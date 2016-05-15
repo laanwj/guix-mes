@@ -1,0 +1,12 @@
+Mes -- Maxwell Equations of Software
+
+Mes is inspired by The Maxwell Equations of Software -- John McCarthy page 13
+http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
+
+Its aim is to have GuixSD boostrap from a minimal trusted binary into
+Scheme.  The strategy is to use OrianJs self-hosting hex assembler to
+write a minimal LISP called MES to bootstrap a full fledged Scheme,
+written in MES.
+
+Mes is free software, it is distributed unde the terms of the GNU
+General Public Licence version 3 or later.  See the file COPYING.
