@@ -1,0 +1,120 @@
+;; -*-scheme-*-
+;; 
+(define (caar x) (car (car x)))
+(define (cadr x) (car (cdr x)))
+(define (cdar x) (cdr (car x)))
+(define (cddr x) (cdr (cdr x)))
+(define (caadr x) (car (car (cdr x))))
+(define (caddr x) (car (cdr (cdr x))))
+(define (cddar x) (cdr (cdr (car x))))
+(define (cdadr x) (cdr (car (cdr x))))
+(define (cadar x) (car (cdr (car x))))
+(define (cdddr x) (cdr (cdr (cdr x))))
+
+;; Page 12
+(define (pairlis x y a)
+  (debug "pairlis x=~a y=~a a=~a\n" x y a)
+  (cond
+   ((null x) a)
+   (#t (cons (cons (car x) (car y))
+             (pairlis (cdr x) (cdr y) a)))))
+
+(define (assoc x a)
+  ;;(stderr "assoc x=~a\n" x)
+  (debug "assoc x=~a a=~a\n" x a)
+  (cond
+   ((null a) #f)
+   ((eq (caar a) x) (car a))
+   (#t (assoc x (cdr a)))))
+
+;; Page 13
+(define (eval-quote fn x)
+  (debug "eval-quote fn=~a x=~a" fn x)
+  (apply fn x '()))
+
+(define (apply fn x a)
+  (debug "apply fn=~a x=~a a=~a\n" fn x a)
+  (cond
+   ((atom fn)
+    (debug "(atom fn)=~a\n" (atom fn))
+    (cond
+     ;; John McCarthy LISP 1.5
+     ;; ((eq fn CAR) (caar x))
+     ;; ((eq fn CDR) (cdar x))
+     ;; ((eq fn CONS) (cons (car x) (cadr x)))
+     ;; ((eq fn ATOM) (atom (car x)))
+     ;; ((eq fn EQ) (eq (car x) (cadr x)))
+     ((builtin fn) (call fn x))
+     (#t (apply (eval fn a) x a))))
+   ;; John McCarthy LISP 1.5
+   ((eq (car fn) 'single-line-LAMBDA) (eval (caddr fn) (pairlis (cadr fn) x a)))
+   ((eq (car fn) 'lambda)
+    ;; (CDDR fn) all eval
+    (cond ((null (cdr (cddr fn)))
+           (eval (caddr fn) (pairlis (cadr fn) x a)))
+          (#t
+           (eval (caddr fn) (pairlis (cadr fn) x a))
+           (apply (cons (car fn) (cons (cadr fn) (cdddr fn)))
+                  x
+                  (pairlis (cadr fn) x a)))))
+   ((eq (car fn) 'label) (apply (caddr fn) x (cons (cons (cadr fn)
+                                                         (caddr fn)) a)))))
+
+(define (eval e a)
+  (debug "eval e=~a a=~a\n" e a)
+  ;;(debug "eval (atom ~a)=~a\n" e (atom e))
+  (cond
+   ;;((and (stderr "NUMBER? ~a ==> ~a\n" e (number e)) #f))
+   ((number e) e)
+   ;; error: extra
+   ((atom e) (cond ((eq (assoc e a) #f)
+                    (stderr "no such symbol: ~a\n" e)
+                    (guile:exit 1))
+                   (#t (cdr (assoc e a)))))
+   ((atom e) (cdr (assoc e a)))
+   ((builtin e) e)
+   ;;((and (stderr "eeee: ~a\n" e) #f))
+   ((atom (car e))
+    (cond
+     ((eq (car e) 'quote) (cadr e))
+     ((eq (car e) 'cond) (evcon (cdr e) a))
+     ;; EXTRA: macro expandszor
+     ;;((and (stderr "2eeee: ~a\n" (cdr (assoc '*macro* a))) #f))
+     (;;;(pair (assoc (car e) (cdr (assoc '*macro* a))))
+      #f
+      ;;(stderr "macro: ~a\n" (assoc (car e) (cdr (assoc '*macro* a))))
+      (stderr "apply: ~a ~a\n"
+              `(cons 'lambda (cdr (cdr
+                                   ,(assoc (car e) (cdr (assoc '*macro* a)))
+                                   )))
+              `(evlis ,(cddr e) a)
+              ;;'(evlist foobar)
+              )
+      (eval (apply
+             `(cons 'lambda (cdr (cdr
+                                  ,(assoc (car e) (cdr (assoc '*macro* a)))
+                                  )))
+             `(evlis ,(cddr e) a)
+             a)
+            a))
+     (#t (apply (car e) (evlis (cdr e) a) a))))
+   (#t (apply (car e) (evlis (cdr e) a) a))))
+
+(define (evcon c a)
+  (debug "evcon c=~a a=~a\n" c a)
+  (cond
+   ;; single-statement cond
+   ;; ((eval (caar c) a) (eval (cadar c) a))
+   ((eval (caar c) a)
+    (cond ((null (cddar c)) (eval (cadar c) a))
+          (#t (eval (cadar c) a)
+              (evcon
+               (cons (cons #t (cddar c)) '())
+               a))))
+   (#t (evcon (cdr c) a))))
+
+(define (evlis m a)
+  (debug "evlis m=~a a=~a\n" m a)
+  (cond
+   ((null m) '())
+   (#t (cons (eval (car m) a) (evlis (cdr m) a)))))

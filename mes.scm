@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-exec guile -L $(pwd) -e '(scm)' -s "$0" "$@"
+exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
@@ -24,7 +24,7 @@ exec guile -L $(pwd) -e '(scm)' -s "$0" "$@"
 ;; The Maxwell Equations of Software -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
-(define-module (scm)
+(define-module (mes)
   #:export (main))
 
 (set-current-module
@@ -34,12 +34,16 @@ exec guile -L $(pwd) -e '(scm)' -s "$0" "$@"
                                 ;; Debugging
                                 apply
                                 cons*
-                                current-output-port
                                 current-error-port
+                                current-output-port
                                 display
+                                eof-object?
+                                exit
                                 force-output
                                 format
                                 newline
+                                read
+                                with-input-from-string
 
                                 ;; Guile admin
                                 module-define!
@@ -52,6 +56,13 @@ exec guile -L $(pwd) -e '(scm)' -s "$0" "$@"
                                 eq?
                                 null?
                                 pair?
+
+                                ;; ADDITIONAL PRIMITIVES
+                                apply
+                                number?
+                                procedure?
+                                <
+                                -
                                 )
                      #:renamer (symbol-prefix-proc 'guile:)))))
 
@@ -82,101 +93,117 @@ exec guile -L $(pwd) -e '(scm)' -s "$0" "$@"
 (define cons guile:cons)
 (define eq guile:eq?)
 (define null guile:null?)
+(define pair guile:pair?)
+(define builtin guile:procedure?)
+(define number guile:number?)
+(define call guile:apply)
 
+(include "mes.mes")
 
-(define ATOM 'atom)
-(define CAR 'car)
-(define CDR 'cdr)
-(define COND 'cond)
-(define CONS 'cons)
-(define EQ 'eq)
-(define LABEL 'label)
-(define LAMBDA 'lambda)
-(define NIL '())
-(define QUOTE 'quote)
+(define (append x y)
+  (cond ((null x) y)
+        (#t (cons (car x) (append (cdr x) y)))))
 
-(define (caar x) (guile:car (guile:car x)))
-(define (cadr x) (guile:car (guile:cdr x)))
-(define (cdar x) (guile:car (guile:cdr (guile:car x))))
-(define (caddr x) (guile:car (guile:cdr (guile:cdr x))))
-(define (cadar x) (guile:car (guile:cdr (guile:car x))))
+(define (eval-environment e a)
+  (eval e (append a environment)))
 
-;; Page 12
-(define (pairlis x y a)
-  (debug "pairlis x=~a y=~a a=~a\n" x y a)
-  (cond
-   ((null x) a)
-   (#t (cons (cons (car x) (car y))
-             (pairlis (cdr x) (cdr y) a)))))
+(define (apply-environment fn e a)
+  (apply fn e (append a environment)))
 
-(define (assoc x a)
-  (debug "assoc x=~a a=~a\n" x a)
-  (cond
-   ((eq (caar a) x) (car a))
-   (#t (assoc x (cdr a)))))
+(define (readenv a)
+  (let ((x (guile:read)))
+    (if (guile:eof-object? x) '()
+        x)))
 
-;; Page 13
-(define (eval-quote fn x)
-  (debug "eval-quote fn=~a x=~a" fn x)
-  (apply fn x NIL))
+(define environment
+  `(
+    (() . ())
+    (#t . #t)
+    (#f . #f)
+    
+    (*unspecified* . ,*unspecified*)
 
-(define (apply fn x a)
-  (debug "apply fn=~a x=~a a=~a\n" fn x a)
-  (cond
-   ((atom fn)
-    (debug "(atom fn)=~a\n" (atom fn))
-    (cond
-     ((eq fn CAR) (caar x))
-     ((eq fn CDR) (cdar x))
-     ((eq fn CONS) (cons (car x) (cadr x)))
-     ((eq fn ATOM) (atom (car x)))
-     ((eq fn EQ) (eq (car x) (cadr x)))
-     (#t (apply (eval fn a) x a))))
-   ((eq (car fn) LAMBDA) (eval (caddr fn) (pairlis (cadr fn) x a)))
-   ((eq (car fn) LABEL) (apply (caddr fn) x (cons (cons (cadr fn)
-                                                        (caddr fn)) a)))))
+    (atom . ,atom)
+    (car . ,car)
+    (cdr . ,cdr)
+    (cons . ,cons)
+    (cond . ,evcon)
+    (eq . ,eq)
 
-(define (eval e a)
-  (debug "eval e=~a a=~a\n" e a)
-  (debug "eval (atom ~a)=~a\n" e (atom e))
-  (cond
-   ((atom e) (cdr (assoc e a)))
-   ((atom (car e))
-    (cond
-     ((eq (car e) QUOTE) (cadr e))
-     ((eq (car e) COND) (evcon (cdr e) a))
-     (#t (apply (car e) (evlis (cdr e) a) a))))
-   (#t (apply (car e) (evlis (cdr e) a) a))))
+    (null . ,null)
+    (pair . ,guile:pair?)
+    ;;(quote . ,quote)
 
-(define (evcon c a)
-  (debug "evcon c=~a a=~a\n" c a)
-  (cond
-   ((eval (caar c) a) (eval (cadar c) a))
-   (#t (evcon (cdr c) a))))
+    (evlis . ,evlis)
+    (evcon . ,evcon)
+    (pairlis . ,pairlis)
+    (assoc . ,assoc)
 
-(define (evlis m a)
-  (debug "evlis m=~a a=~a\n" m a)
-  (cond
-   ((null m) NIL)
-   (#t (cons (eval (car m) a) (evlis (cdr m) a)))))
+    (eval . ,eval-environment)
+    (apply . ,apply-environment)
+
+    (readenv . ,readenv)
+    (display . ,guile:display)
+    (newline . ,guile:newline)
+
+    (builtin . ,builtin)
+    (number . ,number)
+    (call . ,call)
+
+    (< . ,guile:<)
+    (- . ,guile:-)
+
+    ;; DERIVED
+    (caar . ,caar)
+    (cadr . ,cadr)
+    (cdar . ,cdar)
+    (cddr . ,cddr)
+    (caadr . ,caadr)
+    (caddr . ,caddr)
+    (cdadr . ,cdadr)
+    (cadar . ,cadar)
+    (cddar . ,cddar)
+    (cdddr . ,cdddr)
+
+    (append . ,append)
+    (exit . ,guile:exit)
+
+    (*macro* . ())
+
+    ;;
+    (stderr . ,stderr)))
+
+(define (mes-define-lambda x a)
+  (cons (caadr x) (cons 'lambda (cons (cdadr x) (cddr x)))))
+
+(define (mes-define x a)
+  (if (atom (cadr x))
+      (cons (cadr x) (eval (caddr x) a))
+      (mes-define-lambda x a)))
+
+(define (mes-define-macro x a)
+  (cons '*macro*
+        (cons (mes-define-lambda x a)
+              (cdr (assoc '*macro* a)))))
+
+(define (loop r e a)
+  (cond ((null e) r)
+        ((eq e 'exit)
+         (apply (cdr (assoc 'loop a))
+                (cons *unspecified* (cons #t (cons a '())))
+                a))
+        ((atom e) (loop (eval e a) (readenv a) a))
+        ((eq (car e) 'define)
+         (loop *unspecified* (readenv a) (cons (mes-define e a) a)))
+        ((eq (car e) 'define-macro)
+         (loop *unspecified* (readenv a) (cons (mes-define-macro e a) a)))
+        (#t (loop (eval e a) (readenv a) a))))
 
 (define (main arguments)
-  (stdout "Hello scm\n")
-  (guile:display (eval 0 '((0 . 0) (1 . 1))))
-  (guile:newline)
-  (guile:display (eval 1 '((0 . 0) (1 . 1))))
-  (guile:newline)
-  (guile:display (eval '(car '(0 1)) '((0 . 0) (1 . 1))))
-  (guile:newline)
-  (guile:display (eval '(cdr '(0 1)) '((0 . 0) (1 . 1))))
-  (guile:newline)
-  (guile:display (apply 'cons '(0 1) '((0 . 0) (1 . 1))))
-  (guile:newline)
-  (guile:display (eval '(cons 0 1) '((0 . 0) (1 . 1))))
-  (guile:newline)
-  (guile:display (apply '(lambda (x y) (cons x y)) '(0 1) '((0 . 0) (1 . 1))))
-  (guile:newline)
-  (guile:display (eval '((label fun (lambda (x) x)) 2 2) '((2 . 2))))
+  (let ((a (append environment `((*a* . ,environment)))))
+    ;;(guile:display (eval (readenv a) a))
+    (guile:display (loop *unspecified* (readenv a) a))
+    )
   (guile:newline))
 
-(guile:module-define! (guile:resolve-interface '(scm)) 'main main)
+(guile:module-define! (guile:resolve-interface '(mes)) 'main main)

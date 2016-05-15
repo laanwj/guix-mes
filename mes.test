@@ -1,0 +1,20 @@
+#! /bin/sh
+mes=${1-./mes.scm}
+echo 0 | $mes
+echo 1 | $mes
+#echo car | $mes "((0 1))"
+echo "(car '(0 1))" | $mes
+#echo cdr | $mes "((0 1))"
+echo "(cdr '(0 1))" | $mes
+#echo cons | $mes "(0 1)"
+echo "(cons 0 1)" | $mes
+#echo "(lambda (x y) (cons x y))" | $mes "(0 1)"
+echo "((lambda (x y) (cons x y)) 0 1)" | $mes
+echo "((label fun (lambda (x) x)) 2 2)" | $mes
+echo "(< 0 0)" | $mes
+echo "(< 0 1)" | $mes
+echo "((label fun\
+       (lambda (x) (cons x\
+                         (cond ((< 0 x) (fun (- x 1)))\
+                               (#t '())))))\
+       3)" | $mes
