@@ -57,7 +57,7 @@ typedef struct scm_t {
     int value;
     function0_t function0;
     function1_t function1;
-    function2_t function2;    
+    function2_t function2;
     function3_t function3;
     struct scm_t* cdr;
   };
@@ -69,17 +69,17 @@ scm scm_f = {ATOM, "#f"};
 scm scm_lambda = {ATOM, "lambda"};
 scm scm_label = {ATOM, "label"};
 scm scm_unspecified = {ATOM, "*unspecified*"};
-scm scm_define = {ATOM, "define"};
-scm scm_macro = {ATOM, "*macro*"};
+scm scm_symbol_cond = {ATOM, "cond"};
+scm scm_symbol_quote = {ATOM, "quote"};
 
 // PRIMITIVES
 
 scm *
-atom (scm *x)
+atom_p (scm *x)
 {
   return x->type == PAIR ? &scm_f : &scm_t;
 }
-scm scm_atom = {FUNCTION1, .name="atom", .function1 = &atom};
+scm scm_atom = {FUNCTION1, .name="atom", .function1 = &atom_p};
 
 scm *
 car (scm *x)
@@ -112,10 +112,10 @@ eq_p (scm *x, scm *y)
           || (x->type == NUMBER && y->type == NUMBER
               && x->value == y->value)
           // FIXME: alist lookup symbols
-          || (atom (x) == &scm_t
+          || (atom_p (x) == &scm_t
               && x->type != NUMBER
-              && y->type != NUMBER              
-              && atom (y) == &scm_t
+              && y->type != NUMBER
+              && atom_p (y) == &scm_t
               && !strcmp (x->name, y->name)))
     ? &scm_t : &scm_f;
 }
@@ -142,39 +142,6 @@ quote (scm *x)
 {
   return cons (&scm_quote, x);
 }
-
-#if QUASIQUOTE
-scm scm_unquote;
-scm *
-unquote (scm *x)
-{
-  return cons (&scm_unquote, x);
-}
-
-scm scm_quasiquote;
-scm *
-quasiquote (scm *x)
-{
-  return cons (&scm_quasiquote, x);
-}
-
-scm *eval_quasiquote (scm *, scm *);
-#endif
-
-//Primitives
-scm scm_car = {FUNCTION1, "car", .function1 = &car};
-scm scm_cdr = {FUNCTION1, "cdr", .function1 = &cdr};
-scm scm_cons = {FUNCTION2, "cons", .function2 = &cons};
-scm scm_cond = {FUNCTION2, "cond"}; //, .function2 = &cond};
-scm scm_eq_p = {FUNCTION2, "eq", .function2 = &eq_p};
-scm scm_null_p = {FUNCTION1, "null", .function1 = &null_p};
-scm scm_pair_p = {FUNCTION1, "pair", .function1 = &pair_p};
-scm scm_quote = {FUNCTION1, "quote", .function1 = &quote};
-
-#if QUASIQUOTE
-scm scm_unquote = {FUNCTION1, "unquote", .function1 = &unquote};
-scm scm_quasiquote = {FUNCTION1, "quasiquote", .function1 = &quasiquote};
-#endif
 
 //Library functions
 scm scm_read;
@@ -218,10 +185,16 @@ list (scm *x, ...)
   return lst;
 }
 
-// Page 12
 scm *
 pairlis (scm *x, scm *y, scm *a)
 {
+#if 0 //DEBUG
+  printf ("pairlis x=");
+  display (x);
+  printf (" y=");
+  display (y);
+  puts ("");
+#endif
   if (x == &scm_nil)
     return a;
   return cons (cons (car (x), car (y)),
@@ -232,23 +205,21 @@ scm scm_pairlis = {FUNCTION3, .name="pairlis", .function3 = &pairlis};
 scm *
 assoc (scm *x, scm *a)
 {
-  //printf ("assoc: %s\n" , x->name);
-  // not Page 12:
   if (a == &scm_nil) {
 #if DEBUG
     printf ("alist miss: %s\n", x->name);
 #endif
     return &scm_f;
   }
-  // 
   if (eq_p (caar (a), x) == &scm_t)
     return car (a);
   return assoc (x, cdr (a));
 }
 scm scm_assoc = {FUNCTION2, .name="assoc", .function2 = &assoc};
 
-// Page 13
 scm *apply (scm*, scm*, scm*);
+scm *eval_ (scm*, scm*);
+scm *apply_ (scm*, scm*, scm*);
 
 scm *
 eval_quote (scm *fn, scm *x)
@@ -261,27 +232,22 @@ scm *call (scm *, scm*);
 scm *display (scm*);
 scm *newline ();
 
-// .. continued Page 13
 scm *
-apply (scm *fn, scm *x, scm *a)
+apply_ (scm *fn, scm *x, scm *a)
 {
 #if DEBUG
   printf ("apply fn=");
   display (fn);
-  printf (" x=");
-  display (x);
+  //printf (" x=");
+  //display (x);
   puts ("");
 #endif
-  if (atom (fn) != &scm_f)
+  if (atom_p (fn) != &scm_f)
     {
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
       return apply (eval (fn,  a), x, a);
     }
-  // Page 12: single statement lambda
-  // else if (car (fn) == &scm_lambda)
-  //   return eval (caddr (fn), pairlis (cadr (fn), x, a));
-  // Multi-statement lambda
   else if (car (fn) == &scm_lambda) {
     scm *body = cddr (fn);
     scm *ax = pairlis (cadr (fn), x, a);
@@ -299,20 +265,11 @@ scm *evcon (scm*, scm*);
 scm *evlis (scm*, scm*);
 
 scm *
-eval (scm *e, scm *a)
+eval_ (scm *e, scm *a)
 {
-#if DEBUG
-  printf ("eval e=");
-  display (e);
-  // printf (" a=");
-  // display (a);
-  puts ("");
-#endif
-  // not Page 12
   if (e->type == NUMBER)
     return e;
-  //
-  else if (atom (e) == &scm_t) {
+  else if (atom_p (e) == &scm_t) {
     scm *y = assoc (e, a);
     if (y == &scm_f) {
       printf ("eval: no such symbol: %s\n", e->name);
@@ -320,59 +277,14 @@ eval (scm *e, scm *a)
     }
     return cdr (y);
   }
-  // not Page 12
   if (builtin_p (e) == &scm_t)
     return e;
-  //
-  else if (atom (car (e)) == &scm_t)
+  else if (atom_p (car (e)) == &scm_t)
     {
-      scm *macro;
-#if DEBUG
-      printf ("e:");
-      display (e);
-      puts ("");
-      scm *macros = cdr (assoc (&scm_macro, a));
-      if (pair_p (macros) == &scm_t) {
-        printf ("macros:");
-        display (macros);
-        puts ("");
-      }
-#endif
-      if (car (e) == &scm_quote)
+      if (car (e) == &scm_symbol_quote)
         return cadr (e);
-#if QUASIQUOTE
-      else if (car (e) == &scm_unquote)
-        return eval (cadr (e), a);
-      else if (car (e) == &scm_quasiquote) {
-#if DEBUG
-        printf ("cadr e:");
-        display (cadr (e));
-        puts ("");
-        printf ("qq:");
-        display (eval_quasiquote (cadr (e), a));
-        puts ("");
-#endif
-        return eval_quasiquote (cadr (e), a);
-      }
-#endif
-      else if (car (e) == &scm_cond)
+      else if (car (e) == &scm_symbol_cond)
         return evcon (cdr (e), a);
-      //return cond (cdr (e), a);
-      else if ((macro = assoc (car (e), cdr (assoc (&scm_macro, a)))) != &scm_f) {
-#if DEBUG
-        printf ("eval macro:");
-        display (cdr (macro));
-        puts ("");
-        printf ("macro evlis:");
-        display (evlis (cdr (e), a));
-        puts ("");
-#endif
-        return eval (apply
-                     (cdr (macro),
-                      evlis (cdr (e), a),
-                      a),
-                     a);
-      }
       else
         return apply (car (e), evlis (cdr (e), a), a);
     }
@@ -380,18 +292,43 @@ eval (scm *e, scm *a)
 }
 
 scm *
-evcon (scm *c, scm *a)
+evcon_ (scm *c, scm *a)
 {
-  // if (eval (caar (c), a) != &scm_f)
-  //   return eval (cadar (c), a);
+#if DEBUG
+  printf ("evcon_ clause=");
+  display (car (c));
+  puts ("");
+#endif
   if (eval (caar (c), a) != &scm_f) {
+#if DEBUG
+    //if (fn != &scm_display && fn != &scm_call)
+    //if (fn != &scm_call)
+    printf ("#t clause=");
+    display (car (c));
+    printf (" cddar=");
+    display (cddar (c));
+    printf (" nil=%d", cddar (c) == &scm_nil);
+    puts ("");
+#endif
     if (cddar (c) == &scm_nil)
       return eval (cadar (c), a);
     eval (cadar (c), a);
-    return evcon (cons (cons (&scm_t, cddar (c)), &scm_nil), a);
+    return evcon_ (cons (cons (&scm_t, cddar (c)), &scm_nil), a);
   }
-  return evcon (cdr (c), a);
+  return evcon_ (cdr (c), a);
 }
+
+scm *
+evcon (scm *c, scm *a)
+{
+#if DEBUG
+  printf ("\n****evcon=");
+  display (c);
+  puts ("");
+#endif
+  return evcon_ (c, a);
+}
+
 scm scm_evcon = {FUNCTION2, .name="evcon", .function2 = &evcon};
 
 scm *
@@ -403,7 +340,24 @@ evlis (scm *m, scm *a)
 }
 scm scm_evlis = {FUNCTION2, .name="evlis", .function2 = &evlis};
 
-// EXTRAS
+
+//Primitives
+scm scm_car = {FUNCTION1, "car", .function1 = &car};
+scm scm_cdr = {FUNCTION1, "cdr", .function1 = &cdr};
+scm scm_cons = {FUNCTION2, "cons", .function2 = &cons};
+scm scm_cond = {FUNCTION2, "cond", .function2 = &evcon};
+scm scm_eq_p = {FUNCTION2, "eq", .function2 = &eq_p};
+scm scm_null_p = {FUNCTION1, "null", .function1 = &null_p};
+scm scm_pair_p = {FUNCTION1, "pair", .function1 = &pair_p};
+scm scm_quote = {FUNCTION1, "quote", .function1 = &quote};
+
+scm scm_eval = {FUNCTION2, .name="eval", .function2 = &eval};
+scm scm_apply = {FUNCTION3, .name="apply", .function3 = &apply};
+
+scm scm_apply_ = {FUNCTION3, .name="c:apply", .function3 = &apply_};
+scm scm_eval_ = {FUNCTION2, .name="c:eval", .function2 = &eval_};
+
+//Helpers
 
 scm *
 builtin_p (scm *x)
@@ -423,13 +377,35 @@ number_p (scm *x)
 }
 scm scm_number_p = {FUNCTION1, .name="number", .function1 = &number_p};
 
+scm *display_helper (scm*, bool, char*, bool);
+
+scm *
+display (scm *x)
+{
+  return display_helper (x, false, "", false);
+}
+scm scm_display = {FUNCTION1, .name="display", .function1 = &display};
+
+scm *call (scm*, scm*);
+scm scm_call = {FUNCTION2, .name="call", .function2 = &call};
 
 scm *
 call (scm *fn, scm *x)
 {
+#if DEBUG
+  //if (fn != &scm_display && fn != &scm_call)
+  //if (fn != &scm_call)
+  {
+    printf ("\ncall fn=");
+    display (fn);
+    printf (" x=");
+    display (x);
+    puts ("");
+  }
+#endif
   if (fn->type == FUNCTION0)
     return fn->function0 ();
-  else if (fn->type == FUNCTION1)
+  if (fn->type == FUNCTION1)
     return fn->function1 (car (x));
   if (fn->type == FUNCTION2)
     return fn->function2 (car (x), cadr (x));
@@ -437,7 +413,6 @@ call (scm *fn, scm *x)
     return fn->function3 (car (x), cadr (x), caddr (x));
   return &scm_unspecified;
 }
-scm scm_call = {FUNCTION1, .name="call", .function2 = &call};
 
 scm *
 append (scm *x, scm *y)
@@ -473,28 +448,38 @@ lookup (char *x, scm *a)
 {
   if (isdigit (*x) || (*x == '-' && isdigit (*(x+1))))
     return make_number (atoi (x));
-  if (x) {
-    scm *y = make_atom (x);
-    scm *r = assoc (y, a);
-#if 0
-    if (!strcmp (x, "eval")) {
-      printf ("lookup %s ==> ", x);
-      display (r);
-      puts ("");
-    }
+  if (*x == '\'') return &scm_symbol_quote;
 
-    if (!strcmp (x, "apply")) {
-      printf ("lookup %s ==> ", x);
-      display (r);
-      puts ("");
-    }
-#endif
-    if (r != &scm_f) return cdr (r);
-    return y;
-  }
+  if (!strcmp (x, scm_symbol_cond.name)) return &scm_symbol_cond;
+  if (!strcmp (x, scm_symbol_quote.name)) return &scm_symbol_quote;
+  if (!strcmp (x, scm_lambda.name)) return &scm_lambda;
+  if (!strcmp (x, scm_label.name)) return &scm_label;
+  if (!strcmp (x, scm_nil.name)) return &scm_nil;
 
-  return &scm_unspecified;
+  return make_atom (x);
 }
+
+char *
+list2str (scm *l)
+{
+  static char buf[256];
+  char *p = buf;
+  while (l != &scm_nil) {
+    scm *c = car (l);
+    assert (c->type == NUMBER);
+    *p++ = c->value;
+    l = cdr (l);
+  }
+  *p = 0;
+  return buf;
+}
+
+scm *
+builtin_lookup (scm *l, scm *a)
+{
+  return lookup (list2str (l), a);
+}
+scm scm_lookup = {FUNCTION2, .name="lookup", .function2 = &builtin_lookup};
 
 scm *
 cossa (scm *x, scm *a)
@@ -504,15 +489,6 @@ cossa (scm *x, scm *a)
     return car (a);
   return cossa (x, cdr (a));
 }
-
-scm *display_helper (scm*, bool, char*, bool);
-
-scm *
-display (scm *x)
-{
-  return display_helper (x, false, "", false);
-}
-scm scm_display = {FUNCTION1, .name="display", .function1 = &display};
 
 scm *
 newline ()
@@ -526,7 +502,7 @@ scm *
 display_helper (scm *x, bool cont, char *sep, bool quote)
 {
   scm *r;
-  printf (sep);
+  printf ("%s", sep);
   if (x->type == NUMBER) printf ("%d", x->value);
   else if (x->type == PAIR) {
 #if QUOTE_SUGAR
@@ -534,16 +510,6 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       printf ("'");
       return display_helper (car (cdr (x)), cont, "", true);
     }
-#if QUASIQUOTE
-    if (car (x) == &scm_quasiquote) {
-      printf ("`");
-      return display_helper (car (cdr (x)), cont, "", true);
-    }
-    if (car (x) == &scm_unquote) {
-      printf (",");
-      return display_helper (car (cdr (x)), cont, "", true);
-    }
-#endif
 #endif
     if (!cont) printf ("(");
     display (car (x));
@@ -555,12 +521,13 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
     }
     if (!cont) printf (")");
   }
-  else if (atom (x) == &scm_t) printf (x->name);
+  else if (atom_p (x) == &scm_t) printf ("%s", x->name);
 
   return &scm_unspecified;
 }
 
 // READ
+
 int
 ungetchar (int c)
 {
@@ -630,11 +597,9 @@ readword (int c, char* w, scm *a)
                                            &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
   if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
-  char s[2];
-  s[0] = c;
-  s[1] = 0;
-  char buf[256] = "";
-  return readword (getchar (), strcat (w ? w : buf, s), a);
+  char buf[256] = {0};
+  char ch = c;
+  return readword (getchar (), strncat (w ? w : buf, &ch, 1), a);
 }
 
 scm *
@@ -651,13 +616,18 @@ readenv (scm *a)
 {
   return readword (getchar (), 0, a);
 }
-scm scm_readenv = {FUNCTION1, .function1 = &readenv};
+scm scm_readenv = {FUNCTION1, .name="readenv", .function1 = &readenv};
+
+// Extras to make interesting program
 
 scm *
-add_environment (scm *a, char *name, scm* x)
+hello_world ()
 {
-  return cons (cons (make_atom (name), x), a);
+  puts ("c: hello world");
+  return &scm_unspecified;
 }
+scm scm_hello_world = {FUNCTION0, .name="hello-world", .function0 = &hello_world};
+
 
 scm *
 less_p (scm *a, scm *b)
@@ -670,37 +640,38 @@ less_p (scm *a, scm *b)
 scm *
 minus (scm *a, scm *b)
 {
+#if DEBUG
+  printf ("\nminus a=");
+  display (a);
+  printf (" b=");
+  display (b);
+  puts ("");
+#endif
   assert (a->type == NUMBER);
   assert (b->type == NUMBER);
-  return make_number (a->value - b->value);
+  //return make_number (a->value - b->value);
+  scm *r = make_number (a->value - b->value);
+#if DEBUG
+  printf ("  ==> ");
+  display (r);
+  puts ("");
+#endif
+  return r;
 }
 
 scm scm_less_p = {FUNCTION2, .name="<", .function2 = &less_p};
 scm scm_minus = {FUNCTION2, .name="-", .function2 = &minus};
 
-scm *global_environment;
 
 scm *
-apply_environment (scm *fn, scm *x, scm *a)
+add_environment (scm *a, char *name, scm* x)
 {
-  return apply (fn, x, append (a, global_environment));
+  return cons (cons (make_atom (name), x), a);
 }
-
-scm *
-eval_environment (scm *e, scm *a)
-{
-  return eval (e, append (a, global_environment));
-}
-
-//scm scm_cond = {FUNCTION2, .name="cond", .function2 = &evcon};
-scm scm_eval = {FUNCTION2, .name="eval", .function2 = &eval_environment};
-scm scm_apply = {FUNCTION3, .name="apply", .function3 = &apply_environment};
 
 scm *
 initial_environment ()
 {
-  scm_cond.function2 = &evcon;
-
   scm *a = &scm_nil;
 
   a = add_environment (a, "()", &scm_nil);
@@ -723,31 +694,31 @@ initial_environment ()
   a = add_environment (a, "quote", &scm_quote);
   a = add_environment (a, "'", &scm_quote);
 
-#if QUASIQUOTE
-  a = add_environment (a, "quasiquote", &scm_quasiquote);
-  a = add_environment (a, "unquote", &scm_unquote);    
-  a = add_environment (a, ",", &scm_unquote);
-  a = add_environment (a, "`", &scm_quasiquote);
-#endif
-
   a = add_environment (a, "evlis", &scm_evlis);
   a = add_environment (a, "evcon", &scm_evcon);
-  a = add_environment (a, "pairlis", &scm_pairlis);  
+  a = add_environment (a, "pairlis", &scm_pairlis);
   a = add_environment (a, "assoc", &scm_assoc);
 
+  a = add_environment (a, "c:eval", &scm_eval_);
+  a = add_environment (a, "c:apply", &scm_apply_);
   a = add_environment (a, "eval", &scm_eval);
   a = add_environment (a, "apply", &scm_apply);
 
+  a = add_environment (a, "getchar", &scm_getchar);
+  a = add_environment (a, "peekchar", &scm_peekchar);
+  a = add_environment (a, "ungetchar", &scm_ungetchar);
+  a = add_environment (a, "lookup", &scm_lookup);
+
   a = add_environment (a, "readenv", &scm_readenv);
   a = add_environment (a, "display", &scm_display);
-  a = add_environment (a, "newline", &scm_newline);  
+  a = add_environment (a, "newline", &scm_newline);
 
   a = add_environment (a, "builtin", &scm_builtin_p);
   a = add_environment (a, "number", &scm_number_p);
   a = add_environment (a, "call", &scm_call);
 
-  a = add_environment (a, "define", &scm_define);
-  
+
+  a = add_environment (a, "hello-world", &scm_hello_world);
   a = add_environment (a, "<", &scm_less_p);
   a = add_environment (a, "-", &scm_minus);
 
@@ -765,29 +736,8 @@ initial_environment ()
 
   a = add_environment (a, "append", &scm_append);
 
-  a = add_environment (a, "*macro*", &scm_nil);
-  
-  // Hmm
-  //a = add_environment (a, "*a*", &scm_nil);
-  global_environment = add_environment (a, "*a*", a);
   return a;
 }
-
-#if QUASIQUOTE
-scm *
-eval_quasiquote (scm *e, scm *a)
-{
-  if (e == &scm_nil) return e;
-  else if (atom (e) == &scm_t) return e;
-  else if (car (e) == &scm_unquote)
-    return eval (cadr (e), a);
-  else if (car (e) == &scm_quote)
-    return cadr (e);
-  else if (car (e) == &scm_quasiquote)
-    return cadr (e);
-  return cons (car (e), eval_quasiquote (cdr (e), a));
-}
-#endif
 
 scm *
 define_lambda (scm *x, scm *a)
@@ -798,37 +748,27 @@ define_lambda (scm *x, scm *a)
 scm *
 define (scm *x, scm *a)
 {
-  if (atom (cadr (x)) != &scm_f)
+  if (atom_p (cadr (x)) != &scm_f)
     return cons (cadr (x), eval (caddr (x), a));
   return define_lambda (x, a);
 }
 
 scm *
-define_macro (scm *x, scm *a)
-{
-  return cons (&scm_macro,
-               cons (define_lambda (x, a),
-                     cdr (assoc (&scm_macro, a))));
-}
-
-scm *
 loop (scm *r, scm *e, scm *a)
 {
-  //global_environment = add_environment (a, "*a*", a);
-  if (e == &scm_nil) return r; //a;
-  else if (eq_p (e, make_atom ("exit")) == &scm_t)
-    return apply (cdr (assoc (make_atom ("loop"), a)),
+  if (e == &scm_nil)
+    return r;
+  else if (eq_p (e, make_atom ("EOF")) == &scm_t)
+    return apply (cdr (assoc (make_atom ("loop2"), a)),
                   cons (&scm_unspecified, cons (&scm_t, cons (a, &scm_nil))), a);
-  else if (atom (e) == &scm_t)
+  else if (eq_p (e, make_atom ("EOF2")) == &scm_t)
+    return r;
+  else if (atom_p (e) == &scm_t)
     return loop (eval (e, a), readenv (a), a);
   else if (eq_p (car (e), make_atom ("define")) == &scm_t)
     return loop (&scm_unspecified,
                  readenv (a),
                  cons (define (e, a), a));
-  else if (eq_p (car (e), make_atom ("define-macro")) == &scm_t)
-    return loop (&scm_unspecified,
-                 readenv (a),
-                 cons (define_macro (e, a), a));
   return loop (eval (e, a), readenv (a), a);
 }
 
@@ -836,17 +776,45 @@ int
 main (int argc, char *argv[])
 {
   scm *a = initial_environment ();
-  //global_environment = a;
-  scm *x = readenv (a);
+  display (loop (&scm_unspecified, readenv (a), a));
+  newline ();
+  return 0;
+}
+
+scm *
+apply (scm* fn, scm *x, scm *a)
+{
 #if DEBUG
-  printf ("program=");
+  printf ("\nc:apply fn=");
+  display (fn);
+  printf (" x=");
   display (x);
   puts ("");
 #endif
-  //display (eval (x, a));
-  display (loop (&scm_unspecified, x, a));
-  // loop (&scm_unspecified, x, a);
-  //loop (&scm_unspecified, read (), initial_environment ());
-  newline ();
-  return 0;
+  if (fn == &scm_apply_)
+    return eval_ (x, a);
+  return apply_ (fn, x, a);
+}
+
+bool evalling_p = false;
+
+scm *
+eval (scm *e, scm *a)
+{
+#if DEBUG
+  printf ("\nc:eval e=");
+  display (e);
+  puts ("");
+#endif
+
+  scm *eval__ = assoc (make_atom ("eval"), a);
+  assert (eval__ != &scm_f);
+  eval__ = cdr (eval__);
+  if (builtin_p (eval__) == &scm_t
+      || evalling_p)
+    return eval_ (e, a);
+  evalling_p = true;
+  scm *r = apply (eval__, cons (e, cons (a, &scm_nil)), a);
+  evalling_p = false;
+  return r;
 }

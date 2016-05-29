@@ -9,5 +9,9 @@ all: mes
 check: all
 	./mes.test
 	./mes.test ./mes
-	./mes < scm.mes
-	./mes.scm < scm.mes
+	./mes < boot.mes
+#	./mes < scm.mes
+#	./mes.scm < scm.mes
+
+boot: all
+	./mes < boot.mes
