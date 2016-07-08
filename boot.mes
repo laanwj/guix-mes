@@ -24,32 +24,6 @@ exec ./mes "$@" < "$0"
 ;; The Maxwell Equations of programming -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
-;; ((label loop
-;;         (lambda (r e a)
-;;           (cond ((null e) a)
-;;                 ((eq e 'exit)
-;;                  (display 'loop:exiting)
-;;                  (newline)
-;;                  (apply 'loop2 (cons #t (cons #t (cons a '()))) a))
-;;                 ((atom e) (loop (eval e a) (readenv a) a))
-;;                 ((eq (car e) 'define)
-;;                  (loop *unspecified*
-;;                        (readenv a)
-;;                        (cons
-;;                         (cond ((atom (cadr e))
-;;                                (cons (cadr e) (eval (caddr e) a)))
-;;                               (#t
-;;                                (newline)
-;;                                (cons (caadr e)
-;;                                      (cons 'lambda
-;;                                            (cons (cdadr e) (cddr e))))))
-;;                         a)))
-;;                 (#t (loop (eval e a) (readenv a) a)))))
-;;  *unspecified* (readenv '()) '((*macro*)))
-
-(display 'loop-reading...)
-(newline)
-
 ;; loop adds definitions of mes.mes to current-environment
 ;;mes.mes
 
@@ -119,24 +93,13 @@ exec ./mes "$@" < "$0"
   ;; (display 'x:)
   ;; (display x)
   ;; (newline)
-  ;;(debug "apply fn=~a x=~a a=~a\n" fn x a)
   (cond
    ((atom fn)
-    ;;(debug "(atom fn)=~a\n" (atom fn))
     (cond
-     ;; John McCarthy LISP 1.5
-     ;; ((eq fn CAR) (caar x))
-     ;; ((eq fn CDR) (cdar x))
-     ;; ((eq fn CONS) (cons (car x) (cadr x)))
-     ;; ((eq fn ATOM) (atom (car x)))
-     ;; ((eq fn EQ) (eq (car x) (cadr x)))
      ((builtin fn)
       (call fn x))
      (#t (apply (eval fn a) x a))))
-   ;; John McCarthy LISP 1.5
-   ((eq (car fn) 'single-line-LAMBDA) (eval (caddr fn) (pairlis (cadr fn) x a)))
    ((eq (car fn) 'lambda)
-    ;; (CDDR fn) all eval
     (cond ((null (cdr (cddr fn)))
            (eval (caddr fn) (pairlis (cadr fn) x a)))
           (#t
@@ -161,7 +124,6 @@ exec ./mes "$@" < "$0"
   ;; (display (cdr (assoc '*macro* a)))
   ;; (newline)
   (cond
-   ;;((and (stderr "NUMBER? ~a ==> ~a\n" e (number e)) #f))
    ((number e) e)
    ((eq e #t) #t)
    ((eq e #f) #f)
@@ -171,26 +133,13 @@ exec ./mes "$@" < "$0"
     (cond
      ((eq (car e) 'quote) (cadr e))
      ((eq (car e) 'cond) (evcon (cdr e) a))
-     ;; no macro support:
-     (#t (apply (car e) (evlis (cdr e) a) a))
-     ;; ^^^^^^^^^^^^^^^^^
-     (#t
+     (;;#f  ;; #f: no macro support
+      #t ;; #t: macro support
       (cond
-       ;; (#t
-       ;;  (display 'could-be-macro:)
-       ;;  (display e)
-       ;;  (newline)
-       ;;  (display 'null:)
-       ;;  (display (null (cdr (assoc '*macro* a))))
-       ;;  (newline)
-       ;;  #f)
-       ;;(#t (apply (car e) (evlis (cdr e) a) a))
        ((eq (assoc '*macro* a) #f)
-        ;;(null (cdr (assoc '*macro* a)))
-
-        ;; (display 'we-have-no-macros:)
-        ;; (display e)
-        ;; (newline)
+        (display 'we-have-no-macros:)
+        (display e)
+        (newline)
 
         (apply (car e) (evlis (cdr e) a) a)
         )
@@ -212,11 +161,13 @@ exec ./mes "$@" < "$0"
                (evlis (cdr e) a)
                a)
               a))
-       (#t (apply (car e) (evlis (cdr e) a) a))))
+       (#t
+        (apply (car e) (evlis (cdr e) a) a))))
      (#t (apply (car e) (evlis (cdr e) a) a))))
    (#t (apply (car e) (evlis (cdr e) a) a))))
 
-(define (readenv a)
+;; readenv et al works, but slows down dramatically
+(define (DISABLED-readenv a)
   (readword (getchar) '() a))
 
 (define (readword c w a)
@@ -280,25 +231,17 @@ exec ./mes "$@" < "$0"
   (display x))
 
 (define (loop2 r e a)
-  (display '____loop2)
-  (newline)
-  (display 'e:)
-  (display e)  
+  ;; (display '____loop2)
+  ;; (newline)
+  ;; (display 'e:)
+  ;; (display e)  
   ;; (newline)
   (cond ((null e) r)
         ((eq e 'EOF2)
          (display 'loop2-exiting...)
          (newline))
-        ((eq (assoc '*macro* a) #f)
-         (loop2 r (readenv a) (cons (cons '*macro* '()) a)))
         ((atom e)
-         ;; (display 'loop2:atom)
-         ;; (newline)
-         ;; (display 'skipping-one-read-scm:)
-         ;; (display (readenv a))
-         ;; (newline)
-         (loop2 (eval e a) (readenv a) a)
-         )
+         (loop2 (eval e a) (readenv a) a))
         ((eq (car e) 'define)
          (loop2 *unspecified* (readenv a) (cons (scm-define e a) a)))
         ((eq (car e) 'define-macro)
@@ -310,7 +253,7 @@ exec ./mes "$@" < "$0"
 
 ;;(display 'loop:read-loop2-exiting...)
 ;;(newline)
-;;;EOF
+EOF
 
 ;; loop2 skips one read:
 'this-is-skipped-scm
@@ -333,35 +276,27 @@ exec ./mes "$@" < "$0"
 
 (newline)
 
-;; (define-macro (and x y)
-;;   (cond (x
-;;          (display 'true-inside-and:)
-;;          (display x)
-;;          (newline)
-;;          y)
-;;         (#t
-;;          (display 'false-inside-and:)
-;;          (display x)
-;;          #f)))
+(define-macro (and x y)
+  (cond (x y)
+        (#t #f)))
 
-;; (define-macro (and x y)
-;;   (cond (x y)
-;;         (#t #f)))
+(define-macro (or x y)
+  (cond (x x)
+        (#t y)))
 
-;; (define-macro (or x y)
-;;   (cond (x x)
-;;         (#t y)))
+(display 'and-0-1:)
+(display (and 0 1))
+(newline)
+(display 'and-#f-2:)
+(display (and #f 2))
+(newline)
 
-;; (display 'and-0-1:)
-;; ;; ;;(display (and 0 1))
-;; (and 0 1)
-;; (and 0 2)
-;; (and #f 3)
-;; (newline)
-;; (display 'xscm-display)
-;; (newline)
-;; ;; ;;(eval '(display (and 0 1)) '((*macro*)))
-;; (display (and 0 1))
+(display 'or-0-1:)
+(display (or 0 1))
+(newline)
+(display 'or-#f-2:)
+(display (or #f 2))
+(newline)
 
 '()
 EOF2

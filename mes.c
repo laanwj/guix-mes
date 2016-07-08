@@ -736,6 +736,9 @@ initial_environment ()
 
   a = add_environment (a, "append", &scm_append);
 
+  //
+  a = add_environment (a, "*macro*", &scm_nil);
+
   return a;
 }
 
