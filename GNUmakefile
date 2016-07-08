@@ -9,7 +9,7 @@ all: mes
 check: all
 	./mes.test
 	./mes.test ./mes
-	./mes < boot.mes
+#	./mes < boot.mes
 #	./mes < scm.mes
 #	./mes.scm < scm.mes
 

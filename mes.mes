@@ -47,7 +47,7 @@
      ((builtin fn) (call fn x))
      (#t (apply (eval fn a) x a))))
    ;; John McCarthy LISP 1.5
-   ((eq (car fn) 'single-line-LAMBDA) (eval (caddr fn) (pairlis (cadr fn) x a)))
+   ((eq (car fn) 'LAMBDA) (eval (caddr fn) (pairlis (cadr fn) x a)))
    ((eq (car fn) 'lambda)
     ;; (CDDR fn) all eval
     (cond ((null (cdr (cddr fn)))

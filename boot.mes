@@ -45,6 +45,7 @@ exec ./mes "$@" < "$0"
 ;;   (debug "pairlis x=~a y=~a a=~a\n" x y a)
 ;;   (cond
 ;;    ((null x) a)
+;;    ((atom x) (cons (cons x y) a))
 ;;    (#t (cons (cons (car x) (car y))
 ;;              (pairlis (cdr x) (cdr y) a)))))
 
@@ -76,6 +77,9 @@ exec ./mes "$@" < "$0"
 
 (define (evlis m a)
   ;;(debug "evlis m=~a a=~a\n" m a)
+  ;; (display 'mes-evlis:)
+  ;; (display m)
+  ;; (newline)
   (cond
    ((null m) '())
    (#t (cons (eval (car m) a) (evlis (cdr m) a)))))
@@ -119,10 +123,6 @@ exec ./mes "$@" < "$0"
   ;; (display 'a:)
   ;; (display a)
   ;; (newline)
-  ;;(display 'pair?*macro*:)
-  ;;(display (assoc '*macro* a))
-  ;; (display (cdr (assoc '*macro* a)))
-  ;; (newline)
   (cond
    ((number e) e)
    ((eq e #t) #t)
@@ -133,36 +133,13 @@ exec ./mes "$@" < "$0"
     (cond
      ((eq (car e) 'quote) (cadr e))
      ((eq (car e) 'cond) (evcon (cdr e) a))
-     (;;#f  ;; #f: no macro support
-      #t ;; #t: macro support
-      (cond
-       ((eq (assoc '*macro* a) #f)
-        (display 'we-have-no-macros:)
-        (display e)
-        (newline)
-
-        (apply (car e) (evlis (cdr e) a) a)
-        )
-       ((pair (assoc (car e) (cdr (assoc '*macro* a))))
-        ;; (display 'expanz0r:)
-        ;; (display (assoc (car e) (cdr (assoc '*macro* a))))
-        ;; (newline)
-        ;; (display 'running:)
-        ;; (display (cdr (assoc (car e) (cdr (assoc '*macro* a)))))
-        ;; (newline)
-        ;; (display 'args:)
-        ;; (display (cdr e))
-        ;; (newline)
-        ;; (display '==>args:)
-        ;; (display (evlis (cdr e) a))
-        ;; (newline)
-        (eval (apply
-               (cdr (assoc (car e) (cdr (assoc '*macro* a))))
-               (evlis (cdr e) a)
-               a)
-              a))
-       (#t
-        (apply (car e) (evlis (cdr e) a) a))))
+     ((pair (assoc (car e) (cdr (assoc '*macro* a))))
+      (c:eval
+       (c:apply
+        (cdr (assoc (car e) (cdr (assoc '*macro* a))))
+        (cdr e)
+        a)
+       a))
      (#t (apply (car e) (evlis (cdr e) a) a))))
    (#t (apply (car e) (evlis (cdr e) a) a))))
 
@@ -171,14 +148,15 @@ exec ./mes "$@" < "$0"
   (readword (getchar) '() a))
 
 (define (readword c w a)
-  ;; (display 'readword:)
-  ;; (display c)
-  ;; (newline)
+  (display 'mes-readword:)
+  (display c)
+  (newline)
   (cond ((eq c -1) ;; eof
          (cond ((eq w '()) '())
                (#t (lookup w a))))
         ((eq c 10) ;; \n
          (cond ((eq w '()) (readword (getchar) w a))
+               ;; DOT ((eq w '(*dot*)) (car (readword (getchar) '() a)))
                (#t (lookup w a))))
         ((eq c 32) ;; \space
          (readword 10 w a))
@@ -199,8 +177,8 @@ exec ./mes "$@" < "$0"
         (#t (readword (getchar) (append w (cons c '())) a))))
 
 (define (readlis a)
-  ;; (display 'readlis:)
-  ;; (newline)
+  (display 'mes-readlis:)
+  (newline)
   (cond ((eq (peekchar) 41) ;; )
          (getchar)
          '())
@@ -255,10 +233,8 @@ exec ./mes "$@" < "$0"
 ;;(newline)
 EOF
 
-;; loop2 skips one read:
-'this-is-skipped-scm
-
 (display 123)
+
 4
 (newline)
 
@@ -284,6 +260,10 @@ EOF
   (cond (x x)
         (#t y)))
 
+;; EOF2
+;; EOF
+;; EOF2
+
 (display 'and-0-1:)
 (display (and 0 1))
 (newline)
@@ -298,7 +278,62 @@ EOF
 (display (or #f 2))
 (newline)
 
-'()
-EOF2
-EOF
+(define (split-params bindings params)
+  (cond ((null bindings) params)
+        (#t (split-params (cdr bindings)
+                          (append params (cons (caar bindings) '()))))))
 
+(define (split-values bindings values)
+  (cond ((null bindings) values)
+        (#t (split-values (cdr bindings)
+                          (append values (cdar bindings) '())))))
+
+(define-macro (let1 bindings body)
+  (cons (cons 'lambda (cons (split-params bindings '()) (cons body '())))
+        (split-values bindings '())))
+
+(let1 ((a 3)
+      (b 4))
+      ((lambda ()
+         (display 'let-a:3-b:4)
+         (newline)
+         (display 'a:)
+         (display a)
+         (newline)
+         (display 'b:)
+         (display b)
+         (newline))))
+
+(display 'let1-dun)
+(newline)
+
+(define-macro (let bindings . body)
+  (cons (cons 'lambda (cons (split-params bindings '()) body))
+        (split-values bindings '())))
+
+(let ((p 5)
+       (q 6))
+      (display 'let-p:3-q:4)
+      (newline)
+      (display 'p:)
+      (display p)
+      (newline)
+      (display 'q:)
+      (display q)
+      (newline))
+
+
+(display
+ (let ((p 5)
+       (q 6))
+   (display 'hallo)
+   (display p)
+   (display 'daar)
+   (display q)
+   (display 'dan)))
+
+(newline)
+(display 'let-dun)
+(newline)
+
+'()

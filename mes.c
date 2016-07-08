@@ -36,6 +36,8 @@
 
 #define DEBUG 0
 
+#define MACROS 1
+
 #ifndef QUOTE_SUGAR
 #define QUOTE_SUGAR 1
 #endif
@@ -64,6 +66,7 @@ typedef struct scm_t {
 } scm;
 
 scm scm_nil = {ATOM, "()"};
+scm scm_dot = {ATOM, "."};
 scm scm_t = {ATOM, "#t"};
 scm scm_f = {ATOM, "#f"};
 scm scm_lambda = {ATOM, "lambda"};
@@ -71,6 +74,7 @@ scm scm_label = {ATOM, "label"};
 scm scm_unspecified = {ATOM, "*unspecified*"};
 scm scm_symbol_cond = {ATOM, "cond"};
 scm scm_symbol_quote = {ATOM, "quote"};
+scm scm_macro = {ATOM, "*macro*"};
 
 // PRIMITIVES
 
@@ -185,10 +189,12 @@ list (scm *x, ...)
   return lst;
 }
 
+scm* make_atom (char const *);
+
 scm *
 pairlis (scm *x, scm *y, scm *a)
 {
-#if 0 //DEBUG
+#if DEBUG
   printf ("pairlis x=");
   display (x);
   printf (" y=");
@@ -197,6 +203,8 @@ pairlis (scm *x, scm *y, scm *a)
 #endif
   if (x == &scm_nil)
     return a;
+  if (atom_p (x) == &scm_t)
+    return cons (cons (x, y), a);
   return cons (cons (car (x), car (y)),
                pairlis (cdr (x), cdr (y), a));
 }
@@ -238,8 +246,8 @@ apply_ (scm *fn, scm *x, scm *a)
 #if DEBUG
   printf ("apply fn=");
   display (fn);
-  //printf (" x=");
-  //display (x);
+  printf (" x=");
+  display (x);
   puts ("");
 #endif
   if (atom_p (fn) != &scm_f)
@@ -250,6 +258,7 @@ apply_ (scm *fn, scm *x, scm *a)
     }
   else if (car (fn) == &scm_lambda) {
     scm *body = cddr (fn);
+    scm *ca = cadr (fn);
     scm *ax = pairlis (cadr (fn), x, a);
     scm *result = eval (car (body), ax);
     if (cdr (body) == &scm_nil)
@@ -267,6 +276,11 @@ scm *evlis (scm*, scm*);
 scm *
 eval_ (scm *e, scm *a)
 {
+#if DEBUG
+  printf ("eval e=");
+  display (e);
+  puts ("");
+#endif
   if (e->type == NUMBER)
     return e;
   else if (atom_p (e) == &scm_t) {
@@ -281,12 +295,18 @@ eval_ (scm *e, scm *a)
     return e;
   else if (atom_p (car (e)) == &scm_t)
     {
+#if MACROS
+      scm *macro;
+#endif // MACROS
       if (car (e) == &scm_symbol_quote)
         return cadr (e);
       else if (car (e) == &scm_symbol_cond)
         return evcon (cdr (e), a);
-      else
-        return apply (car (e), evlis (cdr (e), a), a);
+#if MACROS
+      else if ((macro = assoc (car (e), cdr (assoc (&scm_macro, a)))) != &scm_f)
+        return eval (apply_ (cdr (macro), cdr (e), a), a);
+#endif // MACROS
+      return apply (car (e), evlis (cdr (e), a), a);
     }
   return apply (car (e), evlis (cdr (e), a), a);
 }
@@ -334,6 +354,11 @@ scm scm_evcon = {FUNCTION2, .name="evcon", .function2 = &evcon};
 scm *
 evlis (scm *m, scm *a)
 {
+#if DEBUG
+  printf ("evlis m=");
+  display (m);
+  puts ("");
+#endif
   if (m == &scm_nil)
     return &scm_nil;
   return cons (eval (car (m), a), evlis (cdr (m), a));
@@ -586,6 +611,7 @@ readword (int c, char* w, scm *a)
 {
   if (c == EOF && !w) return &scm_nil;
   if (c == '\n' && !w) return readword (getchar (), w, a);
+  if (c == '\n' && *w == '.' && w[1] == 0) return &scm_dot;
   if (c == EOF || c == '\n') return lookup (w, a);
   if (c == ' ') return readword ('\n', w, a);
   if (c == '(' && !w) return readlis (a);
@@ -608,6 +634,8 @@ readlis (scm *a)
   int c = getchar ();
   if (c == ')') return &scm_nil;
   scm *w = readword (c, 0, a);
+  if (w == &scm_dot)
+    return car (readlis (a));
   return cons (w, readlis (a));
 }
 
@@ -738,6 +766,7 @@ initial_environment ()
 
   //
   a = add_environment (a, "*macro*", &scm_nil);
+  a = add_environment (a, "*dot*", &scm_dot);
 
   return a;
 }
@@ -757,8 +786,21 @@ define (scm *x, scm *a)
 }
 
 scm *
+define_macro (scm *x, scm *a)
+{
+  return cons (&scm_macro,
+               cons (define_lambda (x, a),
+                     cdr (assoc (&scm_macro, a))));
+}
+
+scm *
 loop (scm *r, scm *e, scm *a)
 {
+#if DEBUG
+  printf ("\nc:loop e=");
+  display (e);
+  puts ("");
+#endif
   if (e == &scm_nil)
     return r;
   else if (eq_p (e, make_atom ("EOF")) == &scm_t)
@@ -772,6 +814,10 @@ loop (scm *r, scm *e, scm *a)
     return loop (&scm_unspecified,
                  readenv (a),
                  cons (define (e, a), a));
+  else if (eq_p (car (e), make_atom ("define-macro")) == &scm_t)
+    return loop (&scm_unspecified,
+                 readenv (a),
+                 cons (define_macro (e, a), a));
   return loop (eval (e, a), readenv (a), a);
 }
 

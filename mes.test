@@ -20,3 +20,5 @@ echo "((label fun\
                          (cond ((< 0 x) (fun (- x 1)))\
                                (#t '())))))\
        3)" | $mes
+echo "'(0 . 1)" | $mes
+echo "(cdr '(0 . 1))" | $mes

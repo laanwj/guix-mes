@@ -54,9 +54,9 @@ exec ./mes "$@" < "$0"
         (#t (split-values (cdr bindings)
                           (append values (cdar bindings) '())))))
 
-;; (define-macro (let bindings body)
-;;   (cons (cons 'lambda (cons (split-params bindings '()) body))
-;;         (split-values bindings '())))
+(define-macro (let bindings body)
+  (cons (cons 'lambda (cons (split-params bindings '()) (cons body '())))
+        (split-values bindings '())))
 
 (display 'and-0-1:)
 (display (and 0 1))
