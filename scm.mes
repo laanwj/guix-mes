@@ -95,4 +95,6 @@ EOF
 
 (define (map f l . r)
   (cond ((null l) '())
-        ((null r) (cons (f (car l)) (map f (cdr l))))))
+        ((null r) (cons (f (car l)) (map f (cdr l))))
+        ((null (cdr r))
+         (cons (f (car l) (caar r)) (map f (cdr l) (cdar r))))))
