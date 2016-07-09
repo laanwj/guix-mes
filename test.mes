@@ -35,22 +35,9 @@
 (display (- 12 3))
 (newline)
 
-(define (+ x y) (- x (- 0 y)))
 (display (+ 3 4))
 
 (newline)
-
-(define-macro (and x y)
-  (cond (x y)
-        (#t #f)))
-
-(define-macro (or x y)
-  (cond (x x)
-        (#t y)))
-
-;; EOF2
-;; EOF
-;; EOF2
 
 (display 'and-0-1:)
 (display (and 0 1))
@@ -65,39 +52,6 @@
 (display 'or-#f-2:)
 (display (or #f 2))
 (newline)
-
-(define (split-params bindings params)
-  (cond ((null bindings) params)
-        (#t (split-params (cdr bindings)
-                          (append params (cons (caar bindings) '()))))))
-
-(define (split-values bindings values)
-  (cond ((null bindings) values)
-        (#t (split-values (cdr bindings)
-                          (append values (cdar bindings) '())))))
-
-(define-macro (let1 bindings body)
-  (cons (cons 'lambda (cons (split-params bindings '()) (cons body '())))
-        (split-values bindings '())))
-
-(let1 ((a 3)
-      (b 4))
-      ((lambda ()
-         (display 'let-a:3-b:4)
-         (newline)
-         (display 'a:)
-         (display a)
-         (newline)
-         (display 'b:)
-         (display b)
-         (newline))))
-
-(display 'let1-dun)
-(newline)
-
-(define-macro (let bindings . body)
-  (cons (cons 'lambda (cons (split-params bindings '()) body))
-        (split-values bindings '())))
 
 (let ((p 5)
        (q 6))

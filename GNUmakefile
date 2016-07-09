@@ -9,7 +9,7 @@ all: mes boot.mes
 check: all
 	./mes.test
 	./mes.test ./mes
-	./mes < test.mes
+	cat scm.mes test.mes | ./mes
 
 boot.mes: mes.mes scm.mes test.mes
 	cat $^ > $@
@@ -18,4 +18,4 @@ boot: all
 	./mes < boot.mes
 
 run: all
-	./mes < test.mes
+	cat scm.mes test.mes | ./mes

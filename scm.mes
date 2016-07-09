@@ -21,6 +21,8 @@
 ;; The Maxwell Equations of Software -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
+(define (list . rest) rest)
+
 (define (scm-define x a)
   (cond ((atom (cadr x)) (cons (cadr x) (eval (caddr x) a)))
         (#t (cons (caadr x) (cons 'lambda (cons (cdadr x) (cddr x)))))))
@@ -54,3 +56,27 @@
 ;;(display 'loop:read-loop2-exiting...)
 ;;(newline)
 EOF
+
+(define (+ x y) (- x (- 0 y)))
+
+(define-macro (and x y)
+  (cond (x y)
+        (#t #f)))
+
+(define-macro (or x y)
+  (cond (x x)
+        (#t y)))
+
+(define (split-params bindings params)
+  (cond ((null bindings) params)
+        (#t (split-params (cdr bindings)
+                          (append params (cons (caar bindings) '()))))))
+
+(define (split-values bindings values)
+  (cond ((null bindings) values)
+        (#t (split-values (cdr bindings)
+                          (append values (cdar bindings) '())))))
+
+(define-macro (let bindings . body)
+  (cons (cons 'lambda (cons (split-params bindings '()) body))
+        (split-values bindings '())))
