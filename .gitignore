@@ -1,6 +1,6 @@
-*~
 *-
 *.go
 *.o
+*~
+/boot.mes
 /mes
-

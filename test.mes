@@ -1,0 +1,127 @@
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; test.mes: This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;; The Maxwell Equations of Software -- John McCarthy page 13
+;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
+
+(display 123)
+
+4
+(newline)
+
+(display 'hello-display-symbol)
+(newline)
+
+(display '(0 1 2))
+(newline)
+
+(display (- 12 3))
+(newline)
+
+(define (+ x y) (- x (- 0 y)))
+(display (+ 3 4))
+
+(newline)
+
+(define-macro (and x y)
+  (cond (x y)
+        (#t #f)))
+
+(define-macro (or x y)
+  (cond (x x)
+        (#t y)))
+
+;; EOF2
+;; EOF
+;; EOF2
+
+(display 'and-0-1:)
+(display (and 0 1))
+(newline)
+(display 'and-#f-2:)
+(display (and #f 2))
+(newline)
+
+(display 'or-0-1:)
+(display (or 0 1))
+(newline)
+(display 'or-#f-2:)
+(display (or #f 2))
+(newline)
+
+(define (split-params bindings params)
+  (cond ((null bindings) params)
+        (#t (split-params (cdr bindings)
+                          (append params (cons (caar bindings) '()))))))
+
+(define (split-values bindings values)
+  (cond ((null bindings) values)
+        (#t (split-values (cdr bindings)
+                          (append values (cdar bindings) '())))))
+
+(define-macro (let1 bindings body)
+  (cons (cons 'lambda (cons (split-params bindings '()) (cons body '())))
+        (split-values bindings '())))
+
+(let1 ((a 3)
+      (b 4))
+      ((lambda ()
+         (display 'let-a:3-b:4)
+         (newline)
+         (display 'a:)
+         (display a)
+         (newline)
+         (display 'b:)
+         (display b)
+         (newline))))
+
+(display 'let1-dun)
+(newline)
+
+(define-macro (let bindings . body)
+  (cons (cons 'lambda (cons (split-params bindings '()) body))
+        (split-values bindings '())))
+
+(let ((p 5)
+       (q 6))
+      (display 'let-p:3-q:4)
+      (newline)
+      (display 'p:)
+      (display p)
+      (newline)
+      (display 'q:)
+      (display q)
+      (newline))
+
+
+(display
+ (let ((p 5)
+       (q 6))
+   (display 'hallo)
+   (display p)
+   (display 'daar)
+   (display q)
+   (display 'dan)))
+
+(newline)
+(display 'let-dun)
+(newline)
+
+'()
