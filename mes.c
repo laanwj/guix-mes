@@ -711,10 +711,20 @@ readword (int c, char* w, scm *a)
   return readword (getchar (), strncat (w ? w : buf, &ch, 1), a);
 }
 
+int
+eat_whitespace (int c)
+{
+  while (c == ' ' || c == '\n') c = getchar ();
+  if (c == ';') return eat_whitespace (readcomment (c));
+  if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return eat_whitespace (getchar ());}
+  return c;
+}
+
 scm *
 readlis (scm *a)
 {
   int c = getchar ();
+  c = eat_whitespace (c);
   if (c == ')') return &scm_nil;
   scm *w = readword (c, 0, a);
   if (w == &scm_dot)

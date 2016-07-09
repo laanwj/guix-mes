@@ -156,9 +156,9 @@
   (readword (getchar) '() a))
 
 (define (readword c w a)
-  (display 'mes-readword:)
-  (display c)
-  (newline)
+  ;; (display 'mes-readword:)
+  ;; (display c)
+  ;; (newline)
   (cond ((eq c -1) ;; eof
          (cond ((eq w '()) '())
                (#t (lookup w a))))
@@ -180,13 +180,34 @@
                       (cons (readword (getchar) w a) '())))
                (#t (ungetchar c) (lookup w a))))
         ((eq c 59) ;; ;
-         (readcomment 59)
+         (readcomment c)
          (readword 10 w a))
+        ((eq c 35) ;; #
+         (cond ((eq (peekchar) 33) ;; !
+                (getchar)
+                (readblock (getchar))
+                (readword 10 w a))
+               (#t (readword (getchar) (append w (cons c '())) a))))
         (#t (readword (getchar) (append w (cons c '())) a))))
 
+(define (readblock c)
+  ;; (display 'mes-readblock:)
+  ;; (display c)
+  ;; (newline)
+  (cond ((eq c 33) (cond ((eq (peekchar) 35) (getchar))
+                         (#t (readblock (getchar)))))
+        (#t (readblock (getchar)))))
+
+(define (eat-whitespace)
+  (cond ((eq (peekchar) 10) (getchar) (eat-whitespace))
+        ((eq (peekchar) 32) (getchar) (eat-whitespace))
+        ((eq (peekchar) 35) (getchar) (eat-whitespace))
+        (#t #t)))
+
 (define (readlis a)
-  (display 'mes-readlis:)
-  (newline)
+  ;; (display 'mes-readlis:)
+  ;; (newline)
+  (eat-whitespace)
   (cond ((eq (peekchar) 41) ;; )
          (getchar)
          '())
