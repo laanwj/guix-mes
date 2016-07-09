@@ -405,7 +405,8 @@ evlis (scm *m, scm *a)
 #endif
   if (m == &scm_nil)
     return &scm_nil;
-  return cons (eval (car (m), a), evlis (cdr (m), a));
+  scm *e = eval (car (m), a);
+  return cons (e, evlis (cdr (m), a));
 }
 scm scm_evlis = {FUNCTION2, .name="evlis", .function2 = &evlis};
 

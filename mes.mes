@@ -212,10 +212,7 @@
          (getchar)
          '())
         ;; TODO *dot*
-        (#t (xcons (readlis a) (readword (getchar) '() a)))))
-
-(define (xcons a b)
-  (cons b a))
+        (#t (cons (readword (getchar) '() a) (readlis a)))))
 
 (define (readcomment c)
   (cond ((eq c 10) ;; \n
