@@ -24,7 +24,7 @@
 (define (list . rest) rest)
 
 (define (scm-define x a)
-  (cond ((atom (cadr x)) (cons (cadr x) (eval (caddr x) a)))
+  (cond ((atom? (cadr x)) (cons (cadr x) (eval (caddr x) a)))
         (#t (cons (caadr x) (cons 'lambda (cons (cdadr x) (cddr x)))))))
 
 (define (scm-define-macro x a)
@@ -38,15 +38,15 @@
   ;; (display 'e:)
   ;; (display e)  
   ;; (newline)
-  (cond ((null e) r)
-        ((eq e 'EOF2)
+  (cond ((null? e) r)
+        ((eq? e 'EOF2)
          (display 'loop2-exiting...)
          (newline))
-        ((atom e)
+        ((atom? e)
          (loop2 (eval e a) (readenv a) a))
-        ((eq (car e) 'define)
+        ((eq? (car e) 'define)
          (loop2 *unspecified* (readenv a) (cons (scm-define e a) a)))
-        ((eq (car e) 'define-macro)
+        ((eq? (car e) 'define-macro)
          (loop2 *unspecified* (readenv a) (cons (scm-define-macro e a) a)))
 
         (#t (loop2 (eval e a) (readenv a) a))
@@ -68,12 +68,12 @@ EOF
         (#t y)))
 
 (define (split-params bindings params)
-  (cond ((null bindings) params)
+  (cond ((null? bindings) params)
         (#t (split-params (cdr bindings)
                           (append params (cons (caar bindings) '()))))))
 
 (define (split-values bindings values)
-  (cond ((null bindings) values)
+  (cond ((null? bindings) values)
         (#t (split-values (cdr bindings)
                           (append values (cdar bindings) '())))))
 
@@ -82,7 +82,7 @@ EOF
         (split-values bindings '())))
 
 (define (expand-let* bindings body)
-  (cond ((null bindings)
+  (cond ((null? bindings)
          (cons (cons 'lambda (cons '() body)) '()))
         (#t
          (cons
@@ -94,7 +94,7 @@ EOF
   (expand-let* bindings body))
 
 (define (map f l . r)
-  (cond ((null l) '())
-        ((null r) (cons (f (car l)) (map f (cdr l))))
-        ((null (cdr r))
+  (cond ((null? l) '())
+        ((null? r) (cons (f (car l)) (map f (cdr l))))
+        ((null? (cdr r))
          (cons (f (car l) (caar r)) (map f (cdr l) (cdar r))))))

@@ -81,7 +81,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 ;;(define debug stderr)
 
 ;; TODO
-(define (atom x)
+(define (atom? x)
   (cond
    ((guile:pair? x) #f)
    ((guile:null? x) #f)
@@ -91,17 +91,33 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 (define car guile:car)
 (define cdr guile:cdr)
 (define cons guile:cons)
-(define eq guile:eq?)
-(define null guile:null?)
-(define pair guile:pair?)
-(define builtin guile:procedure?)
-(define number guile:number?)
+(define eq? guile:eq?)
+(define null? guile:null?)
+(define pair? guile:pair?)
+(define builtin? guile:procedure?)
+(define number? guile:number?)
 (define call guile:apply)
 
 (include "mes.mes")
 
+(define (pairlis x y a)
+  ;;(debug "pairlis x=~a y=~a a=~a\n" x y a)
+  (cond
+   ((null? x) a)
+   ((atom? x) (cons (cons x y) a))
+   (#t (cons (cons (car x) (car y))
+             (pairlis (cdr x) (cdr y) a)))))
+
+(define (assoc x a)
+  ;;(stderr "assoc x=~a\n" x)
+  ;;(debug "assoc x=~a a=~a\n" x a)
+  (cond
+   ((null? a) #f)
+   ((eq? (caar a) x) (car a))
+   (#t (assoc x (cdr a)))))
+
 (define (append x y)
-  (cond ((null x) y)
+  (cond ((null? x) y)
         (#t (cons (car x) (append (cdr x) y)))))
 
 (define (eval-environment e a)
@@ -123,15 +139,15 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
     
     (*unspecified* . ,*unspecified*)
 
-    (atom . ,atom)
+    (atom? . ,atom?)
     (car . ,car)
     (cdr . ,cdr)
     (cons . ,cons)
     (cond . ,evcon)
-    (eq . ,eq)
+    (eq? . ,eq?)
 
-    (null . ,null)
-    (pair . ,guile:pair?)
+    (null? . ,null?)
+    (pair? . ,guile:pair?)
     ;;(quote . ,quote)
 
     (evlis . ,evlis)
@@ -146,8 +162,8 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
     (display . ,guile:display)
     (newline . ,guile:newline)
 
-    (builtin . ,builtin)
-    (number . ,number)
+    (builtin? . ,builtin?)
+    (number? . ,number?)
     (call . ,call)
 
     (< . ,guile:<)
@@ -177,7 +193,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
   (cons (caadr x) (cons 'lambda (cons (cdadr x) (cddr x)))))
 
 (define (mes-define x a)
-  (if (atom (cadr x))
+  (if (atom? (cadr x))
       (cons (cadr x) (eval (caddr x) a))
       (mes-define-lambda x a)))
 
@@ -187,15 +203,15 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
               (cdr (assoc '*macro* a)))))
 
 (define (loop r e a)
-  (cond ((null e) r)
-        ((eq e 'exit)
+  (cond ((null? e) r)
+        ((eq? e 'exit)
          (apply (cdr (assoc 'loop a))
                 (cons *unspecified* (cons #t (cons a '())))
                 a))
-        ((atom e) (loop (eval e a) (readenv a) a))
-        ((eq (car e) 'define)
+        ((atom? e) (loop (eval e a) (readenv a) a))
+        ((eq? (car e) 'define)
          (loop *unspecified* (readenv a) (cons (mes-define e a) a)))
-        ((eq (car e) 'define-macro)
+        ((eq? (car e) 'define-macro)
          (loop *unspecified* (readenv a) (cons (mes-define-macro e a) a)))
         (#t (loop (eval e a) (readenv a) a))))
 

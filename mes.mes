@@ -36,8 +36,8 @@
 ;; (define (pairlis x y a)
 ;;   ;;(debug "pairlis x=~a y=~a a=~a\n" x y a)
 ;;   (cond
-;;    ((null x) a)
-;;    ((atom x) (cons (cons x y) a))
+;;    ((null? x) a)
+;;    ((atom? x) (cons (cons x y) a))
 ;;    (#t (cons (cons (car x) (car y))
 ;;              (pairlis (cdr x) (cdr y) a)))))
 
@@ -45,8 +45,8 @@
 ;;   ;;(stderr "assoc x=~a\n" x)
 ;;   ;;(debug "assoc x=~a a=~a\n" x a)
 ;;   (cond
-;;    ((null a) #f)
-;;    ((eq (caar a) x) (car a))
+;;    ((null? a) #f)
+;;    ((eq? (caar a) x) (car a))
 ;;    (#t (assoc x (cdr a)))))
 
 ;; ;; Page 13
@@ -60,7 +60,7 @@
    ;; single-statement cond
    ;; ((eval (caar c) a) (eval (cadar c) a))
    ((eval (caar c) a)
-    (cond ((null (cddar c)) (eval (cadar c) a))
+    (cond ((null? (cddar c)) (eval (cadar c) a))
           (#t (eval (cadar c) a)
               (evcon
                (cons (cons #t (cddar c)) '())
@@ -73,7 +73,7 @@
   ;; (display m)
   ;; (newline)
   (cond
-   ((null m) '())
+   ((null? m) '())
    (#t (cons (eval (car m) a) (evlis (cdr m) a)))))
 
 
@@ -84,33 +84,33 @@
   ;; (display fn)
   ;; (newline)
   ;; (display 'builtin:)
-  ;; (display (builtin fn))
+  ;; (display (builtin? fn))
   ;; (newline)
   ;; (display 'x:)
   ;; (display x)
   ;; (newline)
   (cond
-   ((atom fn)
+   ((atom? fn)
     (cond
-     ((eq fn 'current-module) ;; FIXME
+     ((eq? fn 'current-module) ;; FIXME
       (c:apply current-module '() a)) 
-     ((builtin fn)
+     ((builtin? fn)
       (call fn x))
      (#t (apply (eval fn a) x a))))
-   ((eq (car fn) 'lambda)
-    (cond ((null (cdr (cddr fn)))
+   ((eq? (car fn) 'lambda)
+    (cond ((null? (cdr (cddr fn)))
            (eval (caddr fn) (pairlis (cadr fn) x a)))
           (#t
            (eval (caddr fn) (pairlis (cadr fn) x a))
            (apply (cons (car fn) (cons (cadr fn) (cdddr fn)))
                   x
                   (pairlis (cadr fn) x a)))))
-   ((eq (car fn) 'label) (apply (caddr fn) x (cons (cons (cadr fn)
+   ((eq? (car fn) 'label) (apply (caddr fn) x (cons (cons (cadr fn)
                                                          (caddr fn)) a)))))
 
 (define (eval e a)
   ;;(debug "eval e=~a a=~a\n" e a)
-  ;;(debug "eval (atom ~a)=~a\n" e (atom e))
+  ;;(debug "eval (atom? ~a)=~a\n" e (atom? e))
   ;; (display 'mes-eval:)
   ;; (display e)
   ;; (newline)
@@ -118,19 +118,19 @@
   ;; (display a)
   ;; (newline)
   (cond
-   ((number e) e)
-   ((eq e #t) #t)
-   ((eq e #f) #f)
-   ((atom e) (cdr (assoc e a)))
-   ((builtin e) e)
-   ((atom (car e))
+   ((number? e) e)
+   ((eq? e #t) #t)
+   ((eq? e #f) #f)
+   ((atom? e) (cdr (assoc e a)))
+   ((builtin? e) e)
+   ((atom? (car e))
     (cond
-     ((eq (car e) 'quote) (cadr e))
-     ((eq (car e) 'lambda) e)
-     ((eq (car e) 'unquote) (eval (cadr e) a))
-     ((eq (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
-     ((eq (car e) 'cond) (evcon (cdr e) a))
-     ((pair (assoc (car e) (cdr (assoc '*macro* a))))
+     ((eq? (car e) 'quote) (cadr e))
+     ((eq? (car e) 'lambda) e)
+     ((eq? (car e) 'unquote) (eval (cadr e) a))
+     ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
+     ((eq? (car e) 'cond) (evcon (cdr e) a))
+     ((pair? (assoc (car e) (cdr (assoc '*macro* a))))
       (c:eval
        (c:apply
         (cdr (assoc (car e) (cdr (assoc '*macro* a))))
@@ -144,12 +144,12 @@
   ;; (display 'mes-eval-quasiquote:)
   ;; (display e)
   ;; (newline)
-  (cond ((null e) e)
-        ((atom e) e)
-        ((atom (car e)) (cons (car e) (eval-quasiquote (cdr e) a)))
-        ((eq (caar e) 'unquote) (cons (eval (cadar e) a) '()))
-        ((eq (caar e) 'quote) (cons (cadar e) '()))
-        ((eq (caar e) 'quasiquote) (cons (cadar e) '()))
+  (cond ((null? e) e)
+        ((atom? e) e)
+        ((atom? (car e)) (cons (car e) (eval-quasiquote (cdr e) a)))
+        ((eq? (caar e) 'unquote) (cons (eval (cadar e) a) '()))
+        ((eq? (caar e) 'quote) (cons (cadar e) '()))
+        ((eq? (caar e) 'quasiquote) (cons (cadar e) '()))
         (#t (cons (car e) (eval-quasiquote (cdr e) a)))))
 
 ;; readenv et al works, but slows down dramatically
@@ -160,31 +160,31 @@
   ;; (display 'mes-readword:)
   ;; (display c)
   ;; (newline)
-  (cond ((eq c -1) ;; eof
-         (cond ((eq w '()) '())
+  (cond ((eq? c -1) ;; eof
+         (cond ((eq? w '()) '())
                (#t (lookup w a))))
-        ((eq c 10) ;; \n
-         (cond ((eq w '()) (readword (getchar) w a))
-               ;; DOT ((eq w '(*dot*)) (car (readword (getchar) '() a)))
+        ((eq? c 10) ;; \n
+         (cond ((eq? w '()) (readword (getchar) w a))
+               ;; DOT ((eq? w '(*dot*)) (car (readword (getchar) '() a)))
                (#t (lookup w a))))
-        ((eq c 32) ;; \space
+        ((eq? c 32) ;; \space
          (readword 10 w a))
-        ((eq c 40) ;; (
-         (cond ((eq w '()) (readlis a))
+        ((eq? c 40) ;; (
+         (cond ((eq? w '()) (readlis a))
                (#t (ungetchar c) (lookup w a))))
-        ((eq c 41) ;; )
-         (cond ((eq w '()) (ungetchar c) w)
+        ((eq? c 41) ;; )
+         (cond ((eq? w '()) (ungetchar c) w)
                (#t (ungetchar c) (lookup w a))))
-        ((eq c 39) ;; '
-         (cond ((eq w '())
+        ((eq? c 39) ;; '
+         (cond ((eq? w '())
                 (cons (lookup (cons c '()) a)
                       (cons (readword (getchar) w a) '())))
                (#t (ungetchar c) (lookup w a))))
-        ((eq c 59) ;; ;
+        ((eq? c 59) ;; ;
          (readcomment c)
          (readword 10 w a))
-        ((eq c 35) ;; #
-         (cond ((eq (peekchar) 33) ;; !
+        ((eq? c 35) ;; #
+         (cond ((eq? (peekchar) 33) ;; !
                 (getchar)
                 (readblock (getchar))
                 (readword 10 w a))
@@ -195,27 +195,27 @@
   ;; (display 'mes-readblock:)
   ;; (display c)
   ;; (newline)
-  (cond ((eq c 33) (cond ((eq (peekchar) 35) (getchar))
+  (cond ((eq? c 33) (cond ((eq? (peekchar) 35) (getchar))
                          (#t (readblock (getchar)))))
         (#t (readblock (getchar)))))
 
 (define (eat-whitespace)
-  (cond ((eq (peekchar) 10) (getchar) (eat-whitespace))
-        ((eq (peekchar) 32) (getchar) (eat-whitespace))
-        ((eq (peekchar) 35) (getchar) (eat-whitespace))
+  (cond ((eq? (peekchar) 10) (getchar) (eat-whitespace))
+        ((eq? (peekchar) 32) (getchar) (eat-whitespace))
+        ((eq? (peekchar) 35) (getchar) (eat-whitespace))
         (#t #t)))
 
 (define (readlis a)
   ;; (display 'mes-readlis:)
   ;; (newline)
   (eat-whitespace)
-  (cond ((eq (peekchar) 41) ;; )
+  (cond ((eq? (peekchar) 41) ;; )
          (getchar)
          '())
         ;; TODO *dot*
         (#t (cons (readword (getchar) '() a) (readlis a)))))
 
 (define (readcomment c)
-  (cond ((eq c 10) ;; \n
+  (cond ((eq? c 10) ;; \n
          c)
         (#t (readcomment (getchar)))))
