@@ -82,6 +82,7 @@ scm scm_symbol_unquote = {ATOM, "unquote"};
 #if MACROS
 scm scm_macro = {ATOM, "*macro*"};
 #endif
+scm scm_symbol_current_module = {ATOM, "current-module"};
 
 // PRIMITIVES
 
@@ -278,6 +279,8 @@ apply_ (scm *fn, scm *x, scm *a)
 #endif
   if (atom_p (fn) != &scm_f)
     {
+      if (fn == &scm_symbol_current_module) // FIXME
+        return a;
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
       return apply (eval (fn,  a), x, a);
@@ -884,7 +887,8 @@ initial_environment ()
   //
   a = add_environment (a, "*macro*", &scm_nil);
   a = add_environment (a, "*dot*", &scm_dot);
-
+  a = add_environment (a, "current-module", &scm_symbol_current_module);
+  
   return a;
 }
 
@@ -905,6 +909,14 @@ define (scm *x, scm *a)
 scm *
 define_macro (scm *x, scm *a)
 {
+#if DEBUG
+  printf ("\nc:define_macro a=");
+  scm *aa =cons (&scm_macro,
+               cons (define_lambda (x, a),
+                     cdr (assoc (&scm_macro, a))));
+  display (aa);
+  puts ("");
+#endif
   return cons (&scm_macro,
                cons (define_lambda (x, a),
                      cdr (assoc (&scm_macro, a))));
