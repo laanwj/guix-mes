@@ -37,6 +37,7 @@
 #define DEBUG 0
 
 #define MACROS 1
+#define QUASIQUOTE 1
 
 #ifndef QUOTE_SUGAR
 #define QUOTE_SUGAR 1
@@ -74,7 +75,13 @@ scm scm_label = {ATOM, "label"};
 scm scm_unspecified = {ATOM, "*unspecified*"};
 scm scm_symbol_cond = {ATOM, "cond"};
 scm scm_symbol_quote = {ATOM, "quote"};
+#if QUASIQUOTE
+scm scm_symbol_quasiquote = {ATOM, "quasiquote"};
+scm scm_symbol_unquote = {ATOM, "unquote"};
+#endif
+#if MACROS
 scm scm_macro = {ATOM, "*macro*"};
+#endif
 
 // PRIMITIVES
 
@@ -146,6 +153,25 @@ quote (scm *x)
 {
   return cons (&scm_quote, x);
 }
+
+#if QUASIQUOTE
+scm scm_unquote;
+scm *
+unquote (scm *x)
+{
+  return cons (&scm_unquote, x);
+}
+
+scm scm_quasiquote;
+scm *
+quasiquote (scm *x)
+{
+  return cons (&scm_quasiquote, x);
+}
+
+scm *eval_quasiquote (scm *, scm *);
+
+#endif
 
 //Library functions
 scm scm_read;
@@ -300,6 +326,21 @@ eval_ (scm *e, scm *a)
 #endif // MACROS
       if (car (e) == &scm_symbol_quote)
         return cadr (e);
+#if QUASIQUOTE
+      else if (car (e) == &scm_symbol_unquote)
+        return eval (cadr (e), a);
+      else if (car (e) == &scm_symbol_quasiquote) {
+#if DEBUG
+        printf ("cadr e:");
+        display (cadr (e));
+        puts ("");
+        printf ("qq:");
+        display (eval_quasiquote (cadr (e), a));
+        puts ("");
+#endif // DEBUG
+        return eval_quasiquote (cadr (e), a);
+      }
+#endif // QUASIQUOTE
       else if (car (e) == &scm_symbol_cond)
         return evcon (cdr (e), a);
 #if MACROS
@@ -375,6 +416,11 @@ scm scm_eq_p = {FUNCTION2, "eq", .function2 = &eq_p};
 scm scm_null_p = {FUNCTION1, "null", .function1 = &null_p};
 scm scm_pair_p = {FUNCTION1, "pair", .function1 = &pair_p};
 scm scm_quote = {FUNCTION1, "quote", .function1 = &quote};
+
+#if QUASIQUOTE
+scm scm_unquote = {FUNCTION1, "unquote", .function1 = &unquote};
+scm scm_quasiquote = {FUNCTION1, "quasiquote", .function1 = &quasiquote};
+#endif
 
 scm scm_eval = {FUNCTION2, .name="eval", .function2 = &eval};
 scm scm_apply = {FUNCTION3, .name="apply", .function3 = &apply};
@@ -481,7 +527,23 @@ lookup (char *x, scm *a)
   if (!strcmp (x, scm_label.name)) return &scm_label;
   if (!strcmp (x, scm_nil.name)) return &scm_nil;
 
+#if QUASIQUOTE
+  if (*x == '`') return &scm_symbol_quasiquote;
+  if (*x == ',') return &scm_symbol_unquote;  
+  if (!strcmp (x, scm_symbol_unquote.name)) return &scm_symbol_unquote;
+  if (!strcmp (x, scm_symbol_quasiquote.name)) return &scm_symbol_quasiquote;
+#endif
+
   return make_atom (x);
+}
+
+scm *
+lookup_char (int c, scm *a)
+{
+  char buf[2];
+  buf[0] = c;
+  buf[1] = 0;
+  return lookup (buf, a);
 }
 
 char *
@@ -535,6 +597,18 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       printf ("'");
       return display_helper (car (cdr (x)), cont, "", true);
     }
+#if QUASIQUOTE
+    if (car (x) == &scm_symbol_quasiquote
+        || car (x) == &scm_quasiquote) {
+      printf ("`");
+      return display_helper (car (cdr (x)), cont, "", true);
+    }
+    if (car (x) == &scm_symbol_unquote
+        || car (x) == &scm_unquote) {
+      printf (",");
+      return display_helper (car (cdr (x)), cont, "", true);
+    }
+#endif
 #endif
     if (!cont) printf ("(");
     display (car (x));
@@ -618,7 +692,13 @@ readword (int c, char* w, scm *a)
   if (c == '(') {ungetchar (c); return lookup (w, a);}
   if (c == ')' && !w) {ungetchar (c); return &scm_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
-  if (c == '\'' && !w) {return cons (lookup ("'", a),
+  if ((c == '\''
+#if QUASIQUOTE
+       || c == '`'
+       || c == ','
+#endif
+       )
+      && !w) {return cons (lookup_char (c, a),
                                      cons (readword (getchar (), w, a),
                                            &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
@@ -690,6 +770,35 @@ minus (scm *a, scm *b)
 scm scm_less_p = {FUNCTION2, .name="<", .function2 = &less_p};
 scm scm_minus = {FUNCTION2, .name="-", .function2 = &minus};
 
+#if QUASIQUOTE
+scm *
+eval_quasiquote (scm *e, scm *a)
+{
+#if DEBUG
+  printf ("\nc:eval_quasiquote e=");
+  display (e);
+  if (pair_p (e) == &scm_t) {
+    printf ("\ncar (e)=");
+    display (car (e));
+    printf (" atom=");
+    display (atom_p (car (e)));
+  }
+  puts ("");
+#endif
+  if (e == &scm_nil) return e;
+  else if (atom_p (e) == &scm_t) return e;
+  else if (atom_p (car (e)) == &scm_t)
+    return cons (car (e), eval_quasiquote (cdr (e), a));
+  else if (eq_p (caar (e), &scm_symbol_unquote) == &scm_t)
+    return cons (eval (cadar (e), a), &scm_nil);
+  else if (eq_p (caar (e), &scm_symbol_quote) == &scm_t)
+    return cons (cadar (e), &scm_nil);
+  else if (eq_p (caar (e), &scm_symbol_quasiquote) == &scm_t)
+    return cdar (e);
+  return cons (car (e), eval_quasiquote (cdr (e), a));
+}
+scm scm_eval_quasiquote = {FUNCTION2, .name="c:eval-quasiquote", .function2 = &eval_quasiquote};
+#endif
 
 scm *
 add_environment (scm *a, char *name, scm* x)
@@ -721,6 +830,14 @@ initial_environment ()
   a = add_environment (a, "pair", &scm_pair_p);
   a = add_environment (a, "quote", &scm_quote);
   a = add_environment (a, "'", &scm_quote);
+
+#if QUASIQUOTE
+  a = add_environment (a, "quasiquote", &scm_quasiquote);
+  a = add_environment (a, "unquote", &scm_unquote);
+  a = add_environment (a, ",", &scm_unquote);
+  a = add_environment (a, "`", &scm_quasiquote);
+  a = add_environment (a, "eval-quasiquote", &scm_eval_quasiquote);
+#endif
 
   a = add_environment (a, "evlis", &scm_evlis);
   a = add_environment (a, "evcon", &scm_evcon);

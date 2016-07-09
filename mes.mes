@@ -124,6 +124,8 @@
    ((atom (car e))
     (cond
      ((eq (car e) 'quote) (cadr e))
+     ((eq (car e) 'unquote) (eval (cadr e) a))
+     ((eq (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
      ((eq (car e) 'cond) (evcon (cdr e) a))
      ((pair (assoc (car e) (cdr (assoc '*macro* a))))
       (c:eval
@@ -134,6 +136,18 @@
        a))
      (#t (apply (car e) (evlis (cdr e) a) a))))
    (#t (apply (car e) (evlis (cdr e) a) a))))
+
+(define (eval-quasiquote e a)
+  ;; (display 'mes-eval-quasiquote:)
+  ;; (display e)
+  ;; (newline)
+  (cond ((null e) e)
+        ((atom e) e)
+        ((atom (car e)) (cons (car e) (eval-quasiquote (cdr e) a)))
+        ((eq (caar e) 'unquote) (cons (eval (cadar e) a) '()))
+        ((eq (caar e) 'quote) (cons (cadar e) '()))
+        ((eq (caar e) 'quasiquote) (cons (cadar e) '()))
+        (#t (cons (car e) (eval-quasiquote (cdr e) a)))))
 
 ;; readenv et al works, but slows down dramatically
 (define (DISABLED-readenv a)

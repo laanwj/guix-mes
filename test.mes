@@ -124,4 +124,8 @@
 (display 'let-dun)
 (newline)
 
+(define c 'b)
+`(aa bb ,c)
+(display `(pp qq ,c))
+(newline)
 '()
