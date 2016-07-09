@@ -92,3 +92,7 @@ EOF
 
 (define-macro (let* bindings . body)
   (expand-let* bindings body))
+
+(define (map f l . r)
+  (cond ((null l) '())
+        ((null r) (cons (f (car l)) (map f (cdr l))))))
