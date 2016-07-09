@@ -82,4 +82,17 @@
 `(aa bb ,c)
 (display `(pp qq ,c))
 (newline)
+
+(display
+ (let* ((aa 2)
+       (bb (+ aa 3))
+       #! boo !#
+       ;;(bb 4)
+       )
+   (display 'allo:)
+   bb))
+
+(newline)
+(display 'let*-dun)
+(newline)
 '()

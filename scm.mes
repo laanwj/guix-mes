@@ -80,3 +80,15 @@ EOF
 (define-macro (let bindings . body)
   (cons (cons 'lambda (cons (split-params bindings '()) body))
         (split-values bindings '())))
+
+(define (expand-let* bindings body)
+  (cond ((null bindings)
+         (cons (cons 'lambda (cons '() body)) '()))
+        (#t
+         (cons
+          (cons 'lambda (cons (cons (caar bindings) '())
+                              (cons (expand-let* (cdr bindings) body) '())))
+          (cdar bindings)))))
+
+(define-macro (let* bindings . body)
+  (expand-let* bindings body))
