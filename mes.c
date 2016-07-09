@@ -329,6 +329,8 @@ eval_ (scm *e, scm *a)
 #endif // MACROS
       if (car (e) == &scm_symbol_quote)
         return cadr (e);
+      if (car (e) == &scm_lambda)
+        return e;
 #if QUASIQUOTE
       else if (car (e) == &scm_symbol_unquote)
         return eval (cadr (e), a);
@@ -904,7 +906,7 @@ initial_environment ()
 }
 
 scm *
-define_lambda (scm *x, scm *a)
+define_lambda (scm *x)
 {
   return cons (caadr (x), cons (&scm_lambda, cons (cdadr (x), cddr (x))));
 }
@@ -914,7 +916,7 @@ define (scm *x, scm *a)
 {
   if (atom_p (cadr (x)) != &scm_f)
     return cons (cadr (x), eval (caddr (x), a));
-  return define_lambda (x, a);
+  return define_lambda (x);
 }
 
 scm *
@@ -923,20 +925,20 @@ define_macro (scm *x, scm *a)
 #if DEBUG
   printf ("\nc:define_macro a=");
   scm *aa =cons (&scm_macro,
-               cons (define_lambda (x, a),
+               cons (define_lambda (x),
                      cdr (assoc (&scm_macro, a))));
   display (aa);
   puts ("");
 #endif
   return cons (&scm_macro,
-               cons (define_lambda (x, a),
+               cons (define_lambda (x),
                      cdr (assoc (&scm_macro, a))));
 }
 
 scm *
 loop (scm *r, scm *e, scm *a)
 {
-#if DEBUG
+#if 0//DEBUG
   printf ("\nc:loop e=");
   display (e);
   puts ("");

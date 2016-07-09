@@ -126,6 +126,7 @@
    ((atom (car e))
     (cond
      ((eq (car e) 'quote) (cadr e))
+     ((eq (car e) 'lambda) e)
      ((eq (car e) 'unquote) (eval (cadr e) a))
      ((eq (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
      ((eq (car e) 'cond) (evcon (cdr e) a))

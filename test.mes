@@ -100,10 +100,10 @@
 (newline)
 (map display '(1 2 3 4))
 (newline)
-(map '(lambda (x) (display x) (newline)) '(5 6 7 8))
+(map (lambda (x) (display x) (newline)) '(5 6 7 8))
 (newline)
 
-(map '(lambda (i a) (display i) (display ':) (display a) (newline)) '(1 2 3 4) '(a b c d))
+(map (lambda (i a) (display i) (display ':) (display a) (newline)) '(1 2 3 4) '(a b c d))
 (newline)
 
 '()
