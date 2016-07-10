@@ -92,3 +92,6 @@
   (cons 'let (cons (unspecified-bindings bindings '())
                     (append (letrec-setters bindings '())
                             body)))  )
+
+(define (begin . rest)
+  (let () rest))

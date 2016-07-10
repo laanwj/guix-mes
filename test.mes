@@ -155,4 +155,10 @@
    (factorial 4)))
 (newline)
 
+(define a 2)
+(begin
+  (display 'a+3=)
+  (display (+ a 3)))
+(newline)
+
 '()
