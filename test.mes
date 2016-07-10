@@ -26,7 +26,7 @@
 4
 (newline)
 
-(cons (display 'one) (display '-) (display 'two))
+(cons (display 'one-) (display 'two))
 (newline)
 
 (display 'hello-display-symbol)

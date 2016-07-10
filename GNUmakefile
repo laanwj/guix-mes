@@ -28,7 +28,7 @@ check: all
 	./mes.test ./mes
 	cat scm.mes test.mes | ./mes
 
-boot.mes: mes.mes scm.mes test.mes
+boot.mes: mes.mes loop2.mes scm.mes test.mes
 	cat $^ > $@
 
 boot: all

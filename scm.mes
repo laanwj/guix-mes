@@ -23,37 +23,6 @@
 
 (define (list . rest) rest)
 
-(define (scm-define x a)
-  (cond ((atom? (cadr x)) (cons (cadr x) (eval (caddr x) a)))
-        (#t (cons (caadr x) (cons 'lambda (cons (cdadr x) (cddr x)))))))
-
-(define (scm-define-macro x a)
-  (cons '*macro*
-        (cons (cons (caadr e) (cons 'lambda (cons (cdadr e) (cddr e))))
-              (cdr (assoc '*macro* a)))))
-
-(define (loop2 r e a)
-  ;; (display '____loop2)
-  ;; (newline)
-  ;; (display 'e:)
-  ;; (display e)  
-  ;; (newline)
-  (cond ((null? e) r)
-        ((eq? e 'EOF2)
-         (display 'loop2-exiting...)
-         (newline))
-        ((atom? e)
-         (loop2 (eval e a) (readenv a) a))
-        ((eq? (car e) 'define)
-         (loop2 *unspecified* (readenv a) (cons (scm-define e a) a)))
-        ((eq? (car e) 'define-macro)
-         (loop2 *unspecified* (readenv a) (cons (scm-define-macro e a) a)))
-        ((eq? (car e) 'set!)
-         (loop2 (set-cdr! (assoc (cadr e) a) (eval (caddr e) a)) (readenv a) a))
-        (#t (loop2 (eval e a) (readenv a) a))))
-
-EOF
-
 (define (+ x y) (- x (- 0 y)))
 
 (define-macro (and x y)
