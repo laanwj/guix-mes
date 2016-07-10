@@ -14,16 +14,16 @@ v "string"
 #\CHAR
 assq
 call-with-values
-char?
+v char?
 length
-list
+v list
 list->vector
 make-vector
 memv
-string
+v string
 v string-append
 v string?
-symbol?
+v symbol?
 values
 vector
 vector->list

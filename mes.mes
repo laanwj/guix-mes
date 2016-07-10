@@ -121,9 +121,10 @@
   ;; (display a)
   ;; (newline)
   (cond
-   ((number? e) e)
    ((eq? e #t) #t)
    ((eq? e #f) #f)
+   ((char? e) e)
+   ((number? e) e)
    ((string? e) e)
    ((atom? e) (cdr (assoc e a)))
    ((builtin? e) e)

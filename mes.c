@@ -42,7 +42,7 @@
 #define QUOTE_SUGAR 1
 #endif
 
-enum type {STRING, SYMBOL, NUMBER, PAIR,
+enum type {STRING, SYMBOL, CHAR, NUMBER, PAIR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
 struct scm_t;
 typedef struct scm_t* (*function0_t) (void);
@@ -140,10 +140,14 @@ scm *
 eq_p (scm *x, scm *y)
 {
   return (x == y
+          || (x->type == CHAR && y->type == CHAR
+              && x->value == y->value)
           || (x->type == NUMBER && y->type == NUMBER
               && x->value == y->value)
           // FIXME: alist lookup symbols
           || (atom_p (x) == &scm_t
+              && x->type != CHAR
+              && y->type != CHAR
               && x->type != NUMBER
               && y->type != NUMBER
               && atom_p (y) == &scm_t
@@ -298,7 +302,9 @@ eval_ (scm *e, scm *a)
   display (e);
   puts ("");
 #endif
-  if (e->type == NUMBER)
+  if (e->type == CHAR)
+    return e;
+  else if (e->type == NUMBER)
     return e;
   else if (e->type == STRING)
     return e;
@@ -415,6 +421,12 @@ builtin_p (scm *x)
 }
 
 scm *
+char_p (scm *x)
+{
+  return x->type == CHAR ? &scm_t : &scm_f;
+}
+
+scm *
 number_p (scm *x)
 {
   return x->type == NUMBER ? &scm_t : &scm_f;
@@ -475,6 +487,15 @@ append (scm *x, scm *y)
 }
 
 scm *
+make_char (int x)
+{
+  scm *p = malloc (sizeof (scm));
+  p->type = CHAR;
+  p->value = x;
+  return p;
+}
+
+scm *
 make_number (int x)
 {
   scm *p = malloc (sizeof (scm));
@@ -500,6 +521,21 @@ make_symbol (char const *s)
   p->type = SYMBOL;
   p->name = strdup (s);
   return p;
+}
+
+scm *
+string (scm *x/*...*/)
+{
+  char buf[256] = "";
+  char *p = buf;
+  while (x != &scm_nil)
+    {
+      scm *s = car (x);
+      assert (s->type == CHAR);
+      *p++ = s->value;
+      x = cdr (x);
+    }
+  return make_string (buf);
 }
 
 scm *
@@ -599,7 +635,10 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
 {
   scm *r;
   printf ("%s", sep);
-  if (x->type == NUMBER) printf ("%d", x->value);
+  if (x->type == CHAR && x->value == 10) printf ("#\\%s", "newline");
+  else if (x->type == CHAR && x->value == 32) printf ("#\\%s", "space");
+  else if (x->type == CHAR) printf ("#\\%c", x->value);
+  else if (x->type == NUMBER) printf ("%d", x->value);
   else if (x->type == PAIR) {
 #if QUOTE_SUGAR
     if (car (x) == &scm_quote) {
@@ -708,10 +747,42 @@ readword (int c, char* w, scm *a)
                                      cons (readword (getchar (), w, a),
                                            &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
+  if (c == '#' && peekchar () == '\\') {getchar (); return readchar ();}
   if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
   char buf[256] = {0};
   char ch = c;
   return readword (getchar (), strncat (w ? w : buf, &ch, 1), a);
+}
+
+scm *
+readchar ()
+{
+  int c = getchar ();
+  if (c >= '0' && c <= '7'
+      && peekchar () >= '0' && peekchar () <= '7') {
+    c = c - '0';
+    while (peekchar () >= '0' && peekchar () <= '7') {
+      c <<= 3;
+      c += getchar () - '0';
+    }
+  }
+  else if (c >= 'a' && c <= 'z'
+      && peekchar () >= 'a' && peekchar () <= 'z') {
+    char buf[256];
+    char *p = buf;
+    *p++ = c;
+    while (peekchar () >= 'a' && peekchar () <= 'z') {
+      *p++ = getchar ();
+    }
+    *p = 0;
+    if (!strcmp (buf, "newline")) c = 10;
+    else if (!strcmp (buf, "space")) c = 32;
+    else {
+      printf ("char not supported: %s", buf);
+      assert (!"char not supported");
+    }
+  }
+  return make_char (c);
 }
 
 scm *

@@ -169,4 +169,17 @@
 (display (string-length (string-append "a" "b" "c")))
 (newline)
 
+#\m
+(display #\m)
+(newline)
+(display #\101)
+(newline)
+(display #\newline)
+(newline)
+(display #\space)
+(newline)
+
+(display (string #\a #\space #\s #\t #\r #\i #\n #\g #\newline))
+(newline)
+
 '()
