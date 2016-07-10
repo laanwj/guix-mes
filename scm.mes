@@ -48,13 +48,10 @@
          (loop2 *unspecified* (readenv a) (cons (scm-define e a) a)))
         ((eq? (car e) 'define-macro)
          (loop2 *unspecified* (readenv a) (cons (scm-define-macro e a) a)))
+        ((eq? (car e) 'set!)
+         (loop2 (set-cdr! (assoc (cadr e) a) (eval (caddr e) a)) (readenv a) a))
+        (#t (loop2 (eval e a) (readenv a) a))))
 
-        (#t (loop2 (eval e a) (readenv a) a))
-        ;;(#t (loop2 ((cdr (assoc 'eval a)) e a) (readenv a) a))
-        ))
-
-;;(display 'loop:read-loop2-exiting...)
-;;(newline)
 EOF
 
 (define (+ x y) (- x (- 0 y)))

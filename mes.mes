@@ -108,6 +108,15 @@
    ((eq? (car fn) 'label) (apply (caddr fn) x (cons (cons (cadr fn)
                                                          (caddr fn)) a)))))
 
+(define (begin-env body a)
+  (cond ((null? body) *unspecified*)
+        ((null? (cdr body)) (eval (car body) a))
+        (#t (eval (car body) a)
+            (begin-env (cdr body) a))))
+
+(define (set-env! x e a)
+  (set-cdr! (assoc x a) e))
+
 (define (eval e a)
   ;;(debug "eval e=~a a=~a\n" e a)
   ;;(debug "eval (atom? ~a)=~a\n" e (atom? e))
@@ -127,6 +136,7 @@
     (cond
      ((eq? (car e) 'quote) (cadr e))
      ((eq? (car e) 'lambda) e)
+     ((eq? (car e) 'set!) (set-env! (cadr e) (caddr e) a))
      ((eq? (car e) 'unquote) (eval (cadr e) a))
      ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
      ((eq? (car e) 'cond) (evcon (cdr e) a))

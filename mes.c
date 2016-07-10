@@ -69,6 +69,11 @@ typedef struct scm_t {
 #include "mes.h"
 
 scm *display_helper (scm*, bool, char*, bool);
+bool
+symbol_eq (scm *x, char *s)
+{
+  return x->type == ATOM && !strcmp (x->name, s);
+}
 
 scm scm_nil = {ATOM, "()"};
 scm scm_dot = {ATOM, "."};
@@ -86,7 +91,15 @@ scm scm_symbol_unquote = {ATOM, "unquote"};
 #if MACROS
 scm scm_macro = {ATOM, "*macro*"};
 #endif
+
+scm scm_symbol_EOF = {ATOM, "EOF"};
+scm scm_symbol_EOF2 = {ATOM, "EOF2"};
 scm scm_symbol_current_module = {ATOM, "current-module"};
+scm scm_symbol_define = {ATOM, "define"};
+scm scm_symbol_define_macro = {ATOM, "define-macro"};
+scm scm_symbol_eval = {ATOM, "eval"};
+scm scm_symbol_loop2 = {ATOM, "loop2"};
+scm scm_symbol_set_x = {ATOM, "set!"};
 
 // PRIMITIVES
 
@@ -147,9 +160,18 @@ pair_p (scm *x)
   return x->type == PAIR ? &scm_t : &scm_f;
 }
 
-scm *eval (scm*, scm*);
+scm *
+set_cdr_x (scm *x, scm *e)
+{
+  assert (x->type == PAIR);
+  x->cdr = e;
+}
 
-scm *display (scm*);
+scm *
+set_env_x (scm *x, scm *e, scm *a)
+{
+  return set_cdr_x (assoc (x, a), e);
+}
 
 scm *
 quote (scm *x)
@@ -301,6 +323,8 @@ eval_ (scm *e, scm *a)
         return cadr (e);
       if (car (e) == &scm_lambda)
         return e;
+      if (car (e) == &scm_symbol_set_x)
+        return set_env_x (cadr (e), eval (caddr (e), a), a);
 #if QUASIQUOTE
       else if (car (e) == &scm_symbol_unquote)
         return eval (cadr (e), a);
@@ -811,21 +835,23 @@ loop (scm *r, scm *e, scm *a)
 #endif
   if (e == &scm_nil)
     return r;
-  else if (eq_p (e, make_atom ("EOF")) == &scm_t)
-    return apply (cdr (assoc (make_atom ("loop2"), a)),
+  else if (eq_p (e, &scm_symbol_EOF) == &scm_t)
+    return apply (cdr (assoc (&scm_symbol_loop2, a)),
                   cons (&scm_unspecified, cons (&scm_t, cons (a, &scm_nil))), a);
-  else if (eq_p (e, make_atom ("EOF2")) == &scm_t)
+  else if (eq_p (e, &scm_symbol_EOF2) == &scm_t)
     return r;
   else if (atom_p (e) == &scm_t)
     return loop (eval (e, a), readenv (a), a);
-  else if (eq_p (car (e), make_atom ("define")) == &scm_t)
+  else if (eq_p (car (e), &scm_symbol_define) == &scm_t)
     return loop (&scm_unspecified,
                  readenv (a),
                  cons (define (e, a), a));
-  else if (eq_p (car (e), make_atom ("define-macro")) == &scm_t)
+  else if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
     return loop (&scm_unspecified,
                  readenv (a),
                  cons (define_macro (e, a), a));
+  else if (eq_p (car (e), &scm_symbol_set_x) == &scm_t)
+    return loop (set_env_x (cadr (e), eval (caddr (e), a), a), readenv (a), a);
   return loop (eval (e, a), readenv (a), a);
 }
 
@@ -864,7 +890,7 @@ eval (scm *e, scm *a)
   puts ("");
 #endif
 
-  scm *eval__ = assoc (make_atom ("eval"), a);
+  scm *eval__ = assoc (&scm_symbol_eval, a);
   assert (eval__ != &scm_f);
   eval__ = cdr (eval__);
   if (builtin_p (eval__) == &scm_t

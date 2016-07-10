@@ -106,4 +106,12 @@
 (map (lambda (i a) (display i) (display ':) (display a) (newline)) '(1 2 3 4) '(a b c d))
 (newline)
 
+(define a 0)
+(display 'a=0:)
+(display a)
+(newline)
+(set! a 1)
+(display 'a=1:)
+(display a)
+(newline)
 '()
