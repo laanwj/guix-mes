@@ -124,6 +124,7 @@
    ((number? e) e)
    ((eq? e #t) #t)
    ((eq? e #f) #f)
+   ((string? e) e)
    ((atom? e) (cdr (assoc e a)))
    ((builtin? e) e)
    ((atom? (car e))

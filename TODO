@@ -9,7 +9,7 @@ letrec
 quote
 set!
 ** implement minimal needed rsr3/rsr4: 
-"string"
+v "string"
 #(v e c t o r)
 #\CHAR
 assq
@@ -21,8 +21,8 @@ list->vector
 make-vector
 memv
 string
-string-append
-string?
+v string-append
+v string?
 symbol?
 values
 vector
@@ -31,6 +31,6 @@ vector-length
 vector-ref
 vector-set!
 vector? 
-... possibly also: any, each, unquote-splicing
+... possibly also: any, each, unquote-splicing, ...
 ** implement extras: (gensym)
 ** hook-up sc-expand, see guile-1.0?: scheme:eval-transformer

@@ -42,12 +42,14 @@
 #define QUOTE_SUGAR 1
 #endif
 
-enum type {ATOM, NUMBER, PAIR, FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3};
+enum type {STRING, SYMBOL, NUMBER, PAIR,
+           FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
 struct scm_t;
 typedef struct scm_t* (*function0_t) (void);
 typedef struct scm_t* (*function1_t) (struct scm_t*);
 typedef struct scm_t* (*function2_t) (struct scm_t*, struct scm_t*);
 typedef struct scm_t* (*function3_t) (struct scm_t*, struct scm_t*, struct scm_t*);
+typedef struct scm_t* (*functionn_t) (struct scm_t*);
 
 typedef struct scm_t {
   enum type type;
@@ -61,6 +63,7 @@ typedef struct scm_t {
     function1_t function1;
     function2_t function2;
     function3_t function3;
+    functionn_t functionn;    
     struct scm_t* cdr;
   };
 } scm;
@@ -72,34 +75,34 @@ scm *display_helper (scm*, bool, char*, bool);
 bool
 symbol_eq (scm *x, char *s)
 {
-  return x->type == ATOM && !strcmp (x->name, s);
+  return x->type == SYMBOL && !strcmp (x->name, s);
 }
 
-scm scm_nil = {ATOM, "()"};
-scm scm_dot = {ATOM, "."};
-scm scm_t = {ATOM, "#t"};
-scm scm_f = {ATOM, "#f"};
-scm scm_lambda = {ATOM, "lambda"};
-scm scm_label = {ATOM, "label"};
-scm scm_unspecified = {ATOM, "*unspecified*"};
-scm scm_symbol_cond = {ATOM, "cond"};
-scm scm_symbol_quote = {ATOM, "quote"};
+scm scm_nil = {SYMBOL, "()"};
+scm scm_dot = {SYMBOL, "."};
+scm scm_t = {SYMBOL, "#t"};
+scm scm_f = {SYMBOL, "#f"};
+scm scm_lambda = {SYMBOL, "lambda"};
+scm scm_label = {SYMBOL, "label"};
+scm scm_unspecified = {SYMBOL, "*unspecified*"};
+scm scm_symbol_cond = {SYMBOL, "cond"};
+scm scm_symbol_quote = {SYMBOL, "quote"};
 #if QUASIQUOTE
-scm scm_symbol_quasiquote = {ATOM, "quasiquote"};
-scm scm_symbol_unquote = {ATOM, "unquote"};
+scm scm_symbol_quasiquote = {SYMBOL, "quasiquote"};
+scm scm_symbol_unquote = {SYMBOL, "unquote"};
 #endif
 #if MACROS
-scm scm_macro = {ATOM, "*macro*"};
+scm scm_macro = {SYMBOL, "*macro*"};
 #endif
 
-scm scm_symbol_EOF = {ATOM, "EOF"};
-scm scm_symbol_EOF2 = {ATOM, "EOF2"};
-scm scm_symbol_current_module = {ATOM, "current-module"};
-scm scm_symbol_define = {ATOM, "define"};
-scm scm_symbol_define_macro = {ATOM, "define-macro"};
-scm scm_symbol_eval = {ATOM, "eval"};
-scm scm_symbol_loop2 = {ATOM, "loop2"};
-scm scm_symbol_set_x = {ATOM, "set!"};
+scm scm_symbol_EOF = {SYMBOL, "EOF"};
+scm scm_symbol_EOF2 = {SYMBOL, "EOF2"};
+scm scm_symbol_current_module = {SYMBOL, "current-module"};
+scm scm_symbol_define = {SYMBOL, "define"};
+scm scm_symbol_define_macro = {SYMBOL, "define-macro"};
+scm scm_symbol_eval = {SYMBOL, "eval"};
+scm scm_symbol_loop2 = {SYMBOL, "loop2"};
+scm scm_symbol_set_x = {SYMBOL, "set!"};
 
 // PRIMITIVES
 
@@ -297,6 +300,8 @@ eval_ (scm *e, scm *a)
 #endif
   if (e->type == NUMBER)
     return e;
+  else if (e->type == STRING)
+    return e;
   else if (atom_p (e) == &scm_t) {
     scm *y = assoc (e, a);
     if (y == &scm_f) {
@@ -404,7 +409,8 @@ builtin_p (scm *x)
   return (x->type == FUNCTION0
           || x->type == FUNCTION1
           || x->type == FUNCTION2
-          || x->type == FUNCTION3)
+          || x->type == FUNCTION3
+          || x->type == FUNCTIONn)
     ? &scm_t : &scm_f;
 }
 
@@ -412,6 +418,19 @@ scm *
 number_p (scm *x)
 {
   return x->type == NUMBER ? &scm_t : &scm_f;
+}
+
+scm *
+string_p (scm *x)
+{
+  return x->type == STRING ? &scm_t : &scm_f;
+}
+
+scm *
+symbol_p (scm *x)
+{
+  //TODO: #f,#t,nil also `symbols' atm
+  return x->type == SYMBOL ? &scm_t : &scm_f;
 }
 
 scm *
@@ -442,6 +461,8 @@ call (scm *fn, scm *x)
     return fn->function2 (car (x), cadr (x));
   if (fn->type == FUNCTION3)
     return fn->function3 (car (x), cadr (x), caddr (x));
+  if (fn->type == FUNCTIONn)
+    return fn->functionn (x);
   return &scm_unspecified;
 }
 
@@ -454,22 +475,53 @@ append (scm *x, scm *y)
 }
 
 scm *
-make_atom (char const *s)
-{
-  // TODO: alist lookup symbols
-  scm *p = malloc (sizeof (scm));
-  p->type = ATOM;
-  p->name = strdup (s);
-  return p;
-}
-
-scm *
 make_number (int x)
 {
   scm *p = malloc (sizeof (scm));
   p->type = NUMBER;
   p->value = x;
   return p;
+}
+
+scm *
+make_string (char const *s)
+{
+  scm *p = malloc (sizeof (scm));
+  p->type = STRING;
+  p->name = strdup (s);
+  return p;
+}
+
+scm *
+make_symbol (char const *s)
+{
+  // TODO: alist lookup symbols
+  scm *p = malloc (sizeof (scm));
+  p->type = SYMBOL;
+  p->name = strdup (s);
+  return p;
+}
+
+scm *
+string_append (scm *x/*...*/)
+{
+  char buf[256] = "";
+
+  while (x != &scm_nil)
+    {
+      scm *s = car (x);
+      assert (s->type == STRING);
+      strcat (buf, s->name);
+      x = cdr (x);
+    }
+  return make_string (buf);
+}
+
+scm *
+string_length (scm *x)
+{
+  assert (x->type == STRING);
+  return make_number (strlen (x->name));
 }
 
 scm *
@@ -493,7 +545,7 @@ lookup (char *x, scm *a)
   if (!strcmp (x, scm_symbol_quasiquote.name)) return &scm_symbol_quasiquote;
 #endif
 
-  return make_atom (x);
+  return make_symbol (x);
 }
 
 scm *
@@ -555,13 +607,13 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       return display_helper (car (cdr (x)), cont, "", true);
     }
 #if QUASIQUOTE
-    if (car (x) == &scm_symbol_quasiquote
-        || car (x) == &scm_quasiquote) {
+    if (/*car (x) == &scm_symbol_quasiquote
+          ||*/ car (x) == &scm_quasiquote) {
       printf ("`");
       return display_helper (car (cdr (x)), cont, "", true);
     }
-    if (car (x) == &scm_symbol_unquote
-        || car (x) == &scm_unquote) {
+    if (/*car (x) == &scm_symbol_unquote
+          ||*/ car (x) == &scm_unquote) {
       printf (",");
       return display_helper (car (cdr (x)), cont, "", true);
     }
@@ -640,6 +692,8 @@ readword (int c, char* w, scm *a)
   if (c == '\n' && *w == '.' && w[1] == 0) return &scm_dot;
   if (c == EOF || c == '\n') return lookup (w, a);
   if (c == ' ') return readword ('\n', w, a);
+  if (c == '"' && !w) return readstring ();
+  if (c == '"') {ungetchar (c); return lookup (w, a);}
   if (c == '(' && !w) return readlis (a);
   if (c == '(') {ungetchar (c); return lookup (w, a);}
   if (c == ')' && !w) {ungetchar (c); return &scm_nil;}
@@ -658,6 +712,23 @@ readword (int c, char* w, scm *a)
   char buf[256] = {0};
   char ch = c;
   return readword (getchar (), strncat (w ? w : buf, &ch, 1), a);
+}
+
+scm *
+readstring ()
+{
+  char buf[256];
+  char *p = buf;
+  int c = getchar ();
+  while (true) {
+    if (c == '"') break;
+    *p++ = c;
+    if (c == '\\' && peekchar () == '"') *p++ = getchar ();
+    if (c == EOF) assert (!"EOF in string");
+    c = getchar ();
+  }
+  *p = 0;
+  return make_string (buf);
 }
 
 int
@@ -776,7 +847,7 @@ eval_quasiquote (scm *e, scm *a)
 scm *
 add_environment (scm *a, char *name, scm *x)
 {
-  return cons (cons (make_atom (name), x), a);
+  return cons (cons (make_symbol (name), x), a);
 }
 
 scm *

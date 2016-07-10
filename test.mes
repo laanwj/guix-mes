@@ -161,4 +161,12 @@
   (display (+ a 3)))
 (newline)
 
+" a b c"
+(display "string me")
+(newline)
+(display (string-append "a" "b" "c"))
+(newline)
+(display (string-length (string-append "a" "b" "c")))
+(newline)
+
 '()
