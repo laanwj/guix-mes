@@ -124,4 +124,11 @@
 (display (= 3 '3))
 (newline)
 
+(display (if #t 'true))
+(newline)
+(display (if (eq? 0 '0) 'true 'false))
+(newline)
+(display (if (= 1 2) 'true 'false))
+(newline)
+
 '()

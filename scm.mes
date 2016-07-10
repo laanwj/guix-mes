@@ -64,3 +64,14 @@
         ((null? r) (cons (f (car l)) (map f (cdr l))))
         ((null? (cdr r))
          (cons (f (car l) (caar r)) (map f (cdr l) (cdar r))))))
+
+(define (not x)
+  (cond (x #f)
+        (#t #t)))
+
+(define-macro (if expr then . else)
+  (cond ((not (eq? (c:eval expr (current-module)) #f))
+         then)
+        (#t
+         (cond ((pair? else) (car else))
+               (#t *unspecified*)))))
