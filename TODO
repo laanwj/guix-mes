@@ -1,0 +1,36 @@
+-*-mode:org-*-
+* run psyntax.pp v2
+** implement core primitives: DONE
+begin
+define
+if
+lambda
+letrec
+quote
+set!
+** implement minimal needed rsr3/rsr4: 
+"string"
+#(v e c t o r)
+#\CHAR
+assq
+call-with-values
+char?
+length
+list
+list->vector
+make-vector
+memv
+string
+string-append
+string?
+symbol?
+values
+vector
+vector->list
+vector-length
+vector-ref
+vector-set!
+vector? 
+... possibly also: any, each, unquote-splicing
+** implement extras: (gensym)
+** hook-up sc-expand, see guile-1.0?: scheme:eval-transformer
