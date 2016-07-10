@@ -115,6 +115,19 @@
 (display a)
 (newline)
 
+(display
+ ((lambda (x)
+    (display 'x:)
+    (display x)
+    (newline)
+    (display 'setting-x=2)
+    (newline)
+    (set! x 2)
+    (display 'x:)
+    (display x)
+    (newline))
+  1))
+
 (display (+ 11 12))
 (newline)
 (display (* 3 3))

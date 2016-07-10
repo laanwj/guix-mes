@@ -191,9 +191,6 @@ quasiquote (scm *x)
 {
   return cons (&scm_symbol_quasiquote, x);
 }
-
-scm *eval_quasiquote (scm *, scm *);
-
 #endif
 
 //Library functions
@@ -209,8 +206,6 @@ scm *cdadr (scm *x) {return cdr (car (cdr (x)));}
 scm *cadar (scm *x) {return car (cdr (car (x)));}
 scm *cddar (scm *x) {return cdr (cdr (car (x)));}
 scm *cdddr (scm *x) {return cdr (cdr (cdr (x)));}
-
-scm* make_atom (char const *);
 
 scm *
 pairlis (scm *x, scm *y, scm *a)
@@ -244,20 +239,11 @@ assoc (scm *x, scm *a)
   return assoc (x, cdr (a));
 }
 
-scm *apply (scm*, scm*, scm*);
-scm *eval_ (scm*, scm*);
-scm *apply_ (scm*, scm*, scm*);
-
 scm *
 eval_quote (scm *fn, scm *x)
 {
   return apply (fn, x, &scm_nil);
 }
-
-scm *builtin_p (scm*);
-scm *call (scm *, scm*);
-scm *display (scm*);
-scm *newline ();
 
 scm *
 apply_ (scm *fn, scm *x, scm *a)
@@ -277,22 +263,22 @@ apply_ (scm *fn, scm *x, scm *a)
         return call (fn, x);
       return apply (eval (fn,  a), x, a);
     }
-  else if (car (fn) == &scm_lambda) {
-    scm *body = cddr (fn);
-    scm *ca = cadr (fn);
-    scm *ax = pairlis (cadr (fn), x, a);
-    scm *result = eval (car (body), ax);
-    if (cdr (body) == &scm_nil)
-      return result;
-    return apply (cons (car (fn), cons (cadr (fn), cdddr (fn))), x, ax);
-  }
+  else if (car (fn) == &scm_lambda)
+    return begin_env (cddr (fn), pairlis (cadr (fn), x, a));
   else if (car (fn) == &scm_label)
     return apply (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
   return &scm_unspecified;
 }
 
-scm *evcon (scm*, scm*);
-scm *evlis (scm*, scm*);
+scm *
+begin_env (scm *body, scm *a)
+{
+  if (body == &scm_nil) return &scm_unspecified;
+  scm *result = eval (car (body), a);
+  if (cdr (body) == &scm_nil)
+    return result;
+  return begin_env (cdr (body), a);
+}
 
 scm *
 eval_ (scm *e, scm *a)
@@ -637,8 +623,6 @@ readblock (int c)
   if (c == '!' && peekchar () == '#') return getchar ();
   return readblock (getchar ());
 }
-
-scm *readlis (scm *a);
 
 scm *
 readword (int c, char* w, scm *a)

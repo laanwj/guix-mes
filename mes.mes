@@ -98,13 +98,7 @@
       (call fn x))
      (#t (apply (eval fn a) x a))))
    ((eq? (car fn) 'lambda)
-    (cond ((null? (cdr (cddr fn)))
-           (eval (caddr fn) (pairlis (cadr fn) x a)))
-          (#t
-           (eval (caddr fn) (pairlis (cadr fn) x a))
-           (apply (cons (car fn) (cons (cadr fn) (cdddr fn)))
-                  x
-                  (pairlis (cadr fn) x a)))))
+    (begin-env (cddr fn) (pairlis (cadr fn) x a)))
    ((eq? (car fn) 'label) (apply (caddr fn) x (cons (cons (cadr fn)
                                                          (caddr fn)) a)))))
 
