@@ -114,4 +114,14 @@
 (display 'a=1:)
 (display a)
 (newline)
+
+(display (+ 11 12))
+(newline)
+(display (* 3 3))
+(newline)
+(display (/ 9 3))
+(newline)
+(display (= 3 '3))
+(newline)
+
 '()

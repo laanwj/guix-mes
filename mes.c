@@ -715,23 +715,41 @@ less_p (scm *a, scm *b)
 scm *
 minus (scm *a, scm *b)
 {
-#if DEBUG
-  printf ("\nminus a=");
-  display (a);
-  printf (" b=");
-  display (b);
-  puts ("");
-#endif
   assert (a->type == NUMBER);
   assert (b->type == NUMBER);
-  //return make_number (a->value - b->value);
-  scm *r = make_number (a->value - b->value);
-#if DEBUG
-  printf ("  ==> ");
-  display (r);
-  puts ("");
-#endif
-  return r;
+  return make_number (a->value - b->value);
+}
+
+scm *
+plus (scm *a, scm *b)
+{
+  assert (a->type == NUMBER);
+  assert (b->type == NUMBER);
+  return make_number (a->value + b->value);
+}
+
+scm *
+divide (scm *a, scm *b)
+{
+  assert (a->type == NUMBER);
+  assert (b->type == NUMBER);
+  return make_number (a->value / b->value);
+}
+
+scm *
+multiply (scm *a, scm *b)
+{
+  assert (a->type == NUMBER);
+  assert (b->type == NUMBER);
+  return make_number (a->value * b->value);
+}
+
+scm *
+is_p (scm *a, scm *b)
+{
+  assert (a->type == NUMBER);
+  assert (b->type == NUMBER);
+  return a->value == b->value ? &scm_t : &scm_f;
 }
 
 #if QUASIQUOTE
