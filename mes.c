@@ -561,6 +561,18 @@ string_length (scm *x)
 }
 
 scm *
+length (scm *x)
+{
+  int n = 0;
+  while (x != &scm_nil)
+    {
+      n++;
+      x = cdr (x);
+    }
+  return make_number (n);
+}
+
+scm *
 lookup (char *x, scm *a)
 {
   if (isdigit (*x) || (*x == '-' && isdigit (*(x+1))))

@@ -182,4 +182,11 @@
 (display (string #\a #\space #\s #\t #\r #\i #\n #\g #\newline))
 (newline)
 
+(display "length of nil: ")
+(display (length '()))
+(newline)
+(display "length of '(a b c): ")
+(display (length '(a b c)))
+(newline)
+
 '()

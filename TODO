@@ -15,7 +15,7 @@ v "string"
 assq
 call-with-values
 v char?
-length
+v length
 v list
 list->vector
 make-vector
