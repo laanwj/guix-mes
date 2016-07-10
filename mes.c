@@ -646,13 +646,11 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       return display_helper (car (cdr (x)), cont, "", true);
     }
 #if QUASIQUOTE
-    if (/*car (x) == &scm_symbol_quasiquote
-          ||*/ car (x) == &scm_quasiquote) {
+    if (car (x) == &scm_quasiquote) {
       printf ("`");
       return display_helper (car (cdr (x)), cont, "", true);
     }
-    if (/*car (x) == &scm_symbol_unquote
-          ||*/ car (x) == &scm_unquote) {
+    if (car (x) == &scm_unquote) {
       printf (",");
       return display_helper (car (cdr (x)), cont, "", true);
     }
