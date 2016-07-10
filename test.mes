@@ -144,4 +144,15 @@
 (display (if (= 1 2) 'true 'false))
 (newline)
 
+(display 'factorial4=)
+(display
+ (letrec ((factorial (lambda (n)
+                       ;; (display 'factorial:)
+                       ;; (display n)
+                       ;; (newline)
+                       (if (= n 1) 1
+                           (* n (factorial (- n 1)))))))
+   (factorial 4)))
+(newline)
+
 '()

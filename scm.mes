@@ -75,3 +75,20 @@
         (#t
          (cond ((pair? else) (car else))
                (#t *unspecified*)))))
+
+(define (unspecified-bindings bindings params)
+  (cond ((null? bindings) params)
+        (#t (unspecified-bindings
+             (cdr bindings)
+             (append params (cons (cons (caar bindings) '(*unspecified*)) '()))))))
+
+(define (letrec-setters bindings setters)
+  (cond ((null? bindings) setters)
+        (#t (letrec-setters (cdr bindings)
+                            (append setters
+                                    (cons (cons 'set! (car bindings)) '()))))))
+
+(define-macro (letrec bindings . body)
+  (cons 'let (cons (unspecified-bindings bindings '())
+                    (append (letrec-setters bindings '())
+                            body)))  )

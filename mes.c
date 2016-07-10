@@ -165,6 +165,13 @@ set_cdr_x (scm *x, scm *e)
 {
   assert (x->type == PAIR);
   x->cdr = e;
+  return &scm_unspecified;
+}
+
+scm *
+set_x (scm *x, scm *e, scm *a)
+{
+  return set_cdr_x (assoc (x, a), e);
 }
 
 scm *
@@ -477,6 +484,7 @@ lookup (char *x, scm *a)
   if (!strcmp (x, scm_lambda.name)) return &scm_lambda;
   if (!strcmp (x, scm_label.name)) return &scm_label;
   if (!strcmp (x, scm_nil.name)) return &scm_nil;
+  if (!strcmp (x, scm_symbol_set_x.name)) return &scm_symbol_set_x;
 
 #if QUASIQUOTE
   if (*x == '`') return &scm_symbol_quasiquote;
