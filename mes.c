@@ -280,7 +280,7 @@ apply_ (scm *fn, scm *x, scm *a)
       if (fn == &scm_symbol_current_module) // FIXME
         return a;
       if (eq_p (fn, &scm_symbol_call_with_values) == &scm_t)
-        return call (&scm_call_with_values_env, append (x, cons (a, &scm_nil)));
+        return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
       return apply (eval (fn,  a), x, a);
@@ -497,12 +497,19 @@ call (scm *fn, scm *x)
 }
 
 scm *
-append (scm *x, scm *y)
+append2 (scm *x, scm *y)
 {
   if (x == &scm_nil) return y;
   assert (x->type == PAIR);
-   return cons (car (x), append (cdr (x), y));
+  return cons (car (x), append2 (cdr (x), y));
 }
+
+scm *
+append (scm *x/*...*/)
+ {
+  if (x == &scm_nil) return &scm_nil;
+  return append2 (car (x), append (cdr (x)));
+ }
 
 scm *
 make_char (int x)
@@ -689,7 +696,7 @@ lookup_char (int c, scm *a)
 }
 
 char *
-list2str (scm *l)
+list2str (scm *l) // char*
 {
   static char buf[256];
   char *p = buf;
@@ -722,7 +729,7 @@ vector_to_list (scm *v)
 {
   scm *x = &scm_nil;
   for (int i = 0; i < v->length; i++)
-    x = append (x, cons (v->vector[i], &scm_nil));
+    x = append2 (x, cons (v->vector[i], &scm_nil));
   return x;
 }
 
