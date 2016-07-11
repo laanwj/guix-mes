@@ -12,7 +12,7 @@ set!
 v "string"
 v #(v e c t o r)
 #\CHAR
-assq
+v assq
 call-with-values
 v char?
 v length

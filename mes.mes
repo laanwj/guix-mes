@@ -41,13 +41,13 @@
 ;;    (#t (cons (cons (car x) (car y))
 ;;              (pairlis (cdr x) (cdr y) a)))))
 
-;; (define (assoc x a)
-;;   ;;(stderr "assoc x=~a\n" x)
-;;   ;;(debug "assoc x=~a a=~a\n" x a)
+;; (define (assq x a)
+;;   ;;(stderr "assq x=~a\n" x)
+;;   ;;(debug "assq x=~a a=~a\n" x a)
 ;;   (cond
 ;;    ((null? a) #f)
 ;;    ((eq? (caar a) x) (car a))
-;;    (#t (assoc x (cdr a)))))
+;;    (#t (assq x (cdr a)))))
 
 ;; ;; Page 13
 ;; (define (eval-quote fn x)
@@ -109,7 +109,7 @@
             (begin-env (cdr body) a))))
 
 (define (set-env! x e a)
-  (set-cdr! (assoc x a) e))
+  (set-cdr! (assq x a) e))
 
 (define (eval e a)
   ;;(debug "eval e=~a a=~a\n" e a)
@@ -127,7 +127,7 @@
    ((number? e) e)
    ((string? e) e)
    ((vector? e) e)
-   ((atom? e) (cdr (assoc e a)))
+   ((atom? e) (cdr (assq e a)))
    ((builtin? e) e)
    ((atom? (car e))
     (cond
@@ -137,10 +137,10 @@
      ((eq? (car e) 'unquote) (eval (cadr e) a))
      ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
      ((eq? (car e) 'cond) (evcon (cdr e) a))
-     ((pair? (assoc (car e) (cdr (assoc '*macro* a))))
+     ((pair? (assq (car e) (cdr (assq '*macro* a))))
       (c:eval
        (c:apply
-        (cdr (assoc (car e) (cdr (assoc '*macro* a))))
+        (cdr (assq (car e) (cdr (assq '*macro* a))))
         (cdr e)
         a)
        a))

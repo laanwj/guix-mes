@@ -28,7 +28,7 @@
 (define (scm-define-macro x a)
   (cons '*macro*
         (cons (cons (caadr e) (cons 'lambda (cons (cdadr e) (cddr e))))
-              (cdr (assoc '*macro* a)))))
+              (cdr (assq '*macro* a)))))
 
 (define (loop2 r e a)
   ;; (display '____loop2)
@@ -47,7 +47,7 @@
         ((eq? (car e) 'define-macro)
          (loop2 *unspecified* (readenv a) (cons (scm-define-macro e a) a)))
         ((eq? (car e) 'set!)
-         (loop2 (set-cdr! (assoc (cadr e) a) (eval (caddr e) a)) (readenv a) a))
+         (loop2 (set-cdr! (assq (cadr e) a) (eval (caddr e) a)) (readenv a) a))
         (#t (loop2 (eval e a) (readenv a) a))))
 
 EOF

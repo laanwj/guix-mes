@@ -108,13 +108,13 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
    (#t (cons (cons (car x) (car y))
              (pairlis (cdr x) (cdr y) a)))))
 
-(define (assoc x a)
-  ;;(stderr "assoc x=~a\n" x)
-  ;;(debug "assoc x=~a a=~a\n" x a)
+(define (assq x a)
+  ;;(stderr "assq x=~a\n" x)
+  ;;(debug "assq x=~a a=~a\n" x a)
   (cond
    ((null? a) #f)
    ((eq? (caar a) x) (car a))
-   (#t (assoc x (cdr a)))))
+   (#t (assq x (cdr a)))))
 
 (define (append x y)
   (cond ((null? x) y)
@@ -153,7 +153,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
     (evlis . ,evlis)
     (evcon . ,evcon)
     (pairlis . ,pairlis)
-    (assoc . ,assoc)
+    (assq . ,assq)
 
     (eval . ,eval-environment)
     (apply . ,apply-environment)
@@ -200,12 +200,12 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 (define (mes-define-macro x a)
   (cons '*macro*
         (cons (mes-define-lambda x a)
-              (cdr (assoc '*macro* a)))))
+              (cdr (assq '*macro* a)))))
 
 (define (loop r e a)
   (cond ((null? e) r)
         ((eq? e 'exit)
-         (apply (cdr (assoc 'loop a))
+         (apply (cdr (assq 'loop a))
                 (cons *unspecified* (cons #t (cons a '())))
                 a))
         ((atom? e) (loop (eval e a) (readenv a) a))

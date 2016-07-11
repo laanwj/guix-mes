@@ -182,13 +182,13 @@ set_cdr_x (scm *x, scm *e)
 scm *
 set_x (scm *x, scm *e, scm *a)
 {
-  return set_cdr_x (assoc (x, a), e);
+  return set_cdr_x (assq (x, a), e);
 }
 
 scm *
 set_env_x (scm *x, scm *e, scm *a)
 {
-  return set_cdr_x (assoc (x, a), e);
+  return set_cdr_x (assq (x, a), e);
 }
 
 scm *
@@ -244,7 +244,7 @@ pairlis (scm *x, scm *y, scm *a)
 }
 
 scm *
-assoc (scm *x, scm *a)
+assq (scm *x, scm *a)
 {
   if (a == &scm_nil) {
 #if DEBUG
@@ -254,7 +254,7 @@ assoc (scm *x, scm *a)
   }
   if (eq_p (caar (a), x) == &scm_t)
     return car (a);
-  return assoc (x, cdr (a));
+  return assq (x, cdr (a));
 }
 
 scm *
@@ -315,7 +315,7 @@ eval_ (scm *e, scm *a)
   else if (e->type == VECTOR)
     return e;
   else if (atom_p (e) == &scm_t) {
-    scm *y = assoc (e, a);
+    scm *y = assq (e, a);
     if (y == &scm_f) {
       printf ("eval: no such symbol: %s\n", e->name);
       exit (1);
@@ -353,7 +353,7 @@ eval_ (scm *e, scm *a)
       else if (car (e) == &scm_symbol_cond)
         return evcon (cdr (e), a);
 #if MACROS
-      else if ((macro = assoc (car (e), cdr (assoc (&scm_macro, a)))) != &scm_f)
+      else if ((macro = assq (car (e), cdr (assq (&scm_macro, a)))) != &scm_f)
         return eval (apply_ (cdr (macro), cdr (e), a), a);
 #endif // MACROS
       return apply (car (e), evlis (cdr (e), a), a);
@@ -1069,13 +1069,13 @@ define_macro (scm *x, scm *a)
   printf ("\nc:define_macro a=");
   scm *aa =cons (&scm_macro,
                cons (define_lambda (x),
-                     cdr (assoc (&scm_macro, a))));
+                     cdr (assq (&scm_macro, a))));
   display (aa);
   puts ("");
 #endif
   return cons (&scm_macro,
                cons (define_lambda (x),
-                     cdr (assoc (&scm_macro, a))));
+                     cdr (assq (&scm_macro, a))));
 }
 
 scm *
@@ -1089,7 +1089,7 @@ loop (scm *r, scm *e, scm *a)
   if (e == &scm_nil)
     return r;
   else if (eq_p (e, &scm_symbol_EOF) == &scm_t)
-    return apply (cdr (assoc (&scm_symbol_loop2, a)),
+    return apply (cdr (assq (&scm_symbol_loop2, a)),
                   cons (&scm_unspecified, cons (&scm_t, cons (a, &scm_nil))), a);
   else if (eq_p (e, &scm_symbol_EOF2) == &scm_t)
     return r;
@@ -1143,7 +1143,7 @@ eval (scm *e, scm *a)
   puts ("");
 #endif
 
-  scm *eval__ = assoc (&scm_symbol_eval, a);
+  scm *eval__ = assq (&scm_symbol_eval, a);
   assert (eval__ != &scm_f);
   eval__ = cdr (eval__);
   if (builtin_p (eval__) == &scm_t
