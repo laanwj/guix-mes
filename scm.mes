@@ -33,8 +33,6 @@
         (#t (memq x (cdr lst)))))
 (define memv memq)
 
-(define (+ x y) (- x (- 0 y)))
-
 (define-macro (and x y)
   (cond (x y)
         (#t #f)))

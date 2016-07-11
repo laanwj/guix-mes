@@ -971,35 +971,60 @@ less_p (scm *a, scm *b)
 }
 
 scm *
-minus (scm *a, scm *b)
+minus (scm *x/*...*/)
 {
+  scm *a = car (x);
   assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return make_number (a->value - b->value);
+  int n = a->value;
+  x = cdr (x);
+  if (x == &scm_nil)
+    n = -n;
+  while (x != &scm_nil)
+    {
+      assert (x->car->type == NUMBER);
+      n -= x->car->value;
+      x = cdr (x);
+    }
+  return make_number (n);
 }
 
 scm *
-plus (scm *a, scm *b)
+plus (scm *x/*...*/)
 {
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return make_number (a->value + b->value);
+  int n = 0;
+  while (x != &scm_nil)
+    {
+      assert (x->car->type == NUMBER);
+      n += x->car->value;
+      x = cdr (x);
+    }
+  return make_number (n);
 }
 
 scm *
-divide (scm *a, scm *b)
+divide (scm *x/*...*/)
 {
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return make_number (a->value / b->value);
+  int n = 1;
+  while (x != &scm_nil)
+    {
+      assert (x->car->type == NUMBER);
+      n /= x->car->value;
+      x = cdr (x);
+    }
+  return make_number (n);
 }
 
 scm *
-multiply (scm *a, scm *b)
+multiply (scm *x/*...*/)
 {
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return make_number (a->value * b->value);
+  int n = 1;
+  while (x != &scm_nil)
+    {
+      assert (x->car->type == NUMBER);
+      n *= x->car->value;
+      x = cdr (x);
+    }
+  return make_number (n);
 }
 
 scm *
