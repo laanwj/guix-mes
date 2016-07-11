@@ -260,4 +260,12 @@
        (display ((lambda (x) x) (values 1 2 3)))
        (newline)))
 
+(display "(procedure? builtin?: ")
+(display (procedure? builtin?))
+(newline)
+
+(display "(procedure? procedure?): ")
+(display (procedure? procedure?))
+(newline)
+
 '()

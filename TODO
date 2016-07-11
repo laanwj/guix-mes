@@ -32,6 +32,7 @@ v vector-length
 v vector-ref
 v vector-set!
 v vector? 
-... possibly also: any, each, unquote-splicing, ...
-** implement extras: (gensym)
+v procedure?
+** any, each, unquote-splicing, ...
+** implement extras: v (gensym)
 ** hook-up sc-expand, see guile-1.0?: scheme:eval-transformer

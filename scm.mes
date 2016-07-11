@@ -24,6 +24,11 @@
 (define (defined? x)
   (assq x (current-module)))
 
+(define (procedure? p)
+  (cond ((builtin? p) #t)
+        ((pair? p) (eq? (car p) 'lambda))
+        (#t #f)))
+
 (define (list . rest) rest)
 (define (vector . rest) (list->vector rest))
 (define assv assq)
