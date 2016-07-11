@@ -669,6 +669,7 @@ lookup (char *x, scm *a)
     return make_number (atoi (x));
   if (*x == '\'') return &scm_symbol_quote;
 
+  if (!strcmp (x, scm_unspecified.name)) return &scm_unspecified;
   if (!strcmp (x, scm_symbol_cond.name)) return &scm_symbol_cond;
   if (!strcmp (x, scm_symbol_quote.name)) return &scm_symbol_quote;
   if (!strcmp (x, scm_lambda.name)) return &scm_lambda;
