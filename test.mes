@@ -268,4 +268,16 @@
 (display (procedure? procedure?))
 (newline)
 
+(define *gensym* 0)
+(define (gensym)
+  (set! *gensym* (+ *gensym* 1))
+  (string->symbol (string-append "g" (number->string *gensym*))))
+
+(display (gensym))
+(newline)
+(display (gensym))
+(newline)
+(display (gensym))
+(newline)
+
 '()

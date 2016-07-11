@@ -725,6 +725,29 @@ list_to_vector (scm *x)
 }
 
 scm*
+number_to_string (scm *x)
+{
+  assert (x->type == NUMBER);
+  char buf[256];
+  sprintf (buf,"%d", x->value);
+  return make_string (buf);
+}
+
+scm*
+string_to_symbol (scm *x)
+{
+  assert (x->type == STRING);
+  return make_symbol (x->name);
+}
+
+scm*
+symbol_to_string (scm *x)
+{
+  assert (x->type == SYMBOL);
+  return make_string (x->name);
+}
+
+scm*
 vector_to_list (scm *v)
 {
   scm *x = &scm_nil;
