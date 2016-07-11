@@ -23,6 +23,12 @@
 
 (define (list . rest) rest)
 (define (vector . rest) (list->vector rest))
+(define assv assq)
+(define (memq x lst)
+  (cond ((null? lst) #f)
+        ((eq? x (car lst)) lst)
+        (#t (memq x (cdr lst)))))
+(define memv memq)
 
 (define (+ x y) (- x (- 0 y)))
 

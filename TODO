@@ -19,7 +19,8 @@ v length
 v list
 v list->vector
 v make-vector
-memv
+v memq
+v memv
 v string
 v string-append
 v string?

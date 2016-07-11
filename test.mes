@@ -222,4 +222,20 @@
 (display v)
 (newline)
 
+(display "memq a: ")
+(display (memq 'a '(a b c)))
+(newline)
+
+(display "memq b: ")
+(display (memq 'b '(a b c)))
+(newline)
+
+(display "memq c: ")
+(display (memq 'c '(a b c)))
+(newline)
+
+(display "memq d: ")
+(display (memq 'd '(a b c)))
+(newline)
+
 '()
