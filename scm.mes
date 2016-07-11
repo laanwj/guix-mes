@@ -22,6 +22,7 @@
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
 (define (list . rest) rest)
+(define (vector . rest) (list->vector rest))
 
 (define (+ x y) (- x (- 0 y)))
 

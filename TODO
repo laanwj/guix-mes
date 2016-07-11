@@ -10,27 +10,27 @@ quote
 set!
 ** implement minimal needed rsr3/rsr4: 
 v "string"
-#(v e c t o r)
+v #(v e c t o r)
 #\CHAR
 assq
 call-with-values
 v char?
 v length
 v list
-list->vector
-make-vector
+v list->vector
+v make-vector
 memv
 v string
 v string-append
 v string?
 v symbol?
 values
-vector
-vector->list
-vector-length
-vector-ref
-vector-set!
-vector? 
+v vector
+v vector->list
+v vector-length
+v vector-ref
+v vector-set!
+v vector? 
 ... possibly also: any, each, unquote-splicing, ...
 ** implement extras: (gensym)
 ** hook-up sc-expand, see guile-1.0?: scheme:eval-transformer

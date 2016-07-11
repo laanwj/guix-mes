@@ -126,6 +126,7 @@
    ((char? e) e)
    ((number? e) e)
    ((string? e) e)
+   ((vector? e) e)
    ((atom? e) (cdr (assoc e a)))
    ((builtin? e) e)
    ((atom? (car e))
@@ -176,7 +177,7 @@
         ((eq? c 32) ;; \space
          (readword 10 w a))
         ((eq? c 40) ;; (
-         (cond ((eq? w '()) (readlis a))
+         (cond ((eq? w '()) (readlist a))
                (#t (ungetchar c) (lookup w a))))
         ((eq? c 41) ;; )
          (cond ((eq? w '()) (ungetchar c) w)
@@ -194,6 +195,7 @@
                 (getchar)
                 (readblock (getchar))
                 (readword 10 w a))
+               ;; TODO: char, vector
                (#t (readword (getchar) (append w (cons c '())) a))))
         (#t (readword (getchar) (append w (cons c '())) a))))
 
@@ -211,15 +213,15 @@
         ((eq? (peekchar) 35) (getchar) (eat-whitespace))
         (#t #t)))
 
-(define (readlis a)
-  ;; (display 'mes-readlis:)
+(define (readlist a)
+  ;; (display 'mes-readlist:)
   ;; (newline)
   (eat-whitespace)
   (cond ((eq? (peekchar) 41) ;; )
          (getchar)
          '())
         ;; TODO *dot*
-        (#t (cons (readword (getchar) '() a) (readlis a)))))
+        (#t (cons (readword (getchar) '() a) (readlist a)))))
 
 (define (readcomment c)
   (cond ((eq? c 10) ;; \n

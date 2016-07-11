@@ -42,7 +42,7 @@
 #define QUOTE_SUGAR 1
 #endif
 
-enum type {STRING, SYMBOL, CHAR, NUMBER, PAIR,
+enum type {CHAR, NUMBER, PAIR, STRING, SYMBOL, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
 struct scm_t;
 typedef struct scm_t* (*function0_t) (void);
@@ -56,6 +56,7 @@ typedef struct scm_t {
   union {
     char *name;
     struct scm_t* car;
+    int length;
   };
   union {
     int value;
@@ -65,6 +66,7 @@ typedef struct scm_t {
     function3_t function3;
     functionn_t functionn;    
     struct scm_t* cdr;
+    struct scm_t** vector;
   };
 } scm;
 
@@ -150,6 +152,8 @@ eq_p (scm *x, scm *y)
               && y->type != CHAR
               && x->type != NUMBER
               && y->type != NUMBER
+              && x->type != VECTOR
+              && y->type != VECTOR
               && atom_p (y) == &scm_t
               && !strcmp (x->name, y->name)))
     ? &scm_t : &scm_f;
@@ -308,6 +312,8 @@ eval_ (scm *e, scm *a)
     return e;
   else if (e->type == STRING)
     return e;
+  else if (e->type == VECTOR)
+    return e;
   else if (atom_p (e) == &scm_t) {
     scm *y = assoc (e, a);
     if (y == &scm_f) {
@@ -446,6 +452,12 @@ symbol_p (scm *x)
 }
 
 scm *
+vector_p (scm *x)
+{
+  return x->type == VECTOR ? &scm_t : &scm_f;
+}
+
+scm *
 display (scm *x)
 {
   return display_helper (x, false, "", false);
@@ -524,6 +536,16 @@ make_symbol (char const *s)
 }
 
 scm *
+make_vector (int n)
+{
+  scm *p = malloc (sizeof (scm));
+  p->type = VECTOR;
+  p->length = n;
+  p->vector = malloc (n * sizeof (scm*));
+  return p;
+}
+
+scm *
 string (scm *x/*...*/)
 {
   char buf[256] = "";
@@ -572,6 +594,44 @@ length (scm *x)
   return make_number (n);
 }
 
+#if 0
+scm *
+builtin_list (scm *x/*...*/) // int
+{
+  return x;
+}
+
+scm *
+vector (scm *x/*...*/) // int
+{
+  return list_to_vector (x);
+}
+#endif
+
+scm *
+vector_length (scm *x)
+{
+  assert (x->type == VECTOR);
+  return make_number (x->length);
+}
+
+scm *
+vector_ref (scm *x, scm *i)
+{
+  assert (x->type == VECTOR);
+  assert (i->value < x->length);
+  return x->vector[i->value];
+}
+
+scm *
+vector_set_x (scm *x, scm *i, scm *e)
+{
+  assert (x->type == VECTOR);
+  assert (i->value < x->length);
+  x->vector[i->value] = e;
+  return &scm_unspecified;
+}
+
 scm *
 lookup (char *x, scm *a)
 {
@@ -618,6 +678,29 @@ list2str (scm *l)
   }
   *p = 0;
   return buf;
+}
+
+scm*
+list_to_vector (scm *x)
+{
+  int n = length (x)->value;
+  scm *v = make_vector (n);
+  scm **p = v->vector;
+  while (x != &scm_nil)
+    {
+      *p++ = car (x);
+      x = cdr (x);
+    }
+  return v;
+}
+
+scm*
+vector_to_list (scm *v)
+{
+  scm *x = &scm_nil;
+  for (int i = 0; i < v->length; i++)
+    x = append (x, cons (v->vector[i], &scm_nil));
+  return x;
 }
 
 scm *
@@ -677,6 +760,12 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       display (cdr (x));
     }
     if (!cont) printf (")");
+  }
+  else if (x->type == VECTOR) {
+    printf ("#(");
+    for (int i = 0; i < x->length; i++)
+      display_helper (x->vector[i], true, i ? " " : "", false);
+    printf (")");
   }
   else if (atom_p (x) == &scm_t) printf ("%s", x->name);
 
@@ -743,7 +832,7 @@ readword (int c, char* w, scm *a)
   if (c == ' ') return readword ('\n', w, a);
   if (c == '"' && !w) return readstring ();
   if (c == '"') {ungetchar (c); return lookup (w, a);}
-  if (c == '(' && !w) return readlis (a);
+  if (c == '(' && !w) return readlist (a);
   if (c == '(') {ungetchar (c); return lookup (w, a);}
   if (c == ')' && !w) {ungetchar (c); return &scm_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
@@ -758,6 +847,8 @@ readword (int c, char* w, scm *a)
                                            &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
   if (c == '#' && peekchar () == '\\') {getchar (); return readchar ();}
+  if (c == '#' && !w && peekchar () == '(') {getchar (); return list_to_vector (readlist (a));}
+  if (c == '#' && peekchar () == '(') {ungetchar (c); return lookup (w, a);}
   if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
   char buf[256] = {0};
   char ch = c;
@@ -822,15 +913,15 @@ eat_whitespace (int c)
 }
 
 scm *
-readlis (scm *a)
+readlist (scm *a)
 {
   int c = getchar ();
   c = eat_whitespace (c);
   if (c == ')') return &scm_nil;
   scm *w = readword (c, 0, a);
   if (w == &scm_dot)
-    return car (readlis (a));
-  return cons (w, readlis (a));
+    return car (readlist (a));
+  return cons (w, readlist (a));
 }
 
 scm *

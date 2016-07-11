@@ -1,6 +1,6 @@
 .PHONY: all check default 
 CFLAGS=-std=c99 -O3 -finline-functions
-#CFLAGS=-g
+#CFLAGS=-std=c99 -g
 
 default: all
 
@@ -15,7 +15,7 @@ mes.h: mes.c GNUmakefile
 		while read f; do\
 			fun=$$(echo $$f | sed -e 's,^scm [*],,' -e 's,{.*,,');\
 			name=$$(echo $$fun | sed -e 's,^scm [\*],,' | grep -o '^[^ ]*');\
-			scm_name=$$(echo $$name | sed -e 's,_p$$,?,' -e 's,_x$$,!,' -e 's,^builtin_,,' -re 's,(.*)_$$,c:\1,' | sed \
+			scm_name=$$(echo $$name | sed -e 's,_to_,->,' -e 's,_p$$,?,' -e 's,_x$$,!,' -e 's,^builtin_,,' -re 's,(.*)_$$,c:\1,' | sed \
 				-e 's,^divide$$,/,'\
 				-e 's,^is?$$,=,'\
 				-e 's,^less?$$,<,'\
