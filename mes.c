@@ -42,7 +42,7 @@
 #define QUOTE_SUGAR 1
 #endif
 
-enum type {CHAR, NUMBER, PAIR, STRING, SYMBOL, VECTOR,
+enum type {CHAR, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
 struct scm_t;
 typedef struct scm_t* (*function0_t) (void);
@@ -99,12 +99,14 @@ scm scm_macro = {SYMBOL, "*macro*"};
 
 scm scm_symbol_EOF = {SYMBOL, "EOF"};
 scm scm_symbol_EOF2 = {SYMBOL, "EOF2"};
+scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm scm_symbol_current_module = {SYMBOL, "current-module"};
 scm scm_symbol_define = {SYMBOL, "define"};
 scm scm_symbol_define_macro = {SYMBOL, "define-macro"};
 scm scm_symbol_eval = {SYMBOL, "eval"};
 scm scm_symbol_loop2 = {SYMBOL, "loop2"};
 scm scm_symbol_set_x = {SYMBOL, "set!"};
+scm scm_symbol_values = {SYMBOL, "values"};
 
 // PRIMITIVES
 
@@ -277,6 +279,8 @@ apply_ (scm *fn, scm *x, scm *a)
     {
       if (fn == &scm_symbol_current_module) // FIXME
         return a;
+      if (eq_p (fn, &scm_symbol_call_with_values) == &scm_t)
+        return call (&scm_call_with_values_env, append (x, cons (a, &scm_nil)));
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
       return apply (eval (fn,  a), x, a);
@@ -479,6 +483,8 @@ call (scm *fn, scm *x)
 #endif
   if (fn->type == FUNCTION0)
     return fn->function0 ();
+  if (x->car->type == VALUES)
+    x = cons (x->car->cdr->car, &scm_nil);
   if (fn->type == FUNCTION1)
     return fn->function1 (car (x));
   if (fn->type == FUNCTION2)
@@ -607,6 +613,23 @@ vector (scm *x/*...*/) // int
   return list_to_vector (x);
 }
 #endif
+
+scm *
+values (scm *x/*...*/)
+{
+  scm *v = cons (0, x);
+  v->type = VALUES;
+  return v;
+}
+
+scm *
+call_with_values_env (scm *producer, scm *consumer, scm *a)
+{
+  scm *v = apply_ (producer, &scm_nil, a);
+  if (v->type == VALUES)
+    v = v->cdr;
+  return apply_ (consumer, v, a);
+}
 
 scm *
 vector_length (scm *x)

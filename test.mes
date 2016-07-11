@@ -238,4 +238,22 @@
 (display (memq 'd '(a b c)))
 (newline)
 
+(cond ((defined? 'loop2)
+       (display "mes:values broken after loop2")
+       (newline))
+      (#t
+       (values 0 1)
+       (display "(values 0 1): ")
+       (display (values 0 1))
+       (newline)
+
+       (display "call-with-values ==> 6: ")
+       (display
+        (call-with-values (lambda () (values 1 2 3))
+          (lambda (a b c) (+ (+ a b) c))))
+       (newline)
+       (display "call-with-values ==> 1: ")
+       (display ((lambda (x) x) (values 1 2 3)))
+       (newline)))
+
 '()

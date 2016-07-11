@@ -13,7 +13,7 @@ v "string"
 v #(v e c t o r)
 #\CHAR
 v assq
-call-with-values
+v call-with-values
 v char?
 v length
 v list
@@ -25,7 +25,7 @@ v string
 v string-append
 v string?
 v symbol?
-values
+v values
 v vector
 v vector->list
 v vector-length

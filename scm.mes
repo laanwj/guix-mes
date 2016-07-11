@@ -21,6 +21,9 @@
 ;; The Maxwell Equations of Software -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
+(define (defined? x)
+  (assq x (current-module)))
+
 (define (list . rest) rest)
 (define (vector . rest) (list->vector rest))
 (define assv assq)

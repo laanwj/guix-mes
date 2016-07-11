@@ -92,8 +92,10 @@
   (cond
    ((atom? fn)
     (cond
-     ((eq? fn 'current-module) ;; FIXME
-      (c:apply current-module '() a)) 
+     ((eq? fn 'current-module)
+      (c:apply current-module '() a))
+     ((eq? fn 'call-with-values)
+      (c:apply 'call-with-values x a))
      ((builtin? fn)
       (call fn x))
      (#t (apply (eval fn a) x a))))
