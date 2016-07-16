@@ -1,0 +1,38 @@
+
+;; (define (run x)
+;;   (define (test? y) (display "testing:") (display y) (newline) (eq? x y))
+;;   (test? 3)
+;;   )
+
+;; (display "(run 3):")
+;; (display (run 3))
+;; (newline)
+;; (display "(run 4):")
+;; (display (run 4))
+;; (newline)
+
+(define (fm a)
+  (define-macro (a b)
+    (display b)
+    (newline)))
+
+(display "f-define-macro...")
+(fm 'dinges)
+(a c)
+(newline)
+
+
+(define-macro (m a)
+  `(define-macro (,a) ;;;(,a b) b: todo
+     (display "b") ;; (display b) ;; todo
+     (newline)))
+
+(display "define-macro...")
+(m dinges)
+
+(display "running dinges...")
+(dinges)
+(newline)
+
+(newline)
+3

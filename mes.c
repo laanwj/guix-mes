@@ -346,8 +346,20 @@ eval_ (scm *e, scm *a)
       else if (car (e) == &scm_symbol_cond)
         return evcon (cdr (e), a);
 #if MACROS
-      else if ((macro = assq (car (e), cdr (assq (&scm_macro, a)))) != &scm_f)
+      else if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
+        return define_macro (e, a);
+      else if ((macro = assq (car (e), cdr (assq (&scm_macro, a)))) != &scm_f) {
+#if DEBUG
+        printf ("GOTTA MACRO! name=");
+        display (car (e));
+        printf (" body=");
+        display (cdr (macro));
+        printf (" args=");
+        display (cdr (e));
+        puts ("");
+#endif
         return eval (apply_env_ (cdr (macro), cdr (e), a), a);
+      }
 #endif // MACROS
       return apply_env (car (e), evlis (cdr (e), a), a);
     }
@@ -1178,13 +1190,14 @@ define_macro (scm *x, scm *a)
   display (aa);
   puts ("");
 #endif
+  scm *macros = assq (&scm_macro, a);
+  scm *macro;
   if (atom_p (cadr (x)) != &scm_f)
-    return cons (&scm_macro,
-                 cons (cons (cadr (x), eval (caddr (x), a)),
-                       cdr (assq (&scm_macro, a))));
-  return cons (&scm_macro,
-               cons (cons (caadr(x), make_lambda (cdadr (x), cddr (x))),
-                     cdr (assq (&scm_macro, a))));
+    macro = cons (cadr (x), eval (caddr (x), a));
+  else
+    macro = cons (caadr(x), make_lambda (cdadr (x), cddr (x)));
+  set_cdr_x (macros, cons (macro, cdr (macros)));
+  return a;
 }
 
 scm *

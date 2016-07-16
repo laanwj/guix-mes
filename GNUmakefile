@@ -47,3 +47,6 @@ run: all
 
 syntax: all
 	cat scm.mes syntax.mes | ./mes
+
+macro: all
+	cat macro.mes | ./mes
