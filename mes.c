@@ -92,6 +92,7 @@ scm scm_symbol_quote = {SYMBOL, "quote"};
 #if QUASIQUOTE
 scm scm_symbol_quasiquote = {SYMBOL, "quasiquote"};
 scm scm_symbol_unquote = {SYMBOL, "unquote"};
+scm scm_symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
 #endif
 #if MACROS
 scm scm_macro = {SYMBOL, "*macro*"};
@@ -201,15 +202,21 @@ quote (scm *x)
 
 #if QUASIQUOTE
 scm *
+quasiquote (scm *x)
+{
+  return cons (&scm_symbol_quasiquote, x);
+}
+
+scm *
 unquote (scm *x)
 {
   return cons (&scm_symbol_unquote, x);
 }
 
 scm *
-quasiquote (scm *x)
+unquote_splicing (scm *x)
 {
-  return cons (&scm_symbol_quasiquote, x);
+  return cons (&scm_symbol_unquote_splicing, x);
 }
 #endif
 
@@ -674,9 +681,11 @@ lookup (char *x, scm *a)
 
 #if QUASIQUOTE
   if (*x == '`') return &scm_symbol_quasiquote;
-  if (*x == ',') return &scm_symbol_unquote;  
-  if (!strcmp (x, scm_symbol_unquote.name)) return &scm_symbol_unquote;
+  if (*x == ',' && *(x+1) == '@') return &scm_symbol_unquote_splicing;
+  if (*x == ',') return &scm_symbol_unquote;
   if (!strcmp (x, scm_symbol_quasiquote.name)) return &scm_symbol_quasiquote;
+  if (!strcmp (x, scm_symbol_unquote.name)) return &scm_symbol_unquote;
+  if (!strcmp (x, scm_symbol_unquote_splicing.name)) return &scm_symbol_unquote_splicing;
 #endif
 
   return make_symbol (x);
@@ -798,6 +807,10 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       printf (",");
       return display_helper (car (cdr (x)), cont, "", true);
     }
+    if (car (x) == &scm_unquote_splicing) {
+      printf (",@");
+      return display_helper (car (cdr (x)), cont, "", true);
+    }
 #endif
 #endif
     if (!cont) printf ("(");
@@ -885,6 +898,9 @@ readword (int c, char* w, scm *a)
   if (c == '(') {ungetchar (c); return lookup (w, a);}
   if (c == ')' && !w) {ungetchar (c); return &scm_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
+  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (",@", a),
+                                                                cons (readword (getchar (), w, a),
+                                                                      &scm_nil));}
   if ((c == '\''
 #if QUASIQUOTE
        || c == '`'
@@ -976,7 +992,15 @@ readlist (scm *a)
 scm *
 readenv (scm *a)
 {
+#if DEBUG
+  scm *e = readword (getchar (), 0, a);
+  printf ("readenv: ");
+  display (e);
+  puts ("");
+  return e;
+#else
   return readword (getchar (), 0, a);
+#endif
 }
 
 // Extras to make interesting program
@@ -1086,15 +1110,17 @@ eval_quasiquote (scm *e, scm *a)
 #endif
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
+  else if (eq_p (car (e), &scm_symbol_quote) == &scm_t)
+    return e;
+  else if (eq_p (car (e), &scm_symbol_quasiquote) == &scm_t)
+    return cons (e, eval_quasiquote (cdr (e), a));
+  else if (eq_p (car (e), &scm_symbol_unquote) == &scm_t)
+    return eval (cadr (e), a);
   else if (atom_p (car (e)) == &scm_t)
     return cons (car (e), eval_quasiquote (cdr (e), a));
-  else if (eq_p (caar (e), &scm_symbol_unquote) == &scm_t)
-    return cons (eval (cadar (e), a), &scm_nil);
-  else if (eq_p (caar (e), &scm_symbol_quote) == &scm_t)
-    return cons (cadar (e), &scm_nil);
-  else if (eq_p (caar (e), &scm_symbol_quasiquote) == &scm_t)
-    return cdar (e);
-  return cons (car (e), eval_quasiquote (cdr (e), a));
+  else if (eq_p (caar (e), &scm_symbol_unquote_splicing) == &scm_t)
+      return append2 (eval_ (cadar (e), a), eval_quasiquote (cdr (e), a));
+  return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
 #endif
 

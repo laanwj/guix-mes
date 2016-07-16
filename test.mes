@@ -137,7 +137,7 @@
 (display (= 3 '3))
 (newline)
 
-(display (if #t 'true 'FIXME))
+(display (if #t 'true))
 (newline)
 (display (if (eq? 0 '0) 'true 'false))
 (newline)
@@ -279,5 +279,30 @@
 (newline)
 (display (gensym))
 (newline)
+
+(display "unquote:")
+(display `,(list 1 2 3 4))
+(newline)
+
+(display `('boo ,@'(bah baz) 1 2))
+(newline)
+
+(display "splice:")
+(display `(1 ,@(list 2 3) 4))
+(newline)
+
+(define s-r '(2 3))
+(display "splice:")
+(display `(1 ,@s-r 4))
+(newline)
+
+(display "when:")
+(when #t
+  (display "true")
+  (newline))
+
+(when #f
+  (display "must not see")
+  (newline))
 
 '()

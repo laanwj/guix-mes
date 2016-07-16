@@ -21,6 +21,16 @@
 ;; The Maxwell Equations of Software -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
+(define (list . rest) rest)
+
+(define-macro (begin . rest)
+  `((lambda () ,@rest)))
+
+(define (vector . rest) (list->vector rest))
+
+(define (apply f args)
+  (c:eval (cons f args) (current-module)))
+
 (define (defined? x)
   (assq x (current-module)))
 
@@ -29,8 +39,6 @@
         ((pair? p) (eq? (car p) 'lambda))
         (#t #f)))
 
-(define (list . rest) rest)
-(define (vector . rest) (list->vector rest))
 (define assv assq)
 (define (memq x lst)
   (cond ((null? lst) #f)
@@ -39,10 +47,10 @@
 (define memv memq)
 
 (define-macro (or x y)
-  (list 'cond (list x x) (list #t y)))
+  `(cond (,x ,x) (#t ,y)))
 
 (define-macro (and x y)
-  (list 'cond (list x y) (list #t #f)))
+  `(cond (,x ,y) (#t #f)))
 
 (define (split-params bindings params)
   (cond ((null? bindings) params)
@@ -80,19 +88,14 @@
   (cond (x #f)
         (#t #t)))
 
-(define-macro (if expr then else)
-  (list 'cond
-        (list expr then)
-        (list #t else)))
+(define-macro (if expr then . else)
+  `(cond
+    (,expr ,then)
+    (#t (cond (,(pair? else) ((lambda () ,@else)))))))
 
-;;TODO
-(define-macro (iif expr then . else)
-  (list 'cond
-        (list expr then)
-        (list #t
-              (list 'cond
-                    (list (list 'pair? else) (list 'car else))
-                    (list #t '*unspecified*)))))
+(define-macro (when expr . body)
+  `(if ,expr
+       ((lambda () ,@body))))
 
 (define (unspecified-bindings bindings params)
   (cond ((null? bindings) params)
@@ -111,8 +114,3 @@
                     (append (letrec-setters bindings '())
                             body)))  )
 
-(define (begin . rest)
-  (let () rest))
-
-(define (apply f args)
-  (c:eval (cons f args) (current-module)))

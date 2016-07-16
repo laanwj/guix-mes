@@ -1,18 +1,18 @@
 
-(display "define-syntax...")
+;; (display "define-syntax...")
 
-(define-macro define-syntax
-  (lambda (form expander)
-    (expander `(define-macro ,(cadr form)
-                 (let ((transformer ,(caddr form)))
-                   (lambda (form expander)
-                     (expander (transformer form
-                                            (lambda (x) x)
-                                            eq?)
-                               expander))))
-              expander)))
+;; (define-macro define-syntax
+;;   (lambda (form expander)
+;;     (expander `(define-macro ,(cadr form)
+;;                  (let ((transformer ,(caddr form)))
+;;                    (lambda (form expander)
+;;                      (expander (transformer form
+;;                                             (lambda (x) x)
+;;                                             eq?)
+;;                                expander))))
+;;               expander)))
 
-(newline)
+;; (newline)
 
 (display "define-syntax when...")
 
@@ -27,68 +27,29 @@
 ;;        (begin ,exp . ,rest)))
 
 
-(define-macro (when clause . rest)
-  (cond
-   ((not (eq? clause #f)) (cons 'let (cons '() rest)))))
-
-(define-macro (ifwhen clause . rest)
-  (if (not (eq? clause #f)) (cons 'let (cons '() rest))))
-
-(define-macro my-when
-  (lambda (test . branch)
-    (list 'if test (cons 'begin branch))))
-
-;; (define-macro (q-when test . branch)
-;;   `(if ,test
-;;        (begin ,@branch)))
-
-;; (define-macro (when clause exp . rest)
-;;   (display "all=")
-;;   (display  (cons exp rest))
-;;   (newline)
-;;   `(if ,clause
-;;        (begin ,(cons exp rest))))
-
 ;; (define-macro (when clause . rest)
-;;   (cond
-;;    ((not (eq? clause #f)) (cons 'let (cons '() rest)))))
+;;   (list 'cond (list clause (list 'let '() rest))))
+
+
+(define-macro (when expr . body)
+  `(if ,expr
+       ((lambda () ,@body))
+       'bah))
 
 (newline)
 
-(ifwhen #t
+(when #t
   (display "true")
   (newline))
 
-(ifwhen #f
-  (display "false")
+(when #t
+  (display "q-when")
   (newline)
   '())
-
-(my-when #t
-  (display "my-when")
-  (newline)
-  '())
-
-
-;; (q-when #t
-;;   (display "q-when")
-;;   (newline)
-;;   '())
-
 
 (define *gensym* 0)
 (define (gensym)
   (set! *gensym* (+ *gensym* 1))
   (string->symbol (string-append "g" (number->string *gensym*))))
 
-(define-macro bla (gensym))
-
-(display bla) (newline)
-(display bla) (newline)
-(display bla) (newline)
-
 (newline)
-'()
-
-;;EOF
-EOF2
