@@ -989,6 +989,14 @@ hello_world ()
 }
 
 scm *
+greater_p (scm *a, scm *b)
+{
+  assert (a->type == NUMBER);
+  assert (b->type == NUMBER);
+  return a->value > b->value ? &scm_t : &scm_f;
+}
+
+scm *
 less_p (scm *a, scm *b)
 {
   assert (a->type == NUMBER);
@@ -1123,9 +1131,9 @@ mes_environment ()
 }
 
 scm *
-define_lambda (scm *x)
+make_lambda (scm *args, scm *body)
 {
-  return cons (caadr (x), cons (&scm_lambda, cons (cdadr (x), cddr (x))));
+  return cons (&scm_lambda, cons (args, body));
 }
 
 scm *
@@ -1133,17 +1141,26 @@ define (scm *x, scm *a)
 {
   if (atom_p (cadr (x)) != &scm_f)
     return cons (cadr (x), eval (caddr (x), a));
-  return define_lambda (x);
+  return cons (caadr (x), make_lambda (cdadr (x), cddr (x)));
 }
 
 scm *
 define_macro (scm *x, scm *a)
 {
 #if DEBUG
-  printf ("\nc:define_macro a=");
+  scm *name = caadr (x);
+  scm *args = cdadr (x);
+  scm *body = cddr (x);
+  printf ("\nc:define_macro name=");
+  display (name);
+  printf (" args=");
+  display (args);
+  printf (" body=");
+  display (body);
+  printf ("\nmacro=");
   scm *aa =cons (&scm_macro,
-               cons (define_lambda (x),
-                     cdr (assq (&scm_macro, a))));
+                 cons (cons (name, make_lambda (args, body)),
+                       cdr (assq (&scm_macro, a))));
   display (aa);
   puts ("");
 #endif
@@ -1152,7 +1169,7 @@ define_macro (scm *x, scm *a)
                  cons (cons (cadr (x), eval (caddr (x), a)),
                        cdr (assq (&scm_macro, a))));
   return cons (&scm_macro,
-               cons (define_lambda (x),
+               cons (cons (caadr(x), make_lambda (cdadr (x), cddr (x))),
                      cdr (assq (&scm_macro, a))));
 }
 

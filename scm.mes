@@ -38,13 +38,11 @@
         (#t (memq x (cdr lst)))))
 (define memv memq)
 
-(define-macro (and x y)
-  (cond (x y)
-        (#t #f)))
-
 (define-macro (or x y)
-  (cond (x x)
-        (#t y)))
+  (list 'cond (list x x) (list #t y)))
+
+(define-macro (and x y)
+  (list 'cond (list x y) (list #t #f)))
 
 (define (split-params bindings params)
   (cond ((null? bindings) params)
@@ -82,12 +80,19 @@
   (cond (x #f)
         (#t #t)))
 
-(define-macro (if expr then . else)
-  (cond ((not (eq? (c:eval expr (current-module)) #f))
-         then)
-        (#t
-         (cond ((pair? else) (car else))
-               (#t *unspecified*)))))
+(define-macro (if expr then else)
+  (list 'cond
+        (list expr then)
+        (list #t else)))
+
+;;TODO
+(define-macro (iif expr then . else)
+  (list 'cond
+        (list expr then)
+        (list #t
+              (list 'cond
+                    (list (list 'pair? else) (list 'car else))
+                    (list #t '*unspecified*)))))
 
 (define (unspecified-bindings bindings params)
   (cond ((null? bindings) params)

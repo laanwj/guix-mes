@@ -137,7 +137,7 @@
 (display (= 3 '3))
 (newline)
 
-(display (if #t 'true))
+(display (if #t 'true 'FIXME))
 (newline)
 (display (if (eq? 0 '0) 'true 'false))
 (newline)

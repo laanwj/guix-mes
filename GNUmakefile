@@ -18,6 +18,7 @@ mes.h: mes.c GNUmakefile
 			scm_name=$$(echo $$name | sed -e 's,_to_,->,' -e 's,_p$$,?,' -e 's,_x$$,!,' -e 's,^builtin_,,' -re 's,(.*)_$$,c:\1,' | sed \
 				-e 's,^divide$$,/,'\
 				-e 's,^is?$$,=,'\
+				-e 's,^greater?$$,>,'\
 				-e 's,^less?$$,<,'\
 				-e 's,^minus$$,-,'\
 				-e 's,^multiply$$,*,'\
