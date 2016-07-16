@@ -46,11 +46,23 @@
         (#t (memq x (cdr lst)))))
 (define memv memq)
 
-(define-macro (or x y)
+(define-macro (or2 x y)
   `(cond (,x ,x) (#t ,y)))
 
-(define-macro (and x y)
+(define-macro (and2 x y)
   `(cond (,x ,y) (#t #f)))
+
+(define-macro (or . x)
+  (cond
+   ((null? x) #f)
+   ((null? (cdr x)) (car x))
+   (#t `(cond (,(car x))
+              (#t (or ,@(cdr x)))))))
+
+(define-macro (and . x)
+  (cond ((null? x) #t)
+        ((null? (cdr x)) (car x))
+        (#t `(cond (,(car x) (and ,@(cdr x)))))))
 
 (define (split-params bindings params)
   (cond ((null? bindings) params)
@@ -121,3 +133,10 @@
      ,@(letrec-setters bindings '())
      ,@body))
 
+;; TODO
+;; (define gensym
+;;   (let ((counter 0))
+;;     (lambda (. rest)
+;;       (let ((val (number->string counter)))
+;;         (set! counter (+ counter 1))
+;;         (string->symbol (string-append "g" val))))))
