@@ -1,4 +1,4 @@
-(define else #t)
+;;(define else #t)
 (define (syntax-error message thing)
   (display "syntax-error:")
   (display message)
@@ -6,7 +6,7 @@
   ;;(display thing)
   (newline))
 
-(display "define-syntax...")
+(display "mes:define-syntax...")
 
 ;;(define (caddr x) (car (cdr (cdr x))))
 ;; (define (caddr x)
@@ -14,7 +14,7 @@
 ;;   (display x)
 ;;   (newline))
 
-;; (define-macro define-syntax
+;; (define-macro mes:define-syntax
 ;;   (lambda (form expander)
 ;;      (expander `(define-macro ,(cadr form)
 ;;                   (let ((transformer ,(caddr form)))
@@ -37,12 +37,12 @@
 ;;                                 eq?)
 ;;                    expander)))))
 
-;; (define-macro (define-syntax form expander)
+;; (define-macro (mes:define-syntax form expander)
 ;;   `(expander (dinges form expander)
 ;;              expander))
 
-(define-macro (define-syntax macro-name transformer . stuff)
-  ;; (display "define-syntax:")
+(define-macro (mes:define-syntax macro-name transformer . stuff)
+  ;; (display "mes:define-syntax:")
   ;; (newline)
   ;; (display   `(define-macro (,macro-name . args)
   ;;    (,transformer (cons ',macro-name args)
@@ -50,15 +50,13 @@
   ;;                  eq?)))
   ;; (newline)
   `(define-macro (,macro-name . args)
-     (
-      ,transformer (cons ',macro-name args)
+     (,transformer (cons ',macro-name args)
                    (lambda (x) x)
-                   eq?
-                   )
-     )
-  )
+                   eq?)
+     ;;"blaat"
+     ))
 
-;; (define-macro (define-syntax form expander)
+;; (define-macro (mes:define-syntax form expander)
 ;;   (expander `(define-macro ,(cadr form)
 ;;                (let ((transformer ,(caddr form)))
 ;;                  (lambda (form expander)
@@ -68,7 +66,7 @@
 ;;                              expander))))
 ;;             expander))
 
-;; (define-macro (define-syntax form expander)
+;; (define-macro (mes:define-syntax form expander)
 ;;   (expander `(define-macro ((cadr form) form expander) 
 ;;                (let ((transformer (caddr form)))
 ;;                  (expander (transformer form
@@ -80,24 +78,12 @@
 (newline)
 
 
-(display "define-syntax syntax-rules...")
+(display "mes:define-syntax syntax-rules...")
 (newline)
-;; (define-macro (syntax-rules exp r c))
 
-;; (define-syntax syntax-rules
-;;   (let ()
-;;     (lambda (exp r c)
-;;       (display "hallo")
-;;       (display "newline"))))
-
-
-;; (define-syntax syntax-rules
-;;   (lambda (exp r c)
-;;     (display "hallo")
-;;     (display "newline")))
-
-(define-syntax syntax-rules
+(mes:define-syntax syntax-rules
   (let ()
+   ;;begin
 
     (define name? symbol?)
 
@@ -113,6 +99,8 @@
 
     (define indicators-for-zero-or-more (list (string->symbol "...") '---))
     
+    (display "BOOO")
+
     (lambda (exp r c)
 
       (define %input (r '%input))     ;Gensym these, if you like.
@@ -128,7 +116,7 @@
         `(lambda (,%input ,%rename ,%compare)
            (let ((,%tail (cdr ,%input)))
              (cond ,@(map process-rule rules)
-                   (else
+                   (#t ;;else
                     (syntax-error
                      "use of macro doesn't match definition"
                      ,%input))))))
@@ -164,7 +152,7 @@
                         ,@(process-match `(cdr ,%temp) (cdr pattern))))))
               ((or (null? pattern) (boolean? pattern) (char? pattern))
                `((eq? ,input ',pattern)))
-              (else
+              (#t ;;else
                `((equal? ,input ',pattern)))))
 
       (define (process-segment-match input pattern)
@@ -196,7 +184,8 @@
               ((pair? pattern)
                (append (process-pattern (car pattern) `(car ,path) mapit)
                        (process-pattern (cdr pattern) `(cdr ,path) mapit)))
-              (else '())))
+              (#t ;;else
+               '())))
 
       ;; Generate code to compose the output expression according to template
 
@@ -228,9 +217,10 @@
               ((pair? template)
                `(cons ,(process-template (car template) rank env)
                       ,(process-template (cdr template) rank env)))
-              (else `(quote ,template))))
+              (#t ;;else
+               `(quote ,template))))
 
-                                        ; Return an association list of (var . rank)
+      ;; Return an association list of (var . rank)
 
       (define (meta-variables pattern rank vars)
         (cond ((name? pattern)
@@ -242,9 +232,10 @@
               ((pair? pattern)
                (meta-variables (car pattern) rank
                                (meta-variables (cdr pattern) rank vars)))
-              (else vars)))
+              (#t ;;else
+               vars)))
 
-                                        ; Return a list of meta-variables of given higher rank
+      ;; Return a list of meta-variables of given higher rank
 
       (define (free-meta-variables template rank env free)
         (cond ((name? template)
@@ -263,9 +254,13 @@
                                     rank env
                                     (free-meta-variables (cdr template)
                                                          rank env free)))
-              (else free)))
+              (#t ;;else
+               free)))
 
-      ;;c ;ignored
+      c ;ignored
+
+      (display "HELLO")
+      (newline)
 
       ;; Kludge for Scheme48 linker.
       ;; `(cons ,(make-transformer rules)
@@ -274,28 +269,25 @@
       (make-transformer rules))))
 
 
-;; (define-syntax or
-;;   (syntax-rules ()
-;;     ((or) #f)
-;;     ((or e) e)
-;;     ((or e1 e ...) (let ((temp e1))
-;;                   (if temp temp (or e ...))))))
+(mes:define-syntax mes:or
+  (syntax-rules ()
+    ((mes:or) #f)
+    ((mes:or e) e)
+    ((mes:or e1 e ...) (let ((temp e1))
+                      (if temp temp (or e ...))))))
 
-;; (define-syntax xwhen
-;;   (syntax-rules ()
-;;     ((when condition exp ...)
-;;      (if condition
-;;          (begin exp ...)))))
+(display "(mes:or #f (= 0 1) 'hello-syntax-world): ")
+(display (mes:or #f (= 0 1) 'hello-syntax-world))
+(display (mes:or #f '==>baaa))
+(newline)
 
-;; (display "define-when: ")
-;; (display 
-;;  (define-syntax xwhen
-;;    (syntax-rules ()
-;;      ((when condition exp ...)
-;;       (if condition
-;;           (begin exp ...))))))
-;; (newline)
-;; (display (xwhen #t "hello syntax world"))
+(mes:define-syntax mes:when
+  (syntax-rules ()
+    ((when condition exp ...)
+     (if condition
+         (begin exp ...)))))
+
+(display (mes:when #t "when:hello syntax world"))
 
 ;; (define-macro (when cond exp . rest)
 ;;   `(if ,cond
@@ -305,6 +297,4 @@
 ;; (define-macro (when clause . rest)
 ;;   (list 'cond (list clause (list 'let '() rest))))
 (newline)
-'boo
-EOF
-'()
+'syntax-dun

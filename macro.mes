@@ -16,22 +16,24 @@
     (display b)
     (newline)))
 
-(display "f-define-macro...")
+(display "f-define-macro: ")
 (fm 'dinges)
 (a c)
 (newline)
 
 
 (define-macro (m a)
-  `(define-macro (,a) ;;;(,a b) b: todo
-     (display "b") ;; (display b) ;; todo
+  `(define-macro ;;(,a)
+     (,a b)
+     (display "b")
+     (display b) ;; todo
      (newline)))
 
-(display "define-macro...")
+(display "define-macro: ")
 (m dinges)
-
-(display "running dinges...")
-(dinges)
+(newline)
+(display "running dinges: ")
+(dinges c)
 (newline)
 
 (newline)

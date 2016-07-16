@@ -48,5 +48,8 @@ run: all
 syntax: all
 	cat scm.mes syntax.mes | ./mes
 
+guile-syntax:
+	guile -s syntax.mes
+
 macro: all
 	cat macro.mes | ./mes
