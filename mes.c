@@ -260,16 +260,10 @@ assq (scm *x, scm *a)
 }
 
 scm *
-eval_quote (scm *fn, scm *x)
-{
-  return apply (fn, x, &scm_nil);
-}
-
-scm *
-apply_ (scm *fn, scm *x, scm *a)
+apply_env_ (scm *fn, scm *x, scm *a)
 {
 #if DEBUG
-  printf ("apply fn=");
+  printf ("apply_env fn=");
   display (fn);
   printf (" x=");
   display (x);
@@ -283,12 +277,12 @@ apply_ (scm *fn, scm *x, scm *a)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
-      return apply (eval (fn,  a), x, a);
+      return apply_env (eval (fn,  a), x, a);
     }
   else if (car (fn) == &scm_lambda)
     return begin_env (cddr (fn), pairlis (cadr (fn), x, a));
   else if (car (fn) == &scm_label)
-    return apply (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
+    return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
   return &scm_unspecified;
 }
 
@@ -358,11 +352,11 @@ eval_ (scm *e, scm *a)
         return evcon (cdr (e), a);
 #if MACROS
       else if ((macro = assq (car (e), cdr (assq (&scm_macro, a)))) != &scm_f)
-        return eval (apply_ (cdr (macro), cdr (e), a), a);
+        return eval (apply_env_ (cdr (macro), cdr (e), a), a);
 #endif // MACROS
-      return apply (car (e), evlis (cdr (e), a), a);
+      return apply_env (car (e), evlis (cdr (e), a), a);
     }
-  return apply (car (e), evlis (cdr (e), a), a);
+  return apply_env (car (e), evlis (cdr (e), a), a);
 }
 
 scm *
@@ -633,10 +627,10 @@ values (scm *x/*...*/)
 scm *
 call_with_values_env (scm *producer, scm *consumer, scm *a)
 {
-  scm *v = apply_ (producer, &scm_nil, a);
+  scm *v = apply_env_ (producer, &scm_nil, a);
   if (v->type == VALUES)
     v = v->cdr;
-  return apply_ (consumer, v, a);
+  return apply_env_ (consumer, v, a);
 }
 
 scm *
@@ -1173,7 +1167,7 @@ loop (scm *r, scm *e, scm *a)
   if (e == &scm_nil)
     return r;
   else if (eq_p (e, &scm_symbol_EOF) == &scm_t)
-    return apply (cdr (assq (&scm_symbol_loop2, a)),
+    return apply_env (cdr (assq (&scm_symbol_loop2, a)),
                   cons (&scm_unspecified, cons (&scm_t, cons (a, &scm_nil))), a);
   else if (eq_p (e, &scm_symbol_EOF2) == &scm_t)
     return r;
@@ -1202,18 +1196,18 @@ main (int argc, char *argv[])
 }
 
 scm *
-apply (scm *fn, scm *x, scm *a)
+apply_env (scm *fn, scm *x, scm *a)
 {
 #if DEBUG
-  printf ("\nc:apply fn=");
+  printf ("\nc:apply_env fn=");
   display (fn);
   printf (" x=");
   display (x);
   puts ("");
 #endif
-  if (fn == &scm_apply_)
+  if (fn == &scm_apply_env_)
     return eval_ (x, a);
-  return apply_ (fn, x, a);
+  return apply_env_ (fn, x, a);
 }
 
 bool evalling_p = false;
@@ -1234,7 +1228,7 @@ eval (scm *e, scm *a)
       || evalling_p)
     return eval_ (e, a);
   evalling_p = true;
-  scm *r = apply (eval__, cons (e, cons (a, &scm_nil)), a);
+  scm *r = apply_env (eval__, cons (e, cons (a, &scm_nil)), a);
   evalling_p = false;
   return r;
 }

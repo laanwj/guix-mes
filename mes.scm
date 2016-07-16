@@ -58,7 +58,6 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
                                 pair?
 
                                 ;; ADDITIONAL PRIMITIVES
-                                apply
                                 number?
                                 procedure?
                                 <
@@ -124,7 +123,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
   (eval e (append a environment)))
 
 (define (apply-environment fn e a)
-  (apply fn e (append a environment)))
+  (apply-env fn e (append a environment)))
 
 (define (readenv a)
   (let ((x (guile:read)))
@@ -156,7 +155,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
     (assq . ,assq)
 
     (eval . ,eval-environment)
-    (apply . ,apply-environment)
+    (apply-env . ,apply-environment)
 
     (readenv . ,readenv)
     (display . ,guile:display)
@@ -205,9 +204,9 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 (define (loop r e a)
   (cond ((null? e) r)
         ((eq? e 'exit)
-         (apply (cdr (assq 'loop a))
-                (cons *unspecified* (cons #t (cons a '())))
-                a))
+         (apply-env (cdr (assq 'loop a))
+                    (cons *unspecified* (cons #t (cons a '())))
+                    a))
         ((atom? e) (loop (eval e a) (readenv a) a))
         ((eq? (car e) 'define)
          (loop *unspecified* (readenv a) (cons (mes-define e a) a)))

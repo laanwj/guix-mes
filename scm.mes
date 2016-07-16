@@ -108,3 +108,6 @@
 
 (define (begin . rest)
   (let () rest))
+
+(define (apply f args)
+  (c:eval (cons f args) (current-module)))

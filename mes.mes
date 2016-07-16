@@ -52,7 +52,7 @@
 ;; ;; Page 13
 ;; (define (eval-quote fn x)
 ;;   ;(debug "eval-quote fn=~a x=~a" fn x)
-;;   (apply fn x '()))
+;;   (apply-env fn x '()))
 
 (define (evcon c a)
   ;;(debug "evcon c=~a a=~a\n" c a)
@@ -78,8 +78,8 @@
    (#t (cons (eval (car m) a) (evlis (cdr m) a)))))
 
 
-(define (apply fn x a) 
-  ;; (display 'mes-apply:)
+(define (apply-env fn x a) 
+  ;; (display 'mes-apply-env:)
   ;; (newline)
   ;; (display 'fn:)
   ;; (display fn)
@@ -94,15 +94,15 @@
    ((atom? fn)
     (cond
      ((eq? fn 'current-module)
-      (c:apply current-module '() a))
+      (c:apply-env current-module '() a))
      ((eq? fn 'call-with-values)
-      (c:apply 'call-with-values x a))
+      (c:apply-env 'call-with-values x a))
      ((builtin? fn)
       (call fn x))
-     (#t (apply (eval fn a) x a))))
+     (#t (apply-env (eval fn a) x a))))
    ((eq? (car fn) 'lambda)
     (begin-env (cddr fn) (pairlis (cadr fn) x a)))
-   ((eq? (car fn) 'label) (apply (caddr fn) x (cons (cons (cadr fn)
+   ((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn)
                                                          (caddr fn)) a)))))
 
 (define (begin-env body a)
@@ -142,13 +142,13 @@
      ((eq? (car e) 'cond) (evcon (cdr e) a))
      ((pair? (assq (car e) (cdr (assq '*macro* a))))
       (c:eval
-       (c:apply
+       (c:apply-env
         (cdr (assq (car e) (cdr (assq '*macro* a))))
         (cdr e)
         a)
        a))
-     (#t (apply (car e) (evlis (cdr e) a) a))))
-   (#t (apply (car e) (evlis (cdr e) a) a))))
+     (#t (apply-env (car e) (evlis (cdr e) a) a))))
+   (#t (apply-env (car e) (evlis (cdr e) a) a))))
 
 (define (eval-quasiquote e a)
   ;; (display 'mes-eval-quasiquote:)
