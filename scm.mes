@@ -62,9 +62,18 @@
         (#t (split-values (cdr bindings)
                           (append values (cdar bindings) '())))))
 
-(define-macro (let bindings . body)
-  `((lambda ,(split-params bindings '()) ,@body)
+(define-macro (simple-let bindings rest)
+  `((lambda ,(split-params bindings '()) ,@rest)
     ,@(split-values bindings '())))
+
+(define-macro (let-loop label bindings rest)
+  `(let ((,label (lambda ,(split-params bindings '()) ,@rest)))
+     (,label ,@(split-values bindings '()))))
+
+(define-macro (let bindings-or-label . rest)
+  `(if ,(symbol? bindings-or-label)
+       (let-loop ,bindings-or-label ,(car rest) ,(cdr rest))
+       (simple-let ,bindings-or-label ,rest)))
 
 (define (expand-let* bindings body)
   (cond ((null? bindings)

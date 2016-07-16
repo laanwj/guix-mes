@@ -81,6 +81,17 @@
 (display 'let-dun)
 (newline)
 
+(let loop ((lst '(3 2 1)))
+  (display "loop")
+  (newline)
+  (if (null? lst) (begin (display "dun") 'dun)
+      (begin
+        (display "looping: ")
+        (display (car lst))
+        (newline)
+        (loop (cdr lst)))))
+(newline)
+
 (define c 'b)
 `(aa bb ,c)
 (display `(pp qq ,c))
