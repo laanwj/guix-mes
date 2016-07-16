@@ -57,6 +57,7 @@
 (define (evcon c a)
   ;;(debug "evcon c=~a a=~a\n" c a)
   (cond
+   ((null? c) *unspecified*)
    ;; single-statement cond
    ;; ((eval (caar c) a) (eval (cadar c) a))
    ((eval (caar c) a)

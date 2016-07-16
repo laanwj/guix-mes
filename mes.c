@@ -373,6 +373,7 @@ evcon_ (scm *c, scm *a)
   display (car (c));
   puts ("");
 #endif
+  if (c == &scm_nil) return &scm_unspecified;
   if (eval (caar (c), a) != &scm_f) {
 #if DEBUG
     //if (fn != &scm_display && fn != &scm_call)
@@ -1152,6 +1153,10 @@ define_macro (scm *x, scm *a)
   display (aa);
   puts ("");
 #endif
+  if (atom_p (cadr (x)) != &scm_f)
+    return cons (&scm_macro,
+                 cons (cons (cadr (x), eval (caddr (x), a)),
+                       cdr (assq (&scm_macro, a))));
   return cons (&scm_macro,
                cons (define_lambda (x),
                      cdr (assq (&scm_macro, a))));
