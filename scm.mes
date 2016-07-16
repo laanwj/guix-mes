@@ -63,17 +63,15 @@
                           (append values (cdar bindings) '())))))
 
 (define-macro (let bindings . body)
-  (cons (cons 'lambda (cons (split-params bindings '()) body))
-        (split-values bindings '())))
+  `((lambda ,(split-params bindings '()) ,@body)
+    ,@(split-values bindings '())))
 
 (define (expand-let* bindings body)
   (cond ((null? bindings)
-         (cons (cons 'lambda (cons '() body)) '()))
-        (#t
-         (cons
-          (cons 'lambda (cons (cons (caar bindings) '())
-                              (cons (expand-let* (cdr bindings) body) '())))
-          (cdar bindings)))))
+         `((lambda () ,@body)))
+        (#t `((lambda (,(caar bindings))
+                ,(expand-let* (cdr bindings) body))
+              ,@(cdar bindings)))))
 
 (define-macro (let* bindings . body)
   (expand-let* bindings body))
@@ -110,7 +108,7 @@
                                     (cons (cons 'set! (car bindings)) '()))))))
 
 (define-macro (letrec bindings . body)
-  (cons 'let (cons (unspecified-bindings bindings '())
-                    (append (letrec-setters bindings '())
-                            body)))  )
+  `(let ,(unspecified-bindings bindings '())
+     ,@(letrec-setters bindings '())
+     ,@body))
 
