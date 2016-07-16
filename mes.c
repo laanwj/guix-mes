@@ -35,12 +35,10 @@
 
 #define DEBUG 0
 
+#define BOOT 1
 #define MACROS 1
 #define QUASIQUOTE 1
-
-#ifndef QUOTE_SUGAR
 #define QUOTE_SUGAR 1
-#endif
 
 enum type {CHAR, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
@@ -291,16 +289,6 @@ apply_env_ (scm *fn, scm *x, scm *a)
   else if (car (fn) == &scm_label)
     return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
   return &scm_unspecified;
-}
-
-scm *
-begin_env (scm *body, scm *a)
-{
-  if (body == &scm_nil) return &scm_unspecified;
-  scm *result = eval (car (body), a);
-  if (cdr (body) == &scm_nil)
-    return result;
-  return begin_env (cdr (body), a);
 }
 
 scm *
@@ -1200,42 +1188,43 @@ define_macro (scm *x, scm *a)
 }
 
 scm *
-loop (scm *r, scm *e, scm *a)
+begin_env (scm *body, scm *a)
 {
-#if 0//DEBUG
-  printf ("\nc:loop e=");
+  if (body == &scm_nil) return &scm_unspecified;
+  scm *e = car (body);
+#if DEBUG
+  printf ("\nc:begin_env e=");
   display (e);
   puts ("");
 #endif
-  if (e == &scm_nil)
-    return r;
-  else if (eq_p (e, &scm_symbol_EOF) == &scm_t)
-    return apply_env (cdr (assq (&scm_symbol_loop2, a)),
-                  cons (&scm_unspecified, cons (&scm_t, cons (a, &scm_nil))), a);
-  else if (eq_p (e, &scm_symbol_EOF2) == &scm_t)
-    return r;
-  else if (atom_p (e) == &scm_t)
-    return loop (eval (e, a), readenv (a), a);
-  else if (eq_p (car (e), &scm_symbol_define) == &scm_t)
-    return loop (&scm_unspecified,
-                 readenv (a),
-                 cons (define (e, a), a));
-  else if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
-    return loop (&scm_unspecified,
-                 readenv (a),
-                 cons (define_macro (e, a), a));
-  else if (eq_p (car (e), &scm_symbol_set_x) == &scm_t)
-    return loop (set_env_x (cadr (e), eval (caddr (e), a), a), readenv (a), a);
-  return loop (eval (e, a), readenv (a), a);
+  if (e->type == PAIR) {
+    if (eq_p (car (e), &scm_symbol_define) == &scm_t)
+      return begin_env (cdr (body), cons (define (e, a), a));
+    else if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
+      return begin_env (cdr (body), cons (define_macro (e, a), a));
+    else if (eq_p (car (e), &scm_symbol_set_x) == &scm_t) {
+      set_env_x (cadr (e), eval (caddr (e), a), a);
+      return begin_env (cdr (e), a);
+    }
+#if BOOT
+    else if (eq_p (e, &scm_symbol_EOF) == &scm_t)
+      return apply_env (cdr (assq (&scm_symbol_loop2, a)),
+                        cons (&scm_unspecified, cons (&scm_t, cons (a, &scm_nil))), a);
+    else if (eq_p (e, &scm_symbol_EOF2) == &scm_t)
+      return make_symbol ("exit boot");
+#endif
+  }
+  scm *result = eval (e, a);
+  if (cdr (body) == &scm_nil)
+    return result;
+  return begin_env (cdr (body), a);
 }
 
-int
-main (int argc, char *argv[])
+scm *
+read_file (scm *e, scm *a)
 {
-  scm *a = mes_environment ();
-  display (loop (&scm_unspecified, readenv (a), a));
-  newline ();
-  return 0;
+  if (e == &scm_nil) return e;
+  return cons (e, read_file (readenv (a), a));
 }
 
 scm *
@@ -1274,4 +1263,13 @@ eval (scm *e, scm *a)
   scm *r = apply_env (eval__, cons (e, cons (a, &scm_nil)), a);
   evalling_p = false;
   return r;
+}
+
+int
+main (int argc, char *argv[])
+{
+  scm *a = mes_environment ();
+  display (begin_env (read_file (readenv (a), a), a));
+  newline ();
+  return 0;
 }

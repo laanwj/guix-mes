@@ -50,4 +50,4 @@
          (loop2 (set-cdr! (assq (cadr e) a) (eval (caddr e) a)) (readenv a) a))
         (#t (loop2 (eval e a) (readenv a) a))))
 
-EOF
+'EOF
