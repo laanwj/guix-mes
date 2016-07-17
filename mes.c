@@ -1111,7 +1111,7 @@ eval_quasiquote (scm *e, scm *a)
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
   else if (eq_p (car (e), &scm_symbol_quote) == &scm_t)
-    return e;
+    return cons (car (e), eval_quasiquote (cdr (e), a));
   else if (eq_p (car (e), &scm_symbol_quasiquote) == &scm_t)
     return cons (e, eval_quasiquote (cdr (e), a));
   else if (eq_p (car (e), &scm_symbol_unquote) == &scm_t)

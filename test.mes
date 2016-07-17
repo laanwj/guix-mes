@@ -315,6 +315,10 @@
 (display `(1 ,@s-r 4))
 (newline)
 
+(display "`(1 2 '(,(+ 1 2))): ")
+(display `(1 2 '(,(+ 1 2))))
+(newline)
+
 (display "when:")
 (when #t
   (display "true")
