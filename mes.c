@@ -214,16 +214,20 @@ quasiquote (scm *x)
 }
 
 scm *
-unquote (scm *x)
+unquote (scm *x) //int must not add to environment
 {
   return cons (&scm_symbol_unquote, x);
 }
+scm *unquote (scm *x);
+scm scm_unquote = {FUNCTION1, .name="unquote", .function1=&unquote};
 
 scm *
-unquote_splicing (scm *x)
+unquote_splicing (scm *x) //int must not add to environment
 {
   return cons (&scm_symbol_unquote_splicing, x);
 }
+scm *unquote_splicing (scm *x);
+scm scm_unquote_splicing = {FUNCTION1, .name="unquote-splicing", .function1=&unquote_splicing};
 #endif
 
 //Library functions
