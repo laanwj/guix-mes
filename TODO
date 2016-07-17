@@ -3,11 +3,12 @@
 ** syntax.mes
 ** or psyntax.pp
 ** bugs
-*** c1.mes
-*** closure.mes
-*** using (let () ...) in macro.mes/syntax.mes
+*** v c0.mes
+*** v closure.mes
+*** v using (let () ...) in macro.mes/syntax.mes
+*** syntax.mes: closuring name? etc in syntax.mes
+*** syntax.mes: closuring: indicators: eval: no such symbol: ---
 *** <=, => take only 2 arguments
-** 
 ** run PEG
 ** parse C using PEG 
 http://piumarta.com/software/peg/
@@ -28,6 +29,7 @@ v #(v e c t o r)
 v assq
 v call-with-values
 v char?
+for-each
 v length
 v list
 v list->vector

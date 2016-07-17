@@ -8,10 +8,11 @@
 ;; 1
 
 (define b 0)
-(define x (lambda () b))
+;;(define x (lambda () b))
+(define (x) b)
 
-(display (x))
-(newline)
+;;(display (x))
+;;(newline)
 (define (c b)
   (display (x))
   (newline)
