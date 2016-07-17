@@ -143,27 +143,27 @@
                       ,%input))))))
 
        (define (process-rule rule)
-         (if (and (pair? rule)
-                  (pair? (cdr rule))
-                  (null? (cddr rule)))
-             (let ((pattern (cdar rule))
-                   (template (cadr rule)))
-               `((and ,@(process-match %tail pattern))
-                 (let* ,(process-pattern pattern
-                                         %tail
-                                         (lambda (x) x))
-                   ,(process-template template
-                                      0
-                                      (meta-variables pattern 0 '())))))
+         (cond ((and (pair? rule)
+                     (pair? (cdr rule))
+                     (null? (cddr rule)))
+                (let ((pattern (cdar rule))
+                      (template (cadr rule)))
+                  `((and ,@(process-match %tail pattern))
+                    (let* ,(process-pattern pattern
+                                            %tail
+                                            (lambda (x) x))
+                      ,(process-template template
+                                         0
+                                         (meta-variables pattern 0 '()))))))
              (syntax-error "ill-formed syntax rule" rule)))
 
        ;; Generate code to test whether input expression matches pattern
 
        (define (process-match input pattern)
          (cond ((name? pattern)
-                (if (member pattern subkeywords)
-                    `((,%compare ,input (,%rename ',pattern)))
-                    `()))
+                (cond ((member pattern subkeywords)
+                       `((,%compare ,input (,%rename ',pattern))))
+                      (#t `())))
                ((segment-pattern? pattern)
                 (process-segment-match input (car pattern)))
                ((pair? pattern)
@@ -178,30 +178,30 @@
 
        (define (process-segment-match input pattern)
          (let ((conjuncts (process-match '(car l) pattern)))
-           (if (null? conjuncts)
-               `((list? ,input))        ;+++
-               `((let loop ((l ,input))
-                   (or (null? l)
-                       (and (pair? l)
-                            ,@conjuncts
-                            (loop (cdr l)))))))))
+           (cond ((null? conjuncts)
+                  `((list? ,input)))        ;+++
+                 (#t `((let loop ((l ,input))
+                         (or (null? l)
+                             (and (pair? l)
+                                  ,@conjuncts
+                                  (loop (cdr l))))))))))
 
        ;; Generate code to take apart the input expression
        ;; This is pretty bad, but it seems to work (can't say why).
 
        (define (process-pattern pattern path mapit)
          (cond ((name? pattern)
-                (if (memq pattern subkeywords)
-                    '()
-                    (list (list pattern (mapit path)))))
+                (cond ((memq pattern subkeywords)
+                       '())
+                    (#t (list (list pattern (mapit path))))))
                ((segment-pattern? pattern)
                 (process-pattern (car pattern)
                                  %temp
                                  (lambda (x) ;temp is free in x
-                                   (mapit (if (eq? %temp x)
-                                              path ;+++
-                                              `(map (lambda (,%temp) ,x)
-                                                    ,path))))))
+                                   (mapit (cond ((eq? %temp x)
+                                                 path) ;+++
+                                                (#t `(map (lambda (,%temp) ,x)
+                                                          ,path)))))))
                ((pair? pattern)
                 (append (process-pattern (car pattern) `(car ,path) mapit)
                         (process-pattern (cdr pattern) `(cdr ,path) mapit)))
@@ -213,28 +213,28 @@
        (define (process-template template rank env)
          (cond ((name? template)
                 (let ((probe (assq template env)))
-                  (if probe
-                      (if (<= (cdr probe) rank)
-                          template
-                          (syntax-error "template rank error (too few ...'s?)"
-                                        template))
-                      `(,%rename ',template))))
+                  (cond (probe
+                         (cond ((<= (cdr probe) rank)
+                                template)
+                               (#t (syntax-error "template rank error (too few ...'s?)"
+                                                 template))))
+                        (#t `(,%rename ',template)))))
                ((segment-template? template)
                 (let ((vars
                        (free-meta-variables (car template) (+ rank 1) env '())))
-                  (if (null? vars)
-                      (syntax-error "too many ...'s" template)
-                      (let* ((x (process-template (car template)
-                                                  (+ rank 1)
-                                                  env))
-                             (gen (if (equal? (list x) vars)
-                                      x ;+++
-                                      `(map (lambda ,vars ,x)
-                                            ,@vars))))
-                        (if (null? (cddr template))
-                            gen         ;+++
-                            `(append ,gen ,(process-template (cddr template)
-                                                             rank env)))))))
+                  (cond ((null? vars)
+                         (syntax-error "too many ...'s" template))
+                        (#t (let* ((x (process-template (car template)
+                                                        (+ rank 1)
+                                                        env))
+                                   (gen (cond ((equal? (list x) vars)
+                                               x) ;+++
+                                              (#t `(map (lambda ,vars ,x)
+                                                        ,@vars)))))
+                              (cond ((null? (cddr template))
+                                     gen)        ;+++
+                                    (#t `(append ,gen ,(process-template (cddr template)
+                                                                         rank env)))))))))
                ((pair? template)
                 `(cons ,(process-template (car template) rank env)
                        ,(process-template (cdr template) rank env)))
@@ -245,9 +245,9 @@
 
        (define (meta-variables pattern rank vars)
          (cond ((name? pattern)
-                (if (memq pattern subkeywords)
-                    vars
-                    (cons (cons pattern rank) vars)))
+                (cond ((memq pattern subkeywords)
+                       vars)
+                      (#t (cons (cons pattern rank) vars))))
                ((segment-pattern? pattern)
                 (meta-variables (car pattern) (+ rank 1) vars))
                ((pair? pattern)
@@ -260,11 +260,11 @@
 
        (define (free-meta-variables template rank env free)
          (cond ((name? template)
-                (if (and (not (memq template free))
-                         (let ((probe (assq template env)))
-                           (and probe (>= (cdr probe) rank))))
-                    (cons template free)
-                    free))
+                (cond ((and (not (memq template free))
+                            (let ((probe (assq template env)))
+                              (and probe (>= (cdr probe) rank))))
+                       (cons template free))
+                      (#t free)))
                ((segment-template? template)
                 (free-meta-variables (car template)
                                      rank env
@@ -295,7 +295,7 @@
     ((mes:or) #f)
     ((mes:or e) e)
     ((mes:or e1 e ...) (let ((temp e1))
-                      (if temp temp (or e ...))))))
+                         (cond (temp temp) (#t (or e ...)))))))
 
 (display "(mes:or #f (= 0 1) 'hello-syntax-world): ")
 (display (mes:or #f (= 0 1) 'hello-syntax-world))
