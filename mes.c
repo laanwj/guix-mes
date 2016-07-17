@@ -291,6 +291,17 @@ apply_env_ (scm *fn, scm *x, scm *a)
     return begin_env (cddr (fn), pairlis (cadr (fn), x, a));
   else if (car (fn) == &scm_label)
     return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
+  else if (car (fn)->type == PAIR) {
+#if DEBUG // FIXME: for macro.mes/syntax.mes this feels *wrong*
+    printf ("APPLY WTF: fn=");
+    display (fn);
+    puts ("");
+#endif
+    //return apply_env_ (eval_ (fn, a), x, a);
+    scm *e = eval_ (fn, a);
+    return apply_env_ (e, x, a);
+    //return &scm_unspecified;
+  }
 #if MACROS
   else if ((macro = assq (car (fn), cdr (assq (&scm_macro, a)))) != &scm_f) {
 #if DEBUG
@@ -302,13 +313,18 @@ apply_env_ (scm *fn, scm *x, scm *a)
     display (cdr (fn));
     puts ("");
 #endif
-    scm *r = apply_env (cdr (macro), cdr (fn), a);
+    //scm *r = apply_env (cdr (macro), cdr (fn), a);
+    scm *r = apply_env (eval_ (cdr (macro), a), cdr (fn), a);
 #if DEBUG
     printf ("APPLY MACRO GOT: ==> ");
     display (r);
     puts ("");
 #endif
-    return apply_env (r, x, a);
+    //return apply_env (r, x, a);
+
+    scm *e = eval_ (r, a);
+    return apply_env (e, x, a);
+
     //return eval_ (cons (r, x), a);
     //return apply_env_ (eval (cdr (macro), a), x, a);
     //return eval (apply_env_ (cdr (macro), x, a), a);

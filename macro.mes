@@ -58,20 +58,28 @@
   )
 
 (d-s s-r
-     (lambda (. n-a)
-       (display "YEAH:")
-       (display n-a)
-       (newline)
-       '(lambda (. i) ;;(i r c)
-          (display "transformers")
-          (newline)
-          ''tee-hee-hee
-          )
-       ;; (define (foo) (display "Footje") (newline) 'f-f-f)
-       ;; foo
-       ;;"blaat"
-       )
-     ;;(let ())
+     (;; let () ;; syntax-rules uses (let () ...),
+                ;; mes doesn't support that yet; use ((lambda () ...))
+      (lambda ()
+        ;; syntax-rules uses defines that get closured-in
+        ;; mes doesn't support that yet; move down
+        ;; (define name? symbol?)
+        (lambda (. n-a)
+          (define name? symbol?)
+
+         (display "YEAH:")
+         (display n-a)
+         (display (name? n-a))
+         (newline)
+         '(lambda (. i) ;;(i r c)
+            (display "transformers")
+            (newline)
+            ''tee-hee-hee
+            )
+         ;; (define (foo) (display "Footje") (newline) 'f-f-f)
+         ;; foo
+         ;;"blaat"
+         )))
      )
 
 (display "calling s-r")
