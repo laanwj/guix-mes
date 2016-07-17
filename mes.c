@@ -478,6 +478,12 @@ builtin_p (scm *x)
 }
 
 scm *
+boolean_p (scm *x)
+{
+  return (x == &scm_t || x == &scm_f) ? &scm_t : &scm_f;
+}
+
+scm *
 char_p (scm *x)
 {
   return x->type == CHAR ? &scm_t : &scm_f;
