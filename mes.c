@@ -498,8 +498,10 @@ string_p (scm *x)
 scm *
 symbol_p (scm *x)
 {
-  //TODO: #f,#t,nil also `symbols' atm
-  return x->type == SYMBOL ? &scm_t : &scm_f;
+  return (x->type == SYMBOL
+          && x != &scm_nil
+          && x != &scm_f
+          && x != &scm_t) ? &scm_t : &scm_f;
 }
 
 scm *
