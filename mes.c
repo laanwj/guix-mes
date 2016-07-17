@@ -412,27 +412,29 @@ eval_ (scm *e, scm *a)
 scm *
 evcon_ (scm *c, scm *a)
 {
+  if (c == &scm_nil) return &scm_unspecified;
+  scm *clause = car (c);
 #if DEBUG
   printf ("evcon_ clause=");
-  display (car (c));
+  display (clause);
   puts ("");
 #endif
-  if (c == &scm_nil) return &scm_unspecified;
-  if (eval (caar (c), a) != &scm_f) {
+  scm *expr = eval (car (clause), a);
+  if (expr != &scm_f) {
 #if DEBUG
-    //if (fn != &scm_display && fn != &scm_call)
-    //if (fn != &scm_call)
     printf ("#t clause=");
-    display (car (c));
-    printf (" cddar=");
-    display (cddar (c));
-    printf (" nil=%d", cddar (c) == &scm_nil);
+    display (clause);
+    // printf (" cddr=");
+    // display (cddr (clause));
+    // printf (" nil=%d", cddr (c) == &scm_nil);
     puts ("");
 #endif
-    if (cddar (c) == &scm_nil)
-      return eval (cadar (c), a);
-    eval (cadar (c), a);
-    return evcon_ (cons (cons (&scm_t, cddar (c)), &scm_nil), a);
+    if (cdr (clause) == &scm_nil)
+      return expr;
+    if (cddr (clause) == &scm_nil)
+      return eval (cadr (clause), a);
+    eval (cadr (clause), a);
+    return evcon_ (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
   }
   return evcon_ (cdr (c), a);
 }
