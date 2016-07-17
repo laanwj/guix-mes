@@ -455,12 +455,14 @@ closure_body (scm *body, scm *a)
     }
     if (eq_p (car (e), &scm_symbol_define) == &scm_t
         // FIXME: closure inside macros?
-        || eq_p (car (e), &scm_symbol_define_macro) == &scm_t
+        // || eq_p (car (e), &scm_symbol_define_macro) == &scm_t
         || eq_p (car (e), &scm_symbol_set_x) == &scm_t) {
       if (cadr (e)->type == PAIR && cadr (e) == &scm_nil) {
         scm *p = pairlis (cdadr (e), cdadr (e), cons (cons (caar (e), caar (e)), a));
         return cons (cons (car (e), cons (cadr (e), closure_body (cddr (e), p))), cdr (body));
       }
+      if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
+        return cons (e, closure_body (cdr (body), a));
       return cons (cons (car (e), cons (cadr (e), closure_body (cddr (e), a))), cdr (body));
     }
   }
@@ -1338,6 +1340,7 @@ define (scm *x, scm *a)
   puts ("");
 #endif
   scm *e = cdr (x);
+  //return cons (caadr (x), make_lambda (cdadr (x), cddr (x)));;
   scm *p = pairlis (cadr (x), cadr (x), a);
   // eval for closure_body
   return cons (caadr (x), eval (make_lambda (cdadr (x), cddr (x)), p));
@@ -1367,12 +1370,14 @@ define_macro (scm *x, scm *a)
   scm *macro;
   if (atom_p (cadr (x)) != &scm_f)
     //macro = cons (cadr (x), eval (caddr (x), a));
-    macro = cons (cadr (x), eval (caddr (x), cons (cons (cadr (x), cadr (x)), a)));
+    macro = cons (cadr (x), caddr (x));
+    // FIXME: closure inside macros?
+  //macro = cons (cadr (x), eval (caddr (x), cons (cons (cadr (x), cadr (x)), a)));
   else {
     scm *p = pairlis (cadr (x), cadr (x), a);
-    //macro = cons (caadr(x), make_lambda (cdadr (x), cddr (x)));
+    macro = cons (caadr(x), make_lambda (cdadr (x), cddr (x)));
     // FIXME: closure inside macros?
-    macro = cons (caadr(x), eval (make_lambda (cdadr (x), cddr (x)), p));
+    // macro = cons (caadr(x), eval (make_lambda (cdadr (x), cddr (x)), p));
   }
   set_cdr_x (macros, cons (macro, cdr (macros)));
   return a;
