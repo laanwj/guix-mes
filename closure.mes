@@ -1,0 +1,28 @@
+
+;; guile:
+;; closure path=(3 2 1)
+;; closure path=()
+;; mapit path=(3 2 1)
+;; closure path=(2 1)
+
+;; mes:
+;; closure path=(3 2 1)
+;; closure path=()
+;; mapit path=()
+;; ()
+
+
+(define (closure start? path mapit)
+  (display "closure path=") (display path) (newline)
+  (cond (start?
+         (closure #f '() ;;path
+                  (lambda (x)
+                    (display "mapit path=") (display path) (newline)
+                    (cond ((null? path) path)
+                          (#t
+                           
+                           (closure #f (cdr path) mapit)
+                           )))))
+        (#t (mapit path))))
+
+(closure #t '(3 2 1) (lambda (x) (display "dun") (newline)))
