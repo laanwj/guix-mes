@@ -274,6 +274,9 @@ apply_env_ (scm *fn, scm *x, scm *a)
   display (x);
   puts ("");
 #endif
+#if MACROS
+  scm *macro;
+#endif
   if (atom_p (fn) != &scm_f)
     {
       if (fn == &scm_symbol_current_module) // FIXME
@@ -288,6 +291,30 @@ apply_env_ (scm *fn, scm *x, scm *a)
     return begin_env (cddr (fn), pairlis (cadr (fn), x, a));
   else if (car (fn) == &scm_label)
     return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
+#if MACROS
+  else if ((macro = assq (car (fn), cdr (assq (&scm_macro, a)))) != &scm_f) {
+#if DEBUG
+    printf ("APPLY GOTTA MACRO! name=");
+    display (car (fn));
+    printf (" body=");
+    display (cdr (macro));
+    printf (" args=");
+    display (cdr (fn));
+    puts ("");
+#endif
+    scm *r = apply_env (cdr (macro), cdr (fn), a);
+#if DEBUG
+    printf ("APPLY MACRO GOT: ==> ");
+    display (r);
+    puts ("");
+#endif
+    return apply_env (r, x, a);
+    //return eval_ (cons (r, x), a);
+    //return apply_env_ (eval (cdr (macro), a), x, a);
+    //return eval (apply_env_ (cdr (macro), x, a), a);
+    //return eval (apply_env_ (eval (cdr (macro), a), x, a), a);
+  }
+#endif // MACROS
   return &scm_unspecified;
 }
 
@@ -831,7 +858,8 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
   }
   else if (atom_p (x) == &scm_t) printf ("%s", x->name);
 
-  return &scm_unspecified;
+  //return &scm_unspecified;
+  return x; // FIXME: eval helper for macros
 }
 
 // READ

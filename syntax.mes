@@ -51,9 +51,8 @@
   ;; (newline)
   `(define-macro (,macro-name . args)
      (,transformer (cons ',macro-name args)
-                   (lambda (x) x)
-                   eq?)
-     ;;"blaat"
+                             (lambda (x) x)
+                             eq?)
      ))
 
 ;; (define-macro (mes:define-syntax form expander)
@@ -83,7 +82,7 @@
 
 (mes:define-syntax syntax-rules
   (let ()
-   ;;begin
+    ;;begin
 
     (define name? symbol?)
 
@@ -103,7 +102,7 @@
 
     (lambda (exp r c)
 
-      (define %input (r '%input))     ;Gensym these, if you like.
+      (define %input (r '%input))      ;Gensym these, if you like.
       (define %compare (r '%compare))
       (define %rename (r '%rename))
       (define %tail (r '%tail))
@@ -158,7 +157,7 @@
       (define (process-segment-match input pattern)
         (let ((conjuncts (process-match '(car l) pattern)))
           (if (null? conjuncts)
-              `((list? ,input))                        ;+++
+              `((list? ,input))        ;+++
               `((let loop ((l ,input))
                   (or (null? l)
                       (and (pair? l)
@@ -176,7 +175,7 @@
               ((segment-pattern? pattern)
                (process-pattern (car pattern)
                                 %temp
-                                (lambda (x)        ;temp is free in x
+                                (lambda (x) ;temp is free in x
                                   (mapit (if (eq? %temp x)
                                              path ;+++
                                              `(map (lambda (,%temp) ,x)
@@ -207,11 +206,11 @@
                                                  (+ rank 1)
                                                  env))
                             (gen (if (equal? (list x) vars)
-                                     x        ;+++
+                                     x ;+++
                                      `(map (lambda ,vars ,x)
                                            ,@vars))))
                        (if (null? (cddr template))
-                           gen                ;+++
+                           gen         ;+++
                            `(append ,gen ,(process-template (cddr template)
                                                             rank env)))))))
               ((pair? template)
@@ -257,7 +256,7 @@
               (#t ;;else
                free)))
 
-      c ;ignored
+      c                                ;ignored
 
       (display "HELLO")
       (newline)
