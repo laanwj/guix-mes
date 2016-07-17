@@ -26,6 +26,13 @@
 (define-macro (begin . rest)
   `((lambda () ,@rest)))
 
+(define (equal? a b) ;; FIXME: only 2 arg
+  (cond ((and (null? a) (null? b)) #t)
+        ((and (pair? a) (pair? b))
+         (and (equal? (car a) (car b))
+              (equal? (cdr a) (cdr b))))
+        (#t (eq? a b))))
+
 (define (vector . rest) (list->vector rest))
 
 (define (apply f args)
@@ -45,6 +52,11 @@
         ((eq? x (car lst)) lst)
         (#t (memq x (cdr lst)))))
 (define memv memq)
+
+(define (member x lst)
+  (cond ((null? lst) #f)
+        ((equal? x (car lst)) lst)
+        (#t (member x (cdr lst)))))
 
 (define-macro (or2 x y)
   `(cond (,x ,x) (#t ,y)))
@@ -104,6 +116,11 @@
         ((null? r) (cons (f (car l)) (map f (cdr l))))
         ((null? (cdr r))
          (cons (f (car l) (caar r)) (map f (cdr l) (cdar r))))))
+
+(define (identity x) x)
+(define (for-each f l . r)
+  (apply map (cons f (cons l r)))
+  *unspecified*)
 
 (define (not x)
   (cond (x #f)

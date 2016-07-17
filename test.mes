@@ -259,6 +259,10 @@
 (display (memq 'd '(a b c)))
 (newline)
 
+(display "member a: ")
+(display (member '(a) '((a) b c)))
+(newline)
+
 (display "plus: ")
 (display (+ 1 1 1 1))
 (newline)

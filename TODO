@@ -12,8 +12,6 @@
 ** run PEG
 ** parse C using PEG 
 http://piumarta.com/software/peg/
-** missing
-member (using equal?)
 ** implement core primitives: DONE
 begin
 define
@@ -29,7 +27,7 @@ v #(v e c t o r)
 v assq
 v call-with-values
 v char?
-for-each
+v for-each
 v length
 v list
 v list->vector
@@ -48,12 +46,16 @@ v vector-ref
 v vector-set!
 v vector? 
 v procedure?
+*** any, each?
+*** hook-up sc-expand, see guile-1.0?: scheme:eval-transformer
+*** implement extras: 
+v (gensym)
 ** implement minimal needed for define-macro-based define-syntax
 v char?
 v assq
 v define-macro
-equal?
-member
+v equal?
+v member
 v let loop
 v nested define-macro
 v nested define
@@ -64,7 +66,3 @@ v string->symbol
 v and
 v or
 v ,@ unquote-splicing
-** any, each?
-** implement extras: 
-v (gensym)
-** hook-up sc-expand, see guile-1.0?: scheme:eval-transformer

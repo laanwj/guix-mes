@@ -7,23 +7,6 @@
   ;;(display thing)
   (newline))
 
-(define (member x lst)
-  (display "MEMBER x=") (display x)
-  (display " lst=") (display lst)
-  (display " => ") (display (memq x lst))
-  (newline)
-  (memq x lst))
-(display "mes:define-syntax...")
-
-(define (equal? a b) ;; FIXME: only 2 arg + broken for lists
-  (display "EQUAL? a=") (display a)
-  (display " b=") (display b) (newline)
-  ;;(eq? a b)
-  (cond ((and (null? a) (null? b)) #t)
-        ((and (pair? a) (pair? b))
-         (and (equal? (car a) (car b))
-              (equal? (cdr a) (cdr b))))
-        (#t (eq? a b))))
 (display "mes:define-syntax...")
 
 ;;(define (caddr x) (car (cdr (cdr x))))
