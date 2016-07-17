@@ -129,6 +129,8 @@
 (display 'a=0:)
 (display a)
 (newline)
+(display "set!")
+(display (set! a 1))
 (set! a 1)
 (display 'a=1:)
 (display a)

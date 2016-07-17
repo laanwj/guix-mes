@@ -1110,15 +1110,16 @@ eval_quasiquote (scm *e, scm *a)
 #endif
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
-  else if (eq_p (car (e), &scm_symbol_quote) == &scm_t)
-    return cons (car (e), eval_quasiquote (cdr (e), a));
-  else if (eq_p (car (e), &scm_symbol_quasiquote) == &scm_t)
-    return cons (e, eval_quasiquote (cdr (e), a));
+  // else if (eq_p (car (e), &scm_symbol_quote) == &scm_t)
+  //   return cons (car (e), eval_quasiquote (cdr (e), a));
+  // else if (eq_p (car (e), &scm_symbol_quasiquote) == &scm_t)
+  //   return cons (e, eval_quasiquote (cdr (e), a));
   else if (eq_p (car (e), &scm_symbol_unquote) == &scm_t)
     return eval (cadr (e), a);
-  else if (atom_p (car (e)) == &scm_t)
-    return cons (car (e), eval_quasiquote (cdr (e), a));
-  else if (eq_p (caar (e), &scm_symbol_unquote_splicing) == &scm_t)
+  // else if (atom_p (car (e)) == &scm_t)
+  //   return cons (car (e), eval_quasiquote (cdr (e), a));
+  else if (e->type == PAIR && e->car->type == PAIR
+           && eq_p (caar (e), &scm_symbol_unquote_splicing) == &scm_t)
       return append2 (eval_ (cadar (e), a), eval_quasiquote (cdr (e), a));
   return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
@@ -1217,7 +1218,7 @@ begin_env (scm *body, scm *a)
       return begin_env (cdr (body), cons (define_macro (e, a), a));
     else if (eq_p (car (e), &scm_symbol_set_x) == &scm_t) {
       set_env_x (cadr (e), eval (caddr (e), a), a);
-      return begin_env (cdr (e), a);
+      return begin_env (cdr (body), a);
     }
 #if BOOT
     else if (eq_p (e, &scm_symbol_EOF) == &scm_t)
