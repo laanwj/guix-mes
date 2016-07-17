@@ -1,0 +1,20 @@
+
+;; guile:
+;; 0
+;; 0
+
+;; mes:
+;; 0
+;; 1
+
+(define b 0)
+(define x (lambda () b))
+
+(display (x))
+(newline)
+(define (c b)
+  (display (x))
+  (newline)
+  (x))
+(c 1)
+""

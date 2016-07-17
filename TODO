@@ -3,6 +3,7 @@
 ** syntax.mes
 ** or psyntax.pp
 ** bugs
+*** c1.mes
 *** closure.mes
 *** using (let () ...) in macro.mes/syntax.mes
 *** <=, => take only 2 arguments
