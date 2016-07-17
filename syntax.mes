@@ -1,3 +1,4 @@
+;; -*-scheme-*-
 ;;(define else #t)
 (define (syntax-error message thing)
   (display "syntax-error:")
@@ -7,7 +8,22 @@
   (newline))
 
 (define (member x lst)
-  (display "MEMBER x=") (display x) (newline) (memq x lst))
+  (display "MEMBER x=") (display x)
+  (display " lst=") (display lst)
+  (display " => ") (display (memq x lst))
+  (newline)
+  (memq x lst))
+(display "mes:define-syntax...")
+
+(define (equal? a b) ;; FIXME: only 2 arg + broken for lists
+  (display "EQUAL? a=") (display a)
+  (display " b=") (display b) (newline)
+  ;;(eq? a b)
+  (cond ((and (null? a) (null? b)) #t)
+        ((and (pair? a) (pair? b))
+         (and (equal? (car a) (car b))
+              (equal? (cdr a) (cdr b))))
+        (#t (eq? a b))))
 (display "mes:define-syntax...")
 
 ;;(define (caddr x) (car (cdr (cdr x))))
@@ -101,7 +117,7 @@
       ;;        (pair? (cdr pattern))
       ;;        (memq (cadr pattern) indicators-for-zero-or-more)))
       
-      ;; (define indicators-for-zero-or-more (list (string->symbol "...") '---))
+      ;;(define indicators-for-zero-or-more (list (string->symbol "...") '---))
     
      (display "BOOO")
 
@@ -111,16 +127,39 @@
        (define name? symbol?)
        
        (define (segment-pattern? pattern)
+         (display "segment-pattern?: ")
+         (display pattern)
+         (newline)
+         (display "segment-template?: ")
+         (display (segment-template? pattern))
+         (newline)
          (and (segment-template? pattern)
               (or (null? (cddr pattern))
                   (syntax-error "segment matching not implemented" pattern))))
        
+       (define indicators-for-zero-or-more (list (string->symbol "...") '---))
+
        (define (segment-template? pattern)
          (and (pair? pattern)
+              (display "pair?: ")
+              (display (pair? pattern))
+              (newline)
               (pair? (cdr pattern))
-              (memq (cadr pattern) indicators-for-zero-or-more)))
+              (display "pair? cdr: ")
+              (display (pair? (cdr pattern)))
+              (newline)
+              ;; (display "indicators: ")
+              ;; (display indicators-for-zero-or-more)
+              ;; (newline)
+              (display "cadr pattern: ")
+              (display (cadr pattern))
+              (newline)
+              (display "memq?: ")
+              ;;(memq (cadr pattern) indicators-for-zero-or-more)
+              (memq (cadr pattern) (list (string->symbol "...") '---))
+              ;;(member (cadr pattern) indicators-for-zero-or-more)
+              ))
        
-       (define indicators-for-zero-or-more (list (string->symbol "...") '---))
        ;; end FIXME
     
 
@@ -134,6 +173,7 @@
        (define subkeywords (cadr exp))
 
        (define (make-transformer rules)
+         (display "make-transformer") (newline)
          `(lambda (,%input ,%rename ,%compare)
             (let ((,%tail (cdr ,%input)))
               (cond ,@(map process-rule rules)
@@ -143,6 +183,7 @@
                       ,%input))))))
 
        (define (process-rule rule)
+         (display "process-rule") (newline)
          (cond ((and (pair? rule)
                      (pair? (cdr rule))
                      (null? (cddr rule)))
@@ -160,6 +201,7 @@
        ;; Generate code to test whether input expression matches pattern
 
        (define (process-match input pattern)
+         (display "process-match") (newline)
          (cond ((name? pattern)
                 (cond ((member pattern subkeywords)
                        `((,%compare ,input (,%rename ',pattern))))
@@ -177,10 +219,12 @@
                 `((equal? ,input ',pattern)))))
 
        (define (process-segment-match input pattern)
+         (display "process-segment-match") (newline)
          (let ((conjuncts (process-match '(car l) pattern)))
            (cond ((null? conjuncts)
                   `((list? ,input)))        ;+++
                  (#t `((let loop ((l ,input))
+                         (display "loop") (newline)
                          (or (null? l)
                              (and (pair? l)
                                   ,@conjuncts
@@ -190,27 +234,45 @@
        ;; This is pretty bad, but it seems to work (can't say why).
 
        (define (process-pattern pattern path mapit)
+         (display "process-pattern pattern=") (display pattern) (newline)
          (cond ((name? pattern)
+                (display "name!") (newline)
+                (display "subkeywords: ") (display subkeywords) (newline)
                 (cond ((memq pattern subkeywords)
+                       ;;;;(member pattern subkeywords)
                        '())
-                    (#t (list (list pattern (mapit path))))))
+                      (#t
+                       (display "hiero mapit=") (display mapit)
+                       (display " path=") (display path)
+                       (newline)
+                       (list (list pattern (mapit path))))))
                ((segment-pattern? pattern)
+                (display "segment!") (newline)
                 (process-pattern (car pattern)
                                  %temp
                                  (lambda (x) ;temp is free in x
+                                   (display "mapit x=") (display x) (newline)
                                    (mapit (cond ((eq? %temp x)
+                                                 ;; guile: x=%temp ==> mapit==> (cdr %tail)
+                                                 ;; mes:   x=%temp ==> mapit==> %temp
+                                                 (display " x=%temp ==> mapit==> ") (display path) (newline)
                                                  path) ;+++
-                                                (#t `(map (lambda (,%temp) ,x)
+                                                (#t
+                                                 (display "not!")
+                                                 `(map (lambda (,%temp) ,x)
                                                           ,path)))))))
                ((pair? pattern)
+                (display "pair!") (newline)
                 (append (process-pattern (car pattern) `(car ,path) mapit)
                         (process-pattern (cdr pattern) `(cdr ,path) mapit)))
                (#t ;;else
+                (display "else!") (newline)
                 '())))
 
        ;; Generate code to compose the output expression according to template
 
        (define (process-template template rank env)
+         (display "process-template") (newline)
          (cond ((name? template)
                 (let ((probe (assq template env)))
                   (cond (probe
@@ -244,6 +306,7 @@
        ;; Return an association list of (var . rank)
 
        (define (meta-variables pattern rank vars)
+         (display "meta-variables") (newline)
          (cond ((name? pattern)
                 (cond ((memq pattern subkeywords)
                        vars)
@@ -259,6 +322,7 @@
        ;; Return a list of meta-variables of given higher rank
 
        (define (free-meta-variables template rank env free)
+         (display "free-meta-variables") (newline)
          (cond ((name? template)
                 (cond ((and (not (memq template free))
                             (let ((probe (assq template env)))
