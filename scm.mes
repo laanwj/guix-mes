@@ -108,6 +108,18 @@
   (cond (x #f)
         (#t #t)))
 
+(define (<= a b) ;; FIXME: only 2 arg
+  (or (< a b)
+      (= a b)))
+
+(define (>= a b) ;; FIXME: only 2 arg
+  (or (> a b)
+      (= a b)))
+
+(define (list? x)
+  (or (null? x)
+      (and (pair? x) (list? (cdr x)))))
+
 (define-macro (if expr then . else)
   `(cond
     (,expr ,then)
