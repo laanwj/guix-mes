@@ -1,5 +1,17 @@
 -*-mode:org-*-
-* run psyntax.pp v2
+* define-syntax and syntax-rules
+** syntax.mes
+** or psyntax.pp
+** bugs
+*** closure.mes
+*** using (let () ...) in macro.mes/syntax.mes
+*** <=, => take only 2 arguments
+** 
+** run PEG
+** parse C using PEG 
+http://piumarta.com/software/peg/
+** missing
+member (using equal?)
 ** implement core primitives: DONE
 begin
 define
@@ -8,7 +20,7 @@ lambda
 letrec
 quote
 set!
-** implement minimal needed rsr3/rsr4: 
+** implement minimal needed for psyntax.pp: 
 v "string"
 v #(v e c t o r)
 #\CHAR
@@ -33,6 +45,23 @@ v vector-ref
 v vector-set!
 v vector? 
 v procedure?
-** any, each, unquote-splicing, ...
-** implement extras: v (gensym)
+** implement minimal needed for define-macro-based define-syntax
+v char?
+v assq
+v define-macro
+equal?
+member
+v let loop
+v nested define-macro
+v nested define
+v boolean?
+v list?
+v <=, >=
+v string->symbol
+v and
+v or
+v ,@ unquote-splicing
+** any, each?
+** implement extras: 
+v (gensym)
 ** hook-up sc-expand, see guile-1.0?: scheme:eval-transformer
