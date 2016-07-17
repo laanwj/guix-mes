@@ -320,15 +320,8 @@ apply_env_ (scm *fn, scm *x, scm *a)
     display (r);
     puts ("");
 #endif
-    //return apply_env (r, x, a);
-
     scm *e = eval_ (r, a);
     return apply_env (e, x, a);
-
-    //return eval_ (cons (r, x), a);
-    //return apply_env_ (eval (cdr (macro), a), x, a);
-    //return eval (apply_env_ (cdr (macro), x, a), a);
-    //return eval (apply_env_ (eval (cdr (macro), a), x, a), a);
   }
 #endif // MACROS
   return &scm_unspecified;
@@ -367,8 +360,16 @@ eval_ (scm *e, scm *a)
 #endif // MACROS
       if (car (e) == &scm_symbol_quote)
         return cadr (e);
-      if (car (e) == &scm_lambda)
-        return e;
+      if (car (e) == &scm_lambda) {
+        scm *p = pairlis (cadr (e), cadr (e), a);
+        printf ("CLOSURE pairlis=");
+        display (p);
+        puts ("");
+        ///return e;
+        //return make_lambda (cadr (e), eval (cddr (e), evlis (cadr (e), a)));
+        // FIXME: CLOSURE...caddr: body of ONE: cons with '()
+        return make_lambda (cadr (e), cons (eval_ (caddr (e), pairlis (cadr (e), cadr (e), a)), &scm_nil));
+      }
       if (car (e) == &scm_symbol_set_x)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
 #if QUASIQUOTE
@@ -1164,14 +1165,8 @@ eval_quasiquote (scm *e, scm *a)
 #endif
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
-  // else if (eq_p (car (e), &scm_symbol_quote) == &scm_t)
-  //   return cons (car (e), eval_quasiquote (cdr (e), a));
-  // else if (eq_p (car (e), &scm_symbol_quasiquote) == &scm_t)
-  //   return cons (e, eval_quasiquote (cdr (e), a));
   else if (eq_p (car (e), &scm_symbol_unquote) == &scm_t)
     return eval (cadr (e), a);
-  // else if (atom_p (car (e)) == &scm_t)
-  //   return cons (car (e), eval_quasiquote (cdr (e), a));
   else if (e->type == PAIR && e->car->type == PAIR
            && eq_p (caar (e), &scm_symbol_unquote_splicing) == &scm_t)
       return append2 (eval_ (cadar (e), a), eval_quasiquote (cdr (e), a));
@@ -1222,7 +1217,22 @@ define (scm *x, scm *a)
 {
   if (atom_p (cadr (x)) != &scm_f)
     return cons (cadr (x), eval (caddr (x), a));
-  return cons (caadr (x), make_lambda (cdadr (x), cddr (x)));
+#if 1//DEBUG
+  scm *name = caadr (x);
+  scm *args = cdadr (x);
+  scm *body = cddr (x);
+  printf ("\nc:define name=");
+  display (name);
+  printf (" args=");
+  display (args);
+  printf (" body=");
+  display (body);
+  printf ("\ndefine=");
+  scm *aa = cons (name, make_lambda (args, body));
+  display (aa);
+  puts ("");
+#endif
+  return cons (caadr (x), eval (make_lambda (cdadr (x), cddr (x)), a));
 }
 
 scm *
