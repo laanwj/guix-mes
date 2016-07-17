@@ -62,7 +62,8 @@
 (define-macro (and . x)
   (cond ((null? x) #t)
         ((null? (cdr x)) (car x))
-        (#t `(cond (,(car x) (and ,@(cdr x)))))))
+        (#t `(cond (,(car x) (and ,@(cdr x)))
+                   (#t #f)))))
 
 (define (split-params bindings params)
   (cond ((null? bindings) params)
