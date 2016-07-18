@@ -5,6 +5,7 @@
 ** bugs
 *** v c0.mes
 *** v closure.mes
+*** c1.mes
 *** v using (let () ...) in macro.mes/syntax.mes
 *** syntax.mes: closuring name? etc in syntax.mes
 *** syntax.mes: closuring: indicators: eval: no such symbol: ---
