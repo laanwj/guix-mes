@@ -6,10 +6,9 @@
   (define b 1)
   (define (y) b)
   (set! b 0)
-  (display b)
-  (let ((b 2))
-    (y))
-  )
+  (list b
+        (let ((b 2))
+          (y))))
 
 (display (x))
 (newline)

@@ -2,7 +2,6 @@
 *.go
 *.o
 *~
-/boot.mes
 /mes
 /mes.h
 /environment.i

@@ -156,6 +156,7 @@
         (display "make-transformer") (newline)
         `(lambda (,%input ,%rename ,%compare)
            (let ((,%tail (cdr ,%input)))
+             (display "TEEL:") (display ,%tail) (newline)
              (cond ,@(map process-rule rules)
                    (#t ;;else
                     (syntax-error
@@ -169,6 +170,24 @@
                     (null? (cddr rule)))
                (let ((pattern (cdar rule))
                      (template (cadr rule)))
+                 (let ((xx `,(process-pattern pattern
+                                              %tail
+                                              (lambda (x) x)))
+                       (tt `,%tail)
+                       (yy (process-match %tail pattern)))
+                   (display "METS>>>") (newline)
+                   (display yy)
+                   (newline)
+                   (display "TEEL>>>") (newline)
+                   (display tt)
+                   (newline)
+                   (display "<<<METS") (newline)
+                   (display "PETTERN>>>") (newline)
+                   (display xx)
+                   (newline)
+                   (display "<<<PETTERN") (newline)
+                   )
+                 
                  `((and ,@(process-match %tail pattern))
                    (let* ,(process-pattern pattern
                                            %tail

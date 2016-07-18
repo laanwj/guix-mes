@@ -4,9 +4,8 @@ CFLAGS=-std=c99 -O3 -finline-functions
 
 default: all
 
-all: mes boot.mes
+all: mes
 
-#mes.o: mes.c mes.h
 mes: mes.c mes.h
 
 mes.h: mes.c GNUmakefile
@@ -35,12 +34,6 @@ check: all
 	./mes.test
 	./mes.test ./mes
 	cat scm.mes test.mes | ./mes
-
-boot.mes: mes.mes loop2.mes scm.mes test.mes
-	cat $^ > $@
-
-boot: all
-	./mes < boot.mes
 
 run: all
 	cat scm.mes test.mes | ./mes

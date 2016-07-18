@@ -36,7 +36,7 @@
 (define (vector . rest) (list->vector rest))
 
 (define (apply f args)
-  (c:eval (cons f args) (current-module)))
+  (eval (cons f args) (current-module)))
 
 (define (defined? x)
   (assq x (current-module)))
@@ -171,3 +171,9 @@
 ;;       (let ((val (number->string counter)))
 ;;         (set! counter (+ counter 1))
 ;;         (string->symbol (string-append "g" val))))))
+
+(define *gensym* 0)
+(define (gensym)
+  (set! *gensym* (+ *gensym* 1))
+  (string->symbol (string-append "g" (number->string *gensym*))))
+

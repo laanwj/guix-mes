@@ -277,7 +277,7 @@ assq (scm *x, scm *a)
 }
 
 scm *
-apply_env_ (scm *fn, scm *x, scm *a)
+apply_env (scm *fn, scm *x, scm *a)
 {
 #if DEBUG
   printf ("apply_env fn=");
@@ -316,9 +316,9 @@ apply_env_ (scm *fn, scm *x, scm *a)
     display (x);
     puts ("");
 #endif
-    //return apply_env_ (eval_ (fn, a), x, a);
-    scm *e = eval_ (fn, a);
-    return apply_env_ (e, x, a);
+    //return apply_env (eval (fn, a), x, a);
+    scm *e = eval (fn, a);
+    return apply_env (e, x, a);
     //return &scm_unspecified;
   }
 #if MACROS
@@ -333,13 +333,13 @@ apply_env_ (scm *fn, scm *x, scm *a)
     puts ("");
 #endif
     //scm *r = apply_env (cdr (macro), cdr (fn), a);
-    scm *r = apply_env (eval_ (cdr (macro), a), cdr (fn), a);
+    scm *r = apply_env (eval (cdr (macro), a), cdr (fn), a);
 #if DEBUG
     printf ("APPLY MACRO GOT: ==> ");
     display (r);
     puts ("");
 #endif
-    scm *e = eval_ (r, a);
+    scm *e = eval (r, a);
     return apply_env (e, x, a);
   }
 #endif // MACROS
@@ -347,7 +347,7 @@ apply_env_ (scm *fn, scm *x, scm *a)
 }
 
 scm *
-eval_ (scm *e, scm *a)
+eval (scm *e, scm *a)
 {
 #if DEBUG
   printf ("eval e=");
@@ -413,7 +413,7 @@ eval_ (scm *e, scm *a)
         display (cdr (e));
         puts ("");
 #endif
-        return eval (apply_env_ (cdr (macro), cdr (e), a), a);
+        return eval (apply_env (cdr (macro), cdr (e), a), a);
       }
 #endif // MACROS
       return apply_env (car (e), evlis (cdr (e), a), a);
@@ -465,6 +465,9 @@ closure_body (scm *body, scm *a)
         scm *p = pairlis (cdadr (e), cdadr (e), cons (cons (caar (e), caar (e)), a));
         return cons (cons (car (e), cons (cadr (e), closure_body (cddr (e), p))), cdr (body));
       }
+      if (eq_p (car (e), &scm_symbol_set_x) == &scm_t)
+        return cons (e, closure_body (cdr (body), a));
+      // skip closure-body-ing macros
       if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
         return cons (e, closure_body (cdr (body), a));
       return cons (cons (car (e), cons (cadr (e), closure_body (cddr (e), a))), cdr (body));
@@ -787,10 +790,10 @@ values (scm *x/*...*/)
 scm *
 call_with_values_env (scm *producer, scm *consumer, scm *a)
 {
-  scm *v = apply_env_ (producer, &scm_nil, a);
+  scm *v = apply_env (producer, &scm_nil, a);
   if (v->type == VALUES)
     v = v->cdr;
-  return apply_env_ (consumer, v, a);
+  return apply_env (consumer, v, a);
 }
 
 scm *
@@ -883,12 +886,33 @@ list_to_vector (scm *x)
 }
 
 scm*
+integer_to_char (scm *x)
+{
+  assert (x->type == NUMBER);
+  return make_char (x->value);
+}
+
+scm*
+char_to_integer (scm *x)
+{
+  assert (x->type == CHAR);
+  return make_number (x->value);
+}
+
+scm*
 number_to_string (scm *x)
 {
   assert (x->type == NUMBER);
   char buf[256];
   sprintf (buf,"%d", x->value);
   return make_string (buf);
+}
+
+scm*
+builtin_exit (scm *x)
+{
+  assert (x->type == NUMBER);
+  exit (x->value);
 }
 
 scm*
@@ -1271,13 +1295,19 @@ eval_quasiquote (scm *e, scm *a)
   }
   puts ("");
 #endif
+//   bool have_unquote = assq (&scm_unquote, a) != &scm_f;
+// #if DEBUG
+//   printf ("eval_quasiquote[%d] ==> ", have_unquote);
+//   display (e);
+//   puts ("");
+// #endif
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
   else if (eq_p (car (e), &scm_symbol_unquote) == &scm_t)
     return eval (cadr (e), a);
   else if (e->type == PAIR && e->car->type == PAIR
            && eq_p (caar (e), &scm_symbol_unquote_splicing) == &scm_t)
-      return append2 (eval_ (cadar (e), a), eval_quasiquote (cdr (e), a));
+      return append2 (eval (cadar (e), a), eval_quasiquote (cdr (e), a));
   return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
 #endif
@@ -1425,44 +1455,6 @@ read_file (scm *e, scm *a)
 {
   if (e == &scm_nil) return e;
   return cons (e, read_file (readenv (a), a));
-}
-
-scm *
-apply_env (scm *fn, scm *x, scm *a)
-{
-#if DEBUG
-  printf ("\nc:apply_env fn=");
-  display (fn);
-  printf (" x=");
-  display (x);
-  puts ("");
-#endif
-  if (fn == &scm_apply_env_)
-    return eval_ (x, a);
-  return apply_env_ (fn, x, a);
-}
-
-bool evalling_p = false;
-
-scm *
-eval (scm *e, scm *a)
-{
-#if DEBUG
-  printf ("\nc:eval e=");
-  display (e);
-  puts ("");
-#endif
-
-  scm *eval__ = assq (&scm_symbol_eval, a);
-  assert (eval__ != &scm_f);
-  eval__ = cdr (eval__);
-  if (builtin_p (eval__) == &scm_t
-      || evalling_p)
-    return eval_ (e, a);
-  evalling_p = true;
-  scm *r = apply_env (eval__, cons (e, cons (a, &scm_nil)), a);
-  evalling_p = false;
-  return r;
 }
 
 int
