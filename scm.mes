@@ -31,6 +31,8 @@
         ((and (pair? a) (pair? b))
          (and (equal? (car a) (car b))
               (equal? (cdr a) (cdr b))))
+        ((and (vector? a) (vector? b))
+         (equal? (vector->list a) (vector->list b)))
         (#t (eq? a b))))
 
 (define (vector . rest) (list->vector rest))

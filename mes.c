@@ -1241,6 +1241,11 @@ scm *
 divide (scm *x/*...*/)
 {
   int n = 1;
+  if (x != &scm_nil) {
+    assert (x->car->type == NUMBER);
+    n = x->car->value;
+    x = cdr (x);
+  }
   while (x != &scm_nil)
     {
       assert (x->car->type == NUMBER);
