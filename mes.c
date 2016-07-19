@@ -34,6 +34,7 @@
 #include <stdbool.h>
 
 #define DEBUG 0
+#define XDEBUG 0
 
 enum type {CHAR, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
@@ -79,6 +80,7 @@ scm scm_t = {SYMBOL, "#t"};
 scm scm_f = {SYMBOL, "#f"};
 scm scm_unspecified = {SYMBOL, "*unspecified*"};
 
+scm symbol_closure = {SYMBOL, "*lambda*"};
 scm symbol_lambda = {SYMBOL, "lambda"};
 scm symbol_begin = {SYMBOL, "begin"};
 scm symbol_list = {SYMBOL, "list"};
@@ -266,21 +268,32 @@ apply_env (scm *fn, scm *x, scm *a)
   scm *macro;
   if (atom_p (fn) != &scm_f)
     {
-      if (fn == &symbol_current_module) // FIXME
-        return a;
+      if (fn == &symbol_current_module) return a;
       if (eq_p (fn, &symbol_call_with_values) == &scm_t)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
       scm *efn = eval (fn,  a);
-      if (efn == &scm_unspecified) assert (!"apply unspecified");
-      // FIXME: closure.scm is calling: (3 2 1)
-      if (efn->type == NUMBER) return cons (efn, x);
-      if (efn->type == NUMBER) assert (!"apply number");
+      if (efn->type == NUMBER || efn == &scm_f || efn == &scm_t) assert (!"apply bool");
       return apply_env (efn, x, a);
     }
   else if (car (fn) == &symbol_lambda)
     return eval (cons (&symbol_begin, cddr (fn)), pairlis (cadr (fn), x, a));
+  else if (car (fn) == &symbol_closure) {
+    int depth = length (a)->value - cadr (fn)->value - 1;
+    scm *args = caddr (fn);
+    scm *body = cdddr (fn);
+    for (int i=0; i < depth; i++) a = a->cdr;
+    // printf ("closure+pl a=");
+    // display (pairlis (args, x, a));
+    // puts ("");
+    return eval (cons (&symbol_begin, body), pairlis (args, x, a));
+  }
+  else if ((macro = assq (car (fn), cdr (assq (&symbol_macro, a)))) != &scm_f) {
+    scm *r = apply_env (eval (cdr (macro), a), cdr (fn), a);
+    scm *e = eval (r, a);
+    return apply_env (e, x, a);
+  }
   return &scm_unspecified;
 }
 
@@ -292,6 +305,7 @@ eval (scm *e, scm *a)
   display (e);
   puts ("");
 #endif
+  scm *macro;
   if (e->type == SYMBOL) {
     scm *y = assq (e, a);
     if (y == &scm_f) {
@@ -305,7 +319,7 @@ eval (scm *e, scm *a)
     return e;
   else if (atom_p (car (e)) == &scm_t)
     {
-      scm *macro;
+      //scm *macro;
       if (car (e) == &symbol_quote)
         return cadr (e);
       if (car (e) == &symbol_begin)
@@ -315,17 +329,121 @@ eval (scm *e, scm *a)
           e = car (body);
           body = cdr (body);
           scm *r = &scm_unspecified;
-          if (e->type == PAIR && eq_p (car (e), &symbol_define) == &scm_t)
-            a = cons (define (e, a), a);
-          else if (e->type == PAIR && eq_p (car (e), &symbol_define_macro) == &scm_t)
-            a = cons (define_macro (e, a), a);
+
+          // closure defines in one go
+          scm *defines = &scm_nil;
+          scm *macros = &scm_nil;
+          while (e->type == PAIR
+              && (eq_p (car (e), &symbol_define) == &scm_t
+                  || eq_p (car (e), &symbol_define_macro) == &scm_t)) {
+            if (eq_p (car (e), &symbol_define) == &scm_t)
+              defines = append2 (defines, cons (def (e), &scm_nil));
+            else if (eq_p (car (e), &symbol_define_macro) == &scm_t)
+              macros = append2 (macros, cons (def (e), &scm_nil));
+            if (body == &scm_nil) e = &scm_unspecified;
+            if (body == &scm_nil) break;
+            e = car (body);
+            body = cdr (body);
+          }
+
+#if XDEBUG
+          printf ("DEFINES: ");
+          display (defines);
+          puts ("");
+
+
+          printf ("MACROS: ");
+          display (macros);
+          puts ("");
+#endif
+
+          scm* xmacros = cons (&symbol_macro,
+                               append2 (macros, cdr (assq (&symbol_macro, a)))); 
+
+#if XDEBUG
+          printf ("MACROS+: ");
+          display (xmacros);
+          puts ("");
+#endif
+          scm *aa = cons (xmacros, a);
+          aa = append2 (defines, aa);
+          a = aa;
+          while (defines != &scm_nil) {
+            scm *name = caar (defines);
+#if XDEBUG
+            printf ("name: ");
+            display (name);
+            puts ("");
+#endif
+            scm *d = cdar (defines);
+#if XDEBUG
+            printf ("define: ");
+            display (d);
+            puts ("");
+#endif
+            scm *x = define (d, a);
+
+#if DEBUG
+            printf ("closure: ");
+            display (x);
+            puts ("");
+#endif
+            scm *entry = assq (name, a);
+            set_cdr_x (entry, cdr (x));
+            defines = cdr (defines);
+          }
+
+          while (macros != &scm_nil) {
+            scm *name = caar (macros);
+#if XDEBUG
+            printf ("name: ");
+            display (name);
+            puts ("");
+#endif
+            scm *d = cdar (macros);
+#if XDEBUG
+            printf ("macro: ");
+            display (macro);
+            puts ("");
+#endif
+            //scm *x = define (d, a);
+            scm *x = define (d, a);
+#if DEBUG
+            printf ("mcclosure: ");
+            display (x);
+            puts ("");
+#endif
+            scm *entry = assq (name, cdr (assq (&symbol_macro, a)));
+            set_cdr_x (entry, cdr (x));
+            macros = cdr (macros);
+          }
+
+#if XDEBUG
+          printf ("a: ");
+          display (a);
+          puts ("");
+
+          printf ("E: ");
+          display (e);
+          puts ("");
+#endif
+
+          // if (e->type == PAIR && eq_p (car (e), &symbol_define) == &scm_t)
+          //   a = cons (define (e, a), a);
+          // else if (e->type == PAIR && eq_p (car (e), &symbol_define_macro) == &scm_t)
+          //   a = cons (define_macro (e, a), a);
+          //else
+          if (e->type == PAIR && car (e) == &symbol_set_x)
+            r = set_env_x (cadr (e), eval (caddr (e), a), a);
           else r = eval (e, a);
           if (body == &scm_nil) return r;
           return eval (cons (&symbol_begin, body), a);
         }
-      if (car (e) == &symbol_lambda) {
-        return make_lambda (cadr (e), closure_body (cddr (e), pairlis (cadr (e), cadr (e), a)));
-      }
+      if (car (e) == &symbol_lambda)
+        //return make_closure (cadr (e), cddr (e), pairlis (cadr (e), cadr (e), a));
+        return make_closure (cadr (e), cddr (e), a);
+      if (car (e) == &symbol_closure)
+        return e;
       if (car (e) == &symbol_unquote)
         return eval (cadr (e), a);
       if (car (e) == &symbol_quasiquote)
@@ -340,67 +458,6 @@ eval (scm *e, scm *a)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
     }
   return apply_env (car (e), evlis (cdr (e), a), a);
-}
-
-// FIXME: add values to closures.  what is this step called, and when
-// should it be run: read/eval/apply?
-scm *
-closure_body (scm *body, scm *a)
-{
-  if (body == &scm_nil) return &scm_nil;
-  scm *e = car (body);
-#if DEBUG
-  printf ("\nclosure_body e=");
-  display (e);
-  puts ("");
-#endif
-  if (e->type == PAIR) {
-    if (eq_p (car (e), &symbol_lambda) == &scm_t) {
-      scm *p = pairlis (cadr (e), cadr (e), a);
-      return cons (make_lambda (cadr (e), cddr (e)), closure_body (cdr (body), p));
-    }
-
-    if (eq_p (car (e), &scm_quote) == &scm_t
-             || eq_p (car (e), &scm_quasiquote) == &scm_t
-             || eq_p (car (e), &scm_unquote) == &scm_t
-             || eq_p (car (e), &scm_unquote_splicing) == &scm_t) {
-      bool have_unquote = assq (&scm_unquote, a) != &scm_f;
-      scm *x = e;
-      if (!have_unquote && eq_p (car (e), &scm_quote) == &scm_t)
-        ;
-      else if (!have_unquote && eq_p (car (e), &scm_quasiquote) == &scm_t)
-        a = add_unquoters (a);
-      else
-        x = cons (car (x), closure_body (cdr (x), a));
-      return cons (x, closure_body (cdr (body), a));
-    }
-    if (eq_p (car (e), &symbol_define) == &scm_t
-        || eq_p (car (e), &symbol_define_macro) == &scm_t
-        || eq_p (car (e), &symbol_set_x) == &scm_t) {
-      if (cadr (e)->type == PAIR && cadr (e) == &scm_nil) {
-        scm *p = pairlis (cdadr (e), cdadr (e), cons (cons (caar (e), caar (e)), a));
-        return cons (cons (car (e), cons (cadr (e), closure_body (cddr (e), p))), cdr (body));
-      }
-      if (eq_p (car (e), &symbol_set_x) == &scm_t)
-        return cons (e, closure_body (cdr (body), a));
-      return cons (e, closure_body (cdr (body), a));
-    }
-  }
-  if (builtin_p (e) == &scm_t)
-    return cons (e, closure_body (cdr (body), a));
-  else if (atom_p (e) == &scm_t) {
-    if (symbol_p (e) == &scm_t
-        && macro_p (e, a) != &scm_t)
-      {
-        scm *s = assq (e, a);
-        if (s == &scm_f) fprintf (stderr, "warning: %s possibly undefined symbol\n", e->name);
-        else if (eq_p (s->cdr, &scm_unspecified) == &scm_t)
-          ; // FIXME: letrec bindings use *unspecified* ...
-        else e = cdr (s);
-    }
-    return cons (e, closure_body (cdr (body), a));
-  }
-  return cons (closure_body (e, a), closure_body (cdr (body), a));
 }
 
 scm *
@@ -635,14 +692,6 @@ builtin_list (scm *x/*...*/)
   return x;
 }
 
-#if 0
-scm *
-vector (scm *x/*...*/) // int
-{
-  return list_to_vector (x);
-}
-#endif
-
 scm *
 values (scm *x/*...*/)
 {
@@ -697,6 +746,7 @@ lookup (char *x, scm *a)
 
   if (!strcmp (x, symbol_begin.name)) return &symbol_begin;
   if (!strcmp (x, symbol_cond.name)) return &symbol_cond;
+  if (!strcmp (x, symbol_closure.name)) return &symbol_closure;
   if (!strcmp (x, symbol_lambda.name)) return &symbol_lambda;
   if (!strcmp (x, symbol_set_x.name)) return &symbol_set_x;
   if (!strcmp (x, symbol_quote.name)) return &symbol_quote;
@@ -804,21 +854,6 @@ vector_to_list (scm *v)
 }
 
 scm *
-builtin_lookup (scm *l, scm *a)
-{
-  return lookup (list2str (l), a);
-}
-
-scm *
-cossa (scm *x, scm *a)
-{
-  if (a == &scm_nil) return &scm_f;
-  if (eq_p (cdar (a), x) == &scm_t)
-    return car (a);
-  return cossa (x, cdr (a));
-}
-
-scm *
 newline ()
 {
   puts ("");
@@ -870,7 +905,6 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
   else if (atom_p (x) == &scm_t) printf ("%s", x->name);
 
   return &scm_unspecified;
-  return x; // FIXME: eval helper for macros
 }
 
 // READ
@@ -1028,15 +1062,7 @@ readlist (scm *a)
 scm *
 readenv (scm *a)
 {
-#if DEBUG
-  scm *e = readword (getchar (), 0, a);
-  printf ("readenv: ");
-  display (e);
-  puts ("");
-  return e;
-#else
   return readword (getchar (), 0, a);
-#endif
 }
 
 scm *
@@ -1168,6 +1194,20 @@ scm *
 make_lambda (scm *args, scm *body)
 {
   return cons (&symbol_lambda, cons (args, body));
+}
+
+scm *
+make_closure (scm *args, scm *body, scm *a)
+{
+  return cons (&symbol_closure, cons (length (a), cons (args, body)));
+}
+
+scm *
+def (scm *x)
+{
+  if (atom_p (cadr (x)) != &scm_f)
+    return cons (cadr (x), x);
+  return cons (caadr (x), x);
 }
 
 scm *

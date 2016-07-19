@@ -1,0 +1,13 @@
+;; guile: 01
+;; mes: 00
+(define free 0)
+
+(define bla #f)
+(let ()
+  (set! bla (lambda () free))
+  #t)
+
+(display (bla))
+(set! free 1)
+(display (bla))
+(newline)

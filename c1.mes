@@ -1,13 +1,42 @@
 
-;; guile: 00
-;; mes: 01
+;; guile: 10
+;; (0 0)
+;; mes: 10
+;; (0 2)
 
 (define (x)
   (define b 1)
   (define (y) b)
+
+  (display b)
   (set! b 0)
+  (display b)
+  (newline)
+
   (list b
-        (let ((b 2))
+        (let ((b 2)) ;; b shadows previous b in mes
+          (y))))     ;; guile: y captures shadowed b, mes: y runs in context new b
+
+(display (x))
+(newline)
+""
+
+;; guile: 10
+;; (0 3)
+;; mes: 10
+;; (0 3)
+(define (x)
+  (define b 1)
+  (define (y) b)   ;; var b is captured
+
+  (display b)
+  (set! b 0)
+  (display b)
+  (newline)
+
+  (list b
+        (let ((d 4))
+          (set! b 3) ;; value b is changed
           (y))))
 
 (display (x))

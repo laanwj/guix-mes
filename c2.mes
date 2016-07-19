@@ -1,0 +1,32 @@
+;; guile
+#!
+;;; compiling /home/janneke/src/mes/c2.mes
+joepie-complie
+;;; compiled /home/janneke/.cache/guile/ccache/2.2-LE-8-3.7/home/janneke/src/mes/c2.mes.go
+joepie
+jippie
+!#
+
+;;mes
+
+
+(define-macro (bla naam de-lambda)
+  `(define-macro (,naam . rest)
+     (,de-lambda)))
+
+(bla joepie
+     (let ()
+        (lambda ()
+          (list 'begin
+                (list 'display "joepie")
+                (list 'newline)
+                (and
+                 (display "joepie-complie")
+                 (newline)
+                 "jippie")))))
+
+(display "compiled")
+(newline)
+(display (joepie 'x))
+(newline)
+

@@ -1,0 +1,11 @@
+;; guile: g0
+;; mes: crash
+(define gensym
+  (let ((counter 0))
+    (lambda (. rest)
+      (let ((value (number->string counter)))
+        (set! counter (+ counter 1))
+        (string->symbol (string-append "g" value))))))
+
+(display (gensym))
+(newline)

@@ -11,16 +11,16 @@
 ;; (display (run 4))
 ;; (newline)
 
-;; (define (fm a)
-;;   (define-macro (a b)
-;;     (display b)
-;;     (newline)
-;;     "boo"))
+(define (fm a)
+  (define-macro (a b)
+    (display b)
+    (newline)
+    "boo"))
 
-;; (display "f-define-macro: ")
-;; (fm 'dinges)
-;; (a c)
-;; (newline)
+(display "f-define-macro: ")
+(fm 'dinges)
+(a c)
+(newline)
 
 
 ;; (define-macro (m a)
@@ -59,9 +59,9 @@
 
 (d-s s-r
      (let ()
-       (define name? symbol?)
+       ;;(define name? symbol?)
        (lambda (. n-a)
-
+         (define name? symbol?)
         (display "YEAH:")
         (display n-a)
         (display (name? n-a))

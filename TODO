@@ -3,9 +3,12 @@
 ** syntax.mes
 ** or psyntax.pp
 ** bugs
+*** c2.mes
+*** c4.mes
 *** v c0.mes
 *** v closure.mes
-*** c1.mes
+*** v c1.mes
+*** v c3.mes
 *** v using (let () ...) in macro.mes/syntax.mes
 *** syntax.mes: closuring name? etc in syntax.mes
 *** syntax.mes: closuring: indicators: eval: no such symbol: ---

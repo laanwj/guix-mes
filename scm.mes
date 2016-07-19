@@ -23,59 +23,6 @@
 
 (define (list . rest) rest)
 
-(define (equal? a b) ;; FIXME: only 2 arg
-  (cond ((and (null? a) (null? b)) #t)
-        ((and (pair? a) (pair? b))
-         (and (equal? (car a) (car b))
-              (equal? (cdr a) (cdr b))))
-        ((and (vector? a) (vector? b))
-         (equal? (vector->list a) (vector->list b)))
-        (#t (eq? a b))))
-
-(define (vector . rest) (list->vector rest))
-
-(define (apply f args)
-  (eval (cons f args) (current-module)))
-
-(define (defined? x)
-  (assq x (current-module)))
-
-(define (procedure? p)
-  (cond ((builtin? p) #t)
-        ((pair? p) (eq? (car p) 'lambda))
-        (#t #f)))
-
-(define assv assq)
-(define (memq x lst)
-  (cond ((null? lst) #f)
-        ((eq? x (car lst)) lst)
-        (#t (memq x (cdr lst)))))
-(define memv memq)
-
-(define (member x lst)
-  (cond ((null? lst) #f)
-        ((equal? x (car lst)) lst)
-        (#t (member x (cdr lst)))))
-
-(define-macro (or2 x y)
-  `(cond (,x ,x) (#t ,y)))
-
-(define-macro (and2 x y)
-  `(cond (,x ,y) (#t #f)))
-
-(define-macro (or . x)
-  (cond
-   ((null? x) #f)
-   ((null? (cdr x)) (car x))
-   (#t `(cond (,(car x))
-              (#t (or ,@(cdr x)))))))
-
-(define-macro (and . x)
-  (cond ((null? x) #t)
-        ((null? (cdr x)) (car x))
-        (#t `(cond (,(car x) (and ,@(cdr x)))
-                   (#t #f)))))
-
 (define (split-params bindings params)
   (cond ((null? bindings) params)
         (#t (split-params (cdr bindings)
@@ -100,6 +47,25 @@
        (let-loop ,bindings-or-label ,(car rest) ,(cdr rest))
        (simple-let ,bindings-or-label ,rest)))
 
+(define-macro (or2 x y)
+  `(cond (,x ,x) (#t ,y)))
+
+(define-macro (and2 x y)
+  `(cond (,x ,y) (#t #f)))
+
+(define-macro (or . x)
+  (cond
+   ((null? x) #f)
+   ((null? (cdr x)) (car x))
+   (#t `(cond (,(car x))
+              (#t (or ,@(cdr x)))))))
+
+(define-macro (and . x)
+  (cond ((null? x) #t)
+        ((null? (cdr x)) (car x))
+        (#t `(cond (,(car x) (and ,@(cdr x)))
+                   (#t #f)))))
+
 (define (expand-let* bindings body)
   (cond ((null? bindings)
          `((lambda () ,@body)))
@@ -109,6 +75,41 @@
 
 (define-macro (let* bindings . body)
   (expand-let* bindings body))
+
+(define (equal? a b) ;; FIXME: only 2 arg
+  (cond ((and (null? a) (null? b)) #t)
+        ((and (pair? a) (pair? b))
+         (and (equal? (car a) (car b))
+              (equal? (cdr a) (cdr b))))
+        ((and (vector? a) (vector? b))
+         (equal? (vector->list a) (vector->list b)))
+        (#t (eq? a b))))
+
+(define (vector . rest) (list->vector rest))
+
+(define (apply f args)
+  (eval (cons f args) (current-module)))
+
+(define (defined? x)
+  (assq x (current-module)))
+
+(define (procedure? p)
+  (cond ((builtin? p) #t)
+        ((and (pair? p) (eq? (car p) 'lambda)))
+        ((and (pair? p) (eq? (car p) '*lambda*)))
+        (#t #f)))
+
+(define assv assq)
+(define (memq x lst)
+  (cond ((null? lst) #f)
+        ((eq? x (car lst)) lst)
+        (#t (memq x (cdr lst)))))
+(define memv memq)
+
+(define (member x lst)
+  (cond ((null? lst) #f)
+        ((equal? x (car lst)) lst)
+        (#t (member x (cdr lst)))))
 
 (define (map f l . r)
   (cond ((null? l) '())
@@ -167,12 +168,10 @@
 ;; (define gensym
 ;;   (let ((counter 0))
 ;;     (lambda (. rest)
-;;       (let ((val (number->string counter)))
+;;       (let ((value (number->string counter)))
 ;;         (set! counter (+ counter 1))
-;;         (string->symbol (string-append "g" val))))))
-
-(define *gensym* 0)
+;;         (string->symbol (string-append "g" value))))))
+(define *gensym* -1)
 (define (gensym)
   (set! *gensym* (+ *gensym* 1))
   (string->symbol (string-append "g" (number->string *gensym*))))
-

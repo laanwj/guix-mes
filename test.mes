@@ -191,6 +191,14 @@
 
 (pass-if "closure 3" (sequal? (x) '(0 0)))
 
+(pass-if "closure 4 "
+  (seq? (begin
+          (let ((count (let ((counter 0))
+                         (lambda ()
+                           counter))))
+            (count)))
+        0))
+
 (newline)
 (display "passed: ") (display (car (result))) (newline)
 (display "failed: ") (display (cadr (result))) (newline)
