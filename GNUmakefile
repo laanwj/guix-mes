@@ -45,4 +45,4 @@ guile-syntax:
 	guile -s syntax.mes
 
 macro: all
-	cat macro.mes | ./mes
+	cat scm.mes macro.mes | ./mes

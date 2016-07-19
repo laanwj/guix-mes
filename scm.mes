@@ -23,9 +23,6 @@
 
 (define (list . rest) rest)
 
-(define-macro (begin . rest)
-  `((lambda () ,@rest)))
-
 (define (equal? a b) ;; FIXME: only 2 arg
   (cond ((and (null? a) (null? b)) #t)
         ((and (pair? a) (pair? b))

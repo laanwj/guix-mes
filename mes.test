@@ -22,3 +22,5 @@ echo "((label fun\
        3)" | $mes
 echo "'(0 . 1)" | $mes
 echo "(cdr '(0 . 1))" | $mes
+todo:oops
+echo "(define (list . rest) rest)" | $mes

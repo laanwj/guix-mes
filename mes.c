@@ -35,11 +35,6 @@
 
 #define DEBUG 0
 
-#define BOOT 1
-#define MACROS 1
-#define QUASIQUOTE 1
-#define QUOTE_SUGAR 1
-
 enum type {CHAR, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
 struct scm_t;
@@ -82,30 +77,23 @@ scm scm_nil = {SYMBOL, "()"};
 scm scm_dot = {SYMBOL, "."};
 scm scm_t = {SYMBOL, "#t"};
 scm scm_f = {SYMBOL, "#f"};
-scm scm_lambda = {SYMBOL, "lambda"};
-scm scm_label = {SYMBOL, "label"};
 scm scm_unspecified = {SYMBOL, "*unspecified*"};
-scm scm_symbol_cond = {SYMBOL, "cond"};
-scm scm_symbol_quote = {SYMBOL, "quote"};
-#if QUASIQUOTE
-scm scm_symbol_quasiquote = {SYMBOL, "quasiquote"};
-scm scm_symbol_unquote = {SYMBOL, "unquote"};
-scm scm_symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
-#endif
-#if MACROS
-scm scm_macro = {SYMBOL, "*macro*"};
-#endif
 
-scm scm_symbol_EOF = {SYMBOL, "EOF"};
-scm scm_symbol_EOF2 = {SYMBOL, "EOF2"};
-scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
-scm scm_symbol_current_module = {SYMBOL, "current-module"};
-scm scm_symbol_define = {SYMBOL, "define"};
-scm scm_symbol_define_macro = {SYMBOL, "define-macro"};
-scm scm_symbol_eval = {SYMBOL, "eval"};
-scm scm_symbol_loop2 = {SYMBOL, "loop2"};
-scm scm_symbol_set_x = {SYMBOL, "set!"};
-scm scm_symbol_values = {SYMBOL, "values"};
+scm symbol_lambda = {SYMBOL, "lambda"};
+scm symbol_begin = {SYMBOL, "begin"};
+scm symbol_list = {SYMBOL, "list"};
+scm symbol_cond = {SYMBOL, "cond"};
+scm symbol_quote = {SYMBOL, "quote"};
+scm symbol_quasiquote = {SYMBOL, "quasiquote"};
+scm symbol_unquote = {SYMBOL, "unquote"};
+scm symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
+scm symbol_macro = {SYMBOL, "*macro*"};
+
+scm symbol_call_with_values = {SYMBOL, "call-with-values"};
+scm symbol_current_module = {SYMBOL, "current-module"};
+scm symbol_define = {SYMBOL, "define"};
+scm symbol_define_macro = {SYMBOL, "define-macro"};
+scm symbol_set_x = {SYMBOL, "set!"};
 
 // PRIMITIVES
 
@@ -160,13 +148,11 @@ eq_p (scm *x, scm *y)
     ? &scm_t : &scm_f;
 }
 
-#if MACROS
 scm *
 macro_p (scm *x, scm *a)
 {
-  return assq (x, cdr (assq (&scm_macro, a))) != &scm_f ?  &scm_t : &scm_f;
+  return assq (x, cdr (assq (&symbol_macro, a))) != &scm_f ?  &scm_t : &scm_f;
 }
-#endif
 
 scm *
 null_p (scm *x)
@@ -203,20 +189,19 @@ set_env_x (scm *x, scm *e, scm *a)
 scm *
 quote (scm *x)
 {
-  return cons (&scm_symbol_quote, x);
+  return cons (&symbol_quote, x);
 }
 
-#if QUASIQUOTE
 scm *
 quasiquote (scm *x)
 {
-  return cons (&scm_symbol_quasiquote, x);
+  return cons (&symbol_quasiquote, x);
 }
 
 scm *
 unquote (scm *x) //int must not add to environment
 {
-  return cons (&scm_symbol_unquote, x);
+  return cons (&symbol_unquote, x);
 }
 scm *unquote (scm *x);
 scm scm_unquote = {FUNCTION1, .name="unquote", .function1=&unquote};
@@ -224,11 +209,10 @@ scm scm_unquote = {FUNCTION1, .name="unquote", .function1=&unquote};
 scm *
 unquote_splicing (scm *x) //int must not add to environment
 {
-  return cons (&scm_symbol_unquote_splicing, x);
+  return cons (&symbol_unquote_splicing, x);
 }
 scm *unquote_splicing (scm *x);
 scm scm_unquote_splicing = {FUNCTION1, .name="unquote-splicing", .function1=&unquote_splicing};
-#endif
 
 //Library functions
 
@@ -247,13 +231,6 @@ scm *cdddr (scm *x) {return cdr (cdr (cdr (x)));}
 scm *
 pairlis (scm *x, scm *y, scm *a)
 {
-#if DEBUG
-  printf ("pairlis x=");
-  display (x);
-  printf (" y=");
-  display (y);
-  puts ("");
-#endif
   if (x == &scm_nil)
     return a;
   if (atom_p (x) == &scm_t)
@@ -286,14 +263,12 @@ apply_env (scm *fn, scm *x, scm *a)
   display (x);
   puts ("");
 #endif
-#if MACROS
   scm *macro;
-#endif
   if (atom_p (fn) != &scm_f)
     {
-      if (fn == &scm_symbol_current_module) // FIXME
+      if (fn == &symbol_current_module) // FIXME
         return a;
-      if (eq_p (fn, &scm_symbol_call_with_values) == &scm_t)
+      if (eq_p (fn, &symbol_call_with_values) == &scm_t)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
@@ -304,45 +279,8 @@ apply_env (scm *fn, scm *x, scm *a)
       if (efn->type == NUMBER) assert (!"apply number");
       return apply_env (efn, x, a);
     }
-  else if (car (fn) == &scm_lambda)
-    return begin_env (cddr (fn), pairlis (cadr (fn), x, a));
-  else if (car (fn) == &scm_label)
-    return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
-  else if (car (fn)->type == PAIR) {
-#if DEBUG // FIXME: for macro.mes/syntax.mes this feels *wrong*
-    printf ("APPLY WTF: fn=");
-    display (fn);
-    printf (" WTF: x=");
-    display (x);
-    puts ("");
-#endif
-    //return apply_env (eval (fn, a), x, a);
-    scm *e = eval (fn, a);
-    return apply_env (e, x, a);
-    //return &scm_unspecified;
-  }
-#if MACROS
-  else if ((macro = assq (car (fn), cdr (assq (&scm_macro, a)))) != &scm_f) {
-#if DEBUG
-    printf ("APPLY GOTTA MACRO! name=");
-    display (car (fn));
-    printf (" body=");
-    display (cdr (macro));
-    printf (" args=");
-    display (cdr (fn));
-    puts ("");
-#endif
-    //scm *r = apply_env (cdr (macro), cdr (fn), a);
-    scm *r = apply_env (eval (cdr (macro), a), cdr (fn), a);
-#if DEBUG
-    printf ("APPLY MACRO GOT: ==> ");
-    display (r);
-    puts ("");
-#endif
-    scm *e = eval (r, a);
-    return apply_env (e, x, a);
-  }
-#endif // MACROS
+  else if (car (fn) == &symbol_lambda)
+    return eval (cons (&symbol_begin, cddr (fn)), pairlis (cadr (fn), x, a));
   return &scm_unspecified;
 }
 
@@ -354,69 +292,52 @@ eval (scm *e, scm *a)
   display (e);
   puts ("");
 #endif
-  if (e->type == CHAR)
-    return e;
-  else if (e->type == NUMBER)
-    return e;
-  else if (e->type == STRING)
-    return e;
-  else if (e->type == VECTOR)
-    return e;
-  else if (atom_p (e) == &scm_t) {
+  if (e->type == SYMBOL) {
     scm *y = assq (e, a);
     if (y == &scm_f) {
+      return e;
       printf ("eval: no such symbol: %s\n", e->name);
       assert (!"unknown symbol");
     }
     return cdr (y);
   }
-  if (builtin_p (e) == &scm_t)
+  else if (pair_p (e) == &scm_f)
     return e;
   else if (atom_p (car (e)) == &scm_t)
     {
-#if MACROS
       scm *macro;
-#endif // MACROS
-      if (car (e) == &scm_symbol_quote)
+      if (car (e) == &symbol_quote)
         return cadr (e);
-      if (car (e) == &scm_lambda)
+      if (car (e) == &symbol_begin)
+        {
+          scm *body = cdr (e);
+          if (body == &scm_nil) return &scm_nil;
+          e = car (body);
+          body = cdr (body);
+          scm *r = &scm_unspecified;
+          if (e->type == PAIR && eq_p (car (e), &symbol_define) == &scm_t)
+            a = cons (define (e, a), a);
+          else if (e->type == PAIR && eq_p (car (e), &symbol_define_macro) == &scm_t)
+            a = cons (define_macro (e, a), a);
+          else r = eval (e, a);
+          if (body == &scm_nil) return r;
+          return eval (cons (&symbol_begin, body), a);
+        }
+      if (car (e) == &symbol_lambda) {
         return make_lambda (cadr (e), closure_body (cddr (e), pairlis (cadr (e), cadr (e), a)));
-      if (car (e) == &scm_symbol_set_x)
-        return set_env_x (cadr (e), eval (caddr (e), a), a);
-#if QUASIQUOTE
-      else if (car (e) == &scm_symbol_unquote)
+      }
+      if (car (e) == &symbol_unquote)
         return eval (cadr (e), a);
-      else if (car (e) == &scm_symbol_quasiquote) {
-#if DEBUG
-        printf ("cadr e:");
-        display (cadr (e));
-        puts ("");
-        printf ("qq:");
-        display (eval_quasiquote (cadr (e), a));
-        puts ("");
-#endif // DEBUG
+      if (car (e) == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
-      }
-#endif // QUASIQUOTE
-      else if (car (e) == &scm_symbol_cond)
+      if (car (e) == &symbol_cond)
         return evcon (cdr (e), a);
-#if MACROS
-      else if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
+      if (eq_p (car (e), &symbol_define_macro) == &scm_t)
         return define_macro (e, a);
-      else if ((macro = assq (car (e), cdr (assq (&scm_macro, a)))) != &scm_f) {
-#if DEBUG
-        printf ("GOTTA MACRO! name=");
-        display (car (e));
-        printf (" body=");
-        display (cdr (macro));
-        printf (" args=");
-        display (cdr (e));
-        puts ("");
-#endif
+      if ((macro = assq (car (e), cdr (assq (&symbol_macro, a)))) != &scm_f)
         return eval (apply_env (cdr (macro), cdr (e), a), a);
-      }
-#endif // MACROS
-      return apply_env (car (e), evlis (cdr (e), a), a);
+      if (car (e) == &symbol_set_x)
+        return set_env_x (cadr (e), eval (caddr (e), a), a);
     }
   return apply_env (car (e), evlis (cdr (e), a), a);
 }
@@ -433,21 +354,17 @@ closure_body (scm *body, scm *a)
   display (e);
   puts ("");
 #endif
-  if (e->type == PAIR) { // FIXME: c&p from begin_env
-    if (eq_p (car (e), &scm_lambda) == &scm_t) {
+  if (e->type == PAIR) {
+    if (eq_p (car (e), &symbol_lambda) == &scm_t) {
       scm *p = pairlis (cadr (e), cadr (e), a);
       return cons (make_lambda (cadr (e), cddr (e)), closure_body (cdr (body), p));
     }
-    else if (eq_p (car (e), &scm_quote) == &scm_t
+
+    if (eq_p (car (e), &scm_quote) == &scm_t
              || eq_p (car (e), &scm_quasiquote) == &scm_t
              || eq_p (car (e), &scm_unquote) == &scm_t
              || eq_p (car (e), &scm_unquote_splicing) == &scm_t) {
       bool have_unquote = assq (&scm_unquote, a) != &scm_f;
-#if DEBUG
-      printf ("quote[%d] ==> ", have_unquote);
-      display (e);
-      puts ("");
-#endif
       scm *x = e;
       if (!have_unquote && eq_p (car (e), &scm_quote) == &scm_t)
         ;
@@ -457,114 +374,72 @@ closure_body (scm *body, scm *a)
         x = cons (car (x), closure_body (cdr (x), a));
       return cons (x, closure_body (cdr (body), a));
     }
-    if (eq_p (car (e), &scm_symbol_define) == &scm_t
-        // FIXME: closure inside macros?
-        // || eq_p (car (e), &scm_symbol_define_macro) == &scm_t
-        || eq_p (car (e), &scm_symbol_set_x) == &scm_t) {
+    if (eq_p (car (e), &symbol_define) == &scm_t
+        || eq_p (car (e), &symbol_define_macro) == &scm_t
+        || eq_p (car (e), &symbol_set_x) == &scm_t) {
       if (cadr (e)->type == PAIR && cadr (e) == &scm_nil) {
         scm *p = pairlis (cdadr (e), cdadr (e), cons (cons (caar (e), caar (e)), a));
         return cons (cons (car (e), cons (cadr (e), closure_body (cddr (e), p))), cdr (body));
       }
-      if (eq_p (car (e), &scm_symbol_set_x) == &scm_t)
+      if (eq_p (car (e), &symbol_set_x) == &scm_t)
         return cons (e, closure_body (cdr (body), a));
-      // skip closure-body-ing macros
-      if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
-        return cons (e, closure_body (cdr (body), a));
-      return cons (cons (car (e), cons (cadr (e), closure_body (cddr (e), a))), cdr (body));
+      return cons (e, closure_body (cdr (body), a));
     }
   }
-  if (builtin_p (e) == &scm_t) {
+  if (builtin_p (e) == &scm_t)
     return cons (e, closure_body (cdr (body), a));
-  }
-
   else if (atom_p (e) == &scm_t) {
-#if DEBUG
-    printf ("e=");
-    display (e);
-#endif
-    scm *x = e;
-    if (builtin_p (e) != &scm_t
-        && e->type != CHAR
-        && e->type != NUMBER
-        && e->type != STRING
-        && e->type != VECTOR        
-#if MACROS
-        && macro_p (e, a) != &scm_t
-#endif
-        ) {
-      scm *s = assq (e, a);
-      if (s == &scm_f) fprintf (stderr, "warning: %s possibly undefined symbol\n", e->name);
-      else if (eq_p (s->cdr, &scm_unspecified) == &scm_t)
-        ; // FIXME: letrec bindings use *unspecified* ...
-      else x = cdr (s);
+    if (symbol_p (e) == &scm_t
+        && macro_p (e, a) != &scm_t)
+      {
+        scm *s = assq (e, a);
+        if (s == &scm_f) fprintf (stderr, "warning: %s possibly undefined symbol\n", e->name);
+        else if (eq_p (s->cdr, &scm_unspecified) == &scm_t)
+          ; // FIXME: letrec bindings use *unspecified* ...
+        else e = cdr (s);
     }
-#if DEBUG
-    printf (" => x=");
-    display (x);
-    puts ("");
-#endif
-    return cons (x, closure_body (cdr (body), a));
+    return cons (e, closure_body (cdr (body), a));
   }
   return cons (closure_body (e, a), closure_body (cdr (body), a));
 }
 
 scm *
-evcon_ (scm *c, scm *a)
+evcon (scm *c, scm *a)
 {
   if (c == &scm_nil) return &scm_unspecified;
   scm *clause = car (c);
-#if DEBUG
-  printf ("evcon_ clause=");
-  display (clause);
-  puts ("");
-#endif
   scm *expr = eval (car (clause), a);
   if (expr != &scm_f) {
-#if DEBUG
-    printf ("#t clause=");
-    display (clause);
-    // printf (" cddr=");
-    // display (cddr (clause));
-    // printf (" nil=%d", cddr (c) == &scm_nil);
-    puts ("");
-#endif
     if (cdr (clause) == &scm_nil)
       return expr;
     if (cddr (clause) == &scm_nil)
       return eval (cadr (clause), a);
-    // printf ("EVALLING: (cadr clause): clause=");
-    // display (clause);
-    // printf (" (cadr clause)=");
-    // display (cadr (clause));
     eval (cadr (clause), a);
-    return evcon_ (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
+    return evcon (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
   }
-  return evcon_ (cdr (c), a);
-}
-
-scm *
-evcon (scm *c, scm *a)
-{
-#if DEBUG
-  printf ("\n****evcon=");
-  display (c);
-  puts ("");
-#endif
-  return evcon_ (c, a);
+  return evcon (cdr (c), a);
 }
 
 scm *
 evlis (scm *m, scm *a)
 {
-#if DEBUG
-  printf ("evlis m=");
-  display (m);
-  puts ("");
-#endif
-  if (m == &scm_nil)
-    return &scm_nil;
+  if (m == &scm_nil) return &scm_nil;
+  if (m->type != PAIR) return eval (m, a);
   scm *e = eval (car (m), a);
   return cons (e, evlis (cdr (m), a));
+}
+
+scm *
+eval_quasiquote (scm *e, scm *a)
+{
+  if (e == &scm_nil) return e;
+  else if (atom_p (e) == &scm_t) return e;
+  else if (eq_p (car (e), &symbol_unquote) == &scm_t)
+    return eval (cadr (e), a);
+  else if (e->type == PAIR && e->car->type == PAIR
+           && eq_p (caar (e), &symbol_unquote_splicing) == &scm_t)
+      return append2 (eval (cadar (e), a), eval_quasiquote (cdr (e), a));
+  return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
 
 //Helpers
@@ -628,17 +503,6 @@ display (scm *x)
 scm *
 call (scm *fn, scm *x)
 {
-#if DEBUG
-  //if (fn != &scm_display && fn != &scm_call)
-  //if (fn != &scm_call)
-  {
-    printf ("\ncall fn=");
-    display (fn);
-    printf (" x=");
-    display (x);
-    puts ("");
-  }
-#endif
   if (fn->type == FUNCTION0)
     return fn->function0 ();
   if (x->car->type == VALUES)
@@ -765,13 +629,13 @@ length (scm *x)
   return make_number (n);
 }
 
-#if 0
 scm *
-builtin_list (scm *x/*...*/) // int
+builtin_list (scm *x/*...*/)
 {
   return x;
 }
 
+#if 0
 scm *
 vector (scm *x/*...*/) // int
 {
@@ -825,24 +689,25 @@ lookup (char *x, scm *a)
 {
   if (isdigit (*x) || (*x == '-' && isdigit (*(x+1))))
     return make_number (atoi (x));
-  if (*x == '\'') return &scm_symbol_quote;
+  if (*x == '\'') return &symbol_quote;
 
+  // Hmmm
   if (!strcmp (x, scm_unspecified.name)) return &scm_unspecified;
-  if (!strcmp (x, scm_symbol_cond.name)) return &scm_symbol_cond;
-  if (!strcmp (x, scm_symbol_quote.name)) return &scm_symbol_quote;
-  if (!strcmp (x, scm_lambda.name)) return &scm_lambda;
-  if (!strcmp (x, scm_label.name)) return &scm_label;
   if (!strcmp (x, scm_nil.name)) return &scm_nil;
-  if (!strcmp (x, scm_symbol_set_x.name)) return &scm_symbol_set_x;
 
-#if QUASIQUOTE
-  if (*x == '`') return &scm_symbol_quasiquote;
-  if (*x == ',' && *(x+1) == '@') return &scm_symbol_unquote_splicing;
-  if (*x == ',') return &scm_symbol_unquote;
-  if (!strcmp (x, scm_symbol_quasiquote.name)) return &scm_symbol_quasiquote;
-  if (!strcmp (x, scm_symbol_unquote.name)) return &scm_symbol_unquote;
-  if (!strcmp (x, scm_symbol_unquote_splicing.name)) return &scm_symbol_unquote_splicing;
-#endif
+  if (!strcmp (x, symbol_begin.name)) return &symbol_begin;
+  if (!strcmp (x, symbol_cond.name)) return &symbol_cond;
+  if (!strcmp (x, symbol_lambda.name)) return &symbol_lambda;
+  if (!strcmp (x, symbol_set_x.name)) return &symbol_set_x;
+  if (!strcmp (x, symbol_quote.name)) return &symbol_quote;
+
+
+  if (*x == '`') return &symbol_quasiquote;
+  if (*x == ',' && *(x+1) == '@') return &symbol_unquote_splicing;
+  if (*x == ',') return &symbol_unquote;
+  if (!strcmp (x, symbol_quasiquote.name)) return &symbol_quasiquote;
+  if (!strcmp (x, symbol_unquote.name)) return &symbol_unquote;
+  if (!strcmp (x, symbol_unquote_splicing.name)) return &symbol_unquote_splicing;
 
   return make_symbol (x);
 }
@@ -970,12 +835,10 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
   else if (x->type == CHAR) printf ("#\\%c", x->value);
   else if (x->type == NUMBER) printf ("%d", x->value);
   else if (x->type == PAIR) {
-#if QUOTE_SUGAR
     if (car (x) == &scm_quote) {
       printf ("'");
       return display_helper (car (cdr (x)), cont, "", true);
     }
-#if QUASIQUOTE
     if (car (x) == &scm_quasiquote) {
       printf ("`");
       return display_helper (car (cdr (x)), cont, "", true);
@@ -988,8 +851,6 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       printf (",@");
       return display_helper (car (cdr (x)), cont, "", true);
     }
-#endif
-#endif
     if (!cont) printf ("(");
     display (car (x));
     if (cdr (x)->type == PAIR)
@@ -1080,11 +941,8 @@ readword (int c, char* w, scm *a)
                                                                 cons (readword (getchar (), w, a),
                                                                       &scm_nil));}
   if ((c == '\''
-#if QUASIQUOTE
        || c == '`'
-       || c == ','
-#endif
-       )
+       || c == ',')
       && !w) {return cons (lookup_char (c, a),
                                      cons (readword (getchar (), w, a),
                                            &scm_nil));}
@@ -1181,15 +1039,6 @@ readenv (scm *a)
 #endif
 }
 
-// Extras to make interesting program
-
-scm *
-hello_world ()
-{
-  puts ("c: hello world");
-  return &scm_unspecified;
-}
-
 scm *
 greater_p (scm *a, scm *b)
 {
@@ -1276,7 +1125,6 @@ is_p (scm *a, scm *b)
   return a->value == b->value ? &scm_t : &scm_f;
 }
 
-#if QUASIQUOTE
 scm *add_environment (scm *a, char *name, scm *x);
 
 scm *
@@ -1286,36 +1134,6 @@ add_unquoters (scm *a)
   a = add_environment (a, "unquote-splicing", &scm_unquote_splicing);
   return a;
 }
-scm *
-eval_quasiquote (scm *e, scm *a)
-{
-#if DEBUG
-  printf ("\nc:eval_quasiquote e=");
-  display (e);
-  if (pair_p (e) == &scm_t) {
-    printf ("\ncar (e)=");
-    display (car (e));
-    printf (" atom=");
-    display (atom_p (car (e)));
-  }
-  puts ("");
-#endif
-//   bool have_unquote = assq (&scm_unquote, a) != &scm_f;
-// #if DEBUG
-//   printf ("eval_quasiquote[%d] ==> ", have_unquote);
-//   display (e);
-//   puts ("");
-// #endif
-  if (e == &scm_nil) return e;
-  else if (atom_p (e) == &scm_t) return e;
-  else if (eq_p (car (e), &scm_symbol_unquote) == &scm_t)
-    return eval (cadr (e), a);
-  else if (e->type == PAIR && e->car->type == PAIR
-           && eq_p (caar (e), &scm_symbol_unquote_splicing) == &scm_t)
-      return append2 (eval (cadar (e), a), eval_quasiquote (cdr (e), a));
-  return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
-}
-#endif
 
 scm *
 add_environment (scm *a, char *name, scm *x)
@@ -1332,20 +1150,14 @@ mes_environment ()
   a = add_environment (a, "#t", &scm_t);
   a = add_environment (a, "#f", &scm_f);
   a = add_environment (a, "*unspecified*", &scm_unspecified);
-  a = add_environment (a, "label", &scm_label);
-  a = add_environment (a, "lambda", &scm_lambda);
+  a = add_environment (a, "lambda", &symbol_lambda);
   a = add_environment (a, "*macro*", &scm_nil);
   a = add_environment (a, "*dot*", &scm_dot);
-  a = add_environment (a, "current-module", &scm_symbol_current_module);
+  a = add_environment (a, "current-module", &symbol_current_module);
 
-  // builtins, for closure_body
-  a = add_environment (a, "cond", &scm_symbol_cond);
-
-//   a = add_environment (a, "'", &scm_quote);
-// #if QUASIQUOTE
-//   a = add_environment (a, ",", &scm_unquote);
-//   a = add_environment (a, "`", &scm_quasiquote);
-// #endif
+  a = add_environment (a, "begin", &symbol_begin);
+  a = add_environment (a, "cond", &symbol_cond);
+  a = add_environment (a, "list", &symbol_list);
 
 #include "environment.i"
   
@@ -1355,7 +1167,7 @@ mes_environment ()
 scm *
 make_lambda (scm *args, scm *body)
 {
-  return cons (&scm_lambda, cons (args, body));
+  return cons (&symbol_lambda, cons (args, body));
 }
 
 scm *
@@ -1363,96 +1175,23 @@ define (scm *x, scm *a)
 {
   if (atom_p (cadr (x)) != &scm_f)
     return cons (cadr (x), eval (caddr (x), cons (cons (cadr (x), cadr (x)), a)));
-#if DEBUG
-  scm *name = caadr (x);
-  scm *args = cdadr (x);
-  scm *body = cddr (x);
-  printf ("\nc:define name=");
-  display (name);
-  printf (" args=");
-  display (args);
-  printf (" body=");
-  display (body);
-  printf ("\ndefine=");
-  scm *aa = cons (name, make_lambda (args, body));
-  display (aa);
-  puts ("");
-#endif
-  scm *e = cdr (x);
-  //return cons (caadr (x), make_lambda (cdadr (x), cddr (x)));;
   scm *p = pairlis (cadr (x), cadr (x), a);
-  // eval for closure_body
   return cons (caadr (x), eval (make_lambda (cdadr (x), cddr (x)), p));
 }
 
 scm *
 define_macro (scm *x, scm *a)
 {
-#if DEBUG
-  scm *name = caadr (x);
-  scm *args = cdadr (x);
-  scm *body = cddr (x);
-  printf ("\nc:define_macro name=");
-  display (name);
-  printf (" args=");
-  display (args);
-  printf (" body=");
-  display (body);
-  printf ("\nmacro=");
-  scm *aa =cons (&scm_macro,
-                 cons (cons (name, make_lambda (args, body)),
-                       cdr (assq (&scm_macro, a))));
-  display (aa);
-  puts ("");
-#endif
-  scm *macros = assq (&scm_macro, a);
+  scm *macros = assq (&symbol_macro, a);
   scm *macro;
   if (atom_p (cadr (x)) != &scm_f)
-    //macro = cons (cadr (x), eval (caddr (x), a));
-    macro = cons (cadr (x), caddr (x));
-    // FIXME: closure inside macros?
-  //macro = cons (cadr (x), eval (caddr (x), cons (cons (cadr (x), cadr (x)), a)));
+    macro = cons (cadr (x), eval (caddr (x), cons (cons (cadr (x), cadr (x)), a)));
   else {
     scm *p = pairlis (cadr (x), cadr (x), a);
-    macro = cons (caadr(x), make_lambda (cdadr (x), cddr (x)));
-    // FIXME: closure inside macros?
-    // macro = cons (caadr(x), eval (make_lambda (cdadr (x), cddr (x)), p));
+    macro = cons (caadr(x), eval (make_lambda (cdadr (x), cddr (x)), p));
   }
   set_cdr_x (macros, cons (macro, cdr (macros)));
   return a;
-}
-
-scm *
-begin_env (scm *body, scm *a)
-{
-  if (body == &scm_nil) return &scm_unspecified;
-  scm *e = car (body);
-#if DEBUG
-  printf ("\nc:begin_env e=");
-  display (e);
-  puts ("");
-#endif
-  if (e->type == PAIR) {
-    if (eq_p (car (e), &scm_symbol_define) == &scm_t)
-      return begin_env (cdr (body), cons (define (e, a), a));
-    else if (eq_p (car (e), &scm_symbol_define_macro) == &scm_t)
-      return begin_env (cdr (body), cons (define_macro (e, a), a));
-    else if (eq_p (car (e), &scm_symbol_set_x) == &scm_t) {
-      set_env_x (cadr (e), eval (caddr (e), a), a);
-      return begin_env (cdr (body), a);
-    }
-#if BOOT
-    else if (eq_p (e, &scm_symbol_EOF) == &scm_t)
-      return apply_env (cdr (assq (&scm_symbol_loop2, a)),
-                        cons (&scm_unspecified, cons (&scm_t, cons (a, &scm_nil))), a);
-    else if (eq_p (e, &scm_symbol_EOF2) == &scm_t)
-      return make_symbol ("exit boot");
-#endif
-  }
-  scm *result = eval (e, a);
-  if (cdr (body) == &scm_nil)
-    return result;
-  return begin_env (cdr (body), a);
 }
 
 scm *
@@ -1466,7 +1205,7 @@ int
 main (int argc, char *argv[])
 {
   scm *a = mes_environment ();
-  display (begin_env (read_file (readenv (a), a), a));
+  display (eval (cons (&symbol_begin, read_file (readenv (a), a)), a));
   newline ();
   return 0;
 }
