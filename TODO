@@ -7,6 +7,16 @@ Find out how to hook-up sc-expand in eval/apply.
 ** bugs
 See bugs/
 ** run PEG
+*** Simple Guile test:
+    make guile-peg
+*** PEG on Mes does not work yet:
+    make peg
+**** v define-syntax-rule
+**** v assq-ref
+**** v assq-set!
+**** datum->syntax
+**** syntax->datum
+**** syntax-case
 ** parse C using PEG 
 http://piumarta.com/software/peg/
 ** implement core primitives: DONE

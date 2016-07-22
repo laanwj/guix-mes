@@ -132,6 +132,10 @@
 (pass-if "memq" (sequal? (memq 'b '(a b c)) '(b c)))
 (pass-if "memq" (seq? (memq 'd '(a b c)) #f))
 (pass-if "member" (sequal? (member '(a) '((a) b c)) '((a) b c)))
+(pass-if "assq-ref" (seq? (assq-ref '((b . 1) (c . 2)) 'c) 2))
+(pass-if "assq-ref 2" (seq? (assq-ref '((b . 1) (c . 2)) 'a) #f))
+(pass-if "assq-set!" (sequal? (assq-set! '((b . 1)) 'a 0) '((a . 0) (b . 1))))
+(pass-if "assq-set! 2" (sequal? (assq-set! '((a . 0)) 'a 1) '((a . 1))))
 
 ;; works, but debugging is foo
 ;; (cond ((defined? 'loop2)
@@ -191,7 +195,7 @@
 (pass-if "closure 3" (sequal? (x) '(0 0)))
 
 (pass-if "closure 4 "
-  (seq? (begin
+  (seq? (let ()
           (let ((count (let ((counter 0))
                          (lambda ()
                            counter))))
@@ -200,7 +204,7 @@
 
 (pass-if "closure 5 "
          (seq?
-          (begin
+          (let ()
             (define name? 2)
             (define (foo)
               (define name? 0)
@@ -210,7 +214,7 @@
 
 (pass-if "closure 6 "
          (seq?
-          (begin
+          (let ()
             (define foo
               (lambda ()
                 (define name? symbol?)
