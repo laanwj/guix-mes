@@ -1,0 +1,37 @@
+-*-mode:org-*-
+* Booting from LISP-1.5 into Mes
+
+Mes started out experimenting with booting from a hex-coded minimal
+LISP-1.5 (prototype in mes.c), into an intepreted full-flegded Scheme.
+
+When EOF is read, the LISP-1.5 machine calls loop2 from loop2.mes,
+which reads the rest of stdin and takes over control.  The functions
+readenv, eval and apply-env in mes.mes introduced define, define-macro
+quasiquote and macro expansion.
+
+While this works, it's amazingly slow.  We implemented a full reader
+in mes.c, which makes running mes:apply-env mes:eval somewhat
+bearable, still over 1000x slower than running mes.c.
+
+Bootstrapping has been removed and mes.c implements enough of R3RS to
+run a macro-based define-syntax and syntax-rules.
+
+loop.mes and mes.mes are unused and lagging behind.  Probably it's not
+worth considering this route without a VM.  GNU Epsilon is taking the
+more usual VM-route to provide multiple personas.  While that sounds
+very cool, Lisp/Scheme, bootstrapping and trusted binaries are
+probably not in scope as there is no mention of such things; only ML
+is mentioned while Guile is used for bootstrapping.
+
+mes.c is ~1200 lines which seems much too big to start translating it
+to assembly/hex.
+
+* Garbage collection
+Mes is using malloc without freeing anything, memory is patient these
+days :-)
+
+* The [GuixSD] boostrap binaries
+** Run a C parser on Mes
+*** Find/port a PEG C and parse minimal C program
+*** Generate an executable from this C-AST
+*** Find a tiny C compiler that can compile gcc

@@ -5,17 +5,7 @@ Using define-macro-based version.
 ** psyntax.pp
 Find out how to hook-up sc-expand in eval/apply.
 ** bugs
-*** c2.mes
-*** c4.mes
-*** v c5.mes
-*** v c0.mes
-*** v closure.mes
-*** v c1.mes
-*** v c3.mes
-*** v using (let () ...) in macro.mes/syntax.mes
-*** v syntax.mes: closuring name? etc in syntax.mes
-*** v syntax.mes: closuring: indicators: eval: no such symbol: ---
-*** <=, => take only 2 arguments
+See bugs/
 ** run PEG
 ** parse C using PEG 
 http://piumarta.com/software/peg/
