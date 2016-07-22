@@ -1,42 +1,3 @@
-
-;; (define (run x)
-;;   (define (test? y) (display "testing:") (display y) (newline) (eq? x y))
-;;   (test? 3)
-;;   )
-
-;; (display "(run 3):")
-;; (display (run 3))
-;; (newline)
-;; (display "(run 4):")
-;; (display (run 4))
-;; (newline)
-
-(define (fm a)
-  (define-macro (a b)
-    (display b)
-    (newline)
-    "boo"))
-
-(display "f-define-macro: ")
-(fm 'dinges)
-(a c)
-(newline)
-
-
-;; (define-macro (m a)
-;;   `(define-macro (,a b)
-;;      (display "b")
-;;      (display b)
-;;      (newline)))
-
-;; (display "define-macro: ")
-;; (m dinges)
-;; (newline)
-;; (display "running dinges: ")
-;; (dinges c)
-;; (newline)
-
-
 (define-macro (d-s n t)
   ;; (display "D-S: ")
   ;; (display `(define-macro (,n . a)
@@ -59,9 +20,9 @@
 
 (d-s s-r
      (let ()
-       ;;(define name? symbol?)
+       (define name? symbol?)
        (lambda (. n-a)
-         (define name? symbol?)
+         ;;(define name? symbol?)
         (display "YEAH:")
         (display n-a)
         (display (name? n-a))

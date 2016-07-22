@@ -1,0 +1,40 @@
+(define (split-params bindings params)
+  (cond ((null? bindings) params)
+        (#t (split-params (cdr bindings)
+                          (append params (cons (caar bindings) '()))))))
+
+(define (split-values bindings values)
+  (cond ((null? bindings) values)
+        (#t (split-values (cdr bindings)
+                          (append values (cdar bindings) '())))))
+
+(define-macro (simple-let bindings rest)
+  `((lambda ,(split-params bindings '()) ,@rest)
+    ,@(split-values bindings '())))
+
+(define-macro (let-loop label bindings . rest)
+  `(let ((,label *unspecified*))
+     (let ((,label (lambda ,(split-params bindings '()) ,@rest)))
+       (,label ,@(split-values bindings '())))))
+
+(define-macro (let-loop label bindings rest)
+  `((lambda (,label)
+      (display "loop") (newline)
+      (set! ,label (lambda ,(split-params bindings '()) ,@rest))
+      (,label ,@(split-values bindings '())))
+    *unspecified*))
+
+(define-macro (let bindings-or-label . rest)
+  `(cond (,(symbol? bindings-or-label)
+          (let-loop ,bindings-or-label ,(car rest) ,(cdr rest)))
+         (#t (simple-let ,bindings-or-label ,rest))))
+
+(display (let ((a "b"))
+           (display "A: ") (display a) (newline) a))
+
+(display (let loop ((lst '(1 2 3)))
+                   (display "LOOP")
+                   (newline)
+                   (cond ((null? lst) '(dun))
+                         (#t (cons (car lst) (loop (cdr lst)))))))
+(newline)

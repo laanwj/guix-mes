@@ -1,0 +1,12 @@
+(define name? 2)
+(define (foo)
+  (define name? 0)
+  (lambda ()
+    name?))
+
+;;; ((foo)) ==>
+;;; (lambda () (display boo: ) (display (name? (quote boo))) (newline))
+;;; apply_env fn=(*lambda* 97 () (display boo: ) (display (name? (quote boo))) (newline)) x=()
+(display ((foo)))
+;;(display (foo))
+

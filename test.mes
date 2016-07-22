@@ -22,11 +22,10 @@
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
 ;; haha, broken.  lat0r
-(define pass 0)
-(define fail 0)
 (define result #f)
 (let ((pass 0)
-      (fail 0))
+      (fail 0)
+      (xresult #f))
   (set! result
     (lambda (. t)
       (cond ((null? t) (list pass fail))
@@ -200,14 +199,25 @@
         0))
 
 (pass-if "closure 5 "
-  (seq? (begin
-          (define foo
-            (lambda ()
-              (define name? symbol?)
+         (seq?
+          (begin
+            (define name? 2)
+            (define (foo)
+              (define name? 0)
+              (lambda () name?))
+            ((foo)))
+          0))
+
+(pass-if "closure 6 "
+         (seq?
+          (begin
+            (define foo
               (lambda ()
-                (name? 'boo))))
-          ((foo)))
-        #t))
+                (define name? symbol?)
+                (lambda ()
+                  (name? 'boo))))
+            ((foo)))
+               #t))
 
 (newline)
 (display "passed: ") (display (car (result))) (newline)

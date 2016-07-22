@@ -1,6 +1,6 @@
 .PHONY: all check default 
-CFLAGS=-std=c99 -O3 -finline-functions
-#CFLAGS=-std=c99 -g
+#CFLAGS=-std=c99 -O3 -finline-functions
+CFLAGS=-std=c99 -g
 
 default: all
 
@@ -9,7 +9,7 @@ all: mes
 mes: mes.c mes.h
 
 mes.h: mes.c GNUmakefile
-	( echo '#if MES'; echo '#if MES' 1>&2;\
+	( echo '#if MES_C'; echo '#if MES_FULL' 1>&2;\
 	grep -E '^(scm [*])*[a-z0-9_]+ \(.*\)( {|$$)' $< | grep -Ev '\(.*(char |bool |int )' | sed -e 's,^scm [*],,' | sort |\
 		while read f; do\
 			fun=$$(echo $$f | sed -e 's,^scm [*],,' -e 's,{.*,,');\
