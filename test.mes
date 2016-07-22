@@ -199,6 +199,16 @@
             (count)))
         0))
 
+(pass-if "closure 5 "
+  (seq? (begin
+          (define foo
+            (lambda ()
+              (define name? symbol?)
+              (lambda ()
+                (name? 'boo))))
+          ((foo)))
+        #t))
+
 (newline)
 (display "passed: ") (display (car (result))) (newline)
 (display "failed: ") (display (cadr (result))) (newline)

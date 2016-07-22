@@ -273,9 +273,6 @@ apply_env (scm *fn, scm *x, scm *a)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
-      scm *efn = eval (fn,  a);
-      if (efn->type == NUMBER || efn == &scm_f || efn == &scm_t) assert (!"apply bool");
-      return apply_env (efn, x, a);
     }
   else if (car (fn) == &symbol_lambda)
     return eval (cons (&symbol_begin, cddr (fn)), pairlis (cadr (fn), x, a));
@@ -294,7 +291,9 @@ apply_env (scm *fn, scm *x, scm *a)
     scm *e = eval (r, a);
     return apply_env (e, x, a);
   }
-  return &scm_unspecified;
+  scm *efn = eval (fn,  a);
+  if (efn->type == NUMBER || efn == &scm_f || efn == &scm_t) assert (!"apply bool");
+  return apply_env (efn, x, a);
 }
 
 scm *
