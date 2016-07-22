@@ -21,7 +21,7 @@
 ;; The Maxwell Equations of Software -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
-;; haha, broken.  lat0r
+;; haha, broken...lat0r
 (define result #f)
 (let ((pass 0)
       (fail 0)

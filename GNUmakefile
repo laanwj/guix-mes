@@ -1,6 +1,6 @@
 .PHONY: all check default 
-#CFLAGS=-std=c99 -O3 -finline-functions
-CFLAGS=-std=c99 -g
+CFLAGS=-std=c99 -O3 -finline-functions
+#CFLAGS=-std=c99 -g
 
 default: all
 

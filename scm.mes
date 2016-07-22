@@ -44,7 +44,6 @@
 
 (define-macro (let-loop label bindings rest)
   `((lambda (,label)
-      (display "loop") (newline)
       (set! ,label (lambda ,(split-params bindings '()) ,@rest))
       (,label ,@(split-values bindings '())))
     *unspecified*))

@@ -1,7 +1,9 @@
 -*-mode:org-*-
 * define-syntax and syntax-rules
 ** syntax.mes
-** or psyntax.pp
+Using define-macro-based version.
+** psyntax.pp
+Find out how to hook-up sc-expand in eval/apply.
 ** bugs
 *** c2.mes
 *** c4.mes
@@ -11,8 +13,8 @@
 *** v c1.mes
 *** v c3.mes
 *** v using (let () ...) in macro.mes/syntax.mes
-*** syntax.mes: closuring name? etc in syntax.mes
-*** syntax.mes: closuring: indicators: eval: no such symbol: ---
+*** v syntax.mes: closuring name? etc in syntax.mes
+*** v syntax.mes: closuring: indicators: eval: no such symbol: ---
 *** <=, => take only 2 arguments
 ** run PEG
 ** parse C using PEG 
