@@ -1,0 +1,6 @@
+(define make-record make-vector)
+(define record-set! vector-set!)
+(define record? vector?)
+(define (record-type x) (vector-ref x 0))
+(define record-ref vector-ref)
+

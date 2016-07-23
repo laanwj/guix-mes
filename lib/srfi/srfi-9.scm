@@ -2,7 +2,7 @@
 
 ;; There's no implicit name concatenation, so it can be defined
 ;; entirely using syntax-rules.  Example:
-;;  (define-record-type foo type/foo
+;;  (define-record-type foo
 ;;    (make-foo x y)
 ;;    foo?              - predicate name is optional
 ;;    (x foo-x)
@@ -13,18 +13,18 @@
 
 (define-syntax define-record-type
   (syntax-rules ()
-    ((define-record-type id type
+    ((define-record-type type
        (constructor arg ...)
        (field . field-stuff)
        ...)
-     (begin (define type (make-record-type 'id '(field ...)))
+     (begin (define type (make-record-type 'type '(field ...)))
             (define constructor (record-constructor type '(arg ...)))
             (define-accessors type (field . field-stuff) ...)))
-    ((define-record-type id type
+    ((define-record-type type
        (constructor arg ...)
        pred
        more ...)
-     (begin (define-record-type id type
+     (begin (define-record-type type
               (constructor arg ...)
               more ...)
             (define pred (record-predicate type))))))

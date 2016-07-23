@@ -835,9 +835,13 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
     if (!cont) printf (")");
   }
   else if (x->type == VECTOR) {
-    printf ("#[%d](", x->length);
-    // for (int i = 0; i < x->length; i++)
-    //   display_helper (x->vector[i], true, i ? " " : "", false);
+    printf ("#(", x->length);
+    for (int i = 0; i < x->length; i++) {
+      if (x->vector[i]->type == VECTOR)
+        printf ("%s#(...)", i ? " " : "");
+      else
+        display_helper (x->vector[i], true, i ? " " : "", false);
+    }
     printf (")");
   }
   else if (atom_p (x) == &scm_t) printf ("%s", x->name);

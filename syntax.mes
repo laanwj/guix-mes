@@ -39,8 +39,6 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-(display "mes:define-syntax...")
-
 (define-macro (define-syntax macro-name transformer . stuff)
   `(define-macro (,macro-name . args)
      (,transformer (cons ',macro-name args)
@@ -57,11 +55,6 @@
 ;;     ((or e) e)
 ;;     ((or e1 e ...) (let ((temp e1))
 ;;		       (if temp temp (or e ...))))))
-
-(newline)
-
-(display "mes:define-syntax syntax-rules...")
-(newline)
 
 (define-syntax syntax-rules
    (let ()
