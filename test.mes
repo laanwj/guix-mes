@@ -32,9 +32,8 @@
             ((car t) (display ": pass") (newline) (set! pass (+ pass 1)))
             (#t (display ": fail") (newline) (set! fail (+ fail 1)))))))
 
-;;(define (guile?) (defined? 'gc))
-(define (guile?) #f)
-(when (guile?)
+(define guile? (defined? 'gc))
+(when guile?
   (module-define! (current-module) 'builtin? (lambda (. x) #t))
   (use-modules (srfi srfi-1)))
 
@@ -167,7 +166,7 @@
 ;;(pass-if "builtin?" (builtin? cond))
 (pass-if "procedure?" (procedure? builtin?))
 (pass-if "procedure?" (procedure? procedure?))
-(when (not (guile?))
+(when (not guile?)
   (pass-if "gensym" (seq? (gensym) 'g0))
   (pass-if "gensym" (seq? (gensym) 'g1))
   (pass-if "gensym" (seq? (gensym) 'g2)))
@@ -235,7 +234,7 @@
 ;;      (circular-list? x))
 ;;    #t))
 
-(pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes)) 'mes))
+(pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes) (guile (display ": pass: *GUILE*") 'mes)) 'mes))
 
 (newline)
 (display "passed: ") (display (car (result))) (newline)

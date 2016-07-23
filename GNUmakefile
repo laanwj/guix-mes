@@ -30,10 +30,13 @@ mes.h: mes.c GNUmakefile
 			echo "a = add_environment (a, \"$$scm_name\", &scm_$$name);" 1>&2;\
 	done; echo '#endif'; echo '#endif' 1>&2) > $@ 2>environment.i
 
-check: all
+check: all guile-check
 	./mes.test
 	./mes.test ./mes
 	cat scm.mes lib/srfi/srfi-0.scm test.mes | ./mes
+
+guile-check:
+	guile -s test.mes
 
 run: all
 	cat scm.mes test.mes | ./mes
