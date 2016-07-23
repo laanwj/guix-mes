@@ -236,6 +236,12 @@
 
 (pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes) (guile (display ": pass: *GUILE*") 'mes)) 'mes))
 
+(begin (define *top-begin-a* '*top-begin-a*))
+(pass-if "top begin " (seq? (and (defined? '*top-begin-a*) *top-begin-a*) '*top-begin-a*))
+
+(let () (define *top-let-a* '*top-let-a*) #f)
+(pass-if "top let " (seq? (and (defined? '*top-let-a*) *top-let-a*) #f))
+
 (newline)
 (display "passed: ") (display (car (result))) (newline)
 (display "failed: ") (display (cadr (result))) (newline)
