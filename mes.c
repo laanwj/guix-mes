@@ -342,17 +342,8 @@ eval (scm *e, scm *a)
             scm *entry = assq (name, a);
             scm *x = cdar (defines);
             set_cdr_x (entry, cdr (define (x, a)));
-            if (eq_p (car (x), &symbol_define_macro) == &scm_t)
-              // HACK: macros are global
-              // should we go back to (*macro* . ...) entry?
-              // scm *last = last_pair (a);
-              // printf ("\n LAST=");
-              // display (last);
-              // puts ("");
-              set_cdr_x (last_pair (a), cons (cons (name, cdr (define (x, a))), &scm_nil));
-              // printf ("a=");
-              // display (a);
-              // puts ("");
+            // if (eq_p (car (x), &symbol_define_macro) == &scm_t)
+            //   set_cdr_x (last_pair (a), cons (cons (name, cdr (define (x, a))), &scm_nil));
             defines = cdr (defines);
           }
           scm *fubar = cons (&scm_dot, &scm_dot);
@@ -372,8 +363,8 @@ eval (scm *e, scm *a)
         return eval_quasiquote (cadr (e), add_unquoters (a));
       if (car (e) == &symbol_cond)
         return evcon (cdr (e), a);
-      if (eq_p (car (e), &symbol_define) == &scm_t)
-        return define (e, a);
+      // if (eq_p (car (e), &symbol_define) == &scm_t)
+      //   return define (e, a);
       if (eq_p (car (e), &symbol_define_macro) == &scm_t)
         return define (e, a);
       if ((macro = lookup_macro (car (e), a)) != &scm_f)
