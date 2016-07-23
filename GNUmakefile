@@ -53,11 +53,20 @@ syntax.test: syntax.mes syntax-test.mes
 guile-syntax: syntax.test
 	guile -s $^
 
+syntax-case: all
+	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes | ./mes
+
+syntax-case.test: syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes
+	cat $^ > $@
+
+guile-syntax-case: syntax-case.test
+	guile -s $^
+
 macro: all
 	cat scm.mes macro.mes | ./mes
 
 peg: all
-	cat scm.mes syntax.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
+	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
 
 peg.test: peg/pmatch.scm peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes
 	cat $^ | sed 's,\(;; Packages the results of a parser\),(when (guile?) (set! compile-peg-pattern (@@ (ice-9 peg codegen) compile-peg-pattern)))\n\1,' > $@
@@ -72,3 +81,5 @@ clean:
 
 record: all
 	cat scm.mes syntax.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm record.mes |./mes
+
+

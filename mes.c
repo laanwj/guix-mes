@@ -92,6 +92,12 @@ scm symbol_quasiquote = {SYMBOL, "quasiquote"};
 scm symbol_unquote = {SYMBOL, "unquote"};
 scm symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
 
+scm symbol_sc_expand = {SYMBOL, "sc-expand"};
+scm symbol_syntax = {SYMBOL, "syntax"};
+scm symbol_quasisyntax = {SYMBOL, "quasisyntax"};
+scm symbol_unsyntax = {SYMBOL, "unsyntax"};
+scm symbol_unsyntax_splicing = {SYMBOL, "unsyntax-splicing"};
+
 scm symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm symbol_current_module = {SYMBOL, "current-module"};
 scm symbol_define = {SYMBOL, "define"};
@@ -219,6 +225,35 @@ unquote_splicing (scm *x) //int must not add to environment
 scm *unquote_splicing (scm *x);
 scm scm_unquote_splicing = {FUNCTION1, .name="unquote-splicing", .function1=&unquote_splicing};
 
+scm *
+syntax (scm *x)
+{
+  return cons (&symbol_syntax, x);
+}
+
+scm *
+quasisyntax (scm *x)
+{
+  return cons (&symbol_quasisyntax, x);
+}
+
+scm *
+unsyntax (scm *x) //int must not add to environment
+{
+  return cons (&symbol_unsyntax, x);
+}
+scm *unsyntax (scm *x);
+scm scm_unsyntax = {FUNCTION1, .name="unsyntax", .function1=&unsyntax};
+
+scm *
+unsyntax_splicing (scm *x) //int must not add to environment
+{
+  return cons (&symbol_unsyntax_splicing, x);
+}
+scm *unsyntax_splicing (scm *x);
+scm scm_unsyntax_splicing = {FUNCTION1, .name="unsyntax-splicing", .function1=&unsyntax_splicing};
+
+
 //Library functions
 
 // Derived, non-primitives
@@ -316,7 +351,7 @@ eval (scm *e, scm *a)
     scm *y = assq (e, a);
     if (y == &scm_f) {
       //return e;
-      printf ("eval: no such symbol: %s\n", e->name);
+      fprintf (stderr, "eval: no such symbol: %s\n", e->name);
       assert (!"unknown symbol");
     }
     return cdr (y);
@@ -325,6 +360,8 @@ eval (scm *e, scm *a)
     return e;
   else if (atom_p (car (e)) == &scm_t)
     {
+      if ((macro = lookup_macro (car (e), a)) != &scm_f)
+        return eval (apply_env (macro, cdr (e), a), a);
       if (car (e) == &symbol_quote)
         return cadr (e);
       if (car (e) == &symbol_begin)
@@ -351,10 +388,11 @@ eval (scm *e, scm *a)
         return define (e, a);
       if (eq_p (car (e), &symbol_define_macro) == &scm_t)
         return define (e, a);
-      if ((macro = lookup_macro (car (e), a)) != &scm_f)
-        return eval (apply_env (macro, cdr (e), a), a);
       if (car (e) == &symbol_set_x)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
+      if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
+        if (cdr (macro) != &scm_f)
+          return eval (apply_env (cdr (macro), e, a), a);
     }
   return apply_env (car (e), evlis (cdr (e), a), a);
 }
@@ -668,21 +706,33 @@ lookup (char *x, scm *a)
   if (!strcmp (x, symbol_cond.name)) return &symbol_cond;
   if (!strcmp (x, symbol_current_module.name)) return &symbol_current_module;
   if (!strcmp (x, symbol_lambda.name)) return &symbol_lambda;
+
   if (!strcmp (x, symbol_quasiquote.name)) return &symbol_quasiquote;
   if (!strcmp (x, symbol_quote.name)) return &symbol_quote;
   if (!strcmp (x, symbol_set_x.name)) return &symbol_set_x;
   if (!strcmp (x, symbol_unquote.name)) return &symbol_unquote;
   if (!strcmp (x, symbol_unquote_splicing.name)) return &symbol_unquote_splicing;
 
-  if (!strcmp (x, scm_car.name)) return &scm_car;
-  if (!strcmp (x, scm_cdr.name)) return &scm_cdr;
-  if (!strcmp (x, scm_display.name)) return &scm_display;
-  if (!strcmp (x, scm_builtin_list.name)) return &scm_builtin_list;
+  if (!strcmp (x, symbol_quasisyntax.name)) return &symbol_quasisyntax;
+  if (!strcmp (x, symbol_syntax.name)) return &symbol_syntax;
+  if (!strcmp (x, symbol_set_x.name)) return &symbol_set_x;
+  if (!strcmp (x, symbol_unsyntax.name)) return &symbol_unsyntax;
+  if (!strcmp (x, symbol_unsyntax_splicing.name)) return &symbol_unsyntax_splicing;
 
   if (*x == '\'') return &symbol_quote;
   if (*x == '`') return &symbol_quasiquote;
   if (*x == ',' && *(x+1) == '@') return &symbol_unquote_splicing;
   if (*x == ',') return &symbol_unquote;
+
+  if (!strcmp (x, scm_car.name)) return &scm_car;
+  if (!strcmp (x, scm_cdr.name)) return &scm_cdr;
+  if (!strcmp (x, scm_display.name)) return &scm_display;
+  if (!strcmp (x, scm_builtin_list.name)) return &scm_builtin_list;
+
+  if (*x == '#' && *(x+1) == '\'') return &symbol_syntax;
+  if (*x == '#' && *(x+1) == '`') return &symbol_quasisyntax;
+  if (*x == '#' && *(x+1) == ',' && *(x+2) == '@') return &symbol_unsyntax_splicing;
+  if (*x == '#' && *(x+1) == ',') return &symbol_unsyntax;
 
   return make_symbol (x);
 }
@@ -922,7 +972,20 @@ readword (int c, char* w, scm *a)
       && !w) {return cons (lookup_char (c, a),
                                      cons (readword (getchar (), w, a),
                                            &scm_nil));}
-  if (c == ';') {readcomment (c); return readword ('\n', w, a);}
+  if (c == '#' && peekchar () == ',' && !w) {
+    getchar ();
+    if (peekchar () == '@'){getchar (); return cons (lookup ("#,@", a),
+                                                     cons (readword (getchar (), w, a),
+                                                           &scm_nil));}
+    return cons (lookup ("#,", a), cons (readword (getchar (), w, a), &scm_nil));
+  }
+  if (c == '#'
+     && (peekchar () == '\''
+         || peekchar () == '`')
+     && !w) {char buf[3] = "#"; buf[1] = getchar (); return cons (lookup (buf, a),
+                          cons (readword (getchar (), w, a),
+                                &scm_nil));}
+   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
   if (c == '#' && peekchar () == '\\') {getchar (); return readchar ();}
   if (c == '#' && !w && peekchar () == '(') {getchar (); return list_to_vector (readlist (a));}
   if (c == '#' && peekchar () == '(') {ungetchar (c); return lookup (w, a);}
@@ -1120,6 +1183,7 @@ mes_environment ()
   a = cons (cons (&scm_unspecified, &scm_unspecified), a);
   a = cons (cons (&symbol_begin, &symbol_begin), a);
   a = cons (cons (&symbol_quote, &scm_quote), a);
+  a = cons (cons (&symbol_syntax, &scm_syntax), a);
   
 #if MES_FULL
 #include "environment.i"
