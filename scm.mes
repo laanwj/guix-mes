@@ -94,6 +94,11 @@
         (#t (eq? a b))))
 
 (define (vector . rest) (list->vector rest))
+(define (make-vector n . x)
+  (let ((fill (if (pair? x) (cdr x) *unspecified*)))
+    (list->vector (let loop ((n n))
+                    (if (= 0 n) '()
+                        (cons fill (loop (- n 1))))))))
 
 (define (apply f args)
   (eval (cons f args) (current-module)))
@@ -204,3 +209,6 @@
   (let loop ((lst lst))
     (if (or (null? lst) (null? (cdr lst))) lst
         (loop (cdr lst)))))
+
+(define else #t)
+(define (unspecific) (if #f #f))

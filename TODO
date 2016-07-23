@@ -19,6 +19,19 @@ See bugs/
 **** syntax-case
 ** parse C using PEG 
 http://piumarta.com/software/peg/
+** C grammar in lex/yacc
+https://github.com/rabishah/Mini-C-Compiler-using-Flex-And-Yacc
+https://www.lysator.liu.se/c/ANSI-C-grammar-y.html
+http://www2.cs.uidaho.edu/~jeffery/courses/nmsu/370/cgram.y
+https://github.com/ProgramLeague/C-Compilerp
+*** parsing in scheme
+ftp://ftp.cs.indiana.edu/pub/scheme-repository/code/lang/cgram-ll1
+** Tiny C
+https://en.wikipedia.org/wiki/Tiny_C_Compiler
+** Sub C
+http://www.t3x.org/subc/index.html
+**
+https://groups.google.com/forum/#!topic/comp.lang.lisp/VPuX0VsjTTE
 ** implement core primitives: DONE
 begin
 define

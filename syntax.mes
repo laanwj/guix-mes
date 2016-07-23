@@ -4,7 +4,7 @@
   (display "syntax-error:")
   (display message)
   (display ":")
-  ;;(display thing)
+  (display thing)
   (newline))
 
 ;;; Adapted from scheme48-1.1/scheme/alt/syntax.scm
@@ -246,5 +246,3 @@
   `(define-syntax ,(car id-pattern)
      (syntax-rules ()
        ((,(car id-pattern) . ,(cdr id-pattern)) ,@template))))
-
-(define else #t)

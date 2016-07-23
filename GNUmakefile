@@ -33,16 +33,39 @@ mes.h: mes.c GNUmakefile
 check: all
 	./mes.test
 	./mes.test ./mes
-	cat scm.mes test.mes | ./mes
+	cat scm.mes lib/srfi/srfi-0.scm test.mes | ./mes
 
 run: all
 	cat scm.mes test.mes | ./mes
 
-syntax: all
-	cat scm.mes syntax.mes | ./mes
+psyntax: all
+	cat scm.mes psyntax.mes psyntax.pp psyntax2.mes | ./mes
 
-guile-syntax:
-	guile -s syntax.mes
+syntax: all
+	cat scm.mes syntax.mes syntax-test.mes | ./mes
+
+syntax.test: syntax.mes syntax-test.mes
+	cat $^ > $@
+
+guile-syntax: syntax.test
+	guile -s $^
 
 macro: all
 	cat scm.mes macro.mes | ./mes
+
+peg: all
+	cat scm.mes syntax.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
+
+peg.test: peg/pmatch.scm peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes
+	cat $^ | sed 's,\(;; Packages the results of a parser\),(when (guile?) (set! compile-peg-pattern (@@ (ice-9 peg codegen) compile-peg-pattern)))\n\1,' > $@
+
+guile-peg: peg.test
+#	guile -s peg-test.mes
+#	@echo "======================================="
+	guile -s $^
+
+clean:
+	rm -f mes environment.i mes.h peg.test syntax.test
+
+record: all
+	cat scm.mes syntax.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm record.mes |./mes
