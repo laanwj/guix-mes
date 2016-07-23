@@ -1,4 +1,22 @@
 ;; -*-scheme-*-
+
+;;; Taken from scheme48-0-21/alt/syntax.scm -- the file itself
+;;; mentions no license or copyright, but this is in COPYING
+
+;; Copyright (c) 1993 by Richard Kelsey and Jonathan Rees.
+
+;;  Use of this program for non-commercial purposes is permitted provided
+;; that such use is acknowledged both in the software itself and in
+;; accompanying documentation.
+
+;;  Use of this program for commercial purposes is also permitted, but
+;; only if, in addition to the acknowledgement required for
+;; non-commercial users, written notification of such use is provided by
+;; the commercial user to the authors prior to the fabrication and
+;; distribution of the resulting software.
+
+
+
 (define (syntax-error message thing)
   (display "syntax-error:")
   (display message)
