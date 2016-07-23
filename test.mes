@@ -33,8 +33,9 @@
             (#t (display ": fail") (newline) (set! fail (+ fail 1)))))))
 
 (define (guile?) (defined? 'gc))
-(if (guile?)
-    (module-define! (current-module) 'builtin? (lambda (. x) #t)))
+(when (guile?)
+  (module-define! (current-module) 'builtin? (lambda (. x) #t))
+  (use-modules (srfi srfi-1)))
 
 (define (seq? a b)
   (or (eq? a b)
@@ -223,6 +224,15 @@
                   (name? 'boo))))
             ((foo)))
                #t))
+
+(pass-if "last-pair " (sequal? (last-pair '(1 2 3 4)) '(4)))
+(pass-if "last-pair 2" (eq? (last-pair '()) '()))
+;; (pass-if "circular-list? "
+;;   (seq?
+;;    (let ((x (list 1 2 3 4)))
+;;      (set-cdr! (last-pair x) (cddr x))
+;;      (circular-list? x))
+;;    #t))
 
 (newline)
 (display "passed: ") (display (car (result))) (newline)

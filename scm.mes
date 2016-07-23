@@ -198,3 +198,9 @@
       (let ((value (number->string counter)))
         (set! counter (+ counter 1))
         (string->symbol (string-append "g" value))))))
+
+;; srfi-1
+(define (last-pair lst)
+  (let loop ((lst lst))
+    (if (or (null? lst) (null? (cdr lst))) lst
+        (loop (cdr lst)))))
