@@ -309,7 +309,7 @@ eval (scm *e, scm *a)
   if (e->type == SYMBOL) {
     scm *y = assq (e, a);
     if (y == &scm_f) {
-      return e;
+      //return e;
       printf ("eval: no such symbol: %s\n", e->name);
       assert (!"unknown symbol");
     }
@@ -1108,6 +1108,11 @@ mes_environment ()
 {
   scm *a = &scm_nil;
 
+  a = cons (cons (&scm_f, &scm_f), a);
+  a = cons (cons (&scm_nil, &scm_nil), a);
+  a = cons (cons (&scm_t, &scm_t), a);
+  a = cons (cons (&scm_unspecified, &scm_unspecified), a);
+  
 #include "environment.i"
   
   return a;

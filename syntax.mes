@@ -41,7 +41,7 @@
 
 (display "mes:define-syntax...")
 
-(define-macro (mes:define-syntax macro-name transformer . stuff)
+(define-macro (define-syntax macro-name transformer . stuff)
   `(define-macro (,macro-name . args)
      (,transformer (cons ',macro-name args)
                              (lambda (x) x)
@@ -63,7 +63,7 @@
 (display "mes:define-syntax syntax-rules...")
 (newline)
 
-(mes:define-syntax syntax-rules
+(define-syntax syntax-rules
    (let ()
      (define name? symbol?)
 
@@ -242,25 +242,9 @@
 
       (make-transformer rules))))
 
+(define-macro (define-syntax-rule id-pattern . template)
+  `(define-syntax ,(car id-pattern)
+     (syntax-rules ()
+       ((,(car id-pattern) . ,(cdr id-pattern)) ,@template))))
 
-(mes:define-syntax mes:or
-  (syntax-rules ()
-    ((mes:or) #f)
-    ((mes:or e) e)
-    ((mes:or e1 e ...) (let ((temp e1))
-                         (cond (temp temp) (#t (or e ...)))))))
-
-(display "(mes:or #f (= 0 1) 'hello-syntax-world): ")
-(display (mes:or #f (= 0 1) 'hello-syntax-world))
-(display (mes:or #f '==>baaa))
-(newline)
-
-(mes:define-syntax mes:when
-  (syntax-rules ()
-    ((when condition exp ...)
-     (if condition
-         (begin exp ...)))))
-
-(display (mes:when #t "when:hello syntax world"))
-(newline)
-'syntax-dun
+(define else #t)
