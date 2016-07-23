@@ -32,7 +32,8 @@
             ((car t) (display ": pass") (newline) (set! pass (+ pass 1)))
             (#t (display ": fail") (newline) (set! fail (+ fail 1)))))))
 
-(define (guile?) (defined? 'gc))
+;;(define (guile?) (defined? 'gc))
+(define (guile?) #f)
 (when (guile?)
   (module-define! (current-module) 'builtin? (lambda (. x) #t))
   (use-modules (srfi srfi-1)))
@@ -233,6 +234,8 @@
 ;;      (set-cdr! (last-pair x) (cddr x))
 ;;      (circular-list? x))
 ;;    #t))
+
+(pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes)) 'mes))
 
 (newline)
 (display "passed: ") (display (car (result))) (newline)

@@ -98,8 +98,8 @@
 (define (apply f args)
   (eval (cons f args) (current-module)))
 
-(define (defined? x)
-  (assq x (current-module)))
+(define-macro (defined? x)
+  `(assq ,x (cddr (current-module))))
 
 (define (procedure? p)
   (cond ((builtin? p) #t)
@@ -199,8 +199,6 @@
         (set! counter (+ counter 1))
         (string->symbol (string-append "g" value))))))
 
-
-()
 ;; srfi-1
 (define (last-pair lst)
   (let loop ((lst lst))
