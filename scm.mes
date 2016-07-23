@@ -21,6 +21,15 @@
 ;; The Maxwell Equations of Software -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
+(define-macro (if expr then . else)
+  `(cond
+    (,expr ,then)
+    (#t (cond (,(pair? else) ((lambda () ,@else)))))))
+
+(define-macro (when expr . body)
+  `(if ,expr
+       ((lambda () ,@body))))
+
 (define (list . rest) rest)
 
 (define (split-params bindings params)
@@ -109,7 +118,7 @@
 (define (procedure? p)
   (cond ((builtin? p) #t)
         ((and (pair? p) (eq? (car p) 'lambda)))
-        ((and (pair? p) (eq? (car p) '*lambda*)))
+        ((and (pair? p) (eq? (car p) '*closure*)))
         (#t #f)))
 
 (define (assq-set! alist key val)
@@ -163,15 +172,6 @@
   (or (null? x)
       (and (pair? x) (list? (cdr x)))))
 
-(define-macro (if expr then . else)
-  `(cond
-    (,expr ,then)
-    (#t (cond (,(pair? else) ((lambda () ,@else)))))))
-
-(define-macro (when expr . body)
-  `(if ,expr
-       ((lambda () ,@body))))
-
 (define (unspecified-bindings bindings params)
   (cond ((null? bindings) params)
         (#t (unspecified-bindings
@@ -189,16 +189,8 @@
      ,@(letrec-setters bindings '())
      ,@body))
 
-;; TODO
-;; (define gensym
-;;   (let ((counter 0))
-;;     (lambda (. rest)
-;;       (let ((value (number->string counter)))
-;;         (set! counter (+ counter 1))
-;;         (string->symbol (string-append "g" value))))))
-(define gensym #f)
-(let ((counter 0))
-  (set! gensym
+(define gensym
+  (let ((counter 0))
     (lambda (. rest)
       (let ((value (number->string counter)))
         (set! counter (+ counter 1))

@@ -81,7 +81,7 @@ scm scm_t = {SYMBOL, "#t"};
 scm scm_f = {SYMBOL, "#f"};
 scm scm_unspecified = {SYMBOL, "*unspecified*"};
 
-scm symbol_closure = {SYMBOL, "*lambda*"};
+scm symbol_closure = {SYMBOL, "*closure*"};
 scm symbol_circ = {SYMBOL, "*circ*"};
 scm symbol_lambda = {SYMBOL, "lambda"};
 scm symbol_begin = {SYMBOL, "begin"};
@@ -277,13 +277,17 @@ apply_env (scm *fn, scm *x, scm *a)
       if (builtin_p (fn) == &scm_t)
         return call (fn, x);
     }
-  else if (car (fn) == &symbol_lambda)
-    return eval (cons (&symbol_begin, cddr (fn)), pairlis (cadr (fn), x, a));
+  else if (car (fn) == &symbol_lambda) {
+    scm *p = pairlis (cadr (fn), x, a);
+    return eval (cons (&symbol_begin, cddr (fn)), cons (cons (&symbol_closure, p), p));
+  }
   else if (car (fn) == &symbol_closure) {
     scm *args = caddr (fn);
     scm *body = cdddr (fn);
     a = cdadr (fn);
-    return eval (cons (&symbol_begin, body), pairlis (args, x, a));
+    a = cdr (a);
+    scm *p = pairlis (args, x, a);
+    return eval (cons (&symbol_begin, body), cons (cons (&symbol_closure, p), p));
   }
   else if ((macro = lookup_macro (car (fn), a)) != &scm_f) {
     scm *r = apply_env (eval (macro, a), cdr (fn), a);
@@ -303,6 +307,8 @@ eval (scm *e, scm *a)
 #if DEBUG
   printf ("\neval e=");
   display (e);
+  printf ("\na=");
+  display (a);
   puts ("");
 #endif
   scm *macro;
@@ -324,37 +330,15 @@ eval (scm *e, scm *a)
       if (car (e) == &symbol_begin)
         {
           scm *body = cdr (e);
-          scm *defines = &scm_nil;
-          while (body != &scm_nil) {
-            e = car (body);
-            body = cdr (body);
-            if (e->type == PAIR
-                && (eq_p (car (e), &symbol_define) == &scm_t
-                    || eq_p (car (e), &symbol_define_macro) == &scm_t)) {
-              defines = append2 (defines, cons (def (e), &scm_nil));
-              e = &scm_unspecified;
-            }
-            else break;
-          }
-          a = append2 (defines, a);
-          while (defines != &scm_nil) {
-            scm *name = caar (defines);
-            scm *entry = assq (name, a);
-            scm *x = cdar (defines);
-            set_cdr_x (entry, cdr (define (x, a)));
-            // if (eq_p (car (x), &symbol_define_macro) == &scm_t)
-            //   set_cdr_x (last_pair (a), cons (cons (name, cdr (define (x, a))), &scm_nil));
-            defines = cdr (defines);
-          }
-          scm *fubar = cons (&scm_dot, &scm_dot);
-          scm *r = eval (e, cons (fubar, a));
-          if (r->type == PAIR && macro_p (cdr (r)))
-            a = cons (r, a); // macros defining macros...
+          if (body == &scm_nil) return &scm_unspecified;
+          e = car (body);
+          body = cdr (body);
+          scm *r = eval (e, a);
           if (body == &scm_nil) return r;
           return eval (cons (&symbol_begin, body), a);
         }
       if (car (e) == &symbol_lambda)
-        return make_closure (cadr (e), cddr (e), a);
+        return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
       if (car (e) == &symbol_closure)
         return e;
       if (car (e) == &symbol_unquote)
@@ -363,8 +347,8 @@ eval (scm *e, scm *a)
         return eval_quasiquote (cadr (e), add_unquoters (a));
       if (car (e) == &symbol_cond)
         return evcon (cdr (e), a);
-      // if (eq_p (car (e), &symbol_define) == &scm_t)
-      //   return define (e, a);
+      if (eq_p (car (e), &symbol_define) == &scm_t)
+        return define (e, a);
       if (eq_p (car (e), &symbol_define_macro) == &scm_t)
         return define (e, a);
       if ((macro = lookup_macro (car (e), a)) != &scm_f)
@@ -820,6 +804,10 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       printf ("(*circ* . #-1#)");
       return &scm_unspecified;
     }
+    if (car (x) == &symbol_closure) {
+      printf ("(*closure* . #-1#)");
+      return &scm_unspecified;
+    }
     if (car (x) == &scm_quote) {
       printf ("'");
       return display_helper (car (cdr (x)), cont, "", true);
@@ -1129,8 +1117,13 @@ mes_environment ()
   a = cons (cons (&symbol_begin, &symbol_begin), a);
   a = cons (cons (&symbol_quote, &scm_quote), a);
   
+#if MES_FULL
 #include "environment.i"
-  
+#else
+  a = add_environment (a, "display", &scm_display);
+  a = add_environment (a, "newline", &scm_newline);
+#endif
+  a = cons (cons (&symbol_closure, a), a);
   return a;
 }
 
@@ -1143,15 +1136,7 @@ make_lambda (scm *args, scm *body)
 scm *
 make_closure (scm *args, scm *body, scm *a)
 {
-  return cons (&symbol_closure, cons (cons (&symbol_circ, cdr (a)), cons (args, body)));
-}
-
-scm *
-def (scm *x)
-{
-  if (atom_p (cadr (x)) != &scm_f)
-    return cons (cadr (x), x);
-  return cons (caadr (x), x);
+  return cons (&symbol_closure, cons (cons (&symbol_circ, a), cons (args, body)));
 }
 
 scm *
@@ -1168,7 +1153,13 @@ define (scm *x, scm *a)
   }
   if (eq_p (car (x), &symbol_define_macro) == &scm_t)
     e = make_macro (e);
-  return cons (name, e);
+  scm *entry = cons (name, e);
+  scm *aa = cons (entry, &scm_nil);
+  set_cdr_x (aa, cdr (a));
+  set_cdr_x (a, aa);
+  scm *cl = assq (&symbol_closure, a);
+  set_cdr_x (cl, aa);
+  return entry;
 }
  
 scm *
