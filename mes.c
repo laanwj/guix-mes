@@ -28,6 +28,7 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -1076,19 +1077,46 @@ readenv (scm *a)
 }
 
 scm *
-greater_p (scm *a, scm *b)
+greater_p (scm *x/*...*/)
 {
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return a->value > b->value ? &scm_t : &scm_f;
+  int n = INT_MAX;
+  while (x != &scm_nil)
+    {
+      assert (x->car->type == NUMBER);
+      if (x->car->value >= n) return &scm_f;
+      n = x->car->value;
+      x = cdr (x);
+    }
+  return &scm_t;
 }
 
 scm *
-less_p (scm *a, scm *b)
+less_p (scm *x/*...*/)
 {
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return a->value < b->value ? &scm_t : &scm_f;
+  int n = INT_MIN;
+  while (x != &scm_nil)
+    {
+      assert (x->car->type == NUMBER);
+      if (x->car->value <= n) return &scm_f;
+      n = x->car->value;
+      x = cdr (x);
+    }
+  return &scm_t;
+}
+
+scm *
+is_p (scm *x/*...*/)
+{
+  if (x == &scm_nil) return &scm_t;
+  assert (x->car->type == NUMBER);
+  int n = x->car->value;
+  x = cdr (x);
+  while (x != &scm_nil)
+    {
+      if (x->car->value != n) return &scm_f;
+      x = cdr (x);
+    }
+  return &scm_t;
 }
 
 scm *
@@ -1151,14 +1179,6 @@ multiply (scm *x/*...*/)
       x = cdr (x);
     }
   return make_number (n);
-}
-
-scm *
-is_p (scm *a, scm *b)
-{
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return a->value == b->value ? &scm_t : &scm_f;
 }
 
 scm *add_environment (scm *a, char *name, scm *x);

@@ -251,6 +251,26 @@
 (pass-if "apply identity 2" (sequal? (apply identity '((0 1))) '(0 1)))
 (pass-if "apply append" (sequal? (apply append '((1 2) (3 4))) '(1 2 3 4)))
 
+(pass-if "=" (seq? (=) #t))
+(pass-if "= 1" (seq? (= 0) #t))
+(pass-if "= 2" (seq? (= 0 0) #t))
+(pass-if "= 3" (seq? (= 0 0) #t))
+(pass-if "= 4" (seq? (= 0 1 0) #f))
+
+(pass-if "<" (seq? (<) #t))
+(pass-if "< 1" (seq? (< 0) #t))
+(pass-if "< 2" (seq? (< 0 1) #t))
+(pass-if "< 3" (seq? (< 1 0) #f))
+(pass-if "< 4" (seq? (< 0 1 2) #t))
+(pass-if "< 5" (seq? (< 0 2 1) #f))
+
+(pass-if ">" (seq? (>) #t))
+(pass-if "> 1" (seq? (> 0) #t))
+(pass-if "> 2" (seq? (> 1 0) #t))
+(pass-if "> 3" (seq? (> 0 1) #f))
+(pass-if "> 4" (seq? (> 2 1 0) #t))
+(pass-if "> 5" (seq? (> 1 2 0) #f))
+
 (newline)
 (display "passed: ") (display (car (result))) (newline)
 (display "failed: ") (display (cadr (result))) (newline)
