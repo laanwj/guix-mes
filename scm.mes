@@ -182,6 +182,9 @@
 
 (define quotient /)
 
+(define (remainder x y)
+  (- x (* (/ x y) y)))
+
 (define (max x . rest)
   (if (null? rest) x
       (let* ((y (car rest))

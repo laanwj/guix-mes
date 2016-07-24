@@ -102,6 +102,9 @@
 (pass-if "+" (seq? (+ 1 2 3) 6))
 (pass-if "*" (seq? (* 3 3 3) 27))
 (pass-if "/" (seq? (/ 9 3) 3))
+(pass-if "remainder" (seq? (remainder 11 3) 2))
+(pass-if "modulo" (seq? (modulo 11 3) 2))
+
 (pass-if "=" (seq? 3 '3))
 (pass-if "= 2" (not (= 3 '4)))
 (pass-if "if" (seq? (if #t 'true) 'true))
