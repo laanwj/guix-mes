@@ -9,5 +9,7 @@
 /syntax.test
 /paren.test
 /syntax-case.test
+/mescc.test
 ?
 ?.mes
+

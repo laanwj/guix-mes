@@ -91,3 +91,9 @@ paren.test: lib/lalr.scm paren.scm
 
 guile-paren: paren.test
 	echo '___P((()))' | guile -s $^ 
+
+mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
+	cat $^ > $@
+
+guile-mescc: mescc.test
+	cat main.c | guile -s $^ 
