@@ -275,3 +275,10 @@
        (let ((i (char->integer x)))
         (or (and (>= i (char->integer #\A)) (<= i (char->integer #\Z)))
             (and (>= i (char->integer #\a)) (<= i (char->integer #\z)))))))
+
+(define (current-input-port) #f)
+(define (port-filename port) "<stdin>")
+(define (port-line port) 0)
+(define (port-column port) 0)
+(define (ftell port) 0)
+(define (false-if-exception x) x)
