@@ -164,7 +164,7 @@
 
 ;; readenv et al works, but slows down dramatically
 (define (DISABLED-readenv a)
-  (readword (getchar) '() a))
+  (readword (read-char) '() a))
 
 (define (readword c w a)
   ;; (display 'mes-readword:)
@@ -174,59 +174,59 @@
          (cond ((eq? w '()) '())
                (#t (lookup w a))))
         ((eq? c 10) ;; \n
-         (cond ((eq? w '()) (readword (getchar) w a))
-               ;; DOT ((eq? w '(*dot*)) (car (readword (getchar) '() a)))
+         (cond ((eq? w '()) (readword (read-char) w a))
+               ;; DOT ((eq? w '(*dot*)) (car (readword (read-char) '() a)))
                (#t (lookup w a))))
         ((eq? c 32) ;; \space
          (readword 10 w a))
         ((eq? c 40) ;; (
          (cond ((eq? w '()) (readlist a))
-               (#t (ungetchar c) (lookup w a))))
+               (#t (unread-char c) (lookup w a))))
         ((eq? c 41) ;; )
-         (cond ((eq? w '()) (ungetchar c) w)
-               (#t (ungetchar c) (lookup w a))))
+         (cond ((eq? w '()) (unread-char c) w)
+               (#t (unread-char c) (lookup w a))))
         ((eq? c 39) ;; '
          (cond ((eq? w '())
                 (cons (lookup (cons c '()) a)
-                      (cons (readword (getchar) w a) '())))
-               (#t (ungetchar c) (lookup w a))))
+                      (cons (readword (read-char) w a) '())))
+               (#t (unread-char c) (lookup w a))))
         ((eq? c 59) ;; ;
          (readcomment c)
          (readword 10 w a))
         ((eq? c 35) ;; #
-         (cond ((eq? (peekchar) 33) ;; !
-                (getchar)
-                (readblock (getchar))
+         (cond ((eq? (peek-char) 33) ;; !
+                (read-char)
+                (readblock (read-char))
                 (readword 10 w a))
                ;; TODO: char, vector
-               (#t (readword (getchar) (append w (cons c '())) a))))
-        (#t (readword (getchar) (append w (cons c '())) a))))
+               (#t (readword (read-char) (append w (cons c '())) a))))
+        (#t (readword (read-char) (append w (cons c '())) a))))
 
 (define (readblock c)
   ;; (display 'mes-readblock:)
   ;; (display c)
   ;; (newline)
-  (cond ((eq? c 33) (cond ((eq? (peekchar) 35) (getchar))
-                         (#t (readblock (getchar)))))
-        (#t (readblock (getchar)))))
+  (cond ((eq? c 33) (cond ((eq? (peek-char) 35) (read-char))
+                         (#t (readblock (read-char)))))
+        (#t (readblock (read-char)))))
 
 (define (eat-whitespace)
-  (cond ((eq? (peekchar) 10) (getchar) (eat-whitespace))
-        ((eq? (peekchar) 32) (getchar) (eat-whitespace))
-        ((eq? (peekchar) 35) (getchar) (eat-whitespace))
+  (cond ((eq? (peek-char) 10) (read-char) (eat-whitespace))
+        ((eq? (peek-char) 32) (read-char) (eat-whitespace))
+        ((eq? (peek-char) 35) (read-char) (eat-whitespace))
         (#t #t)))
 
 (define (readlist a)
   ;; (display 'mes-readlist:)
   ;; (newline)
   (eat-whitespace)
-  (cond ((eq? (peekchar) 41) ;; )
-         (getchar)
+  (cond ((eq? (peek-char) 41) ;; )
+         (read-char)
          '())
         ;; TODO *dot*
-        (#t (cons (readword (getchar) '() a) (readlist a)))))
+        (#t (cons (readword (read-char) '() a) (readlist a)))))
 
 (define (readcomment c)
   (cond ((eq? c 10) ;; \n
          c)
-        (#t (readcomment (getchar)))))
+        (#t (readcomment (read-char)))))

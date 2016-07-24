@@ -913,7 +913,7 @@ ungetchar (int c) //int
 }
 
 int
-peekchar () //int
+peek_char () //int
 {
   int c = getchar ();
   ungetchar (c);
@@ -927,9 +927,9 @@ builtin_getchar ()
 }
 
 scm*
-builtin_peekchar ()
+builtin_peek_char ()
 {
-  return make_number (peekchar ());
+  return make_char (getchar ());
 }
 
 scm*
@@ -950,7 +950,7 @@ readcomment (int c)
 int
 readblock (int c)
 {
-  if (c == '!' && peekchar () == '#') return getchar ();
+  if (c == '!' && peek_char () == '#') return getchar ();
   return readblock (getchar ());
 }
 
@@ -968,7 +968,7 @@ readword (int c, char* w, scm *a)
   if (c == '(') {ungetchar (c); return lookup (w, a);}
   if (c == ')' && !w) {ungetchar (c); return &scm_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
-  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (",@", a),
+  if (c == ',' && peek_char () == '@') {getchar (); return cons (lookup (",@", a),
                                                                 cons (readword (getchar (), w, a),
                                                                       &scm_nil));}
   if ((c == '\''
@@ -977,47 +977,47 @@ readword (int c, char* w, scm *a)
       && !w) {return cons (lookup_char (c, a),
                                      cons (readword (getchar (), w, a),
                                            &scm_nil));}
-  if (c == '#' && peekchar () == ',' && !w) {
+  if (c == '#' && peek_char () == ',' && !w) {
     getchar ();
-    if (peekchar () == '@'){getchar (); return cons (lookup ("#,@", a),
+    if (peek_char () == '@'){getchar (); return cons (lookup ("#,@", a),
                                                      cons (readword (getchar (), w, a),
                                                            &scm_nil));}
     return cons (lookup ("#,", a), cons (readword (getchar (), w, a), &scm_nil));
   }
   if (c == '#'
-     && (peekchar () == '\''
-         || peekchar () == '`')
+     && (peek_char () == '\''
+         || peek_char () == '`')
      && !w) {char buf[3] = "#"; buf[1] = getchar (); return cons (lookup (buf, a),
                           cons (readword (getchar (), w, a),
                                 &scm_nil));}
    if (c == ';') {readcomment (c); return readword ('\n', w, a);}
-  if (c == '#' && peekchar () == '\\') {getchar (); return readchar ();}
-  if (c == '#' && !w && peekchar () == '(') {getchar (); return list_to_vector (readlist (a));}
-  if (c == '#' && peekchar () == '(') {ungetchar (c); return lookup (w, a);}
-  if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
+  if (c == '#' && peek_char () == '\\') {getchar (); return read_char ();}
+  if (c == '#' && !w && peek_char () == '(') {getchar (); return list_to_vector (readlist (a));}
+  if (c == '#' && peek_char () == '(') {ungetchar (c); return lookup (w, a);}
+  if (c == '#' && peek_char () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
   char buf[256] = {0};
   char ch = c;
   return readword (getchar (), strncat (w ? w : buf, &ch, 1), a);
 }
 
 scm *
-readchar ()
+read_char ()
 {
   int c = getchar ();
   if (c >= '0' && c <= '7'
-      && peekchar () >= '0' && peekchar () <= '7') {
+      && peek_char () >= '0' && peek_char () <= '7') {
     c = c - '0';
-    while (peekchar () >= '0' && peekchar () <= '7') {
+    while (peek_char () >= '0' && peek_char () <= '7') {
       c <<= 3;
       c += getchar () - '0';
     }
   }
   else if (c >= 'a' && c <= 'z'
-      && peekchar () >= 'a' && peekchar () <= 'z') {
+      && peek_char () >= 'a' && peek_char () <= 'z') {
     char buf[256];
     char *p = buf;
     *p++ = c;
-    while (peekchar () >= 'a' && peekchar () <= 'z') {
+    while (peek_char () >= 'a' && peek_char () <= 'z') {
       *p++ = getchar ();
     }
     *p = 0;
@@ -1041,7 +1041,7 @@ readstring ()
   while (true) {
     if (c == '"') break;
     *p++ = c;
-    if (c == '\\' && peekchar () == '"') *p++ = getchar ();
+    if (c == '\\' && peek_char () == '"') *p++ = getchar ();
     if (c == EOF) assert (!"EOF in string");
     c = getchar ();
   }
@@ -1054,7 +1054,7 @@ eat_whitespace (int c)
 {
   while (c == ' ' || c == '\t' || c == '\n') c = getchar ();
   if (c == ';') return eat_whitespace (readcomment (c));
-  if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return eat_whitespace (getchar ());}
+  if (c == '#' && peek_char () == '!') {getchar (); readblock (getchar ()); return eat_whitespace (getchar ());}
   return c;
 }
 

@@ -260,3 +260,16 @@
 (define (reverse lst)
   (if (null? lst) '()
       (append (reverse (cdr lst)) (cons (car lst) '()))))
+
+(define (eof-object? x)
+  (and (number? x) (= x -1)))
+
+(define (char=? x y)
+  (and (char? x) (char? y)
+       (eq? x y)))
+
+(define (char-alphabetic? x)
+  (and (char? x)
+       (let ((i (char->integer x)))
+        (or (and (>= i (char->integer #\A)) (<= i (char->integer #\Z)))
+            (and (>= i (char->integer #\a)) (<= i (char->integer #\z)))))))
