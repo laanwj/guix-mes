@@ -894,7 +894,7 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
       if (x->vector[i]->type == VECTOR)
         printf ("%s#(...)", i ? " " : "");
       else
-        display_helper (x->vector[i], true, i ? " " : "", false);
+        display_helper (x->vector[i], false, i ? " " : "", false);
     }
     printf (")");
   }
