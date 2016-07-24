@@ -104,7 +104,7 @@
 
 (define (vector . rest) (list->vector rest))
 (define (make-vector n . x)
-  (let ((fill (if (pair? x) (cdr x) *unspecified*)))
+  (let ((fill (if (pair? x) (car x) *unspecified*)))
     (list->vector (let loop ((n n))
                     (if (= 0 n) '()
                         (cons fill (loop (- n 1))))))))
