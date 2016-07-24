@@ -1189,6 +1189,19 @@ multiply (scm *x/*...*/)
   return make_number (n);
 }
 
+scm *
+logior (scm *x/*...*/)
+{
+  int n = 0;
+  while (x != &scm_nil)
+    {
+      assert (x->car->type == NUMBER);
+      n |= x->car->value;
+      x = cdr (x);
+    }
+  return make_number (n);
+}
+
 scm *add_environment (scm *a, char *name, scm *x);
 
 scm *
