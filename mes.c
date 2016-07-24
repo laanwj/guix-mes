@@ -105,6 +105,15 @@ scm symbol_define = {SYMBOL, "define"};
 scm symbol_define_macro = {SYMBOL, "define-macro"};
 scm symbol_set_x = {SYMBOL, "set!"};
 
+scm char_nul = {CHAR, .name="nul", .value=0};
+scm char_backspace = {CHAR, .name="backspace", .value=8};
+scm char_tab = {CHAR, .name="tab", .value=9};
+scm char_newline = {CHAR, .name="newline", .value=10};
+scm char_vt = {CHAR, .name="vt", .value=11};
+scm char_page = {CHAR, .name="page", .value=12};
+scm char_return = {CHAR, .name="return", .value=13};
+scm char_space = {CHAR, .name="space", .value=32};
+
 // PRIMITIVES
 
 scm *
@@ -848,9 +857,14 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
 {
   scm *r;
   printf ("%s", sep);
-  if (x->type == CHAR && x->value == 9) printf ("#\\%s", "tab");
-  else if (x->type == CHAR && x->value == 10) printf ("#\\%s", "newline");
-  else if (x->type == CHAR && x->value == 32) printf ("#\\%s", "space");
+  if (x->type == CHAR && x->value == char_nul.value) printf ("#\\%s", char_nul.name);
+  else if (x->type == CHAR && x->value == char_backspace.value) printf ("#\\%s", char_backspace.name);
+  else if (x->type == CHAR && x->value == char_tab.value) printf ("#\\%s", char_tab.name);
+  else if (x->type == CHAR && x->value == char_newline.value) printf ("#\\%s", char_newline.name);
+  else if (x->type == CHAR && x->value == char_vt.value) printf ("#\\%s", char_vt.name);
+  else if (x->type == CHAR && x->value == char_page.value) printf ("#\\%s", char_page.name);
+  else if (x->type == CHAR && x->value == char_return.value) printf ("#\\%s", char_return.name);
+  else if (x->type == CHAR && x->value == char_space.value) printf ("#\\%s", char_space.name);
   else if (x->type == CHAR) printf ("#\\%c", x->value);
   else if (x->type == MACRO) {
     printf ("(*macro* ");
@@ -1025,9 +1039,14 @@ read_character ()
       *p++ = getchar ();
     }
     *p = 0;
-    if (!strcmp (buf, "tab")) c = 9;
-    else if (!strcmp (buf, "newline")) c = 10;
-    else if (!strcmp (buf, "space")) c = 32;
+    if (!strcmp (buf, char_nul.name)) c = char_nul.value;
+    else if (!strcmp (buf, char_backspace.name)) c = char_backspace.value;
+    else if (!strcmp (buf, char_tab.name)) c = char_tab.value;
+    else if (!strcmp (buf, char_newline.name)) c = char_newline.value;
+    else if (!strcmp (buf, char_vt.name)) c = char_vt.value;
+    else if (!strcmp (buf, char_page.name)) c = char_page.value;
+    else if (!strcmp (buf, char_return.name)) c = char_return.value;
+    else if (!strcmp (buf, char_space.name)) c = char_space.value;
     else {
       fprintf (stderr, "char not supported: %s\n", buf);
       assert (!"char not supported");
