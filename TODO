@@ -17,6 +17,9 @@ See bugs/
 **** datum->syntax
 **** syntax->datum
 **** syntax-case
+** parse C using LALR
+*** v get LALR running paren.scm
+*** Translate cgram.y into lalr, generate AST
 ** parse C using PEG 
 http://piumarta.com/software/peg/
 ** C grammar in lex/yacc

@@ -32,6 +32,11 @@ days :-)
 
 * The [GuixSD] boostrap binaries
 ** Run a C parser on Mes
+*** Run simple PEG on Guile
+*** Run simple PEG on Mes
 *** Find/port a PEG C and parse minimal C program
 *** Generate an executable from this C-AST
 *** Find a tiny C compiler that can compile gcc
+** Run lalr on Mes
+*** Get paren.scm test running
+*** Translate cgram.y into lalr, generate AST
