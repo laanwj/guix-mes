@@ -40,7 +40,6 @@
    )
   )
 
-
 (define (port-source-location port)
   (make-source-location (port-filename port)
                         (port-line port)
@@ -106,15 +105,15 @@
 
 (define (read-string loc)
   (let ((c (read-char)))
-    (let ((terms (string c #\\ #\nl #\cr)))
+    (let ((terms (string c #\\ #\newline #\return)))
       (define (read-escape)
         (let ((c (read-char)))
           (case c
             ((#\' #\" #\\) c)
-            ((#\b) #\bs)
-            ((#\f) #\np)
-            ((#\n) #\nl)
-            ((#\r) #\cr)
+            ((#\b) #\backspace)
+            ((#\f) #\page)
+            ((#\n) #\newline)
+            ((#\r) #\return)
             ((#\t) #\tab)
             ((#\v) #\vt)
             ((#\0)
@@ -343,7 +342,7 @@
                                 puncs))))))
     (lambda (loc)
       (let lp ((c (peek-char)) (tree punc-tree) (candidate #f))
-        (display "read-punctuation c=") (display c) (newline)
+        ;;(display "read-punctuation c=") (display c) (newline)
         (cond
          ((assv-ref tree c)
           (let ((node-tail (assv-ref tree c)))
@@ -357,13 +356,14 @@
 (define (next-token div?)
   (let ((c   (peek-char))
         (loc (port-source-location (current-input-port))))
-    (display "next-token c=") (display c) (newline)
+    ;;(display "next-token c=") (display c) (newline)
 
     (case c
-      ((#\ht #\vt #\np #\space #\x00A0) ; whitespace
+      ((#\tab #\vt #\page #\space ;;#\x00A0
+        ) ; whitespace
        (read-char)
        (next-token div?))
-      ((#\newline #\cr)                 ; line break
+      ((#\newline #\return)                 ; line break
        (read-char)
        (next-token div?))
       ((#\/)

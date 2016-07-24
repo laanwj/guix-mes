@@ -635,6 +635,22 @@ string_append (scm *x/*...*/)
 }
 
 scm *
+list_to_string (scm *x)
+{
+  char buf[256] = "";
+  char *p = buf;
+  while (x != &scm_nil)
+    {
+      scm *s = car (x);
+      assert (s->type == CHAR);
+      *p++ = s->value;
+      x = cdr (x);
+    }
+  *p = 0;
+  return make_string (buf);
+}
+
+scm *
 string_length (scm *x)
 {
   assert (x->type == STRING);

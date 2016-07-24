@@ -68,6 +68,20 @@
        ,@body
        (loop ,@(cddar init)))))
 
+(define-macro (case val . args)
+  (if (null? args)
+      #f
+      (let* ((clause (car args))
+             (pred (car clause))
+             (body (cdr clause)))
+        (if (pair? pred)
+            `(if ,(if (null? (cdr pred))
+                      `(eq? ,val ',(car pred))
+                           `(member ,val ',pred))
+                 (begin ,@body)
+                 (case ,val ,@(cdr args)))
+            `(begin ,@body)))))  ; else clause
+
 (define-macro (or2 x y)
   `(cond (,x ,x) (#t ,y)))
 
@@ -144,6 +158,11 @@
   (cond ((null? alist) #f)
         ((equal? key (caar alist)) (car alist))
         (#t (assoc key (cdr alist)))))
+
+(define (assoc-ref alist key)
+  (let ((entry (assoc key alist)))
+    (if entry (cdr entry)
+        #f)))
 
 (define (memq x lst)
   (cond ((null? lst) #f)
@@ -275,6 +294,11 @@
        (let ((i (char->integer x)))
         (or (and (>= i (char->integer #\A)) (<= i (char->integer #\Z)))
             (and (>= i (char->integer #\a)) (<= i (char->integer #\z)))))))
+
+(define (char-numeric? x)
+  (and (char? x)
+       (let ((i (char->integer x)))
+         (and (>= i (char->integer #\0)) (<= i (char->integer #\9))))))
 
 (define (current-input-port) #f)
 (define (port-filename port) "<stdin>")

@@ -92,6 +92,9 @@ paren.test: lib/lalr.scm paren.scm
 guile-paren: paren.test
 	echo '___P((()))' | guile -s $^ 
 
+mescc: all
+	echo ' EOF ' | cat scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes
+
 mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
 	cat $^ > $@
 
