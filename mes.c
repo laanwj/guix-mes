@@ -1169,6 +1169,14 @@ divide (scm *x/*...*/)
 }
 
 scm *
+modulo (scm *a, scm *b)
+{
+  assert (a->type == NUMBER);
+  assert (b->type == NUMBER);
+  return make_number (a->value % b->value);
+}
+
+scm *
 multiply (scm *x/*...*/)
 {
   int n = 1;
