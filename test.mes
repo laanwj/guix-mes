@@ -290,6 +290,8 @@
 (pass-if "min 1" (seq? (min 0 1) 0))
 (pass-if "min 2" (seq? (min 1 0 2) 0))
 
+(pass-if "list-ref" (seq? (list-ref '(0 1 2) 1) 1))
+
 (pass-if "do" (sequal? (let ((acc '())) (do ((i 0 (+ i 1))) ((>= i 3)) (set! acc (cons i acc))) acc) '(2 1 0)))
 
 (newline)

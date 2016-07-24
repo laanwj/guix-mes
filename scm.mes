@@ -246,6 +246,11 @@
   (display rest)
   (newline))
 
+(define (list-ref lst k)
+  (let loop ((lst lst) (k k))
+    (if (= 0 k) (car lst)
+        (loop (cdr lst) (- k 1)))))
+
 ;; srfi-1
 (define (last-pair lst)
   (let loop ((lst lst))
