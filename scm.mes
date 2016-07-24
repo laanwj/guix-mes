@@ -176,6 +176,18 @@
 
 (define quotient /)
 
+(define (max x . rest)
+  (if (null? rest) x
+      (let* ((y (car rest))
+             (z (if (> x y) x y)))
+        (apply max (cons z (cdr rest))))))
+
+(define (min x . rest)
+  (if (null? rest) x
+      (let* ((y (car rest))
+             (z (if (< x y) x y)))
+        (apply min (cons z (cdr rest))))))
+
 (define (list? x)
   (or (null? x)
       (and (pair? x) (list? (cdr x)))))
