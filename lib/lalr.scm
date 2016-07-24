@@ -20,7 +20,6 @@
 
 (define *lalr-scm-version* "2.5.0")
 
-
 (cond-expand 
 
  ;; -- Gambit-C
@@ -79,6 +78,7 @@
 
  ;; -- Guile
  (guile
+  (display "GUILE") (newline)
   (use-modules (ice-9 pretty-print))
   (use-modules (srfi srfi-9))
 
@@ -98,8 +98,15 @@
   (mes
    (display "MES!")
    (newline)
-   )
 
+   (define pprint display)
+   (define lalr-keyword? symbol?)
+   (define-macro (BITS-PER-WORD) 30)
+   (define-macro (logical-or x . y) `(logior ,x ,@y))
+   (define-macro (lalr-error msg obj) `(error ,msg ,obj))
+   (define (note-source-location lvalue tok) lvalue)
+   )
+  
  ;; -- Kawa
  (kawa
   (require 'pretty-print)

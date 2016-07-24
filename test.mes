@@ -140,6 +140,7 @@
 (pass-if "assq-ref 2" (seq? (assq-ref '((b . 1) (c . 2)) 'a) #f))
 (pass-if "assq-set!" (sequal? (assq-set! '((b . 1)) 'a 0) '((a . 0) (b . 1))))
 (pass-if "assq-set! 2" (sequal? (assq-set! '((a . 0)) 'a 1) '((a . 1))))
+(pass-if "assoc" (sequal? (assoc '(a . 0) '((a . 0) (b . 1) ((a . 0) aa))) '((a . 0) aa)))
 
 ;; works, but debugging is foo
 ;; (cond ((defined? 'loop2)
@@ -224,13 +225,15 @@
                #t))
 
 (pass-if "last-pair " (sequal? (last-pair '(1 2 3 4)) '(4)))
-(pass-if "last-pair 2" (eq? (last-pair '()) '()))
+(pass-if "last-pair 2" (seq? (last-pair '()) '()))
 ;; (pass-if "circular-list? "
 ;;   (seq?
 ;;    (let ((x (list 1 2 3 4)))
 ;;      (set-cdr! (last-pair x) (cddr x))
 ;;      (circular-list? x))
 ;;    #t))
+
+(pass-if "reverse" (sequal? (reverse '(1 2 3)) '(3 2 1)))
 
 (pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes) (guile (display ": pass: *GUILE*") 'mes)) 'mes))
 

@@ -134,6 +134,11 @@
 
 (define assv assq)
 
+(define (assoc key alist)
+  (cond ((null? alist) #f)
+        ((equal? key (caar alist)) (car alist))
+        (#t (assoc key (cdr alist)))))
+
 (define (memq x lst)
   (cond ((null? lst) #f)
         ((eq? x (car lst)) lst)
@@ -198,8 +203,26 @@
 
 (define else #t)
 
+(define (error who . rest)
+  (display "error:")
+  (display who)
+  (display ":")
+  (display rest)
+  (display newline))
+
+(define (syntax-error message . rest)
+  (display "syntax-error:")
+  (display message)
+  (display ":")
+  (display rest)
+  (newline))
+
 ;; srfi-1
 (define (last-pair lst)
   (let loop ((lst lst))
     (if (or (null? lst) (null? (cdr lst))) lst
         (loop (cdr lst)))))
+
+(define (reverse lst)
+  (if (null? lst) '()
+      (append (reverse (cdr lst)) (cons (car lst) '()))))

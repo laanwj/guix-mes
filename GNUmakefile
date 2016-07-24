@@ -83,3 +83,12 @@ record: all
 	cat scm.mes syntax.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm record.mes |./mes
 
 
+paren: all
+	cat scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm | ./mes
+#	#echo '___P((()))'
+
+paren.test: lib/lalr.scm paren.scm
+	cat $^ > $@
+
+guile-paren: paren.test
+	echo '___P((()))' | guile -s $^ 
