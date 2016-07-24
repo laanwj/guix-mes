@@ -138,6 +138,7 @@
         #f)))
 
 (define assv assq)
+(define assv-ref assq-ref)
 
 (define (assoc key alist)
   (cond ((null? alist) #f)

@@ -188,6 +188,14 @@ pair_p (scm *x)
 }
 
 scm *
+set_car_x (scm *x, scm *e)
+{
+  assert (x->type == PAIR);
+  x->car = e;
+  return &scm_unspecified;
+}
+
+scm *
 set_cdr_x (scm *x, scm *e)
 {
   assert (x->type == PAIR);
@@ -631,6 +639,34 @@ string_length (scm *x)
 {
   assert (x->type == STRING);
   return make_number (strlen (x->name));
+}
+
+scm *
+string_ref (scm *x, scm *k)
+{
+  assert (x->type == STRING);
+  assert (k->type == NUMBER);
+  return make_char (x->name[k->value]);
+}
+
+scm *
+substring (scm *x/*...*/)
+{
+  assert (x->type == PAIR);
+  assert (x->car->type == STRING);
+  char *s = x->car->name;
+  assert (x->cdr->car->type == NUMBER);
+  int start = x->cdr->car->value;
+  int end = strlen (s);
+  if (x->cdr->cdr->type == PAIR) {
+    assert (x->cdr->cdr->car->type == NUMBER);
+    assert (x->cdr->cdr->car->value <= end);
+    end = x->cdr->cdr->car->value;
+  }
+  char buf[256];
+  strncpy (buf, s+start, end - start);
+  buf[end-start] = 0;
+  return make_string (buf);
 }
 
 scm *
