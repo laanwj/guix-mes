@@ -840,7 +840,8 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
 {
   scm *r;
   printf ("%s", sep);
-  if (x->type == CHAR && x->value == 10) printf ("#\\%s", "newline");
+  if (x->type == CHAR && x->value == 9) printf ("#\\%s", "tab");
+  else if (x->type == CHAR && x->value == 10) printf ("#\\%s", "newline");
   else if (x->type == CHAR && x->value == 32) printf ("#\\%s", "space");
   else if (x->type == CHAR) printf ("#\\%c", x->value);
   else if (x->type == MACRO) {
@@ -1016,10 +1017,11 @@ readchar ()
       *p++ = getchar ();
     }
     *p = 0;
-    if (!strcmp (buf, "newline")) c = 10;
+    if (!strcmp (buf, "tab")) c = 9;
+    else if (!strcmp (buf, "newline")) c = 10;
     else if (!strcmp (buf, "space")) c = 32;
     else {
-      printf ("char not supported: %s", buf);
+      fprintf (stderr, "char not supported: %s\n", buf);
       assert (!"char not supported");
     }
   }
@@ -1046,7 +1048,7 @@ readstring ()
 int
 eat_whitespace (int c)
 {
-  while (c == ' ' || c == '\n') c = getchar ();
+  while (c == ' ' || c == '\t' || c == '\n') c = getchar ();
   if (c == ';') return eat_whitespace (readcomment (c));
   if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return eat_whitespace (getchar ());}
   return c;
