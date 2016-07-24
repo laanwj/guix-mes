@@ -81,7 +81,7 @@
 
    ;; Options.
 
-   ;; (expect: 0) ;; even one conflict is an error
+   (expect: 0) ;; even one conflict is an error
 
    ;; List of terminal tokens.
 
