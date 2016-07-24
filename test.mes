@@ -94,7 +94,8 @@
 
 (pass-if "map" (sequal? (map identity '(1 2 3 4)) '(1 2 3 4)))
 (pass-if "map 2 " (sequal? (map (lambda (i a) (cons i a)) '(1 2 3 4) '(a b c d))
-                          '((1 . a) (2 . b) (3 . c) (4 . d))))
+                           '((1 . a) (2 . b) (3 . c) (4 . d))))
+(pass-if "for-each" (sequal? (let ((acc '())) (for-each (lambda (x) (set! acc (cons x acc))) '(1 2 3 4)) acc) '(4 3 2 1)))
 (define xxxa 0)
 (pass-if "set! " (seq? (begin (set! xxxa 1) xxxa) 1))
 (pass-if "set! 2" (seq? (let ((a 0)) (set! a 1) a) 1))

@@ -342,8 +342,6 @@ eval (scm *e, scm *a)
 #if DEBUG
   printf ("\neval e=");
   display (e);
-  printf ("\na=");
-  display (a);
   puts ("");
 #endif
   scm *macro;

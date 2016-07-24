@@ -158,8 +158,10 @@
 
 (define (identity x) x)
 (define (for-each f l . r)
-  (apply map (cons f (cons l r)))
-  *unspecified*)
+  (cond ((null? l) '())
+        ((null? r) (f (car l)) (for-each f (cdr l)))
+        ((null? (cdr r))
+         (for-each f (cdr l) (cdar r)))))
 
 (define (not x)
   (cond (x #f)
