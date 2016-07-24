@@ -244,6 +244,10 @@
 (let () (define *top-let-a* '*top-let-a*) #f)
 (pass-if "top let " (seq? (and (defined? '*top-let-a*) *top-let-a*) #f))
 
+(pass-if "apply identity" (seq? (apply identity '(0)) 0))
+(pass-if "apply identity 2" (sequal? (apply identity '((0 1))) '(0 1)))
+(pass-if "apply append" (sequal? (apply append '((1 2) (3 4))) '(1 2 3 4)))
+
 (newline)
 (display "passed: ") (display (car (result))) (newline)
 (display "failed: ") (display (cadr (result))) (newline)

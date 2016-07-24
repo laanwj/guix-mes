@@ -261,6 +261,7 @@ scm *caar (scm *x) {return car (car (x));}
 scm *cadr (scm *x) {return car (cdr (x));}
 scm *cdar (scm *x) {return cdr (car (x));}
 scm *cddr (scm *x) {return cdr (cdr (x));}
+scm *caaar (scm *x) {return car (car (car (x)));}
 scm *caadr (scm *x) {return car (car (cdr (x)));}
 scm *caddr (scm *x) {return car (cdr (cdr (x)));}
 scm *cdadr (scm *x) {return cdr (car (cdr (x)));}
@@ -334,7 +335,11 @@ apply_env (scm *fn, scm *x, scm *a)
   return apply_env (efn, x, a);
 }
 
-scm *make_symbol (char const *s);
+scm *
+apply (scm *f, scm *x)
+{
+  return apply_env (f, x, &scm_nil);
+}
 
 scm *
 eval (scm *e, scm *a)
@@ -349,8 +354,8 @@ eval (scm *e, scm *a)
     scm *y = assq (e, a);
     if (y == &scm_f) {
       //return e;
-      fprintf (stderr, "eval: no such symbol: %s\n", e->name);
-      assert (!"unknown symbol");
+      fprintf (stderr, "eval: unbound variable: %s\n", e->name);
+      assert (!"unbound variable");
     }
     return cdr (y);
   }
