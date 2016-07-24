@@ -62,6 +62,12 @@
           (let-loop ,bindings-or-label ,(car rest) ,(cdr rest)))
          (#t (simple-let ,bindings-or-label ,rest))))
 
+(define-macro (do init test . body)
+  `(let loop ((,(caar init) ,(cadar init)))
+     (when (not ,@test)
+       ,@body
+       (loop ,@(cddar init)))))
+
 (define-macro (or2 x y)
   `(cond (,x ,x) (#t ,y)))
 
