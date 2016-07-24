@@ -271,6 +271,12 @@
 (pass-if "> 4" (seq? (> 2 1 0) #t))
 (pass-if "> 5" (seq? (> 1 2 0) #f))
 
+(pass-if ">=" (seq? (>= 3 2 1) #t))
+(pass-if ">= 2" (seq? (>= 1 2 3) #f))
+
+(pass-if "<=" (seq? (<= 3 2 1) #f))
+(pass-if "<= 2" (seq? (<= 1 2 3) #t))
+
 (newline)
 (display "passed: ") (display (car (result))) (newline)
 (display "failed: ") (display (cadr (result))) (newline)

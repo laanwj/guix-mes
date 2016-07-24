@@ -166,13 +166,13 @@
   (cond (x #f)
         (#t #t)))
 
-(define (<= a b) ;; FIXME: only 2 arg
-  (or (< a b)
-      (= a b)))
+(define (<= . rest)
+  (or (apply < rest)
+      (apply = rest)))
 
-(define (>= a b) ;; FIXME: only 2 arg
-  (or (> a b)
-      (= a b)))
+(define (>= . rest)
+  (or (apply > rest)
+      (apply = rest)))
 
 (define quotient /)
 
