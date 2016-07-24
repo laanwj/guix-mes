@@ -185,6 +185,11 @@
 (define (remainder x y)
   (- x (* (/ x y) y)))
 
+(define (expt x y)
+  (let loop ((s 1) (count y))
+    (if (= 0 count) s
+        (loop (* s x) (- count 1)))))
+
 (define (max x . rest)
   (if (null? rest) x
       (let* ((y (car rest))

@@ -104,6 +104,7 @@
 (pass-if "/" (seq? (/ 9 3) 3))
 (pass-if "remainder" (seq? (remainder 11 3) 2))
 (pass-if "modulo" (seq? (modulo 11 3) 2))
+(pass-if "expt" (seq? (expt 2 3) 8))
 
 (pass-if "=" (seq? 3 '3))
 (pass-if "= 2" (not (= 3 '4)))
