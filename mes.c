@@ -738,6 +738,10 @@ lookup (char *x, scm *a)
   if (*x == '#' && *(x+1) == ',' && *(x+2) == '@') return &symbol_unsyntax_splicing;
   if (*x == '#' && *(x+1) == ',') return &symbol_unsyntax;
 
+  if (!strcmp (x, "EOF")) {
+    fprintf (stderr, "mes: got EOF\n");
+    return &scm_nil; // `EOF': eval program, which may read stdin
+  }
   return make_symbol (x);
 }
 
@@ -921,13 +925,13 @@ peek_char () //int
 }
 
 scm*
-builtin_getchar ()
+builtin_peek_char ()
 {
-  return make_number (getchar ());
+  return make_char (peek_char ());
 }
 
-scm*
-builtin_peek_char ()
+scm *
+read_char ()
 {
   return make_char (getchar ());
 }
@@ -990,8 +994,8 @@ readword (int c, char* w, scm *a)
      && !w) {char buf[3] = "#"; buf[1] = getchar (); return cons (lookup (buf, a),
                           cons (readword (getchar (), w, a),
                                 &scm_nil));}
-   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
-  if (c == '#' && peek_char () == '\\') {getchar (); return read_char ();}
+  if (c == ';') {readcomment (c); return readword ('\n', w, a);}
+  if (c == '#' && peek_char () == '\\') {getchar (); return read_character ();}
   if (c == '#' && !w && peek_char () == '(') {getchar (); return list_to_vector (readlist (a));}
   if (c == '#' && peek_char () == '(') {ungetchar (c); return lookup (w, a);}
   if (c == '#' && peek_char () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
@@ -1001,7 +1005,7 @@ readword (int c, char* w, scm *a)
 }
 
 scm *
-read_char ()
+read_character ()
 {
   int c = getchar ();
   if (c >= '0' && c <= '7'

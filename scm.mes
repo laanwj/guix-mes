@@ -262,7 +262,8 @@
       (append (reverse (cdr lst)) (cons (car lst) '()))))
 
 (define (eof-object? x)
-  (and (number? x) (= x -1)))
+  (or (and (number? x) (= x -1))
+      (and (char? x) (eof-object? (char->integer x)))))
 
 (define (char=? x y)
   (and (char? x) (char? y)

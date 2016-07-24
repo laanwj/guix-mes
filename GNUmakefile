@@ -84,8 +84,7 @@ record: all
 
 
 paren: all
-	cat scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm | ./mes
-#	#echo '___P((()))'
+	echo -e 'EOF\n___P((()))' | cat scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm - | ./mes
 
 paren.test: lib/lalr.scm paren.scm
 	cat $^ > $@
