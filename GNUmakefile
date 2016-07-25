@@ -31,21 +31,36 @@ mes.h: mes.c GNUmakefile
 	done; echo '#endif'; echo '#endif' 1>&2) > $@ 2>environment.i
 
 check: all guile-check
-	./mes.test
-	./mes.test ./mes
-	cat scm.mes lib/srfi/srfi-0.scm test.mes | ./mes
+#	./mes.test
+#	./mes.test ./mes
+	cat base0.mes base.mes lib/test.mes test/base.test | ./mes
+	cat base0.mes base.mes lib/test.mes test/closure.test | ./mes
+	cat base0.mes base.mes quasiquote.mes lib/test.mes test/quasiquote.test | ./mes
+	cat base0.mes base.mes quasiquote.mes let.mes lib/test.mes test/let.test | ./mes
+	cat base0.mes base.mes quasiquote.mes let.mes lib/srfi/srfi-0.scm scm.mes lib/test.mes test/scm.test | ./mes
 
 guile-check:
-	guile -s test.mes
+	guile -s <(cat base.mes lib/test.mes test/base.test)
+	guile -s <(cat base.mes lib/test.mes test/closure.test)
+	guile -s <(cat base.mes lib/test.mes test/quasiquote.test)
+	guile -s <(cat quasiquote.mes lib/test.mes test/quasiquote.test)
+#	guile -s <(cat base.mes let.mes test/foo.test)
+#	exit 1
+	guile -s <(cat lib/test.mes test/base.test)
+	guile -s <(cat lib/test.mes test/quasiquote.test)
+	guile -s <(cat lib/test.mes test/let.test)
+	guile -s <(cat quasiquote.mes lib/test.mes test/base.test)
+	guile -s <(cat quasiquote.mes lib/test.mes test/quasiquote.test)
+	guile -s <(cat lib/test.mes test/scm.test)
 
 run: all
 	cat scm.mes test.mes | ./mes
 
 psyntax: all
-	cat scm.mes psyntax.mes psyntax.pp psyntax2.mes | ./mes
+	cat base0.mes base.mes quasiquote.mes let.mes psyntax.mes psyntax.pp psyntax2.mes | ./mes
 
 syntax: all
-	cat scm.mes syntax.mes syntax-test.mes | ./mes
+	cat base0.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes syntax-test.mes | ./mes
 
 syntax.test: syntax.mes syntax-test.mes
 	cat $^ > $@
@@ -63,7 +78,7 @@ guile-syntax-case: syntax-case.test
 	guile -s $^
 
 macro: all
-	cat scm.mes macro.mes | ./mes
+	cat base0.mes base.mes quasiquote.mes let.mes scm.mes macro.mes | ./mes
 
 peg: all
 	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
@@ -84,7 +99,7 @@ record: all
 
 
 paren: all
-	echo -e 'EOF\n___P((()))' | cat scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm - | ./mes
+	echo -e 'EOF\n___P((()))' | cat base0.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm - | ./mes
 
 paren.test: lib/lalr.scm paren.scm
 	cat $^ > $@
@@ -93,7 +108,7 @@ guile-paren: paren.test
 	echo '___P((()))' | guile -s $^ 
 
 mescc: all
-	echo ' EOF ' | cat scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes
+	echo ' EOF ' | cat base0.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes
 
 mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
 	cat $^ > $@

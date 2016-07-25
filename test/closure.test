@@ -1,0 +1,46 @@
+(define b 0)
+(define x (lambda () b))
+(define (x) b)
+(pass-if "closure" (seq? (x) 0))
+(define (c b)
+  (x))
+(pass-if "closure 2" (seq? (c 1) 0))
+
+(define (x)
+  (define b 1)
+  (define (y) b)
+  (set! b 0)
+  (list b
+        (let ((b 2))
+          (y))))
+
+(pass-if "closure 3" (sequal? (x) '(0 0)))
+
+(pass-if "closure 4 "
+  (seq? (let ()
+          (let ((count (let ((counter 0))
+                         (lambda ()
+                           counter))))
+            (count)))
+        0))
+
+(pass-if "closure 5 "
+         (seq?
+          (let ()
+            (define name? 2)
+            (define (foo)
+              (define name? 0)
+              (lambda () name?))
+            ((foo)))
+          0))
+
+(pass-if "closure 6 "
+         (seq?
+          (let ()
+            (define foo
+              (lambda ()
+                (define name? symbol?)
+                (lambda ()
+                  (name? 'boo))))
+            ((foo)))
+               #t))

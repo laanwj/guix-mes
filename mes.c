@@ -315,13 +315,6 @@ assq (scm *x, scm *a)
 scm *
 apply_env (scm *fn, scm *x, scm *a)
 {
-#if DEBUG
-  printf ("\napply_env fn=");
-  display (fn);
-  printf (" x=");
-  display (x);
-  puts ("");
-#endif
   scm *macro;
   if (atom_p (fn) != &scm_f)
     {
@@ -362,16 +355,10 @@ apply (scm *f, scm *x)
 scm *
 eval (scm *e, scm *a)
 {
-#if DEBUG
-  printf ("\neval e=");
-  display (e);
-  puts ("");
-#endif
   scm *macro;
   if (e->type == SYMBOL) {
     scm *y = assq (e, a);
     if (y == &scm_f) {
-      //return e;
       fprintf (stderr, "eval: unbound variable: %s\n", e->name);
       assert (!"unbound variable");
     }
@@ -381,8 +368,6 @@ eval (scm *e, scm *a)
     return e;
   else if (atom_p (car (e)) == &scm_t)
     {
-      if ((macro = lookup_macro (car (e), a)) != &scm_f)
-        return eval (apply_env (macro, cdr (e), a), a);
       if (car (e) == &symbol_quote)
         return cadr (e);
       if (car (e) == &symbol_begin)
@@ -399,10 +384,6 @@ eval (scm *e, scm *a)
         return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
       if (car (e) == &symbol_closure)
         return e;
-      if (car (e) == &symbol_unquote)
-        return eval (cadr (e), a);
-      if (car (e) == &symbol_quasiquote)
-        return eval_quasiquote (cadr (e), add_unquoters (a));
       if (car (e) == &symbol_cond)
         return evcon (cdr (e), a);
       if (eq_p (car (e), &symbol_define) == &scm_t)
@@ -411,9 +392,12 @@ eval (scm *e, scm *a)
         return define (e, a);
       if (car (e) == &symbol_set_x)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
-      if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
-        if (cdr (macro) != &scm_f)
-          return eval (apply_env (cdr (macro), e, a), a);
+      if ((macro = lookup_macro (car (e), a)) != &scm_f)
+        return eval (apply_env (macro, cdr (e), a), a);
+      if (car (e) == &symbol_unquote)
+        return eval (cadr (e), a);
+      if (car (e) == &symbol_quasiquote)
+        return eval_quasiquote (cadr (e), add_unquoters (a));
     }
   return apply_env (car (e), evlis (cdr (e), a), a);
 }
@@ -774,15 +758,14 @@ lookup (char *x, scm *a)
 
   if (!strcmp (x, symbol_quasiquote.name)) return &symbol_quasiquote;
   if (!strcmp (x, symbol_quote.name)) return &symbol_quote;
-  if (!strcmp (x, symbol_set_x.name)) return &symbol_set_x;
+
   if (!strcmp (x, symbol_unquote.name)) return &symbol_unquote;
   if (!strcmp (x, symbol_unquote_splicing.name)) return &symbol_unquote_splicing;
-
+  
   if (!strcmp (x, symbol_quasisyntax.name)) return &symbol_quasisyntax;
   if (!strcmp (x, symbol_syntax.name)) return &symbol_syntax;
+
   if (!strcmp (x, symbol_set_x.name)) return &symbol_set_x;
-  if (!strcmp (x, symbol_unsyntax.name)) return &symbol_unsyntax;
-  if (!strcmp (x, symbol_unsyntax_splicing.name)) return &symbol_unsyntax_splicing;
 
   if (*x == '\'') return &symbol_quote;
   if (*x == '`') return &symbol_quasiquote;
@@ -935,18 +918,6 @@ display_helper (scm *x, bool cont, char *sep, bool quote)
     }
     if (car (x) == &scm_quote) {
       printf ("'");
-      return display_helper (car (cdr (x)), cont, "", true);
-    }
-    if (car (x) == &scm_quasiquote) {
-      printf ("`");
-      return display_helper (car (cdr (x)), cont, "", true);
-    }
-    if (car (x) == &scm_unquote) {
-      printf (",");
-      return display_helper (car (cdr (x)), cont, "", true);
-    }
-    if (car (x) == &scm_unquote_splicing) {
-      printf (",@");
       return display_helper (car (cdr (x)), cont, "", true);
     }
     if (!cont) printf ("(");
@@ -1350,7 +1321,7 @@ define (scm *x, scm *a)
   set_cdr_x (cl, aa);
   return entry;
 }
- 
+
 scm *
 lookup_macro (scm *x, scm *a)
 {

@@ -1,0 +1,6 @@
+(display (let () 0))
+(newline)
+(display (let ((x 0)) x))
+(newline)
+(display (let loop ((x 0)) 0))
+(newline)

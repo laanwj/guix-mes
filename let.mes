@@ -1,0 +1,100 @@
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; test.mes: This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+(define-macro (simple-let bindings . rest)
+  `(,`(lambda ,(map car bindings) ,@rest)
+    ,@(map cadr bindings)))
+
+(define-macro (named-let label bindings . rest)
+  `(simple-let ((,label *unspecified*))
+     (set! ,label (lambda ,(map car bindings) ,@rest))
+     (,label ,@(map cadr bindings))))
+
+(define-macro (combined-let bindings-or-label . rest)
+  (display
+   `(,`(cond
+        (,(symbol? bindings-or-label)
+         (lambda () ,(cons* 'named-let bindings-or-label `(car ,rest) `(cdr ,rest))))
+        (#t
+         (lambda () ,(cons* 'simple-let bindings-or-label rest))
+         ))))
+  (newline)
+  `(,`(cond
+       (,(symbol? bindings-or-label)
+        (lambda () ,(cons* 'named-let bindings-or-label `(car ,rest) `(cdr ,rest))))
+       (#t
+        (lambda () ,(cons* 'simple-let bindings-or-label rest))
+        ))))
+
+
+
+
+(define (split-params bindings params)
+  (cond ((null? bindings) params)
+        (#t (split-params (cdr bindings)
+                          (append params (cons (caar bindings) '()))))))
+
+(define (split-values bindings values)
+  (cond ((null? bindings) values)
+        (#t (split-values (cdr bindings)
+                          (append values (cdar bindings) '())))))
+
+(define-macro (xsimple-let bindings rest)
+  `((lambda ,(split-params bindings '()) ,@rest)
+    ,@(split-values bindings '())))
+
+(define-macro (xnamed-let label bindings rest)
+  `((lambda (,label)
+      (set! ,label (lambda ,(split-params bindings '()) ,@rest))
+      (,label ,@(split-values bindings '())))
+    *unspecified*))
+
+(define-macro (let bindings-or-label . rest)
+  `(cond (,(symbol? bindings-or-label)
+          (xnamed-let ,bindings-or-label ,(car rest) ,(cdr rest)))
+         (#t (xsimple-let ,bindings-or-label ,rest))))
+
+(define (expand-let* bindings body)
+  (cond ((null? bindings)
+         `((lambda () ,@body)))
+        (#t `((lambda (,(caar bindings))
+                ,(expand-let* (cdr bindings) body))
+              ,@(cdar bindings)))))
+
+(define-macro (let* bindings . body)
+  (expand-let* bindings body))
+
+(define (unspecified-bindings bindings params)
+  (cond ((null? bindings) params)
+        (#t (unspecified-bindings
+             (cdr bindings)
+             (append params (cons (cons (caar bindings) '(*unspecified*)) '()))))))
+
+(define (letrec-setters bindings setters)
+  (cond ((null? bindings) setters)
+        (#t (letrec-setters (cdr bindings)
+                            (append setters
+                                    (cons (cons 'set! (car bindings)) '()))))))
+
+(define-macro (letrec bindings . body)
+  `(let ,(unspecified-bindings bindings '())
+     ,@(letrec-setters bindings '())
+     ,@body))
+

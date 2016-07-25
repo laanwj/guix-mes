@@ -4,6 +4,9 @@
 Using define-macro-based version.
 ** psyntax.pp
 Find out how to hook-up sc-expand in eval/apply.
+** make core smaller
+*** replase mes.c:quasiquote by qq.mes
+*** cleanup environment/closures
 ** bugs
 See bugs/
 ** run PEG

@@ -18,55 +18,12 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;; The Maxwell Equations of Software -- John McCarthy page 13
-;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
+(define (list . rest) rest)
 
 (define-macro (if expr then . else)
   `(cond
     (,expr ,then)
     (#t (cond (,(pair? else) ((lambda () ,@else)))))))
-
-(define-macro (when expr . body)
-  `(if ,expr
-       ((lambda () ,@body))))
-
-(define (list . rest) rest)
-
-(define (split-params bindings params)
-  (cond ((null? bindings) params)
-        (#t (split-params (cdr bindings)
-                          (append params (cons (caar bindings) '()))))))
-
-(define (split-values bindings values)
-  (cond ((null? bindings) values)
-        (#t (split-values (cdr bindings)
-                          (append values (cdar bindings) '())))))
-
-(define-macro (simple-let bindings rest)
-  `((lambda ,(split-params bindings '()) ,@rest)
-    ,@(split-values bindings '())))
-
-(define-macro (let-loop label bindings . rest)
-  `(let ((,label *unspecified*))
-     (let ((,label (lambda ,(split-params bindings '()) ,@rest)))
-       (,label ,@(split-values bindings '())))))
-
-(define-macro (let-loop label bindings rest)
-  `((lambda (,label)
-      (set! ,label (lambda ,(split-params bindings '()) ,@rest))
-      (,label ,@(split-values bindings '())))
-    *unspecified*))
-
-(define-macro (let bindings-or-label . rest)
-  `(cond (,(symbol? bindings-or-label)
-          (let-loop ,bindings-or-label ,(car rest) ,(cdr rest)))
-         (#t (simple-let ,bindings-or-label ,rest))))
-
-(define-macro (do init test . body)
-  `(let loop ((,(caar init) ,(cadar init)))
-     (when (not ,@test)
-       ,@body
-       (loop ,@(cddar init)))))
 
 (define-macro (case val . args)
   (if (null? args)
@@ -80,36 +37,25 @@
                            `(member ,val ',pred))
                  (begin ,@body)
                  (case ,val ,@(cdr args)))
-            `(begin ,@body)))))  ; else clause
+            `(begin ,@body)))))
 
-(define-macro (or2 x y)
-  `(cond (,x ,x) (#t ,y)))
+(define-macro (when expr . body)
+  `(if ,expr
+       ((lambda () ,@body))))
 
-(define-macro (and2 x y)
-  `(cond (,x ,y) (#t #f)))
+(define-macro (do init test . body)
+  `(let loop ((,(caar init) ,(cadar init)))
+     (when (not ,@test)
+       ,@body
+       (loop ,@(cddar init)))))
 
-(define-macro (or . x)
-  (cond
-   ((null? x) #f)
-   ((null? (cdr x)) (car x))
-   (#t `(cond (,(car x))
-              (#t (or ,@(cdr x)))))))
+(define (procedure? p)
+  (cond ((builtin? p) #t)
+        ((and (pair? p) (eq? (car p) 'lambda)))
+        ((and (pair? p) (eq? (car p) '*closure*)))
+        (#t #f)))
 
-(define-macro (and . x)
-  (cond ((null? x) #t)
-        ((null? (cdr x)) (car x))
-        (#t `(cond (,(car x) (and ,@(cdr x)))
-                   (#t #f)))))
-
-(define (expand-let* bindings body)
-  (cond ((null? bindings)
-         `((lambda () ,@body)))
-        (#t `((lambda (,(caar bindings))
-                ,(expand-let* (cdr bindings) body))
-              ,@(cdar bindings)))))
-
-(define-macro (let* bindings . body)
-  (expand-let* bindings body))
+(define integer? number?)
 
 (define (equal? a b) ;; FIXME: only 2 arg
   (cond ((and (null? a) (null? b)) #t)
@@ -128,17 +74,6 @@
     (list->vector (let loop ((n n))
                     (if (= 0 n) '()
                         (cons fill (loop (- n 1))))))))
-
-(define-macro (defined? x)
-  `(assq ,x (cddr (current-module))))
-
-(define (procedure? p)
-  (cond ((builtin? p) #t)
-        ((and (pair? p) (eq? (car p) 'lambda)))
-        ((and (pair? p) (eq? (car p) '*closure*)))
-        (#t #f)))
-
-(define integer? number?)
 
 (define (assq-set! alist key val)
   (let ((entry (assq key alist)))
@@ -225,23 +160,6 @@
 (define (list? x)
   (or (null? x)
       (and (pair? x) (list? (cdr x)))))
-
-(define (unspecified-bindings bindings params)
-  (cond ((null? bindings) params)
-        (#t (unspecified-bindings
-             (cdr bindings)
-             (append params (cons (cons (caar bindings) '(*unspecified*)) '()))))))
-
-(define (letrec-setters bindings setters)
-  (cond ((null? bindings) setters)
-        (#t (letrec-setters (cdr bindings)
-                            (append setters
-                                    (cons (cons 'set! (car bindings)) '()))))))
-
-(define-macro (letrec bindings . body)
-  `(let ,(unspecified-bindings bindings '())
-     ,@(letrec-setters bindings '())
-     ,@body))
 
 (define gensym
   (let ((counter 0))
