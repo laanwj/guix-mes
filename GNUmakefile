@@ -100,3 +100,10 @@ mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
 
 guile-mescc: mescc.test
 	cat main.c | guile -s $^ 
+
+hello.o: hello.S
+	as --32 -march=i386 -o $@ $^
+
+hello: hello.o
+	ld -A i386 -m elf_i386 -nostdlib -nodefaultlibs -A i386 -o $@ $^
+#	ld -A i386 -m elf_i386 -A i386 -o $@ $^
