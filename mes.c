@@ -159,6 +159,8 @@ eq_p (scm *x, scm *y)
               && atom_p (y) == &scm_t
               && x->type != CHAR
               && y->type != CHAR
+              && x->type != MACRO
+              && y->type != MACRO
               && x->type != NUMBER
               && y->type != NUMBER
               && x->type != STRING
@@ -392,6 +394,9 @@ eval (scm *e, scm *a)
         return define (e, a);
       if (car (e) == &symbol_set_x)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
+      if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
+        if (cdr (macro) != &scm_f)
+          return eval (apply_env (cdr (macro), e, a), a);
       if ((macro = lookup_macro (car (e), a)) != &scm_f)
         return eval (apply_env (macro, cdr (e), a), a);
       if (car (e) == &symbol_unquote)
@@ -542,11 +547,12 @@ make_char (int x)
 }
 
 scm *
-make_macro (scm *x) //int
+make_macro (scm *x, char *name)
 {
   scm *p = malloc (sizeof (scm));
   p->type = MACRO;
   p->macro = x;
+  p->name = name;
   return p;
 }
 
@@ -1312,7 +1318,7 @@ define (scm *x, scm *a)
     e = eval (make_lambda (cdadr (x), cddr (x)), p);
   }
   if (eq_p (car (x), &symbol_define_macro) == &scm_t)
-    e = make_macro (e);
+    e = make_macro (e, name->name);
   scm *entry = cons (name, e);
   scm *aa = cons (entry, &scm_nil);
   set_cdr_x (aa, cdr (a));
