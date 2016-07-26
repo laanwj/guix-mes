@@ -18,7 +18,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-macro (quasiquote x)
+(define-macro (works-but-sloooooow-quasiquote x)
   (define (check x)
     (cond ((pair? (cdr x)) (cond ((null? (cddr x)))
                                  (#t (error (car x) "invalid form ~s" x))))))
