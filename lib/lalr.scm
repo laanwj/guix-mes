@@ -281,11 +281,14 @@
     (eq? driver-name 'lr-driver))
 
   (define (gen-tables! tokens gram )
+    (display "gen-tables!") (newline)
     (initialize-all)
+    (display "gen-tables!2") (newline)
     (rewrite-grammar
      tokens
      gram
      (lambda (terms terms/prec vars gram gram/actions)
+       (display "inside kee") (newline)
        (set! the-terminals/prec (list->vector terms/prec))
        (set! the-terminals (list->vector terms))
        (set! the-nonterminals (list->vector vars))
@@ -297,13 +300,21 @@
 			    (if (null? l)
 				count
 				(loop (cdr l) (+ count (length (caar l))))))))
+         (display "inside kee2") (newline)
 	 (pack-grammar no-of-rules no-of-items gram)
+         (display "inside kee3") (newline)
 	 (set-derives)
+         (display "inside kee4") (newline)
 	 (set-nullable)
+         (display "inside kee5") (newline)
 	 (generate-states)
+         (display "inside kee6") (newline)
 	 (lalr)
+         (display "inside kee7") (newline)
 	 (build-tables)
+         (display "inside kee8") (newline)
 	 (compact-action-table terms)
+         (display "inside kee9") (newline)
 	 gram/actions))))
 
 
@@ -381,6 +392,7 @@
     (define dset  (make-vector nvars -1))
 
     (let loop ((i 1) (j 0))		; i = 0
+      (display "set-derives loop i=") (display i) (newline)
       (if (< i nrules)
 	  (let ((lhs (vector-ref rlhs i)))
 	    (if (>= lhs 0)
@@ -391,7 +403,7 @@
 		(loop (+ i 1) j)))))
 
     (set! derives (make-vector nvars 0))
-
+    (display "set-derives derives=") (display derives) (newline)
     (let loop ((i 0))
       (if (< i nvars)
 	  (let ((q (let loop2 ((j (vector-ref dset i)) (s '()))
@@ -465,17 +477,28 @@
   (define (set-firsts)
     (set! firsts (make-vector nvars '()))
 
+    (display "set-firsts firsts=") (display firsts) (newline)
     ;; -- initialization
     (let loop ((i 0))
+      (display "loop firsts i=") (display i)
+      (display " firsts=") (display firsts) (newline)
       (if (< i nvars)
 	  (let loop2 ((sp (vector-ref derives i)))
 	    (if (null? sp)
 		(loop (+ i 1))
 		(let ((sym (vector-ref ritem (vector-ref rrhs (car sp)))))
+                  (display "sym=") (display sym)
+                  (display " nvars=") (display nvars)
+                  (display " < -1 sym nvars: ") (display (< -1 sym nvars)) (newline)
 		  (if (< -1 sym nvars)
-		      (vector-set! firsts i (sinsert sym (vector-ref firsts i))))
+		      (begin
+                        (display "set i=") (display i)
+                        (display " :") (sinsert sym (vector-ref firsts i)) (newline)
+                        (vector-set! firsts i (sinsert sym (vector-ref firsts i))))
+                      (begin (display "no set i=") (display i) (newline)))
 		  (loop2 (cdr sp)))))))
 
+    (display "set-firsts 2 firsts=") (display firsts) (newline)
     ;; -- reflexive and transitive closure
     (let loop ((continue #t))
       (if continue
@@ -509,6 +532,7 @@
     (set-firsts)
 
     (let loop ((i 0))
+      (display "fderives i=") (display i) (newline)
       (if (< i nvars)
 	  (let ((x (let loop2 ((l (vector-ref firsts i)) (fd '()))
 		     (if (null? l)
@@ -577,9 +601,13 @@
 
 
   (define (generate-states)
+    (display "inside generate-states") (newline)
     (allocate-storage)
+    (display "inside generate-states2") (newline)
     (set-fderives)
+    (display "inside generate-states3") (newline)
     (initialize-states)
+    (display "inside generate-states4") (newline)
     (let loop ((this-state first-state))
       (if (pair? this-state)
 	  (let* ((x (car this-state))
@@ -715,15 +743,25 @@
 
   (define (lalr)
     (set! token-set-size (+ 1 (quotient nterms (BITS-PER-WORD))))
+    (display "lalr") (newline)
     (set-accessing-symbol)
+    (display "lalr 1") (newline)
     (set-shift-table)
+    (display "lalr 2") (newline)
     (set-reduction-table)
+    (display "lalr 3") (newline)
     (set-max-rhs)
+    (display "lalr 4") (newline)
     (initialize-LA)
+    (display "lalr 5") (newline)
     (set-goto-map)
+    (display "lalr 6") (newline)
     (initialize-F)
+    (display "lalr 7") (newline)
     (build-relations)
+    (display "lalr 8") (newline)
     (digraph includes)
+    (display "lalr 8") (newline)
     (compute-lookaheads))
 
   (define (set-accessing-symbol)
@@ -1275,6 +1313,7 @@
 			(right:    . right)
 			(nonassoc: . nonassoc)))))
 
+    (display "rewrite-grammar!") (newline)
     (cond
      ;; --- a few error conditions
      ((not (list? tokens))
@@ -1288,6 +1327,7 @@
 		  (rev-terms      '())
 		  (rev-terms/prec '())
 		  (prec-level     0))
+        (display "rewrite-grammar! loop1") (newline)
 	(if (pair? lst)
 	    (let ((term (car lst)))
 	      (cond
@@ -1319,6 +1359,7 @@
 
 	    ;; --- check the grammar rules
 	    (let loop2 ((lst grammar) (rev-nonterm-defs '()))
+              (display "rewrite-grammar! loop2") (newline)
 	      (if (pair? lst)
 		  (let ((def (car lst)))
 		    (if (not (pair? def))
@@ -1332,16 +1373,24 @@
 				(else
 				 (loop2 (cdr lst)
 					(cons def rev-nonterm-defs)))))))
-		  (let* ((terms        (cons eoi            (cons 'error          (reverse rev-terms))))
+		  (let* (;;(foobar (begin (display "foobar") (newline)))
+                         (terms        (cons eoi            (cons 'error          (reverse rev-terms))))
+                         ;;(foobar1 (begin (display "foobar2") (newline)))
 			 (terms/prec   (cons '(eoi none 0)  (cons '(error none 0) (reverse rev-terms/prec))))
+                         ;;(foobar2 (begin (display "foobar3") (newline)))
 			 (nonterm-defs (reverse rev-nonterm-defs))
-			 (nonterms     (cons '*start* (map car nonterm-defs))))
+                         ;;(foobar3 (begin (display "foobar4") (newline)))
+			 (nonterms     (cons '*start* (map car nonterm-defs)))
+                         ;;(foobar4 (begin (display "foobar5") (newline)))
+                         )
+                    (display "terms") (newline)
 		    (if (= (length nonterms) 1)
 			(lalr-error "Grammar must contain at least one nonterminal" '())
 			(let loop-defs ((defs      (cons `(*start* (,(cadr nonterms) ,eoi) : $1)
 							 nonterm-defs))
 					(ruleno    0)
 					(comp-defs '()))
+                          (display "loop-defs") (newline)
 			  (if (pair? defs)
 			      (let* ((nonterm-def  (car defs))
 				     (compiled-def (rewrite-nonterm-def
@@ -1352,13 +1401,28 @@
 					   (+ ruleno (length compiled-def))
 					   (cons compiled-def comp-defs)))
 
-			      (let ((compiled-nonterm-defs (reverse comp-defs)))
-				(k terms
-				   terms/prec
-				   nonterms
-				   (map (lambda (x) (cons (caaar x) (map cdar x)))
-					compiled-nonterm-defs)
-				   (apply append compiled-nonterm-defs))))))))))))))
+			      (let* ((compiled-nonterm-defs (reverse comp-defs))
+                                     (foobar6 (begin (display "foobar6") (newline)))
+                                     (foobar7 (begin (display "compiled-nonterm-defs:") (display compiled-nonterm-defs) (newline)))
+                                     (aa (apply append compiled-nonterm-defs))
+                                     (foobar8 (begin (display "foobar8 aa=") (display aa) (newline)))
+                                     (mep (map (lambda (x) (cons (caaar x) (map cdar x))) compiled-nonterm-defs))
+                                     (foobar9 (begin (display "foobar9 mep=") (display mep) (newline)))
+                                     )
+                                (display "K...") (newline)
+                                (display "k=") (display k) (newline)
+				(let ((kee
+                                       (k terms
+                                          terms/prec
+                                          nonterms
+                                          ;;;(map (lambda (x) (cons (caaar x) (map cdar x))) compiled-nonterm-defs)
+                                          mep
+                                          ;;(apply append compiled-nonterm-defs)
+                                          aa
+                                          )))
+                                  (display "K...dun") (newline)
+                                  kee
+                                  )))))))))))))
 
 
   (define (rewrite-nonterm-def nonterm-def ruleno terms nonterms)
@@ -1624,7 +1688,18 @@
 		       '())))
 	   (vector->list shift-table)))))
 
+  (define (build-goto-table---)
+    (display "build-goto-table...")
+    (let ((r (build-goto-table-)))
+      (newline)
+      r))
 
+  (define (build-reduction-table--- gram/actions)
+    (display "build-reduction-table...")
+    (let ((r (build-reduction-table- gram/actions)))
+      (newline)
+      r))
+  
   (define build-reduction-table
     (lambda (gram/actions)
       `(vector
@@ -1696,8 +1771,10 @@
 
 
   (define (validate-options options)
+    (display "validate-options options=") (display options) (newline)
     (for-each
      (lambda (option)
+       (display "option=") (display option) (newline)
        (let ((p (assoc (car option) *valid-options*)))
 	 (if (or (not p)
 		 (not ((cdr p) option)))
@@ -1737,18 +1814,24 @@
   ;; -- arguments
 
   (define (extract-arguments lst proc)
+    ;; (display "extracting") (newline)
     (let loop ((options '())
 	       (tokens  '())
 	       (rules   '())
 	       (lst     lst))
       (if (pair? lst)
 	  (let ((p (car lst)))
+            ;; (display "p:") (display p) (newline)
+            ;; (display "keyword?: ") (display (lalr-keyword? (car p))) (newline)
 	    (cond
 	     ((and (pair? p)
 		   (lalr-keyword? (car p))
 		   (assq (car p) *valid-options*))
 	      (loop (cons p options) tokens rules (cdr lst)))
 	     (else
+              ;; (display "CALLING PROC") (newline)
+              ;; (display "LST:") (display (cdr lst)) (newline)
+              ;; (display "options:") (display options) (newline)
 	      (proc options p (cdr lst)))))
 	  (lalr-error "Malformed lalr-parser form" lst))))
 
