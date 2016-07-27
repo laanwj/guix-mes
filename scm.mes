@@ -20,11 +20,6 @@
 
 (define (list . rest) rest)
 
-(define-macro (if expr then . else)
-  `(cond
-    (,expr ,then)
-    (#t (cond (,(pair? else) ((lambda () ,@else)))))))
-
 (define-macro (case val . args)
   (if (null? args)
       #f
@@ -57,17 +52,6 @@
 
 (define integer? number?)
 
-(define (equal? a b) ;; FIXME: only 2 arg
-  (cond ((and (null? a) (null? b)) #t)
-        ((and (pair? a) (pair? b))
-         (and (equal? (car a) (car b))
-              (equal? (cdr a) (cdr b))))
-        ((and (string? a) (string? b))
-         (eq? (string->symbol a) (string->symbol b)))
-        ((and (vector? a) (vector? b))
-         (equal? (vector->list a) (vector->list b)))
-        (#t (eq? a b))))
-
 (define (vector . rest) (list->vector rest))
 (define (make-vector n . x)
   (let ((fill (if (pair? x) (car x) *unspecified*)))
@@ -90,9 +74,14 @@
 (define assv-ref assq-ref)
 
 (define (assoc key alist)
-  (cond ((null? alist) #f)
+  (cond ((null? alist) #f) ;; COND
         ((equal? key (caar alist)) (car alist))
         (#t (assoc key (cdr alist)))))
+
+(define (assoc key alist)
+  (if (null? alist) #f ;; IF
+      (if (equal? key (caar alist)) (car alist)
+          (assoc key (cdr alist)))))
 
 (define (assoc-ref alist key)
   (let ((entry (assoc key alist)))
@@ -100,32 +89,37 @@
         #f)))
 
 (define (memq x lst)
-  (cond ((null? lst) #f)
+  (cond ((null? lst) #f) ;; COND
         ((eq? x (car lst)) lst)
         (#t (memq x (cdr lst)))))
+
+(define (memq x lst)
+  (if (null? lst) #f ;; IF
+      (if (eq? x (car lst)) lst
+          (memq x (cdr lst)))))
 (define memv memq)
 
 (define (member x lst)
-  (cond ((null? lst) #f)
+  (cond ((null? lst) #f) ;; COND
         ((equal? x (car lst)) lst)
         (#t (member x (cdr lst)))))
 
-(define (map f l . r)
-  (cond ((null? l) '())
-        ((null? r) (cons (f (car l)) (map f (cdr l))))
-        ((null? (cdr r))
-         (cons (f (car l) (caar r)) (map f (cdr l) (cdar r))))))
+(define (member x lst)
+  (if (null? lst) #f ;; IF
+      (if (equal? x (car lst)) lst
+          (member x (cdr lst)))))
 
-(define (identity x) x)
 (define (for-each f l . r)
-  (cond ((null? l) '())
+  (cond ((null? l) '()) ;; COND
         ((null? r) (f (car l)) (for-each f (cdr l)))
         ((null? (cdr r))
          (for-each f (cdr l) (cdar r)))))
 
-(define (not x)
-  (cond (x #f)
-        (#t #t)))
+(define (for-each f l . r)
+  (if (null? l) '() ;; IF
+      (if (null? r) (begin (f (car l)) (for-each f (cdr l)))
+          (if (null? (cdr r))
+              (for-each f (cdr l) (cdar r))))))
 
 (define (<= . rest)
   (or (apply < rest)
@@ -134,6 +128,11 @@
 (define (>= . rest)
   (or (apply > rest)
       (apply = rest)))
+
+;; (define (>= . rest)
+;;   (if (apply > rest) #t
+;;       (if (apply = rest) #t
+;;           #f)))
 
 (define quotient /)
 

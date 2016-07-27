@@ -21,39 +21,26 @@
 (define (identity x) x)
 (define else #t)
 
-(define (not x)
-  (cond (x #f)
-        (#t #t)))
-
-(define guile? (not (pair? (current-module))))
-
-(define-macro (or2 x y)
-  `(cond (,x ,x) (#t ,y)))
-
-(define-macro (and2 x y)
-  `(cond (,x ,y) (#t #f)))
-
-(define-macro (and . x)
-  (cond ((null? x) #t)
-        ((null? (cdr x)) (car x))
-        (#t (list 'cond (list (car x) (cons 'and (cdr x)))
-                  '(#t #f)))))
-
+;;; COND based
 (define-macro (or . x)
-  (cond
+  (cond ;; COND
    ((null? x) #f)
    ((null? (cdr x)) (car x))
-   (#t (list 'cond (list (car x))
+   (#t (list 'cond (list (car x)) ;; COND
              (list #t (cons 'or (cdr x)))))))
 
-(define (cons* x . rest)
-  (define (loop rest)
-    (cond ((null? (cdr rest)) (car rest))
-          (#t (cons (car rest) (loop (cdr rest))))))
-  (loop (cons x rest)))
+(define-macro (and . x)
+  (cond ((null? x) #t) ;; COND
+        ((null? (cdr x)) (car x))
+        (#t (list 'cond (list (car x) (cons 'and (cdr x))) ;; COND
+                  '(#t #f)))))
+
+(define (not x)
+  (cond (x #f) ;; COND
+        (#t #t)))
 
 (define (equal? a b) ;; FIXME: only 2 arg
-  (cond ((and (null? a) (null? b)) #t)
+  (cond ((and (null? a) (null? b)) #t) ;; COND
         ((and (pair? a) (pair? b))
          (and (equal? (car a) (car b))
               (equal? (cdr a) (cdr b))))
@@ -64,15 +51,55 @@
         (#t (eq? a b))))
 
 (define (memq x lst)
-  (cond ((null? lst) #f)
+  (cond ((null? lst) #f) ;; COND
         ((eq? x (car lst)) lst)
         (#t (memq x (cdr lst)))))
 
 (define (map f l . r)
-  (cond ((null? l) '())
+  (cond ((null? l) '()) ;; COND
         ((null? r) (cons (f (car l)) (map f (cdr l))))
         ((null? (cdr r))
          (cons (f (car l) (caar r)) (map f (cdr l) (cdar r))))))
+
+;; IF based
+(define-macro (or . x)
+  (if (null? x) #f ;; IF
+      (if (null? (cdr x)) (car x) ;; IF
+          (list 'if (car x) (car x)
+                (cons* 'or (cdr x))))))
+
+(define-macro (and . x)
+  (if (null? x) #t ;; IF
+      (if (null? (cdr x)) (car x) ;; IF
+          (list 'if (car x) (cons 'and (cdr x)) ;; IF
+                #f))))
+
+(define (not x)
+  (if x #f #t))
+
+(define (equal? a b) ;; FIXME: only 2 arg
+  (if (and (null? a) (null? b)) #t ;; IF
+      (if (and (pair? a) (pair? b))
+          (and (equal? (car a) (car b))
+               (equal? (cdr a) (cdr b)))
+          (if (and (string? a) (string? b)) ;; IF
+              (eq? (string->symbol a) (string->symbol b))
+              (if (and (vector? a) (vector? b)) ;; IF
+                  (equal? (vector->list a) (vector->list b))
+                  (eq? a b))))))
+
+(define (memq x lst)
+  (if (null? lst) #f ;; IF
+      (if (eq? x (car lst)) lst ;; IF
+          (memq x (cdr lst)))))
+
+(define guile? (not (pair? (current-module))))
+
+(define (map f l . r)
+  (if (null? l) '() ;; IF
+      (if (null? r) (cons (f (car l)) (map f (cdr l))) ;; IF
+          (if (null? (cdr r)) ;; IF
+              (cons (f (car l) (caar r)) (map f (cdr l) (cdar r)))))))
 
 (define-macro (simple-let bindings . rest)
   (cons (cons 'lambda (cons (map car bindings) rest))

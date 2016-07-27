@@ -88,6 +88,7 @@ scm symbol_lambda = {SYMBOL, "lambda"};
 scm symbol_begin = {SYMBOL, "begin"};
 scm symbol_list = {SYMBOL, "list"};
 scm symbol_cond = {SYMBOL, "cond"};
+scm symbol_if = {SYMBOL, "if"};
 scm symbol_quote = {SYMBOL, "quote"};
 scm symbol_quasiquote = {SYMBOL, "quasiquote"};
 scm symbol_unquote = {SYMBOL, "unquote"};
@@ -386,19 +387,24 @@ eval (scm *e, scm *a)
         return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
       if (car (e) == &symbol_closure)
         return e;
+      if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
+        if (cdr (macro) != &scm_f)
+          return eval (apply_env (cdr (macro), e, a), a);
+      if ((macro = lookup_macro (car (e), a)) != &scm_f)
+        return eval (apply_env (macro, cdr (e), a), a);
+#if COND
       if (car (e) == &symbol_cond)
         return evcon (cdr (e), a);
+#else
+      if (car (e) == &symbol_if)
+        return if_env (cdr (e), a);
+#endif
       if (eq_p (car (e), &symbol_define) == &scm_t)
         return define (e, a);
       if (eq_p (car (e), &symbol_define_macro) == &scm_t)
         return define (e, a);
       if (car (e) == &symbol_set_x)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
-      if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
-        if (cdr (macro) != &scm_f)
-          return eval (apply_env (cdr (macro), e, a), a);
-      if ((macro = lookup_macro (car (e), a)) != &scm_f)
-        return eval (apply_env (macro, cdr (e), a), a);
       if (car (e) == &symbol_unquote)
         return eval (cadr (e), a);
       if (car (e) == &symbol_quasiquote)
@@ -422,6 +428,16 @@ evcon (scm *c, scm *a)
     return evcon (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
   }
   return evcon (cdr (c), a);
+}
+
+scm *
+if_env (scm *e, scm *a)
+{
+  if (eval (car (e), a) != &scm_f)
+    return eval (cadr (e), a);
+  if (cddr (e) != &scm_nil)
+    return eval (caddr (e), a);
+  return &scm_unspecified;
 }
 
 scm *
@@ -755,11 +771,13 @@ lookup (char *x, scm *a)
   if (!strcmp (x, scm_nil.name)) return &scm_nil;
   if (!strcmp (x, scm_t.name)) return &scm_t;
   if (!strcmp (x, scm_unspecified.name)) return &scm_unspecified;
-
   if (!strcmp (x, symbol_begin.name)) return &symbol_begin;
   if (!strcmp (x, symbol_closure.name)) return &symbol_closure;
+#if COND
   if (!strcmp (x, symbol_cond.name)) return &symbol_cond;
-  if (!strcmp (x, symbol_current_module.name)) return &symbol_current_module;
+#else
+  if (!strcmp (x, symbol_if.name)) return &symbol_if;
+#endif
   if (!strcmp (x, symbol_lambda.name)) return &symbol_lambda;
 
   if (!strcmp (x, symbol_quasiquote.name)) return &symbol_quasiquote;
@@ -792,6 +810,10 @@ lookup (char *x, scm *a)
     fprintf (stderr, "mes: got EOF\n");
     return &scm_nil; // `EOF': eval program, which may read stdin
   }
+
+  // Hmm?
+  if (!strcmp (x, symbol_current_module.name)) return &symbol_current_module;
+
   return make_symbol (x);
 }
 

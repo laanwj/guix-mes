@@ -4,7 +4,7 @@
   `(assq ,x (cddr (current-module))))
 
 (define (cond-expand-expander clauses)
-  (named-let loop ((clauses clauses))
+  (let loop ((clauses clauses))
     (if (defined? (caar clauses))
         (eval (cons 'begin (cdar clauses)) (current-module))
         (loop (cdr clauses)))))

@@ -26,10 +26,6 @@
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
 
-(pass-if "if" (seq? (if #t 'true) 'true))
-(pass-if "if 2" (seq? (if (seq? 0 '0) 'true 'false) 'true))
-(pass-if "if 3" (seq? (if (= 1 2) 'true 'false) 'false))
-
 (pass-if "when" (seq? (when #t 'true) 'true))
 (pass-if "when 2" (seq? (when #f 'true) *unspecified*))
 
