@@ -70,18 +70,18 @@ psyntax: all
 	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes psyntax.mes psyntax.pp psyntax2.mes | ./mes
 
 syntax: all
-	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax.mes syntax-test.mes | ./mes
+	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes syntax-test.mes | ./mes
 
-syntax.test: syntax.mes syntax-test.mes
+syntax.test: syntax-cond.mes syntax-test.mes
 	cat $^ > $@
 
 guile-syntax: syntax.test
 	guile -s $^
 
 syntax-case: all
-	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes | ./mes
+	cat scm.mes syntax-cond.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes | ./mes
 
-syntax-case.test: syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes
+syntax-case.test: syntax-cond.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes
 	cat $^ > $@
 
 guile-syntax-case: syntax-case.test
@@ -91,7 +91,7 @@ macro: all
 	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes macro.mes | ./mes
 
 peg: all
-	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
+	cat scm.mes syntax-cond.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
 
 peg.test: peg/pmatch.scm peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes
 	cat $^ | sed 's,\(;; Packages the results of a parser\),(when (guile?) (set! compile-peg-pattern (@@ (ice-9 peg codegen) compile-peg-pattern)))\n\1,' > $@
@@ -105,11 +105,11 @@ clean:
 	rm -f mes environment.i mes.h peg.test syntax.test
 
 record: all
-	cat scm.mes syntax.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm record.mes |./mes
+	cat scm.mes syntax-cond.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm record.mes |./mes
 
 
 paren: all
-	echo -e 'EOF\n___P((()))' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm - | ./mes
+	echo -e 'EOF\n___P((()))' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm - | ./mes
 
 paren.test: lib/lalr.scm paren.scm
 	cat $^ > $@
@@ -118,7 +118,7 @@ guile-paren: paren.test
 	echo '___P((()))' | guile -s $^ 
 
 mescc: all
-	echo ' EOF ' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes
+	echo ' EOF ' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes
 
 mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
 	cat $^ > $@
