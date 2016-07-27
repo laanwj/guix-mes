@@ -27,44 +27,20 @@
      (set! ,label (lambda ,(map car bindings) ,@rest))
      (,label ,@(map cadr bindings))))
 
-(define-macro (combined-let bindings-or-label . rest)
-  (display
-   `(,`(cond
-        (,(symbol? bindings-or-label)
-         (lambda () ,(cons* 'named-let bindings-or-label `(car ,rest) `(cdr ,rest))))
-        (#t
-         (lambda () ,(cons* 'simple-let bindings-or-label rest))
-         ))))
-  (newline)
-  `(,`(cond
-       (,(symbol? bindings-or-label)
-        (lambda () ,(cons* 'named-let bindings-or-label `(car ,rest) `(cdr ,rest))))
-       (#t
-        (lambda () ,(cons* 'simple-let bindings-or-label rest))
-        ))))
-
-
-
-
-(define (split-params bindings params)
-  (cond ((null? bindings) params)
-        (#t (split-params (cdr bindings)
-                          (append params (cons (caar bindings) '()))))))
-
-(define (split-values bindings values)
-  (cond ((null? bindings) values)
-        (#t (split-values (cdr bindings)
-                          (append values (cdar bindings) '())))))
+(define-macro (let bindings-or-label . rest)
+  `(`,(cond (,(symbol? bindings-or-label)
+             (list 'lambda '() (cons* 'named-let ,bindings-or-label ,(car rest) ,(cdr rest))))
+            (#t
+             (list 'lambda '() (cons* 'simple-let ,bindings-or-label ,rest))))))
 
 (define-macro (xsimple-let bindings rest)
-  `((lambda ,(split-params bindings '()) ,@rest)
-    ,@(split-values bindings '())))
+  `(,`(lambda ,(map car bindings) ,@rest)
+    ,@(map cadr bindings)))
 
 (define-macro (xnamed-let label bindings rest)
-  `((lambda (,label)
-      (set! ,label (lambda ,(split-params bindings '()) ,@rest))
-      (,label ,@(split-values bindings '())))
-    *unspecified*))
+  `(simple-let ((,label *unspecified*))
+     (set! ,label (lambda ,(map car bindings) ,@rest))
+     (,label ,@(map cadr bindings))))
 
 (define-macro (let bindings-or-label . rest)
   `(cond (,(symbol? bindings-or-label)
