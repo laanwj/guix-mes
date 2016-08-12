@@ -405,12 +405,14 @@
     (lambda ()
       (c-parser (c-lexer errorp) errorp))))
 
-(display "program: " 2)
-(display (mescc) 2)
-(newline 2)
+(display "program: " (current-error-port))
+(display (mescc) (current-error-port))
+(newline (current-error-port))
 
-(define elf-header '(#x7f #E #L #F #x01))
+(define (write-int x) (write-char (integer->char x)))
+(define elf-header '(#x7f #\E #\L #\F #x01))
 
 (define elf-header '(#x7f #x45 #x4c #x46 #x01))
-(map write-char elf-header)
+;;(map write-char elf-header)
+(map write-int elf-header)
 (newline)

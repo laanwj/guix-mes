@@ -20,3 +20,7 @@
 
 (define-macro (defined? x)
   `(assq ,x (cddr (current-module))))
+
+(define (current-input-port) 0)
+(define (current-output-port) 1)
+(define (current-error-port) 2)
