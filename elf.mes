@@ -1,0 +1,12 @@
+;;; -*-scheme-*-
+
+(write-char #x7f)
+(write-char #x45)
+(write-char #x4c)
+(write-char #x46)
+(write-char #x08)
+(write-char #x48)
+(write-char #x65)
+(write-char #x6c)
+(write-char #x6c)
+(write-char #x6f)

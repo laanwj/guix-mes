@@ -2,6 +2,7 @@
 *.go
 *.o
 *~
+/a.out
 /mes
 /mes.h
 /environment.i

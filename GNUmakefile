@@ -118,7 +118,7 @@ guile-paren: paren.test
 	echo '___P((()))' | guile -s $^ 
 
 mescc: all
-	echo ' EOF ' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes
+	echo ' EOF ' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes > a.out
 
 mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
 	cat $^ > $@
