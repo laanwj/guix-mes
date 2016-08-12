@@ -78,7 +78,6 @@
 
  ;; -- Guile
  (guile
-  (display "GUILE") (newline)
   (use-modules (ice-9 pretty-print))
   (use-modules (srfi srfi-9))
 
@@ -96,9 +95,6 @@
 
  ;; -- Mes
   (mes
-   (display "MES!")
-   (newline)
-
    (define pprint display)
    (define lalr-keyword? symbol?)
    (define-macro (BITS-PER-WORD) 30)
