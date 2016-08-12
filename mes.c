@@ -69,7 +69,7 @@ typedef struct scm_t {
 #define MES_C 1
 #include "mes.h"
 
-scm *display_helper (scm*, bool, char*, bool);
+scm *display_helper (FILE*, scm*, bool, char*, bool);
 bool
 symbol_eq (scm *x, char *s)
 {
@@ -515,9 +515,20 @@ vector_p (scm *x)
 }
 
 scm *
-display (scm *x)
+display (scm *x/*...*/)
 {
-  return display_helper (x, false, "", false);
+  scm *e = car (x);
+  scm *p = cdr (x);
+  int fd = 1;
+  if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
+  FILE *f = fd == 1 ? stdout : stderr;
+  return display_helper (f, e, false, "", false);
+}
+
+scm *
+display_ (FILE* f, scm *x) //internal
+{
+  return display_helper (f, x, false, "", false);
 }
 
 scm *
@@ -909,66 +920,69 @@ vector_to_list (scm *v)
 }
 
 scm *
-newline ()
+newline (scm *p/*...*/)
 {
-  puts ("");
+  int fd = 1;
+  if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
+  FILE *f = fd == 1 ? stdout : stderr;
+  fputs ("\n", f);
   return &scm_unspecified;
 }
 
 scm *
-display_helper (scm *x, bool cont, char *sep, bool quote)
+display_helper (FILE* f, scm *x, bool cont, char *sep, bool quote)
 {
   scm *r;
-  printf ("%s", sep);
-  if (x->type == CHAR && x->value == char_nul.value) printf ("#\\%s", char_nul.name);
-  else if (x->type == CHAR && x->value == char_backspace.value) printf ("#\\%s", char_backspace.name);
-  else if (x->type == CHAR && x->value == char_tab.value) printf ("#\\%s", char_tab.name);
-  else if (x->type == CHAR && x->value == char_newline.value) printf ("#\\%s", char_newline.name);
-  else if (x->type == CHAR && x->value == char_vt.value) printf ("#\\%s", char_vt.name);
-  else if (x->type == CHAR && x->value == char_page.value) printf ("#\\%s", char_page.name);
-  else if (x->type == CHAR && x->value == char_return.value) printf ("#\\%s", char_return.name);
-  else if (x->type == CHAR && x->value == char_space.value) printf ("#\\%s", char_space.name);
-  else if (x->type == CHAR) printf ("#\\%c", x->value);
+  fprintf (f, "%s", sep);
+  if (x->type == CHAR && x->value == char_nul.value) fprintf (f, "#\\%s", char_nul.name);
+  else if (x->type == CHAR && x->value == char_backspace.value) fprintf (f, "#\\%s", char_backspace.name);
+  else if (x->type == CHAR && x->value == char_tab.value) fprintf (f, "#\\%s", char_tab.name);
+  else if (x->type == CHAR && x->value == char_newline.value) fprintf (f, "#\\%s", char_newline.name);
+  else if (x->type == CHAR && x->value == char_vt.value) fprintf (f, "#\\%s", char_vt.name);
+  else if (x->type == CHAR && x->value == char_page.value) fprintf (f, "#\\%s", char_page.name);
+  else if (x->type == CHAR && x->value == char_return.value) fprintf (f, "#\\%s", char_return.name);
+  else if (x->type == CHAR && x->value == char_space.value) fprintf (f, "#\\%s", char_space.name);
+  else if (x->type == CHAR) fprintf (f, "#\\%c", x->value);
   else if (x->type == MACRO) {
-    printf ("(*macro* ");
-    display_helper (x->macro, cont, sep, quote);
-    printf (")");
+    fprintf (f, "(*macro* ");
+    display_helper (f, x->macro, cont, sep, quote);
+    fprintf (f, ")");
   }
-  else if (x->type == NUMBER) printf ("%d", x->value);
+  else if (x->type == NUMBER) fprintf (f, "%d", x->value);
   else if (x->type == PAIR) {
     if (car (x) == &symbol_circ) {
-      printf ("(*circ* . #-1#)");
+      fprintf (f, "(*circ* . #-1#)");
       return &scm_unspecified;
     }
     if (car (x) == &symbol_closure) {
-      printf ("(*closure* . #-1#)");
+      fprintf (f, "(*closure* . #-1#)");
       return &scm_unspecified;
     }
     if (car (x) == &scm_quote) {
-      printf ("'");
-      return display_helper (car (cdr (x)), cont, "", true);
+      fprintf (f, "'");
+      return display_helper (f, car (cdr (x)), cont, "", true);
     }
-    if (!cont) printf ("(");
-    display (car (x));
+    if (!cont) fprintf (f, "(");
+    display_ (f, car (x));
     if (cdr (x)->type == PAIR)
-      display_helper (cdr (x), true, " ", false);
+      display_helper (f, cdr (x), true, " ", false);
     else if (cdr (x) != &scm_nil) {
-      printf (" . ");
-      display (cdr (x));
+      fprintf (f, " . ");
+      display_ (f, cdr (x));
     }
-    if (!cont) printf (")");
+    if (!cont) fprintf (f, ")");
   }
   else if (x->type == VECTOR) {
-    printf ("#(", x->length);
+    fprintf (f, "#(", x->length);
     for (int i = 0; i < x->length; i++) {
       if (x->vector[i]->type == VECTOR)
-        printf ("%s#(...)", i ? " " : "");
+        fprintf (f, "%s#(...)", i ? " " : "");
       else
-        display_helper (x->vector[i], false, i ? " " : "", false);
+        display_helper (f, x->vector[i], false, i ? " " : "", false);
     }
-    printf (")");
+    fprintf (f, ")");
   }
-  else if (atom_p (x) == &scm_t) printf ("%s", x->name);
+  else if (atom_p (x) == &scm_t) fprintf (f, "%s", x->name);
 
   return &scm_unspecified;
 }
@@ -1001,10 +1015,23 @@ read_char ()
   return make_char (getchar ());
 }
 
+scm *
+write_char (scm *x/*...*/)
+{
+  scm *c = car (x);
+  scm *p = cdr (x);
+  int fd = 1;
+  if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
+  FILE *f = fd == 1 ? stdout : stderr;
+  assert (c->type == NUMBER || c->type == CHAR);
+  fputc (c->value, f);
+  return c;
+}
+
 scm*
 builtin_ungetchar (scm *c)
 {
-  assert (c->type == NUMBER);
+  assert (c->type == NUMBER || c->type == CHAR);
   ungetchar (c->value);
   return c;
 }
@@ -1060,6 +1087,7 @@ readword (int c, char* w, scm *a)
                           cons (readword (getchar (), w, a),
                                 &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
+  if (c == '#' && peek_char () == 'x') {getchar (); return read_hex ();}
   if (c == '#' && peek_char () == '\\') {getchar (); return read_character ();}
   if (c == '#' && !w && peek_char () == '(') {getchar (); return list_to_vector (readlist (a));}
   if (c == '#' && peek_char () == '(') {ungetchar (c); return lookup (w, a);}
@@ -1067,6 +1095,24 @@ readword (int c, char* w, scm *a)
   char buf[256] = {0};
   char ch = c;
   return readword (getchar (), strncat (w ? w : buf, &ch, 1), a);
+}
+
+scm *
+read_hex ()
+{
+  int n = 0;
+  int c = peek_char ();
+  while ((c >= '0' && c <= '9')
+         || (c >= 'A' && c <= 'F')
+         || (c >= 'a' && c <= 'f')) {
+    n <<= 4;
+    if (c >= 'a') n += c - 'a' + 10;
+    else if (c >= 'A') n += c - 'A' + 10;
+    else n+= c - '0';
+    getchar ();
+    c = peek_char ();
+  }
+  return make_number (n);
 }
 
 scm *
@@ -1370,7 +1416,7 @@ int
 main (int argc, char *argv[])
 {
   scm *a = mes_environment ();
-  display (eval (cons (&symbol_begin, read_file (readenv (a), a)), a));
-  newline ();
+  display_ (stderr, eval (cons (&symbol_begin, read_file (readenv (a), a)), a));
+  fputs ("", stderr);
   return 0;
 }
