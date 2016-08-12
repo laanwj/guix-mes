@@ -1,12 +1,66 @@
 ;;; -*-scheme-*-
 
-(write-char #x7f)
-(write-char #x45)
-(write-char #x4c)
-(write-char #x46)
-(write-char #x08)
-(write-char #x48)
-(write-char #x65)
-(write-char #x6c)
-(write-char #x6c)
-(write-char #x6f)
+(define ei-magic '(#x7f #\E #\L #\F))
+;;(define ei-magic '(#x7f #x45 #x4c #x46))
+(define ei-class '(#x01)) ;; 32 bit
+(define ei-data '(#x01)) ;; little endian
+(define ei-version '(#x01))
+(define ei-osabi '(#x00))
+(define ei-pad '(#x0 #x0 #x0 #x0 #x0 #x0 #x0 #x0))
+(define e-ident
+  (append
+   ei-magic
+   ei-class
+   ei-data
+   ei-version
+   ei-osabi
+   ei-pad))
+
+(define e-type '(#x02 #x00)) ;; ET_EXEC
+(define e-machine '(#x03 #x00))
+(define e-version '(#x01 #x00 #x00 #x00))
+(define e-entry '(#xb0 #x00 #x40 #x00 #x00 #x00 #x00 #x00))
+(define e-type '(#x02 #x00))
+(define e-phoff '(#x40 #x00 #x00 #x00 #x00 #x00 #x00 #x00))
+(define e-shoff '(#x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00))
+(define e-flags '(#x00 #x00 #x00 #x00))
+(define e-ehsize '(#x40 #x00))
+(define e-phentsize '(#x38 #x00))
+(define e-phnum '(#x02 #x00))
+(define e-shentsize '(#x00 #x00))
+(define e-shnum '(#x00 #x00))
+(define e-shstrndx '(#x03 #x00))
+
+(define elf-header
+  (append
+   e-ident
+   e-type
+   e-machine
+   e-version
+   e-entry
+   e-phoff
+   e-shoff
+   e-flags
+   e-ehsize
+   e-phentsize
+   e-phnum
+   e-shentsize
+   e-shnum
+   e-shstrndx
+   ))
+
+;;(define elf-header '(#x7f #x45 #x4c #x46 #x01))
+(define program-header
+  (append
+   ;; p-offset
+   ;; p-type
+   ;; p-offset
+   ;; p-vaddr
+   ;; p-paddr
+   ;; p-filesz
+   ;; p-memsz
+   ;; p-flags
+   ;; p-align
+   ))
+
+(map write-char elf-header)
