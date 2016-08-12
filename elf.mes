@@ -19,17 +19,16 @@
 (define e-type '(#x02 #x00)) ;; ET_EXEC
 (define e-machine '(#x03 #x00))
 (define e-version '(#x01 #x00 #x00 #x00))
-(define e-entry '(#xb0 #x00 #x40 #x00 #x00 #x00 #x00 #x00))
-(define e-type '(#x02 #x00))
-(define e-phoff '(#x40 #x00 #x00 #x00 #x00 #x00 #x00 #x00))
-(define e-shoff '(#x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00))
+(define e-entry '(#x54 #x80 #x04 #x08))
+(define e-phoff '(#x30 #x00 #x00 #x00))
+(define e-shoff '(#x50 #x00 #x00 #x00))
 (define e-flags '(#x00 #x00 #x00 #x00))
-(define e-ehsize '(#x40 #x00))
-(define e-phentsize '(#x38 #x00))
-(define e-phnum '(#x02 #x00))
-(define e-shentsize '(#x00 #x00))
-(define e-shnum '(#x00 #x00))
-(define e-shstrndx '(#x03 #x00))
+(define e-ehsize '(#x80 #x00))
+(define e-phentsize '(#x20 #x00))
+(define e-phnum '(#x01 #x00))
+(define e-shentsize '(#x28 #x00))
+(define e-shnum '(#x05 #x00))
+(define e-shstrndx '(#x04 #x00))
 
 (define elf-header
   (append
@@ -63,4 +62,52 @@
    ;; p-align
    ))
 
-(map write-char elf-header)
+(define rest
+  '(
+    #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+         #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
+
+))
+
+(define exe
+  (append
+   elf-header
+   rest))
+(map write-char exe)
