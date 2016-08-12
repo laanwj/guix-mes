@@ -119,6 +119,7 @@ guile-paren: paren.test
 
 mescc: all
 	echo ' EOF ' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes > a.out
+	chmod +x a.out
 
 mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
 	cat $^ > $@
@@ -132,3 +133,7 @@ hello.o: hello.S
 hello: hello.o
 	ld -A i386 -m elf_i386 -nostdlib -nodefaultlibs -A i386 -o $@ $^
 #	ld -A i386 -m elf_i386 -A i386 -o $@ $^
+
+a.out:  elf.mes
+	cat base0.mes base0-if.mes base.mes elf.mes | ./mes > a.out
+	chmod +x a.out
