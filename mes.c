@@ -69,6 +69,19 @@ typedef struct scm_t {
 #define MES_C 1
 #include "mes.h"
 
+char *g_arena;
+int ARENA_SIZE = 1024 * 1024 * 1024;
+void *
+xmalloc (int size)
+{
+  static char *arena_start = 0;
+  if (!arena_start) arena_start = g_arena;
+  assert (g_arena - arena_start + size < ARENA_SIZE);
+  char* x = g_arena;
+  g_arena += size;
+  return x;
+}
+
 scm *display_helper (FILE*, scm*, bool, char*, bool);
 bool
 symbol_eq (scm *x, char *s)
@@ -140,7 +153,7 @@ cdr (scm *x)
 scm *
 cons (scm *x, scm *y)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = xmalloc (sizeof (scm));
   p->type = PAIR;
   p->car = x;
   p->cdr = y;
@@ -567,7 +580,7 @@ append (scm *x/*...*/)
 scm *
 make_char (int x)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = xmalloc (sizeof (scm));
   p->type = CHAR;
   p->value = x;
   return p;
@@ -576,7 +589,7 @@ make_char (int x)
 scm *
 make_macro (scm *x, char *name)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = xmalloc (sizeof (scm));
   p->type = MACRO;
   p->macro = x;
   p->name = name;
@@ -586,7 +599,7 @@ make_macro (scm *x, char *name)
 scm *
 make_number (int x)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = xmalloc (sizeof (scm));
   p->type = NUMBER;
   p->value = x;
   return p;
@@ -595,7 +608,7 @@ make_number (int x)
 scm *
 make_string (char const *s)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = xmalloc (sizeof (scm));
   p->type = STRING;
   p->name = strdup (s);
   return p;
@@ -605,7 +618,7 @@ scm *
 make_symbol (char const *s)
 {
   // TODO: alist lookup symbols
-  scm *p = malloc (sizeof (scm));
+  scm *p = xmalloc (sizeof (scm));
   p->type = SYMBOL;
   p->name = strdup (s);
   return p;
@@ -614,10 +627,10 @@ make_symbol (char const *s)
 scm *
 make_vector (int n)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = xmalloc (sizeof (scm));
   p->type = VECTOR;
   p->length = n;
-  p->vector = malloc (n * sizeof (scm*));
+  p->vector = xmalloc (n * sizeof (scm*));
   return p;
 }
 
@@ -1415,6 +1428,7 @@ read_file (scm *e, scm *a)
 int
 main (int argc, char *argv[])
 {
+  g_arena = malloc (ARENA_SIZE);
   scm *a = mes_environment ();
   display_ (stderr, eval (cons (&symbol_begin, read_file (readenv (a), a)), a));
   fputs ("", stderr);
