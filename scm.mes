@@ -52,12 +52,15 @@
 
 (define integer? number?)
 
+(define (make-list n . x)
+  (let ((fill (if (pair? x) (car x) *unspecified*)))
+    (let loop ((n n))
+      (if (= 0 n) '()
+          (cons fill (loop (- n 1)))))))
+
 (define (vector . rest) (list->vector rest))
 (define (make-vector n . x)
-  (let ((fill (if (pair? x) (car x) *unspecified*)))
-    (list->vector (let loop ((n n))
-                    (if (= 0 n) '()
-                        (cons fill (loop (- n 1))))))))
+  (list->vector (apply make-list (cons n x))))
 
 (define (assq-set! alist key val)
   (let ((entry (assq key alist)))
