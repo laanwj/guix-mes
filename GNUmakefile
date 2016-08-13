@@ -134,6 +134,6 @@ hello: hello.o
 	ld -A i386 -m elf_i386 -nostdlib -nodefaultlibs -A i386 -o $@ $^
 #	ld -A i386 -m elf_i386 -A i386 -o $@ $^
 
-a.out:  elf.mes
-	cat base0.mes base0-if.mes base.mes elf.mes | ./mes > a.out
+a.out: elf.mes GNUmakefile
+	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm scm.mes elf.mes | ./mes > a.out
 	chmod +x a.out
