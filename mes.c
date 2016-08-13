@@ -1160,9 +1160,10 @@ readstring ()
   int c = getchar ();
   while (true) {
     if (c == '"') break;
-    *p++ = c;
     if (c == '\\' && peek_char () == '"') *p++ = getchar ();
-    if (c == EOF) assert (!"EOF in string");
+    else if (c == '\\' && peek_char () == 'n') {getchar (); *p++ = '\n';}
+    else if (c == EOF) assert (!"EOF in string");
+    else *p++ = c;
     c = getchar ();
   }
   *p = 0;

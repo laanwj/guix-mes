@@ -58,6 +58,12 @@
       (if (= 0 n) '()
           (cons fill (loop (- n 1)))))))
 
+(define (string->list s)
+  (let ((n (string-length s)))
+    (let loop ((i 0))
+      (if (= i n) '()
+          (cons (string-ref s i) (loop (+ i 1)))))))
+
 (define (vector . rest) (list->vector rest))
 (define (make-vector n . x)
   (list->vector (apply make-list (cons n x))))
