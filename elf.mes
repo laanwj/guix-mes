@@ -103,9 +103,6 @@
 (define (text-offset)
   (length (headers)))
 
-(define data-offset #x1076)
-(define data-address (+ data-offset vaddress))
-
 (define (i386:puts data)
   `(
     #xba #x0e #x00 #x00 #x00       ;; mov    $0xe,%edx
@@ -122,19 +119,25 @@
     #xcd #x80                      ;; int    $0x80
     ))
 
-(define text
+(define (text data)
   (append
-   (i386:puts data-address)
+   (i386:puts data)
    (i386:exit 0)
    ))
 
-(define text-free
-  (vector->list (make-vector (- data-offset (length text) (text-offset)) #x00)))
+(define (text-length)
+  (length (text 0)))
 
-(define program-length
-  (+ (length text) (length text-free)))
-(set! p-filesz (int->bv32 program-length))
-(set! p-memsz (int->bv32 program-length))
+(define (data-offset)
+  (length
+   (append
+    (headers)
+    (text 0))))
+
+(define (data-address) (+ (data-offset) vaddress))
+
+(set! p-filesz (int->bv32 (text-length)))
+(set! p-memsz (int->bv32 (text-length)))
 
 ;; 1076
 (define data
@@ -143,8 +146,10 @@
 (define note
   (string->list
    (string-append
-    "Mes -- Maxwell Equations of Software\n"
-    "https://gitlab.com/janneke/mes")
+    "MES"
+    ;;"Mes -- Maxwell Equations of Software\n"
+    ;;"https://gitlab.com/janneke/mes"
+    )
     ;; #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
     ;; #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
     ))
@@ -190,15 +195,13 @@
 (define sh-text-name      '(#x0b #x00 #x00 #x00))
 (define sh-text-type      '(#x01 #x00 #x00 #x00))
 (define sh-text-flags     '(#x06 #x00 #x00 #x00))
-;;(define sh-text-addr      '(#x54 #x80 #x04 #x08))
 (define sh-text-addr      (int->bv32 (+ vaddress (text-offset))))
 (set! e-entry sh-text-addr)
 (set! p-vaddr sh-text-addr)
 (set! p-paddr sh-text-addr)
-;;(define sh-text-offset    '(#x54 #x00 #x00 #x00))
 (define sh-text-offset    (int->bv32 (text-offset)))
 (set! p-offset sh-text-offset)
-(define sh-text-size      '(#x22 #x00 #x00 #x00))
+(define sh-text-size      (int->bv32 (length text)))
 (define sh-text-link      '(#x00 #x00 #x00 #x00))
 (define sh-text-info      '(#x00 #x00 #x00 #x00))
 (define sh-text-addralign '(#x01 #x00 #x00 #x00))
@@ -222,11 +225,8 @@
 (define sh-data-name      '(#x11 #x00 #x00 #x00))
 (define sh-data-type      '(#x01 #x00 #x00 #x00))
 (define sh-data-flags     '(#x03 #x00 #x00 #x00))
-;;(define sh-data-addr      '(#x76 #x90 #x04 #x08))
-(define sh-data-addr      (int->bv32 data-address))
-;;(define sh-data-offset    '(#x76 #x10 #x00 #x00))
-(define sh-data-offset    (int->bv32 data-offset))
-;;(define sh-data-size      '(#x0e #x00 #x00 #x00))
+(define sh-data-addr      (int->bv32 (data-address)))
+(define sh-data-offset    (int->bv32 (data-offset)))
 (define sh-data-size      (int->bv32 (length data)))
 (define sh-data-link      '(#x00 #x00 #x00 #x00))
 (define sh-data-info      '(#x00 #x00 #x00 #x00))
@@ -252,11 +252,8 @@
 (define sh-note-type      '(#x07 #x00 #x00 #x00))
 (define sh-note-flags     '(#x00 #x00 #x00 #x00))
 (define sh-note-addr      '(#x00 #x00 #x00 #x00))
-;;(define sh-note-offset    '(#x84 #x10 #x00 #x00))
 (define sh-note-offset    '(0 0 0 0))
-(define (note-offset) 0)
-;;(define sh-note-offset    (int->bv32 (note-offset)))
-(define sh-note-size      '(#x14 #x00 #x00 #x00))
+(define sh-note-size      (int->bv32 (length note)))
 (define sh-note-link      '(#x00 #x00 #x00 #x00))
 (define sh-note-info      '(#x00 #x00 #x00 #x00))
 (define sh-note-addralign '(#x01 #x00 #x00 #x00))
@@ -281,10 +278,8 @@
 (define sh-tab-type      '(#x03 #x00 #x00 #x00))
 (define sh-tab-flags     '(#x00 #x00 #x00 #x00))
 (define sh-tab-addr      '(#x00 #x00 #x00 #x00))
-;;(define sh-tab-offset    '(#x98 #x10 #x00 #x00))
 (define sh-tab-offset    '(0 0 0 0))
-;;(define sh-tab-offset    (int->bv32 (tab-offset)))
-(define sh-tab-size      '(#x1d #x00 #x00 #x00))
+(define sh-tab-size      (int->bv32 (length tab)))
 (define sh-tab-link      '(#x00 #x00 #x00 #x00))
 (define sh-tab-info      '(#x00 #x00 #x00 #x00))
 (define sh-tab-addralign '(#x01 #x00 #x00 #x00))
@@ -317,8 +312,7 @@
   (length
    (append
     (headers)
-    text
-    text-free
+    (text 0)
     data
     )))
 
@@ -328,8 +322,7 @@
   (length
    (append
     (headers)
-    text
-    text-free
+    (text 0)
     data
     note
     )))
@@ -340,8 +333,7 @@
   (length
    (append
     (headers)
-    text
-    text-free
+    (text 0)
     data
     note
     tab)))
@@ -351,15 +343,10 @@
 (define exe
   (append
    (headers)
-   text
-   text-free
-   ;;1076 (+ 0804 8000): 0804 9076
+   (text (data-address))
    data
-   ;;1084
    note
-   ;;1098
    tab
-   ;;10b8
    (section-headers)
    ))
 (map write-char exe)
