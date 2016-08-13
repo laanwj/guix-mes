@@ -10,6 +10,11 @@
     (bytevector-u16-native-set! bv 0 value)
     bv))
 
+(define elf32-addr int->bv32)
+(define elf32-half int->bv16)
+(define elf32-off int->bv32)
+(define elf32-word int->bv32)
+
 (define vaddress #x08048000)
 
 (define ei-magic `(#x7f ,@(string->list "ELF")))
@@ -27,31 +32,70 @@
    ei-osabi
    ei-pad))
 
-(define e-type '(#x02 #x00)) ;; ET_EXEC
-(define e-machine '(#x03 #x00))
-(define e-version '(#x01 #x00 #x00 #x00))
-(define e-entry '(0 0 0 0))
-(define e-phoff '(0 0 0 0))
-(define e-shoff '(0 0 0 0))
-(define e-flags '(#x00 #x00 #x00 #x00))
-(define e-ehsize '(0 0))
-(define e-phentsize '(0 0))
-(define e-phnum '(#x01 #x00))
-(define e-shentsize '(0 0))
-(define e-shnum '(#x05 #x00))
-(define e-shstrndx '(#x04 #x00))
+(define ET-EXEC 2)
+(define EM-386 3)
+(define EV-CURRENT 1)
 
-(define (elf-header)
+(define p-filesz (elf32-word 0))
+(define p-memsz (elf32-word 0))
+(define PF-X 1)
+(define PF-W 2)
+(define PF-R 4)
+(define p-flags (elf32-word (logior PF-X PF-W PF-R)))
+(define p-align (elf32-word 1))
+
+(define (program-header type offset text)
+  (append
+   (elf32-word type)
+   (elf32-off offset)
+   (elf32-addr (+ vaddress offset))
+   (elf32-addr (+ vaddress offset))
+   (elf32-word (length text))
+   (elf32-word (length text))
+   p-flags
+   p-align
+   ))
+
+(define (section-header name type offset text)
+  (append
+   (elf32-word name)
+   (elf32-word type)
+   (elf32-word 3) ;; write/alloc must for data hmm
+   (elf32-addr (+ vaddress offset))
+   (elf32-off offset) 
+   (elf32-word (length text))
+   (elf32-word 0)
+   (elf32-word 0)
+   (elf32-word 1)
+   (elf32-word 0)))
+
+
+(define e-type (elf32-half ET-EXEC))
+(define e-machine (elf32-half EM-386))
+(define e-version (elf32-word EV-CURRENT))
+(define e-entry (elf32-addr 0))
+;;(define e-entry (elf32-addr (+ vaddress text-offset)))
+;;(define e-phoff (elf32-off 0))
+(define e-shoff (elf32-off 0))
+(define e-flags (elf32-word 0))
+;;(define e-ehsize (elf32-half 0))
+(define e-phentsize (elf32-half (length (program-header 0 0 '()))))
+(define e-phnum (elf32-half 1))
+(define e-shentsize (elf32-half (length (section-header 0 0 0 '()))))
+(define e-shnum (elf32-half 5))
+(define e-shstrndx (elf32-half 4))
+
+(define (elf-header size entry sections)
   (append
    e-ident
    e-type
    e-machine
    e-version
-   e-entry
-   e-phoff
-   e-shoff
+   (elf32-addr (+ vaddress entry)) ;; e-entry
+   (elf32-off size) ;; e-phoff
+   (elf32-off sections) ;; e-shoff
    e-flags
-   e-ehsize
+   (elf32-half size) ;; e-ehsize
    e-phentsize
    e-phnum
    e-shentsize
@@ -59,49 +103,19 @@
    e-shstrndx
    ))
 
-(define p-type '(#x01 #x00 #x00 #x00))
-(define p-offset '(0 0 0 0))
-(define p-vaddr '(0 0 0 0))
-(define p-paddr '(0 0 0 0))
-(define p-filesz '(0 0 0 0))
-(define p-memsz '(0 0 0 0))
-(define p-flags '(#x07 #x00 #x00 #x00))
-(define p-align '(#x01 #x00 #x00 #x00))
+(define elf-header-size
+  (length (elf-header 0 0 0)))
 
-(define (program-header-0)
-  (append
-   p-type
-   p-offset
-   p-vaddr
-   p-paddr
-   p-filesz
-   p-memsz
-   p-flags
-   p-align
-   ))
+(define program-header-size
+  (length (program-header 0 0 '())))
 
-(set! e-phentsize (int->bv16 (length (program-header-0))))
+(define text-offset
+  (+ elf-header-size program-header-size))
 
 (define (program-headers)
   (append
-   (program-header-0)
+   (program-header 1 text-offset (text 0))
    ))
-
-(define (headers)
-  (append
-   (elf-header)
-   (program-headers)
-   ))
-
-(define (elf-header-size)
-  (length
-   (elf-header)))
-
-(set! e-phoff (int->bv32 (elf-header-size)))
-(set! e-ehsize (int->bv16 (elf-header-size)))
-
-(define (text-offset)
-  (length (headers)))
 
 (define (i386:puts data)
   `(
@@ -125,24 +139,6 @@
    (i386:exit 0)
    ))
 
-(define (text-length)
-  (length (text 0)))
-
-(define (data-offset)
-  (length
-   (append
-    (headers)
-    (text 0))))
-
-(define (data-address) (+ (data-offset) vaddress))
-
-(set! p-filesz (int->bv32 (text-length)))
-(set! p-memsz (int->bv32 (text-length)))
-
-;; 1076
-(define data
-  (string->list "Hello, world!\n"))
-
 (define note
   (string->list
    (string-append
@@ -154,7 +150,6 @@
     ;; #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
     ))
 
-;; 1098 sh str table
 (define tab
   `(
     #x00 ,@(string->list ".shstrtab")
@@ -164,189 +159,58 @@
          #x00 #x00 #x00 #x00
     ))
 
-(define sh-0-name      '(#x99 #x99 #x00 #x00))
-(define sh-0-type      '(#x00 #x00 #x00 #x00))
-(define sh-0-flags     '(#x00 #x00 #x00 #x00))
-(define sh-0-addr      '(#x00 #x00 #x00 #x00))
-(define sh-0-offset    '(#x00 #x00 #x00 #x00))
-(define sh-0-size      '(#x00 #x00 #x00 #x00))
-(define sh-0-link      '(#x00 #x00 #x00 #x00))
-(define sh-0-info      '(#x00 #x00 #x00 #x00))
-(define sh-0-addralign '(#x00 #x00 #x00 #x00))
-(define sh-0-entsize   '(#x00 #x00 #x00 #x00))
+(define text-length
+  (length (text 0)))
 
-(define (sh-0)
-  (append
-   sh-0-name
-   sh-0-type
-   sh-0-flags
-   sh-0-addr
-   sh-0-offset
-   sh-0-size
-   sh-0-link
-   sh-0-info
-   sh-0-addralign
-   sh-0-entsize
-   ))
+(define data-offset
+  (+ text-offset text-length))
 
-(set! e-shentsize (int->bv16 (length (sh-0))))
+(define data-address (+ data-offset vaddress))
 
-;; 10e0 sh1: .text
-(define sh-text-name      '(#x0b #x00 #x00 #x00))
-(define sh-text-type      '(#x01 #x00 #x00 #x00))
-(define sh-text-flags     '(#x06 #x00 #x00 #x00))
-(define sh-text-addr      (int->bv32 (+ vaddress (text-offset))))
-(set! e-entry sh-text-addr)
-(set! p-vaddr sh-text-addr)
-(set! p-paddr sh-text-addr)
-(define sh-text-offset    (int->bv32 (text-offset)))
-(set! p-offset sh-text-offset)
-(define sh-text-size      (int->bv32 (length text)))
-(define sh-text-link      '(#x00 #x00 #x00 #x00))
-(define sh-text-info      '(#x00 #x00 #x00 #x00))
-(define sh-text-addralign '(#x01 #x00 #x00 #x00))
-(define sh-text-entsize   '(#x00 #x00 #x00 #x00))
+(define data
+  (string->list "Hello, world!\n"))
 
-(define (sh-text)
-  (append
-   sh-text-name
-   sh-text-type
-   sh-text-flags
-   sh-text-addr
-   sh-text-offset
-   sh-text-size
-   sh-text-link
-   sh-text-info
-   sh-text-addralign
-   sh-text-entsize
-   ))
+(define data-length
+  (length data))
 
-;; 1108 sh2: .data
-(define sh-data-name      '(#x11 #x00 #x00 #x00))
-(define sh-data-type      '(#x01 #x00 #x00 #x00))
-(define sh-data-flags     '(#x03 #x00 #x00 #x00))
-(define sh-data-addr      (int->bv32 (data-address)))
-(define sh-data-offset    (int->bv32 (data-offset)))
-(define sh-data-size      (int->bv32 (length data)))
-(define sh-data-link      '(#x00 #x00 #x00 #x00))
-(define sh-data-info      '(#x00 #x00 #x00 #x00))
-(define sh-data-addralign '(#x01 #x00 #x00 #x00))
-(define sh-data-entsize   '(#x00 #x00 #x00 #x00))
+(define note-length
+  (length note))
 
-(define (sh-data)
-  (append
-   sh-data-name
-   sh-data-type
-   sh-data-flags
-   sh-data-addr
-   sh-data-offset
-   sh-data-size
-   sh-data-link
-   sh-data-info
-   sh-data-addralign
-   sh-data-entsize
-   ))
+(define note-offset
+  (+ data-offset data-length))
 
-;; 1130 sh3: .note
-(define sh-note-name      '(#x17 #x00 #x00 #x00))
-(define sh-note-type      '(#x07 #x00 #x00 #x00))
-(define sh-note-flags     '(#x00 #x00 #x00 #x00))
-(define sh-note-addr      '(#x00 #x00 #x00 #x00))
-(define sh-note-offset    '(0 0 0 0))
-(define sh-note-size      (int->bv32 (length note)))
-(define sh-note-link      '(#x00 #x00 #x00 #x00))
-(define sh-note-info      '(#x00 #x00 #x00 #x00))
-(define sh-note-addralign '(#x01 #x00 #x00 #x00))
-(define sh-note-entsize   '(#x00 #x00 #x00 #x00))
+(define tab-offset
+  (+ note-offset note-length))
 
-(define (sh-note)
-  (append
-   sh-note-name
-   sh-note-type
-   sh-note-flags
-   sh-note-addr
-   sh-note-offset
-   sh-note-size
-   sh-note-link
-   sh-note-info
-   sh-note-addralign
-   sh-note-entsize
-   ))
+(define tab-length
+  (length tab))
 
-;; 1158 sh4: .shstrtab
-(define sh-tab-name      '(#x01 #x00 #x00 #x00))
-(define sh-tab-type      '(#x03 #x00 #x00 #x00))
-(define sh-tab-flags     '(#x00 #x00 #x00 #x00))
-(define sh-tab-addr      '(#x00 #x00 #x00 #x00))
-(define sh-tab-offset    '(0 0 0 0))
-(define sh-tab-size      (int->bv32 (length tab)))
-(define sh-tab-link      '(#x00 #x00 #x00 #x00))
-(define sh-tab-info      '(#x00 #x00 #x00 #x00))
-(define sh-tab-addralign '(#x01 #x00 #x00 #x00))
-(define sh-tab-entsize   '(#x00 #x00 #x00 #x00))
+(define section-headers-offset
+  (+ tab-offset tab-length))
 
-(define (sh-tab)
-  (append
-   sh-tab-name
-   sh-tab-type
-   sh-tab-flags
-   sh-tab-addr
-   sh-tab-offset
-   sh-tab-size
-   sh-tab-link
-   sh-tab-info
-   sh-tab-addralign
-   sh-tab-entsize
-   ))
 
+(define SHT-PROGBITS 1)
+(define SHT-STRTAB 3)
+(define SHT-NOTE 7)
 (define (section-headers)
   (append
-   (sh-0)
-   (sh-text)
-   (sh-data)
-   (sh-note)
-   (sh-tab)
+   (section-header 0 0 0 '())
+   (section-header 11 SHT-PROGBITS text-offset (text 0))
+   (section-header 17 SHT-PROGBITS data-offset data)
+   (section-header 23 SHT-NOTE note-offset note)
+   (section-header 1 SHT-STRTAB tab-offset tab)
    ))
-
-(define (note-offset)
-  (length
-   (append
-    (headers)
-    (text 0)
-    data
-    )))
-
-(set! sh-note-offset (int->bv32 (note-offset)))
-
-(define (tab-offset)
-  (length
-   (append
-    (headers)
-    (text 0)
-    data
-    note
-    )))
-
-(set! sh-tab-offset (int->bv32 (tab-offset)))
-
-(define (section-headers-offset)
-  (length
-   (append
-    (headers)
-    (text 0)
-    data
-    note
-    tab)))
-
-(set! e-shoff (int->bv32 (section-headers-offset)))
 
 (define exe
   (append
-   (headers)
-   (text (data-address))
+   (elf-header elf-header-size text-offset section-headers-offset)
+   (program-headers)
+   (text data-address)
    data
    note
    tab
    (section-headers)
    ))
-(map write-char exe)
+(define (write-any x) (write-char (if (char? x) x (integer->char x))))
+(map write-any exe)
+
