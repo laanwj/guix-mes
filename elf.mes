@@ -141,9 +141,12 @@
   (string->list "Hello, world!\n"))
 
 (define note
-  '(
-    #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
-    #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
+  (string->list
+   (string-append
+    "Mes -- Maxwell Equations of Software\n"
+    "https://gitlab.com/janneke/mes")
+    ;; #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
+    ;; #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
     ))
 
 ;; 1098 sh str table
@@ -167,7 +170,7 @@
 (define sh-0-addralign '(#x00 #x00 #x00 #x00))
 (define sh-0-entsize   '(#x00 #x00 #x00 #x00))
 
-(define sh-0
+(define (sh-0)
   (append
    sh-0-name
    sh-0-type
@@ -181,7 +184,7 @@
    sh-0-entsize
    ))
 
-(set! e-shentsize (int->bv16 (length sh-0)))
+(set! e-shentsize (int->bv16 (length (sh-0))))
 
 ;; 10e0 sh1: .text
 (define sh-text-name      '(#x0b #x00 #x00 #x00))
@@ -201,7 +204,7 @@
 (define sh-text-addralign '(#x01 #x00 #x00 #x00))
 (define sh-text-entsize   '(#x00 #x00 #x00 #x00))
 
-(define sh-text
+(define (sh-text)
   (append
    sh-text-name
    sh-text-type
@@ -230,7 +233,7 @@
 (define sh-data-addralign '(#x01 #x00 #x00 #x00))
 (define sh-data-entsize   '(#x00 #x00 #x00 #x00))
 
-(define sh-data
+(define (sh-data)
   (append
    sh-data-name
    sh-data-type
@@ -249,14 +252,17 @@
 (define sh-note-type      '(#x07 #x00 #x00 #x00))
 (define sh-note-flags     '(#x00 #x00 #x00 #x00))
 (define sh-note-addr      '(#x00 #x00 #x00 #x00))
-(define sh-note-offset    '(#x84 #x10 #x00 #x00))
+;;(define sh-note-offset    '(#x84 #x10 #x00 #x00))
+(define sh-note-offset    '(0 0 0 0))
+(define (note-offset) 0)
+;;(define sh-note-offset    (int->bv32 (note-offset)))
 (define sh-note-size      '(#x14 #x00 #x00 #x00))
 (define sh-note-link      '(#x00 #x00 #x00 #x00))
 (define sh-note-info      '(#x00 #x00 #x00 #x00))
 (define sh-note-addralign '(#x01 #x00 #x00 #x00))
 (define sh-note-entsize   '(#x00 #x00 #x00 #x00))
 
-(define sh-note
+(define (sh-note)
   (append
    sh-note-name
    sh-note-type
@@ -275,14 +281,16 @@
 (define sh-tab-type      '(#x03 #x00 #x00 #x00))
 (define sh-tab-flags     '(#x00 #x00 #x00 #x00))
 (define sh-tab-addr      '(#x00 #x00 #x00 #x00))
-(define sh-tab-offset    '(#x98 #x10 #x00 #x00))
+;;(define sh-tab-offset    '(#x98 #x10 #x00 #x00))
+(define sh-tab-offset    '(0 0 0 0))
+;;(define sh-tab-offset    (int->bv32 (tab-offset)))
 (define sh-tab-size      '(#x1d #x00 #x00 #x00))
 (define sh-tab-link      '(#x00 #x00 #x00 #x00))
 (define sh-tab-info      '(#x00 #x00 #x00 #x00))
 (define sh-tab-addralign '(#x01 #x00 #x00 #x00))
 (define sh-tab-entsize   '(#x00 #x00 #x00 #x00))
 
-(define sh-tab
+(define (sh-tab)
   (append
    sh-tab-name
    sh-tab-type
@@ -296,14 +304,37 @@
    sh-tab-entsize
    ))
 
-(define section-headers
+(define (section-headers)
   (append
-   sh-0
-   sh-text
-   sh-data
-   sh-note
-   sh-tab
+   (sh-0)
+   (sh-text)
+   (sh-data)
+   (sh-note)
+   (sh-tab)
    ))
+
+(define (note-offset)
+  (length
+   (append
+    (headers)
+    text
+    text-free
+    data
+    )))
+
+(set! sh-note-offset (int->bv32 (note-offset)))
+
+(define (tab-offset)
+  (length
+   (append
+    (headers)
+    text
+    text-free
+    data
+    note
+    )))
+
+(set! sh-tab-offset (int->bv32 (tab-offset)))
 
 (define (section-headers-offset)
   (length
@@ -329,6 +360,6 @@
    ;;1098
    tab
    ;;10b8
-   section-headers
+   (section-headers)
    ))
 (map write-char exe)
