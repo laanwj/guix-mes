@@ -38,8 +38,8 @@
 (define e-phentsize '(0 0))
 (define e-phnum '(#x01 #x00))
 (define e-shentsize '(0 0))
-(define e-shnum '(#x04 #x00))
-(define e-shstrndx '(#x03 #x00))
+(define e-shnum '(#x05 #x00))
+(define e-shstrndx '(#x04 #x00))
 
 (define (elf-header)
   (append
@@ -140,13 +140,19 @@
 (define data
   (string->list "Hello, world!\n"))
 
-;;; 
+(define note
+  '(
+    #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
+    #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
+    ))
+
 ;; 1098 sh str table
 (define tab
   `(
     #x00 ,@(string->list ".shstrtab")
          #x00 ,@(string->list ".text")
          #x00 ,@(string->list ".data")
+         #x00 ,@(string->list ".note")
          #x00 #x00 #x00 #x00
     ))
 
@@ -238,13 +244,38 @@
    sh-data-entsize
    ))
 
+;; 1130 sh3: .note
+(define sh-note-name      '(#x17 #x00 #x00 #x00))
+(define sh-note-type      '(#x07 #x00 #x00 #x00))
+(define sh-note-flags     '(#x00 #x00 #x00 #x00))
+(define sh-note-addr      '(#x00 #x00 #x00 #x00))
+(define sh-note-offset    '(#x84 #x10 #x00 #x00))
+(define sh-note-size      '(#x14 #x00 #x00 #x00))
+(define sh-note-link      '(#x00 #x00 #x00 #x00))
+(define sh-note-info      '(#x00 #x00 #x00 #x00))
+(define sh-note-addralign '(#x01 #x00 #x00 #x00))
+(define sh-note-entsize   '(#x00 #x00 #x00 #x00))
+
+(define sh-note
+  (append
+   sh-note-name
+   sh-note-type
+   sh-note-flags
+   sh-note-addr
+   sh-note-offset
+   sh-note-size
+   sh-note-link
+   sh-note-info
+   sh-note-addralign
+   sh-note-entsize
+   ))
+
 ;; 1158 sh4: .shstrtab
 (define sh-tab-name      '(#x01 #x00 #x00 #x00))
 (define sh-tab-type      '(#x03 #x00 #x00 #x00))
 (define sh-tab-flags     '(#x00 #x00 #x00 #x00))
 (define sh-tab-addr      '(#x00 #x00 #x00 #x00))
-;;(define sh-tab-offset    '(#x98 #x10 #x00 #x00))
-(define sh-tab-offset    '(#x84 #x10 #x00 #x00))
+(define sh-tab-offset    '(#x98 #x10 #x00 #x00))
 (define sh-tab-size      '(#x1d #x00 #x00 #x00))
 (define sh-tab-link      '(#x00 #x00 #x00 #x00))
 (define sh-tab-info      '(#x00 #x00 #x00 #x00))
@@ -270,6 +301,7 @@
    sh-0
    sh-text
    sh-data
+   sh-note
    sh-tab
    ))
 
@@ -280,6 +312,7 @@
     text
     text-free
     data
+    note
     tab)))
 
 (set! e-shoff (int->bv32 (section-headers-offset)))
@@ -291,7 +324,11 @@
    text-free
    ;;1076 (+ 0804 8000): 0804 9076
    data
+   ;;1084
+   note
+   ;;1098
    tab
+   ;;10b8
    section-headers
    ))
 (map write-char exe)
