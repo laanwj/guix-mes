@@ -1,5 +1,15 @@
 ;;; -*-scheme-*-
 
+(define (int->bv32 value)
+  (let ((bv (make-bytevector 4)))
+    (bytevector-u32-native-set! bv 0 value)
+    bv))
+
+(define (int->bv16 value)
+  (let ((bv (make-bytevector 2)))
+    (bytevector-u16-native-set! bv 0 value)
+    bv))
+
 (define ei-magic '(#x7f #\E #\L #\F))
 ;;(define ei-magic '(#x7f #x45 #x4c #x46))
 (define ei-class '(#x01)) ;; 32 bit
@@ -79,6 +89,57 @@
    program-header-0
    ))
 
+(define headers
+  (append
+   elf-header
+   program-headers
+   ))
+
+;;(define text-offset #x54)
+(define text-offset
+  (length headers))
+
+(define data-offset #x1076)
+
+;;0054 (+ 0804 8000): 0804 8054
+(define text
+  '(
+    #xba #x0e #x00 #x00 #x00       ;; mov    $0xe,%edx
+    #xb9 #x76 #x90 #x04 #x08       ;; mov    $0x8049076,%ecx
+    #xbb #x01 #x00 #x00 #x00       ;; mov    $0x1,%ebx
+    #xb8 #x04 #x00 #x00 #x00       ;; mov    $0x4,%eax
+    #xcd #x80                      ;; int    $0x80
+    #xbb #x00 #x00 #x00 #x00       ;; mov    $0x0,%ebx
+    #xb8 #x01 #x00 #x00 #x00       ;; mov    $0x1,%eax
+    #xcd #x80                      ;; int    $0x80
+    ))
+
+(define text-free
+  (vector->list (make-vector (- data-offset (length text) text-offset) #x00)))
+
+;; 1076
+(define data
+  '(
+    #\H #\e #\l #\l #\o #\, #\space #\w #\o #\r
+    #\l #\d #\! #\newline
+    ))
+
+(define note
+  '(
+    #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
+    #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
+    ))
+
+;; 1098 sh str table
+(define tab
+  '(
+    #x00 #\. #\s #\h #\s #\t #\r #\t
+
+    #\a #\b #x00 #\. #\t #\e #\x #\t #x00 #\. #\d #\a #\t #\a #x00 #\.
+    #\n #\o #\t #\e  #x00 #x00 #x00 #x00
+    ))
+
+
 (define sh-0-name      '(#x99 #x99 #x00 #x00))
 (define sh-0-type      '(#x00 #x00 #x00 #x00))
 (define sh-0-flags     '(#x00 #x00 #x00 #x00))
@@ -109,7 +170,7 @@
 (define sh-text-type      '(#x01 #x00 #x00 #x00))
 (define sh-text-flags     '(#x06 #x00 #x00 #x00))
 (define sh-text-addr      '(#x54 #x80 #x04 #x08))
-(define sh-text-offset    '(#x54 #x00 #x00 #x00))
+;;(define sh-text-offset    '(#x54 #x00 #x00 #x00))
 (define sh-text-size      '(#x22 #x00 #x00 #x00))
 (define sh-text-link      '(#x00 #x00 #x00 #x00))
 (define sh-text-info      '(#x00 #x00 #x00 #x00))
@@ -122,7 +183,8 @@
    sh-text-type
    sh-text-flags
    sh-text-addr
-   sh-text-offset
+   ;;sh-text-offset
+   (int->bv32 text-offset)
    sh-text-size
    sh-text-link
    sh-text-info
@@ -135,6 +197,7 @@
 (define sh-data-type      '(#x01 #x00 #x00 #x00))
 (define sh-data-flags     '(#x03 #x00 #x00 #x00))
 (define sh-data-addr      '(#x76 #x90 #x04 #x08))
+;;(define sh-data-offset    '(#x76 #x10 #x00 #x00))
 (define sh-data-offset    '(#x76 #x10 #x00 #x00))
 (define sh-data-size      '(#x0e #x00 #x00 #x00))
 (define sh-data-link      '(#x00 #x00 #x00 #x00))
@@ -148,8 +211,10 @@
    sh-data-type
    sh-data-flags
    sh-data-addr
-   sh-data-offset
-   sh-data-size
+   ;;sh-data-offset
+   (int->bv32 data-offset)
+   ;;sh-data-size
+   (int->bv32 (length data))
    sh-data-link
    sh-data-info
    sh-data-addralign
@@ -215,48 +280,6 @@
    sh-data
    sh-note
    sh-tab
-   ))
-
-;;0054 (+ 0804 8000): 0804 8054
-(define text
-  '(
-    #xba #x0e #x00 #x00 #x00       ;; mov    $0xe,%edx
-    #xb9 #x76 #x90 #x04 #x08       ;; mov    $0x8049076,%ecx
-    #xbb #x01 #x00 #x00 #x00       ;; mov    $0x1,%ebx
-    #xb8 #x04 #x00 #x00 #x00       ;; mov    $0x4,%eax
-    #xcd #x80                      ;; int    $0x80
-    #xbb #x00 #x00 #x00 #x00       ;; mov    $0x0,%ebx
-    #xb8 #x01 #x00 #x00 #x00       ;; mov    $0x1,%eax
-    #xcd #x80                      ;; int    $0x80
-
-    #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x00
-))
-
-(define text-free
-  (vector->list (make-vector (- #x1076 #x80 ) #x00))
-  )
-
-;; 1076
-(define data
-  '(
-    #\H #\e #\l #\l #\o #\, #\space #\w #\o #\r
-    #\l #\d #\! #\newline
-   ))
-
-(define note
-  '(
-    #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
-         #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
-         ))
-
-;; 1098 sh str table
-(define tab
-  '(
-
-   #x00 #\. #\s #\h #\s #\t #\r #\t
-
-   #\a #\b #x00 #\. #\t #\e #\x #\t #x00 #\. #\d #\a #\t #\a #x00 #\.
-   #\n #\o #\t #\e  #x00 #x00 #x00 #x00
    ))
 
 (define exe

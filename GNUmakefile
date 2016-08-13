@@ -135,5 +135,5 @@ hello: hello.o
 #	ld -A i386 -m elf_i386 -A i386 -o $@ $^
 
 a.out: elf.mes GNUmakefile
-	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm scm.mes elf.mes | ./mes > a.out
+	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm scm.mes lib/rnrs/bytevectors.scm elf.mes | ./mes > a.out
 	chmod +x a.out
