@@ -118,14 +118,15 @@ guile-paren: paren.test
 	echo '___P((()))' | guile -s $^ 
 
 mescc: all
-	echo ' EOF ' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm c-lexer.scm mescc.scm - main.c | ./mes > a.out
+	echo ' EOF ' | cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes syntax-cond.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm - main.c | ./mes > a.out
 	chmod +x a.out
 
-mescc.test: lib/lalr.scm c-lexer.scm mescc.scm
+mescc.test: lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm
 	cat $^ > $@
 
 guile-mescc: mescc.test
-	cat main.c | guile -s $^ 
+	cat main.c | guile -s $^ > a.out
+	chmod +x a.out
 
 hello.o: hello.S
 	as --32 -march=i386 -o $@ $^
@@ -134,6 +135,6 @@ hello: hello.o
 	ld -A i386 -m elf_i386 -nostdlib -nodefaultlibs -A i386 -o $@ $^
 #	ld -A i386 -m elf_i386 -A i386 -o $@ $^
 
-a.out: elf.mes GNUmakefile
-	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes lib/rnrs/bytevectors.scm elf.mes | ./mes > a.out
+a.out: lib/elf.mes elf.mes GNUmakefile
+	cat base0.mes base0-$(CONDIF).mes base.mes quasiquote.mes let.mes scm.mes lib/rnrs/bytevectors.scm lib/elf.mes elf.mes | ./mes > a.out
 	chmod +x a.out

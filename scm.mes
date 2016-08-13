@@ -18,6 +18,8 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+(define (cadddr x) (car (cdddr x)))
+
 (define (list . rest) rest)
 
 (define-macro (case val . args)
@@ -186,11 +188,11 @@
   (display newline))
 
 (define (syntax-error message . rest)
-  (display "syntax-error:")
-  (display message)
-  (display ":")
-  (display rest)
-  (newline))
+  (display "syntax-error:" (current-error-port))
+  (display message (current-error-port))
+  (display ":" (current-error-port))
+  (display rest (current-error-port))
+  (newline (current-error-port)))
 
 (define (list-ref lst k)
   (let loop ((lst lst) (k k))

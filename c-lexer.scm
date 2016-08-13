@@ -26,7 +26,7 @@
 
 (cond-expand
   (guile
-   (use-modules ((ice-9 rdelim)))
+   ;;(use-modules ((ice-9 rdelim)))
 
    (define (syntax-error what loc form . args)
      (throw 'syntax-error #f what
@@ -37,8 +37,18 @@
    )
   (mes
 
+      
    )
   )
+
+(define (read-delimited delims port handle-delim)
+     (let ((stop (string->list delims)))
+       (let loop ((c (peek-char)) (lst '()))
+         (if (member c stop)
+             (list->string lst)
+             (begin
+               (read-char)
+               (loop (peek-char) (append lst (list c))))))))
 
 (define (port-source-location port)
   (make-source-location (port-filename port)

@@ -10,7 +10,7 @@
 
    (lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
            =
-           Identifier NumericLiteral
+           Identifier NumericLiteral StringLiteral
            break case continue goto label
            return switch
            if else
@@ -237,11 +237,11 @@
     (lbrace rbrace) : '(compound)
     (lbrace declaration-list rbrace) : `(compound ,@$2)
     (lbrace statement-list rbrace) :  `(compound ,@$2)
-    (lbrace declaration-list statement-list rbrace) : `(compound ,@$2 ,@$3))
+    (lbrace declaration-list statement-list rbrace) : `(compound ,@$2 ,$3))
 
    (statement-list
     (statement) : `(,$1)
-    (statement-list statement) : `(,@$1 ,@$2))
+    (statement-list statement) : `(,@$1 ,$2))
    
    ;; selection_statement:
    ;; 		   IF lparen x rparen statement			{ ; }
@@ -277,7 +277,9 @@
     (x comma assignment-expression) : `($1 ,@$2))
    		
    (assignment-expression
-    (primary-expression) : $1     ;;(conditional-expression)
+     ;;(conditional-expression)
+    ;;(primary-expression) : $1
+    (postfix-expression) : $1
     (unary-expression assignment-operator assignment-expression) : `(,$2 ,$1 ,$3))
 
    (assignment-operator
@@ -355,7 +357,8 @@
    ;; 		;
 
    (unary-expression
-    (primary-expression) : $1)
+    (postfix-expression) : $1
+    )
    ;; unary_expression:  postfix_expression
    ;; 		|  INCOP unary_expression		{ ; }
    ;; 		|  DECOP unary_expression		{ ; }
@@ -369,6 +372,11 @@
    ;; 		|  NOT cast_expression			{ ; }
    ;; 		;
 
+   (postfix-expression
+    (primary-expression) : $1
+    (postfix-expression lparen rparen) : `(call ,$1 (arguments))
+    (postfix-expression lparen argument-expression-list rparen) : `(call ,$1 ,$3))
+
    ;; postfix_expression: primary_expression
    ;; 		|  postfix_expression lbracket x rbracket
    ;; 		|  postfix_expression lparen rparen
@@ -381,7 +389,9 @@
 
    (primary-expression
     (Identifier): $1
-    (NumericLiteral) : $1)
+    (NumericLiteral) : $1
+    (StringLiteral) : $1
+    )
    ;; primary_expression: Identifier
    ;; INT_LITERAL
    ;; CHAR_LITERAL
@@ -390,12 +400,34 @@
    ;; lparen x rparen
    ;; 		
 
-   ;; argument_expression_list: assignment_expression
-   ;; 		| argument_expression_list comma assignment_expression
-   ;; 		;
+   (argument-expression-list
+    (assignment-expression) : `(arguments ,$1)
+    (argument-expression-list comma assignment-expression): `(,@$1 ,@(cdr $2)))))
 
-   ))
+(define (i386:puts data)
+  `(
+     #xba #x0e #x00 #x00 #x00       ;; mov    $0xe,%edx
+          #xb9 ,@(int->bv32 data)        ;; mov    $data,%ecx
+          #xbb #x01 #x00 #x00 #x00       ;; mov    $0x1,%ebx
+          #xb8 #x04 #x00 #x00 #x00       ;; mov    $0x4,%eax
+          #xcd #x80                      ;; int    $0x80
+          ))
 
+(define (i386:exit code)
+  `(
+    #xbb ,@(int->bv32 code)        ;; mov    $code,%ebx
+         #xb8 #x01 #x00 #x00 #x00       ;; mov    $0x1,%eax
+         #xcd #x80                      ;; int    $0x80
+         ))
+
+(define (i386:puts data length)
+  `(
+     #xba ,@(int->bv32 length)           ;; mov    $length,%edx
+          #xb9 ,@(int->bv32 data)        ;; mov    $data,%ecx
+          #xbb #x01 #x00 #x00 #x00       ;; mov    $0x1,%ebx
+          #xb8 #x04 #x00 #x00 #x00       ;; mov    $0x4,%eax
+          #xcd #x80                      ;; int    $0x80
+          ))
 
 (define mescc
   (let ((errorp
@@ -405,14 +437,68 @@
     (lambda ()
       (c-parser (c-lexer errorp) errorp))))
 
-(display "program: " (current-error-port))
-(display (mescc) (current-error-port))
-(newline (current-error-port))
+(define (write-any x) (write-char (if (char? x) x (integer->char x))))
 
-(define (write-int x) (write-char (integer->char x)))
-(define elf-header '(#x7f #\E #\L #\F #x01))
+(define (ast:function? o)
+  (and (pair? o) (eq? (car o) 'function)))
 
-(define elf-header '(#x7f #x45 #x4c #x46 #x01))
-;;(map write-char elf-header)
-(map write-int elf-header)
-(newline)
+(define (.name o)
+  (cadr o))
+
+;; (define (.statement o)
+;;   (match o
+;;     (('function name signature statement) statement)
+;;     (_ #f)))
+
+;; (define (statement->data o)
+;;   (match o
+;;     (('call 'puts ('arguments string)) (string->list string))
+;;     (_ '())))
+
+;; (define (statement->text o)
+;;   (match o
+;;     (('call 'puts ('arguments string)) (list (lambda (data) (i386:puts data (string-length string)))))
+;;     (('return code) (list (lambda (data) (i386:exit code))))
+;;     (_ '())))
+
+(define (.statement o)
+  (and (pair? o)
+       (eq? (car o) 'function)
+       (cadddr o)))
+
+(define (statement->data o)
+  (or (and (pair? o)
+           (eq? (car o) 'call)
+           (string->list (cadr (caddr o))))
+      '()))
+
+(define (statement->text o)
+  (cond
+   ((and (pair? o) (eq? (car o) 'call))
+    (let ((string (cadr (caddr o))))
+      (list (lambda (data) (i386:puts data (string-length string))))))
+   ((and (pair? o) (eq? (car o) 'return))
+    (list (lambda (data) (i386:exit (cadr o)))))
+   (else '())))
+
+(let* ((ast (mescc))
+       (functions (filter ast:function? (cdr ast)))
+       (main (find (lambda (x) (eq? (.name x) 'main)) functions))
+       (statements (cdr (.statement main))))
+  (display "program: " (current-error-port))
+  (display ast (current-error-port))
+  (newline (current-error-port))
+  (let loop ((statements statements) (text '()) (data '()))
+    (display "text:" (current-error-port))
+    (display text (current-error-port))
+    (newline (current-error-port))
+    (if (null? statements)
+        (map write-any (make-elf (lambda (data)
+                                   (append-map (lambda (f) (f data)) text)) data))
+        (let* ((statement (car statements)))
+          (display "statement:" (current-error-port))
+          (display statement (current-error-port))
+          (newline (current-error-port))
+          (loop (cdr statements)
+                (append text (statement->text statement))
+                (append data (statement->data statement)))))))
