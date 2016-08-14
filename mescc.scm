@@ -13,9 +13,12 @@
            Identifier NumericLiteral StringLiteral
            break case continue goto label
            return switch
+           for
            if else
            (left: or && ! * / + -)
            (left: bool double float enum void int struct)
+           (left: < > <= >=)
+           (left: ++ --)
            (nonassoc: == !=)
            )
    
@@ -38,11 +41,11 @@
 
    (declaration
     (declaration-specifiers semicolon) : `(,$1)
-    ;;(declaration-specifiers init-declarator-list semicolon): `(,$1 ,$2)
+    (declaration-specifiers init-declarator-list semicolon): `((,@$1 ,@$2))
     )
 
    (declaration-list
-    (declaration) : `(formals $1)
+    (declaration) : `(formals ,@$1)
     (declaration-list declaration) : `(,@$1 ,@(cdr $2)))
 
    (declaration-specifiers
@@ -50,7 +53,7 @@
     (type-specifier) : `(,$1)
     ;;(type-qualifier) : `($1)
     ;;(storage-class-specifier declaration-specifiers) : (cons $1 $2)
-    ;;(type-specifier declaration-specifiers) : (cons $1 $2)
+    (type-specifier declaration-specifiers) : `(,$1 ,$2)
     ;;(type-qualifier declaration-specifiers) : (cons $1 $2)
     )
 
@@ -96,14 +99,20 @@
    ;; 		|  struct_declaration_list struct_declaration
    ;; 		;
 
+   (init-declarator-list
+    ;; (init-declarator %prec comma) : `(,$1) HUH?
+    (init-declarator) : `(,$1)
+    (init-declarator-list comma init-declarator) : `(,$1)
+    )
    ;; init_declarator_list:     init_declarator %prec comma
    ;; 		|  init_declarator_list comma init_declarator
    ;; 		;
 
-   ;; init_declarator:  declarator
-   ;; 		| declarator EQ initializer
-   ;; 		| error { yyerror("init declarator error"); }
-   ;; 		;
+   (init-declarator
+    (declarator) : $1
+    (declarator = initializer) : `(= ,$1 ,$3)
+    ;; 		| error { yyerror("init declarator error"); }
+    )
 
    ;; struct_declaration: specifier_qualifier_list struct_declarator_list semicolon
    ;; 		;
@@ -181,10 +190,14 @@
    ;; 		|  error { yyerror("identifier list error"); }
    ;; 		;
 
-   ;; initializer:       assignment_expression %prec comma
-   ;; 		|  lbrace initializer_list rbrace		{ ; }
-   ;; 		|  lbrace initializer_list comma rbrace		{ ; }
-   ;; 		;
+   (initializer
+    ;;(assignment-expression %prec comma) HUH?
+    (assignment-expression) : $1
+    ;; initializer:       assignment_expression %prec comma
+    ;; 		|  lbrace initializer_list rbrace		{ ; }
+    ;; 		|  lbrace initializer_list comma rbrace		{ ; }
+    ;; 		;
+    )
 
    ;; initializer_list:         initializer %prec comma
    ;; 		|  initializer_list comma initializer
@@ -217,7 +230,7 @@
     (expression-statement) : $1
     (compound-statement) : $1
     ;;(selection-statement)
-    ;;(iteration-statement)
+    (iteration-statement) : $1
     (jump-statement) : $1
     (semicolon) : '()
     (error semicolon) : (begin (syntax-error "statement error" @1 $1) '())
@@ -235,9 +248,9 @@
 
    (compound-statement
     (lbrace rbrace) : '(compound)
-    (lbrace declaration-list rbrace) : `(compound ,@$2)
+    (lbrace declaration-list rbrace) : `(compound ,$2)
     (lbrace statement-list rbrace) :  `(compound ,@$2)
-    (lbrace declaration-list statement-list rbrace) : `(compound ,@$2 ,$3))
+    (lbrace declaration-list statement-list rbrace) : `(compound ,$2 ,@$3))
 
    (statement-list
     (statement) : `(,$1)
@@ -249,24 +262,23 @@
    ;; 		|  SWITCH lparen x rparen statement		{ ; }
    ;; 		;
 
-   ;; iteration_statement:
-   ;; 		   WHILE lparen x rparen statement		{ ; }
-   ;; 		|  DO statement WHILE lparen x rparen semicolon	{ ; }
-   ;; 		|  FOR lparen forcntrl rparen statement		{ ; }
-   ;; 		;
-
-   ;; forcntrl:         semicolon semicolon					{ ; }
-   ;; 		| semicolon semicolon x				{ ; }
-   ;; 		| semicolon x semicolon				{ ; }
-   ;; 		| semicolon x semicolon x				{ ; }
-   ;; 		| x semicolon semicolon
-   ;; 		| x semicolon semicolon x
-   ;; 		| x semicolon x semicolon
-   ;; 		| x semicolon x semicolon x
-   ;; 		;
+   (iteration-statement
+    ;; iteration_statement:
+    ;; 		   WHILE lparen x rparen statement		{ ; }
+    ;; 		|  DO statement WHILE lparen x rparen semicolon	{ ; }
+    (for lparen forcntrl rparen statement) : `(for ,@$3 ,$5))
+   
+   (forcntrl
+    ;; 		| semicolon semicolon x				{ ; }
+    ;; 		| semicolon x semicolon				{ ; }
+    ;; 		| semicolon x semicolon x				{ ; }
+    ;; 		| x semicolon semicolon
+    ;; 		| x semicolon semicolon x
+    ;; 		| x semicolon x semicolon
+    (x semicolon x semicolon x) : `((start ,$1) (test ,$3) (step ,$5)))
 
    (jump-statement
-    (goto Identifier semicolon) : `(goto ,$1)
+    (goto Identifier semicolon) : `(goto ,$2)
     (continue semicolon) : '(continue)
     (break semicolon) : '(break)
     (return semicolon) : '(return)
@@ -274,17 +286,15 @@
 
    (x
     (assignment-expression) : $1
-    (x comma assignment-expression) : `($1 ,@$2))
+    (x comma assignment-expression) : `(,$1 ,@$3))
    		
    (assignment-expression
-     ;;(conditional-expression)
-    ;;(primary-expression) : $1
-    (postfix-expression) : $1
+    (equality-expression) : $1 ;; skip some
+    ;;(conditional-expression) : $1
     (unary-expression assignment-operator assignment-expression) : `(,$2 ,$1 ,$3))
 
    (assignment-operator
-    (=) : $1)
-   ;; 		   EQ					{ ; }
+    (=) : '=)
    ;; 		|  PLUSEQ				{ ; }
    ;; 		|  MINUSEQ				{ ; }
    ;; 		|  MUEQ					{ ; }
@@ -324,23 +334,25 @@
    ;; 		|  and_expression AND equality_expression
    ;; 		;
 
-   ;; equality_expression: relational_expression
-   ;; 		|  equality_expression EQEQ relational_expression
-   ;; 		|  equality_expression NOTEQ relational_expression
-   ;; 		;
+   (equality-expression
+    (relational-expression) : $1
+    (equality-expression == relational-expression) : `(== ,$1 ,$3)
+    (equality-expression != relational-expression) : `(!= ,$1 ,$3))
 
-   ;; relational_expression: shift_expression
-   ;; 		|  relational_expression LT shift_expression
-   ;; 		|  relational_expression LE shift_expression
-   ;; 		|  relational_expression GT shift_expression
-   ;; 		|  relational_expression GE shift_expression
-   ;; 		;
+   (relational-expression
+    (shift-expression) : $1
+    (relational-expression < shift-expression) : `(< ,$1 ,$3)
+    (relational-expression <= shift-expression) : `(<= ,$1 ,$3)
+    (relational-expression > shift-expression) : `(> ,$1 ,$3)
+    (relational-expression >= shift-expression) : `(>= ,$1 ,$3))
 
-   ;; shift_expression: additive_expression
-   ;; 		|  shift_expression LTLT additive_expression
-   ;; 		|  shift_expression GTGT additive_expression
-   ;; 		;
-
+   (shift-expression
+    (unary-expression) : $1 ;; skip some
+    ;; shift_expression: additive_expression
+    ;; 		|  shift_expression LTLT additive_expression
+    ;; 		|  shift_expression GTGT additive_expression
+    ;; 		;
+    )
    ;; additive_expression: multiplicative_expression
    ;; 		|  additive_expression PLUS multiplicative_expression
    ;; 		|  additive_expression MINUS multiplicative_expression
@@ -358,10 +370,8 @@
 
    (unary-expression
     (postfix-expression) : $1
-    )
-   ;; unary_expression:  postfix_expression
-   ;; 		|  INCOP unary_expression		{ ; }
-   ;; 		|  DECOP unary_expression		{ ; }
+    (++ unary-expression) : `(++x ,$2)
+    (-- unary-expression) : `(--x ,$2)
    ;; 		|  SIZEOF unary_expression		{ ; }
    ;; 		|  SIZEOF lparen type_name rparen %prec SIZEOF	{ ; }
    ;; 		|  STAR cast_expression			{ ; }
@@ -371,47 +381,34 @@
    ;; 		|  NEG cast_expression			{ ; }
    ;; 		|  NOT cast_expression			{ ; }
    ;; 		;
+    )
 
    (postfix-expression
     (primary-expression) : $1
+    ;; 		|  postfix_expression lbracket x rbracket
     (postfix-expression lparen rparen) : `(call ,$1 (arguments))
-    (postfix-expression lparen argument-expression-list rparen) : `(call ,$1 ,$3))
-
-   ;; postfix_expression: primary_expression
-   ;; 		|  postfix_expression lbracket x rbracket
-   ;; 		|  postfix_expression lparen rparen
-   ;; 		|  postfix_expression lparen argument_expression_list rparen
-   ;; 		|  postfix_expression FOLLOW Identifier
-   ;; 		|  postfix_expression DOT Identifier
-   ;; 		|  postfix_expression INCOP
-   ;; 		|  postfix_expression DECOP
-   ;; 		;
+    (postfix-expression lparen argument-expression-list rparen) : `(call ,$1 ,$3)
+    ;; 		|  postfix_expression FOLLOW Identifier
+    ;; 		|  postfix_expression DOT Identifier
+    (postfix-expression ++) : `(x++ ,$1)
+    (postfix-expression --) : `(x-- ,$1)
+    )
 
    (primary-expression
     (Identifier): $1
     (NumericLiteral) : $1
+    ;; INT_LITERAL
+    ;; CHAR_LITERAL
+    ;; FLOAT_LITERAL
+    ;; STRING_LITERAL
     (StringLiteral) : $1
+    ;; lparen x rparen
     )
-   ;; primary_expression: Identifier
-   ;; INT_LITERAL
-   ;; CHAR_LITERAL
-   ;; FLOAT_LITERAL
-   ;; STRING_LITERAL
-   ;; lparen x rparen
    ;; 		
 
    (argument-expression-list
     (assignment-expression) : `(arguments ,$1)
-    (argument-expression-list comma assignment-expression): `(,@$1 ,@(cdr $2)))))
-
-(define (i386:puts data)
-  `(
-     #xba #x0e #x00 #x00 #x00       ;; mov    $0xe,%edx
-          #xb9 ,@(int->bv32 data)        ;; mov    $data,%ecx
-          #xbb #x01 #x00 #x00 #x00       ;; mov    $0x1,%ebx
-          #xb8 #x04 #x00 #x00 #x00       ;; mov    $0x4,%eax
-          #xcd #x80                      ;; int    $0x80
-          ))
+    (argument-expression-list comma assignment-expression): `(,@$1 ,@(cdr $3)))))
 
 (define (i386:exit code)
   `(
@@ -429,6 +426,41 @@
           #xcd #x80                      ;; int    $0x80
           ))
 
+(define (i386:for start test step statement)
+`(
+
+  ;;   b:
+  #x89 #xe5                	;; mov    %esp,%ebp
+       ;;21:
+       #xc7 #x45 #xf4 ,@(int->bv32 start) ;;	movl   $start,-0xc(%ebp)
+       ;;28:
+       #xeb ,(+ (length statement) 9) ;;x14	jmp    3e <main+0x3e>
+       ;;2a:
+       ;;#x83 #xec #x0c             ;;	sub    $0xc,%esp
+       
+       ;;   9:
+       #x55   ;;                	push   %ebp
+       
+       ,@statement
+       #x5d   ;;                	pop   %ebp
+       ;;2d:
+ ;;;;;;#x68 #x09 #x00 #x00 #x00       ;;	push   $0x9
+       ;;32:
+ ;;;;;;#xe8 #xfc #xff #xff #xff       ;;	call   33 <main+0x33>
+       ;;37:
+ ;;;;;;#x83 #xc4 #x10             ;;	add    $0x10,%esp
+       ;;3a:
+       ;;;;#x83 #x45 #xf4 ,step          ;;	addl   $step,-0xc(%ebp)
+       ;;3e:
+       ;;;;#x83 #x7d #xf4 ,test          ;;	cmpl   $test,-0xc(%ebp)
+       #x81 #x45 #xf4 ,@(int->bv32 step) 	;;addl   $step,-0xc(%ebp)
+       #x81 #x7d #xf4 ,@(int->bv32 test) ;;cmpl   $0x7cff,-0xc(%ebp)
+       ;;42:
+       ;;;;#x7e ,(- 0 (length statement) 18) ;;#xe6 ;;	jle    2a <main+0x2a>
+       #x75 ,(- 0 (length statement) 18) ;;#xe6 ;;	jne    2a <main+0x2a>
+))
+
+
 (define mescc
   (let ((errorp
          (lambda args
@@ -437,7 +469,7 @@
     (lambda ()
       (c-parser (c-lexer errorp) errorp))))
 
-(define (write-any x) (write-char (if (char? x) x (integer->char x))))
+(define (write-any x) (write-char (if (char? x) x (integer->char (if (>= x 0) x (+ x 256))))))
 
 (define (ast:function? o)
   (and (pair? o) (eq? (car o) 'function)))
@@ -470,6 +502,9 @@
   (or (and (pair? o)
            (eq? (car o) 'call)
            (string->list (cadr (caddr o))))
+      (and (pair? o) (eq? (car o) 'for)
+           (let ((statement (cadr (cdddr o))))
+             (statement->data statement)))
       '()))
 
 (define (statement->text data o)
@@ -478,6 +513,42 @@
     (let ((string (cadr (caddr o)))
           (offset (length data)))
       (list (lambda (data) (i386:puts (+ data offset) (string-length string))))))
+   ((and (pair? o) (eq? (car o) 'for))
+    (let ((start (cadr o))
+          (test (caddr o))
+          (step (cadddr o))
+          (statement (cadr (cdddr o))))
+      (display "start:" (current-error-port))
+      (display start (current-error-port))
+      (newline (current-error-port))
+
+      (display "test:" (current-error-port))
+      (display test (current-error-port))
+      (newline (current-error-port))
+
+      (display "step:" (current-error-port))
+      (display step (current-error-port))
+      (newline (current-error-port))
+
+      (display "for-statement:" (current-error-port))
+      (display statement (current-error-port))
+      (newline (current-error-port))
+
+      (let ((start (cadr (cdadr start)))
+            (test (cadr (cdadr test)))
+            ;;(step (cadr (cdadr step)))
+            (step 1)
+            (statement (car (statement->text data statement)))
+            )
+        (display "2start:" (current-error-port))
+        (display start (current-error-port))
+        (newline (current-error-port))
+
+      (display "2for-statement:" (current-error-port))
+      (display statement (current-error-port))
+      (newline (current-error-port))
+
+        (list (lambda (d) (i386:for start test step (statement d)))))))
    ((and (pair? o) (eq? (car o) 'return))
     (list (lambda (data) (i386:exit (cadr o)))))
    (else '())))

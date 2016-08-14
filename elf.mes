@@ -34,18 +34,7 @@
          #xcd #x80                      ;; int    $0x80
          ))
 
-(define (i386:for start add test statement)
-                                     ;; 	movl	$0, -12(%ebp)
-                                     ;; 	jmp	.L2
-                                     ;; .L3:
-                                     ;; 	subl	$12, %esp
-                                     ;; 	pushl	$.LC1
-                                     ;; 	call	puts
-                                     ;; 	addl	$16, %esp
-                                     ;; 	addl	$1, -12(%ebp)
-                                     ;; .L2:
-                                     ;; 	cmpl	$2, -12(%ebp)
-                                     ;; 	jle	.L3
+(define (i386:for start test step statement)
 `(
 
   ;;   b:
@@ -53,7 +42,7 @@
        ;;21:
        #xc7 #x45 #xf4 ,@(int->bv32 start) ;;	movl   $start,-0xc(%ebp)
        ;;28:
-       #xeb ,(+ (length statement) 6) ;;x14	jmp    3e <main+0x3e>
+       #xeb ,(+ (length statement) 9) ;;x14	jmp    3e <main+0x3e>
        ;;2a:
        ;;#x83 #xec #x0c             ;;	sub    $0xc,%esp
        
@@ -69,11 +58,14 @@
        ;;37:
  ;;;;;;#x83 #xc4 #x10             ;;	add    $0x10,%esp
        ;;3a:
-       #x83 #x45 #xf4 ,add          ;;	addl   $add,-0xc(%ebp)
+       ;;;;#x83 #x45 #xf4 ,step          ;;	addl   $step,-0xc(%ebp)
        ;;3e:
-       #x83 #x7d #xf4 ,test          ;;	cmpl   $test,-0xc(%ebp)
+       ;;;;#x83 #x7d #xf4 ,test          ;;	cmpl   $test,-0xc(%ebp)
+       #x81 #x45 #xf4 ,@(int->bv32 step) 	;;addl   $step,-0xc(%ebp)
+       #x81 #x7d #xf4 ,@(int->bv32 test) ;;cmpl   $0x7cff,-0xc(%ebp)
        ;;42:
-       #x7e ,(- 0 (length statement) 12) ;;#xe6 ;;	jle    2a <main+0x2a>
+       ;;;#x7e ,(- 0 (length statement) 18) ;;#xe6 ;;	jle    2a <main+0x2a>
+       #x75 ,(- 0 (length statement) 18) ;;#xe6 ;;	jne    2a <main+0x2a>
 ))
 
 (define data
@@ -82,7 +74,7 @@
 (define (text d)
   (append
    (i386:puts d (length data))
-   (i386:for 0 1 2 (i386:puts d (length data)))
+   (i386:for 0 3 1 (i386:puts (+ d 6) (- (length data) 6)))
    (i386:exit 0)
    ))
 

@@ -50,6 +50,12 @@
                (read-char)
                (loop (peek-char) (append lst (list c))))))))
 
+(define (read-line . rest ;; port handle-delim
+         )
+  (let ((line (read-delimited "\n\r" (current-input-port) 'peek)))
+    (read-char)
+    line))
+
 (define (port-source-location port)
   (make-source-location (port-filename port)
                         (port-line port)
