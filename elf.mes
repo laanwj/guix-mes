@@ -34,12 +34,55 @@
          #xcd #x80                      ;; int    $0x80
          ))
 
+(define (i386:for start add test statement)
+                                     ;; 	movl	$0, -12(%ebp)
+                                     ;; 	jmp	.L2
+                                     ;; .L3:
+                                     ;; 	subl	$12, %esp
+                                     ;; 	pushl	$.LC1
+                                     ;; 	call	puts
+                                     ;; 	addl	$16, %esp
+                                     ;; 	addl	$1, -12(%ebp)
+                                     ;; .L2:
+                                     ;; 	cmpl	$2, -12(%ebp)
+                                     ;; 	jle	.L3
+`(
+
+  ;;   b:
+  #x89 #xe5                	;; mov    %esp,%ebp
+       ;;21:
+       #xc7 #x45 #xf4 ,@(int->bv32 start) ;;	movl   $start,-0xc(%ebp)
+       ;;28:
+       #xeb ,(+ (length statement) 6) ;;x14	jmp    3e <main+0x3e>
+       ;;2a:
+       ;;#x83 #xec #x0c             ;;	sub    $0xc,%esp
+       
+       ;;   9:
+       #x55   ;;                	push   %ebp
+       
+       ,@statement
+       #x5d   ;;                	pop   %ebp
+       ;;2d:
+ ;;;;;;#x68 #x09 #x00 #x00 #x00       ;;	push   $0x9
+       ;;32:
+ ;;;;;;#xe8 #xfc #xff #xff #xff       ;;	call   33 <main+0x33>
+       ;;37:
+ ;;;;;;#x83 #xc4 #x10             ;;	add    $0x10,%esp
+       ;;3a:
+       #x83 #x45 #xf4 ,add          ;;	addl   $add,-0xc(%ebp)
+       ;;3e:
+       #x83 #x7d #xf4 ,test          ;;	cmpl   $test,-0xc(%ebp)
+       ;;42:
+       #x7e ,(- 0 (length statement) 12) ;;#xe6 ;;	jle    2a <main+0x2a>
+))
+
 (define data
   (string->list "Hello, world!\n"))
 
 (define (text d)
   (append
    (i386:puts d (length data))
+   (i386:for 0 1 2 (i386:puts d (length data)))
    (i386:exit 0)
    ))
 
