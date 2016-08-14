@@ -472,11 +472,12 @@
            (string->list (cadr (caddr o))))
       '()))
 
-(define (statement->text o)
+(define (statement->text data o)
   (cond
    ((and (pair? o) (eq? (car o) 'call))
-    (let ((string (cadr (caddr o))))
-      (list (lambda (data) (i386:puts data (string-length string))))))
+    (let ((string (cadr (caddr o)))
+          (offset (length data)))
+      (list (lambda (data) (i386:puts (+ data offset) (string-length string))))))
    ((and (pair? o) (eq? (car o) 'return))
     (list (lambda (data) (i386:exit (cadr o)))))
    (else '())))
@@ -500,5 +501,5 @@
           (display statement (current-error-port))
           (newline (current-error-port))
           (loop (cdr statements)
-                (append text (statement->text statement))
+                (append text (statement->text data statement))
                 (append data (statement->data statement)))))))
