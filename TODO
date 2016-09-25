@@ -1,12 +1,17 @@
 -*-mode:org-*-
-* define-syntax and syntax-rules
-** syntax.mes
+* minimal bootstrap binary, via Scheme, into C compiler/linker
+** match
+*** let-syntax
+** define-syntax and syntax-rules
+*** syntax.mes
+**** now syntax-cond.mes --> syntax-if.mes
 Using define-macro-based version.
 ** psyntax.pp
 Find out how to hook-up sc-expand in eval/apply.
 ** make core smaller
 *** replase mes.c:quasiquote by qq.mes
 *** cleanup environment/closures
+** make core faster
 ** bugs
 See bugs/
 ** run PEG

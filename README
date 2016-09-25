@@ -10,3 +10,30 @@ written in MES.
 
 Mes is free software, it is distributed unde the terms of the GNU
 General Public Licence version 3 or later.  See the file COPYING.
+
+Current targets.
+
+* make check
+
+* C compiler
+
+   make mescc
+   make guile-mescc
+
+from there, work on mescc.scm, main.c.
+
+* Transition to syntax-if.scm (still using syntax-cond.scm)
+
+* syntax-case using portable psyntax.pp
+
+   make psyntax
+
+* syntax-case using define-macro
+
+   make syntax-case
+   make guile-syntax-case
+
+* PEG
+
+   make peg
+   make guile-peg
