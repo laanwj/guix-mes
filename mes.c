@@ -35,6 +35,7 @@
 #include <stdbool.h>
 
 #define DEBUG 0
+#define COND 1 // 50% speedup for define-syntax/match
 #define MES_FULL 1
 
 enum type {CHAR, MACRO, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
@@ -73,8 +74,8 @@ scm *display_helper (FILE*, scm*, bool, char const*, bool);
 
 scm scm_nil = {SYMBOL, "()"};
 scm scm_dot = {SYMBOL, "."};
-scm scm_t = {SYMBOL, "#t"};
 scm scm_f = {SYMBOL, "#f"};
+scm scm_t = {SYMBOL, "#t"};
 scm scm_unspecified = {SYMBOL, "*unspecified*"};
 
 scm symbol_closure = {SYMBOL, "*closure*"};
@@ -375,10 +376,10 @@ eval (scm *e, scm *a)
           return eval (apply_env (cdr (macro), e, a), a);
       if ((macro = lookup_macro (car (e), a)) != &scm_f)
         return eval (apply_env (macro, cdr (e), a), a);
-#if 1 //COND
+#if COND
       if (car (e) == &symbol_cond)
         return evcon (cdr (e), a);
-#endif
+#endif // COND
       if (car (e) == &symbol_if)
         return if_env (cdr (e), a);
       if (eq_p (car (e), &symbol_define) == &scm_t)
@@ -395,6 +396,7 @@ eval (scm *e, scm *a)
   return apply_env (car (e), evlis (cdr (e), a), a);
 }
 
+#if COND
 scm *
 evcon (scm *c, scm *a)
 {
@@ -411,6 +413,7 @@ evcon (scm *c, scm *a)
   }
   return evcon (cdr (c), a);
 }
+#endif // COND
 
 scm *
 if_env (scm *e, scm *a)
@@ -484,10 +487,38 @@ string_p (scm *x)
 scm *
 symbol_p (scm *x)
 {
+  // FIXME: use INTERNAL/XSYMBOL or something?
   return (x->type == SYMBOL
           && x != &scm_nil
+          && x != &scm_dot
           && x != &scm_f
-          && x != &scm_t) ? &scm_t : &scm_f;
+          && x != &scm_t
+          && x != &scm_unspecified
+
+          && x != &symbol_closure
+          && x != &symbol_circ
+          && x != &symbol_lambda
+          && x != &symbol_begin
+          && x != &symbol_list
+          && x != &symbol_cond
+          && x != &symbol_if
+          && x != &symbol_quote
+          && x != &symbol_quasiquote
+          && x != &symbol_unquote
+          && x != &symbol_unquote_splicing
+
+          && x != &symbol_sc_expand
+          && x != &symbol_syntax
+          && x != &symbol_quasisyntax
+          && x != &symbol_unsyntax
+          && x != &symbol_unsyntax_splicing
+
+          && x != &symbol_call_with_values
+          && x != &symbol_current_module
+          && x != &symbol_define
+          && x != &symbol_define_macro
+          && x != &symbol_set_x
+          ) ? &scm_t : &scm_f;
 }
 
 scm *
