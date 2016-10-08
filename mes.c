@@ -142,15 +142,18 @@ cons (scm *x, scm *y)
   return p;
 }
 
+#define EQ_P(x, y)\
+  ((x == y                                              \
+    || (x->type == CHAR && y->type == CHAR              \
+        && x->value == y->value)                        \
+    || (x->type == NUMBER && y->type == NUMBER          \
+        && x->value == y->value))                       \
+   ? &scm_t : &scm_f)
+
 scm *
 eq_p (scm *x, scm *y)
 {
-  return (x == y
-          || (x->type == CHAR && y->type == CHAR
-              && x->value == y->value)
-          || (x->type == NUMBER && y->type == NUMBER
-              && x->value == y->value))
-    ? &scm_t : &scm_f;
+  return EQ_P (x, y);
 }
 
 scm *
@@ -162,7 +165,7 @@ macro_p (scm *x)
 scm *
 null_p (scm *x)
 {
-  return eq_p (x, &scm_nil);
+  return x == &scm_nil ? &scm_t : &scm_f;
 }
 
 scm *
@@ -285,15 +288,14 @@ pairlis (scm *x, scm *y, scm *a)
 scm *
 assq (scm *x, scm *a)
 {
+  while (a != &scm_nil && EQ_P (x, a->car->car) == &scm_f) a = a->cdr;
   if (a == &scm_nil) {
 #if DEBUG
     printf ("alist miss: %s\n", x->name);
 #endif
     return &scm_f;
   }
-  if (eq_p (caar (a), x) == &scm_t)
-    return car (a);
-  return assq (x, cdr (a));
+  return a->car;
 }
 
 scm *
