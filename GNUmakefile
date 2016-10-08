@@ -39,7 +39,9 @@ mes.h: mes.c GNUmakefile
 			echo "a = add_environment (a, \"$$scm_name\", &scm_$$name);" 1>&2;\
 	done; echo '#endif'; echo '#endif' 1>&2) > $@ 2>environment.i
 
-check: all guile-check
+check: all guile-check mes-check
+
+mes-check: all
 #	./mes.test
 #	./mes.test ./mes
 	cat base0.mes base0-$(CONDIF).mes base.mes lib/test.mes test/base.test | ./mes
