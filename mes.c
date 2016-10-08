@@ -49,7 +49,7 @@ typedef struct scm_t* (*functionn_t) (struct scm_t*);
 typedef struct scm_t {
   enum type type;
   union {
-    char *name;
+    char const *name;
     struct scm_t* car;
     int length;
   };
@@ -69,7 +69,7 @@ typedef struct scm_t {
 #define MES_C 1
 #include "mes.h"
 
-scm *display_helper (FILE*, scm*, bool, char*, bool);
+scm *display_helper (FILE*, scm*, bool, char const*, bool);
 
 scm scm_nil = {SYMBOL, "()"};
 scm scm_dot = {SYMBOL, "."};
@@ -135,7 +135,7 @@ cdr (scm *x)
 scm *
 cons (scm *x, scm *y)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = (scm*)malloc (sizeof (scm));
   p->type = PAIR;
   p->car = x;
   p->cdr = y;
@@ -550,16 +550,16 @@ append (scm *x/*...*/)
 scm *
 make_char (int x)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = (scm*)malloc (sizeof (scm));
   p->type = CHAR;
   p->value = x;
   return p;
 }
 
 scm *
-make_macro (scm *x, char *name)
+make_macro (scm *x, char const *name)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = (scm*)malloc (sizeof (scm));
   p->type = MACRO;
   p->macro = x;
   p->name = name;
@@ -569,7 +569,7 @@ make_macro (scm *x, char *name)
 scm *
 make_number (int x)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = (scm*)malloc (sizeof (scm));
   p->type = NUMBER;
   p->value = x;
   return p;
@@ -578,7 +578,7 @@ make_number (int x)
 scm *
 make_string (char const *s)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = (scm*)malloc (sizeof (scm));
   p->type = STRING;
   p->name = strdup (s);
   return p;
@@ -598,7 +598,7 @@ internal_lookup_symbol (char const *s)
 scm *
 internal_make_symbol (char const *s)
 {
-  scm *x = malloc (sizeof (scm));
+  scm *x = (scm*)malloc (sizeof (scm));
   x->type = SYMBOL;
   x->name = strdup (s);
   symbols = cons (x, symbols);
@@ -615,10 +615,10 @@ make_symbol (char const *s)
 scm *
 make_vector (int n)
 {
-  scm *p = malloc (sizeof (scm));
+  scm *p = (scm*)malloc (sizeof (scm));
   p->type = VECTOR;
   p->length = n;
-  p->vector = malloc (n * sizeof (scm*));
+  p->vector = (scm**)malloc (n * sizeof (scm*));
   return p;
 }
 
@@ -688,7 +688,7 @@ substring (scm *x/*...*/)
 {
   assert (x->type == PAIR);
   assert (x->car->type == STRING);
-  char *s = x->car->name;
+  char const *s = x->car->name;
   assert (x->cdr->car->type == NUMBER);
   int start = x->cdr->car->value;
   int end = strlen (s);
@@ -773,7 +773,7 @@ vector_set_x (scm *x, scm *i, scm *e)
 }
 
 scm *
-lookup (char *s, scm *a)
+lookup (char const *s, scm *a)
 {
   if (isdigit (*s) || (*s == '-' && isdigit (*(s+1))))
     return make_number (atoi (s));
@@ -808,7 +808,7 @@ lookup_char (int c, scm *a)
   return lookup (buf, a);
 }
 
-char *
+char const *
 list2str (scm *l) // char*
 {
   static char buf[256];
@@ -901,7 +901,7 @@ newline (scm *p/*...*/)
 }
 
 scm *
-display_helper (FILE* f, scm *x, bool cont, char *sep, bool quote)
+display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
 {
   scm *r;
   fprintf (f, "%s", sep);
@@ -1022,7 +1022,7 @@ readblock (int c)
 }
 
 scm *
-readword (int c, char* w, scm *a)
+readword (int c, char *w, scm *a)
 {
   if (c == EOF && !w) return &scm_nil;
   if (c == '\n' && !w) return readword (getchar (), w, a);
@@ -1294,7 +1294,7 @@ logior (scm *x/*...*/)
   return make_number (n);
 }
 
-scm *add_environment (scm *a, char *name, scm *x);
+scm *add_environment (scm *a, char const *name, scm *x);
 
 scm *
 add_unquoters (scm *a)
@@ -1305,7 +1305,7 @@ add_unquoters (scm *a)
 }
 
 scm *
-add_environment (scm *a, char *name, scm *x)
+add_environment (scm *a, char const *name, scm *x)
 {
   return cons (cons (make_symbol (name), x), a);
 }
