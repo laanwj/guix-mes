@@ -38,6 +38,10 @@ mes.h: mes.c GNUmakefile
 			echo "scm scm_$$name = {FUNCTION$$args, .name=\"$$scm_name\", .function$$args=&$$name};";\
 			echo "a = add_environment (a, \"$$scm_name\", &scm_$$name);" 1>&2;\
 	done; echo '#endif'; echo '#endif' 1>&2) > $@ 2>environment.i
+	grep -oE '^scm ([a-z_]+) = {SYMBOL,' mes.c | cut -d' ' -f 2 |\
+		while read f; do\
+			echo "symbols = cons (&$$f, symbols);";\
+		done > symbols.i
 
 check: all guile-check mes-check
 

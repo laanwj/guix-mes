@@ -70,11 +70,6 @@ typedef struct scm_t {
 #include "mes.h"
 
 scm *display_helper (FILE*, scm*, bool, char*, bool);
-bool
-symbol_eq (scm *x, char *s)
-{
-  return x->type == SYMBOL && !strcmp (x->name, s);
-}
 
 scm scm_nil = {SYMBOL, "()"};
 scm scm_dot = {SYMBOL, "."};
@@ -154,21 +149,7 @@ eq_p (scm *x, scm *y)
           || (x->type == CHAR && y->type == CHAR
               && x->value == y->value)
           || (x->type == NUMBER && y->type == NUMBER
-              && x->value == y->value)
-          // FIXME: alist lookup symbols
-          || (atom_p (x) == &scm_t
-              && atom_p (y) == &scm_t
-              && x->type != CHAR
-              && y->type != CHAR
-              && x->type != MACRO
-              && y->type != MACRO
-              && x->type != NUMBER
-              && y->type != NUMBER
-              && x->type != STRING
-              && y->type != STRING
-              && x->type != VECTOR
-              && y->type != VECTOR
-              && !strcmp (x->name, y->name)))
+              && x->value == y->value))
     ? &scm_t : &scm_f;
 }
 
@@ -601,14 +582,32 @@ make_string (char const *s)
   return p;
 }
 
+scm *symbols = 0;
+
+scm *
+internal_lookup_symbol (char const *s)
+{
+  scm *x = symbols;
+  while (x && strcmp (s, x->car->name)) x = x->cdr;
+  if (x) x = x->car;
+  return x;
+}
+
+scm *
+internal_make_symbol (char const *s)
+{
+  scm *x = malloc (sizeof (scm));
+  x->type = SYMBOL;
+  x->name = strdup (s);
+  symbols = cons (x, symbols);
+  return x;
+}
+
 scm *
 make_symbol (char const *s)
 {
-  // TODO: alist lookup symbols
-  scm *p = malloc (sizeof (scm));
-  p->type = SYMBOL;
-  p->name = strdup (s);
-  return p;
+  scm *x = internal_lookup_symbol (s);
+  return x ? x : internal_make_symbol (s);
 }
 
 scm *
@@ -772,60 +771,30 @@ vector_set_x (scm *x, scm *i, scm *e)
 }
 
 scm *
-lookup (char *x, scm *a)
+lookup (char *s, scm *a)
 {
-  if (isdigit (*x) || (*x == '-' && isdigit (*(x+1))))
-    return make_number (atoi (x));
+  if (isdigit (*s) || (*s == '-' && isdigit (*(s+1))))
+    return make_number (atoi (s));
 
-  if (!strcmp (x, scm_dot.name)) return &scm_dot;
-  if (!strcmp (x, scm_f.name)) return &scm_f;
-  if (!strcmp (x, scm_nil.name)) return &scm_nil;
-  if (!strcmp (x, scm_t.name)) return &scm_t;
-  if (!strcmp (x, scm_unspecified.name)) return &scm_unspecified;
-  if (!strcmp (x, symbol_begin.name)) return &symbol_begin;
-  if (!strcmp (x, symbol_closure.name)) return &symbol_closure;
-#if COND
-  if (!strcmp (x, symbol_cond.name)) return &symbol_cond;
-#else
-  if (!strcmp (x, symbol_if.name)) return &symbol_if;
-#endif
-  if (!strcmp (x, symbol_lambda.name)) return &symbol_lambda;
+  scm *x = internal_lookup_symbol (s);
+  if (x) return x;
 
-  if (!strcmp (x, symbol_quasiquote.name)) return &symbol_quasiquote;
-  if (!strcmp (x, symbol_quote.name)) return &symbol_quote;
+  if (*s == '\'') return &symbol_quote;
+  if (*s == '`') return &symbol_quasiquote;
+  if (*s == ',' && *(s+1) == '@') return &symbol_unquote_splicing;
+  if (*s == ',') return &symbol_unquote;
 
-  if (!strcmp (x, symbol_unquote.name)) return &symbol_unquote;
-  if (!strcmp (x, symbol_unquote_splicing.name)) return &symbol_unquote_splicing;
+  if (*s == '#' && *(s+1) == '\'') return &symbol_syntax;
+  if (*s == '#' && *(s+1) == '`') return &symbol_quasisyntax;
+  if (*s == '#' && *(s+1) == ',' && *(s+2) == '@') return &symbol_unsyntax_splicing;
+  if (*s == '#' && *(s+1) == ',') return &symbol_unsyntax;
   
-  if (!strcmp (x, symbol_quasisyntax.name)) return &symbol_quasisyntax;
-  if (!strcmp (x, symbol_syntax.name)) return &symbol_syntax;
-
-  if (!strcmp (x, symbol_set_x.name)) return &symbol_set_x;
-
-  if (*x == '\'') return &symbol_quote;
-  if (*x == '`') return &symbol_quasiquote;
-  if (*x == ',' && *(x+1) == '@') return &symbol_unquote_splicing;
-  if (*x == ',') return &symbol_unquote;
-
-  if (!strcmp (x, scm_car.name)) return &scm_car;
-  if (!strcmp (x, scm_cdr.name)) return &scm_cdr;
-  if (!strcmp (x, scm_display.name)) return &scm_display;
-  if (!strcmp (x, scm_builtin_list.name)) return &scm_builtin_list;
-
-  if (*x == '#' && *(x+1) == '\'') return &symbol_syntax;
-  if (*x == '#' && *(x+1) == '`') return &symbol_quasisyntax;
-  if (*x == '#' && *(x+1) == ',' && *(x+2) == '@') return &symbol_unsyntax_splicing;
-  if (*x == '#' && *(x+1) == ',') return &symbol_unsyntax;
-
-  if (!strcmp (x, "EOF")) {
+  if (!strcmp (s, "EOF")) {
     fprintf (stderr, "mes: got EOF\n");
     return &scm_nil; // `EOF': eval program, which may read stdin
   }
 
-  // Hmm?
-  if (!strcmp (x, symbol_current_module.name)) return &symbol_current_module;
-
-  return make_symbol (x);
+  return internal_make_symbol (s);
 }
 
 scm *
@@ -1343,6 +1312,8 @@ scm *
 mes_environment ()
 {
   scm *a = &scm_nil;
+
+  #include "symbols.i"
 
   a = cons (cons (&scm_f, &scm_f), a);
   a = cons (cons (&scm_nil, &scm_nil), a);
