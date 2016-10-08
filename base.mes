@@ -21,46 +21,6 @@
 (define (identity x) x)
 (define else #t)
 
-;;; COND based
-(define-macro (or . x)
-  (cond ;; COND
-   ((null? x) #f)
-   ((null? (cdr x)) (car x))
-   (#t (list 'cond (list (car x)) ;; COND
-             (list #t (cons 'or (cdr x)))))))
-
-(define-macro (and . x)
-  (cond ((null? x) #t) ;; COND
-        ((null? (cdr x)) (car x))
-        (#t (list 'cond (list (car x) (cons 'and (cdr x))) ;; COND
-                  '(#t #f)))))
-
-(define (not x)
-  (cond (x #f) ;; COND
-        (#t #t)))
-
-(define (equal? a b) ;; FIXME: only 2 arg
-  (cond ((and (null? a) (null? b)) #t) ;; COND
-        ((and (pair? a) (pair? b))
-         (and (equal? (car a) (car b))
-              (equal? (cdr a) (cdr b))))
-        ((and (string? a) (string? b))
-         (eq? (string->symbol a) (string->symbol b)))
-        ((and (vector? a) (vector? b))
-         (equal? (vector->list a) (vector->list b)))
-        (#t (eq? a b))))
-
-(define (memq x lst)
-  (cond ((null? lst) #f) ;; COND
-        ((eq? x (car lst)) lst)
-        (#t (memq x (cdr lst)))))
-
-(define (map f l . r)
-  (cond ((null? l) '()) ;; COND
-        ((null? r) (cons (f (car l)) (map f (cdr l))))
-        ((null? (cdr r))
-         (cons (f (car l) (caar r)) (map f (cdr l) (cdar r))))))
-
 ;; IF based
 (define-macro (or . x)
   (if (null? x) #f ;; IF

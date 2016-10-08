@@ -375,13 +375,12 @@ eval (scm *e, scm *a)
           return eval (apply_env (cdr (macro), e, a), a);
       if ((macro = lookup_macro (car (e), a)) != &scm_f)
         return eval (apply_env (macro, cdr (e), a), a);
-#if COND
+#if 1 //COND
       if (car (e) == &symbol_cond)
         return evcon (cdr (e), a);
-#else
+#endif
       if (car (e) == &symbol_if)
         return if_env (cdr (e), a);
-#endif
       if (eq_p (car (e), &symbol_define) == &scm_t)
         return define (e, a);
       if (eq_p (car (e), &symbol_define_macro) == &scm_t)

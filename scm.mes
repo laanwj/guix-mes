@@ -85,11 +85,6 @@
 (define assv-ref assq-ref)
 
 (define (assoc key alist)
-  (cond ((null? alist) #f) ;; COND
-        ((equal? key (caar alist)) (car alist))
-        (#t (assoc key (cdr alist)))))
-
-(define (assoc key alist)
   (if (null? alist) #f ;; IF
       (if (equal? key (caar alist)) (car alist)
           (assoc key (cdr alist)))))
@@ -100,31 +95,15 @@
         #f)))
 
 (define (memq x lst)
-  (cond ((null? lst) #f) ;; COND
-        ((eq? x (car lst)) lst)
-        (#t (memq x (cdr lst)))))
-
-(define (memq x lst)
   (if (null? lst) #f ;; IF
       (if (eq? x (car lst)) lst
           (memq x (cdr lst)))))
 (define memv memq)
 
 (define (member x lst)
-  (cond ((null? lst) #f) ;; COND
-        ((equal? x (car lst)) lst)
-        (#t (member x (cdr lst)))))
-
-(define (member x lst)
   (if (null? lst) #f ;; IF
       (if (equal? x (car lst)) lst
           (member x (cdr lst)))))
-
-(define (for-each f l . r)
-  (cond ((null? l) '()) ;; COND
-        ((null? r) (f (car l)) (for-each f (cdr l)))
-        ((null? (cdr r))
-         (for-each f (cdr l) (cdar r)))))
 
 (define (for-each f l . r)
   (if (null? l) '() ;; IF

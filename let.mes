@@ -28,10 +28,9 @@
      (,label ,@(map cadr bindings))))
 
 (define-macro (let bindings-or-label . rest)
-  `(`,(cond (,(symbol? bindings-or-label)
-             (list 'lambda '() (cons* 'named-let ,bindings-or-label ,(car rest) ,(cdr rest))))
-            (#t
-             (list 'lambda '() (cons* 'simple-let ,bindings-or-label ,rest))))))
+  `(`,(if ,(symbol? bindings-or-label)
+          (list 'lambda '() (cons* 'named-let ,bindings-or-label ,(car rest) ,(cdr rest)))
+            (list 'lambda '() (cons* 'simple-let ,bindings-or-label ,rest)))))
 
 (define-macro (xsimple-let bindings rest)
   `(,`(lambda ,(map car bindings) ,@rest)
@@ -42,12 +41,6 @@
      (set! ,label (lambda ,(map car bindings) ,@rest))
      (,label ,@(map cadr bindings))))
 
-;; COND
-(define-macro (let bindings-or-label . rest)
-  `(cond (,(symbol? bindings-or-label) ;; COND
-          (xnamed-let ,bindings-or-label ,(car rest) ,(cdr rest)))
-         (#t (xsimple-let ,bindings-or-label ,rest))))
-
 ;; IF
 (define-macro (let bindings-or-label . rest)
   `(if ,(symbol? bindings-or-label) ;; IF
@@ -55,26 +48,26 @@
        (xsimple-let ,bindings-or-label ,rest)))
 
 (define (expand-let* bindings body)
-  (cond ((null? bindings)
-         `((lambda () ,@body)))
-        (#t `((lambda (,(caar bindings))
-                ,(expand-let* (cdr bindings) body))
-              ,@(cdar bindings)))))
+  (if (null? bindings)
+      `((lambda () ,@body))
+      `((lambda (,(caar bindings))
+          ,(expand-let* (cdr bindings) body))
+        ,@(cdar bindings))))
 
 (define-macro (let* bindings . body)
   (expand-let* bindings body))
 
 (define (unspecified-bindings bindings params)
-  (cond ((null? bindings) params)
-        (#t (unspecified-bindings
-             (cdr bindings)
-             (append params (cons (cons (caar bindings) '(*unspecified*)) '()))))))
+  (if (null? bindings) params
+      (unspecified-bindings
+       (cdr bindings)
+       (append params (cons (cons (caar bindings) '(*unspecified*)) '())))))
 
 (define (letrec-setters bindings setters)
-  (cond ((null? bindings) setters)
-        (#t (letrec-setters (cdr bindings)
-                            (append setters
-                                    (cons (cons 'set! (car bindings)) '()))))))
+  (if (null? bindings) setters
+      (letrec-setters (cdr bindings)
+                      (append setters
+                              (cons (cons 'set! (car bindings)) '())))))
 
 (define-macro (letrec bindings . body)
   `(let ,(unspecified-bindings bindings '())
