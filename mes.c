@@ -112,10 +112,11 @@ scm char_space = {CHAR, .name="space", .value=32};
 
 // PRIMITIVES
 
+#define ATOM_P(x) (x->type == PAIR ? &scm_f : &scm_t)
 scm *
 atom_p (scm *x)
 {
-  return x->type == PAIR ? &scm_f : &scm_t;
+  return ATOM_P(x);
 }
 
 scm *
@@ -168,10 +169,11 @@ null_p (scm *x)
   return x == &scm_nil ? &scm_t : &scm_f;
 }
 
+#define PAIR_P(x) (x->type == PAIR ? &scm_t : &scm_f)
 scm *
 pair_p (scm *x)
 {
-  return x->type == PAIR ? &scm_t : &scm_f;
+  return PAIR_P(x);
 }
 
 scm *
@@ -298,23 +300,33 @@ assq (scm *x, scm *a)
   return a->car;
 }
 
+#define BUILTIN_P(x)             \
+  ((x->type == FUNCTION0         \
+    || x->type == FUNCTION1      \
+    || x->type == FUNCTION2      \
+    || x->type == FUNCTION3      \
+    || x->type == FUNCTIONn)     \
+   ? &scm_t : &scm_f)
+
 scm *
 apply_env (scm *fn, scm *x, scm *a)
 {
   scm *macro;
-  if (atom_p (fn) != &scm_f)
+  if (fn->type != PAIR)
     {
-      if (fn == &symbol_current_module) return a;
+      if (fn == &scm_car) return x->car->car;
+      if (fn == &scm_cdr) return x->car->cdr;
+      if (BUILTIN_P (fn) == &scm_t)
+        return call (fn, x);
       if (eq_p (fn, &symbol_call_with_values) == &scm_t)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
-      if (builtin_p (fn) == &scm_t)
-        return call (fn, x);
+      if (fn == &symbol_current_module) return a;
     }
-  else if (car (fn) == &symbol_lambda) {
+  else if (fn->car == &symbol_lambda) {
     scm *p = pairlis (cadr (fn), x, a);
     return eval (cons (&symbol_begin, cddr (fn)), cons (cons (&symbol_closure, p), p));
   }
-  else if (car (fn) == &symbol_closure) {
+  else if (fn->car == &symbol_closure) {
     scm *args = caddr (fn);
     scm *body = cdddr (fn);
     a = cdadr (fn);
@@ -351,25 +363,39 @@ eval (scm *e, scm *a)
     }
     return cdr (y);
   }
-  else if (pair_p (e) == &scm_f)
+  else if (e->type != PAIR)
     return e;
-  else if (atom_p (car (e)) == &scm_t)
+  else if (e->car->type != PAIR)
     {
-      if (car (e) == &symbol_quote)
+      if (e->car == &symbol_quote)
         return cadr (e);
-      if (car (e) == &symbol_begin)
+      if (e->car == &symbol_begin)
         {
-          scm *body = cdr (e);
+          scm *body = e->cdr;
           if (body == &scm_nil) return &scm_unspecified;
-          e = car (body);
-          body = cdr (body);
+          e = body->car;
+          body = body->cdr;
           scm *r = eval (e, a);
           if (body == &scm_nil) return r;
           return eval (cons (&symbol_begin, body), a);
         }
-      if (car (e) == &symbol_lambda)
+        // return eval_begin (e, a);
+        // with -Ofast 6secs slower: 44sec vs 38
+        // {
+        //   if (e->cdr == &scm_nil) return &scm_unspecified;
+        //   //scm *r = &scm_unspecified;
+        //   scm *b = e;
+        //   while (1) {//e != &scm_nil) {
+        //     scm *q = b->car;
+        //     b = b->cdr;
+        //     scm *r = eval (q, a);
+        //     if (b == &scm_nil) return r;
+        //   }
+        //   //return r;
+        // }
+      if (e->car == &symbol_lambda)
         return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
-      if (car (e) == &symbol_closure)
+      if (e->car == &symbol_closure)
         return e;
       if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
         if (cdr (macro) != &scm_f)
@@ -377,24 +403,47 @@ eval (scm *e, scm *a)
       if ((macro = lookup_macro (car (e), a)) != &scm_f)
         return eval (apply_env (macro, cdr (e), a), a);
 #if COND
-      if (car (e) == &symbol_cond)
-        return evcon (cdr (e), a);
-#endif // COND
-      if (car (e) == &symbol_if)
+      if (e->car == &symbol_cond)
+        return evcon (e->cdr, a);
+#endif
+      if (e->car == &symbol_if)
         return if_env (cdr (e), a);
-      if (eq_p (car (e), &symbol_define) == &scm_t)
+      if (e->car == &symbol_define)
         return define (e, a);
-      if (eq_p (car (e), &symbol_define_macro) == &scm_t)
+      if (e->car == &symbol_define_macro)
         return define (e, a);
-      if (car (e) == &symbol_set_x)
+      if (e->car == &symbol_set_x)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
-      if (car (e) == &symbol_unquote)
+      if (e->car == &symbol_unquote)
         return eval (cadr (e), a);
-      if (car (e) == &symbol_quasiquote)
+      if (e->car == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
     }
-  return apply_env (car (e), evlis (cdr (e), a), a);
+  return apply_env (e->car, evlis (e->cdr, a), a);
 }
+
+// scm *
+// xxeval_begin (scm *e, scm *a)
+// {
+//   scm *body = e->cdr;
+//   if (body == &scm_nil) return &scm_unspecified;
+//   e = body->car;
+//   body = body->cdr;
+//   scm *r = eval (e, a);
+//   if (body == &scm_nil) return r;
+//   return eval_begin (cons (&symbol_begin, body), a);
+// }
+
+// scm *
+// eval_begin (scm *e, scm *a)
+// {
+//   scm *r = &scm_unspecified;
+//   while (e != &scm_nil) {
+//     r = eval (e->car, a);
+//     e = e->cdr;
+//   }
+//   return r;
+// }
 
 #if COND
 scm *
@@ -452,12 +501,7 @@ eval_quasiquote (scm *e, scm *a)
 scm *
 builtin_p (scm *x)
 {
-  return (x->type == FUNCTION0
-          || x->type == FUNCTION1
-          || x->type == FUNCTION2
-          || x->type == FUNCTION3
-          || x->type == FUNCTIONn)
-    ? &scm_t : &scm_f;
+  return BUILTIN_P(x);
 }
 
 scm *
