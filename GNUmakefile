@@ -1,5 +1,6 @@
 .PHONY: all check default 
 CFLAGS:=-std=c99 -O3 -finline-functions
+#CFLAGS:=-pg -std=c99 -O3 -finline-functions
 #CFLAGS:=-std=c99 -g
 
 default: all
@@ -44,6 +45,7 @@ mes-check: all
 	cat base0.mes base0-if.mes base.mes quasiquote.mes lib/test.mes test/quasiquote.test | ./mes
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/test.mes test/let.test | ./mes
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/srfi/srfi-0.scm scm.mes lib/test.mes test/scm.test | ./mes
+	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/test.mes test/let-syntax.test | ./mes
 
 guile-check:
 	guile -s <(cat base.mes lib/test.mes test/base.test)
@@ -115,7 +117,7 @@ guile-paren: paren.test
 	echo '___P((()))' | guile -s $^ 
 
 mescc: all
-	echo ' EOF ' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm - main.c | ./mes > a.out
+	echo ' EOF ' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm - main.c | ./mes > a.out
 	chmod +x a.out
 
 mescc.test: lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm
@@ -135,3 +137,12 @@ hello: hello.o
 a.out: lib/elf.mes elf.mes GNUmakefile
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes lib/rnrs/bytevectors.scm lib/elf.mes elf.mes | ./mes > a.out
 	chmod +x a.out
+
+match: all
+	echo ' EOF ' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm match.mes | ./mes
+
+match.test: lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm match.mes
+	cat $^ > $@
+
+guile-match: match.test
+	guile -s $^
