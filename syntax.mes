@@ -7,6 +7,9 @@
   (display thing)
   (newline))
 
+(define (silent-syntax-error message thing)
+  *unspecified*)
+
 ;;; Adapted from scheme48-1.1/scheme/alt/syntax.scm
 
 ;;; Copyright (c) 1993-2004 by Richard Kelsey and Jonathan Rees. See file COPYING.
@@ -172,7 +175,7 @@
                (let ((vars
                       (free-meta-variables (car template) (+ rank 1) env '())))
                  (if (null? vars)
-                     (syntax-error "too many ...'s" template)
+                     (silent-syntax-error "too many ...'s" template)
                      (let* ((x (process-template (car template)
                                                  (+ rank 1)
                                                  env))
