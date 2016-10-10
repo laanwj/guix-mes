@@ -177,9 +177,4 @@
 (pass-if "char-alphabetic?" (seq? (char-alphabetic? #\a) #t))
 (pass-if "char-alphabetic? 2" (seq? (char-alphabetic? #\[) #f))
 
-(newline)
-(display "passed: ") (display (car (result))) (newline)
-(display "failed: ") (display (cadr (result))) (newline)
-(display "total: ") (display (apply + (result))) (newline)
-
-(exit (cadr (result)))
+(result 'report)
