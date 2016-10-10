@@ -45,6 +45,7 @@ mes-check: all
 	cat base0.mes base0-if.mes base.mes quasiquote.mes lib/test.mes test/quasiquote.test | ./mes
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/test.mes test/let.test | ./mes
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/srfi/srfi-0.scm scm.mes lib/test.mes test/scm.test | ./mes
+	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/srfi/srfi-0.scm scm.mes syntax.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/test.mes test/record.test |./mes
 ifneq ($(SYNTAX),)
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/test.mes test/let-syntax.test | ./mes
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/match.scm lib/test.mes test/match.test | ./mes
@@ -65,6 +66,7 @@ guile-check:
 	guile -s <(cat lib/test.mes test/let.test)
 	guile -s <(cat quasiquote.mes lib/test.mes test/base.test)
 	guile -s <(cat quasiquote.mes lib/test.mes test/quasiquote.test)
+	guile -s <(cat lib/test.mes test/record.test)
 	guile -s <(cat lib/test.mes test/let-syntax.test)
 	guile -s <(cat lib/test.mes test/match.test)
 
@@ -74,62 +76,46 @@ run: all
 psyntax: all
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes psyntax.mes psyntax.pp psyntax2.mes | ./mes
 
-syntax: all
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes syntax-test.mes | ./mes
-
-syntax.test: syntax.mes syntax-test.mes
-	cat $^ > $@
-
-guile-syntax: syntax.test
-	guile -s $^
-
 syntax-case: all
 	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes | ./mes
 
-syntax-case.test: syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes
+syntax-case.cat: syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes
 	cat $^ > $@
 
-guile-syntax-case: syntax-case.test
+guile-syntax-case: syntax-case.cat
 	guile -s $^
-
-macro: all
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes macro.mes | ./mes
 
 peg: all
 	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
 
-peg.test: peg/pmatch.scm peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes
+peg.cat: peg/pmatch.scm peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes
 	cat $^ | sed 's,\(;; Packages the results of a parser\),(when (guile?) (set! compile-peg-pattern (@@ (ice-9 peg codegen) compile-peg-pattern)))\n\1,' > $@
 
-guile-peg: peg.test
+guile-peg: peg.cat
 #	guile -s peg-test.mes
 #	@echo "======================================="
 	guile -s $^
 
 clean:
-	rm -f mes environment.i mes.h peg.test syntax.test
-
-record: all
-	cat scm.mes syntax.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm record.mes |./mes
-
+	rm -f mes environment.i symbol.i mes.h *.cat hello.o main.o a.out
 
 paren: all
 	echo -e 'EOF\n___P((()))' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm - | ./mes
 
-paren.test: lib/lalr.scm paren.scm
+paren.cat: lib/lalr.scm paren.scm
 	cat $^ > $@
 
-guile-paren: paren.test
+guile-paren: paren.cat
 	echo '___P((()))' | guile -s $^ 
 
 mescc: all
 	echo ' EOF ' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm - main.c | ./mes > a.out
 	chmod +x a.out
 
-mescc.test: lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm
+mescc.cat: lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm
 	cat $^ > $@
 
-guile-mescc: mescc.test
+guile-mescc: mescc.cat
 	cat main.c | guile -s $^ > a.out
 	chmod +x a.out
 
@@ -143,12 +129,3 @@ hello: hello.o
 a.out: lib/elf.mes elf.mes GNUmakefile
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes lib/rnrs/bytevectors.scm lib/elf.mes elf.mes | ./mes > a.out
 	chmod +x a.out
-
-match: all
-	echo ' EOF ' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm match.mes | ./mes
-
-match.test: lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm match.mes
-	cat $^ > $@
-
-guile-match: match.test
-	guile -s $^

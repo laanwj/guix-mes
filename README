@@ -22,9 +22,11 @@ Current targets.
 
 from there, work on mescc.scm, main.c.
 
-* Transition to syntax-if.scm (still using syntax-cond.scm)
+* syntax-case: simple portable version by Andre van Tonder
 
-* syntax-case using portable psyntax.pp
+  TODO
+
+* syntax-case: using portable psyntax.pp
 
    make psyntax
 

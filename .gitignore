@@ -6,11 +6,8 @@
 /mes
 /mes.h
 /environment.i
-/peg.test
-/syntax.test
-/paren.test
-/syntax-case.test
-/mescc.test
+/symbols.i
+/*.cat
 ?
 ?.mes
 /hello
