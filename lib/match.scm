@@ -357,13 +357,18 @@
     ((match-two v (? pred . p) g+s sk fk i)
      (if (pred v) (match-one v (and . p) g+s sk fk i) fk))
     ((match-two v (= proc p) . x)
-     (let ((w (proc v))) (match-one w p . x)))
+     (let ((w (proc v))) (match-one w p . x))
+     ;;(let ((W (proc v))) (match-one W p . x))
+     )
     ((match-two v (p ___ . r) g+s sk fk i)
      (match-extract-vars p (match-gen-ellipses v p r g+s sk fk i) i ()))
     ((match-two v (p) g+s sk fk i)
      (if (and (pair? v) (null? (cdr v)))
-         (let ((w (car v)))
-           (match-one w p ((car v) (set-car! v)) sk fk i))
+         (let ;;((w (car v)))
+             ((W (car v)))
+           ;;(match-one w p ((car v) (set-car! v)) sk fk i)
+           (match-one W p ((car v) (set-car! v)) sk fk i)
+           )
          fk))
     ((match-two v (p *** q) g+s sk fk i)
      (match-extract-vars p (match-gen-search v p q g+s sk fk i) i ()))
@@ -379,9 +384,12 @@
          fk))
     ((match-two v (p . q) g+s sk fk i)
      (if (pair? v)
-         (let ((w (car v)) (x (cdr v)))
-           (match-one w p ((car v) (set-car! v))
-                      (match-one x q ((cdr v) (set-cdr! v)) sk fk)
+         (let ;;((w (car v)) (x (cdr v)))
+             ((W (car v)) (X (cdr v)))
+           (match-one ;;w p ((car v) (set-car! v))
+                      W p ((car v) (set-car! v))
+                      ;;(match-one x q ((cdr v) (set-cdr! v)) sk fk)
+                      (match-one X q ((cdr v) (set-cdr! v)) sk fk)
                       fk
                       i))
          fk))
@@ -392,15 +400,20 @@
     ;; new symbol, in which case we just bind it, or if it's an
     ;; already bound symbol or some other literal, in which case we
     ;; compare it with EQUAL?.
-    ((match-two v x g+s (sk ...) fk (id ...))
+    (;;(match-two v x g+s (sk ...) fk (id ...))
+     (match-two V X g+s (sk ...) fk (id ...))
      (let-syntax
          ((new-sym?
            (syntax-rules (id ...)
-             ((new-sym? x sk2 fk2) sk2)
+             ;;((new-sym? x sk2 fk2) sk2)
+             ((new-sym? X sk2 fk2) sk2)
              ((new-sym? y sk2 fk2) fk2))))
        (new-sym? random-sym-to-match
-                 (let ((x v)) (sk ... (id ... x)))
-                 (if (equal? v x) (sk ... (id ...)) fk))))
+                 ;;(let ((x v)) (sk ... (id ... x)))
+                 (let ((X V)) (sk ... (id ... X)))
+                 ;;(if (equal? v x) (sk ... (id ...)) fk)
+                 (if (equal? V X) (sk ... (id ...)) fk)
+                 )))
     ))
 
 ;; QUASIQUOTE patterns
@@ -425,16 +438,19 @@
      (match-quasiquote v p g+s sk fk i . depth))
     ((_ v (p . q) g+s sk fk i . depth)
      (if (pair? v)
-       (let ((w (car v)) (x (cdr v)))
+         (let ;;((w (car v)) (x (cdr v)))
+             ((W (car v)) (X (cdr v)))
          (match-quasiquote
-          w p g+s
-          (match-quasiquote-step x q g+s sk fk depth)
+          ;;w p g+s
+          W p g+s
+          ;;(match-quasiquote-step x q g+s sk fk depth)
+          (match-quasiquote-step X q g+s sk fk depth)
           fk i . depth))
        fk))
     ((_ v #(elt ...) g+s sk fk i . depth)
      (if (vector? v)
-       (let ((ls (vector->list v)))
-         (match-quasiquote ls (elt ...) g+s sk fk i . depth))
+         (let ((ls (vector->list v)))
+           (match-quasiquote ls (elt ...) g+s sk fk i . depth))
        fk))
     ((_ v x g+s sk fk i . depth)
      (match-one v 'x g+s sk fk i))))
@@ -501,11 +517,16 @@
 
 (define-syntax match-gen-ellipses
   (syntax-rules ()
-    ((_ v p () g+s (sk ...) fk i ((id id-ls) ...))
-     (match-check-identifier p
-       ;; simplest case equivalent to (p ...), just bind the list
-       (let ((p v))
-         (if (list? p)
+    (;;(_ v p () g+s (sk ...) fk i ((id id-ls) ...))
+     (_ v P () g+s (sk ...) fk i ((id id-ls) ...))
+     (match-check-identifier
+      ;;p
+      P
+      ;; simplest case equivalent to (p ...), just bind the list
+      (let ;;((p v))
+          ((P v))
+        (if ;;(list? p)
+         (list? P)
              (sk ... i)
              fk))
        ;; simple case, match all elements of the list
@@ -514,8 +535,10 @@
            ((null? ls)
             (let ((id (reverse id-ls)) ...) (sk ... i)))
            ((pair? ls)
-            (let ((w (car ls)))
-              (match-one w p ((car ls) (set-car! ls))
+            (let ;;((w (car ls)))
+                ((W (car ls)))
+              (match-one ;;w p ((car ls) (set-car! ls))
+                         W p ((car ls) (set-car! ls))
                          (match-drop-ids (loop (cdr ls) (cons id id-ls) ...))
                          fk i)))
            (else
