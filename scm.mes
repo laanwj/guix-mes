@@ -160,11 +160,11 @@
 (define else #t)
 
 (define (error who . rest)
-  (display "error:")
-  (display who)
-  (display ":")
-  (display rest)
-  (display newline))
+  (display "error:" (current-error-port))
+  (display who (current-error-port))
+  (display ":" (current-error-port))
+  (display rest (current-error-port))
+  (newline (current-error-port)))
 
 (define (syntax-error message . rest)
   (display "syntax-error:" (current-error-port))

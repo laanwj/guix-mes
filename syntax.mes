@@ -1,11 +1,11 @@
 ;; -*-scheme-*-
 
 (define (syntax-error message thing)
-  (display "syntax-error:")
-  (display message)
-  (display ":")
-  (display thing)
-  (newline))
+  (display "syntax-error:" (current-error-port))
+  (display message (current-error-port))
+  (display ":" (current-error-port))
+  (display thing (current-error-port))
+  (newline (current-error-port)))
 
 (define (silent-syntax-error message thing)
   *unspecified*)
