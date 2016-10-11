@@ -82,7 +82,6 @@ scm symbol_closure = {SYMBOL, "*closure*"};
 scm symbol_circ = {SYMBOL, "*circ*"};
 scm symbol_lambda = {SYMBOL, "lambda"};
 scm symbol_begin = {SYMBOL, "begin"};
-scm symbol_list = {SYMBOL, "list"};
 scm symbol_cond = {SYMBOL, "cond"};
 scm symbol_if = {SYMBOL, "if"};
 scm symbol_quote = {SYMBOL, "quote"};
@@ -343,6 +342,7 @@ scm *
 eval (scm *e, scm *a)
 {
   scm *macro;
+  if (internal_symbol_p (e) == &scm_t) return e;
   if (e->type == SYMBOL) {
     scm *y = assq (e, a);
     if (y == &scm_f) {
@@ -485,39 +485,46 @@ string_p (scm *x)
 }
 
 scm *
-symbol_p (scm *x)
+internal_symbol_p (scm *x)
 {
   // FIXME: use INTERNAL/XSYMBOL or something?
   return (x->type == SYMBOL
-          && x != &scm_nil
-          && x != &scm_dot
-          && x != &scm_f
-          && x != &scm_t
-          && x != &scm_unspecified
+          && (x == &scm_nil
+              || x == &scm_dot
+              || x == &scm_f
+              || x == &scm_t
+              || x == &scm_unspecified
+              
+              || x == &symbol_closure
+              || x == &symbol_circ
+              || x == &symbol_lambda
+              || x == &symbol_begin
+              || x == &symbol_cond
+              || x == &symbol_if
+              || x == &symbol_quote
+              || x == &symbol_quasiquote
+              || x == &symbol_unquote
+              || x == &symbol_unquote_splicing
+              
+              || x == &symbol_sc_expand
+              || x == &symbol_syntax
+              || x == &symbol_quasisyntax
+              || x == &symbol_unsyntax
+              || x == &symbol_unsyntax_splicing
+              
+              || x == &symbol_call_with_values
+              || x == &symbol_current_module
+              || x == &symbol_define
+              || x == &symbol_define_macro
+              || x == &symbol_set_x
+              )) ? &scm_t : &scm_f;
+}
 
-          && x != &symbol_closure
-          && x != &symbol_circ
-          && x != &symbol_lambda
-          && x != &symbol_begin
-          && x != &symbol_list
-          && x != &symbol_cond
-          && x != &symbol_if
-          && x != &symbol_quote
-          && x != &symbol_quasiquote
-          && x != &symbol_unquote
-          && x != &symbol_unquote_splicing
-
-          && x != &symbol_sc_expand
-          && x != &symbol_syntax
-          && x != &symbol_quasisyntax
-          && x != &symbol_unsyntax
-          && x != &symbol_unsyntax_splicing
-
-          && x != &symbol_call_with_values
-          && x != &symbol_current_module
-          && x != &symbol_define
-          && x != &symbol_define_macro
-          && x != &symbol_set_x
+scm *
+symbol_p (scm *x)
+{
+  return (x->type == SYMBOL
+          && internal_symbol_p (x) == &scm_f
           ) ? &scm_t : &scm_f;
 }
 
