@@ -1102,7 +1102,10 @@ readword (int c, char *w, scm *a)
   if (c == '#' && peek_char () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
   char buf[256] = {0};
   char ch = c;
-  return readword (getchar (), strncat (w ? w : buf, &ch, 1), a);
+  char *p = w ? w + strlen (w) : buf;
+  *p = ch;
+  *(p+1) = 0;
+  return readword (getchar (), w ? w : buf, a);
 }
 
 scm *
