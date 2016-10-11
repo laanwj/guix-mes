@@ -45,7 +45,12 @@ mes-check: all
 	cat base0.mes base0-if.mes base.mes quasiquote.mes lib/test.mes test/quasiquote.test | ./mes
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/test.mes test/let.test | ./mes
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/srfi/srfi-0.scm scm.mes lib/test.mes test/scm.test | ./mes
+ifneq ($(SYNTAX),)
 	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/test.mes test/let-syntax.test | ./mes
+	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/match.scm lib/test.mes test/match.test | ./mes
+else
+	@echo skipping slooowwww syntax tests
+endif
 
 guile-check:
 	guile -s <(cat base.mes lib/test.mes test/base.test)
@@ -60,7 +65,8 @@ guile-check:
 	guile -s <(cat lib/test.mes test/let.test)
 	guile -s <(cat quasiquote.mes lib/test.mes test/base.test)
 	guile -s <(cat quasiquote.mes lib/test.mes test/quasiquote.test)
-	guile -s <(cat lib/test.mes test/scm.test)
+	guile -s <(cat lib/test.mes test/let-syntax.test)
+	guile -s <(cat lib/test.mes test/match.test)
 
 run: all
 	cat scm.mes test.mes | ./mes
