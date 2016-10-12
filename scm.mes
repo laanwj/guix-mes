@@ -46,12 +46,6 @@
        ,@body
        (loop ,@(cddar init)))))
 
-(define (procedure? p)
-  (cond ((builtin? p) #t)
-        ((and (pair? p) (eq? (car p) 'lambda)))
-        ((and (pair? p) (eq? (car p) '*closure*)))
-        (#t #f)))
-
 (define integer? number?)
 
 (define (make-list n . x)

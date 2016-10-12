@@ -67,3 +67,9 @@
 
 (define-macro (let bindings . rest)
   (cons* 'simple-let bindings rest))
+
+(define (procedure? p)
+  (cond ((builtin? p) #t)
+        ((and (pair? p) (eq? (car p) 'lambda)))
+        ((and (pair? p) (eq? (car p) '*closure*)))
+        (#t #f)))
