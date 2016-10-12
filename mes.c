@@ -35,7 +35,9 @@
 #include <stdbool.h>
 
 #define DEBUG 0
-#define COND 1 // 50% speedup for define-syntax/match
+#define STATIC_PRIMITIVES 1 // 8x speedup for mescc
+#define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
+#define COND 1 // 30% speedup for mescc
 #define MES_FULL 1
 
 enum type {CHAR, MACRO, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
@@ -216,6 +218,7 @@ quasiquote (scm *x)
   return cons (&symbol_quasiquote, x);
 }
 
+#if BUILTIN_QUASIQUOTE
 scm *
 unquote (scm *x) //int must not add to environment
 {
@@ -231,7 +234,7 @@ unquote_splicing (scm *x) //int must not add to environment
 }
 scm *unquote_splicing (scm *x);
 scm scm_unquote_splicing = {FUNCTION1, .name="unquote-splicing", .function1=&unquote_splicing};
-
+#endif // BUILTIN_QUASIQUOTE
 scm *
 syntax (scm *x)
 {
@@ -290,7 +293,9 @@ pairlis (scm *x, scm *y, scm *a)
 scm *
 assq (scm *x, scm *a)
 {
-  while (a != &scm_nil && EQ_P (x, a->car->car) == &scm_f) a = a->cdr;
+  while (a != &scm_nil && EQ_P (x, a->car->car) == &scm_f) {
+    a = a->cdr;
+  }
   if (a == &scm_nil) {
 #if DEBUG
     printf ("alist miss: %s\n", x->name);
@@ -307,6 +312,35 @@ assq (scm *x, scm *a)
     || x->type == FUNCTION3      \
     || x->type == FUNCTIONn)     \
    ? &scm_t : &scm_f)
+
+
+#if COND
+scm *
+evcon (scm *c, scm *a) // internal
+{
+  if (c == &scm_nil) return &scm_unspecified;
+  scm *clause = car (c);
+  scm *expr = eval (car (clause), a);
+  if (expr != &scm_f) {
+    if (cdr (clause) == &scm_nil)
+      return expr;
+    if (cddr (clause) == &scm_nil)
+      return eval (cadr (clause), a);
+    eval (cadr (clause), a);
+    return evcon (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
+  }
+  return evcon (cdr (c), a);
+}
+#endif // COND
+
+scm *
+evlis (scm *m, scm *a)
+{
+  if (m == &scm_nil) return &scm_nil;
+  if (m->type != PAIR) return eval (m, a);
+  scm *e = eval (car (m), a);
+  return cons (e, evlis (cdr (m), a));
+}
 
 scm *
 apply_env (scm *fn, scm *x, scm *a)
@@ -355,6 +389,7 @@ eval (scm *e, scm *a)
 {
   scm *macro;
   if (internal_symbol_p (e) == &scm_t) return e;
+  //if (internal_primitive_p (e) == &scm_t) return e;
   if (e->type == SYMBOL) {
     scm *y = assq (e, a);
     if (y == &scm_f) {
@@ -370,42 +405,22 @@ eval (scm *e, scm *a)
       if (e->car == &symbol_quote)
         return cadr (e);
       if (e->car == &symbol_begin)
-        {
-          scm *body = e->cdr;
-          if (body == &scm_nil) return &scm_unspecified;
-          e = body->car;
-          body = body->cdr;
-          scm *r = eval (e, a);
-          if (body == &scm_nil) return r;
-          return eval (cons (&symbol_begin, body), a);
-        }
-        // return eval_begin (e, a);
-        // with -Ofast 6secs slower: 44sec vs 38
-        // {
-        //   if (e->cdr == &scm_nil) return &scm_unspecified;
-        //   //scm *r = &scm_unspecified;
-        //   scm *b = e;
-        //   while (1) {//e != &scm_nil) {
-        //     scm *q = b->car;
-        //     b = b->cdr;
-        //     scm *r = eval (q, a);
-        //     if (b == &scm_nil) return r;
-        //   }
-        //   //return r;
-        // }
+        return eval_begin (e, a);
       if (e->car == &symbol_lambda)
         return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
       if (e->car == &symbol_closure)
         return e;
+#if SC_EXPAND
       if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
         if (cdr (macro) != &scm_f)
           return eval (apply_env (cdr (macro), e, a), a);
+#endif // SC_EXPAND
       if ((macro = lookup_macro (car (e), a)) != &scm_f)
         return eval (apply_env (macro, cdr (e), a), a);
 #if COND
       if (e->car == &symbol_cond)
         return evcon (e->cdr, a);
-#endif
+#endif // COND
       if (e->car == &symbol_if)
         return if_env (cdr (e), a);
       if (e->car == &symbol_define)
@@ -414,55 +429,26 @@ eval (scm *e, scm *a)
         return define (e, a);
       if (e->car == &symbol_set_x)
         return set_env_x (cadr (e), eval (caddr (e), a), a);
+#if BUILTIN_QUASIQUOTE
       if (e->car == &symbol_unquote)
         return eval (cadr (e), a);
       if (e->car == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
+#endif //BUILTIN_QUASIQUOTE
     }
   return apply_env (e->car, evlis (e->cdr, a), a);
 }
 
-// scm *
-// xxeval_begin (scm *e, scm *a)
-// {
-//   scm *body = e->cdr;
-//   if (body == &scm_nil) return &scm_unspecified;
-//   e = body->car;
-//   body = body->cdr;
-//   scm *r = eval (e, a);
-//   if (body == &scm_nil) return r;
-//   return eval_begin (cons (&symbol_begin, body), a);
-// }
-
-// scm *
-// eval_begin (scm *e, scm *a)
-// {
-//   scm *r = &scm_unspecified;
-//   while (e != &scm_nil) {
-//     r = eval (e->car, a);
-//     e = e->cdr;
-//   }
-//   return r;
-// }
-
-#if COND
 scm *
-evcon (scm *c, scm *a)
+eval_begin (scm *e, scm *a)
 {
-  if (c == &scm_nil) return &scm_unspecified;
-  scm *clause = car (c);
-  scm *expr = eval (car (clause), a);
-  if (expr != &scm_f) {
-    if (cdr (clause) == &scm_nil)
-      return expr;
-    if (cddr (clause) == &scm_nil)
-      return eval (cadr (clause), a);
-    eval (cadr (clause), a);
-    return evcon (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
+  scm *r = &scm_unspecified;
+  while (e != &scm_nil) {
+    r = eval (e->car, a);
+    e = e->cdr;
   }
-  return evcon (cdr (c), a);
+  return r;
 }
-#endif // COND
 
 scm *
 if_env (scm *e, scm *a)
@@ -474,15 +460,7 @@ if_env (scm *e, scm *a)
   return &scm_unspecified;
 }
 
-scm *
-evlis (scm *m, scm *a)
-{
-  if (m == &scm_nil) return &scm_nil;
-  if (m->type != PAIR) return eval (m, a);
-  scm *e = eval (car (m), a);
-  return cons (e, evlis (cdr (m), a));
-}
-
+#if BUILTIN_QUASIQUOTE
 scm *
 eval_quasiquote (scm *e, scm *a)
 {
@@ -495,6 +473,7 @@ eval_quasiquote (scm *e, scm *a)
       return append2 (eval (cadar (e), a), eval_quasiquote (cdr (e), a));
   return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
+#endif // BUILTIN_QUASIQUOTE
 
 //Helpers
 
@@ -543,13 +522,17 @@ internal_symbol_p (scm *x)
               || x == &symbol_circ
               || x == &symbol_lambda
               || x == &symbol_begin
+#if COND
               || x == &symbol_cond
+#endif // COND
               || x == &symbol_if
+
+#if BUILTIN_QUASIQUOTE
               || x == &symbol_quote
               || x == &symbol_quasiquote
               || x == &symbol_unquote
               || x == &symbol_unquote_splicing
-              
+#endif // BUILTIN_QUASIQUOTE          
               || x == &symbol_sc_expand
               || x == &symbol_syntax
               || x == &symbol_quasisyntax
@@ -664,6 +647,27 @@ make_string (char const *s)
   p->name = strdup (s);
   return p;
 }
+
+#if STATIC_PRIMITIVES
+scm *primitives = 0;
+
+scm *
+internal_lookup_primitive (char const *s)
+{
+  scm *x = primitives;
+  while (x && strcmp (s, x->car->name)) x = x->cdr;
+  if (x) x = x->car;
+  return x;
+}
+
+scm *
+internal_primitive_p (scm *e) // internal
+{
+  scm *x = primitives;
+  while (x && e != x->car) x = x->cdr;
+  return x ? &scm_t : &scm_f;
+}
+#endif // STATIC_PRIMITIVES
 
 scm *symbols = 0;
 
@@ -859,7 +863,12 @@ lookup (char const *s, scm *a)
   if (isdigit (*s) || (*s == '-' && isdigit (*(s+1))))
     return make_number (atoi (s));
 
-  scm *x = internal_lookup_symbol (s);
+  scm *x;
+#if STATIC_PRIMITIVES
+  x = internal_lookup_primitive (s);
+  if (x) return x;
+#endif // STATIC_PRIMITIVES
+  x = internal_lookup_symbol (s);
   if (x) return x;
 
   if (*s == '\'') return &symbol_quote;
@@ -1383,8 +1392,8 @@ scm *add_environment (scm *a, char const *name, scm *x);
 scm *
 add_unquoters (scm *a)
 {
-  a = add_environment (a, "unquote", &scm_unquote);
-  a = add_environment (a, "unquote-splicing", &scm_unquote_splicing);
+  a = cons (cons (&symbol_unquote, &scm_unquote), a);
+  a = cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing), a);
   return a;
 }
 
@@ -1393,6 +1402,54 @@ add_environment (scm *a, char const *name, scm *x)
 {
   return cons (cons (make_symbol (name), x), a);
 }
+
+#if STATIC_PRIMITIVES
+scm *
+mes_primitives () // internal
+{
+  primitives = cons (&scm_eval, primitives);
+  primitives = cons (&scm_apply, primitives);
+#if 0 //COND
+  primitives = cons (&scm_evcon, primitives);
+#endif
+  primitives = cons (&scm_string_p, primitives);
+  primitives = cons (&scm_symbol_p, primitives);
+
+  primitives = cons (&scm_caar, primitives);
+  primitives = cons (&scm_cadr, primitives);
+  primitives = cons (&scm_cdar, primitives);
+  primitives = cons (&scm_cddr, primitives);
+  primitives = cons (&scm_assq, primitives);
+
+  primitives = cons (&scm_eq_p, primitives);
+#if BUILTIN_QUASIQUOTE
+  primitives = cons (&scm_unquote, primitives);
+  primitives = cons (&scm_unquote_splicing, primitives);
+#endif // BUILTIN_QUASIQUOTE
+  primitives = cons (&scm_vector_set_x, primitives);
+  primitives = cons (&scm_vector_ref, primitives);
+  primitives = cons (&scm_vector_p, primitives);
+
+  //primitives = cons (&scm_quasiquote, primitives);
+
+  // lalr: invalid non-terminal
+  //primitives = cons (&scm_less_p, primitives);
+  //primitives = cons (&scm_is_p, primitives);
+  //primitives = cons (&scm_minus, primitives);
+  //primitives = cons (&scm_plus, primitives);
+
+
+  primitives = cons (&scm_pair_p, primitives);
+
+  primitives = cons (&scm_builtin_list, primitives);
+
+  primitives = cons (&scm_cons, primitives);
+  primitives = cons (&scm_car, primitives);
+  primitives = cons (&scm_cdr, primitives);
+  primitives = cons (&scm_null_p, primitives);
+  primitives = cons (&scm_if_env, primitives);
+}
+#endif // STATIC_PRIMITIVES
 
 scm *
 mes_environment ()
@@ -1457,6 +1514,11 @@ define (scm *x, scm *a)
 scm *
 lookup_macro (scm *x, scm *a)
 {
+#if STATIC_PRIMITIVES
+  if (internal_primitive_p (x) == &scm_t) return &scm_f;
+  if (internal_symbol_p (x) == &scm_t) return &scm_f;
+#endif
+
   scm *m = assq (x, a);
   if (m != &scm_f && macro_p (cdr (m)) != &scm_f)
     return cdr (m)->macro;
@@ -1474,6 +1536,9 @@ int
 main (int argc, char *argv[])
 {
   scm *a = mes_environment ();
+#if STATIC_PRIMITIVES
+  mes_primitives ();
+#endif
   display_ (stderr, eval (cons (&symbol_begin, read_file (readenv (a), a)), a));
   fputs ("", stderr);
   return 0;

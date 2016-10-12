@@ -24,7 +24,7 @@
         (cons (car rest) (loop (cdr rest)))))
   (loop (cons x rest)))
 
-(define-macro xcond ;; using evcon: 50% speedup (cond in syntax.mes)
+(define-macro disabled-cond ;; using evcon: 50% speedup (cond in syntax.mes)
   (lambda clauses
     (if (null? clauses) *unspecified* ;; IF
         (if (null? (cdr clauses)) ;; IF
