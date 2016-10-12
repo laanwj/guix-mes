@@ -1,0 +1,215 @@
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; elf.mes: This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; elf.mes - produce a i386 elf executable.
+
+;;; Code:
+
+(define (int->bv32 value)
+  (let ((bv (make-bytevector 4)))
+    (bytevector-u32-native-set! bv 0 value)
+    bv))
+
+(define (int->bv16 value)
+  (let ((bv (make-bytevector 2)))
+    (bytevector-u16-native-set! bv 0 value)
+    bv))
+
+(define elf32-addr int->bv32)
+(define elf32-half int->bv16)
+(define elf32-off int->bv32)
+(define elf32-word int->bv32)
+
+(define (make-elf text data)
+ (define vaddress #x08048000)
+
+ (define ei-magic `(#x7f ,@(string->list "ELF")))
+ (define ei-class '(#x01)) ;; 32 bit
+ (define ei-data '(#x01)) ;; little endian
+ (define ei-version '(#x01))
+ (define ei-osabi '(#x00))
+ (define ei-pad '(#x0 #x0 #x0 #x0 #x0 #x0 #x0 #x0))
+ (define e-ident
+   (append
+    ei-magic
+    ei-class
+    ei-data
+    ei-version
+    ei-osabi
+    ei-pad))
+
+ (define ET-EXEC 2)
+ (define EM-386 3)
+ (define EV-CURRENT 1)
+
+ (define p-filesz (elf32-word 0))
+ (define p-memsz (elf32-word 0))
+ (define PF-X 1)
+ (define PF-W 2)
+ (define PF-R 4)
+ (define p-flags (elf32-word (logior PF-X PF-W PF-R)))
+ (define p-align (elf32-word 1))
+
+ (define (program-header type offset text)
+   (append
+    (elf32-word type)
+    (elf32-off offset)
+    (elf32-addr (+ vaddress offset))
+    (elf32-addr (+ vaddress offset))
+    (elf32-word (length text))
+    (elf32-word (length text))
+    p-flags
+    p-align
+    ))
+
+ (define (section-header name type offset text)
+   (append
+    (elf32-word name)
+    (elf32-word type)
+    (elf32-word 3) ;; write/alloc must for data hmm
+    (elf32-addr (+ vaddress offset))
+    (elf32-off offset) 
+    (elf32-word (length text))
+    (elf32-word 0)
+    (elf32-word 0)
+    (elf32-word 1)
+    (elf32-word 0)))
+
+
+ (define e-type (elf32-half ET-EXEC))
+ (define e-machine (elf32-half EM-386))
+ (define e-version (elf32-word EV-CURRENT))
+ (define e-entry (elf32-addr 0))
+ ;;(define e-entry (elf32-addr (+ vaddress text-offset)))
+ ;;(define e-phoff (elf32-off 0))
+ (define e-shoff (elf32-off 0))
+ (define e-flags (elf32-word 0))
+ ;;(define e-ehsize (elf32-half 0))
+ (define e-phentsize (elf32-half (length (program-header 0 0 '()))))
+ (define e-phnum (elf32-half 1))
+ (define e-shentsize (elf32-half (length (section-header 0 0 0 '()))))
+ (define e-shnum (elf32-half 5))
+ (define e-shstrndx (elf32-half 4))
+
+ (define (elf-header size entry sections)
+   (append
+    e-ident
+    e-type
+    e-machine
+    e-version
+    (elf32-addr (+ vaddress entry)) ;; e-entry
+    (elf32-off size) ;; e-phoff
+    (elf32-off sections) ;; e-shoff
+    e-flags
+    (elf32-half size) ;; e-ehsize
+    e-phentsize
+    e-phnum
+    e-shentsize
+    e-shnum
+    e-shstrndx
+    ))
+
+ (define elf-header-size
+   (length (elf-header 0 0 0)))
+
+ (define program-header-size
+   (length (program-header 0 0 '())))
+
+ (define text-offset
+   (+ elf-header-size program-header-size))
+
+ (define (program-headers)
+   (append
+    (program-header 1 text-offset (text 0))
+    ))
+
+
+ (define note
+   (string->list
+    (string-append
+     "MES"
+     ;;"Mes -- Maxwell Equations of Software\n"
+     ;;"https://gitlab.com/janneke/mes"
+     )
+    ;; #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
+    ;; #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
+    ))
+
+ (define tab
+   `(
+     #x00 ,@(string->list ".shstrtab")
+          #x00 ,@(string->list ".text")
+          #x00 ,@(string->list ".data")
+          #x00 ,@(string->list ".note")
+          #x00 #x00 #x00 #x00
+          ))
+
+ (define text-length
+   (length (text 0)))
+
+ (define data-offset
+   (+ text-offset text-length))
+
+ (define data-address (+ data-offset vaddress))
+
+ (define data-length
+   (length data))
+
+ (define note-length
+   (length note))
+
+ (define note-offset
+   (+ data-offset data-length))
+
+ (define tab-offset
+   (+ note-offset note-length))
+
+ (define tab-length
+   (length tab))
+
+ (define section-headers-offset
+   (+ tab-offset tab-length))
+
+
+ (define SHT-PROGBITS 1)
+ (define SHT-STRTAB 3)
+ (define SHT-NOTE 7)
+ (define (section-headers)
+   (append
+    (section-header 0 0 0 '())
+    (section-header 11 SHT-PROGBITS text-offset (text 0))
+    (section-header 17 SHT-PROGBITS data-offset data)
+    (section-header 23 SHT-NOTE note-offset note)
+    (section-header 1 SHT-STRTAB tab-offset tab)
+    ))
+
+ (define exe
+   (append
+    (elf-header elf-header-size text-offset section-headers-offset)
+    (program-headers)
+    (text data-address)
+    data
+    note
+    tab
+    (section-headers)
+    ))
+ exe)

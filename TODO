@@ -62,6 +62,13 @@ http://www.muppetlabs.com/~breadbox/software/tiny/
 http://www.cirosantilli.com/elf-hello-world/
 
 ** SCM
+** RNRS
+   http://www.scheme-reports.org/
+*** Scheme
+ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-349.pdf
+*** RRS
+ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-452.pdf
+
 http://groups.csail.mit.edu/mac/ftpdir/scm/OLD/scm2e.tar.Z
 wget http://groups.csail.mit.edu/mac/ftpdir/scm/OLD/scm3c13.tar.Z
 http://groups.csail.mit.edu/mac/ftpdir/scm/OLD/scm4a5.tar.Z

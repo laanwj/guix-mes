@@ -1,0 +1,6 @@
+#! /bin/sh
+
+cat $1 \
+  | grep -Eo '(mes-use-module \([^()]+ [^()]+))' \
+  | grep -Eo ' \([^)]+\)' \
+  | sed -e 's@^ *(@module/@' -e 's@ @/@g' -e 's@)@.mes@'

@@ -1,4 +1,4 @@
-.PHONY: all check default 
+.PHONY: all check clean default 
 #CFLAGS:=-std=c99 -O0
 CFLAGS:=-std=c99 -O3 -finline-functions
 #CFLAGS:=-pg -std=c99 -O0
@@ -9,6 +9,9 @@ default: all
 all: mes
 
 mes: mes.c mes.h
+
+clean:
+	rm -f mes environment.i symbol.i mes.h *.cat a.out
 
 mes.h: mes.c GNUmakefile
 	( echo '#if MES_C'; echo '#if MES_FULL' 1>&2;\
@@ -38,98 +41,42 @@ mes.h: mes.c GNUmakefile
 
 check: all guile-check mes-check
 
-mes-check: all
-#	./mes.test
-#	./mes.test ./mes
-	cat base0.mes base0-if.mes base.mes lib/test.mes test/base.test | ./mes
-	cat base0.mes base0-if.mes base.mes lib/test.mes test/closure.test | ./mes
-	cat base0.mes base0-if.mes base.mes quasiquote.mes lib/test.mes test/quasiquote.test | ./mes
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/test.mes test/let.test | ./mes
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/srfi/srfi-0.scm scm.mes lib/test.mes test/scm.test | ./mes
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes lib/srfi/srfi-0.scm scm.mes syntax.mes lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/test.mes test/record.test |./mes
-ifneq ($(SYNTAX),)
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/test.mes test/let-syntax.test | ./mes
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/match.scm lib/test.mes test/match.test | ./mes
-else
-	@echo skipping slooowwww syntax tests
-endif
+TESTS:=\
+ tests/base.test\
+ tests/closure.test\
+ tests/quasiquote.test\
+ tests/let.test\
+ tests/scm.test\
+ tests/record.test\
+ tests/let-syntax.test\
+ tests/match.test\
+#
 
-repl:
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/match.scm repl.mes /dev/stdin | ./mes 
+BASE-0:=module/mes/base-0.mes
+MES-0:=guile/mes-0.scm
+MES:=./mes
+
+mes-check: all
+	for i in $(TESTS); do\
+		cat $(BASE-0) $$(scripts/include.mes $$i) $$i | $(MES);\
+	done
 
 guile-check:
-	guile -s <(cat base.mes lib/test.mes test/base.test)
-	guile -s <(cat base.mes lib/test.mes test/closure.test)
-	guile -s <(cat base.mes lib/test.mes test/quasiquote.test)
-	guile -s <(cat quasiquote.mes lib/test.mes test/quasiquote.test)
-#	guile -s <(cat base.mes quasiquote.mes let.mes lib/test.mes test/let.test)
-#	guile -s <(cat base.mes let.mes test/foo.test)
-#	exit 1
-	guile -s <(cat lib/test.mes test/base.test)
-	guile -s <(cat lib/test.mes test/quasiquote.test)
-	guile -s <(cat lib/test.mes test/let.test)
-	guile -s <(cat quasiquote.mes lib/test.mes test/base.test)
-	guile -s <(cat quasiquote.mes lib/test.mes test/quasiquote.test)
-	guile -s <(cat lib/test.mes test/record.test)
-	guile -s <(cat lib/test.mes test/let-syntax.test)
-	guile -s <(cat lib/test.mes test/match.test)
-
-run: all
-	cat scm.mes test.mes | ./mes
-
-psyntax: all
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes psyntax.mes psyntax.pp psyntax2.mes | ./mes
-
-syntax-case: all
-	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes | ./mes
-
-syntax-case.cat: syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes syntax-case-test.mes
-	cat $^ > $@
-
-guile-syntax-case: syntax-case.cat
-	guile -s $^
-
-peg: all
-	cat scm.mes syntax.mes syntax-case-lib.mes syntax-case.mes syntax-case-after.mes peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes | ./mes
-
-peg.cat: peg/pmatch.scm peg.mes peg/codegen.scm peg/string-peg.scm peg/simplify-tree.scm peg/using-parsers.scm peg/cache.scm peg-test.mes
-	cat $^ | sed 's,\(;; Packages the results of a parser\),(when (guile?) (set! compile-peg-pattern (@@ (ice-9 peg codegen) compile-peg-pattern)))\n\1,' > $@
-
-guile-peg: peg.cat
-#	guile -s peg-test.mes
-#	@echo "======================================="
-	guile -s $^
-
-clean:
-	rm -f mes environment.i symbol.i mes.h *.cat hello.o main.o a.out
-
-paren: all
-	echo -e 'EOF\n___P((()))' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm paren.scm - | ./mes
-
-paren.cat: lib/lalr.scm paren.scm
-	cat $^ > $@
-
-guile-paren: paren.cat
-	echo '___P((()))' | guile -s $^ 
+	for i in $(TESTS); do\
+		guile -s <(cat $(MES-0) $$(scripts/include.mes $$i | grep -Ev 'let.mes|quasiquote.mes|srfi-0') $$i);\
+	done
+	for i in $(TESTS); do\
+		guile -s <(cat $(MES-0) module/mes/test.mes $$i);\
+	done
 
 mescc: all
-	echo ' EOF ' | cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/record.mes lib/record.scm lib/srfi/srfi-9.scm lib/lalr.mes lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm - main.c | ./mes > a.out
-	chmod +x a.out
+	scripts/mescc.mes
+	./a.out
 
-mescc.cat: lib/lalr.scm lib/rnrs/bytevectors.scm lib/srfi/srfi-1.scm lib/match.scm lib/elf.mes c-lexer.scm mescc.scm
-	cat $^ > $@
+mescc.cat: $(MES-0) module/mes/lalr.mes module/mes/elf.mes module/mes/libc-i386.mes $(shell scripts/include.mes scripts/mescc.mes | grep -Ev '/mes/|/srfi/')
+	echo '(compile)' | cat $^ - > $@
 
 guile-mescc: mescc.cat
-	cat main.c | guile -s $^ > a.out
+	cat doc/examples/main.c | guile -s $^ > a.out
 	chmod +x a.out
-
-hello.o: hello.S
-	as --32 -march=i386 -o $@ $^
-
-hello: hello.o
-	ld -A i386 -m elf_i386 -nostdlib -nodefaultlibs -A i386 -o $@ $^
-#	ld -A i386 -m elf_i386 -A i386 -o $@ $^
-
-a.out: lib/elf.mes elf.mes GNUmakefile
-	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes lib/rnrs/bytevectors.scm lib/elf.mes elf.mes | ./mes > a.out
-	chmod +x a.out
+	./a.out

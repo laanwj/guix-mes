@@ -1,8 +1,0 @@
-
-(define pprint display)
-(define lalr-keyword? symbol?)
-(define-macro (BITS-PER-WORD) 30)
-(define-macro (logical-or x . y) `(logior ,x ,@y))
-(define-macro (lalr-error msg obj) `(error ,msg ,obj))
-(define (note-source-location lvalue tok) lvalue)
-(define *eoi* -1)

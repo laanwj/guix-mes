@@ -1,0 +1,75 @@
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; libc-i386.mes: This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; libc-i386.mes defines C library routines
+
+;;; Code:
+
+(define (i386:puts data length)
+  `(
+     #xba ,@(int->bv32 length)      ;; mov    $0xe,%edx
+          #xb9 ,@(int->bv32 data)        ;; mov    $data,%ecx
+          #xbb #x01 #x00 #x00 #x00       ;; mov    $0x1,%ebx
+          #xb8 #x04 #x00 #x00 #x00       ;; mov    $0x4,%eax
+          #xcd #x80                      ;; int    $0x80
+          ))
+
+(define (i386:exit code)
+  `(
+    #xbb ,@(int->bv32 code)        ;; mov    $code,%ebx
+         #xb8 #x01 #x00 #x00 #x00       ;; mov    $0x1,%eax
+         #xcd #x80                      ;; int    $0x80
+         ))
+
+(define (i386:for start test step statement)
+`(
+
+  ;;   b:
+  #x89 #xe5                	;; mov    %esp,%ebp
+       ;;21:
+       #xc7 #x45 #xf4 ,@(int->bv32 start) ;;	movl   $start,-0xc(%ebp)
+       ;;28:
+       #xeb ,(+ (length statement) 9) ;;x14	jmp    3e <main+0x3e>
+       ;;2a:
+       ;;#x83 #xec #x0c             ;;	sub    $0xc,%esp
+       
+       ;;   9:
+       #x55   ;;                	push   %ebp
+       
+       ,@statement
+       #x5d   ;;                	pop   %ebp
+       ;;2d:
+ ;;;;;;#x68 #x09 #x00 #x00 #x00       ;;	push   $0x9
+       ;;32:
+ ;;;;;;#xe8 #xfc #xff #xff #xff       ;;	call   33 <main+0x33>
+       ;;37:
+ ;;;;;;#x83 #xc4 #x10             ;;	add    $0x10,%esp
+       ;;3a:
+       ;;;;#x83 #x45 #xf4 ,step          ;;	addl   $step,-0xc(%ebp)
+       ;;3e:
+       ;;;;#x83 #x7d #xf4 ,test          ;;	cmpl   $test,-0xc(%ebp)
+       #x81 #x45 #xf4 ,@(int->bv32 step) 	;;addl   $step,-0xc(%ebp)
+       #x81 #x7d #xf4 ,@(int->bv32 test) ;;cmpl   $0x7cff,-0xc(%ebp)
+       ;;42:
+       ;;;#x7e ,(- 0 (length statement) 18) ;;#xe6 ;;	jle    2a <main+0x2a>
+       #x75 ,(- 0 (length statement) 18) ;;#xe6 ;;	jne    2a <main+0x2a>
+))
