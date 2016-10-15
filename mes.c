@@ -38,7 +38,6 @@
 #define DEBUG 0
 #define STATIC_PRIMITIVES 1 // 8x speedup for mescc
 #define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
-#define COND 1 // 30% speedup for mescc
 #define MES_FULL 1
 
 enum type {CHAR, MACRO, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
@@ -314,26 +313,6 @@ assq (scm *x, scm *a)
     || x->type == FUNCTIONn)     \
    ? &scm_t : &scm_f)
 
-
-#if COND
-scm *
-evcon (scm *c, scm *a) // internal
-{
-  if (c == &scm_nil) return &scm_unspecified;
-  scm *clause = car (c);
-  scm *expr = eval_env (car (clause), a);
-  if (expr != &scm_f) {
-    if (cdr (clause) == &scm_nil)
-      return expr;
-    if (cddr (clause) == &scm_nil)
-      return eval_env (cadr (clause), a);
-    eval_env (cadr (clause), a);
-    return evcon (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
-  }
-  return evcon (cdr (c), a);
-}
-#endif // COND
-
 scm *
 evlis (scm *m, scm *a)
 {
@@ -408,10 +387,6 @@ eval_env (scm *e, scm *a)
         return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
       if (e->car == &symbol_closure)
         return e;
-#if COND
-      if (e->car == &symbol_cond)
-        return evcon (e->cdr, a);
-#endif // COND
       if (e->car == &symbol_if)
         return if_env (cdr (e), a);
       if (e->car == &symbol_define)
@@ -547,9 +522,6 @@ internal_symbol_p (scm *x)
               || x == &symbol_circ
               || x == &symbol_lambda
               || x == &symbol_begin
-#if COND
-              || x == &symbol_cond
-#endif // COND
               || x == &symbol_if
 
               || x == &symbol_sc_expand
@@ -1454,9 +1426,6 @@ mes_primitives () // internal
 {
   primitives = cons (&scm_eval_env, primitives);
   primitives = cons (&scm_apply_env, primitives);
-#if 0 //COND
-  primitives = cons (&scm_evcon, primitives);
-#endif
   primitives = cons (&scm_string_p, primitives);
   primitives = cons (&scm_symbol_p, primitives);
 

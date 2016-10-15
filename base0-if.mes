@@ -20,21 +20,21 @@
 
 (define (cons* x . rest)
   (define (loop rest)
-    (if (null? (cdr rest)) (car rest) ;; IF
+    (if (null? (cdr rest)) (car rest)
         (cons (car rest) (loop (cdr rest)))))
   (loop (cons x rest)))
 
-(define-macro disabled-cond ;; using evcon: 50% speedup (cond in syntax.mes)
+(define-macro cond
   (lambda clauses
-    (if (null? clauses) *unspecified* ;; IF
-        (if (null? (cdr clauses)) ;; IF
-            (list 'if (car (car clauses)) ;; IF
+    (if (null? clauses) *unspecified*
+        (if (null? (cdr clauses))
+            (list 'if (car (car clauses))
                   (cons* 'begin (car (car clauses)) (cdr (car clauses)))
                   *unspecified*)
-            (if (eq? (car (cadr clauses)) 'else) ;; IF
-                (list 'if (car (car clauses)) ;; IF
+            (if (eq? (car (cadr clauses)) 'else)
+                (list 'if (car (car clauses))
                       (cons* 'begin (car (car clauses)) (cdr (car clauses)))
                       (cons* 'begin *unspecified* (cdr (cadr clauses))))
-                (list 'if (car (car clauses)) ;; IF
+                (list 'if (car (car clauses))
                       (cons* 'begin (car (car clauses)) (cdr (car clauses)))
-                      (cons* 'cond (cdr clauses)))))))) ;; IF
+                      (cons* 'cond (cdr clauses))))))))
