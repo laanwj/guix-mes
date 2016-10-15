@@ -2,6 +2,7 @@
 *.go
 *.o
 *~
+/.config.make
 /a.out
 /mes
 /mes.h
@@ -10,3 +11,8 @@
 /*.cat
 ?
 ?.mes
+/out
+/.tarball-version
+/ChangeLog
+.#*
+\#*#

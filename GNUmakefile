@@ -1,10 +1,19 @@
-.PHONY: all check clean default 
-#CFLAGS:=-std=c99 -O0
+.PHONY: all check clean default distclean help install release
+default: all
+
+.config.make: configure GNUmakefile
+	./configure
+
+OUT:=out
 CFLAGS:=-std=c99 -O3 -finline-functions
+#CFLAGS:=-std=c99 -O0
 #CFLAGS:=-pg -std=c99 -O0
 #CFLAGS:=-std=c99 -O0 -g
 
-default: all
+include .config.make
+-include .local.make
+include make/install.make
+
 
 all: mes
 
@@ -12,6 +21,9 @@ mes: mes.c mes.h
 
 clean:
 	rm -f mes environment.i symbol.i mes.h *.cat a.out
+
+distclean: clean
+	rm -f .config.make
 
 mes.h: mes.c GNUmakefile
 	( echo '#if MES_C'; echo '#if MES_FULL' 1>&2;\
@@ -80,3 +92,29 @@ guile-mescc: mescc.cat
 	cat doc/examples/main.c | guile -s $^ > a.out
 	chmod +x a.out
 	./a.out
+
+help: help-top
+
+install: all
+
+release: all
+
+help:
+	@echo
+
+define HELP_TOP
+Usage: make [OPTION]... [TARGET]...
+
+Targets:
+  all             update everything
+  check           run unit tests
+  clean           remove all generated stuff
+  dist            create tarball in $(TARBALL)
+  distclean       also clean configuration
+  mescc           compile cc/main.c to a.out
+  install         install in $$(PREFIX) [$(PREFIX)]
+  release         make a release
+endef
+export HELP_TOP
+help-top:
+	@echo "$$HELP_TOP"

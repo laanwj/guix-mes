@@ -1,0 +1,206 @@
+#! /bin/sh
+# -*- scheme -*-
+unset LANG LC_ALL
+echo -n "checking for guile..."
+GUILE=$(type -p ${GUILE-guile} 2>/dev/null|tail -n 1|sed 's,^.* ,,')
+export GUILE
+if [ -x "$GUILE" ]; then
+    echo " $GUILE"
+else
+    pm=$({ guix --help || dpkg --help; }|head -n 1|sed 's,.*Usage: \([^ ]*\).*,\1,g')
+#-paredit:'})(
+    case "$pm" in dpkg) message="sudo apt-get install guile-2.0";; *) message="guix package -i guile";; esac
+    cat <<EOF
+Missing dependencies, run
+
+    $pm
+EOF
+    exit 1
+fi
+unset GUILE_AUTO_COMPILE GUILE_LOAD_COMPILED_PATH
+exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
+!#
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; configure: This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+
+(define-module (configure)
+  #:use-module (ice-9 and-let-star)
+  #:use-module (ice-9 curried-definitions)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim))
+
+(define *shell* "sh")
+(define PACKAGE "mes")
+(define VERSION "0.0")
+(define PREFIX "/usr/local")
+(define GUILE_EV (effective-version))
+(define CC (or (getenv "CC") "gcc"))
+(define GUILE (or (getenv "guile") "guile"))
+(define SYSCONFDIR "$(PREFIX)/etc")
+
+;;; Utility
+(define (gulp-pipe command)
+  (let* ((port (open-pipe* OPEN_READ *shell* "-c" command))
+         (output (read-string port)))
+    (close-port port)
+    (string-trim-right output #\newline)))
+
+(define (logf port string . rest)
+  (apply format (cons* port string rest))
+  (force-output port)
+  #t)
+
+(define (stderr string . rest)
+  (apply logf (cons* (current-error-port) string rest)))
+
+(define (stdout string . rest)
+  (apply logf (cons* (current-output-port) string rest)))
+
+(define* ((->string #:optional (infix "")) h . t)
+  (let ((o (if (pair? t) (cons h t) h)))
+    (match o
+      ((? char?) (make-string 1 o))
+      ((? number?) (number->string o))
+      ((? string?) o)
+      ((? symbol?) (symbol->string o))
+      ((h ... t) (string-join (map (->string) o) ((->string) infix)))
+      (_ ""))))
+
+(define (tuple< a b)
+  (cond
+   ((and (null? a) (null? b)) #t)
+   ((null? a) (not (null? b)))
+   ((null? b) #f)
+   ((and (not (< (car a) (car b)))
+         (not (< (car b) (car a))))
+    (tuple< (cdr a) (cdr b)))
+   (else (< (car a) (car b)))))
+
+(define (tuple<= a b)
+  (or (equal? a b) (tuple< a b)))
+
+;;; Configure
+(define (version->string version)
+  ((->string '.) version))
+
+(define (string->version string)
+  (and-let* ((version (string-tokenize string
+                                       (char-set-adjoin char-set:digit #\.)))
+             ((pair? version))
+             (version (car version))
+             (version (string-tokenize version
+                                       (char-set-complement (char-set #\.)))))
+            (map string->number version)))
+
+(define required '())
+(define* (check-version command expected
+                        #:optional
+                        (deb #f)
+                        (version-option '--version)
+                        (compare tuple<=))
+  (stderr "checking for ~a~a..." command
+          (if (null? expected) ""
+              (format #f " [~a]" (version->string expected))))
+  (let* ((actual (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
+         (actual (string->version actual))
+         (pass? (and actual (compare expected actual))))
+    (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
+                          (if actual " no, found" "")) (version->string actual))
+    (if (not pass?)
+        (set! required (cons (or deb command) required)))
+    pass?))
+
+(define* (check-pkg-config package expected #:optional (deb #f))
+  (check-version (format #f "pkg-config --modversion ~a" package) expected deb))
+
+(define (check-compile-header-c++ header)
+  (and (= 0 (system (format #f "echo '#include \"~a\"' | gcc --language=c++ --std=c++11 -E - > /dev/null 2>&1" header)))
+       'yes))
+
+(define* (check-header-c++ header deb #:optional (check check-compile-header-c++))
+  (stderr "checking for ~a..." header)
+  (let ((result (check header)))
+    (stderr " ~a\n" (if result result "no"))
+    (if (not result)
+        (set! required (cons deb required)))))
+
+(define guix?
+  (system "guix --version &>/dev/null"))
+;;;
+
+(define (parse-opts args)
+  (let* ((option-spec
+  	  '((build (value #t))
+            (help (single-char #\h))
+            (prefix (value #t))
+            (sysconfdir (value #t))
+            ;;ignore
+            (enable-fast-install)))
+         (options (getopt-long args option-spec))
+         (help? (option-ref options 'help #f))
+         (files (option-ref options '() '()))
+         (prefix (option-ref options '() PREFIX))
+         (usage? (and (not help?) #f)))
+    (if (pair? files)
+        (stderr "ignoring files: ~a\n" files))
+    (or (and (or help? usage?)
+             ((or (and usage? stderr) stdout) "\
+Usage: ./configure [OPTION]...
+  -h, --help           display this help
+  --prefix=DIR         install in PREFIX [~a]
+  --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
+" PREFIX)
+             (exit (or (and usage? 2) 0)))
+        options)))
+
+(define BUILD_TRIPLET (gulp-pipe "gcc -dumpmachine 2>/dev/null"))
+
+(define (main args)
+  (let* ((options (parse-opts args))
+         (build-triplet (option-ref options 'build BUILD_TRIPLET))
+         (prefix (option-ref options 'prefix PREFIX))
+         (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR)))
+    (check-version 'bash '(4 0))
+    (check-version 'gcc '(4 8))
+    (check-version 'guile '(2 0))
+    (check-version 'make '(4 0))
+    (check-version 'perl '(5))
+
+    (when (pair? required)
+          (stderr "\nMissing dependencies, run\n\n")
+          (if guix?
+              (stderr "    guix environment -l guix.scm\n")
+              (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
+          (exit 1))
+    (with-output-to-file ".config.make"
+      (lambda ()
+        (stdout "CC:=~a\n" CC)
+        (stdout "GUILE:=~a\n" GUILE)
+        (stdout "GUILE_EV:=~a\n" GUILE_EV)
+        (stdout "PACKAGE:=~a\n" PACKAGE)
+        (stdout "VERSION:=~a\n" VERSION)
+        (stdout "PREFIX:=~a\n" prefix)
+        (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
+    (stdout "\nRun:
+  make            to build mes
+  make help       for help on other targets\n")))
