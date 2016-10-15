@@ -1,0 +1,30 @@
+                                                              -*- org -*-
+#+TITLE: Mes NEWS – history of user-visible changes
+#+STARTUP: content hidestars
+
+Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+Please send Mes bug reports to janneke@gnu.org.
+
+* Changes in 0.1 (since progress report #2)
+
+** Core
+*** expand_macro is now a separate function.
+** Language
+*** Mes now provides a subset of R5RS.
+*** Mes now provides let-syntax.
+*** Mes now provides match.
+** User interface
+*** Mes now provides a REPL, run:
+    scripts/repl.mes
+  * Mes compiler can be run as a script:
+    scripts/mescc.mes doc/examples/main.c
+*** Macro expansion can be inspected in the REPL, e.g.:
+    ,expand (and 0 1)
+** Noteworthy bug fixes
+*** Performance of (e.g. scripts/mescc.mes) has been improved by a factor of 40.
+*** Symbols are now truly unique.

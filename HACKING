@@ -1,9 +1,65 @@
 -*-mode:org-*-
 
-* Booting from LISP-1.5 into Mes
+* Fully source-based bootstrapping
+
+** R5RS-like scheme interpreter
+This first part is prototyped in C by the mes.c core and Scheme
+bootstrap code in module/.  Of course, while mes.c is pretty small it
+cannot serve as a fully source-based solution.
+
+The initial idea was to have the minimal core support LISP-1.5 (or
+something very close to that as a tribute to John McCarthy) and extend
+eval/apply from LISP-1.5 source with define, define-macro etc. and
+metamorphose into R6RS.  It seemed to work but performance of the
+LISP-intepreted RRS was so bad (~1000x slower than initial LISP-1.5)
+that this track was abandoned after the initial ANNOUNCE.
+
+The route changed trying strike a balance between core size and
+performance: still writing as much as possible in Scheme, but having a
+mescc compiler that takes not more than some seconds to run.
+
+Now that the important bits of R5RS are done and R6RS's syntax-case
+comes in scope, mes.c has grown into ~1500LOC, some effort must
+probably be directed into making that smaller.
+
+** Move mes.c into hex?
+One idea is to use OrianJ's amazing self-hosting [[https://github.com/oriansj/stage0][stage0]] hex assembler
+and minimal bootstrap binaries and rewrite the mes.c core to directly
+bootstrap into Scheme.
+
+** Rewrite mes.c and generate hex?
+Another idea (thanks Rutger!) is to rewrite the mes.c core in a
+C/Assembly variant and have mescc produce the simple, annotated
+bootstrap binary.
+
+** R6RS's syntax-case
+
+Having syntax-case should enable Mes to run [[https://savannah.gnu.org/projects/nyacc][nyacc]], which comes with a
+full C parser.
+
+*** Get Andre van Tonder's portable syntax-case up.
+    + This would avoid the psyntax.ss -> psyntax.pp -> psyntax.ss
+      bootstrap problem with an elegantly small implementation.
+
+    - Does this support the idea of a minimal mes.c core, or is too
+      much Scheme support required in the core?
+*** Get a version of portable psyntax.pp up.
+    + Fully standard complient R6RS macros.
+    + Minimal mes.c core required (not even quasiquote?).
+    - Sloooowwwww with intepreter?
+
+* Bugs
+** Garbage collection?
+Mes is using malloc without freeing anything, memory is patient these
+days :-)
+** find/fix hygiene problem: see module/mes/match.scm ;; X vs x
+**
+** Actually do something useful, build: [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
+
+* OLD: Booting from LISP-1.5 into Mes
 
 Mes started out experimenting with booting from a hex-coded minimal
-LISP-1.5 (prototype in mes.c), into an intepreted full-flegded Scheme.
+LISP-1.5 (prototype in mes.c), into an almost-RRS Scheme.
 
 When EOF is read, the LISP-1.5 machine calls loop2 from loop2.mes,
 which reads the rest of stdin and takes over control.  The functions
@@ -14,30 +70,40 @@ While this works, it's amazingly slow.  We implemented a full reader
 in mes.c, which makes running mes:apply-env mes:eval somewhat
 bearable, still over 1000x slower than running mes.c.
 
-Bootstrapping has been removed and mes.c implements enough of R3RS to
+Bootstrapping has been removed and mes.c implements enough of RRS to
 run a macro-based define-syntax and syntax-rules.
 
 loop.mes and mes.mes are unused and lagging behind.  Probably it's not
 worth considering this route without a VM.  GNU Epsilon is taking the
 more usual VM-route to provide multiple personas.  While that sounds
-very cool, Lisp/Scheme, bootstrapping and trusted binaries are
-probably not in scope as there is no mention of such things; only ML
-is mentioned while Guile is used for bootstrapping.
+neat, Lisp/Scheme, bootstrapping and trusted binaries are probably not
+in scope as there is no mention of such things; only ML is mentioned
+while Guile is used for bootstrapping.
 
-mes.c is ~1200 lines which seems much too big to start translating it
-to assembly/hex.
+mes.c is ~1500 lines (~10,000LOC Assembly) which seems much too big to
+start translating it to assembly/hex.
 
-* Garbage collection
-Mes is using malloc without freeing anything, memory is patient these
-days :-)
+* Assorted ideas and info 
+** C parser/compiler
+*** [[https://savannah.gnu.org/projects/nyacc][nyacc]]
+*** PEG: [[http://piumarta.com/software/peg/][parse C using PEG]]
+*** [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
+*** [[http://www.t3x.org/subc/index.html][Sub C]]
+*** [[https://groups.google.com/forum/#!topic/comp.lang.lisp/VPuX0VsjTTE][C intepreter in LISP/Scheme/Python]]
 
-* The [GuixSD] boostrap binaries
-** Run a C parser on Mes
-*** Run simple PEG on Guile
-*** Run simple PEG on Mes
-*** Find/port a PEG C and parse minimal C program
-*** Generate an executable from this C-AST
-*** Find a tiny C compiler that can compile gcc
-** Run lalr on Mes
-*** Get paren.scm test running
-*** Translate cgram.y into lalr, generate AST
+** C assembler/linker
+*** [[http://www.tldp.org/HOWTO/Assembly-HOWTO/linux.html][Assembly HOWTO]]
+*** System call clue bat
+Basically, you issue an int 0x80, with the __NR_syscallname number
+(from asm/unistd.h) in eax, and parameters (up to six) in ebx, ecx,
+edx, esi, edi, ebp respectively.
+*** ELF
+7f 45 4c 46
+*** [[http://www.muppetlabs.com/~breadbox/software/tiny/][Small ELF programs]]
+*** [[http://www.cirosantilli.com/elf-hello-world/][Elf hello world]]
+
+** RNRS
+*** [[http://www.scheme-reports.org/][Scheme Reports]] 
+*** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-349.pdf][Scheme - Report on Scheme]]
+*** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-452.pdf][RRS - Revised Report on Scheme]]
+
