@@ -400,6 +400,8 @@ eval_env (scm *e, scm *a)
     {
       if (e->car == &symbol_quote)
         return cadr (e);
+      if (e->car == &symbol_syntax)
+        return e;
       if (e->car == &symbol_begin)
         return eval_begin_env (e, a);
       if (e->car == &symbol_lambda)
@@ -423,6 +425,10 @@ eval_env (scm *e, scm *a)
         return eval_env (cadr (e), a);
       if (e->car == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
+      if (e->car == &symbol_unsyntax)
+        return eval_env (cadr (e), a);
+      if (e->car == &symbol_quasisyntax)
+        return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
 #endif //BUILTIN_QUASIQUOTE
     }
   return apply_env (e->car, evlis (e->cdr, a), a);
@@ -472,6 +478,26 @@ eval_quasiquote (scm *e, scm *a)
       return append2 (eval_env (cadar (e), a), eval_quasiquote (cdr (e), a));
   return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
+
+scm *
+eval_quasisyntax (scm *e, scm *a)
+{
+  if (e == &scm_nil) return e;
+  else if (atom_p (e) == &scm_t) return e;
+  else if (eq_p (car (e), &symbol_unsyntax) == &scm_t)
+    return eval_env (cadr (e), a);
+  else if (e->type == PAIR && e->car->type == PAIR
+           && eq_p (caar (e), &symbol_unsyntax_splicing) == &scm_t)
+      return append2 (eval_env (cadar (e), a), eval_quasisyntax (cdr (e), a));
+  return cons (eval_quasisyntax (car (e), a), eval_quasisyntax (cdr (e), a));
+}
+
+#else
+scm*add_unquoters (scm *a){}
+scm*add_unsyntaxers (scm *a){}
+scm*eval_unsyntax (scm *e, scm *a){}
+scm*eval_quasiquote (scm *e, scm *a){}
+scm*eval_quasisyntax (scm *e, scm *a){}
 #endif // BUILTIN_QUASIQUOTE
 
 //Helpers
@@ -526,17 +552,18 @@ internal_symbol_p (scm *x)
 #endif // COND
               || x == &symbol_if
 
-#if BUILTIN_QUASIQUOTE
+              || x == &symbol_sc_expand
+              || x == &symbol_syntax
               || x == &symbol_quote
+
+#if BUILTIN_QUASIQUOTE
               || x == &symbol_quasiquote
               || x == &symbol_unquote
               || x == &symbol_unquote_splicing
-#endif // BUILTIN_QUASIQUOTE          
-              || x == &symbol_sc_expand
-              || x == &symbol_syntax
               || x == &symbol_quasisyntax
               || x == &symbol_unsyntax
               || x == &symbol_unsyntax_splicing
+#endif // BUILTIN_QUASIQUOTE          
               
               || x == &symbol_call_with_values
               || x == &symbol_current_module
@@ -1397,6 +1424,7 @@ logior (scm *x/*...*/)
 
 scm *add_environment (scm *a, char const *name, scm *x);
 
+#if BUILTIN_QUASIQUOTE
 scm *
 add_unquoters (scm *a)
 {
@@ -1404,6 +1432,15 @@ add_unquoters (scm *a)
   a = cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing), a);
   return a;
 }
+
+scm *
+add_unsyntaxers (scm *a)
+{
+  a = cons (cons (&symbol_unsyntax, &scm_unsyntax), a);
+  a = cons (cons (&symbol_unsyntax_splicing, &scm_unsyntax_splicing), a);
+  return a;
+}
+#endif // BUILTIN_QUASIQUOTE
 
 scm *
 add_environment (scm *a, char const *name, scm *x)
@@ -1430,23 +1467,17 @@ mes_primitives () // internal
   primitives = cons (&scm_assq, primitives);
 
   primitives = cons (&scm_eq_p, primitives);
-#if BUILTIN_QUASIQUOTE
-  primitives = cons (&scm_unquote, primitives);
-  primitives = cons (&scm_unquote_splicing, primitives);
-#endif // BUILTIN_QUASIQUOTE
   primitives = cons (&scm_vector_set_x, primitives);
   primitives = cons (&scm_vector_ref, primitives);
   primitives = cons (&scm_vector_p, primitives);
 
-  //primitives = cons (&scm_quasiquote, primitives);
-
-  // lalr: invalid non-terminal
-  //primitives = cons (&scm_less_p, primitives);
-  //primitives = cons (&scm_is_p, primitives);
-  //primitives = cons (&scm_minus, primitives);
-  //primitives = cons (&scm_plus, primitives);
-
-
+#if 0 //LALR
+  primitives = cons (&scm_less_p, primitives);
+  primitives = cons (&scm_is_p, primitives);
+  primitives = cons (&scm_minus, primitives);
+  primitives = cons (&scm_plus, primitives);
+#endif
+  
   primitives = cons (&scm_pair_p, primitives);
 
   primitives = cons (&scm_builtin_list, primitives);
