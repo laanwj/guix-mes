@@ -18,10 +18,11 @@ Please send Mes bug reports to janneke@gnu.org.
 *** Mes now provides a subset of R5RS.
 *** Mes now provides let-syntax.
 *** Mes now provides match.
+*** Mes now provides quasisyntax, unsyntax and unsyntax-splicing.
 ** User interface
 *** Mes now provides a REPL, run:
     scripts/repl.mes
-  * Mes compiler can be run as a script:
+*** Mes compiler can be run as a script:
     scripts/mescc.mes doc/examples/main.c
 *** Macro expansion can be inspected in the REPL, e.g.:
     ,expand (and 0 1)

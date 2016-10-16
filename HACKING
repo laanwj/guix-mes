@@ -49,6 +49,17 @@ full C parser.
     - Sloooowwwww with intepreter?
 
 * Bugs
+** Core is too fat
+mes.c is ~1500 lines (~10,000LOC Assembly) which seems much too big to
+start translating it to assembly/hex.
+
+** (mes-use-module ...) is a fake, see module/mes/base.mes.
+All top level scripts and test files (scripts/*.mes tests/*.test)
+now include appropriate (mes-use-module ...) stanzas.
+
+This hack allows for scripts/includes.mes to generate the list of
+files to be prepended.  Previously, this information was put in
+GNUmakefile.
 ** Garbage collection?
 Mes is using malloc without freeing anything, memory is patient these
 days :-)
@@ -79,9 +90,6 @@ more usual VM-route to provide multiple personas.  While that sounds
 neat, Lisp/Scheme, bootstrapping and trusted binaries are probably not
 in scope as there is no mention of such things; only ML is mentioned
 while Guile is used for bootstrapping.
-
-mes.c is ~1500 lines (~10,000LOC Assembly) which seems much too big to
-start translating it to assembly/hex.
 
 * Assorted ideas and info 
 ** C parser/compiler
