@@ -1,0 +1,42 @@
+                                                              -*- org -*-
+Building and Installing Mes
+
+* Get it
+
+   git clone https://gitlab.com/janneke/mes
+
+* Prerequisites
+
+** A C compiler, GNU Gcc 4.9.3 is known to work.
+The idea is to drop this requirement, of course.
+
+** Guile, version 2.0.12 or is know to work.
+Guile is not strictly necessary but it is used by the configure script
+and in development.
+
+** GNU Make, version 4.0 is know to work.
+Not strictly necessary.
+
+** /bin/sh, GNU Bash 4.3 is known to work.
+Let's just say for now that it gets awkward without a shell.
+
+
+*** Development (but see [[./guix.scm]])
+
+** GNU coreutils
+** sed, GNU sed 4.2 is known to work.
+** git, 2.10 is known to work.
+** Perl, 5.22 is known to work.
+
+* Build it
+
+   ./configure
+   make all
+
+* Check it
+
+   make check
+
+* Install it
+
+   make install
