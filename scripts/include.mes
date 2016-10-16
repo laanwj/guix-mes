@@ -1,6 +1,11 @@
 #! /bin/sh
 
+for prefix in $(dirname $(dirname $0))/share/mes . $(dirname $(dirname $0)); do
+    if [ -d ${prefix}/module ]; then
+        break;
+    fi
+done
 cat $1 \
   | grep -Eo '(mes-use-module \([^()]+ [^()]+))' \
   | grep -Eo ' \([^)]+\)' \
-  | sed -e 's@^ *(@module/@' -e 's@ @/@g' -e 's@)@.mes@'
+  | sed -e "s@^ *(@${prefix}/module/@" -e 's@ @/@g' -e 's@)@.mes@'

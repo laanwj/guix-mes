@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-cat cc/main.c | cat $($(dirname $0)/include.mes $0) cc/c-lexer.mes cc/mescc.mes $0 /dev/stdin | ./mes > a.out
+cat ${1-$(dirname $(dirname $0))/share/doc/mes/examples/main.c} | cat $($(dirname $0)/include.mes $0) $0 /dev/stdin | $(dirname $0)/mes > a.out
 chmod +x a.out
 exit $?
 !#
@@ -29,7 +29,7 @@ exit $?
 ;;;
 ;;; Run with Guile:
 ;;;    make guile-mescc
-;;; BROKEN? cat cc/main.c | guile -s <(echo '(compile)' | cat guile/mes-0.scm module/mes/lalr.mes module/rnrs/bytevectors.mes module/srfi/srfi-1.mes module/mes/elf.mes module/mes/libc-i386.mes cc/c-lexer.mes cc/mescc.mes -)
+;;; BROKEN? cat doc/examples/main.c | guile -s <(echo '(compile)' | cat guile/mes-0.scm module/mes/lalr.mes module/mes/elf.mes module/mes/libc-i386.mes module/rnrs/bytevectors.mes module/language/c/lexer.mes module/language/c/parser.mes module/language/c/compiler.mes -)
 
 ;;; Code:
 
@@ -53,6 +53,10 @@ exit $?
 (mes-use-module (rnrs bytevectors))
 (mes-use-module (mes elf))
 (mes-use-module (mes libc-i386))
+
+(mes-use-module (language c lexer))
+(mes-use-module (language c parser))
+(mes-use-module (language c compiler))
 
 (compile)
 ()
