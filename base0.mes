@@ -19,7 +19,7 @@
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-macro (defined? x)
-  `(assq ,x (cddr (current-module))))
+  (list 'assq x '(cddr (current-module))))
 
 (define (current-input-port) 0)
 (define (current-output-port) 1)
