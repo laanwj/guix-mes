@@ -20,7 +20,7 @@ all: mes
 mes: mes.c mes.h
 
 clean:
-	rm -f mes environment.i symbol.i mes.h *.cat a.out
+	rm -f mes environment.i symbols.i mes.h *.cat a.out
 
 distclean: clean
 	rm -f .config.make
@@ -81,15 +81,16 @@ guile-check:
 		guile -s <(cat $(MES-0) module/mes/test.mes $$i);\
 	done
 
+MAIN_C:=doc/examples/main.c
 mescc: all
-	scripts/mescc.mes
+	scripts/mescc.mes $(MAIN_C)
 	./a.out
 
 mescc.cat: $(MES-0) module/mes/lalr.mes module/mes/elf.mes module/mes/libc-i386.mes $(shell scripts/include.mes scripts/mescc.mes | grep -Ev '/mes/|/srfi/')
 	echo '(compile)' | cat $^ - > $@
 
 guile-mescc: mescc.cat
-	cat doc/examples/main.c | guile -s $^ > a.out
+	cat $(MAIN_C) | guile -s $^ > a.out
 	chmod +x a.out
 	./a.out
 
