@@ -54,6 +54,9 @@ else
 	@echo skipping slooowwww syntax tests
 endif
 
+repl:
+	cat base0.mes base0-if.mes base.mes quasiquote.mes let.mes scm.mes syntax.mes let-syntax.mes lib/srfi/srfi-0.scm lib/match.scm repl.mes /dev/stdin | ./mes 
+
 guile-check:
 	guile -s <(cat base.mes lib/test.mes test/base.test)
 	guile -s <(cat base.mes lib/test.mes test/closure.test)

@@ -25,6 +25,7 @@
  * http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
  */
 
+#define STRING_MAX 2048
 #define _GNU_SOURCE
 #include <assert.h>
 #include <ctype.h>
@@ -320,13 +321,13 @@ evcon (scm *c, scm *a) // internal
 {
   if (c == &scm_nil) return &scm_unspecified;
   scm *clause = car (c);
-  scm *expr = eval (car (clause), a);
+  scm *expr = eval_env (car (clause), a);
   if (expr != &scm_f) {
     if (cdr (clause) == &scm_nil)
       return expr;
     if (cddr (clause) == &scm_nil)
-      return eval (cadr (clause), a);
-    eval (cadr (clause), a);
+      return eval_env (cadr (clause), a);
+    eval_env (cadr (clause), a);
     return evcon (cons (cons (&scm_t, cddr (clause)), &scm_nil), a);
   }
   return evcon (cdr (c), a);
@@ -337,8 +338,8 @@ scm *
 evlis (scm *m, scm *a)
 {
   if (m == &scm_nil) return &scm_nil;
-  if (m->type != PAIR) return eval (m, a);
-  scm *e = eval (car (m), a);
+  if (m->type != PAIR) return eval_env (m, a);
+  scm *e = eval_env (car (m), a);
   return cons (e, evlis (cdr (m), a));
 }
 
@@ -358,7 +359,7 @@ apply_env (scm *fn, scm *x, scm *a)
     }
   else if (fn->car == &symbol_lambda) {
     scm *p = pairlis (cadr (fn), x, a);
-    return eval (cons (&symbol_begin, cddr (fn)), cons (cons (&symbol_closure, p), p));
+    return eval_env (cons (&symbol_begin, cddr (fn)), cons (cons (&symbol_closure, p), p));
   }
   else if (fn->car == &symbol_closure) {
     scm *args = caddr (fn);
@@ -366,30 +367,25 @@ apply_env (scm *fn, scm *x, scm *a)
     a = cdadr (fn);
     a = cdr (a);
     scm *p = pairlis (args, x, a);
-    return eval (cons (&symbol_begin, body), cons (cons (&symbol_closure, p), p));
+    return eval_env (cons (&symbol_begin, body), cons (cons (&symbol_closure, p), p));
   }
   else if ((macro = lookup_macro (car (fn), a)) != &scm_f) {
-    scm *r = apply_env (eval (macro, a), cdr (fn), a);
-    scm *e = eval (r, a);
+    scm *r = apply_env (eval_env (macro, a), cdr (fn), a);
+    scm *e = eval_env (r, a);
     return apply_env (e, x, a);
   }
-  scm *efn = eval (fn,  a);
+  scm *efn = eval_env (fn,  a);
   if (efn->type == NUMBER || efn == &scm_f || efn == &scm_t) assert (!"apply bool");
   return apply_env (efn, x, a);
 }
 
 scm *
-apply (scm *f, scm *x)
+eval_env (scm *e, scm *a)
 {
-  return apply_env (f, x, &scm_nil);
-}
-
-scm *
-eval (scm *e, scm *a)
-{
-  scm *macro;
   if (internal_symbol_p (e) == &scm_t) return e;
-  //if (internal_primitive_p (e) == &scm_t) return e;
+
+  e = expand_macro_env (e, a);
+
   if (e->type == SYMBOL) {
     scm *y = assq (e, a);
     if (y == &scm_f) {
@@ -405,18 +401,11 @@ eval (scm *e, scm *a)
       if (e->car == &symbol_quote)
         return cadr (e);
       if (e->car == &symbol_begin)
-        return eval_begin (e, a);
+        return eval_begin_env (e, a);
       if (e->car == &symbol_lambda)
         return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
       if (e->car == &symbol_closure)
         return e;
-#if SC_EXPAND
-      if ((macro = assq (&symbol_sc_expand, a)) != &scm_f)
-        if (cdr (macro) != &scm_f)
-          return eval (apply_env (cdr (macro), e, a), a);
-#endif // SC_EXPAND
-      if ((macro = lookup_macro (car (e), a)) != &scm_f)
-        return eval (apply_env (macro, cdr (e), a), a);
 #if COND
       if (e->car == &symbol_cond)
         return evcon (e->cdr, a);
@@ -428,10 +417,10 @@ eval (scm *e, scm *a)
       if (e->car == &symbol_define_macro)
         return define (e, a);
       if (e->car == &symbol_set_x)
-        return set_env_x (cadr (e), eval (caddr (e), a), a);
+        return set_env_x (cadr (e), eval_env (caddr (e), a), a);
 #if BUILTIN_QUASIQUOTE
       if (e->car == &symbol_unquote)
-        return eval (cadr (e), a);
+        return eval_env (cadr (e), a);
       if (e->car == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
 #endif //BUILTIN_QUASIQUOTE
@@ -440,11 +429,21 @@ eval (scm *e, scm *a)
 }
 
 scm *
-eval_begin (scm *e, scm *a)
+expand_macro_env (scm *e, scm *a)
+{
+  scm *macro;
+  if (e->type == PAIR
+      && (macro = lookup_macro (e->car, a)) != &scm_f)
+    return expand_macro_env (apply_env (macro, e->cdr, a), a);
+  return e;
+}
+
+scm *
+eval_begin_env (scm *e, scm *a)
 {
   scm *r = &scm_unspecified;
   while (e != &scm_nil) {
-    r = eval (e->car, a);
+    r = eval_env (e->car, a);
     e = e->cdr;
   }
   return r;
@@ -453,10 +452,10 @@ eval_begin (scm *e, scm *a)
 scm *
 if_env (scm *e, scm *a)
 {
-  if (eval (car (e), a) != &scm_f)
-    return eval (cadr (e), a);
+  if (eval_env (car (e), a) != &scm_f)
+    return eval_env (cadr (e), a);
   if (cddr (e) != &scm_nil)
-    return eval (caddr (e), a);
+    return eval_env (caddr (e), a);
   return &scm_unspecified;
 }
 
@@ -467,10 +466,10 @@ eval_quasiquote (scm *e, scm *a)
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
   else if (eq_p (car (e), &symbol_unquote) == &scm_t)
-    return eval (cadr (e), a);
+    return eval_env (cadr (e), a);
   else if (e->type == PAIR && e->car->type == PAIR
            && eq_p (caar (e), &symbol_unquote_splicing) == &scm_t)
-      return append2 (eval (cadar (e), a), eval_quasiquote (cdr (e), a));
+      return append2 (eval_env (cadar (e), a), eval_quasiquote (cdr (e), a));
   return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
 #endif // BUILTIN_QUASIQUOTE
@@ -710,7 +709,7 @@ make_vector (int n)
 scm *
 string (scm *x/*...*/)
 {
-  char buf[256] = "";
+  char buf[STRING_MAX] = "";
   char *p = buf;
   while (x != &scm_nil)
     {
@@ -725,7 +724,7 @@ string (scm *x/*...*/)
 scm *
 string_append (scm *x/*...*/)
 {
-  char buf[256] = "";
+  char buf[STRING_MAX] = "";
 
   while (x != &scm_nil)
     {
@@ -740,7 +739,7 @@ string_append (scm *x/*...*/)
 scm *
 list_to_string (scm *x)
 {
-  char buf[256] = "";
+  char buf[STRING_MAX] = "";
   char *p = buf;
   while (x != &scm_nil)
     {
@@ -782,7 +781,7 @@ substring (scm *x/*...*/)
     assert (x->cdr->cdr->car->value <= end);
     end = x->cdr->cdr->car->value;
   }
-  char buf[256];
+  char buf[STRING_MAX];
   strncpy (buf, s+start, end - start);
   buf[end-start] = 0;
   return make_string (buf);
@@ -901,7 +900,7 @@ lookup_char (int c, scm *a)
 char const *
 list2str (scm *l) // char*
 {
-  static char buf[256];
+  static char buf[STRING_MAX];
   char *p = buf;
   while (l != &scm_nil) {
     scm *c = car (l);
@@ -945,7 +944,7 @@ scm*
 number_to_string (scm *x)
 {
   assert (x->type == NUMBER);
-  char buf[256];
+  char buf[STRING_MAX];
   sprintf (buf,"%d", x->value);
   return make_string (buf);
 }
@@ -988,6 +987,15 @@ newline (scm *p/*...*/)
   FILE *f = fd == 1 ? stdout : stderr;
   fputs ("\n", f);
   return &scm_unspecified;
+}
+
+scm *
+force_output (scm *p/*...*/)
+{
+  int fd = 1;
+  if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
+  FILE *f = fd == 1 ? stdout : stderr;
+  fflush (f);
 }
 
 scm *
@@ -1153,7 +1161,7 @@ readword (int c, char *w, scm *a)
   if (c == '#' && !w && peek_char () == '(') {getchar (); return list_to_vector (readlist (a));}
   if (c == '#' && peek_char () == '(') {ungetchar (c); return lookup (w, a);}
   if (c == '#' && peek_char () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
-  char buf[256] = {0};
+  char buf[STRING_MAX] = {0};
   char ch = c;
   char *p = w ? w + strlen (w) : buf;
   *p = ch;
@@ -1193,7 +1201,7 @@ read_character ()
   }
   else if (c >= 'a' && c <= 'z'
       && peek_char () >= 'a' && peek_char () <= 'z') {
-    char buf[256];
+    char buf[STRING_MAX];
     char *p = buf;
     *p++ = c;
     while (peek_char () >= 'a' && peek_char () <= 'z') {
@@ -1219,7 +1227,7 @@ read_character ()
 scm *
 readstring ()
 {
-  char buf[256];
+  char buf[STRING_MAX];
   char *p = buf;
   int c = getchar ();
   while (true) {
@@ -1256,7 +1264,7 @@ readlist (scm *a)
 }
 
 scm *
-readenv (scm *a)
+read_env (scm *a)
 {
   return readword (getchar (), 0, a);
 }
@@ -1407,8 +1415,8 @@ add_environment (scm *a, char const *name, scm *x)
 scm *
 mes_primitives () // internal
 {
-  primitives = cons (&scm_eval, primitives);
-  primitives = cons (&scm_apply, primitives);
+  primitives = cons (&scm_eval_env, primitives);
+  primitives = cons (&scm_apply_env, primitives);
 #if 0 //COND
   primitives = cons (&scm_evcon, primitives);
 #endif
@@ -1494,11 +1502,11 @@ define (scm *x, scm *a)
   scm *e;
   scm *name = cadr (x);
   if (name->type != PAIR)
-    e = eval (caddr (x), cons (cons (cadr (x), cadr (x)), a));
+    e = eval_env (caddr (x), cons (cons (cadr (x), cadr (x)), a));
   else {
     name = car (name);
     scm *p = pairlis (cadr (x), cadr (x), a);
-    e = eval (make_lambda (cdadr (x), cddr (x)), p);
+    e = eval_env (make_lambda (cdadr (x), cddr (x)), p);
   }
   if (eq_p (car (x), &symbol_define_macro) == &scm_t)
     e = make_macro (e, name->name);
@@ -1529,7 +1537,7 @@ scm *
 read_file (scm *e, scm *a)
 {
   if (e == &scm_nil) return e;
-  return cons (e, read_file (readenv (a), a));
+  return cons (e, read_file (read_env (a), a));
 }
 
 int
@@ -1539,7 +1547,7 @@ main (int argc, char *argv[])
 #if STATIC_PRIMITIVES
   mes_primitives ();
 #endif
-  display_ (stderr, eval (cons (&symbol_begin, read_file (readenv (a), a)), a));
+  display_ (stderr, eval_env (cons (&symbol_begin, read_file (read_env (a), a)), a));
   fputs ("", stderr);
   return 0;
 }

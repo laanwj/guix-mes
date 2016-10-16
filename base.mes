@@ -68,6 +68,10 @@
 (define-macro (let bindings . rest)
   (cons* 'simple-let bindings rest))
 
+(define (list? x)
+  (or (null? x)
+      (and (pair? x) (list? (cdr x)))))
+
 (define (procedure? p)
   (cond ((builtin? p) #t)
         ((and (pair? p) (eq? (car p) 'lambda)))

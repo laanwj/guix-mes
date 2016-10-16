@@ -21,6 +21,10 @@
 (define (cadddr x) (car (cdddr x)))
 
 (define (list . rest) rest)
+(define eval eval-env)
+(define (apply f x) (apply-env f x (current-module)))
+(define (primitive-eval e) (eval-env e (current-module)))
+(define (expand-macro e) (expand-macro-env e (current-module)))
 
 (define-macro (case val . args)
   (if (null? args)
@@ -63,6 +67,9 @@
 (define (vector . rest) (list->vector rest))
 (define (make-vector n . x)
   (list->vector (apply make-list (cons n x))))
+
+(define (acons key value alist)
+  (cons (cons key value) alist))
 
 (define (assq-set! alist key val)
   (let ((entry (assq key alist)))
@@ -139,10 +146,6 @@
       (let* ((y (car rest))
              (z (if (< x y) x y)))
         (apply min (cons z (cdr rest))))))
-
-(define (list? x)
-  (or (null? x)
-      (and (pair? x) (list? (cdr x)))))
 
 (define gensym
   (let ((counter 0))
