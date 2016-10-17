@@ -1,4 +1,4 @@
-/*
+/* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
  * Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
  *
@@ -16,13 +16,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-// (setq comment-start "//")
-// (setq comment-end "")
-/*
- * The Maxwell Equations of Software -- John McCarthy page 13
- * http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
  */
 
 #define STRING_MAX 2048
@@ -325,7 +318,6 @@ evlis (scm *m, scm *a)
 scm *
 apply_env (scm *fn, scm *x, scm *a)
 {
-  scm *macro;
   if (fn->type != PAIR)
     {
       if (fn == &scm_car) return x->car->car;
@@ -347,11 +339,6 @@ apply_env (scm *fn, scm *x, scm *a)
     a = cdr (a);
     scm *p = pairlis (args, x, a);
     return eval_env (cons (&symbol_begin, body), cons (cons (&symbol_closure, p), p));
-  }
-  else if ((macro = lookup_macro (car (fn), a)) != &scm_f) {
-    scm *r = apply_env (eval_env (macro, a), cdr (fn), a);
-    scm *e = eval_env (r, a);
-    return apply_env (e, x, a);
   }
   scm *efn = eval_env (fn,  a);
   if (efn->type == NUMBER || efn == &scm_f || efn == &scm_t) assert (!"apply bool");
