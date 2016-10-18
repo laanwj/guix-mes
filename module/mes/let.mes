@@ -18,20 +18,6 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-macro (simple-let bindings . rest)
-  `(,`(lambda ,(map car bindings) ,@rest)
-    ,@(map cadr bindings)))
-
-(define-macro (named-let label bindings . rest)
-  `(simple-let ((,label *unspecified*))
-     (set! ,label (lambda ,(map car bindings) ,@rest))
-     (,label ,@(map cadr bindings))))
-
-(define-macro (let bindings-or-label . rest)
-  `(`,(if ,(symbol? bindings-or-label)
-          (list 'lambda '() (cons* 'named-let ,bindings-or-label ,(car rest) ,(cdr rest)))
-            (list 'lambda '() (cons* 'simple-let ,bindings-or-label ,rest)))))
-
 (define-macro (xsimple-let bindings rest)
   `(,`(lambda ,(map car bindings) ,@rest)
     ,@(map cadr bindings)))
