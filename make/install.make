@@ -10,6 +10,7 @@ READMES:=\
 #
 
 COMMIT:=$(shell test -d .git && (git show 2>/dev/null | head -1 | cut -d' ' -f 2) || cat .tarball-version)
+GUIX-HASH:=out/guix-hash
 TARBALL_DIR:=$(PACKAGE)-$(VERSION)
 TARBALL:=$(OUT)/$(TARBALL_DIR).tar.gz
 
@@ -22,7 +23,7 @@ GIT_ARCHIVE_HEAD:=tar -cf-
 GIT_LS_FILES:=find
 endif
 
-.tarball-version:
+.tarball-version: tree-clean-p
 	echo $(COMMIT) > $@
 
 dist: $(TARBALL)
@@ -63,3 +64,18 @@ release: tree-clean-p check dist
 	git tag v$(VERSION)
 	git push --tags origin master
 	git push origin master
+
+$(GUIX-HASH): tree-clean-p
+	rm -rf out/mes && mkdir -p out && git clone . out/mes && guix hash -rx out/mes > $@
+
+update-hash: $(GUIX-HASH) .tarball-version
+	@echo -n hash:
+	cat $^
+	sed -i \
+		-e 's,(base32 "[^"]*"),(base32 "$(shell cat $<)"),'\
+		-e 's,(commit "[^"]*"),(commit "$(shell cat .tarball-version)"),'\
+		-e 's,(version "[^"]*"),(version "$(VERSION).$(shell cut -b1-8 .tarball-version)"),'\
+		guix.scm
+	! git diff --exit-code
+	git commit -m 'guix hash: $(shell cat $<)' guix.scm
+

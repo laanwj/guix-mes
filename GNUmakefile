@@ -114,6 +114,7 @@ Targets:
   mescc           compile cc/main.c to a.out
   install         install in $$(PREFIX) [$(PREFIX)]
   release         make a release
+  update-hash     update hash in guix.scm
 endef
 export HELP_TOP
 help-top:
