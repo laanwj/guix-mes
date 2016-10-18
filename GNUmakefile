@@ -44,3 +44,6 @@ boot: all
 
 run: all
 	cat scm.mes test.mes | ./mes
+
+syntax: all
+	cat scm.mes syntax.mes | ./mes
