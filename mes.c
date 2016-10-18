@@ -1037,6 +1037,7 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
     }
     fprintf (f, ")");
   }
+  else if (builtin_p (x) == &scm_t) fprintf (f, "#<procedure %s>", x->name);
   else if (atom_p (x) == &scm_t) fprintf (f, "%s", x->name);
 
   return &scm_unspecified;
