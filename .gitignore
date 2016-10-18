@@ -5,3 +5,9 @@
 /mes
 /mes.h
 /environment.i
+/peg.test
+/syntax.test
+/paren.test
+/syntax-case.test
+?
+?.mes
