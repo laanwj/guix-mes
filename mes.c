@@ -77,7 +77,6 @@ scm symbol_closure = {SYMBOL, "*closure*"};
 scm symbol_circ = {SYMBOL, "*circ*"};
 scm symbol_lambda = {SYMBOL, "lambda"};
 scm symbol_begin = {SYMBOL, "begin"};
-scm symbol_cond = {SYMBOL, "cond"};
 scm symbol_if = {SYMBOL, "if"};
 scm symbol_quote = {SYMBOL, "quote"};
 scm symbol_quasiquote = {SYMBOL, "quasiquote"};
