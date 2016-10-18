@@ -340,8 +340,10 @@ apply_env (scm *fn, scm *x, scm *a)
     scm *p = pairlis (args, x, a);
     return eval_env (cons (&symbol_begin, body), cons (cons (&symbol_closure, p), p));
   }
-  scm *efn = eval_env (fn,  a);
-  if (efn->type == NUMBER || efn == &scm_f || efn == &scm_t) assert (!"apply bool");
+  scm *efn = eval_env (fn, a);
+  if (efn == &scm_f || efn == &scm_t) assert (!"apply bool");
+  if (efn->type == NUMBER) assert (!"apply number");
+  if (efn->type == STRING) assert (!"apply string");  
   return apply_env (efn, x, a);
 }
 
