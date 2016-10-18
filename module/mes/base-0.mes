@@ -51,26 +51,31 @@
         (cons (car rest) (loop (cdr rest)))))
   (loop (cons x rest)))
 
-(define-macro cond
-  (lambda clauses
-    (if (null? clauses) *unspecified*
+(define-macro (cond . clauses)
+  (list 'if (null? clauses) *unspecified*
         (if (null? (cdr clauses))
-            (list 'if (car (car clauses))
-                  (cons* 'begin (car (car clauses)) (cdr (car clauses)))
-                  *unspecified*)
-            (if (eq? (car (cadr clauses)) 'else)
-                (list 'if (car (car clauses))
-                      (cons* 'begin (car (car clauses)) (cdr (car clauses)))
-                      (cons* 'begin *unspecified* (cdr (cadr clauses))))
-                (list 'if (car (car clauses))
-                      (cons* 'begin (car (car clauses)) (cdr (car clauses)))
-                      (cons* 'cond (cdr clauses))))))))
+           (list 'if (car (car clauses))
+                 (list (cons 'lambda (cons '() (cons (car (car clauses)) (cdr (car clauses))))))
+                 *unspecified*)
+           (if (eq? (car (cadr clauses)) 'else)
+               (list 'if (car (car clauses))
+                   (list (cons 'lambda (cons '() (car clauses))))
+                   (list (cons 'lambda (cons '() (cons *unspecified* (cdr (cadr clauses)))))))
+               (list 'if (car (car clauses))
+                   (list (cons 'lambda (cons '() (car clauses))))
+                   (cons 'cond (cdr clauses)))))))
 
 (define else #t)
+
+(define (map f l . r)
+  (if (null? l) '()
+      (if (null? r) (cons (f (car l)) (map f (cdr l)))
+          (if (null? (cdr r))
+              (cons (f (car l) (caar r)) (map f (cdr l) (cdar r)))))))
 
 (define-macro (simple-let bindings . rest)
   (cons (cons 'lambda (cons (map car bindings) rest))
         (map cadr bindings)))
 
 (define-macro (let bindings . rest)
-  (cons* 'simple-let bindings rest))
+  (cons 'simple-let (cons bindings rest)))
