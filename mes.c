@@ -70,6 +70,7 @@ scm scm_nil = {SCM, "()"};
 scm scm_dot = {SCM, "."};
 scm scm_f = {SCM, "#f"};
 scm scm_t = {SCM, "#t"};
+scm scm_undefined = {SCM, "*undefined*"};
 scm scm_unspecified = {SCM, "*unspecified*"};
 scm scm_closure = {SCM, "*closure*"};
 scm scm_circular = {SCM, "*circular*"};
@@ -183,6 +184,7 @@ scm *
 set_cdr_x (scm *x, scm *e)
 {
   assert (x->type == PAIR);
+  cache_invalidate (x->cdr);
   x->cdr = e;
   return &scm_unspecified;
 }
@@ -190,12 +192,7 @@ set_cdr_x (scm *x, scm *e)
 scm *
 set_x (scm *x, scm *e, scm *a)
 {
-  return set_cdr_x (assq (x, a), e);
-}
-
-scm *
-set_env_x (scm *x, scm *e, scm *a)
-{
+  cache_invalidate (x);
   return set_cdr_x (assq (x, a), e);
 }
 
@@ -286,17 +283,99 @@ pairlis (scm *x, scm *y, scm *a)
 scm *
 assq (scm *x, scm *a)
 {
-  while (a != &scm_nil && EQ_P (x, a->car->car) == &scm_f) {
-    a = a->cdr;
-  }
-  if (a == &scm_nil) {
-#if DEBUG
-    printf ("alist miss: %s\n", x->name);
-#endif
-    return &scm_f;
-  }
-  return a->car;
+  while (a != &scm_nil && EQ_P (x, a->car->car) == &scm_f) a = a->cdr;
+  return a != &scm_nil ? a->car : &scm_f;
 }
+
+#define ENV_CACHE 1
+#if !ENV_CACHE
+scm *
+assq_ref_cache (scm *x, scm *a) //internal
+{
+  x = assq (x, a);
+  if (x == &scm_f) return &scm_f;
+  return x->cdr;
+}
+scm*cache_invalidate (scm*x){}
+scm*cache_invalidate_range (scm*p,scm*a){}
+scm*cache_save (scm*p){}
+scm*cache_lookup (scm*x){}
+
+#else // ENV_CACHE
+
+#define CACHE_SIZE 20
+scm *env_cache_cars[CACHE_SIZE];
+scm *env_cache_cdrs[CACHE_SIZE];
+int cache_threshold = 0;
+scm *
+cache_save (scm *p)
+{
+  int n = p->car->value;
+  if (n < cache_threshold) return &scm_unspecified;
+  int j = -1;
+  for (int i=0; i < CACHE_SIZE; i++) {
+    if (!env_cache_cars[i]) {
+      j = i;
+      break;
+    }
+    if (env_cache_cars[i] == p->car) return &scm_unspecified;
+    if (n > env_cache_cars[i]->value) {
+      n = env_cache_cars[i]->value;
+      j = i;
+    }
+  }
+  if (j >= 0) {
+    cache_threshold = p->car->value;
+    env_cache_cars[j] = p->car;
+    env_cache_cdrs[j] = p->cdr;
+  }
+  return &scm_unspecified;
+}
+
+scm *
+cache_lookup (scm *x)
+{
+  for (int i=0; i < CACHE_SIZE; i++) {
+    if (!env_cache_cars[i]) break;
+    if (env_cache_cars[i] == x) return env_cache_cdrs[i];
+  }
+  return &scm_undefined;
+}
+
+scm *
+cache_invalidate (scm *x)
+{
+  for (int i=0; i < CACHE_SIZE; i++) {
+    if (env_cache_cars[i] == x) {
+      env_cache_cars[i] = 0;
+      break;
+    }
+  }
+  return &scm_unspecified;
+}
+
+scm *
+cache_invalidate_range (scm *p, scm *a)
+{
+  do {
+    cache_invalidate (p->car->car);
+    p = p->cdr;
+  } while (p != a);
+  return &scm_unspecified;
+}
+
+scm *
+assq_ref_cache (scm *x, scm *a)
+{
+  x->value++;
+  scm *c = cache_lookup (x);
+  if (c != &scm_undefined) return c;
+  while (a != &scm_nil && x != a->car->car) a = a->cdr;
+  if (a == &scm_nil) return &scm_undefined;
+  cache_save (a->car);
+  return a->car->cdr;
+}
+#endif // ENV_CACHE
 
 scm *
 evlis (scm *m, scm *a)
@@ -322,7 +401,10 @@ apply_env (scm *fn, scm *x, scm *a)
     }
   else if (fn->car == &scm_lambda) {
     scm *p = pairlis (cadr (fn), x, a);
-    return builtin_eval (cons (&symbol_begin, cddr (fn)), cons (cons (&scm_closure, p), p));
+    cache_invalidate_range (p, a->cdr);
+    scm *r = builtin_eval (cons (&symbol_begin, cddr (fn)), cons (cons (&scm_closure, p), p));
+    cache_invalidate_range (p, a->cdr);
+    return r;
   }
   else if (fn->car == &scm_closure) {
     scm *args = caddr (fn);
@@ -330,7 +412,10 @@ apply_env (scm *fn, scm *x, scm *a)
     a = cdadr (fn);
     a = cdr (a);
     scm *p = pairlis (args, x, a);
-    return builtin_eval (cons (&symbol_begin, body), cons (cons (&scm_closure, p), p));
+    cache_invalidate_range (p, a->cdr);
+    scm *r = builtin_eval (cons (&symbol_begin, body), cons (cons (&scm_closure, p), p));
+    cache_invalidate_range (p, a->cdr);
+    return r;
   }
   scm *efn = builtin_eval (fn, a);
   if (efn == &scm_f || efn == &scm_t) assert (!"apply bool");
@@ -348,12 +433,12 @@ builtin_eval (scm *e, scm *a)
   e = expand_macro_env (e, a);
 
   if (e->type == SYMBOL) {
-    scm *y = assq (e, a);
-    if (y == &scm_f) {
+    scm *y = assq_ref_cache (e, a);
+    if (y == &scm_undefined) {
       fprintf (stderr, "eval: unbound variable: %s\n", e->name);
       assert (!"unbound variable");
     }
-    return cdr (y);
+    return y;
   }
   else if (e->type != PAIR)
     return e;
@@ -376,7 +461,7 @@ builtin_eval (scm *e, scm *a)
       if (e->car == &symbol_define_macro)
         return define (e, a);
       if (e->car == &symbol_set_x)
-        return set_env_x (cadr (e), builtin_eval (caddr (e), a), a);
+        return set_x (cadr (e), builtin_eval (caddr (e), a), a);
 #if BUILTIN_QUASIQUOTE
       if (e->car == &symbol_unquote)
         return builtin_eval (cadr (e), a);
@@ -616,6 +701,7 @@ internal_make_symbol (char const *s)
   scm *x = (scm*)malloc (sizeof (scm));
   x->type = SYMBOL;
   x->name = strdup (s);
+  x->value = 0;
   symbols = cons (x, symbols);
   return x;
 }
@@ -1413,14 +1499,13 @@ scm *
 define_macro (scm *x, scm *a)
 {
 }
-#endif
 
 scm *
 lookup_macro (scm *x, scm *a)
 {
-  scm *m = assq (x, a);
-  if (m != &scm_f && macro_p (cdr (m)) != &scm_f)
-    return cdr (m)->macro;
+  if (x->type != SYMBOL) return &scm_f;
+  scm *m = assq_ref_cache (x, a);
+  if (macro_p (m) == &scm_t) return m->macro;
   return &scm_f;
 }
 
