@@ -349,6 +349,7 @@ apply_env (scm *fn, scm *x, scm *a)
 scm *
 eval_env (scm *e, scm *a)
 {
+  if (BUILTIN_P (e) != &scm_f) return e;
   if (internal_symbol_p (e) == &scm_t) return e;
 
   e = expand_macro_env (e, a);
@@ -638,10 +639,10 @@ make_string (char const *s)
 scm *primitives = 0;
 
 scm *
-internal_lookup_primitive (char const *s)
+lookup_primitive_ (scm *e)
 {
   scm *x = primitives;
-  while (x && strcmp (s, x->car->name)) x = x->cdr;
+  while (x && strcmp (e->name, x->car->name)) x = x->cdr;
   if (x) x = x->car;
   return x;
 }
@@ -850,8 +851,10 @@ lookup (char const *s, scm *a)
     return make_number (atoi (s));
 
   scm *x;
+  scm p = {SYMBOL};
+  p.name = s;
 #if STATIC_PRIMITIVES
-  x = internal_lookup_primitive (s);
+  x = lookup_primitive_ (&p);
   if (x) return x;
 #endif // STATIC_PRIMITIVES
   x = internal_lookup_symbol (s);
