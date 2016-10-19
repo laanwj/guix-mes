@@ -370,9 +370,10 @@ assq_ref_cache (scm *x, scm *a)
   x->value++;
   scm *c = cache_lookup (x);
   if (c != &scm_undefined) return c;
-  while (a != &scm_nil && x != a->car->car) a = a->cdr;
+  int i = 0;
+  while (a != &scm_nil && x != a->car->car) {i++;a = a->cdr;}
   if (a == &scm_nil) return &scm_undefined;
-  cache_save (a->car);
+  if (i>4*CACHE_SIZE) cache_save (a->car);
   return a->car->cdr;
 }
 #endif // ENV_CACHE
