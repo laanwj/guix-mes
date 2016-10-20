@@ -88,6 +88,31 @@
                       (list (cons 'lambda (cons '() (car clauses))))
                       (cons 'cond (cdr clauses)))))))
 
+(define (map f l . r)
+  (if (null? l) '()
+      (if (null? r) (cons (f (car l)) (map f (cdr l)))
+          (if (null? (cdr r))
+              (cons (f (car l) (caar r)) (map f (cdr l) (cdar r)))))))
+
+(define-macro (simple-let bindings . rest)
+  (cons (cons 'lambda (cons (map car bindings) rest))
+        (map cadr bindings)))
+
+(define-macro (let bindings . rest)
+  (cons 'simple-let (cons bindings rest)))
+
+(define-macro (or . x)
+  (if (null? x) #f
+      (if (null? (cdr x)) (car x)
+          (list 'if (car x) (car x)
+                (cons 'or (cdr x))))))
+
+(define-macro (and . x)
+  (if (null? x) #t
+      (if (null? (cdr x)) (car x)
+          (list 'if (car x) (cons 'and (cdr x))
+                #f))))
+
 (define (not x)
   (if x #f #t))
 
@@ -106,21 +131,20 @@
      ((eq? fn 'current-module) a)
      (#t (apply-env (eval fn a) x a))))
    ((eq? (car fn) 'lambda)
-    ;; (let ((p (pairlis (cadr fn) x a)))
-    ;;   (eval (cons 'begin (cddr fn)) (cons (cons '*closure* p)) p))
-    (eval (cons 'begin (cddr fn))
-              (cons (cons '*closure* (pairlis (cadr fn) x a))
-                    (pairlis (cadr fn) x a))))
+    (let ((p (pairlis (cadr fn) x a)))
+      (cache-invalidate-range p (cdr a))
+      (let ((r (eval (cons 'begin (cddr fn)) (cons (cons '*closure* p) p))))
+        (cache-invalidate-range p (cdr a))
+        r)))
    ((eq? (car fn) '*closure*)
-    ;; (let* ((args (caddr fn))
-    ;;        (body (cdddr fn))
-    ;;        (a (cddr (cadr fn)))
-    ;;        (p (pairlis args x a)))
-    ;; (eval (cons 'begin body) (cons (cons '*closure* p) p)))
-    (eval (cons 'begin (cdddr fn))
-              (cons (cons '*closure* (pairlis (caddr fn) x (cddr (cadr fn))))
-                    (pairlis (caddr fn) x (cddr (cadr fn))))))
-
+    (let ((args (caddr fn))
+          (body (cdddr fn))
+          (a (cddr (cadr fn))))
+      (let ((p (pairlis args x a)))
+        (cache-invalidate-range p (cdr a))
+        (let ((r (eval (cons 'begin body) (cons (cons '*closure* p) p))))
+          (cache-invalidate-range p (cdr a))
+          r))))
    ((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
    (#t (apply-env (eval fn a) x a))))
 
@@ -132,7 +156,7 @@
    ((number? e) e)
    ((string? e) e)
    ((vector? e) e)
-   ((atom? e) (cdr (assq e a)))
+   ((symbol? e) (assq-ref-cache e a))
    ((atom? (car e))
     (cond
      ((eq? (car e) 'quote) (cadr e))
