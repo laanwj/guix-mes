@@ -145,9 +145,16 @@
      ((eq? (car e) 'define-macro) (env:define (env:macro (sexp:define e a)) a))
      ((eq? (car e) 'set!) (set-env! (cadr e) (eval (caddr e) a) a))
      ((eq? (car e) 'unquote) (eval (cadr e) a))
-     ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
+     ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) (add-unquoters a)))
      (#t (apply-env (car e) (evlis-env (cdr e) a) a))))
    (#t (apply-env (car e) (evlis-env (cdr e) a) a))))
+
+(define (unquote x) (cons 'unquote x))
+(define (unquote-splicing x) (cons 'quasiquote x))
+
+(define (add-unquoters a)
+  (cons (cons 'unquote unquote)
+        (cons (cons 'unquote-splicing unquote-splicing) a)))
 
 (define (eval e a)
   (eval-expand (expand-macro-env e a) a))
@@ -169,6 +176,15 @@
 (define (eval-if-env e a)
   (if (eval (car e) a) (eval (cadr e) a)
       (if (pair? (cddr e)) (eval (caddr e) a))))
+
+(define (eval-quasiquote e a)
+  (cond ((null? e) e)
+        ((atom? e) e)
+        ((eq? (car e) 'unquote) (eval (cadr e) a))
+        ((and (pair? (car e))
+              (eq? (caar e) 'unquote-splicing))
+         (append2 (eval (cadar e) a) (eval-quasiquote (cdr e) a)))
+        (#t (cons (eval-quasiquote (car e) a) (eval-quasiquote (cdr e) a)))))
 
 (define (sexp:define e a)
   (if (atom? (cadr e)) (cons (cadr e) (eval (caddr e) a))
