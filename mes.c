@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define BOOT 0
 #define DEBUG 0
 #define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
 #define MES_FULL 1
@@ -64,6 +65,7 @@ typedef struct scm_t {
 #define MES_C 1
 #include "mes.h"
 
+scm *display_ (FILE* f, scm *x); //internal
 scm *display_helper (FILE*, scm*, bool, char const*, bool);
 
 scm scm_nil = {SCM, "()"};
@@ -74,6 +76,10 @@ scm scm_undefined = {SCM, "*undefined*"};
 scm scm_unspecified = {SCM, "*unspecified*"};
 scm scm_closure = {SCM, "*closure*"};
 scm scm_circular = {SCM, "*circular*"};
+#if BOOT
+scm scm_label = {
+  SCM, "label"};
+#endif
 scm scm_lambda = {SCM, "lambda"};
 
 scm symbol_begin = {SCM, "begin"};
@@ -190,7 +196,7 @@ set_cdr_x (scm *x, scm *e)
 }
 
 scm *
-set_x (scm *x, scm *e, scm *a)
+set_env_x (scm *x, scm *e, scm *a)
 {
   cache_invalidate (x);
   return set_cdr_x (assq (x, a), e);
@@ -379,12 +385,12 @@ assq_ref_cache (scm *x, scm *a)
 #endif // ENV_CACHE
 
 scm *
-evlis (scm *m, scm *a)
+evlis_env (scm *m, scm *a)
 {
   if (m == &scm_nil) return &scm_nil;
   if (m->type != PAIR) return builtin_eval (m, a);
   scm *e = builtin_eval (car (m), a);
-  return cons (e, evlis (cdr (m), a));
+  return cons (e, evlis_env (cdr (m), a));
 }
 
 scm *
@@ -418,6 +424,10 @@ apply_env (scm *fn, scm *x, scm *a)
     cache_invalidate_range (p, a->cdr);
     return r;
   }
+#if BOOT
+  else if (fn->car == &scm_label)
+    return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
+#endif
   scm *efn = builtin_eval (fn, a);
   if (efn == &scm_f || efn == &scm_t) assert (!"apply bool");
   if (efn->type == NUMBER) assert (!"apply number");
@@ -457,12 +467,22 @@ builtin_eval (scm *e, scm *a)
         return e;
       if (e->car == &symbol_if)
         return builtin_if (cdr (e), a);
+#if !BOOT
       if (e->car == &symbol_define)
         return define (e, a);
       if (e->car == &symbol_define_macro)
         return define (e, a);
+#else
+      if (e->car == &symbol_define) {
+        fprintf (stderr, "C DEFINE: %s\n", e->cdr->car->type == SYMBOL
+                 ? e->cdr->car->name
+                 : e->cdr->car->car->name);
+      }
+      assert (e->car != &symbol_define);
+      assert (e->car != &symbol_define_macro);
+#endif
       if (e->car == &symbol_set_x)
-        return set_x (cadr (e), builtin_eval (caddr (e), a), a);
+        return set_env_x (cadr (e), builtin_eval (caddr (e), a), a);
 #if BUILTIN_QUASIQUOTE
       if (e->car == &symbol_unquote)
         return builtin_eval (cadr (e), a);
@@ -474,7 +494,7 @@ builtin_eval (scm *e, scm *a)
         return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
 #endif //BUILTIN_QUASIQUOTE
     }
-  return apply_env (e->car, evlis (e->cdr, a), a);
+  return apply_env (e->car, evlis_env (e->cdr, a), a);
 }
 
 scm *
@@ -589,7 +609,7 @@ internal_p (scm *x)
 scm *
 symbol_p (scm *x)
 {
-  return (x->type == SYMBOL) ? &scm_t : &scm_f;
+  return x->type == SYMBOL ? &scm_t : &scm_f;
 }
 
 scm *
@@ -658,12 +678,12 @@ make_char (int x)
 }
 
 scm *
-make_macro (scm *x, char const *name)
+make_macro (scm *name, scm *x)
 {
   scm *p = (scm*)malloc (sizeof (scm));
   p->type = MACRO;
   p->macro = x;
-  p->name = name;
+  p->name = name->name;
   return p;
 }
 
@@ -893,7 +913,7 @@ lookup (char const *s, scm *a)
   if (*s == '#' && *(s+1) == '`') return &symbol_quasisyntax;
   if (*s == '#' && *(s+1) == ',' && *(s+2) == '@') return &symbol_unsyntax_splicing;
   if (*s == '#' && *(s+1) == ',') return &symbol_unsyntax;
-  
+
   if (!strcmp (s, "EOF")) {
     fprintf (stderr, "mes: got EOF\n");
     return &scm_nil; // `EOF': eval program, which may read stdin
@@ -1443,6 +1463,11 @@ mes_environment ()
 
   #include "symbols.i"
 
+#if BOOT
+  symbols = cons (&scm_label, symbols);
+  a = cons (cons (&scm_label, &scm_t), a);
+#endif
+
   a = cons (cons (&scm_f, &scm_f), a);
   a = cons (cons (&scm_nil, &scm_nil), a);
   a = cons (cons (&scm_t, &scm_t), a);
@@ -1473,6 +1498,7 @@ make_closure (scm *args, scm *body, scm *a)
   return cons (&scm_closure, cons (cons (&scm_circular, a), cons (args, body)));
 }
 
+#if !BOOT
 scm *
 define (scm *x, scm *a)
 {
@@ -1486,7 +1512,7 @@ define (scm *x, scm *a)
     e = builtin_eval (make_lambda (cdadr (x), cddr (x)), p);
   }
   if (eq_p (car (x), &symbol_define_macro) == &scm_t)
-    e = make_macro (e, name->name);
+    e = make_macro (name, e);
   scm *entry = cons (name, e);
   scm *aa = cons (entry, &scm_nil);
   set_cdr_x (aa, cdr (a));
@@ -1495,6 +1521,9 @@ define (scm *x, scm *a)
   set_cdr_x (cl, aa);
   return entry;
 }
+#else // BOOT
+scm*define (scm *x, scm *a){}
+#endif
 
 scm *
 define_macro (scm *x, scm *a)
