@@ -26,9 +26,8 @@
 
 ;;; Code:
 
-(define eval eval-env)
 (define (apply f x) (apply-env f x (current-module)))
-(define (primitive-eval e) (eval-env e (current-module)))
+(define (primitive-eval e) (eval e (current-module)))
 (define (expand-macro e) (expand-macro-env e (current-module)))
 
 (define quotient /)

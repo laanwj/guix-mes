@@ -31,6 +31,7 @@ mes.h: mes.c GNUmakefile
 		while read f; do\
 			fun=$$(echo $$f | sed -e 's,^scm [*],,' -e 's,{.*,,');\
 			name=$$(echo $$fun | sed -e 's,^scm [\*],,' | grep -o '^[^ ]*');\
+			builtin=scm_$$name\
 			scm_name=$$(echo $$name | sed -e 's,_to_,->,' -e 's,_p$$,?,' -e 's,_x$$,!,' -e 's,^builtin_,,' -re 's,(.*)_$$,c:\1,' | sed \
 				-e 's,^divide$$,/,'\
 				-e 's,^is?$$,=,'\
@@ -43,10 +44,10 @@ mes.h: mes.c GNUmakefile
 			args=$$(echo $$fun | grep -o 'scm [\*]' | wc -l);\
 			[ "$$(echo $$fun | fgrep -o ... )" = "..." ] && args=n;\
 			echo "scm *$$fun;";\
-			echo "scm scm_$$name = {FUNCTION$$args, .name=\"$$scm_name\", .function$$args=&$$name};";\
-			echo "a = add_environment (a, \"$$scm_name\", &scm_$$name);" 1>&2;\
+			echo "scm $$builtin = {FUNCTION$$args, .name=\"$$scm_name\", .function$$args=&$$name};";\
+			echo "a = add_environment (a, \"$$scm_name\", &$$builtin);" 1>&2;\
 	done; echo '#endif'; echo '#endif' 1>&2) > $@ 2>environment.i
-	grep -oE '^scm ([a-z_]+) = {SYMBOL,' mes.c | cut -d' ' -f 2 |\
+	grep -oE '^scm ([a-z_]+) = {(SCM|SYMBOL),' mes.c | cut -d' ' -f 2 |\
 		while read f; do\
 			echo "symbols = cons (&$$f, symbols);";\
 		done > symbols.i

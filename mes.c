@@ -32,7 +32,7 @@
 #define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
 #define MES_FULL 1
 
-enum type {CHAR, MACRO, NUMBER, PAIR, STRING, SYMBOL, VALUES, VECTOR,
+enum type {CHAR, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
 struct scm_t;
 typedef struct scm_t* (*function0_t) (void);
@@ -54,7 +54,7 @@ typedef struct scm_t {
     function1_t function1;
     function2_t function2;
     function3_t function3;
-    functionn_t functionn;    
+    functionn_t functionn;
     struct scm_t* cdr;
     struct scm_t* macro;
     struct scm_t** vector;
@@ -66,17 +66,21 @@ typedef struct scm_t {
 
 scm *display_helper (FILE*, scm*, bool, char const*, bool);
 
-scm scm_nil = {SYMBOL, "()"};
-scm scm_dot = {SYMBOL, "."};
-scm scm_f = {SYMBOL, "#f"};
-scm scm_t = {SYMBOL, "#t"};
-scm scm_unspecified = {SYMBOL, "*unspecified*"};
+scm scm_nil = {SCM, "()"};
+scm scm_dot = {SCM, "."};
+scm scm_f = {SCM, "#f"};
+scm scm_t = {SCM, "#t"};
+scm scm_unspecified = {SCM, "*unspecified*"};
+scm scm_closure = {SCM, "*closure*"};
+scm scm_circular = {SCM, "*circular*"};
+scm scm_lambda = {SCM, "lambda"};
 
-scm symbol_closure = {SYMBOL, "*closure*"};
-scm symbol_circ = {SYMBOL, "*circ*"};
-scm symbol_lambda = {SYMBOL, "lambda"};
-scm symbol_begin = {SYMBOL, "begin"};
-scm symbol_if = {SYMBOL, "if"};
+scm symbol_begin = {SCM, "begin"};
+scm symbol_if = {SCM, "if"};
+scm symbol_define = {SCM, "define"};
+scm symbol_define_macro = {SCM, "define-macro"};
+scm symbol_set_x = {SCM, "set!"};
+
 scm symbol_quote = {SYMBOL, "quote"};
 scm symbol_quasiquote = {SYMBOL, "quasiquote"};
 scm symbol_unquote = {SYMBOL, "unquote"};
@@ -90,9 +94,7 @@ scm symbol_unsyntax_splicing = {SYMBOL, "unsyntax-splicing"};
 
 scm symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm symbol_current_module = {SYMBOL, "current-module"};
-scm symbol_define = {SYMBOL, "define"};
-scm symbol_define_macro = {SYMBOL, "define-macro"};
-scm symbol_set_x = {SYMBOL, "set!"};
+
 
 scm char_nul = {CHAR, .name="nul", .value=0};
 scm char_backspace = {CHAR, .name="backspace", .value=8};
@@ -296,20 +298,12 @@ assq (scm *x, scm *a)
   return a->car;
 }
 
-#define BUILTIN_P(x)             \
-  ((x->type == FUNCTION0         \
-    || x->type == FUNCTION1      \
-    || x->type == FUNCTION2      \
-    || x->type == FUNCTION3      \
-    || x->type == FUNCTIONn)     \
-   ? &scm_t : &scm_f)
-
 scm *
 evlis (scm *m, scm *a)
 {
   if (m == &scm_nil) return &scm_nil;
-  if (m->type != PAIR) return eval_env (m, a);
-  scm *e = eval_env (car (m), a);
+  if (m->type != PAIR) return builtin_eval (m, a);
+  scm *e = builtin_eval (car (m), a);
   return cons (e, evlis (cdr (m), a));
 }
 
@@ -320,35 +314,36 @@ apply_env (scm *fn, scm *x, scm *a)
     {
       if (fn == &scm_car) return x->car->car;
       if (fn == &scm_cdr) return x->car->cdr;
-      if (BUILTIN_P (fn) == &scm_t)
+      if (builtin_p (fn) == &scm_t)
         return call (fn, x);
       if (eq_p (fn, &symbol_call_with_values) == &scm_t)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (fn == &symbol_current_module) return a;
     }
-  else if (fn->car == &symbol_lambda) {
+  else if (fn->car == &scm_lambda) {
     scm *p = pairlis (cadr (fn), x, a);
-    return eval_env (cons (&symbol_begin, cddr (fn)), cons (cons (&symbol_closure, p), p));
+    return builtin_eval (cons (&symbol_begin, cddr (fn)), cons (cons (&scm_closure, p), p));
   }
-  else if (fn->car == &symbol_closure) {
+  else if (fn->car == &scm_closure) {
     scm *args = caddr (fn);
     scm *body = cdddr (fn);
     a = cdadr (fn);
     a = cdr (a);
     scm *p = pairlis (args, x, a);
-    return eval_env (cons (&symbol_begin, body), cons (cons (&symbol_closure, p), p));
+    return builtin_eval (cons (&symbol_begin, body), cons (cons (&scm_closure, p), p));
   }
-  scm *efn = eval_env (fn, a);
+  scm *efn = builtin_eval (fn, a);
   if (efn == &scm_f || efn == &scm_t) assert (!"apply bool");
   if (efn->type == NUMBER) assert (!"apply number");
-  if (efn->type == STRING) assert (!"apply string");  
+  if (efn->type == STRING) assert (!"apply string");
   return apply_env (efn, x, a);
 }
 
 scm *
-eval_env (scm *e, scm *a)
+builtin_eval (scm *e, scm *a)
 {
-  if (internal_symbol_p (e) == &scm_t) return e;
+  if (builtin_p (e) == &scm_t) return e;
+  if (internal_p (e) == &scm_t) return e;
 
   e = expand_macro_env (e, a);
 
@@ -369,26 +364,26 @@ eval_env (scm *e, scm *a)
       if (e->car == &symbol_syntax)
         return e;
       if (e->car == &symbol_begin)
-        return eval_begin_env (e, a);
-      if (e->car == &symbol_lambda)
-        return make_closure (cadr (e), cddr (e), assq (&symbol_closure, a));
-      if (e->car == &symbol_closure)
+        return begin (e, a);
+      if (e->car == &scm_lambda)
+        return make_closure (cadr (e), cddr (e), assq (&scm_closure, a));
+      if (e->car == &scm_closure)
         return e;
       if (e->car == &symbol_if)
-        return if_env (cdr (e), a);
+        return builtin_if (cdr (e), a);
       if (e->car == &symbol_define)
         return define (e, a);
       if (e->car == &symbol_define_macro)
         return define (e, a);
       if (e->car == &symbol_set_x)
-        return set_env_x (cadr (e), eval_env (caddr (e), a), a);
+        return set_env_x (cadr (e), builtin_eval (caddr (e), a), a);
 #if BUILTIN_QUASIQUOTE
       if (e->car == &symbol_unquote)
-        return eval_env (cadr (e), a);
+        return builtin_eval (cadr (e), a);
       if (e->car == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
       if (e->car == &symbol_unsyntax)
-        return eval_env (cadr (e), a);
+        return builtin_eval (cadr (e), a);
       if (e->car == &symbol_quasisyntax)
         return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
 #endif //BUILTIN_QUASIQUOTE
@@ -407,23 +402,23 @@ expand_macro_env (scm *e, scm *a)
 }
 
 scm *
-eval_begin_env (scm *e, scm *a)
+begin (scm *e, scm *a)
 {
   scm *r = &scm_unspecified;
   while (e != &scm_nil) {
-    r = eval_env (e->car, a);
+    r = builtin_eval (e->car, a);
     e = e->cdr;
   }
   return r;
 }
 
 scm *
-if_env (scm *e, scm *a)
+builtin_if (scm *e, scm *a)
 {
-  if (eval_env (car (e), a) != &scm_f)
-    return eval_env (cadr (e), a);
+  if (builtin_eval (car (e), a) != &scm_f)
+    return builtin_eval (cadr (e), a);
   if (cddr (e) != &scm_nil)
-    return eval_env (caddr (e), a);
+    return builtin_eval (caddr (e), a);
   return &scm_unspecified;
 }
 
@@ -434,10 +429,10 @@ eval_quasiquote (scm *e, scm *a)
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
   else if (eq_p (car (e), &symbol_unquote) == &scm_t)
-    return eval_env (cadr (e), a);
+    return builtin_eval (cadr (e), a);
   else if (e->type == PAIR && e->car->type == PAIR
            && eq_p (caar (e), &symbol_unquote_splicing) == &scm_t)
-      return append2 (eval_env (cadar (e), a), eval_quasiquote (cdr (e), a));
+      return append2 (builtin_eval (cadar (e), a), eval_quasiquote (cdr (e), a));
   return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
 }
 
@@ -447,10 +442,10 @@ eval_quasisyntax (scm *e, scm *a)
   if (e == &scm_nil) return e;
   else if (atom_p (e) == &scm_t) return e;
   else if (eq_p (car (e), &symbol_unsyntax) == &scm_t)
-    return eval_env (cadr (e), a);
+    return builtin_eval (cadr (e), a);
   else if (e->type == PAIR && e->car->type == PAIR
            && eq_p (caar (e), &symbol_unsyntax_splicing) == &scm_t)
-      return append2 (eval_env (cadar (e), a), eval_quasisyntax (cdr (e), a));
+      return append2 (builtin_eval (cadar (e), a), eval_quasisyntax (cdr (e), a));
   return cons (eval_quasisyntax (car (e), a), eval_quasisyntax (cdr (e), a));
 }
 
@@ -467,7 +462,12 @@ scm*eval_quasisyntax (scm *e, scm *a){}
 scm *
 builtin_p (scm *x)
 {
-  return BUILTIN_P(x);
+  return (x->type == FUNCTION0
+          || x->type == FUNCTION1
+          || x->type == FUNCTION2
+          || x->type == FUNCTION3
+          || x->type == FUNCTIONn)
+    ? &scm_t : &scm_f;
 }
 
 scm *
@@ -946,11 +946,11 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
   }
   else if (x->type == NUMBER) fprintf (f, "%d", x->value);
   else if (x->type == PAIR) {
-    if (car (x) == &symbol_circ) {
+    if (car (x) == &scm_circular) {
       fprintf (f, "(*circ* . #-1#)");
       return &scm_unspecified;
     }
-    if (car (x) == &symbol_closure) {
+    if (car (x) == &scm_closure) {
       fprintf (f, "(*closure* . #-1#)");
       return &scm_unspecified;
     }
@@ -993,7 +993,7 @@ ungetchar (int c) //int
 }
 
 int
-peek_char () //int
+peekchar () //int
 {
   int c = getchar ();
   ungetchar (c);
@@ -1001,9 +1001,9 @@ peek_char () //int
 }
 
 scm*
-builtin_peek_char ()
+peek_char ()
 {
-  return make_char (peek_char ());
+  return make_char (peekchar ());
 }
 
 scm *
@@ -1026,7 +1026,7 @@ write_char (scm *x/*...*/)
 }
 
 scm*
-builtin_ungetchar (scm *c)
+unget_char (scm *c)
 {
   assert (c->type == NUMBER || c->type == CHAR);
   ungetchar (c->value);
@@ -1043,7 +1043,7 @@ readcomment (int c)
 int
 readblock (int c)
 {
-  if (c == '!' && peek_char () == '#') return getchar ();
+  if (c == '!' && peekchar () == '#') return getchar ();
   return readblock (getchar ());
 }
 
@@ -1061,34 +1061,34 @@ readword (int c, char *w, scm *a)
   if (c == '(') {ungetchar (c); return lookup (w, a);}
   if (c == ')' && !w) {ungetchar (c); return &scm_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
-  if (c == ',' && peek_char () == '@') {getchar (); return cons (lookup (",@", a),
-                                                                cons (readword (getchar (), w, a),
-                                                                      &scm_nil));}
+  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (",@", a),
+                                                                   cons (readword (getchar (), w, a),
+                                                                         &scm_nil));}
   if ((c == '\''
        || c == '`'
        || c == ',')
       && !w) {return cons (lookup_char (c, a),
                                      cons (readword (getchar (), w, a),
                                            &scm_nil));}
-  if (c == '#' && peek_char () == ',' && !w) {
+  if (c == '#' && peekchar () == ',' && !w) {
     getchar ();
-    if (peek_char () == '@'){getchar (); return cons (lookup ("#,@", a),
+    if (peekchar () == '@'){getchar (); return cons (lookup ("#,@", a),
                                                      cons (readword (getchar (), w, a),
                                                            &scm_nil));}
     return cons (lookup ("#,", a), cons (readword (getchar (), w, a), &scm_nil));
   }
   if (c == '#'
-     && (peek_char () == '\''
-         || peek_char () == '`')
+     && (peekchar () == '\''
+         || peekchar () == '`')
      && !w) {char buf[3] = "#"; buf[1] = getchar (); return cons (lookup (buf, a),
                           cons (readword (getchar (), w, a),
                                 &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
-  if (c == '#' && peek_char () == 'x') {getchar (); return read_hex ();}
-  if (c == '#' && peek_char () == '\\') {getchar (); return read_character ();}
-  if (c == '#' && !w && peek_char () == '(') {getchar (); return list_to_vector (readlist (a));}
-  if (c == '#' && peek_char () == '(') {ungetchar (c); return lookup (w, a);}
-  if (c == '#' && peek_char () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
+  if (c == '#' && peekchar () == 'x') {getchar (); return read_hex ();}
+  if (c == '#' && peekchar () == '\\') {getchar (); return read_character ();}
+  if (c == '#' && !w && peekchar () == '(') {getchar (); return list_to_vector (readlist (a));}
+  if (c == '#' && peekchar () == '(') {ungetchar (c); return lookup (w, a);}
+  if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
   char buf[STRING_MAX] = {0};
   char ch = c;
   char *p = w ? w + strlen (w) : buf;
@@ -1101,7 +1101,7 @@ scm *
 read_hex ()
 {
   int n = 0;
-  int c = peek_char ();
+  int c = peekchar ();
   while ((c >= '0' && c <= '9')
          || (c >= 'A' && c <= 'F')
          || (c >= 'a' && c <= 'f')) {
@@ -1110,7 +1110,7 @@ read_hex ()
     else if (c >= 'A') n += c - 'A' + 10;
     else n+= c - '0';
     getchar ();
-    c = peek_char ();
+    c = peekchar ();
   }
   return make_number (n);
 }
@@ -1120,19 +1120,19 @@ read_character ()
 {
   int c = getchar ();
   if (c >= '0' && c <= '7'
-      && peek_char () >= '0' && peek_char () <= '7') {
+      && peekchar () >= '0' && peekchar () <= '7') {
     c = c - '0';
-    while (peek_char () >= '0' && peek_char () <= '7') {
+    while (peekchar () >= '0' && peekchar () <= '7') {
       c <<= 3;
       c += getchar () - '0';
     }
   }
   else if (c >= 'a' && c <= 'z'
-      && peek_char () >= 'a' && peek_char () <= 'z') {
+      && peekchar () >= 'a' && peekchar () <= 'z') {
     char buf[STRING_MAX];
     char *p = buf;
     *p++ = c;
-    while (peek_char () >= 'a' && peek_char () <= 'z') {
+    while (peekchar () >= 'a' && peekchar () <= 'z') {
       *p++ = getchar ();
     }
     *p = 0;
@@ -1160,8 +1160,8 @@ readstring ()
   int c = getchar ();
   while (true) {
     if (c == '"') break;
-    if (c == '\\' && peek_char () == '"') *p++ = getchar ();
-    else if (c == '\\' && peek_char () == 'n') {getchar (); *p++ = '\n';}
+    if (c == '\\' && peekchar () == '"') *p++ = getchar ();
+    else if (c == '\\' && peekchar () == 'n') {getchar (); *p++ = '\n';}
     else if (c == EOF) assert (!"EOF in string");
     else *p++ = c;
     c = getchar ();
@@ -1175,7 +1175,7 @@ eat_whitespace (int c)
 {
   while (c == ' ' || c == '\t' || c == '\n') c = getchar ();
   if (c == ';') return eat_whitespace (readcomment (c));
-  if (c == '#' && peek_char () == '!') {getchar (); readblock (getchar ()); return eat_whitespace (getchar ());}
+  if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return eat_whitespace (getchar ());}
   return c;
 }
 
@@ -1363,27 +1363,27 @@ mes_environment ()
   a = cons (cons (&symbol_begin, &symbol_begin), a);
   a = cons (cons (&symbol_quote, &scm_quote), a);
   a = cons (cons (&symbol_syntax, &scm_syntax), a);
-  
+
 #if MES_FULL
 #include "environment.i"
 #else
   a = add_environment (a, "display", &scm_display);
   a = add_environment (a, "newline", &scm_newline);
 #endif
-  a = cons (cons (&symbol_closure, a), a);
+  a = cons (cons (&scm_closure, a), a);
   return a;
 }
 
 scm *
 make_lambda (scm *args, scm *body)
 {
-  return cons (&symbol_lambda, cons (args, body));
+  return cons (&scm_lambda, cons (args, body));
 }
 
 scm *
 make_closure (scm *args, scm *body, scm *a)
 {
-  return cons (&symbol_closure, cons (cons (&symbol_circ, a), cons (args, body)));
+  return cons (&scm_closure, cons (cons (&scm_circular, a), cons (args, body)));
 }
 
 scm *
@@ -1392,11 +1392,11 @@ define (scm *x, scm *a)
   scm *e;
   scm *name = cadr (x);
   if (name->type != PAIR)
-    e = eval_env (caddr (x), cons (cons (cadr (x), cadr (x)), a));
+    e = builtin_eval (caddr (x), cons (cons (cadr (x), cadr (x)), a));
   else {
     name = car (name);
     scm *p = pairlis (cadr (x), cadr (x), a);
-    e = eval_env (make_lambda (cdadr (x), cddr (x)), p);
+    e = builtin_eval (make_lambda (cdadr (x), cddr (x)), p);
   }
   if (eq_p (car (x), &symbol_define_macro) == &scm_t)
     e = make_macro (e, name->name);
@@ -1404,17 +1404,20 @@ define (scm *x, scm *a)
   scm *aa = cons (entry, &scm_nil);
   set_cdr_x (aa, cdr (a));
   set_cdr_x (a, aa);
-  scm *cl = assq (&symbol_closure, a);
+  scm *cl = assq (&scm_closure, a);
   set_cdr_x (cl, aa);
   return entry;
 }
 
 scm *
-lookup_macro (scm *x, scm *a)
+define_macro (scm *x, scm *a)
 {
 }
 #endif
 
+scm *
+lookup_macro (scm *x, scm *a)
+{
   scm *m = assq (x, a);
   if (m != &scm_f && macro_p (cdr (m)) != &scm_f)
     return cdr (m)->macro;
@@ -1425,7 +1428,12 @@ scm *
 read_file (scm *e, scm *a)
 {
   if (e == &scm_nil) return e;
+#if DEBUG
+  scm *x = cons (e, read_file (read_env (a), a));
+  display_ (stderr, x);
+#else
   return cons (e, read_file (read_env (a), a));
+#endif
 }
 
 int
@@ -1434,10 +1442,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.0\n");
   scm *a = mes_environment ();
-#if STATIC_PRIMITIVES
-  mes_primitives ();
-#endif
-  display_ (stderr, eval_env (cons (&symbol_begin, read_file (read_env (a), a)), a));
+  display_ (stderr, builtin_eval (cons (&symbol_begin, read_file (read_env (a), a)), a));
   fputs ("", stderr);
   return 0;
 }

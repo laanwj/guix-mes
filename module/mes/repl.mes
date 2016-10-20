@@ -147,7 +147,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
               (begin
                 (meta (cadr sexp))
                 (loop a))
-              (let ((e (eval-env sexp a)))
+              (let ((e (eval sexp a)))
                 (if (eq? e *unspecified*) (loop a)
                     (let ((id (string->symbol (string-append "$" (number->string count)))))
                       (set! count (+ count 1))
