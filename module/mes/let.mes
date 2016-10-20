@@ -22,16 +22,16 @@
   `(,`(lambda ,(map car bindings) ,@rest)
     ,@(map cadr bindings)))
 
-(define-macro (xnamed-let label bindings rest)
-  `(simple-let ((,label *unspecified*))
-     (set! ,label (lambda ,(map car bindings) ,@rest))
-     (,label ,@(map cadr bindings))))
+(define-macro (xnamed-let name bindings rest)
+  `(simple-let ((,name *unspecified*))
+     (set! ,name (lambda ,(map car bindings) ,@rest))
+     (,name ,@(map cadr bindings))))
 
 ;; IF
-(define-macro (let bindings-or-label . rest)
-  `(if ,(symbol? bindings-or-label) ;; IF
-       (xnamed-let ,bindings-or-label ,(car rest) ,(cdr rest))
-       (xsimple-let ,bindings-or-label ,rest)))
+(define-macro (let bindings-or-name . rest)
+  `(if ,(symbol? bindings-or-name) ;; IF
+       (xnamed-let ,bindings-or-name ,(car rest) ,(cdr rest))
+       (xsimple-let ,bindings-or-name ,rest)))
 
 (define (expand-let* bindings body)
   (if (null? bindings)
