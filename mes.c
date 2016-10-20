@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define BOOT 0
 #define DEBUG 0
 #define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
 #define MES_FULL 1

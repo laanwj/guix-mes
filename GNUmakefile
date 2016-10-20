@@ -10,6 +10,11 @@ CFLAGS:=-std=c99 -O3 -finline-functions
 #CFLAGS:=-pg -std=c99 -O0
 #CFLAGS:=-std=c99 -O0 -g
 
+export BOOT
+ifneq ($(BOOT),)
+CFLAGS+=-DBOOT=1
+endif
+
 include .config.make
 -include .local.make
 include make/install.make
@@ -47,7 +52,7 @@ mes.h: mes.c GNUmakefile
 			echo "scm $$builtin = {FUNCTION$$args, .name=\"$$scm_name\", .function$$args=&$$name};";\
 			echo "a = add_environment (a, \"$$scm_name\", &$$builtin);" 1>&2;\
 	done; echo '#endif'; echo '#endif' 1>&2) > $@ 2>environment.i
-	grep -oE '^scm ([a-z_]+) = {(SCM|SYMBOL),' mes.c | cut -d' ' -f 2 |\
+	grep -oE '^scm ([a-z_0-9]+) = {(SCM|SYMBOL),' mes.c | cut -d' ' -f 2 |\
 		while read f; do\
 			echo "symbols = cons (&$$f, symbols);";\
 		done > symbols.i
@@ -74,7 +79,7 @@ mes-check: all
 
 guile-check:
 	for i in $(TESTS); do\
-		guile -s <(cat $(MES-0) $$(scripts/include.mes $$i | grep -Ev 'let.mes|quasiquote.mes|base-0|srfi-0') $$i);\
+		guile -s <(cat $(MES-0) $$(scripts/include.mes $$i | grep -Ev 'let.mes|quasiquote.mes|base-0|loop-0|srfi-0') $$i);\
 	done
 	for i in $(TESTS); do\
 		guile -s <(cat $(MES-0) module/mes/test.mes $$i);\

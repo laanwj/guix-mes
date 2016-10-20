@@ -9,6 +9,10 @@ for prefix in $(dirname $(dirname $0))/share/mes . $(dirname $(dirname $0)); do
         break;
     fi
 done
+
+if [ -n "$BOOT" ]; then
+    echo $prefix/module/mes/loop-0.mes
+fi
 cat $1 \
   | grep -Eo '(mes-use-module \([^()]+ [^()]+))' \
   | grep -Eo ' \([^)]+\)' \
