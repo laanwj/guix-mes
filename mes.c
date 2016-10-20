@@ -29,7 +29,6 @@
 #include <stdbool.h>
 
 #define DEBUG 0
-#define STATIC_PRIMITIVES 1 // 8x speedup for mescc
 #define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
 #define MES_FULL 1
 
@@ -349,7 +348,6 @@ apply_env (scm *fn, scm *x, scm *a)
 scm *
 eval_env (scm *e, scm *a)
 {
-  if (BUILTIN_P (e) != &scm_f) return e;
   if (internal_symbol_p (e) == &scm_t) return e;
 
   e = expand_macro_env (e, a);
@@ -497,49 +495,15 @@ string_p (scm *x)
 }
 
 scm *
-internal_symbol_p (scm *x)
+internal_p (scm *x)
 {
-  // FIXME: use INTERNAL/XSYMBOL or something?
-  return (x->type == SYMBOL
-          && (x == &scm_nil
-              || x == &scm_dot
-              || x == &scm_f
-              || x == &scm_t
-              || x == &scm_unspecified
-              
-              || x == &symbol_closure
-              || x == &symbol_circ
-              || x == &symbol_lambda
-              || x == &symbol_begin
-              || x == &symbol_if
-
-              || x == &symbol_sc_expand
-              || x == &symbol_syntax
-              || x == &symbol_quote
-
-#if BUILTIN_QUASIQUOTE
-              || x == &symbol_quasiquote
-              || x == &symbol_unquote
-              || x == &symbol_unquote_splicing
-              || x == &symbol_quasisyntax
-              || x == &symbol_unsyntax
-              || x == &symbol_unsyntax_splicing
-#endif // BUILTIN_QUASIQUOTE          
-              
-              || x == &symbol_call_with_values
-              || x == &symbol_current_module
-              || x == &symbol_define
-              || x == &symbol_define_macro
-              || x == &symbol_set_x
-              )) ? &scm_t : &scm_f;
+  return x->type == SCM ? &scm_t : &scm_f;
 }
 
 scm *
 symbol_p (scm *x)
 {
-  return (x->type == SYMBOL
-          && internal_symbol_p (x) == &scm_f
-          ) ? &scm_t : &scm_f;
+  return (x->type == SYMBOL) ? &scm_t : &scm_f;
 }
 
 scm *
@@ -634,27 +598,6 @@ make_string (char const *s)
   p->name = strdup (s);
   return p;
 }
-
-#if STATIC_PRIMITIVES
-scm *primitives = 0;
-
-scm *
-lookup_primitive_ (scm *e)
-{
-  scm *x = primitives;
-  while (x && strcmp (e->name, x->car->name)) x = x->cdr;
-  if (x) x = x->car;
-  return x;
-}
-
-scm *
-internal_primitive_p (scm *e) // internal
-{
-  scm *x = primitives;
-  while (x && e != x->car) x = x->cdr;
-  return x ? &scm_t : &scm_f;
-}
-#endif // STATIC_PRIMITIVES
 
 scm *symbols = 0;
 
@@ -851,12 +794,6 @@ lookup (char const *s, scm *a)
     return make_number (atoi (s));
 
   scm *x;
-  scm p = {SYMBOL};
-  p.name = s;
-#if STATIC_PRIMITIVES
-  x = lookup_primitive_ (&p);
-  if (x) return x;
-#endif // STATIC_PRIMITIVES
   x = internal_lookup_symbol (s);
   if (x) return x;
 
@@ -1412,45 +1349,6 @@ add_environment (scm *a, char const *name, scm *x)
   return cons (cons (make_symbol (name), x), a);
 }
 
-#if STATIC_PRIMITIVES
-scm *
-mes_primitives () // internal
-{
-  primitives = cons (&scm_eval_env, primitives);
-  primitives = cons (&scm_apply_env, primitives);
-  primitives = cons (&scm_string_p, primitives);
-  primitives = cons (&scm_symbol_p, primitives);
-
-  primitives = cons (&scm_caar, primitives);
-  primitives = cons (&scm_cadr, primitives);
-  primitives = cons (&scm_cdar, primitives);
-  primitives = cons (&scm_cddr, primitives);
-  primitives = cons (&scm_assq, primitives);
-
-  primitives = cons (&scm_eq_p, primitives);
-  primitives = cons (&scm_vector_set_x, primitives);
-  primitives = cons (&scm_vector_ref, primitives);
-  primitives = cons (&scm_vector_p, primitives);
-
-#if 0 //LALR
-  primitives = cons (&scm_less_p, primitives);
-  primitives = cons (&scm_is_p, primitives);
-  primitives = cons (&scm_minus, primitives);
-  primitives = cons (&scm_plus, primitives);
-#endif
-  
-  primitives = cons (&scm_pair_p, primitives);
-
-  primitives = cons (&scm_builtin_list, primitives);
-
-  primitives = cons (&scm_cons, primitives);
-  primitives = cons (&scm_car, primitives);
-  primitives = cons (&scm_cdr, primitives);
-  primitives = cons (&scm_null_p, primitives);
-  primitives = cons (&scm_if_env, primitives);
-}
-#endif // STATIC_PRIMITIVES
-
 scm *
 mes_environment ()
 {
@@ -1514,9 +1412,7 @@ define (scm *x, scm *a)
 scm *
 lookup_macro (scm *x, scm *a)
 {
-#if STATIC_PRIMITIVES
-  if (internal_primitive_p (x) == &scm_t) return &scm_f;
-  if (internal_symbol_p (x) == &scm_t) return &scm_f;
+}
 #endif
 
   scm *m = assq (x, a);
