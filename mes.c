@@ -295,6 +295,9 @@ assq (scm *x, scm *a)
 }
 
 #define ENV_CACHE 1
+#define CACHE_SIZE 30
+#define ENV_HEAD 15
+
 #if !ENV_CACHE
 scm *
 assq_ref_cache (scm *x, scm *a) //internal
@@ -310,7 +313,6 @@ scm*cache_lookup (scm*x){}
 
 #else // ENV_CACHE
 
-#define CACHE_SIZE 20
 scm *env_cache_cars[CACHE_SIZE];
 scm *env_cache_cdrs[CACHE_SIZE];
 int cache_threshold = 0;
@@ -380,7 +382,7 @@ assq_ref_cache (scm *x, scm *a)
   int i = 0;
   while (a != &scm_nil && x != a->car->car) {i++;a = a->cdr;}
   if (a == &scm_nil) return &scm_undefined;
-  if (i>4*CACHE_SIZE) cache_save (a->car);
+  if (i>ENV_HEAD) cache_save (a->car);
   return a->car->cdr;
 }
 #endif // ENV_CACHE
