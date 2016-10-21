@@ -31,18 +31,16 @@
 (define (list . rest) rest)
 
 (define-macro (case val . args)
-  (if (null? args)
-      #f
-      (let* ((clause (car args))
-             (pred (car clause))
-             (body (cdr clause)))
-        (if (pair? pred)
-            `(if ,(if (null? (cdr pred))
-                      `(eq? ,val ',(car pred))
-                           `(member ,val ',pred))
-                 (begin ,@body)
-                 (case ,val ,@(cdr args)))
-            `(begin ,@body)))))
+  (if (null? args) #f
+      (let ((clause (car args)))
+        (let ((pred (car clause)))
+          (let ((body (cdr clause)))
+           (if (pair? pred) `(if ,(if (null? (cdr pred))
+                                      `(eq? ,val ',(car pred))
+                                      `(member ,val ',pred))
+                                 (begin ,@body)
+                                 (case ,val ,@(cdr args)))
+               `(begin ,@body)))))))
 
 (define-macro (when expr . body)
   `(if ,expr
@@ -139,15 +137,15 @@
 
 (define (max x . rest)
   (if (null? rest) x
-      (let* ((y (car rest))
-             (z (if (> x y) x y)))
-        (apply max (cons z (cdr rest))))))
+      (let ((y (car rest)))
+        (let ((z (if (> x y) x y)))
+          (apply max (cons z (cdr rest)))))))
 
 (define (min x . rest)
   (if (null? rest) x
-      (let* ((y (car rest))
-             (z (if (< x y) x y)))
-        (apply min (cons z (cdr rest))))))
+      (let ((y (car rest)))
+        (let ((z (if (< x y) x y)))
+          (apply min (cons z (cdr rest)))))))
 
 (define gensym
   (let ((counter 0))
