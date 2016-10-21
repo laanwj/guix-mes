@@ -168,6 +168,7 @@
      ((eq? (car e) 'define) (env:define (cons (sexp:define e a) '()) a))
      ((eq? (car e) 'define-macro) (env:define (env:macro (sexp:define e a)) a))
      ((eq? (car e) 'set!) (set-env! (cadr e) (eval (caddr e) a) a))
+     ((eq? (car e) 'apply-env) (apply-env (eval (cadr e) a) (evlis-env (caddr e) a) a))
      ((eq? (car e) 'unquote) (eval (cadr e) a))
      ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) (add-unquoters a)))
      (#t (apply-env (car e) (evlis-env (cdr e) a) a))))
