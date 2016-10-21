@@ -30,7 +30,6 @@
 
 #define DEBUG 0
 #define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
-#define MES_FULL 1
 
 enum type {CHAR, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
@@ -63,10 +62,9 @@ typedef struct scm_t {
 
 scm temp_number = {NUMBER, .name="nul", .value=0};
 
-#define MES_C 1
-#include "mes.h"
+#include "mes.environment.h"
 
-scm *display_ (FILE* f, scm *x); //internal
+scm *display_ (FILE* f, scm *x);
 scm *display_helper (FILE*, scm*, bool, char const*, bool);
 
 scm scm_nil = {SCM, "()"};
@@ -215,23 +213,25 @@ quasiquote (scm *x)
   return cons (&symbol_quasiquote, x);
 }
 
+scm *
+quasisyntax (scm *x)
+{
+  return cons (&symbol_quasisyntax, x);
+}
+
 #if BUILTIN_QUASIQUOTE
 scm *
-unquote (scm *x) //int must not add to environment
+unquote (scm *x) ///((no-environment))
 {
   return cons (&symbol_unquote, x);
 }
-scm *unquote (scm *x);
-scm scm_unquote = {FUNCTION1, .name="unquote", .function1=&unquote};
 
 scm *
-unquote_splicing (scm *x) //int must not add to environment
+unquote_splicing (scm *x) ///((no-environment))
 {
   return cons (&symbol_unquote_splicing, x);
 }
-scm *unquote_splicing (scm *x);
-scm scm_unquote_splicing = {FUNCTION1, .name="unquote-splicing", .function1=&unquote_splicing};
-#endif // BUILTIN_QUASIQUOTE
+
 scm *
 syntax (scm *x)
 {
@@ -239,27 +239,17 @@ syntax (scm *x)
 }
 
 scm *
-quasisyntax (scm *x)
-{
-  return cons (&symbol_quasisyntax, x);
-}
-
-scm *
-unsyntax (scm *x) //int must not add to environment
+unsyntax (scm *x) ///((no-environment))
 {
   return cons (&symbol_unsyntax, x);
 }
-scm *unsyntax (scm *x);
-scm scm_unsyntax = {FUNCTION1, .name="unsyntax", .function1=&unsyntax};
 
 scm *
-unsyntax_splicing (scm *x) //int must not add to environment
+unsyntax_splicing (scm *x) ///((no-environment))
 {
   return cons (&symbol_unsyntax_splicing, x);
 }
-scm *unsyntax_splicing (scm *x);
-scm scm_unsyntax_splicing = {FUNCTION1, .name="unsyntax-splicing", .function1=&unsyntax_splicing};
-
+#endif // BUILTIN_QUASIQUOTE
 
 //Library functions
 
@@ -300,7 +290,7 @@ assq (scm *x, scm *a)
 
 #if !ENV_CACHE
 scm *
-assq_ref_cache (scm *x, scm *a) //internal
+assq_ref_cache (scm *x, scm *a)
 {
   x = assq (x, a);
   if (x == &scm_f) return &scm_f;
@@ -622,7 +612,7 @@ vector_p (scm *x)
 }
 
 scm *
-display (scm *x/*...*/)
+display (scm *x) ///((args . n))
 {
   scm *e = car (x);
   scm *p = cdr (x);
@@ -633,7 +623,7 @@ display (scm *x/*...*/)
 }
 
 scm *
-display_ (FILE* f, scm *x) //internal
+display_ (FILE* f, scm *x) ///((internal))
 {
   return display_helper (f, x, false, "", false);
 }
@@ -665,7 +655,7 @@ append2 (scm *x, scm *y)
 }
 
 scm *
-append (scm *x/*...*/)
+append (scm *x) ///((args . n))
  {
   if (x == &scm_nil) return &scm_nil;
   return append2 (car (x), append (cdr (x)));
@@ -749,7 +739,7 @@ make_vector (scm *n)
 }
 
 scm *
-string (scm *x/*...*/)
+string (scm *x) ///((args . n))
 {
   char buf[STRING_MAX] = "";
   char *p = buf;
@@ -764,7 +754,7 @@ string (scm *x/*...*/)
 }
 
 scm *
-string_append (scm *x/*...*/)
+string_append (scm *x) ///((args . n))
 {
   char buf[STRING_MAX] = "";
 
@@ -810,7 +800,7 @@ string_ref (scm *x, scm *k)
 }
 
 scm *
-substring (scm *x/*...*/)
+substring (scm *x) ///((args . n))
 {
   assert (x->type == PAIR);
   assert (x->car->type == STRING);
@@ -852,13 +842,13 @@ last_pair (scm *x)
 }
 
 scm *
-builtin_list (scm *x/*...*/)
+builtin_list (scm *x) ///((args . n))
 {
   return x;
 }
 
 scm *
-values (scm *x/*...*/)
+values (scm *x) ///((args . n))
 {
   scm *v = cons (0, x);
   v->type = VALUES;
@@ -936,7 +926,7 @@ lookup_char (int c, scm *a)
 }
 
 char const *
-list2str (scm *l) // char*
+list2str (scm *l)
 {
   static char buf[STRING_MAX];
   char *p = buf;
@@ -950,7 +940,7 @@ list2str (scm *l) // char*
   return buf;
 }
 
-scm*
+scm *
 list_to_vector (scm *x)
 {
   temp_number.value = length (x)->value;
@@ -964,21 +954,21 @@ list_to_vector (scm *x)
   return v;
 }
 
-scm*
+scm *
 integer_to_char (scm *x)
 {
   assert (x->type == NUMBER);
   return make_char (x->value);
 }
 
-scm*
+scm *
 char_to_integer (scm *x)
 {
   assert (x->type == CHAR);
   return make_number (x->value);
 }
 
-scm*
+scm *
 number_to_string (scm *x)
 {
   assert (x->type == NUMBER);
@@ -987,28 +977,28 @@ number_to_string (scm *x)
   return make_string (buf);
 }
 
-scm*
+scm *
 builtin_exit (scm *x)
 {
   assert (x->type == NUMBER);
   exit (x->value);
 }
 
-scm*
+scm *
 string_to_symbol (scm *x)
 {
   assert (x->type == STRING);
   return make_symbol (x->name);
 }
 
-scm*
+scm *
 symbol_to_string (scm *x)
 {
   assert (x->type == SYMBOL);
   return make_string (x->name);
 }
 
-scm*
+scm *
 vector_to_list (scm *v)
 {
   scm *x = &scm_nil;
@@ -1018,7 +1008,7 @@ vector_to_list (scm *v)
 }
 
 scm *
-newline (scm *p/*...*/)
+newline (scm *p) ///((args . n))
 {
   int fd = 1;
   if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
@@ -1028,7 +1018,7 @@ newline (scm *p/*...*/)
 }
 
 scm *
-force_output (scm *p/*...*/)
+force_output (scm *p) ///((args . n))
 {
   int fd = 1;
   if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
@@ -1098,20 +1088,20 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
 // READ
 
 int
-ungetchar (int c) //int
+ungetchar (int c)
 {
   return ungetc (c, stdin);
 }
 
 int
-peekchar () //int
+peekchar ()
 {
   int c = getchar ();
   ungetchar (c);
   return c;
 }
 
-scm*
+scm *
 peek_char ()
 {
   return make_char (peekchar ());
@@ -1124,7 +1114,7 @@ read_char ()
 }
 
 scm *
-write_char (scm *x/*...*/)
+write_char (scm *x) ///((args . n))
 {
   scm *c = car (x);
   scm *p = cdr (x);
@@ -1136,7 +1126,7 @@ write_char (scm *x/*...*/)
   return c;
 }
 
-scm*
+scm *
 unget_char (scm *c)
 {
   assert (c->type == NUMBER || c->type == CHAR);
@@ -1309,7 +1299,7 @@ read_env (scm *a)
 }
 
 scm *
-greater_p (scm *x/*...*/)
+greater_p (scm *x) ///((name . ">") (args . n))
 {
   int n = INT_MAX;
   while (x != &scm_nil)
@@ -1323,7 +1313,7 @@ greater_p (scm *x/*...*/)
 }
 
 scm *
-less_p (scm *x/*...*/)
+less_p (scm *x) ///((name . "<") (args . n))
 {
   int n = INT_MIN;
   while (x != &scm_nil)
@@ -1337,7 +1327,7 @@ less_p (scm *x/*...*/)
 }
 
 scm *
-is_p (scm *x/*...*/)
+is_p (scm *x) ///((name . "=") (args . n))
 {
   if (x == &scm_nil) return &scm_t;
   assert (x->car->type == NUMBER);
@@ -1352,7 +1342,7 @@ is_p (scm *x/*...*/)
 }
 
 scm *
-minus (scm *x/*...*/)
+minus (scm *x) ///((name . "-") (args . n))
 {
   scm *a = car (x);
   assert (a->type == NUMBER);
@@ -1370,7 +1360,7 @@ minus (scm *x/*...*/)
 }
 
 scm *
-plus (scm *x/*...*/)
+plus (scm *x) ///((name . "+") (args . n))
 {
   int n = 0;
   while (x != &scm_nil)
@@ -1383,7 +1373,7 @@ plus (scm *x/*...*/)
 }
 
 scm *
-divide (scm *x/*...*/)
+divide (scm *x) ///((name . "/") (args . n))
 {
   int n = 1;
   if (x != &scm_nil) {
@@ -1409,7 +1399,7 @@ modulo (scm *a, scm *b)
 }
 
 scm *
-multiply (scm *x/*...*/)
+multiply (scm *x) ///((name . "*") (args . n))
 {
   int n = 1;
   while (x != &scm_nil)
@@ -1422,7 +1412,7 @@ multiply (scm *x/*...*/)
 }
 
 scm *
-logior (scm *x/*...*/)
+logior (scm *x) ///((args . n))
 {
   int n = 0;
   while (x != &scm_nil)
@@ -1461,11 +1451,11 @@ add_environment (scm *a, char const *name, scm *x)
 }
 
 scm *
-mes_environment ()
+mes_environment () ///((internal))
 {
   scm *a = &scm_nil;
 
-  #include "symbols.i"
+  #include "mes.symbols.i"
 
 #if BOOT
   symbols = cons (&scm_label, symbols);
@@ -1480,12 +1470,8 @@ mes_environment ()
   a = cons (cons (&symbol_quote, &scm_quote), a);
   a = cons (cons (&symbol_syntax, &scm_syntax), a);
 
-#if MES_FULL
-#include "environment.i"
-#else
-  a = add_environment (a, "display", &scm_display);
-  a = add_environment (a, "newline", &scm_newline);
-#endif
+#include "mes.environment.i"
+
   a = cons (cons (&scm_closure, a), a);
   return a;
 }
