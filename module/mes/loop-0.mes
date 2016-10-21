@@ -28,9 +28,9 @@
 ;;; boot-0.mes, loop-0.mes is loaded to provide a richer eval/apply.
 
 ;;; This might enable moving more functionality from C to Scheme,
-;;; making the full source bootstrap process more feasible.  However,
-;;; currently performance is 400x worse.  Also several tests in the
-;;; test suite fail and the REPL does not work yet.
+;;; making the entirely-from-source bootstrap process more feasible.
+;;; However, currently performance is 400x worse.  Also several tests
+;;; in the test suite fail and the REPL does not work yet.
 
 ;;; Code:
 
@@ -145,7 +145,7 @@
         (let ((r (eval (cons 'begin body) (cons (cons '*closure* p) p))))
           (cache-invalidate-range p (cdr a))
           r))))
-   ((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
+   ;;((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
    (#t (apply-env (eval fn a) x a))))
 
 (define (eval-expand e a)
