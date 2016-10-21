@@ -64,6 +64,7 @@ TESTS:=\
  tests/closure.test\
  tests/quasiquote.test\
  tests/let.test\
+ tests/vector.test\
  tests/scm.test\
  tests/record.test\
  tests/let-syntax.test\

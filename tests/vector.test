@@ -1,0 +1,56 @@
+#! /bin/sh
+# -*-scheme-*-
+echo ' ()' | cat $($(dirname $0)/../scripts/include.mes $0) $0 /dev/stdin | $(dirname $0)/../scripts/mes "$@"
+#paredit:||
+exit $?
+!#
+
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; vector.test: This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+(mes-use-module (mes base-0))
+(mes-use-module (mes base))
+(mes-use-module (mes quasiquote))
+(mes-use-module (mes let))
+(mes-use-module (srfi srfi-0))
+(mes-use-module (mes scm))
+(mes-use-module (mes test))
+
+(when guile?
+  (use-modules (srfi srfi-1)))
+
+(pass-if "first dummy" #t)
+(pass-if-not "second dummy" #f)
+
+(pass-if "vector" (sequal? #(vector 0 1 2) #(vector 0 1 2)))
+(pass-if "vector?" (vector? #(1 2 c)))
+(pass-if "vector-length" (seq? (vector-length #(1)) 1))
+
+(when (not guile?)
+  (pass-if "c:make-vector" (sequal? (c:make-vector 3) #(*unspecified* *unspecified* *unspecified*)))
+  (pass-if "make-vector" (sequal? (make-vector 3) #(*unspecified* *unspecified* *unspecified*))))
+
+(pass-if "make-vector 2" (sequal? (make-vector 3 1) #(1 1 1)))
+(pass-if "vector-ref" (seq? (vector-ref #(0 1) 1) 1))
+(pass-if "vector-set" (equal? (let ((v #(0 1))) (vector-set! v 1 'q) v) #(0 q)))
+(pass-if "vector-set 2" (not (equal? (let ((v #(0 1))) (vector-set! v 1 'q) v) #())))
+(pass-if "list->vector" (sequal? (list->vector '(a b c)) #(a b c)))
+
+(result 'report)

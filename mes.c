@@ -61,6 +61,8 @@ typedef struct scm_t {
   };
 } scm;
 
+scm temp_number = {NUMBER, .name="nul", .value=0};
+
 #define MES_C 1
 #include "mes.h"
 
@@ -734,12 +736,13 @@ make_symbol (char const *s)
 }
 
 scm *
-make_vector (int n)
+make_vector (scm *n)
 {
   scm *p = (scm*)malloc (sizeof (scm));
   p->type = VECTOR;
-  p->length = n;
-  p->vector = (scm**)malloc (n * sizeof (scm*));
+  p->length = n->value;
+  p->vector = (scm**)malloc (n->value * sizeof (scm*));
+  for (int i=0; i<n->value; i++) p->vector[i] = &scm_unspecified;
   return p;
 }
 
@@ -948,8 +951,8 @@ list2str (scm *l) // char*
 scm*
 list_to_vector (scm *x)
 {
-  int n = length (x)->value;
-  scm *v = make_vector (n);
+  temp_number.value = length (x)->value;
+  scm *v = make_vector (&temp_number);
   scm **p = v->vector;
   while (x != &scm_nil)
     {

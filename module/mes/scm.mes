@@ -67,8 +67,10 @@
           (cons (string-ref s i) (loop (+ i 1)))))))
 
 (define (vector . rest) (list->vector rest))
+(define c:make-vector make-vector)
 (define (make-vector n . x)
-  (list->vector (apply make-list (cons n x))))
+  (if (null? x) (c:make-vector n)
+      (list->vector (apply make-list (cons n x)))))
 
 (define (acons key value alist)
   (cons (cons key value) alist))
