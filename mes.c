@@ -62,6 +62,7 @@ typedef struct scm_t {
 
 scm temp_number = {NUMBER, .name="nul", .value=0};
 
+#include "type.environment.h"
 #include "mes.environment.h"
 
 scm *display_ (FILE* f, scm *x);
@@ -113,13 +114,6 @@ scm char_space = {CHAR, .name="space", .value=32};
 
 // PRIMITIVES
 
-#define ATOM_P(x) (x->type == PAIR ? &scm_f : &scm_t)
-scm *
-atom_p (scm *x)
-{
-  return ATOM_P(x);
-}
-
 scm *
 car (scm *x)
 {
@@ -144,37 +138,15 @@ cons (scm *x, scm *y)
   return p;
 }
 
-#define EQ_P(x, y)\
-  ((x == y                                              \
-    || (x->type == CHAR && y->type == CHAR              \
-        && x->value == y->value)                        \
-    || (x->type == NUMBER && y->type == NUMBER          \
-        && x->value == y->value))                       \
-   ? &scm_t : &scm_f)
-
 scm *
 eq_p (scm *x, scm *y)
 {
-  return EQ_P (x, y);
-}
-
-scm *
-macro_p (scm *x)
-{
-  return x->type == MACRO ? &scm_t : &scm_f;
-}
-
-scm *
-null_p (scm *x)
-{
-  return x == &scm_nil ? &scm_t : &scm_f;
-}
-
-#define PAIR_P(x) (x->type == PAIR ? &scm_t : &scm_f)
-scm *
-pair_p (scm *x)
-{
-  return PAIR_P(x);
+  return (x == y
+          || (x->type == CHAR && y->type == CHAR
+              && x->value == y->value)
+          || (x->type == NUMBER && y->type == NUMBER
+              && x->value == y->value))
+    ? &scm_t : &scm_f;
 }
 
 scm *
@@ -218,6 +190,8 @@ quasisyntax (scm *x)
 {
   return cons (&symbol_quasisyntax, x);
 }
+
+#include "type.c"
 
 #if BUILTIN_QUASIQUOTE
 scm *
@@ -271,7 +245,7 @@ pairlis (scm *x, scm *y, scm *a)
 {
   if (x == &scm_nil)
     return a;
-  if (atom_p (x) == &scm_t)
+  if (pair_p (x) == &scm_f)
     return cons (cons (x, y), a);
   return cons (cons (car (x), car (y)),
                pairlis (cdr (x), cdr (y), a));
@@ -280,7 +254,7 @@ pairlis (scm *x, scm *y, scm *a)
 scm *
 assq (scm *x, scm *a)
 {
-  while (a != &scm_nil && EQ_P (x, a->car->car) == &scm_f) a = a->cdr;
+  while (a != &scm_nil && eq_p (x, a->car->car) == &scm_f) a = a->cdr;
   return a != &scm_nil ? a->car : &scm_f;
 }
 
@@ -432,7 +406,7 @@ scm *
 builtin_eval (scm *e, scm *a)
 {
   if (builtin_p (e) == &scm_t) return e;
-  if (internal_p (e) == &scm_t) return e;
+  if (e->type == SCM) return e;
 
   e = expand_macro_env (e, a);
 
@@ -559,59 +533,6 @@ scm*eval_quasisyntax (scm *e, scm *a){}
 //Helpers
 
 scm *
-builtin_p (scm *x)
-{
-  return (x->type == FUNCTION0
-          || x->type == FUNCTION1
-          || x->type == FUNCTION2
-          || x->type == FUNCTION3
-          || x->type == FUNCTIONn)
-    ? &scm_t : &scm_f;
-}
-
-scm *
-boolean_p (scm *x)
-{
-  return (x == &scm_t || x == &scm_f) ? &scm_t : &scm_f;
-}
-
-scm *
-char_p (scm *x)
-{
-  return x->type == CHAR ? &scm_t : &scm_f;
-}
-
-scm *
-number_p (scm *x)
-{
-  return x->type == NUMBER ? &scm_t : &scm_f;
-}
-
-scm *
-string_p (scm *x)
-{
-  return x->type == STRING ? &scm_t : &scm_f;
-}
-
-scm *
-internal_p (scm *x)
-{
-  return x->type == SCM ? &scm_t : &scm_f;
-}
-
-scm *
-symbol_p (scm *x)
-{
-  return x->type == SYMBOL ? &scm_t : &scm_f;
-}
-
-scm *
-vector_p (scm *x)
-{
-  return x->type == VECTOR ? &scm_t : &scm_f;
-}
-
-scm *
 display (scm *x) ///((args . n))
 {
   scm *e = car (x);
@@ -623,7 +544,7 @@ display (scm *x) ///((args . n))
 }
 
 scm *
-display_ (FILE* f, scm *x) ///((internal))
+display_ (FILE* f, scm *x)
 {
   return display_helper (f, x, false, "", false);
 }
@@ -1080,7 +1001,7 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
     fprintf (f, ")");
   }
   else if (builtin_p (x) == &scm_t) fprintf (f, "#<procedure %s>", x->name);
-  else if (atom_p (x) == &scm_t) fprintf (f, "%s", x->name);
+  else if (pair_p (x) == &scm_f) fprintf (f, "%s", x->name);
 
   return &scm_unspecified;
 }
@@ -1471,6 +1392,7 @@ mes_environment () ///((internal))
   a = cons (cons (&symbol_syntax, &scm_syntax), a);
 
 #include "mes.environment.i"
+#include "type.environment.i"
 
   a = cons (cons (&scm_closure, a), a);
   return a;

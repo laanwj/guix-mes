@@ -22,7 +22,9 @@ include make/install.make
 
 all: mes
 
-mes.o: mes.c mes.environment.h mes.symbols.i mes.environment.i
+mes.o: mes.c
+mes.o: mes.c mes.environment.h mes.environment.i mes.symbols.i
+mes.o: type.c type.environment.h type.environment.i
 
 clean:
 	rm -f mes mes.o mes.environment.i mes.symbols.i mes.environment.h *.cat a.out
@@ -30,7 +32,7 @@ clean:
 distclean: clean
 	rm -f .config.make
 
-mes.environment.h mes.environment.i mes.symbols.i: mes.c build-aux/mes-snarf.scm
+%.environment.h %.environment.i %.symbols.i: %.c build-aux/mes-snarf.scm
 	build-aux/mes-snarf.scm $<
 
 check: all guile-check mes-check

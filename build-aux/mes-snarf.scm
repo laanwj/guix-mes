@@ -94,6 +94,9 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
              #:annotation (with-input-from-string (match:substring m 4) read)))
          matches)))
 
+(define (content? f)
+  ((compose not string-null? .content) f))
+
 (define (internal? f)
   ((compose (cut assoc-ref <> 'internal) .annotation) f))
 
@@ -124,7 +127,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define (main args)
   (let* ((files (cdr args)))
-    (map file-write (append-map generate-includes files))))
+    (map file-write (filter content? (append-map generate-includes files)))))
 
 ;;(define string (with-input-from-file "../mes.c" read-string))
 
