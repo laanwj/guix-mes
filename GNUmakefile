@@ -24,6 +24,7 @@ all: mes
 
 mes.o: mes.c
 mes.o: mes.c mes.environment.h mes.environment.i mes.symbols.i
+mes.o: quasiquote.c quasiquote.environment.h quasiquote.environment.i
 mes.o: type.c type.environment.h type.environment.i
 
 clean:

@@ -29,7 +29,7 @@
 #include <stdbool.h>
 
 #define DEBUG 0
-#define BUILTIN_QUASIQUOTE 1 // 6x speedup for mescc
+#define QUASIQUOTE 1
 
 enum type {CHAR, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
@@ -63,6 +63,7 @@ typedef struct scm_t {
 scm temp_number = {NUMBER, .name="nul", .value=0};
 
 #include "type.environment.h"
+#include "quasiquote.environment.h"
 #include "mes.environment.h"
 
 scm *display_ (FILE* f, scm *x);
@@ -192,38 +193,7 @@ quasisyntax (scm *x)
 }
 
 #include "type.c"
-
-#if BUILTIN_QUASIQUOTE
-scm *
-unquote (scm *x) ///((no-environment))
-{
-  return cons (&symbol_unquote, x);
-}
-
-scm *
-unquote_splicing (scm *x) ///((no-environment))
-{
-  return cons (&symbol_unquote_splicing, x);
-}
-
-scm *
-syntax (scm *x)
-{
-  return cons (&symbol_syntax, x);
-}
-
-scm *
-unsyntax (scm *x) ///((no-environment))
-{
-  return cons (&symbol_unsyntax, x);
-}
-
-scm *
-unsyntax_splicing (scm *x) ///((no-environment))
-{
-  return cons (&symbol_unsyntax_splicing, x);
-}
-#endif // BUILTIN_QUASIQUOTE
+#include "quasiquote.c"
 
 //Library functions
 
@@ -450,7 +420,7 @@ builtin_eval (scm *e, scm *a)
 #endif
       if (e->car == &symbol_set_x)
         return set_env_x (cadr (e), builtin_eval (caddr (e), a), a);
-#if BUILTIN_QUASIQUOTE
+#if QUASIQUOTE
       if (e->car == &symbol_unquote)
         return builtin_eval (cadr (e), a);
       if (e->car == &symbol_quasiquote)
@@ -459,7 +429,7 @@ builtin_eval (scm *e, scm *a)
         return builtin_eval (cadr (e), a);
       if (e->car == &symbol_quasisyntax)
         return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
-#endif //BUILTIN_QUASIQUOTE
+#endif //QUASIQUOTE
     }
   return apply_env (e->car, evlis_env (e->cdr, a), a);
 }
@@ -494,41 +464,6 @@ builtin_if (scm *e, scm *a)
     return builtin_eval (caddr (e), a);
   return &scm_unspecified;
 }
-
-#if BUILTIN_QUASIQUOTE
-scm *
-eval_quasiquote (scm *e, scm *a)
-{
-  if (e == &scm_nil) return e;
-  else if (atom_p (e) == &scm_t) return e;
-  else if (eq_p (car (e), &symbol_unquote) == &scm_t)
-    return builtin_eval (cadr (e), a);
-  else if (e->type == PAIR && e->car->type == PAIR
-           && eq_p (caar (e), &symbol_unquote_splicing) == &scm_t)
-      return append2 (builtin_eval (cadar (e), a), eval_quasiquote (cdr (e), a));
-  return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
-}
-
-scm *
-eval_quasisyntax (scm *e, scm *a)
-{
-  if (e == &scm_nil) return e;
-  else if (atom_p (e) == &scm_t) return e;
-  else if (eq_p (car (e), &symbol_unsyntax) == &scm_t)
-    return builtin_eval (cadr (e), a);
-  else if (e->type == PAIR && e->car->type == PAIR
-           && eq_p (caar (e), &symbol_unsyntax_splicing) == &scm_t)
-      return append2 (builtin_eval (cadar (e), a), eval_quasisyntax (cdr (e), a));
-  return cons (eval_quasisyntax (car (e), a), eval_quasisyntax (cdr (e), a));
-}
-
-#else
-scm*add_unquoters (scm *a){}
-scm*add_unsyntaxers (scm *a){}
-scm*eval_unsyntax (scm *e, scm *a){}
-scm*eval_quasiquote (scm *e, scm *a){}
-scm*eval_quasisyntax (scm *e, scm *a){}
-#endif // BUILTIN_QUASIQUOTE
 
 //Helpers
 
@@ -1344,26 +1279,6 @@ logior (scm *x) ///((args . n))
     }
   return make_number (n);
 }
-
-scm *add_environment (scm *a, char const *name, scm *x);
-
-#if BUILTIN_QUASIQUOTE
-scm *
-add_unquoters (scm *a)
-{
-  a = cons (cons (&symbol_unquote, &scm_unquote), a);
-  a = cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing), a);
-  return a;
-}
-
-scm *
-add_unsyntaxers (scm *a)
-{
-  a = cons (cons (&symbol_unsyntax, &scm_unsyntax), a);
-  a = cons (cons (&symbol_unsyntax_splicing, &scm_unsyntax_splicing), a);
-  return a;
-}
-#endif // BUILTIN_QUASIQUOTE
 
 scm *
 add_environment (scm *a, char const *name, scm *x)
