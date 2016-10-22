@@ -295,7 +295,7 @@ assq (scm *x, scm *a)
 }
 
 #define ENV_CACHE 1
-#define CACHE_SIZE 50
+#define CACHE_SIZE 30
 #define ENV_HEAD 15
 
 #if !ENV_CACHE
@@ -328,16 +328,13 @@ cache_save (scm *p)
       break;
     }
     if (env_cache_cars[i] == p->car) return &scm_unspecified;
-    if (n > -1 * env_cache_cars[i]->value) {
-      n = env_cache_cars[i]->value * -1;
+    if (n > env_cache_cars[i]->value) {
+      n = env_cache_cars[i]->value;
       j = i;
     }
   }
   if (j >= 0) {
-    cache_threshold = p->car->value * -1;
-    p->car->value *= -1;
-    if (env_cache_cars[j]) env_cache_cars[j]->value *= -1;
-    //fprintf (stderr, "caching: %s [%d]\n", p->car->name, p->car->value);
+    cache_threshold = p->car->value;
     env_cache_cars[j] = p->car;
     env_cache_cdrs[j] = p->cdr;
   }
@@ -359,8 +356,6 @@ cache_invalidate (scm *x)
 {
   for (int i=0; i < CACHE_SIZE; i++) {
     if (env_cache_cars[i] == x) {
-      x->value *= -1;
-      //fprintf (stderr, "dropping: %s [%d]\n", env_cache_cars[i]->name, env_cache_cars[i]->value);
       env_cache_cars[i] = 0;
       break;
     }
@@ -381,13 +376,13 @@ cache_invalidate_range (scm *p, scm *a)
 scm *
 assq_ref_cache (scm *x, scm *a)
 {
-  x->value < 0 ? x->value-- : x->value++;
+  x->value++;
   scm *c = cache_lookup (x);
   if (c != &scm_undefined) return c;
   int i = 0;
   while (a != &scm_nil && x != a->car->car) {i++;a = a->cdr;}
   if (a == &scm_nil) return &scm_undefined;
-  if (i>ENV_HEAD /* && a->car->value > cache_threshold*/) cache_save (a->car);
+  if (i>ENV_HEAD) cache_save (a->car);
   return a->car->cdr;
 }
 #endif // ENV_CACHE
