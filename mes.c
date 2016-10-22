@@ -63,6 +63,7 @@ typedef struct scm_t {
 scm temp_number = {NUMBER, .name="nul", .value=0};
 
 #include "type.environment.h"
+#include "define.environment.h"
 #include "quasiquote.environment.h"
 #include "mes.environment.h"
 
@@ -193,6 +194,7 @@ quasisyntax (scm *x)
 }
 
 #include "type.c"
+#include "define.c"
 #include "quasiquote.c"
 
 //Library functions
@@ -1307,6 +1309,7 @@ mes_environment () ///((internal))
   a = cons (cons (&symbol_syntax, &scm_syntax), a);
 
 #include "mes.environment.i"
+#include "define.environment.i"
 #include "type.environment.i"
 
   a = cons (cons (&scm_closure, a), a);
@@ -1323,38 +1326,6 @@ scm *
 make_closure (scm *args, scm *body, scm *a)
 {
   return cons (&scm_closure, cons (cons (&scm_circular, a), cons (args, body)));
-}
-
-#if !BOOT
-scm *
-define (scm *x, scm *a)
-{
-  scm *e;
-  scm *name = cadr (x);
-  if (name->type != PAIR)
-    e = builtin_eval (caddr (x), cons (cons (cadr (x), cadr (x)), a));
-  else {
-    name = car (name);
-    scm *p = pairlis (cadr (x), cadr (x), a);
-    e = builtin_eval (make_lambda (cdadr (x), cddr (x)), p);
-  }
-  if (eq_p (car (x), &symbol_define_macro) == &scm_t)
-    e = make_macro (name, e);
-  scm *entry = cons (name, e);
-  scm *aa = cons (entry, &scm_nil);
-  set_cdr_x (aa, cdr (a));
-  set_cdr_x (a, aa);
-  scm *cl = assq (&scm_closure, a);
-  set_cdr_x (cl, aa);
-  return entry;
-}
-#else // BOOT
-scm*define (scm *x, scm *a){}
-#endif
-
-scm *
-define_macro (scm *x, scm *a)
-{
 }
 
 scm *
