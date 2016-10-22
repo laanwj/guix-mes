@@ -82,6 +82,11 @@
    ((not (pair? m)) (eval m a))
    (#t (cons (eval (car m) a) (evlis-env (cdr m) a)))))
 
+(define (evlis-env m a)
+  (if (null? m) '()
+      (if (not (pair? m)) (eval m a)
+          (cons (eval (car m) a) (evlis-env (cdr m) a)))))
+
 (define (apply-env fn x a) 
   (cond
    ((atom? fn)
@@ -108,6 +113,46 @@
    ;;((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
    (#t (apply-env (eval fn a) x a))))
 
+(define (apply-env fn x a) 
+  (if (atom? fn) (if (builtin? fn) (call fn x)
+                     (if (eq? fn 'call-with-values) (c:apply-env 'call-with-values x a)
+                         (if (eq? fn 'current-module) a
+                             (apply-env (eval fn a) x a))))
+      (if (eq? (car fn) 'lambda)
+          ;; (let ((p (pairlis (cadr fn) x a)))
+          ;;   (cache-invalidate-range p (cdr a))
+          ;;   (let ((r (eval-begin-env (cddr fn) (cons (cons '*closure* p) p))))
+          ;;     (cache-invalidate-range p (cdr a))
+          ;;     r))
+          ((lambda (p)
+             (cache-invalidate-range p (cdr a))
+             ((lambda (r)
+                (cache-invalidate-range p (cdr a))
+                r)
+              (eval-begin-env (cddr fn) (cons (cons '*closure* p) p))))
+           (pairlis (cadr fn) x a))
+          (if (eq? (car fn) '*closure*)
+              ;; (let ((args (caddr fn))
+              ;;       (body (cdddr fn))
+              ;;       (a (cddr (cadr fn))))
+              ;;   (let ((p (pairlis args x a)))
+              ;;     (cache-invalidate-range p (cdr a))
+              ;;     (let ((r (eval-begin-env body (cons (cons '*closure* p) p))))
+              ;;       (cache-invalidate-range p (cdr a))
+              ;;       r)))
+              ((lambda (a)
+                 ((lambda (p)
+                    (cache-invalidate-range p (cdr a))
+                    ((lambda (r)
+                       (cache-invalidate-range p (cdr a))
+                       r)
+                     (eval-begin-env (cdddr fn) (cons (cons '*closure* p) p))))
+                  (pairlis (caddr fn) x a)))
+               (cddr (cadr fn)))
+              
+              ;;((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
+              (apply-env (eval fn a) x a)))))
+
 (define (eval-expand e a)
   (cond
    ((symbol? e) (assq-ref-cache e a))
@@ -128,6 +173,25 @@
      ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) (add-unquoters a)))
      (#t (apply-env (car e) (evlis-env (cdr e) a) a))))
    (#t (apply-env (car e) (evlis-env (cdr e) a) a))))
+
+(define (eval-expand e a)
+  (if (symbol? e) (assq-ref-cache e a)
+      (if (atom? e) e
+          (if (atom? (car e))
+              (if (eq? (car e) 'quote) (cadr e)
+                  (if (eq? (car e) 'syntax) (cadr e)
+                      (if (eq? (car e) 'begin) (eval-begin-env e a)
+                          (if (eq? (car e) 'lambda) (make-closure (cadr e) (cddr e) (assq '*closure* a))
+                              (if (eq? (car e) '*closure*) e
+                                  (if (eq? (car e) 'if) (eval-if-env (cdr e) a)
+                                      (if (eq? (car e) 'define) (env:define (cons (sexp:define e a) '()) a)
+                                          (if (eq? (car e) 'define-macro) (env:define (env:macro (sexp:define e a)) a)
+                                              (if (eq? (car e) 'set!) (set-env! (cadr e) (eval (caddr e) a) a)
+                                                  (if (eq? (car e) 'apply-env) (apply-env (eval (cadr e) a) (evlis-env (caddr e) a) a)
+                                                      (if (eq? (car e) 'unquote) (eval (cadr e) a)
+                                                          (if (eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) (add-unquoters a))
+                                                              (apply-env (car e) (evlis-env (cdr e) a) a)))))))))))))
+              (apply-env (car e) (evlis-env (cdr e) a) a)))))
 
 (define (unquote x) (cons 'unquote x))
 (define (unquote-splicing x) (cons 'quasiquote x))
@@ -169,6 +233,15 @@
               (eq? (caar e) 'unquote-splicing))
          (append2 (eval (cadar e) a) (eval-quasiquote (cdr e) a)))
         (#t (cons (eval-quasiquote (car e) a) (eval-quasiquote (cdr e) a)))))
+
+(define (eval-quasiquote e a)
+  (if (null? e) e
+      (if (atom? e) e
+          (if (eq? (car e) 'unquote) (eval (cadr e) a)
+              (if (pair? (car e)) (if (eq? (caar e) 'unquote-splicing) (append2 (eval (cadar e) a) (eval-quasiquote (cdr e) a))
+                                      
+                                      (cons (eval-quasiquote (car e) a) (eval-quasiquote (cdr e) a)))
+                  (cons (eval-quasiquote (car e) a) (eval-quasiquote (cdr e) a)))))))
 
 (define (sexp:define e a)
   (if (atom? (cadr e)) (cons (cadr e) (eval (caddr e) a))
