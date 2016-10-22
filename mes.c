@@ -62,12 +62,13 @@ typedef struct scm_t {
 
 scm temp_number = {NUMBER, .name="nul", .value=0};
 
-#include "type.environment.h"
 #include "define.environment.h"
-#include "quasiquote.environment.h"
+#include "lib.environment.h"
 #include "math.environment.h"
-#include "string.environment.h"
 #include "mes.environment.h"
+#include "quasiquote.environment.h"
+#include "string.environment.h"
+#include "type.environment.h"
 
 scm *display_ (FILE* f, scm *x);
 scm *display_helper (FILE*, scm*, bool, char const*, bool);
@@ -194,21 +195,6 @@ quasisyntax (scm *x)
 {
   return cons (&symbol_quasisyntax, x);
 }
-
-//Library functions
-
-// Derived, non-primitives
-scm *caar (scm *x) {return car (car (x));}
-scm *cadr (scm *x) {return car (cdr (x));}
-scm *cdar (scm *x) {return cdr (car (x));}
-scm *cddr (scm *x) {return cdr (cdr (x));}
-scm *caaar (scm *x) {return car (car (car (x)));}
-scm *caadr (scm *x) {return car (car (cdr (x)));}
-scm *caddr (scm *x) {return car (cdr (cdr (x)));}
-scm *cdadr (scm *x) {return cdr (car (cdr (x)));}
-scm *cadar (scm *x) {return car (cdr (car (x)));}
-scm *cddar (scm *x) {return cdr (cdr (car (x)));}
-scm *cdddr (scm *x) {return cdr (cdr (cdr (x)));}
 
 scm *
 pairlis (scm *x, scm *y, scm *a)
@@ -595,34 +581,6 @@ make_vector (scm *n)
 }
 
 scm *
-length (scm *x)
-{
-  int n = 0;
-  while (x != &scm_nil)
-    {
-      n++;
-      x = cdr (x);
-    }
-  return make_number (n);
-}
-
-scm *
-last_pair (scm *x)
-{
-  //if (x != &scm_nil && cdr (x) != &scm_nil)
-  //return last_pair (cdr (x));
-  while (x != &scm_nil && cdr (x) != &scm_nil)
-    x = cdr (x);
-  return x;
-}
-
-scm *
-builtin_list (scm *x) ///((args . n))
-{
-  return x;
-}
-
-scm *
 values (scm *x) ///((args . n))
 {
   scm *v = cons (0, x);
@@ -700,21 +658,6 @@ lookup_char (int c, scm *a)
   return lookup (buf, a);
 }
 
-char const *
-list2str (scm *l)
-{
-  static char buf[STRING_MAX];
-  char *p = buf;
-  while (l != &scm_nil) {
-    scm *c = car (l);
-    assert (c->type == NUMBER);
-    *p++ = c->value;
-    l = cdr (l);
-  }
-  *p = 0;
-  return buf;
-}
-
 scm *
 list_to_vector (scm *x)
 {
@@ -727,36 +670,6 @@ list_to_vector (scm *x)
       x = cdr (x);
     }
   return v;
-}
-
-scm *
-integer_to_char (scm *x)
-{
-  assert (x->type == NUMBER);
-  return make_char (x->value);
-}
-
-scm *
-char_to_integer (scm *x)
-{
-  assert (x->type == CHAR);
-  return make_number (x->value);
-}
-
-scm *
-builtin_exit (scm *x)
-{
-  assert (x->type == NUMBER);
-  exit (x->value);
-}
-
-scm *
-vector_to_list (scm *v)
-{
-  scm *x = &scm_nil;
-  for (int i = 0; i < v->length; i++)
-    x = append2 (x, cons (v->vector[i], &scm_nil));
-  return x;
 }
 
 scm *
@@ -1078,6 +991,7 @@ mes_environment () ///((internal))
 
 #include "string.environment.i"
 #include "math.environment.i"
+#include "lib.environment.i"
 #include "mes.environment.i"
 #include "define.environment.i"
 #include "type.environment.i"
@@ -1121,6 +1035,7 @@ read_file (scm *e, scm *a)
 
 #include "type.c"
 #include "define.c"
+#include "lib.c"
 #include "math.c"
 #include "quasiquote.c"
 #include "string.c"
