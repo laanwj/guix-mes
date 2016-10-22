@@ -66,6 +66,7 @@ scm temp_number = {NUMBER, .name="nul", .value=0};
 #include "define.environment.h"
 #include "quasiquote.environment.h"
 #include "math.environment.h"
+#include "string.environment.h"
 #include "mes.environment.h"
 
 scm *display_ (FILE* f, scm *x);
@@ -193,11 +194,6 @@ quasisyntax (scm *x)
 {
   return cons (&symbol_quasisyntax, x);
 }
-
-#include "type.c"
-#include "define.c"
-#include "math.c"
-#include "quasiquote.c"
 
 //Library functions
 
@@ -599,87 +595,6 @@ make_vector (scm *n)
 }
 
 scm *
-string (scm *x) ///((args . n))
-{
-  char buf[STRING_MAX] = "";
-  char *p = buf;
-  while (x != &scm_nil)
-    {
-      scm *s = car (x);
-      assert (s->type == CHAR);
-      *p++ = s->value;
-      x = cdr (x);
-    }
-  return make_string (buf);
-}
-
-scm *
-string_append (scm *x) ///((args . n))
-{
-  char buf[STRING_MAX] = "";
-
-  while (x != &scm_nil)
-    {
-      scm *s = car (x);
-      assert (s->type == STRING);
-      strcat (buf, s->name);
-      x = cdr (x);
-    }
-  return make_string (buf);
-}
-
-scm *
-list_to_string (scm *x)
-{
-  char buf[STRING_MAX] = "";
-  char *p = buf;
-  while (x != &scm_nil)
-    {
-      scm *s = car (x);
-      assert (s->type == CHAR);
-      *p++ = s->value;
-      x = cdr (x);
-    }
-  *p = 0;
-  return make_string (buf);
-}
-
-scm *
-string_length (scm *x)
-{
-  assert (x->type == STRING);
-  return make_number (strlen (x->name));
-}
-
-scm *
-string_ref (scm *x, scm *k)
-{
-  assert (x->type == STRING);
-  assert (k->type == NUMBER);
-  return make_char (x->name[k->value]);
-}
-
-scm *
-substring (scm *x) ///((args . n))
-{
-  assert (x->type == PAIR);
-  assert (x->car->type == STRING);
-  char const *s = x->car->name;
-  assert (x->cdr->car->type == NUMBER);
-  int start = x->cdr->car->value;
-  int end = strlen (s);
-  if (x->cdr->cdr->type == PAIR) {
-    assert (x->cdr->cdr->car->type == NUMBER);
-    assert (x->cdr->cdr->car->value <= end);
-    end = x->cdr->cdr->car->value;
-  }
-  char buf[STRING_MAX];
-  strncpy (buf, s+start, end - start);
-  buf[end-start] = 0;
-  return make_string (buf);
-}
-
-scm *
 length (scm *x)
 {
   int n = 0;
@@ -829,33 +744,10 @@ char_to_integer (scm *x)
 }
 
 scm *
-number_to_string (scm *x)
-{
-  assert (x->type == NUMBER);
-  char buf[STRING_MAX];
-  sprintf (buf,"%d", x->value);
-  return make_string (buf);
-}
-
-scm *
 builtin_exit (scm *x)
 {
   assert (x->type == NUMBER);
   exit (x->value);
-}
-
-scm *
-string_to_symbol (scm *x)
-{
-  assert (x->type == STRING);
-  return make_symbol (x->name);
-}
-
-scm *
-symbol_to_string (scm *x)
-{
-  assert (x->type == SYMBOL);
-  return make_string (x->name);
 }
 
 scm *
@@ -1184,6 +1076,7 @@ mes_environment () ///((internal))
   a = cons (cons (&symbol_quote, &scm_quote), a);
   a = cons (cons (&symbol_syntax, &scm_syntax), a);
 
+#include "string.environment.i"
 #include "math.environment.i"
 #include "mes.environment.i"
 #include "define.environment.i"
@@ -1225,6 +1118,12 @@ read_file (scm *e, scm *a)
   return cons (e, read_file (read_env (a), a));
 #endif
 }
+
+#include "type.c"
+#include "define.c"
+#include "math.c"
+#include "quasiquote.c"
+#include "string.c"
 
 int
 main (int argc, char *argv[])
