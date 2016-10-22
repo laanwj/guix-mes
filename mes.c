@@ -981,14 +981,6 @@ mes_environment () ///((internal))
   a = cons (cons (&scm_label, &scm_t), a);
 #endif
 
-  a = cons (cons (&scm_f, &scm_f), a);
-  a = cons (cons (&scm_nil, &scm_nil), a);
-  a = cons (cons (&scm_t, &scm_t), a);
-  a = cons (cons (&scm_unspecified, &scm_unspecified), a);
-  a = cons (cons (&symbol_begin, &symbol_begin), a);
-  a = cons (cons (&symbol_quote, &scm_quote), a);
-  a = cons (cons (&symbol_syntax, &scm_syntax), a);
-
 #include "string.environment.i"
 #include "math.environment.i"
 #include "lib.environment.i"
