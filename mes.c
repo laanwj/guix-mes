@@ -65,6 +65,7 @@ scm temp_number = {NUMBER, .name="nul", .value=0};
 #include "type.environment.h"
 #include "define.environment.h"
 #include "quasiquote.environment.h"
+#include "math.environment.h"
 #include "mes.environment.h"
 
 scm *display_ (FILE* f, scm *x);
@@ -195,6 +196,7 @@ quasisyntax (scm *x)
 
 #include "type.c"
 #include "define.c"
+#include "math.c"
 #include "quasiquote.c"
 
 //Library functions
@@ -1157,132 +1159,6 @@ read_env (scm *a)
 }
 
 scm *
-greater_p (scm *x) ///((name . ">") (args . n))
-{
-  int n = INT_MAX;
-  while (x != &scm_nil)
-    {
-      assert (x->car->type == NUMBER);
-      if (x->car->value >= n) return &scm_f;
-      n = x->car->value;
-      x = cdr (x);
-    }
-  return &scm_t;
-}
-
-scm *
-less_p (scm *x) ///((name . "<") (args . n))
-{
-  int n = INT_MIN;
-  while (x != &scm_nil)
-    {
-      assert (x->car->type == NUMBER);
-      if (x->car->value <= n) return &scm_f;
-      n = x->car->value;
-      x = cdr (x);
-    }
-  return &scm_t;
-}
-
-scm *
-is_p (scm *x) ///((name . "=") (args . n))
-{
-  if (x == &scm_nil) return &scm_t;
-  assert (x->car->type == NUMBER);
-  int n = x->car->value;
-  x = cdr (x);
-  while (x != &scm_nil)
-    {
-      if (x->car->value != n) return &scm_f;
-      x = cdr (x);
-    }
-  return &scm_t;
-}
-
-scm *
-minus (scm *x) ///((name . "-") (args . n))
-{
-  scm *a = car (x);
-  assert (a->type == NUMBER);
-  int n = a->value;
-  x = cdr (x);
-  if (x == &scm_nil)
-    n = -n;
-  while (x != &scm_nil)
-    {
-      assert (x->car->type == NUMBER);
-      n -= x->car->value;
-      x = cdr (x);
-    }
-  return make_number (n);
-}
-
-scm *
-plus (scm *x) ///((name . "+") (args . n))
-{
-  int n = 0;
-  while (x != &scm_nil)
-    {
-      assert (x->car->type == NUMBER);
-      n += x->car->value;
-      x = cdr (x);
-    }
-  return make_number (n);
-}
-
-scm *
-divide (scm *x) ///((name . "/") (args . n))
-{
-  int n = 1;
-  if (x != &scm_nil) {
-    assert (x->car->type == NUMBER);
-    n = x->car->value;
-    x = cdr (x);
-  }
-  while (x != &scm_nil)
-    {
-      assert (x->car->type == NUMBER);
-      n /= x->car->value;
-      x = cdr (x);
-    }
-  return make_number (n);
-}
-
-scm *
-modulo (scm *a, scm *b)
-{
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return make_number (a->value % b->value);
-}
-
-scm *
-multiply (scm *x) ///((name . "*") (args . n))
-{
-  int n = 1;
-  while (x != &scm_nil)
-    {
-      assert (x->car->type == NUMBER);
-      n *= x->car->value;
-      x = cdr (x);
-    }
-  return make_number (n);
-}
-
-scm *
-logior (scm *x) ///((args . n))
-{
-  int n = 0;
-  while (x != &scm_nil)
-    {
-      assert (x->car->type == NUMBER);
-      n |= x->car->value;
-      x = cdr (x);
-    }
-  return make_number (n);
-}
-
-scm *
 add_environment (scm *a, char const *name, scm *x)
 {
   return cons (cons (make_symbol (name), x), a);
@@ -1308,6 +1184,7 @@ mes_environment () ///((internal))
   a = cons (cons (&symbol_quote, &scm_quote), a);
   a = cons (cons (&symbol_syntax, &scm_syntax), a);
 
+#include "math.environment.i"
 #include "mes.environment.i"
 #include "define.environment.i"
 #include "type.environment.i"

@@ -25,11 +25,12 @@ all: mes
 mes.o: mes.c
 mes.o: mes.c mes.environment.h mes.environment.i mes.symbols.i
 mes.o: define.c define.environment.h define.environment.i
+mes.o: math.c math.environment.h math.environment.i
 mes.o: quasiquote.c quasiquote.environment.h quasiquote.environment.i
 mes.o: type.c type.environment.h type.environment.i
 
 clean:
-	rm -f mes mes.o mes.environment.i mes.symbols.i mes.environment.h *.cat a.out
+	rm -f mes mes.o *.environment.i *.symbols.i *.environment.h *.cat a.out
 
 distclean: clean
 	rm -f .config.make
