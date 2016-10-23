@@ -23,9 +23,13 @@
 ;;; type-0.mes - to be loaded after loop-0.mes if type.i is not
 ;;; included in core.
 
+;;; This code is only loaded if environment variable TYPE0 is set.
+;;; There are two copies of the type enum, with manual numbering.  Not
+;;; good.
+
+
 ;;; Code:
 
-;; two copies of enum type, with manual numbering FIXME
 (define <char> 0)
 (define <macro> 1)
 (define <number> 2)

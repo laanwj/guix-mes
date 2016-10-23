@@ -93,7 +93,7 @@
    ((eq? (car fn) 'lambda)
     (let ((p (pairlis (cadr fn) x a)))
       (cache-invalidate-range p (cdr a))
-      (let ((r (eval (cons 'begin (cddr fn)) (cons (cons '*closure* p) p))))
+      (let ((r (eval-begin-env (cddr fn) (cons (cons '*closure* p) p))))
         (cache-invalidate-range p (cdr a))
         r)))
    ((eq? (car fn) '*closure*)
@@ -102,7 +102,7 @@
           (a (cddr (cadr fn))))
       (let ((p (pairlis args x a)))
         (cache-invalidate-range p (cdr a))
-        (let ((r (eval (cons 'begin body) (cons (cons '*closure* p) p))))
+        (let ((r (eval-begin-env body (cons (cons '*closure* p) p))))
           (cache-invalidate-range p (cdr a))
           r))))
    ;;((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
@@ -132,9 +132,13 @@
 (define (unquote x) (cons 'unquote x))
 (define (unquote-splicing x) (cons 'quasiquote x))
 
+(define %the-unquoters
+  (cons
+   (cons 'unquote unquote)
+   (cons (cons 'unquote-splicing unquote-splicing) '())))
+
 (define (add-unquoters a)
-  (cons (cons 'unquote unquote)
-        (cons (cons 'unquote-splicing unquote-splicing) a)))
+  (cons %the-unquoters a))
 
 (define (eval e a)
   (eval-expand (expand-macro-env e a) a))

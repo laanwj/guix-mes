@@ -332,7 +332,7 @@ apply_env (scm *fn, scm *x, scm *a)
   else if (fn->car == &scm_lambda) {
     scm *p = pairlis (cadr (fn), x, a);
     cache_invalidate_range (p, a->cdr);
-    scm *r = builtin_eval (cons (&symbol_begin, cddr (fn)), cons (cons (&scm_closure, p), p));
+    scm *r = begin (cddr (fn), cons (cons (&scm_closure, p), p));
     cache_invalidate_range (p, a->cdr);
     return r;
   }
@@ -343,7 +343,7 @@ apply_env (scm *fn, scm *x, scm *a)
     a = cdr (a);
     scm *p = pairlis (args, x, a);
     cache_invalidate_range (p, a->cdr);
-    scm *r = builtin_eval (cons (&symbol_begin, body), cons (cons (&scm_closure, p), p));
+    scm *r = begin (body, cons (cons (&scm_closure, p), p));
     cache_invalidate_range (p, a->cdr);
     return r;
   }
@@ -1038,7 +1038,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.0\n");
   scm *a = mes_environment ();
-  display_ (stderr, builtin_eval (cons (&symbol_begin, read_file (read_env (a), a)), a));
+  display_ (stderr, begin (read_file (read_env (a), a), a));
   fputs ("", stderr);
   return 0;
 }

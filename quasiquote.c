@@ -78,11 +78,16 @@ eval_quasisyntax (scm *e, scm *a)
 scm *add_environment (scm *a, char const *name, scm *x);
 
 scm *
+the_unquoters = &scm_nil;
+
+scm *
 add_unquoters (scm *a)
 {
-  a = cons (cons (&symbol_unquote, &scm_unquote), a);
-  a = cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing), a);
-  return a;
+  if (the_unquoters == &scm_nil)
+    the_unquoters = cons (cons (&symbol_unquote, &scm_unquote),
+                          cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing),
+                                &scm_nil));
+  return append2 (the_unquoters, a);
 }
 
 scm *
