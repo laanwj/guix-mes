@@ -93,8 +93,8 @@
   (filter gc-pair? (module-map (lambda (x y) (variable-ref y)) (current-module)))
   list1234)
 
-(define new-cars (make-vector (+ gc-size root-size) '(* . *)))
-(define new-cdrs (make-vector (+ gc-size root-size) '(* . *)))
+(define new-cars (make-vector gc-size '(* . *)))
+(define new-cdrs (make-vector gc-size '(* . *)))
 
 #!
      begin-garbage-collection
@@ -196,37 +196,34 @@
 
 !#
 
-(define scan 0)
-
 (define (gc)
   (let ((root (gc-root)))
     (display "gc root=") (display root) (newline)
     (set! gc-free 0)
-    (set! scan 0)
-    (gc-loop (gc-relocate root))))
+    (gc-relocate root)
+    (gc-loop 0)))
 
-(define (gc-loop new)
+(define (gc-loop scan)
   (gc-show)
   (gc-show-new)
-  (display "gc-loop new=") (display new) (newline)
   (display "gc-loop scan=") (display scan) (newline)
   (display "gc-loop free=") (display gc-free) (newline)
 
   (if (eq? scan gc-free) (gc-flip)
       (let ((old (vector-ref new-cars scan)))
         (let ((new (gc-relocate old)))
-          (let ((old (gc-update-car new))) 
+          (let ((old (gc-update-car scan new))) 
             (let ((new (gc-relocate old)))
-              (gc-update-cdr new)
-              (gc-loop new)))))))
+              (let ((scan (gc-update-cdr scan new)))
+                (gc-loop scan))))))))
 
-(define (gc-update-car new) ; -> old
+(define (gc-update-car scan new) ; -> old
   (vector-set! new-cars scan new)
   (vector-ref new-cdrs scan))
 
-(define (gc-update-cdr new)
+(define (gc-update-cdr scan new)
   (vector-set! new-cdrs scan new)
-  (set! scan (+ 1 scan)))
+  (+ 1 scan))
 
 (define (broken-heart? c) (eq? (car c) '<))
 (define gc-broken-heart '(< . 3))
@@ -285,6 +282,7 @@
 (display "sicp-lst:") (gc-display list1234) (newline)
 (gc-show)
 
+(display "\n**** trigger gc ****\n")
 (define next (gc-list (make-symbol 'N) (make-symbol 'X)))
 (set! list1234 '(p . 0))
 (display "sicp-lst:") (gc-display list1234) (newline)
