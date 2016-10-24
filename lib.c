@@ -60,8 +60,11 @@ scm *
 vector_to_list (scm *v)
 {
   scm *x = &scm_nil;
-  for (int i = 0; i < v->length; i++)
-    x = append2 (x, cons (v->vector[i], &scm_nil));
+  for (int i = 0; i < v->length; i++) {
+    scm *e = &v->vector[i];
+    if (e->type == REF) e = e->ref;
+    x = append2 (x, cons (e, &scm_nil));
+  }
   return x;
 }
 

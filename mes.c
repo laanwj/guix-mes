@@ -31,7 +31,7 @@
 #define DEBUG 0
 #define QUASIQUOTE 1
 
-enum type {CHAR, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, VALUES, VECTOR,
+enum type {CHAR, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
 struct scm_t;
 typedef struct scm_t* (*function0_t) (void);
@@ -45,6 +45,7 @@ typedef struct scm_t {
   union {
     char const *name;
     struct scm_t* car;
+    struct scm_t* ref;
     int length;
   };
   union {
@@ -56,7 +57,7 @@ typedef struct scm_t {
     functionn_t functionn;
     struct scm_t* cdr;
     struct scm_t* macro;
-    struct scm_t** vector;
+    struct scm_t* vector;
   };
 } scm;
 
@@ -134,9 +135,15 @@ cdr (scm *x)
 }
 
 scm *
+alloc (int n)
+{
+  return (scm*)malloc (n * sizeof (scm));
+}
+
+scm *
 cons (scm *x, scm *y)
 {
-  scm *p = (scm*)malloc (sizeof (scm));
+  scm *p = alloc (1);
   p->type = PAIR;
   p->car = x;
   p->cdr = y;
@@ -506,7 +513,7 @@ append (scm *x) ///((args . n))
 scm *
 make_char (int x)
 {
-  scm *p = (scm*)malloc (sizeof (scm));
+  scm *p = alloc (1);
   p->type = CHAR;
   p->value = x;
   return p;
@@ -515,7 +522,7 @@ make_char (int x)
 scm *
 make_macro (scm *name, scm *x)
 {
-  scm *p = (scm*)malloc (sizeof (scm));
+  scm *p = alloc (1);
   p->type = MACRO;
   p->macro = x;
   p->name = name->name;
@@ -525,16 +532,25 @@ make_macro (scm *name, scm *x)
 scm *
 make_number (int x)
 {
-  scm *p = (scm*)malloc (sizeof (scm));
+  scm *p = alloc (1);
   p->type = NUMBER;
   p->value = x;
   return p;
 }
 
 scm *
+make_ref (scm *x)
+{
+  scm *p = alloc (1);
+  p->type = REF;
+  p->ref = x;
+  return p;
+}
+
+scm *
 make_string (char const *s)
 {
-  scm *p = (scm*)malloc (sizeof (scm));
+  scm *p = alloc (1);
   p->type = STRING;
   p->name = strdup (s);
   return p;
@@ -554,7 +570,7 @@ internal_lookup_symbol (char const *s)
 scm *
 internal_make_symbol (char const *s)
 {
-  scm *x = (scm*)malloc (sizeof (scm));
+  scm *x = alloc (1);
   x->type = SYMBOL;
   x->name = strdup (s);
   x->value = 0;
@@ -572,11 +588,11 @@ make_symbol (char const *s)
 scm *
 make_vector (scm *n)
 {
-  scm *p = (scm*)malloc (sizeof (scm));
+  scm *p = alloc (1);
   p->type = VECTOR;
   p->length = n->value;
-  p->vector = (scm**)malloc (n->value * sizeof (scm*));
-  for (int i=0; i<n->value; i++) p->vector[i] = &scm_unspecified;
+  p->vector = alloc (n->value);
+  for (int i=0; i<n->value; i++) p->vector[i] = *vector_entry (&scm_unspecified);
   return p;
 }
 
@@ -609,7 +625,17 @@ vector_ref (scm *x, scm *i)
 {
   assert (x->type == VECTOR);
   assert (i->value < x->length);
-  return x->vector[i->value];
+  scm *e = &x->vector[i->value];
+  if (e->type == REF) e = e->ref;
+  if (e->type == CHAR) e = make_char (e->value);
+  if (e->type == NUMBER) e = make_number (e->value);
+  return e;
+}
+
+scm *
+vector_entry (scm *x) {
+  if (x->type == PAIR || x->type == SCM || x->type == STRING || x->type == SYMBOL || x->type == VECTOR) x = make_ref (x);
+  return x;
 }
 
 scm *
@@ -617,7 +643,7 @@ vector_set_x (scm *x, scm *i, scm *e)
 {
   assert (x->type == VECTOR);
   assert (i->value < x->length);
-  x->vector[i->value] = e;
+  x->vector[i->value] = *vector_entry (e);
   return &scm_unspecified;
 }
 
@@ -663,10 +689,10 @@ list_to_vector (scm *x)
 {
   temp_number.value = length (x)->value;
   scm *v = make_vector (&temp_number);
-  scm **p = v->vector;
+  scm *p = v->vector;
   while (x != &scm_nil)
     {
-      *p++ = car (x);
+      *p++ = *vector_entry (car (x));
       x = cdr (x);
     }
   return v;
@@ -737,13 +763,16 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
   else if (x->type == VECTOR) {
     fprintf (f, "#(", x->length);
     for (int i = 0; i < x->length; i++) {
-      if (x->vector[i]->type == VECTOR)
+      if (x->vector[i].type == VECTOR
+          || (x->vector[i].type == REF
+              && x->vector[i].ref->type == VECTOR))
         fprintf (f, "%s#(...)", i ? " " : "");
       else
-        display_helper (f, x->vector[i], false, i ? " " : "", false);
+        display_helper (f, &x->vector[i], false, i ? " " : "", false);
     }
     fprintf (f, ")");
   }
+  else if (x->type == REF) display_helper (f, x->ref, cont, "", true);
   else if (builtin_p (x) == &scm_t) fprintf (f, "#<procedure %s>", x->name);
   else if (pair_p (x) == &scm_f) fprintf (f, "%s", x->name);
 

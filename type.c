@@ -45,6 +45,12 @@ pair_p (scm *x)
 }
 
 scm *
+ref_p (scm *x)
+{
+  return x->type == REF ? &scm_t : &scm_f;
+}
+
+scm *
 string_p (scm *x)
 {
   return x->type == STRING ? &scm_t : &scm_f;
