@@ -21,54 +21,34 @@
 scm *
 string (scm *x) ///((args . n))
 {
-  char buf[STRING_MAX] = "";
-  char *p = buf;
-  while (x != &scm_nil)
-    {
-      scm *s = car (x);
-      assert (s->type == CHAR);
-      *p++ = s->value;
-      x = cdr (x);
-    }
-  return make_string (buf);
+  return make_string (x);
 }
 
 scm *
 string_append (scm *x) ///((args . n))
 {
-  char buf[STRING_MAX] = "";
-
+  scm *p = &scm_nil;
   while (x != &scm_nil)
     {
       scm *s = car (x);
       assert (s->type == STRING);
-      strcat (buf, s->name);
+      p = append2 (p, s->string);
       x = cdr (x);
     }
-  return make_string (buf);
+  return make_string (p);
 }
 
 scm *
 list_to_string (scm *x)
 {
-  char buf[STRING_MAX] = "";
-  char *p = buf;
-  while (x != &scm_nil)
-    {
-      scm *s = car (x);
-      assert (s->type == CHAR);
-      *p++ = s->value;
-      x = cdr (x);
-    }
-  *p = 0;
-  return make_string (buf);
+  return make_string (x);
 }
 
 scm *
 string_length (scm *x)
 {
   assert (x->type == STRING);
-  return make_number (strlen (x->name));
+  return make_number (length (x->string)->value);
 }
 
 scm *
@@ -76,7 +56,8 @@ string_ref (scm *x, scm *k)
 {
   assert (x->type == STRING);
   assert (k->type == NUMBER);
-  return make_char (x->name[k->value]);
+  scm n = {NUMBER, .value=k->value};
+  return make_char (list_ref (x->string, &n)->value);
 }
 
 scm *
@@ -84,40 +65,48 @@ substring (scm *x) ///((args . n))
 {
   assert (x->type == PAIR);
   assert (x->car->type == STRING);
-  char const *s = x->car->name;
+  scm *s = x->car->string;
   assert (x->cdr->car->type == NUMBER);
   int start = x->cdr->car->value;
-  int end = strlen (s);
+  int end = length (s)->value;
   if (x->cdr->cdr->type == PAIR) {
     assert (x->cdr->cdr->car->type == NUMBER);
     assert (x->cdr->cdr->car->value <= end);
     end = x->cdr->cdr->car->value;
   }
-  char buf[STRING_MAX];
-  strncpy (buf, s+start, end - start);
-  buf[end-start] = 0;
-  return make_string (buf);
+  int n = end - start;
+  while (start--) s = s->cdr;
+  scm *p = &scm_nil;
+  while (n-- && s != &scm_nil) {
+    p = append2 (p, cons (make_char (s->car->value), &scm_nil));
+    s = s->cdr;
+  }
+  return make_string (p);
 }
 
 scm *
 number_to_string (scm *x)
 {
   assert (x->type == NUMBER);
-  char buf[STRING_MAX];
-  sprintf (buf,"%d", x->value);
-  return make_string (buf);
+  int n = x->value;
+  scm *p = n < 0 ? cons (make_char ('-'), &scm_nil) : &scm_nil;
+  do {
+    p = cons (make_char (n % 10 + '0'), p);
+    n = n / 10;
+  } while (n);
+  return make_string (p);
 }
 
 scm *
 string_to_symbol (scm *x)
 {
   assert (x->type == STRING);
-  return make_symbol (x->name);
+  return make_symbol (x->string);
 }
 
 scm *
 symbol_to_string (scm *x)
 {
   assert (x->type == SYMBOL);
-  return make_string (x->name);
+  return make_string (x->string);
 }

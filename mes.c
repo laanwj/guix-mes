@@ -18,7 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define STRING_MAX 2048
 #define _GNU_SOURCE
 #include <assert.h>
 #include <ctype.h>
@@ -44,6 +43,7 @@ typedef struct scm_t {
   enum type type;
   union {
     char const *name;
+    struct scm_t* string;
     struct scm_t* car;
     struct scm_t* ref;
     int length;
@@ -376,7 +376,9 @@ builtin_eval (scm *e, scm *a)
   if (e->type == SYMBOL) {
     scm *y = assq_ref_cache (e, a);
     if (y == &scm_undefined) {
-      fprintf (stderr, "eval: unbound variable: %s\n", e->name);
+      fprintf (stderr, "eval: unbound variable:");
+      display_ (stderr, e);
+      fprintf (stderr, "\n");
       assert (!"unbound variable");
     }
     return y;
@@ -404,9 +406,12 @@ builtin_eval (scm *e, scm *a)
         return define (e, a);
 #else
       if (e->car == &symbol_define) {
-        fprintf (stderr, "C DEFINE: %s\n", e->cdr->car->type == SYMBOL
-                 ? e->cdr->car->name
-                 : e->cdr->car->car->name);
+        fprintf (stderr, "C DEFINE: ");
+        display_ (stderr,
+                  e->cdr->car->type == SYMBOL
+                  ? e->cdr->car->string
+                  : e->cdr->car->car->string);
+        fprintf (stderr, "\n");
       }
       assert (e->car != &symbol_define);
       assert (e->car != &symbol_define_macro);
@@ -525,7 +530,7 @@ make_macro (scm *name, scm *x)
   scm *p = alloc (1);
   p->type = MACRO;
   p->macro = x;
-  p->name = name->name;
+  p->string = name->string;
   return p;
 }
 
@@ -548,38 +553,68 @@ make_ref (scm *x)
 }
 
 scm *
-make_string (char const *s)
+make_string (scm *x)
 {
   scm *p = alloc (1);
   p->type = STRING;
-  p->name = strdup (s);
+  p->string = x;
+  return p;
+}
+
+scm *
+cstring_to_list (char const* s)
+{
+  scm *p = &scm_nil;
+  while (s && *s)
+    p = append2 (p, cons (make_char (*s++), &scm_nil));
   return p;
 }
 
 scm *symbols = 0;
 
 scm *
-internal_lookup_symbol (char const *s)
+list_of_char_equal_p (scm *a, scm *b)
+{
+  while (a != &scm_nil && b != &scm_nil && a->car->value == b->car->value) {
+    assert (a->car->type == CHAR);
+    assert (b->car->type == CHAR);
+    a = a->cdr;
+    b = b->cdr;
+  }
+  return (a == &scm_nil && b == &scm_nil) ? &scm_t : &scm_f;
+}
+
+scm *
+internal_lookup_symbol (scm *s)
 {
   scm *x = symbols;
-  while (x && strcmp (s, x->car->name)) x = x->cdr;
+  while (x) {
+    // FIXME: .string and .name is the same field; .name is used as a
+    // handy static field initializer.  A string can only be mistaken
+    // for a cell with type == PAIR for the one character long,
+    // zero-padded #\etx.
+    if (x->car->string->type != PAIR)
+      x->car->string = cstring_to_list (x->car->name);
+    if (list_of_char_equal_p (x->car->string, s) == &scm_t) break;
+    x = x->cdr;
+  }
   if (x) x = x->car;
   return x;
 }
 
 scm *
-internal_make_symbol (char const *s)
+internal_make_symbol (scm *s)
 {
   scm *x = alloc (1);
   x->type = SYMBOL;
-  x->name = strdup (s);
+  x->string = s;
   x->value = 0;
   symbols = cons (x, symbols);
   return x;
 }
 
 scm *
-make_symbol (char const *s)
+make_symbol (scm *s)
 {
   scm *x = internal_lookup_symbol (s);
   return x ? x : internal_make_symbol (s);
@@ -648,28 +683,44 @@ vector_set_x (scm *x, scm *i, scm *e)
 }
 
 scm *
-lookup (char const *s, scm *a)
+lookup (scm *s, scm *a)
 {
-  if (isdigit (*s) || (*s == '-' && isdigit (*(s+1))))
-    return make_number (atoi (s));
-
-  scm *x;
-  x = internal_lookup_symbol (s);
+  if (isdigit (s->car->value) || (s->car->value == '-' && s->cdr != &scm_nil)) {
+    scm *p = s;
+    int sign = 1;
+    if (s->car->value == '-') {
+      sign = -1;
+      p = s->cdr;
+    }
+    int n = 0;
+    while (p != &scm_nil && isdigit (p->car->value)) {
+      n *= 10;
+      n += p->car->value - '0';
+      p = p->cdr;
+    }
+    if (p == &scm_nil) return make_number (n * sign);
+  }
+  
+  scm *x = internal_lookup_symbol (s);
   if (x) return x;
 
-  if (*s == '\'') return &symbol_quote;
-  if (*s == '`') return &symbol_quasiquote;
-  if (*s == ',' && *(s+1) == '@') return &symbol_unquote_splicing;
-  if (*s == ',') return &symbol_unquote;
-
-  if (*s == '#' && *(s+1) == '\'') return &symbol_syntax;
-  if (*s == '#' && *(s+1) == '`') return &symbol_quasisyntax;
-  if (*s == '#' && *(s+1) == ',' && *(s+2) == '@') return &symbol_unsyntax_splicing;
-  if (*s == '#' && *(s+1) == ',') return &symbol_unsyntax;
-
-  if (!strcmp (s, "EOF")) {
-    fprintf (stderr, "mes: got EOF\n");
-    return &scm_nil; // `EOF': eval program, which may read stdin
+  if (s->cdr == &scm_nil) {
+    if (s->car->value == '\'') return &symbol_quote;
+    if (s->car->value == '`') return &symbol_quasiquote;
+    if (s->car->value == ',') return &symbol_unquote;
+  }
+  else if (s->cdr->cdr == &scm_nil) {
+    if (s->car->value == ',' && s->cdr->car->value == '@') return &symbol_unquote_splicing;
+    if (s->car->value == '#' && s->cdr->car->value == '\'') return &symbol_syntax;
+    if (s->car->value == '#' && s->cdr->car->value == '`') return &symbol_quasisyntax;
+    if (s->car->value == '#' && s->cdr->car->value == ',') return &symbol_unsyntax;
+  }
+  else if (s->cdr->cdr->cdr == &scm_nil) {
+    if (s->car->value == '#' && s->cdr->car->value == ',' && s->cdr->cdr->car->value == '@') return &symbol_unsyntax_splicing;
+    if (s->car->value == 'E' && s->cdr->car->value == 'O' && s->cdr->cdr->car->value == 'F') {
+      fprintf (stderr, "mes: got EOF\n");
+      return &scm_nil; // `EOF': eval program, which may read stdin
+    }
   }
 
   return internal_make_symbol (s);
@@ -678,10 +729,7 @@ lookup (char const *s, scm *a)
 scm *
 lookup_char (int c, scm *a)
 {
-  char buf[2];
-  buf[0] = c;
-  buf[1] = 0;
-  return lookup (buf, a);
+  return lookup (cons (make_char (c), &scm_nil), a);
 }
 
 scm *
@@ -774,7 +822,16 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
   }
   else if (x->type == REF) display_helper (f, x->ref, cont, "", true);
   else if (builtin_p (x) == &scm_t) fprintf (f, "#<procedure %s>", x->name);
-  else if (pair_p (x) == &scm_f) fprintf (f, "%s", x->name);
+  else if (x->type != PAIR && x->string) {
+    scm *p = x->string;
+    assert (p);
+    while (p != &scm_nil) {
+      assert (p->car->type == CHAR);
+      fputc (p->car->value, f);
+      p = p->cdr;
+    }
+  }
+  else if (x->type != PAIR && x->name) fprintf (f, "%s", x->name);
 
   return &scm_unspecified;
 }
@@ -843,53 +900,48 @@ readblock (int c)
 }
 
 scm *
-readword (int c, char *w, scm *a)
+readword (int c, scm *w, scm *a)
 {
-  if (c == EOF && !w) return &scm_nil;
-  if (c == '\n' && !w) return readword (getchar (), w, a);
-  if (c == '\n' && *w == '.' && w[1] == 0) return &scm_dot;
+  if (c == EOF && w == &scm_nil) return &scm_nil;
+  if (c == '\n' && w == &scm_nil) return readword (getchar (), w, a);
+  if (c == '\n' && w->car->value == '.' && w->cdr == &scm_nil) return &scm_dot;
   if (c == EOF || c == '\n') return lookup (w, a);
   if (c == ' ') return readword ('\n', w, a);
-  if (c == '"' && !w) return readstring ();
+  if (c == '"' && w == &scm_nil) return readstring ();
   if (c == '"') {ungetchar (c); return lookup (w, a);}
-  if (c == '(' && !w) return readlist (a);
+  if (c == '(' && w == &scm_nil) return readlist (a);
   if (c == '(') {ungetchar (c); return lookup (w, a);}
-  if (c == ')' && !w) {ungetchar (c); return &scm_nil;}
+  if (c == ')' && w == &scm_nil) {ungetchar (c); return &scm_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
-  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (",@", a),
+  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (symbol_unquote_splicing.string, a),
                                                                    cons (readword (getchar (), w, a),
                                                                          &scm_nil));}
   if ((c == '\''
        || c == '`'
        || c == ',')
-      && !w) {return cons (lookup_char (c, a),
+      && w == &scm_nil) {return cons (lookup_char (c, a),
                                      cons (readword (getchar (), w, a),
                                            &scm_nil));}
-  if (c == '#' && peekchar () == ',' && !w) {
+  if (c == '#' && peekchar () == ',' && w == &scm_nil) {
     getchar ();
-    if (peekchar () == '@'){getchar (); return cons (lookup ("#,@", a),
+    if (peekchar () == '@'){getchar (); return cons (lookup (symbol_unsyntax_splicing.string, a),
                                                      cons (readword (getchar (), w, a),
                                                            &scm_nil));}
-    return cons (lookup ("#,", a), cons (readword (getchar (), w, a), &scm_nil));
+    return cons (lookup (symbol_unsyntax.string, a), cons (readword (getchar (), w, a), &scm_nil));
   }
   if (c == '#'
      && (peekchar () == '\''
          || peekchar () == '`')
-     && !w) {char buf[3] = "#"; buf[1] = getchar (); return cons (lookup (buf, a),
+      && w == &scm_nil) {return cons (lookup (cons (make_char ('#'), cons (make_char (getchar ()), &scm_nil)), a),
                           cons (readword (getchar (), w, a),
                                 &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
   if (c == '#' && peekchar () == 'x') {getchar (); return read_hex ();}
   if (c == '#' && peekchar () == '\\') {getchar (); return read_character ();}
-  if (c == '#' && !w && peekchar () == '(') {getchar (); return list_to_vector (readlist (a));}
+  if (c == '#' && w == &scm_nil && peekchar () == '(') {getchar (); return list_to_vector (readlist (a));}
   if (c == '#' && peekchar () == '(') {ungetchar (c); return lookup (w, a);}
   if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
-  char buf[STRING_MAX] = {0};
-  char ch = c;
-  char *p = w ? w + strlen (w) : buf;
-  *p = ch;
-  *(p+1) = 0;
-  return readword (getchar (), w ? w : buf, a);
+  return readword (getchar (), append2 (w, cons (make_char (c), &scm_nil)), a);
 }
 
 scm *
@@ -924,7 +976,7 @@ read_character ()
   }
   else if (c >= 'a' && c <= 'z'
       && peekchar () >= 'a' && peekchar () <= 'z') {
-    char buf[STRING_MAX];
+    char buf[10];
     char *p = buf;
     *p++ = c;
     while (peekchar () >= 'a' && peekchar () <= 'z') {
@@ -948,21 +1000,25 @@ read_character ()
 }
 
 scm *
+append_char (scm *x, int i)
+{
+  return append2 (x, cons (make_char (i), &scm_nil));
+}
+
+scm *
 readstring ()
 {
-  char buf[STRING_MAX];
-  char *p = buf;
+  scm *p = &scm_nil;
   int c = getchar ();
   while (true) {
     if (c == '"') break;
-    if (c == '\\' && peekchar () == '"') *p++ = getchar ();
-    else if (c == '\\' && peekchar () == 'n') {getchar (); *p++ = '\n';}
+    if (c == '\\' && peekchar () == '"') p = append_char (p, getchar ());
+    else if (c == '\\' && peekchar () == 'n') {getchar (); p = append_char (p, '\n');}
     else if (c == EOF) assert (!"EOF in string");
-    else *p++ = c;
+    else p = append_char (p, c);
     c = getchar ();
   }
-  *p = 0;
-  return make_string (buf);
+  return make_string (p);
 }
 
 int
@@ -980,7 +1036,7 @@ readlist (scm *a)
   int c = getchar ();
   c = eat_whitespace (c);
   if (c == ')') return &scm_nil;
-  scm *w = readword (c, 0, a);
+  scm *w = readword (c, &scm_nil, a);
   if (w == &scm_dot)
     return car (readlist (a));
   return cons (w, readlist (a));
@@ -989,13 +1045,13 @@ readlist (scm *a)
 scm *
 read_env (scm *a)
 {
-  return readword (getchar (), 0, a);
+  return readword (getchar (), &scm_nil, a);
 }
 
 scm *
 add_environment (scm *a, char const *name, scm *x)
 {
-  return cons (cons (make_symbol (name), x), a);
+  return cons (cons (make_symbol (cstring_to_list (name)), x), a);
 }
 
 scm *

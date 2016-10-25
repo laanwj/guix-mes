@@ -57,6 +57,16 @@ list (scm *x) ///((args . n))
 }
 
 scm *
+list_ref (scm *x, scm *k)
+{
+  assert (x->type == PAIR);
+  assert (k->type == NUMBER);
+  int n = k->value;
+  while (n-- && x->cdr != &scm_nil) x = x->cdr;
+  return x != &scm_nil ? x->car : &scm_undefined;
+}
+
+scm *
 vector_to_list (scm *v)
 {
   scm *x = &scm_nil;
