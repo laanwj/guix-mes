@@ -59,13 +59,13 @@ MES-0:=guile/mes-0.scm
 MES:=./mes
 
 mes-check: all
-	for i in $(TESTS); do ./$$i; done
+	set -e; for i in $(TESTS); do ./$$i; done
 
 guile-check:
-	for i in $(TESTS); do\
+	set -e; for i in $(TESTS); do\
 		guile -s <(cat $(MES-0) $$(scripts/include.mes $$i | grep -Ev 'let.mes|quasiquote.mes|base-0|loop-0|srfi-0') $$i);\
 	done
-	for i in $(TESTS); do\
+	set -e; for i in $(TESTS); do\
 		guile -s <(cat $(MES-0) module/mes/test.mes $$i);\
 	done
 
