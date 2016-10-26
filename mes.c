@@ -58,10 +58,9 @@ typedef struct scm_t {
     struct scm_t* cdr;
     struct scm_t* macro;
     struct scm_t* vector;
+    int hits;
   };
 } scm;
-
-scm temp_number = {NUMBER, .name="nul", .value=0};
 
 #include "define.environment.h"
 #include "lib.environment.h"
@@ -141,13 +140,26 @@ alloc (int n)
 }
 
 scm *
+make_cell (scm *type, scm *car, scm *cdr)
+{
+  scm *x = alloc (1);
+  assert (type->type == NUMBER);
+  x->type = type->value;
+  if (type->value == CHAR || type->value == NUMBER) {
+    if (car) x->car = car->car;
+    if (cdr) x->cdr = cdr->cdr;
+  } else {
+    x->car = car;
+    x->cdr = cdr;
+  }
+  return x;
+}
+
+scm *
 cons (scm *x, scm *y)
 {
-  scm *p = alloc (1);
-  p->type = PAIR;
-  p->car = x;
-  p->cdr = y;
-  return p;
+  scm t = {NUMBER, .value=PAIR};
+  return make_cell (&t, x, y);
 }
 
 scm *
@@ -246,7 +258,7 @@ int cache_threshold = 0;
 scm *
 cache_save (scm *p)
 {
-  int n = p->car->value;
+  int n = p->car->hits;
   if (n < cache_threshold) return &scm_unspecified;
   int j = -1;
   for (int i=0; i < CACHE_SIZE; i++) {
@@ -255,13 +267,13 @@ cache_save (scm *p)
       break;
     }
     if (env_cache_cars[i] == p->car) return &scm_unspecified;
-    if (n > env_cache_cars[i]->value) {
-      n = env_cache_cars[i]->value;
+    if (n > env_cache_cars[i]->hits) {
+      n = env_cache_cars[i]->hits;
       j = i;
     }
   }
   if (j >= 0) {
-    cache_threshold = p->car->value;
+    cache_threshold = p->car->hits;
     env_cache_cars[j] = p->car;
     env_cache_cdrs[j] = p->cdr;
   }
@@ -303,7 +315,7 @@ cache_invalidate_range (scm *p, scm *a)
 scm *
 assq_ref_cache (scm *x, scm *a)
 {
-  x->value++;
+  x->hits++;
   scm *c = cache_lookup (x);
   if (c != &scm_undefined) return c;
   int i = 0;
@@ -471,7 +483,7 @@ display (scm *x) ///((args . n))
   scm *e = car (x);
   scm *p = cdr (x);
   int fd = 1;
-  if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
+  if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->hits;
   FILE *f = fd == 1 ? stdout : stderr;
   return display_helper (f, e, false, "", false);
 }
@@ -518,47 +530,38 @@ append (scm *x) ///((args . n))
 scm *
 make_char (int x)
 {
-  scm *p = alloc (1);
-  p->type = CHAR;
-  p->value = x;
-  return p;
+  scm t = {NUMBER, .value=CHAR};
+  scm n = {NUMBER, .value=x};  
+  return make_cell (&t, &n, &n);
 }
 
 scm *
 make_macro (scm *name, scm *x)
 {
-  scm *p = alloc (1);
-  p->type = MACRO;
-  p->macro = x;
-  p->string = name->string;
-  return p;
+  scm t = {NUMBER, .value=MACRO};
+  return make_cell (&t, name->string, x);
 }
 
 scm *
 make_number (int x)
 {
-  scm *p = alloc (1);
-  p->type = NUMBER;
-  p->value = x;
-  return p;
+  scm t = {NUMBER, .value=NUMBER};
+  scm n = {NUMBER, .value=x};  
+  return make_cell (&t, &n, &n);
 }
 
 scm *
 make_ref (scm *x)
 {
-  scm *p = alloc (1);
-  p->type = REF;
-  p->ref = x;
-  return p;
+  scm t = {NUMBER, .value=REF};
+  return make_cell (&t, x, x);
 }
 
 scm *
 make_string (scm *x)
 {
-  scm *p = alloc (1);
-  p->type = STRING;
-  p->string = x;
-  return p;
+  scm t = {NUMBER, .value=STRING};
+  return make_cell (&t, x, 0);
 }
 
 scm *
@@ -589,10 +592,10 @@ internal_lookup_symbol (scm *s)
 {
   scm *x = symbols;
   while (x) {
-    // FIXME: .string and .name is the same field; .name is used as a
-    // handy static field initializer.  A string can only be mistaken
-    // for a cell with type == PAIR for the one character long,
-    // zero-padded #\etx.
+    // .string and .name is the same field; .name is used as a handy
+    // static field initializer.  A string can only be mistaken for a
+    // cell with type == PAIR for the one character long, zero-padded
+    // #\etx.
     if (x->car->string->type != PAIR)
       x->car->string = cstring_to_list (x->car->name);
     if (list_of_char_equal_p (x->car->string, s) == &scm_t) break;
@@ -605,10 +608,8 @@ internal_lookup_symbol (scm *s)
 scm *
 internal_make_symbol (scm *s)
 {
-  scm *x = alloc (1);
-  x->type = SYMBOL;
-  x->string = s;
-  x->value = 0;
+  scm t = {NUMBER, .value=SYMBOL};
+  scm *x = make_cell (&t, s, 0);
   symbols = cons (x, symbols);
   return x;
 }
@@ -623,12 +624,11 @@ make_symbol (scm *s)
 scm *
 make_vector (scm *n)
 {
-  scm *p = alloc (1);
-  p->type = VECTOR;
-  p->length = n->value;
-  p->vector = alloc (n->value);
-  for (int i=0; i<n->value; i++) p->vector[i] = *vector_entry (&scm_unspecified);
-  return p;
+  scm t = {NUMBER, .value=VECTOR};
+  scm *v = alloc (n->value);
+  scm *x = make_cell (&t, (scm*)(long)n->value, v);
+  for (int i=0; i<n->value; i++) x->vector[i] = *vector_entry (&scm_unspecified);
+  return x;
 }
 
 scm *
@@ -735,8 +735,8 @@ lookup_char (int c, scm *a)
 scm *
 list_to_vector (scm *x)
 {
-  temp_number.value = length (x)->value;
-  scm *v = make_vector (&temp_number);
+  scm n = {NUMBER, .value=length (x)->value};
+  scm *v = make_vector (&n);
   scm *p = v->vector;
   while (x != &scm_nil)
     {
