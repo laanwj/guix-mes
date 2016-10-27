@@ -31,10 +31,15 @@
 #define QUASIQUOTE 1
 //#define QUASISYNTAX 0
 #define GC 1
+#if GC // call gc from builtin_eval () -- dumps core
 //int ARENA_SIZE = 1024 * 1024 * 1024;
-//int ARENA_SIZE = 27000; // sizeof(scm) = 24
+/* 28000 cells triggers a gc for mes-check just afre passing the first test */
+int ARENA_SIZE = 28000; // sizeof(scm) = 24
+int GC_SAFETY = 1000;
+#else // testing
 int ARENA_SIZE = 10;
 int GC_SAFETY = 0;
+#endif
 
 enum type {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
 
@@ -156,7 +161,7 @@ scm *g_news;
 scm *
 alloc (int n)
 {
-#if 0
+#if GC
   // haha, where are we going to get our root, i.e., a=environment?
   //if (g_free - g_cells + n >= ARENA_SIZE) gc ();
   assert (g_free.value + n < ARENA_SIZE);
@@ -182,7 +187,7 @@ gc (scm *a)
 {
   fprintf (stderr, "***GC***\n");
   g_free.value = 0;
-  gc_show ();
+  //gc_show ();
   scm *new = gc_copy (a);
   return gc_loop (new);
 }
@@ -192,7 +197,7 @@ gc_loop (scm *new)
 {
   while (new - g_news < g_free.value)
     {
-      gc_show ();
+      //gc_show ();
       if (new->type == PAIR
           || new->type == REF
           || new->type == STRING
@@ -560,7 +565,9 @@ apply_env (scm *fn, scm *x, scm *a)
 scm *
 eval_env (scm *e, scm *a)
 {
-  /////if (g_free.value + GC_SAFETY > ARENA_SIZE) gc (a);
+#if GC
+  if (g_free.value + GC_SAFETY > ARENA_SIZE) gc (a);
+#endif
   switch (e->type)
     {
     case PAIR:
@@ -962,7 +969,7 @@ int display_depth = 1000;
 scm *
 display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
 {
-  if (!display_depth) return &scm_unspecified;
+  //if (!display_depth) return &scm_unspecified;
   display_depth--;
   scm *r;
   fprintf (f, "%s", sep);
