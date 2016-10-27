@@ -30,8 +30,13 @@
 #define DEBUG 0
 #define QUASIQUOTE 1
 //#define QUASISYNTAX 0
+#define GC 1
+//int ARENA_SIZE = 1024 * 1024 * 1024;
+//int ARENA_SIZE = 27000; // sizeof(scm) = 24
+int ARENA_SIZE = 10;
+int GC_SAFETY = 0;
 
-enum type {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR};
+enum type {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
 
 typedef struct scm_t* (*function0_t) (void);
 typedef struct scm_t* (*function1_t) (struct scm_t*);
@@ -144,10 +149,150 @@ cdr (scm *x)
   return x->cdr;
 }
 
+scm g_free = {NUMBER, .value=0};
+scm *g_cells;
+scm *g_news;
+
 scm *
 alloc (int n)
 {
-  return (scm*)malloc (n * sizeof (scm));
+#if 0
+  // haha, where are we going to get our root, i.e., a=environment?
+  //if (g_free - g_cells + n >= ARENA_SIZE) gc ();
+  assert (g_free.value + n < ARENA_SIZE);
+  scm* x = &g_cells[g_free.value];
+  g_free.value += n;
+  return x;
+#else
+  return (scm*)malloc(n*sizeof (scm));
+#endif
+}
+
+scm *
+gc_alloc (int n)
+{
+  assert (g_free.value + n < ARENA_SIZE);
+  scm* x = &g_cells[g_free.value];
+  g_free.value += n;
+  return x;
+}
+
+scm *
+gc (scm *a)
+{
+  fprintf (stderr, "***GC***\n");
+  g_free.value = 0;
+  gc_show ();
+  scm *new = gc_copy (a);
+  return gc_loop (new);
+}
+
+scm *
+gc_loop (scm *new)
+{
+  while (new - g_news < g_free.value)
+    {
+      gc_show ();
+      if (new->type == PAIR
+          || new->type == REF
+          || new->type == STRING
+          || new->type == SYMBOL)
+        {
+          scm *car = gc_copy (new->car);
+          gc_relocate_car (new, car);
+        }
+      if (new->type == PAIR)
+        {
+          scm *cdr = gc_copy (new->cdr);
+          gc_relocate_cdr (new, cdr);
+        }
+      new++;
+    }
+  return gc_flip ();
+}
+
+scm *
+gc_copy (scm *old)
+{
+  if (old->type == BROKEN_HEART) return old->car;
+  if (old->type == SCM) return old;
+  scm *new = &g_news[g_free.value++];
+  *new = *old;
+  if (new->type == VECTOR)
+    for (int i=0; i<old->length; i++)
+      *(new+i+1) = old->vector[i];
+  old->type = BROKEN_HEART;
+  old->car = new;
+  return new;
+}
+
+scm *
+gc_move (scm* dest, scm *src)
+{
+  *dest = *src;
+}
+
+scm *
+gc_relocate_car (scm *new, scm *car)
+{
+  new->car = car;
+  return &scm_unspecified;
+}
+
+scm *
+gc_relocate_cdr (scm *new, scm *cdr)
+{
+  new->cdr = cdr;
+  return &scm_unspecified;
+}
+
+scm *
+gc_flip ()
+{
+  scm *cells = g_cells;
+  g_cells = g_news;
+  g_news = cells;
+  (g_cells-1)->vector = g_news;
+  (g_news-1)->vector = g_cells;
+  return &scm_unspecified;
+}
+
+scm *
+gc_show ()
+{
+  fprintf (stderr, "cells: ");
+  display_ (stderr, g_cells-1);
+  fprintf (stderr, "\n");
+  fprintf (stderr, "news: ");
+  display_ (stderr, g_news-1);
+  fprintf (stderr, "\n");
+  return &scm_unspecified;
+}
+
+scm *
+gc_make_cell (scm *type, scm *car, scm *cdr)
+{
+  scm *x = gc_alloc (1);
+  assert (type->type == NUMBER);
+  x->type = type->value;
+  if (type->value == CHAR || type->value == NUMBER) {
+    if (car) x->car = car->car;
+    if (cdr) x->cdr = cdr->cdr;
+  } else {
+    x->car = car;
+    x->cdr = cdr;
+  }
+  return x;
+}
+
+scm *
+gc_make_vector (scm *n)
+{
+  scm t = {NUMBER, .value=VECTOR};
+  scm *v = gc_alloc (n->value);
+  scm *x = gc_make_cell (&t, (scm*)(long)n->value, v);
+  for (int i=0; i<n->value; i++) x->vector[i] = *vector_entry (&scm_unspecified);
+  return x;
 }
 
 scm *
@@ -415,6 +560,7 @@ apply_env (scm *fn, scm *x, scm *a)
 scm *
 eval_env (scm *e, scm *a)
 {
+  /////if (g_free.value + GC_SAFETY > ARENA_SIZE) gc (a);
   switch (e->type)
     {
     case PAIR:
@@ -812,9 +958,12 @@ force_output (scm *p) ///((arity . n))
   fflush (f);
 }
 
+int display_depth = 1000;
 scm *
 display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
 {
+  if (!display_depth) return &scm_unspecified;
+  display_depth--;
   scm *r;
   fprintf (f, "%s", sep);
   switch (x->type)
@@ -881,6 +1030,7 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
       }
     case REF: display_helper (f, x->ref, cont, "", true); break;
     case FUNCTION: fprintf (f, "#<procedure %s>", x->name); ;break;
+    case BROKEN_HEART: fprintf (f, "<3"); break;
     default:
       if (x->string)
         {
@@ -1124,6 +1274,20 @@ scm *
 mes_environment () ///((internal))
 {
   scm *a = &scm_nil;
+
+  // setup GC
+  g_cells = (scm*)malloc (ARENA_SIZE*sizeof(scm));
+  g_news = (scm*)malloc (ARENA_SIZE*sizeof(scm));
+  g_cells[0].type = VECTOR;
+  g_cells[0].length = ARENA_SIZE - 1;
+  g_cells[0].vector = &g_cells[1];
+  g_news[0].type = VECTOR;
+  g_news[0].length = ARENA_SIZE - 1;
+  g_news[0].vector = &g_news[1];
+
+  a = add_environment (a, "%free", &g_free);
+  a = add_environment (a, "%the-cells", g_cells++);
+  a = add_environment (a, "%new-cells", g_news++);
 
   #include "mes.symbols.i"
 

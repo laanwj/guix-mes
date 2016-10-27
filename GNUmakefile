@@ -5,10 +5,10 @@ default: all
 	./configure
 
 OUT:=out
-CFLAGS:=-std=c99 -O3 -finline-functions
+#CFLAGS:=-std=c99 -O3 -finline-functions
 #CFLAGS:=-std=c99 -O0
 #CFLAGS:=-pg -std=c99 -O0
-#CFLAGS:=-std=c99 -O0 -g
+CFLAGS:=-std=c99 -O0 -g
 
 export BOOT
 ifneq ($(BOOT),)
