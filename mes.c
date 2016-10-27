@@ -37,7 +37,7 @@
 int ARENA_SIZE = 28000; // sizeof(scm) = 24
 int GC_SAFETY = 1000;
 #else // testing
-int ARENA_SIZE = 10;
+int ARENA_SIZE = 11;
 int GC_SAFETY = 0;
 #endif
 
