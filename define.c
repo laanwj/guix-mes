@@ -20,33 +20,41 @@
 
 #if !BOOT
 scm *
-define_env (scm *x, scm *a)
+define_env (scm *e, scm *a)
 {
-  scm *e;
-  scm *name = cadr (x);
+  return vm_call (vm_define_env, e, &scm_undefined, a);
+}
+
+scm *
+vm_define_env ()
+{
+  scm *x;
+  scm *name = cadr (r1);
   if (name->type != PAIR)
-    e = eval_env (caddr (x), cons (cons (cadr (x), cadr (x)), a));
+    x = eval_env (caddr (r1), cons (cons (cadr (r1), cadr (r1)), r0));
   else {
     name = car (name);
-    scm *p = pairlis (cadr (x), cadr (x), a);
-    cache_invalidate_range (p, a);
-    e = eval_env (make_lambda (cdadr (x), cddr (x)), p);
+    scm *p = pairlis (cadr (r1), cadr (r1), r0);
+    cache_invalidate_range (p, r0);
+    x = eval_env (make_lambda (cdadr (r1), cddr (r1)), p);
   }
-  if (eq_p (car (x), &symbol_define_macro) == &scm_t)
-    e = make_macro (name, e);
-  scm *entry = cons (name, e);
+  if (eq_p (car (r1), &symbol_define_macro) == &scm_t)
+    x = make_macro (name, x);
+  
+  scm *entry = cons (name, x);
   scm *aa = cons (entry, &scm_nil);
-  set_cdr_x (aa, cdr (a));
-  set_cdr_x (a, aa);
-  scm *cl = assq (&scm_closure, a);
+  set_cdr_x (aa, cdr (r0));
+  set_cdr_x (r0, aa);
+  scm *cl = assq (&scm_closure, r0);
   set_cdr_x (cl, aa);
   return entry;
 }
 #else // BOOT
-scm*define_env (scm *x, scm *a){}
+scm*define_env (scm *r1, scm *a){}
+scm*vm_define_env (scm *r1, scm *a){}
 #endif
 
 scm *
-define_macro (scm *x, scm *a)
+define_macro (scm *r1, scm *a)
 {
 }

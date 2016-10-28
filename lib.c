@@ -29,6 +29,7 @@ scm *cdadr (scm *x) {return cdr (car (cdr (x)));}
 scm *cadar (scm *x) {return car (cdr (car (x)));}
 scm *cddar (scm *x) {return cdr (cdr (car (x)));}
 scm *cdddr (scm *x) {return cdr (cdr (cdr (x)));}
+scm *cadddr (scm *x) {return car (cdr (cdr (cdr (x))));}
 
 scm *
 length (scm *x)

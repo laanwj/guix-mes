@@ -36,14 +36,24 @@ unquote_splicing (scm *x) ///((no-environment))
 scm *
 eval_quasiquote (scm *e, scm *a)
 {
-  if (e == &scm_nil) return e;
-  else if (atom_p (e) == &scm_t) return e;
-  else if (eq_p (car (e), &symbol_unquote) == &scm_t)
-    return eval_env (cadr (e), a);
-  else if (e->type == PAIR && e->car->type == PAIR
-           && eq_p (caar (e), &symbol_unquote_splicing) == &scm_t)
-      return append2 (eval_env (cadar (e), a), eval_quasiquote (cdr (e), a));
-  return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
+  return vm_call (vm_eval_quasiquote, e, &scm_undefined, a);
+}
+
+scm *
+vm_eval_quasiquote ()
+{
+  if (r1 == &scm_nil) return r1;
+  else if (atom_p (r1) == &scm_t) return r1;
+  else if (eq_p (car (r1), &symbol_unquote) == &scm_t)
+    return eval_env (cadr (r1), r0);
+  else if (r1->type == PAIR && r1->car->type == PAIR
+           && eq_p (caar (r1), &symbol_unquote_splicing) == &scm_t)
+    {
+      r2 = eval_env (cadar (r1), r0);
+      return append2 (r2, eval_quasiquote (cdr (r1), r0));
+    }
+  r2 = eval_quasiquote (car (r1), r0);
+  return cons (r2, eval_quasiquote (cdr (r1), r0));
 }
 
 scm *

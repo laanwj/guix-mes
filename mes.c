@@ -30,19 +30,29 @@
 #define DEBUG 0
 #define QUASIQUOTE 1
 //#define QUASISYNTAX 0
+
 #define GC 1
-#if GC // call gc from builtin_eval () -- dumps core
-//int ARENA_SIZE = 1024 * 1024 * 1024;
-/* 28000 cells triggers a gc for mes-check just afre passing the first test */
-int ARENA_SIZE = 28000; // sizeof(scm) = 24
+#define MES_FULL 1
+#define MES_MINI 0 // 1 for gc-2a.test, gc-3.test
+
+#if MES_FULL
+int ARENA_SIZE = 300000000; // need this much for tests/match.scm
+//int ARENA_SIZE = 30000000; // need this much for tests/record.scm
+//int ARENA_SIZE = 500000; // enough for tests/scm.test
+//int ARENA_SIZE = 60000; // enough for tests/base.test
+int GC_SAFETY = 10000;
+int GC_FREE = 20000;
+#else
+// just enough for empty environment and tests/gc-2.test.
+//int ARENA_SIZE = 7500; // gc-3.test, gc-2a.test
+//int ARENA_SIZE = 10000; // gc-2a.test
+int ARENA_SIZE = 18000; // gc-2.test -->KRAK
+//int ARENA_SIZE = 23000; // gc-2.test OK
 int GC_SAFETY = 1000;
-#else // testing
-int ARENA_SIZE = 11;
-int GC_SAFETY = 0;
+int GC_FREE = 1000;
 #endif
 
 enum type {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
-
 typedef struct scm_t* (*function0_t) (void);
 typedef struct scm_t* (*function1_t) (struct scm_t*);
 typedef struct scm_t* (*function2_t) (struct scm_t*, struct scm_t*);
@@ -90,6 +100,13 @@ typedef struct scm_t {
 scm *display_ (FILE* f, scm *x);
 scm *display_helper (FILE*, scm*, bool, char const*, bool);
 
+scm *symbols = 0;
+scm *stack = 0;
+scm *r0 = 0; // a/env
+scm *r1 = 0; // param 1
+scm *r2 = 0; // param 2
+scm *r3 = 0; // param 3
+
 scm scm_nil = {SCM, "()"};
 scm scm_dot = {SCM, "."};
 scm scm_f = {SCM, "#f"};
@@ -102,7 +119,7 @@ scm scm_circular = {SCM, "*circular*"};
 scm scm_label = {
   SCM, "label"};
 #endif
-scm scm_begin = {SCM, "begin"};
+scm scm_begin = {SCM, "*begin*"};
 
 scm symbol_lambda = {SYMBOL, "lambda"};
 scm symbol_begin = {SYMBOL, "begin"};
@@ -162,8 +179,6 @@ scm *
 alloc (int n)
 {
 #if GC
-  // haha, where are we going to get our root, i.e., a=environment?
-  //if (g_free - g_cells + n >= ARENA_SIZE) gc ();
   assert (g_free.value + n < ARENA_SIZE);
   scm* x = &g_cells[g_free.value];
   g_free.value += n;
@@ -185,33 +200,36 @@ gc_alloc (int n)
 scm *
 gc (scm *a)
 {
-  fprintf (stderr, "***GC***\n");
+  fprintf (stderr, "***gc[%d]...", g_free.value);
   g_free.value = 0;
-  //gc_show ();
-  scm *new = gc_copy (a);
+  scm *new = gc_copy (stack);
+  gc_copy (symbols);
   return gc_loop (new);
 }
 
 scm *
-gc_loop (scm *new)
+gc_loop (scm *scan)
 {
-  while (new - g_news < g_free.value)
+  while (scan - g_news < g_free.value)
     {
-      //gc_show ();
-      if (new->type == PAIR
-          || new->type == REF
-          || new->type == STRING
-          || new->type == SYMBOL)
+      if (scan->type == MACRO
+          || scan->type == PAIR
+          || scan->type == REF
+          || (scan->type == SCM && scan->car->type == PAIR)
+          || (scan->type == STRING && scan->car->type == PAIR)
+          || (scan->type == SYMBOL && scan->car->type == PAIR))
         {
-          scm *car = gc_copy (new->car);
-          gc_relocate_car (new, car);
+          scm *car = gc_copy (scan->car);
+          gc_relocate_car (scan, car);
         }
-      if (new->type == PAIR)
+      if ((scan->type == MACRO
+           || scan->type == PAIR)
+          && scan->cdr) // allow for 0 terminated list of symbols
         {
-          scm *cdr = gc_copy (new->cdr);
-          gc_relocate_cdr (new, cdr);
+          scm *cdr = gc_copy (scan->cdr);
+          gc_relocate_cdr (scan, cdr);
         }
-      new++;
+      scan++;
     }
   return gc_flip ();
 }
@@ -220,7 +238,9 @@ scm *
 gc_copy (scm *old)
 {
   if (old->type == BROKEN_HEART) return old->car;
+  if (old->type == FUNCTION) return old;
   if (old->type == SCM) return old;
+  if (old < g_cells && old < g_news) return old;
   scm *new = &g_news[g_free.value++];
   *new = *old;
   if (new->type == VECTOR)
@@ -229,12 +249,6 @@ gc_copy (scm *old)
   old->type = BROKEN_HEART;
   old->car = new;
   return new;
-}
-
-scm *
-gc_move (scm* dest, scm *src)
-{
-  *dest = *src;
 }
 
 scm *
@@ -259,6 +273,24 @@ gc_flip ()
   g_news = cells;
   (g_cells-1)->vector = g_news;
   (g_news-1)->vector = g_cells;
+
+  fprintf (stderr, " => jam[%d]\n", g_free.value);
+  // Reduce arena size to quickly get multiple GC's.
+  // Startup memory footprint is relatively high because of builtin
+  // function names
+  //ARENA_SIZE = g_free.value + GC_FREE + GC_SAFETY;
+  // fprintf (stderr, "ARENA SIZE => %d\n", ARENA_SIZE - GC_SAFETY);
+  symbols = &g_cells[1];
+  return &g_cells[0];
+}
+
+scm *
+gc_bump ()
+{
+  g_cells += g_free.value;
+  g_news += g_free.value;
+  ARENA_SIZE -= g_free.value;
+  g_free.value = 0;
   return &scm_unspecified;
 }
 
@@ -391,7 +423,12 @@ pairlis (scm *x, scm *y, scm *a)
 scm *
 assq (scm *x, scm *a)
 {
-  while (a != &scm_nil && eq_p (x, a->car->car) == &scm_f) a = a->cdr;
+  while (a != &scm_nil && eq_p (x, a->car->car) == &scm_f)
+    {
+      if (a->type == BROKEN_HEART || a->car->type == BROKEN_HEART)
+        fprintf (stderr, "oops, broken heart\n");
+      a = a->cdr;
+    }
   return a != &scm_nil ? a->car : &scm_f;
 }
 
@@ -502,47 +539,144 @@ assert_defined (scm *x, scm *e)
 }
 
 scm *
+vm_call (function0_t f, scm *p1, scm *p2, scm *a)
+{
+  scm *frame = cons (r1, cons (r2, cons (r3, cons (r0, &scm_nil))));
+  stack = cons (frame, stack);
+  r1 = p1;
+  r2 = p2;
+  r0 = a;
+  //if (f == vm_expand_macro_env && g_free.value + GC_SAFETY > ARENA_SIZE)
+  if (g_free.value + GC_SAFETY > ARENA_SIZE)
+    {
+      frame = cons (r1, cons (r2, cons (r3, cons (r0, &scm_nil))));
+      stack = cons (frame, stack);
+      scm *x = gc (stack);
+      *stack = *x;
+      frame = car (stack);      
+      stack = cdr (stack);
+      r1 = car (frame);
+      r2 = cadr (frame);
+      r3 = caddr (frame);
+      r0 = cadddr (frame);
+    }
+
+  scm *r = f ();
+  frame = car (stack);
+  stack = cdr (stack);
+  r1 = car (frame);
+  r2 = cadr (frame);
+  r3 = caddr (frame);
+  r0 = cadddr (frame);
+  return r; 
+}
+
+scm *
 evlis_env (scm *m, scm *a)
 {
-  if (m == &scm_nil) return &scm_nil;
-  if (m->type != PAIR) return eval_env (m, a);
-  scm *e = eval_env (car (m), a);
-  return cons (e, evlis_env (cdr (m), a));
+  return vm_call (vm_evlis_env, m, &scm_undefined, a);
 }
 
 scm *
 apply_env (scm *fn, scm *x, scm *a)
 {
-  if (fn->type != PAIR)
+  return vm_call (vm_apply_env, fn, x, a);
+}
+
+scm *
+eval_env (scm *e, scm *a)
+{
+  return vm_call (vm_eval_env, e, &scm_undefined, a);
+}
+
+scm *
+expand_macro_env (scm *e, scm *a)
+{
+  return vm_call (vm_expand_macro_env, e, &scm_undefined, a);
+}
+
+scm *
+begin_env (scm *e, scm *a)
+{
+  return vm_call (vm_begin_env, e, &scm_undefined, a);
+}
+
+scm *
+if_env (scm *e, scm *a)
+{
+  return vm_call (vm_if_env, e, &scm_undefined, a);
+}
+
+scm *
+call_lambda (scm *e, scm *x, scm* aa, scm *a) ///((internal))
+{
+  scm *cl = cons (cons (&scm_closure, x), x);
+  r1 = e;
+  r0 = cl;
+  r2 = a;
+  r3 = aa;
+  cache_invalidate_range (r0, r3->cdr);
+  scm *r = vm_call_lambda ();
+  cache_invalidate_range (r0, r3->cdr);
+  return r;
+}
+
+scm *
+vm_evlis_env ()
+{
+  if (r1 == &scm_nil) return &scm_nil;
+  if (r1->type != PAIR) return eval_env (r1, r0);
+  r2 = eval_env (car (r1), r0);
+  r1 = evlis_env (cdr (r1), r0);
+  return cons (r2, r1);
+}
+
+scm *
+vm_call_lambda ()
+{
+  return vm_call (vm_begin_env, r1, &scm_undefined, r0);
+}
+
+scm *
+vm_apply_env ()
+{
+  if (r1->type != PAIR)
     {
-      if (fn->type == FUNCTION) return call (fn, x);
-      if (fn == &symbol_call_with_values)
-        return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
-      if (fn == &symbol_current_module) return a;
+      if (r1->type == FUNCTION) return call (r1, r2);
+      if (r1 == &symbol_call_with_values)
+        return call (&scm_call_with_values_env, append2 (r2, cons (r0, &scm_nil)));
+      if (r1 == &symbol_current_module) return r0;
     }
-  else if (fn->car == &symbol_lambda) {
-    scm *p = pairlis (cadr (fn), x, a);
-    cache_invalidate_range (p, a->cdr);
-    scm *r = begin_env (cddr (fn), cons (cons (&scm_closure, p), p));
-    cache_invalidate_range (p, a->cdr);
-    return r;
+  else if (r1->car == &symbol_lambda) {
+    scm *args = cadr (r1);
+    scm *body = cddr (r1);
+    scm *p = pairlis (args, r2, r0);
+    return call_lambda (body, p, p, r0);
+    // r2 = p;
+    // cache_invalidate_range (r2, r0->cdr);
+    // scm *r = begin_env (cddr (r1), cons (cons (&scm_closure, p), p));
+    // cache_invalidate_range (r2, r0->cdr);
+    // return r;
   }
-  else if (fn->car == &scm_closure) {
-    scm *args = caddr (fn);
-    scm *body = cdddr (fn);
-    a = cdadr (fn);
-    a = cdr (a);
-    scm *p = pairlis (args, x, a);
-    cache_invalidate_range (p, a->cdr);
-    scm *r = begin_env (body, cons (cons (&scm_closure, p), p));
-    cache_invalidate_range (p, a->cdr);
-    return r;
+  else if (r1->car == &scm_closure) {
+    scm *args = caddr (r1);
+    scm *body = cdddr (r1);
+    scm *aa = cdadr (r1);
+    aa = cdr (aa);
+    scm *p = pairlis (args, r2, aa);
+    return call_lambda (body, p, aa, r0);
+    // r2 = p;
+    // r3 = aa;
+    // cache_invalidate_range (r2, r3->cdr);
+    // scm *r = begin_env (body, cons (cons (&scm_closure, p), p));
+    // cache_invalidate_range (r2, r3->cdr);
+    // return r;
   }
 #if BOOT
-  else if (fn->car == &scm_label)
-    return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
+  else if (r1->car == &scm_label)
+    return apply_env (caddr (r1), r2, cons (cons (cadr (r1), caddr (r1)), r0));
 #endif
-  scm *e = eval_env (fn, a);
+  scm *e = eval_env (r1, r0);
   char const* type = 0;
   if (e == &scm_f || e == &scm_t) type = "bool";
   if (e->type == CHAR) type = "char";
@@ -554,122 +688,129 @@ apply_env (scm *fn, scm *x, scm *a)
     {
       fprintf (stderr, "cannot apply: %s: ", type);
       display_ (stderr, e);
-      fprintf (stderr, " (");
-      display_ (stderr, fn);
-      fprintf (stderr, ")\n");
+      fprintf (stderr, " [");
+      display_ (stderr, r1);
+      fprintf (stderr, "]\n");
       assert (!"cannot apply");
     }
-  return apply_env (e, x, a);
+  return apply_env (e, r2, r0);
 }
 
+scm*cstring_to_list (char const* s);
+
 scm *
-eval_env (scm *e, scm *a)
+vm_eval_env ()
 {
-#if GC
-  if (g_free.value + GC_SAFETY > ARENA_SIZE) gc (a);
-#endif
-  switch (e->type)
+  switch (r1->type)
     {
     case PAIR:
       {
-        if (e->car == &symbol_quote)
-          return cadr (e);
+        if (r1->car == &symbol_quote)
+          return cadr (r1);
 #if QUASISYNTAX
-        if (e->car == &symbol_syntax)
-          return e;
+        if (r1->car == &symbol_syntax)
+          return r1;
 #endif
-        if (e->car == &symbol_begin)
-          return begin_env (e, a);
-        if (e->car == &symbol_lambda)
-          return make_closure (cadr (e), cddr (e), assq (&scm_closure, a));
-        if (e->car == &scm_closure)
-          return e;
-        if (e->car == &symbol_if)
-          return builtin_if (cdr (e), a);
+        if (r1->car == &symbol_begin)
+          return begin_env (r1, r0);
+        if (r1->car == &symbol_lambda)
+          return make_closure (cadr (r1), cddr (r1), assq (&scm_closure, r0));
+        if (r1->car == &scm_closure)
+          return r1;
+        if (r1->car == &symbol_if)
+          return if_env (cdr (r1), r0);
 #if !BOOT
-        if (e->car == &symbol_define)
-          return define_env (e, a);
-        if (e->car == &symbol_define_macro)
-          return define_env (e, a);
-        if (e->car == &symbol_primitive_load)
-          return load_env (a);
+        if (r1->car == &symbol_define)
+          return define_env (r1, r0);
+        if (r1->car == &symbol_define_macro)
+          return define_env (r1, r0);
+        if (r1->car == &symbol_primitive_load)
+          return load_env (r0);
 #else
-if (e->car == &symbol_define) {
+        if (r1->car == &symbol_define) {
         fprintf (stderr, "C DEFINE: ");
         display_ (stderr,
-                  e->cdr->car->type == SYMBOL
-                  ? e->cdr->car->string
-                  : e->cdr->car->car->string);
+                  r1->cdr->car->type == SYMBOL
+                  ? r1->cdr->car->string
+                  : r1->cdr->car->car->string);
         fprintf (stderr, "\n");
       }
-      assert (e->car != &symbol_define);
-      assert (e->car != &symbol_define_macro);
+      assert (r1->car != &symbol_define);
+      assert (r1->car != &symbol_define_macro);
 #endif
-      if (e->car == &symbol_set_x)
-        return set_env_x (cadr (e), eval_env (caddr (e), a), a);
+#if 1 //!BOOT
+      if (r1->car == &symbol_set_x)
+        return set_env_x (cadr (r1), eval_env (caddr (r1), r0), r0);
+#else
+      assert (r1->car != &symbol_set_x);
+#endif
 #if QUASIQUOTE
-      if (e->car == &symbol_unquote)
-        return eval_env (cadr (e), a);
-      if (e->car == &symbol_quasiquote)
-        return eval_quasiquote (cadr (e), add_unquoters (a));
+      if (r1->car == &symbol_unquote)
+        return eval_env (cadr (r1), r0);
+      if (r1->car == &symbol_quasiquote)
+        return eval_quasiquote (cadr (r1), add_unquoters (r0));
 #endif //QUASIQUOTE
 #if QUASISYNTAX
-      if (e->car == &symbol_unsyntax)
-        return eval_env (cadr (e), a);
-      if (e->car == &symbol_quasisyntax)
-        return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
+      if (r1->car == &symbol_unsyntax)
+        return eval_env (cadr (r1), r0);
+      if (r1->car == &symbol_quasisyntax)
+        return eval_quasisyntax (cadr (r1), add_unsyntaxers (r0));
 #endif //QUASISYNTAX
-      scm *x = expand_macro_env (e, a);
-      if (x != e) return eval_env (x, a);
-      return apply_env (e->car, evlis_env (e->cdr, a), a);
+      scm *x = expand_macro_env (r1, r0);
+      if (x != r1)
+          return eval_env (x, r0);
+      scm *m = evlis_env (r1->cdr, r0);
+      return apply_env (r1->car, m, r0);
       }
-    case SYMBOL: return assert_defined (e, assq_ref_cache (e, a));
-    default: return e;
+    case SYMBOL: return assert_defined (r1, assq_ref_cache (r1, r0));
+    default: return r1;
     }
 }
 
 scm *
-expand_macro_env (scm *e, scm *a)
+vm_expand_macro_env ()
 {
-  if (car (e)->type == STRING && string_to_symbol (car (e)) == &symbol_noexpand)
-    return cadr (e);
+  if (car (r1)->type == STRING && string_to_symbol (car (r1)) == &symbol_noexpand)
+    return cadr (r1);
 
   scm *macro;
-  if (e->type == PAIR
-      && (macro = lookup_macro (e->car, a)) != &scm_f)
-    return apply_env (macro, e->cdr, a);
-
   scm *expanders;
-  if (e->type == PAIR
-    && car (e)->type == SYMBOL
-    && ((expanders = assq_ref_cache (&symbol_sc_expander_alist, a)) != &scm_undefined)
-    && ((macro = assq (car (e), expanders)) != &scm_f))
+  if (r1->type == PAIR
+      && (macro = lookup_macro (r1->car, r0)) != &scm_f)
+    return apply_env (macro, r1->cdr, r0);
+  else if (r1->type == PAIR
+    && car (r1)->type == SYMBOL
+    && ((expanders = assq_ref_cache (&symbol_sc_expander_alist, r0)) != &scm_undefined)
+    && ((macro = assq (car (r1), expanders)) != &scm_f))
     {
-      scm *sc_expand = assq_ref_cache (&symbol_expand_macro, a);
+      scm *sc_expand = assq_ref_cache (&symbol_expand_macro, r0);
       if (sc_expand != &scm_undefined && sc_expand != &scm_f)
-        e = apply_env (sc_expand, cons (e, &scm_nil), a);
+        r1 = apply_env (sc_expand, cons (r1, &scm_nil), r0);
     }
-  return e;
+  return r1;
 }
 
 scm *
-begin_env (scm *e, scm *a)
+vm_begin_env ()
 {
   scm *r = &scm_unspecified;
-  while (e != &scm_nil) {
-    r = eval_env (e->car, a);
-    e = e->cdr;
+  while (r1 != &scm_nil) {
+    if (car (r1)->type == PAIR && caar (r1) == &symbol_begin)
+      r1 = append2 (cdar (r1), cdr (r1));
+    r = eval_env (r1->car, r0);
+    r1 = r1->cdr;
   }
   return r;
 }
 
 scm *
-builtin_if (scm *e, scm *a)
+vm_if_env ()
 {
-  if (eval_env (car (e), a) != &scm_f)
-    return eval_env (cadr (e), a);
-  if (cddr (e) != &scm_nil)
-    return eval_env (caddr (e), a);
+  scm *x = eval_env (car (r1), r0);
+  if (x != &scm_f)
+    return eval_env (cadr (r1), r0);
+  if (cddr (r1) != &scm_nil)
+    return eval_env (caddr (r1), r0);
   return &scm_unspecified;
 }
 
@@ -772,8 +913,6 @@ cstring_to_list (char const* s)
     p = append2 (p, cons (make_char (*s++), &scm_nil));
   return p;
 }
-
-scm *symbols = 0;
 
 scm *
 list_of_char_equal_p (scm *a, scm *b)
@@ -965,12 +1104,9 @@ force_output (scm *p) ///((arity . n))
   fflush (f);
 }
 
-int display_depth = 1000;
 scm *
 display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
 {
-  //if (!display_depth) return &scm_unspecified;
-  display_depth--;
   scm *r;
   fprintf (f, "%s", sep);
   switch (x->type)
@@ -1012,7 +1148,7 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
         }
         if (!cont) fprintf (f, "(");
         display_ (f, car (x));
-        if (cdr (x)->type == PAIR)
+        if (cdr (x) && cdr (x)->type == PAIR)
           display_helper (f, cdr (x), true, " ", false);
         else if (cdr (x) != &scm_nil) {
           fprintf (f, " . ");
@@ -1272,9 +1408,15 @@ read_env (scm *a)
 }
 
 scm *
+acons (scm *key, scm *value, scm *alist)
+{
+  return cons (cons (key, value), alist);
+}
+
+scm *
 add_environment (scm *a, char const *name, scm *x)
 {
-  return cons (cons (make_symbol (cstring_to_list (name)), x), a);
+  return acons (make_symbol (cstring_to_list (name)), x, a);
 }
 
 scm *
@@ -1292,9 +1434,11 @@ mes_environment () ///((internal))
   g_news[0].length = ARENA_SIZE - 1;
   g_news[0].vector = &g_news[1];
 
-  a = add_environment (a, "%free", &g_free);
-  a = add_environment (a, "%the-cells", g_cells++);
-  a = add_environment (a, "%new-cells", g_news++);
+  g_cells++;
+  g_news++;
+  // a = add_environment (a, "%free", &g_free); hihi, gets <3 moved
+  // a = add_environment (a, "%the-cells", g_cells);
+  // a = add_environment (a, "%new-cells", g_news);
 
   #include "mes.symbols.i"
 
@@ -1304,6 +1448,7 @@ mes_environment () ///((internal))
 #endif
   a = cons (cons (&symbol_begin, &scm_begin), a);
 
+#if MES_FULL
 #include "posix.environment.i"
 #include "string.environment.i"
 #include "math.environment.i"
@@ -1312,10 +1457,43 @@ mes_environment () ///((internal))
 //#include "quasiquote.environment.i"
 #include "define.environment.i"
 #include "type.environment.i"
+#else
+   a = add_environment (a, "cons", &scm_cons);
+   a = add_environment (a, "eq?", &scm_eq_p);
+   a = add_environment (a, "display", &scm_display);
+   a = add_environment (a, "newline", &scm_newline);
+
+#if !MES_MINI
+   a = add_environment (a, "*", &scm_multiply);
+   a = add_environment (a, "list", &scm_list);
+   //
+   a = add_environment (a, "car", &scm_car);
+   a = add_environment (a, "cdr", &scm_cdr);
+   a = add_environment (a, "+", &scm_plus);
+   a = add_environment (a, "quote", &scm_quote);
+   a = add_environment (a, "null?", &scm_null_p);
+   a = add_environment (a, "=", &scm_is_p);
+
+   // a = add_environment (a, "gc", &scm_gc);
+   // a = add_environment (a, "apply-env", &scm_apply_env);
+   // a = add_environment (a, "eval-env", &scm_eval_env);
+   // a = add_environment (a, "cadr", &scm_cadr);
+#endif
+#endif
 
   a = add_environment (a, "sc-expand", &scm_f);
 
   a = cons (cons (&scm_closure, a), a);
+
+  internal_lookup_symbol (&scm_nil);
+
+  gc_bump (); // secure the .string of builtins, scm and symbols
+  r0 = a;
+  r1 = make_char (0);
+  r2 = make_char (0);
+  r3 = make_char (0);
+  stack = cons (&scm_nil, &scm_nil);
+
   return a;
 }
 
@@ -1370,5 +1548,6 @@ main (int argc, char *argv[])
   scm *a = mes_environment ();
   display_ (stderr, load_env (a));
   fputs ("", stderr);
+  fprintf (stderr, "\nstats: [%d]\n", g_free.value);
   return 0;
 }
