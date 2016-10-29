@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-(define (apply f x) (apply-env f x (current-module)))
+;;(define (apply f x) (apply-env f x (current-module)))
 (define (primitive-eval e) (eval e (current-module)))
 (define (expand-macro e) (expand-macro-env e (current-module)))
 
@@ -49,6 +49,11 @@
     (if (null? (cdr rest)) (car rest)
         (cons (car rest) (loop (cdr rest)))))
   (loop (cons x rest)))
+
+(define (apply f h . t) (apply-env f (cons h t) (current-module)))
+(define (apply f h . t)
+  (if (null? t) (apply-env f h (current-module))
+      (apply f (apply cons* (cons h t)))))
 
 (define-macro (cond . clauses)
   (list 'if (null? clauses) *unspecified*

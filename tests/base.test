@@ -65,4 +65,8 @@ exit $?
 (pass-if "let 2" (seq? (let ((x 0)) x) 0))
 (pass-if "let 3" (seq? (let ((p 5) (q 6)) (+ p q)) 11))
 
+(pass-if "apply" (sequal? (apply list '(1)) '(1)))
+(pass-if "apply 2" (sequal? (apply list 1 '(2)) '(1 2)))
+(pass-if "apply 3" (sequal? (apply list 1 2 '(3)) '(1 2 3)))
+
 (result 'report)
