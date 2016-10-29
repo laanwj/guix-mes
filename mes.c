@@ -1101,15 +1101,16 @@ lookup_macro (scm *x, scm *a)
 }
 
 scm *
-read_file (scm *e, scm *a)
+read_file_env (scm *e, scm *a)
 {
   if (e == &scm_nil) return e;
-#if DEBUG
-  scm *x = cons (e, read_file (read_env (a), a));
-  display_ (stderr, x);
-#else
-  return cons (e, read_file (read_env (a), a));
-#endif
+  return cons (e, read_file_env (read_env (a), a));
+}
+
+scm *
+load_file_env (scm *a)
+{
+  return begin (read_file_env (read_env (a), a), a);
 }
 
 #include "type.c"
@@ -1125,7 +1126,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.1\n");
   scm *a = mes_environment ();
-  display_ (stderr, begin (read_file (read_env (a), a), a));
+  display_ (stderr, load_file_env (a));
   fputs ("", stderr);
   return 0;
 }
