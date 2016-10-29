@@ -499,10 +499,12 @@ call (scm *fn, scm *x)
 {
   if (fn->type == FUNCTION0)
     return fn->function0 ();
-  if (x->car->type == VALUES)
-    x = cons (x->car->cdr->car, &scm_nil);
+  if (x != &scm_nil && x->car->type == VALUES)
+    x = cons (x->car->cdr->car, x->cdr);
   if (fn->type == FUNCTION1)
     return fn->function1 (car (x));
+  if (x != &scm_nil && x->cdr->car->type == VALUES)
+    x = cons (x->car, cons (x->cdr->car->cdr->car, x->cdr));
   if (fn->type == FUNCTION2)
     return fn->function2 (car (x), cadr (x));
   if (fn->type == FUNCTION3)

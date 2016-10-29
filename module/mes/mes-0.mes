@@ -87,7 +87,7 @@
    ((atom? fn)
     (cond
      ((builtin? fn) (call fn x))
-     ((eq? fn 'call-with-values) (c:apply-env 'call-with-values x a))
+     ((eq? fn 'call-with-values) (call call-with-values-env (append x (cons a '()))))
      ((eq? fn 'current-module) a)
      (#t (apply-env (eval fn a) x a))))
    ((eq? (car fn) 'lambda)
