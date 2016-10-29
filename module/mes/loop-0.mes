@@ -37,7 +37,7 @@
 ((label loop-0
         (lambda (r e a)
           ;; (display "***LOOP-0*** ... e=") (display e) (newline)
-          (if (null? e) (eval (read-file (read-env a) a) a)
+          (if (null? e) (eval (cons 'begin (read-file-env (read-env a) a)) a)
               (if (atom? e) (loop-0 (eval e a) (read-env a) a)
                   (if (eq? (car e) 'define)
                       ((lambda (aa)     ; env:define

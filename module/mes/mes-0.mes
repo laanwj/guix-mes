@@ -189,4 +189,3 @@
 ;; boot into loop-0
 (cache-invalidate-range (current-module) '())
 ()
-ignored
