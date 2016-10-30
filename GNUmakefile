@@ -51,6 +51,7 @@ TESTS:=\
  tests/scm.test\
  tests/record.test\
  tests/let-syntax.test\
+ tests/psyntax.test\
  tests/match.test\
 #
 
@@ -63,7 +64,7 @@ mes-check: all
 
 guile-check:
 	set -e; for i in $(TESTS); do\
-		guile -s <(cat $(MES-0) $$(scripts/include.mes $$i | grep -Ev 'let.mes|quasiquote.mes|base-0|loop-0|srfi-0') $$i);\
+		guile -s <(cat $(MES-0) $$(scripts/include.mes $$i | grep -Ev 'let.mes|quasiquote.mes|base-0|loop-0|psyntax-|srfi-0') $$i);\
 	done
 	set -e; for i in $(TESTS); do\
 		guile -s <(cat $(MES-0) module/mes/test.mes $$i);\

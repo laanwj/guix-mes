@@ -100,6 +100,8 @@ scm symbol_unquote = {SYMBOL, "unquote"};
 scm symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
 
 scm symbol_sc_expand = {SYMBOL, "sc-expand"};
+scm symbol_sc_expander_alist = {SYMBOL, "*sc-expander-alist*"};
+scm symbol_noexpand = {SYMBOL, "noexpand"};
 scm symbol_syntax = {SYMBOL, "syntax"};
 scm symbol_quasisyntax = {SYMBOL, "quasisyntax"};
 scm symbol_unsyntax = {SYMBOL, "unsyntax"};
@@ -409,6 +411,10 @@ builtin_eval (scm *e, scm *a)
     return e;
   else if (e->car->type != PAIR)
     {
+      if (e->car->type == STRING && string_to_symbol (e->car) == &symbol_noexpand)
+        e = cadr (e);
+      else
+        e = sc_expand_env (e, a);
       if (e->car == &symbol_quote)
         return cadr (e);
 #if QUASISYNTAX
@@ -465,6 +471,27 @@ expand_macro_env (scm *e, scm *a)
   if (e->type == PAIR
       && (macro = lookup_macro (e->car, a)) != &scm_f)
     return expand_macro_env (apply_env (macro, e->cdr, a), a);
+  return e;
+}
+
+scm *
+sc_expand_env (scm *e, scm *a)
+{
+  scm *expanders;
+  scm *macro;
+  if (e->type == PAIR
+    && car (e)->type == SYMBOL
+    && car (e) != &symbol_quasiquote
+    && car (e) != &symbol_quote
+    && car (e) != &symbol_unquote
+    && car (e) != &symbol_unquote_splicing
+    && ((expanders = assq_ref_cache (&symbol_sc_expander_alist, a)) != &scm_undefined)
+    && ((macro = assq (car (e), expanders)) != &scm_f))
+    {
+      scm *sc_expand = assq_ref_cache (&symbol_sc_expand, a);
+      if (sc_expand != &scm_undefined)
+        return apply_env (sc_expand, cons (e, &scm_nil), a);
+    }
   return e;
 }
 
@@ -1088,6 +1115,8 @@ mes_environment () ///((internal))
 #include "mes.environment.i"
 #include "define.environment.i"
 #include "type.environment.i"
+
+  a = add_environment (a, "sc-expand", &scm_f);
 
   a = cons (cons (&scm_closure, a), a);
   return a;
