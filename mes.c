@@ -972,12 +972,10 @@ readword (int c, scm *w, scm *a)
                                                            &scm_nil));}
     return cons (lookup (symbol_unsyntax.string, a), cons (readword (getchar (), w, a), &scm_nil));
   }
-  if (c == '#'
-     && (peekchar () == '\''
-         || peekchar () == '`')
-      && w == &scm_nil) {return cons (lookup (cons (make_char ('#'), cons (make_char (getchar ()), &scm_nil)), a),
-                          cons (readword (getchar (), w, a),
-                                &scm_nil));}
+  if (c == '#' && (peekchar () == '\'' || peekchar () == '`') && w == &scm_nil) {
+    c = getchar ();
+    return cons (lookup (cons (make_char ('#'), cons (make_char (c), &scm_nil)), a),
+                 cons (readword (getchar (), w, a), &scm_nil));}
   if (c == ';') {readcomment (c); return readword ('\n', w, a);}
   if (c == '#' && peekchar () == 'x') {getchar (); return read_hex ();}
   if (c == '#' && peekchar () == '\\') {getchar (); return read_character ();}
