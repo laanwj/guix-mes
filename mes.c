@@ -382,6 +382,7 @@ apply_env (scm *fn, scm *x, scm *a)
   if (efn == &scm_f || efn == &scm_t) assert (!"apply bool");
   if (efn->type == NUMBER) assert (!"apply number");
   if (efn->type == STRING) assert (!"apply string");
+  if (efn == &scm_unspecified) assert (!"apply *unspecified*");
   return apply_env (efn, x, a);
 }
 
