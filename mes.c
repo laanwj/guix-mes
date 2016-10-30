@@ -194,7 +194,15 @@ scm *
 set_env_x (scm *x, scm *e, scm *a)
 {
   cache_invalidate (x);
-  return set_cdr_x (assq (x, a), e);
+  scm *p = assq (x, a);
+  if (p->type != PAIR)
+    {
+      fprintf (stderr, "set!: unbound variable:");
+      display_ (stderr, x);
+      fprintf (stderr, "\n");
+      assert (!"unbound variable");
+    }
+  return set_cdr_x (p, e);
 }
 
 scm *
