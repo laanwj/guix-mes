@@ -119,5 +119,25 @@ exit $?
        (list foo bar)))
    (list "bar" "foo")))
 
-(result 'report)
+(pass-if "define-syntax sr:when [syntax-rules]"
+  (sequal?
+   (let ()
+     (define-syntax sr:when
+       (syntax-rules ()
+         ((sc:when condition exp ...)
+          (if condition
+              (begin exp ...)))))
+     (let ()
+       (sr:when #t "if not now, then?")))
+   "if not now, then?"))
 
+(pass-if "define-syntax-rule"
+  (sequal?
+   (let ()
+     (define-syntax-rule (sre:when c e ...)
+       (if c (begin e ...)))
+     (let ()
+       (sre:when #t "if not now, then?")))
+   "if not now, then?"))
+
+(result 'report)
