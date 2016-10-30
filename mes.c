@@ -29,6 +29,7 @@
 
 #define DEBUG 0
 #define QUASIQUOTE 1
+//#define QUASISYNTAX 0
 
 enum type {CHAR, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR,
            FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
@@ -410,8 +411,10 @@ builtin_eval (scm *e, scm *a)
     {
       if (e->car == &symbol_quote)
         return cadr (e);
+#if QUASISYNTAX
       if (e->car == &symbol_syntax)
         return e;
+#endif
       if (e->car == &symbol_begin)
         return begin (e, a);
       if (e->car == &scm_lambda)
@@ -444,11 +447,13 @@ builtin_eval (scm *e, scm *a)
         return builtin_eval (cadr (e), a);
       if (e->car == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
+#endif //QUASIQUOTE
+#if QUASISYNTAX
       if (e->car == &symbol_unsyntax)
         return builtin_eval (cadr (e), a);
       if (e->car == &symbol_quasisyntax)
         return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
-#endif //QUASIQUOTE
+#endif //QUASISYNTAX
     }
   return apply_env (e->car, evlis_env (e->cdr, a), a);
 }

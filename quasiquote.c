@@ -19,6 +19,8 @@
  */
 
 #if QUASIQUOTE
+scm *add_environment (scm *a, char const *name, scm *x);
+
 scm *
 unquote (scm *x) ///((no-environment))
 {
@@ -31,6 +33,39 @@ unquote_splicing (scm *x) ///((no-environment))
   return cons (&symbol_unquote_splicing, x);
 }
 
+scm *
+eval_quasiquote (scm *e, scm *a)
+{
+  if (e == &scm_nil) return e;
+  else if (atom_p (e) == &scm_t) return e;
+  else if (eq_p (car (e), &symbol_unquote) == &scm_t)
+    return builtin_eval (cadr (e), a);
+  else if (e->type == PAIR && e->car->type == PAIR
+           && eq_p (caar (e), &symbol_unquote_splicing) == &scm_t)
+      return append2 (builtin_eval (cadar (e), a), eval_quasiquote (cdr (e), a));
+  return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
+}
+
+scm *
+the_unquoters = &scm_nil;
+
+scm *
+add_unquoters (scm *a)
+{
+  if (the_unquoters == &scm_nil)
+    the_unquoters = cons (cons (&symbol_unquote, &scm_unquote),
+                          cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing),
+                                &scm_nil));
+  return append2 (the_unquoters, a);
+}
+#else // !QUASIQUOTE
+
+scm*add_unquoters (scm *a){}
+scm*eval_quasiquote (scm *e, scm *a){}
+
+#endif // QUASIQUOTE
+
+#if QUASISYNTAX
 scm *
 syntax (scm *x)
 {
@@ -50,19 +85,6 @@ unsyntax_splicing (scm *x) ///((no-environment))
 }
 
 scm *
-eval_quasiquote (scm *e, scm *a)
-{
-  if (e == &scm_nil) return e;
-  else if (atom_p (e) == &scm_t) return e;
-  else if (eq_p (car (e), &symbol_unquote) == &scm_t)
-    return builtin_eval (cadr (e), a);
-  else if (e->type == PAIR && e->car->type == PAIR
-           && eq_p (caar (e), &symbol_unquote_splicing) == &scm_t)
-      return append2 (builtin_eval (cadar (e), a), eval_quasiquote (cdr (e), a));
-  return cons (eval_quasiquote (car (e), a), eval_quasiquote (cdr (e), a));
-}
-
-scm *
 eval_quasisyntax (scm *e, scm *a)
 {
   if (e == &scm_nil) return e;
@@ -75,21 +97,6 @@ eval_quasisyntax (scm *e, scm *a)
   return cons (eval_quasisyntax (car (e), a), eval_quasisyntax (cdr (e), a));
 }
 
-scm *add_environment (scm *a, char const *name, scm *x);
-
-scm *
-the_unquoters = &scm_nil;
-
-scm *
-add_unquoters (scm *a)
-{
-  if (the_unquoters == &scm_nil)
-    the_unquoters = cons (cons (&symbol_unquote, &scm_unquote),
-                          cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing),
-                                &scm_nil));
-  return append2 (the_unquoters, a);
-}
-
 scm *
 add_unsyntaxers (scm *a)
 {
@@ -98,13 +105,12 @@ add_unsyntaxers (scm *a)
   return a;
 }
 
-#else // !QUASIQUOTE
-
-scm*add_unquoters (scm *a){}
+#else // !QUASISYNTAX
+scm*syntax (scm *x){}
+scm*unsyntax (scm *x){}
+scm*unsyntax_splicing (scm *x){}
 scm*add_unsyntaxers (scm *a){}
 scm*eval_unsyntax (scm *e, scm *a){}
-scm*eval_quasiquote (scm *e, scm *a){}
 scm*eval_quasisyntax (scm *e, scm *a){}
 
-#endif // !QUASIQUOTE
-
+#endif // !QUASISYNTAX
