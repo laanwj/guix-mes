@@ -140,4 +140,24 @@ exit $?
        (sre:when #t "if not now, then?")))
    "if not now, then?"))
 
+(pass-if-equal "syntax-rules plus"
+    (+ 1 2 3)
+  (let ()
+    (define-syntax plus
+      (syntax-rules ()
+        ((plus x ...) (+ x ...))))
+    (plus 1 2 3)))
+
+(when guile?
+  (pass-if-equal "macro with quasisyntax"
+      '("foo" "foo")
+    (let ()
+      (define-syntax string-let
+        (lambda (stx)
+          (syntax-case stx ()
+            ((_ id body ...)
+             #`(let ((id #,(symbol->string (syntax->datum #'id))))
+                 body ...)))))
+      (string-let foo (list foo foo)))))
+
 (result 'report)
