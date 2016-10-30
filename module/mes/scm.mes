@@ -163,7 +163,9 @@
   (display who (current-error-port))
   (display ":" (current-error-port))
   (display rest (current-error-port))
-  (newline (current-error-port)))
+  (newline (current-error-port))
+  (display "exiting...\n" (current-error-port))
+  (exit 1))
 
 (define (syntax-error message . rest)
   (display "syntax-error:" (current-error-port))
