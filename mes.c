@@ -250,7 +250,7 @@ scm *
 assq_ref_cache (scm *x, scm *a)
 {
   x = assq (x, a);
-  if (x == &scm_f) return &scm_f;
+  if (x == &scm_f) return &scm_undefined;
   return x->cdr;
 }
 scm*cache_invalidate (scm*x){}
