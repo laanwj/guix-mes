@@ -65,11 +65,25 @@
         (newline)
         #f)))
 
+(define (sequal2? expect actual)
+  (or (equal? expect actual)
+      (begin
+        (display ": fail") (newline)
+        (display "expected: ") (display expect) (newline)
+        (display "actual: ") (display actual) (newline)
+        #f)))
+
 (define-macro (pass-if name t)
   (list
    'begin
    (list display "test: ") (list display name)
    (list result t)))
+
+(define-macro (pass-if-equal name expect . body)
+  `(pass-if ,name (sequal2? ,expect (begin ,@body))))
+
+(define-macro (expect-fail name expect . body)
+  `(pass-if ,name (not (sequal2? ,expect (begin ,@body)))))
 
 (define-macro (pass-if-not name f)
   (list
