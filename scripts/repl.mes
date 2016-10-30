@@ -34,5 +34,9 @@ exit $?
 (mes-use-module (mes match))
 (mes-use-module (mes repl))
 
+(mes-use-module (mes psyntax-0))
+(mes-use-module (mes psyntax))
+(mes-use-module (mes psyntax-1))
+
 (repl)
 ()
