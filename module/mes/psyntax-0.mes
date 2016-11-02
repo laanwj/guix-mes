@@ -77,9 +77,9 @@
 
 (define putprop #f)
 (define getprop #f)
+(define properties-alist #f)
 
-;;(define properties *sc-expander-alist*)
-(let ((xproperties '()))
+(let ((properties '()))
   (set! putprop
         (lambda (symbol key value)
           (let ((plist (assq symbol *sc-expander-alist*)))
@@ -100,7 +100,8 @@
                   (if (pair? couple)
                       (cdr couple)
                       #f))
-                #f)))))
+                #f))))
+  (set! properties-alist (lambda () *sc-expander-alist*)))
 ;; (define fx+ +)
 ;; (define fx- -)
 ;; (define fx= =)

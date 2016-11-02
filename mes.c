@@ -101,6 +101,7 @@ scm symbol_unquote = {SYMBOL, "unquote"};
 scm symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
 
 scm symbol_sc_expand = {SYMBOL, "sc-expand"};
+scm symbol_expand_macro = {SYMBOL, "expand-macro"};
 scm symbol_sc_expander_alist = {SYMBOL, "*sc-expander-alist*"};
 scm symbol_noexpand = {SYMBOL, "noexpand"};
 scm symbol_syntax = {SYMBOL, "syntax"};
@@ -482,6 +483,13 @@ sc_expand_env (scm *e, scm *a)
   scm *macro;
   if (e->type == PAIR
     && car (e)->type == SYMBOL
+
+    && car (e) != &symbol_lambda
+    && car (e) != &symbol_set_x
+    && car (e) != &symbol_if
+    && car (e) != &symbol_begin
+    && car (e) != &symbol_define
+
     && car (e) != &symbol_quasiquote
     && car (e) != &symbol_quote
     && car (e) != &symbol_unquote
@@ -489,9 +497,12 @@ sc_expand_env (scm *e, scm *a)
     && ((expanders = assq_ref_cache (&symbol_sc_expander_alist, a)) != &scm_undefined)
     && ((macro = assq (car (e), expanders)) != &scm_f))
     {
-      scm *sc_expand = assq_ref_cache (&symbol_sc_expand, a);
-      if (sc_expand != &scm_undefined)
-        return apply_env (sc_expand, cons (e, &scm_nil), a);
+      scm *sc_expand = assq_ref_cache (&symbol_expand_macro, a);
+      if (sc_expand != &scm_undefined && sc_expand != &scm_f)
+        {
+          e = apply_env (sc_expand, cons (e, &scm_nil), a);
+          return expand_macro_env (e, a);
+        }
     }
   return e;
 }

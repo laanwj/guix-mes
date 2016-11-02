@@ -36,15 +36,18 @@
    (mes-use-module (mes quasiquote))
    (mes-use-module (mes let))
    (mes-use-module (mes scm))
-   (mes-use-module (mes syntax))
+
    (mes-use-module (srfi srfi-0))
+
+   (mes-use-module (mes psyntax-0))
+   (mes-use-module (mes psyntax-pp))
+   (mes-use-module (mes psyntax-1))
+
    (mes-use-module (mes record-0))
    (mes-use-module (mes record))
    (mes-use-module (srfi srfi-9))
    (mes-use-module (mes lalr-0))
    (mes-use-module (mes lalr))
-
-   (mes-use-module (mes let-syntax))
    (mes-use-module (srfi srfi-1))
    (mes-use-module (mes match))
 

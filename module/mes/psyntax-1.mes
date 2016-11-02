@@ -27,37 +27,9 @@
 
 (define datum->syntax datum->syntax-object)
 (define syntax->datum syntax-object->datum)
-
-(define-macro (define-syntax macro-name transformer)
-  `(define-macro ,macro-name
-     `(lambda args
-        (eval
-         (syntax-object->datum
-          (,transformer (cons ,macro-name args)))
-         (current-module)))))
-
-(define-syntax syntax-rules
-  (lambda (x)
-    (syntax-case x ()
-      ((_ (k ...) ((keyword . pattern) template) ...)
-       (syntax (lambda (x)
-                (syntax-case x (k ...)
-                  ((dummy . pattern) (syntax template))
-                  ...)))))))
+(set! expand-macro sc-expand)
 
 (define-macro (define-syntax-rule id-pattern . template)
   `(define-syntax ,(car id-pattern)
      (syntax-rules ()
        ((,(car id-pattern) . ,(cdr id-pattern)) ,@template))))
-
-(define-macro (let-syntax bindings . rest)
-  `((lambda ()
-      ,@(map (lambda (binding)
-               `(define-macro ,(car binding)
-                  `(lambda args
-                     (eval
-                      (syntax-object->datum
-                       (,(cadr binding) (cons ',(car binding) args)))
-                      (current-module)))))
-             bindings)
-      ,@rest)))

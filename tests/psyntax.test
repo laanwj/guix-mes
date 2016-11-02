@@ -110,6 +110,23 @@ exit $?
          (syntax-case exp ()
            ((swap! a b)
             (syntax
+             ((lambda (temp)
+                (set! a b)
+                (set! b temp)) a))))))
+     (let ((foo "foo")
+           (bar "bar"))
+       (swap! foo bar)
+       (list foo bar)))
+   (list "bar" "foo")))
+
+(pass-if "define-syntax swap! [syntax-case+let]"
+  (sequal?
+   (let ()
+     (define-syntax swap!
+       (lambda (exp)
+         (syntax-case exp ()
+           ((swap! a b)
+            (syntax
              (let ((temp a))
                (set! a b)
                (set! b temp)))))))
