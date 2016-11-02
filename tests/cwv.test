@@ -1,0 +1,76 @@
+#! /bin/sh
+# -*-scheme-*-
+echo ' ()' | cat $($(dirname $0)/../scripts/include.mes $0) $0 /dev/stdin | $(dirname $0)/../scripts/mes "$@"
+#paredit:||
+exit $?
+!#
+
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; scm.test: This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+(mes-use-module (mes base-0))
+(mes-use-module (mes base))
+(mes-use-module (mes quasiquote))
+(mes-use-module (mes let))
+(mes-use-module (srfi srfi-0))
+(mes-use-module (mes scm))
+(mes-use-module (mes test))
+
+(if guile?
+  (use-modules (srfi srfi-1)))
+
+(pass-if "values" (seq? (values 0 1) 0))
+(pass-if "values 2" (seq? ((lambda (x) x) (values 1 2 3)) 1))
+(pass-if "values 3" (seq? 1 ((lambda (x) x) (values 1 2 3))))
+(pass-if "call-with-values" (seq? (call-with-values (lambda () (values 1 2 3))
+                                    (lambda (a b c) (+ a b c)))
+                                  6))
+
+(pass-if-equal "values 5"
+    '(1 2 3 4 5)
+    (call-with-values
+     (lambda ()
+       (values 1 2 3 4 5))
+   (lambda (one two three four five)
+     (list one two three four five))))
+
+(pass-if-equal "values rests"
+    1
+    (call-with-values
+     (lambda ()
+       (values 1 2 3 4 5))
+     (lambda (one . rest)
+       one)))
+
+(pass-if-equal "values 4a 4b"
+    '(1 2 3 four-a 5)
+ ((lambda (one two three four five)
+    (append
+     (list one two three)
+     (call-with-values
+         (lambda () four)
+       (lambda (4a . 4b)
+         ;;(cons 4a 4b) FIXME: non-compliancy?
+         (list 4a)
+))
+     (list five)))
+  1 2 3 (values 'four-a 'four-b) 5))
+
+(result 'report)

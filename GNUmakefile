@@ -49,6 +49,7 @@ TESTS:=\
  tests/let.test\
  tests/vector.test\
  tests/scm.test\
+ tests/cwv.test\
  tests/record.test\
  tests/let-syntax.test\
  tests/psyntax.test\
