@@ -70,4 +70,11 @@ exit $?
 (pass-if "apply 2" (sequal? (apply list 1 '(2)) '(1 2)))
 (pass-if "apply 3" (sequal? (apply list 1 2 '(3)) '(1 2 3)))
 
+(begin
+  (define local-answer 41))
+(pass-if-equal "begin 2" 41 (begin local-answer))
+
+(if (not guile?)
+  (pass-if-equal "load" 42 (begin (load "tests/data/load.scm") the-answer)))
+
 (result 'report)

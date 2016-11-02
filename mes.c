@@ -112,7 +112,7 @@ scm symbol_unsyntax_splicing = {SYMBOL, "unsyntax-splicing"};
 
 scm symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm symbol_current_module = {SYMBOL, "current-module"};
-
+scm symbol_primitive_load = {SYMBOL, "primitive-load"};
 
 scm char_nul = {CHAR, .name="nul", .value=0};
 scm char_backspace = {CHAR, .name="backspace", .value=8};
@@ -437,6 +437,8 @@ builtin_eval (scm *e, scm *a)
         return define_env (e, a);
       if (e->car == &symbol_define_macro)
         return define_env (e, a);
+      if (e->car == &symbol_primitive_load)
+        return load_env (a);
 #else
       if (e->car == &symbol_define) {
         fprintf (stderr, "C DEFINE: ");
