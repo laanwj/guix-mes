@@ -893,10 +893,17 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
 
 // READ
 
+FILE *g_stdin;
+int
+getchar ()
+{
+  return getc (g_stdin);
+}
+
 int
 ungetchar (int c)
 {
-  return ungetc (c, stdin);
+  return ungetc (c, g_stdin);
 }
 
 int
@@ -1179,6 +1186,7 @@ main (int argc, char *argv[])
 {
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.1\n");
+  g_stdin = stdin;
   scm *a = mes_environment ();
   display_ (stderr, load_file_env (a));
   fputs ("", stderr);
