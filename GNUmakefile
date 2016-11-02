@@ -27,6 +27,7 @@ mes.o: mes.c mes.environment.h mes.environment.i mes.symbols.i
 mes.o: define.c define.environment.h define.environment.i
 mes.o: lib.c lib.environment.h lib.environment.i
 mes.o: math.c math.environment.h math.environment.i
+mes.o: posix.c posix.environment.h posix.environment.i
 mes.o: quasiquote.c quasiquote.environment.h quasiquote.environment.i
 mes.o: string.c string.environment.h string.environment.i
 mes.o: type.c type.environment.h type.environment.i

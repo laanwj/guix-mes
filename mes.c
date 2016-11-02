@@ -67,6 +67,7 @@ typedef struct scm_t {
 #include "lib.environment.h"
 #include "math.environment.h"
 #include "mes.environment.h"
+#include "posix.environment.h"
 #include "quasiquote.environment.h"
 #include "string.environment.h"
 #include "type.environment.h"
@@ -1127,10 +1128,12 @@ mes_environment () ///((internal))
 #endif
   a = cons (cons (&symbol_begin, &scm_begin), a);
 
+#include "posix.environment.i"
 #include "string.environment.i"
 #include "math.environment.i"
 #include "lib.environment.i"
 #include "mes.environment.i"
+//#include "quasiquote.environment.i"
 #include "define.environment.i"
 #include "type.environment.i"
 
@@ -1162,22 +1165,23 @@ lookup_macro (scm *x, scm *a)
 }
 
 scm *
-read_file_env (scm *e, scm *a)
+read_input_file_env (scm *e, scm *a)
 {
   if (e == &scm_nil) return e;
-  return cons (e, read_file_env (read_env (a), a));
+  return cons (e, read_input_file_env (read_env (a), a));
 }
 
 scm *
-load_file_env (scm *a)
+load_env (scm *a)
 {
-  return begin_env (read_file_env (read_env (a), a), a);
+  return begin_env (read_input_file_env (read_env (a), a), a);
 }
 
 #include "type.c"
 #include "define.c"
 #include "lib.c"
 #include "math.c"
+#include "posix.c"
 #include "quasiquote.c"
 #include "string.c"
 
@@ -1188,7 +1192,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.1\n");
   g_stdin = stdin;
   scm *a = mes_environment ();
-  display_ (stderr, load_file_env (a));
+  display_ (stderr, load_env (a));
   fputs ("", stderr);
   return 0;
 }
