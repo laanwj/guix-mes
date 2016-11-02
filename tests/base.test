@@ -34,6 +34,7 @@ exit $?
 
 
 (pass-if "begin" (seq? (begin 'a 'b (+ 1 2)) 3))
+(pass-if "lambda" (symbol? 'lambda))
 
 (begin (define *top-begin-a* '*top-begin-a*))
 (pass-if "top begin " (seq? *top-begin-a* '*top-begin-a*))

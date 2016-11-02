@@ -20,7 +20,7 @@
 
 #if !BOOT
 scm *
-define (scm *x, scm *a)
+define_env (scm *x, scm *a)
 {
   scm *e;
   scm *name = cadr (x);
@@ -43,7 +43,7 @@ define (scm *x, scm *a)
   return entry;
 }
 #else // BOOT
-scm*define (scm *x, scm *a){}
+scm*define_env (scm *x, scm *a){}
 #endif
 
 scm *

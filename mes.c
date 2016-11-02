@@ -86,13 +86,14 @@ scm scm_circular = {SCM, "*circular*"};
 scm scm_label = {
   SCM, "label"};
 #endif
-scm scm_lambda = {SCM, "lambda"};
+scm scm_begin = {SCM, "begin"};
 
-scm symbol_begin = {SCM, "begin"};
-scm symbol_if = {SCM, "if"};
-scm symbol_define = {SCM, "define"};
+scm symbol_lambda = {SYMBOL, "lambda"};
+scm symbol_begin = {SYMBOL, "begin"};
+scm symbol_if = {SYMBOL, "if"};
+scm symbol_define = {SYMBOL, "define"};
 scm symbol_define_macro = {SCM, "define-macro"};
-scm symbol_set_x = {SCM, "set!"};
+scm symbol_set_x = {SYMBOL, "set!"};
 
 scm symbol_quote = {SYMBOL, "quote"};
 scm symbol_quasiquote = {SYMBOL, "quasiquote"};
@@ -359,10 +360,10 @@ apply_env (scm *fn, scm *x, scm *a)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (fn == &symbol_current_module) return a;
     }
-  else if (fn->car == &scm_lambda) {
+  else if (fn->car == &symbol_lambda) {
     scm *p = pairlis (cadr (fn), x, a);
     cache_invalidate_range (p, a->cdr);
-    scm *r = begin (cddr (fn), cons (cons (&scm_closure, p), p));
+    scm *r = begin_env (cddr (fn), cons (cons (&scm_closure, p), p));
     cache_invalidate_range (p, a->cdr);
     return r;
   }
@@ -373,7 +374,7 @@ apply_env (scm *fn, scm *x, scm *a)
     a = cdr (a);
     scm *p = pairlis (args, x, a);
     cache_invalidate_range (p, a->cdr);
-    scm *r = begin (body, cons (cons (&scm_closure, p), p));
+    scm *r = begin_env (body, cons (cons (&scm_closure, p), p));
     cache_invalidate_range (p, a->cdr);
     return r;
   }
@@ -422,8 +423,8 @@ builtin_eval (scm *e, scm *a)
         return e;
 #endif
       if (e->car == &symbol_begin)
-        return begin (e, a);
-      if (e->car == &scm_lambda)
+        return begin_env (e, a);
+      if (e->car == &symbol_lambda)
         return make_closure (cadr (e), cddr (e), assq (&scm_closure, a));
       if (e->car == &scm_closure)
         return e;
@@ -431,9 +432,9 @@ builtin_eval (scm *e, scm *a)
         return builtin_if (cdr (e), a);
 #if !BOOT
       if (e->car == &symbol_define)
-        return define (e, a);
+        return define_env (e, a);
       if (e->car == &symbol_define_macro)
-        return define (e, a);
+        return define_env (e, a);
 #else
       if (e->car == &symbol_define) {
         fprintf (stderr, "C DEFINE: ");
@@ -496,7 +497,7 @@ sc_expand_env (scm *e, scm *a)
 }
 
 scm *
-begin (scm *e, scm *a)
+begin_env (scm *e, scm *a)
 {
   scm *r = &scm_unspecified;
   while (e != &scm_nil) {
@@ -1106,6 +1107,7 @@ mes_environment () ///((internal))
   symbols = cons (&scm_label, symbols);
   a = cons (cons (&scm_label, &scm_t), a);
 #endif
+  a = cons (cons (&symbol_begin, &scm_begin), a);
 
 #include "string.environment.i"
 #include "math.environment.i"
@@ -1123,7 +1125,7 @@ mes_environment () ///((internal))
 scm *
 make_lambda (scm *args, scm *body)
 {
-  return cons (&scm_lambda, cons (args, body));
+  return cons (&symbol_lambda, cons (args, body));
 }
 
 scm *
@@ -1151,7 +1153,7 @@ read_file_env (scm *e, scm *a)
 scm *
 load_file_env (scm *a)
 {
-  return begin (read_file_env (read_env (a), a), a);
+  return begin_env (read_file_env (read_env (a), a), a);
 }
 
 #include "type.c"

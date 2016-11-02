@@ -80,7 +80,8 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
                    (format #f "scm ~a = {FUNCTION~a, .name=~S, .function~a=&~a};\n" (function-builtin-name f) n (function-scm-name f) n (.name f)))))
 
 (define (snarf-symbols string)
-  (let* ((matches (list-matches "\nscm ([a-z_0-9]+) = [{](SCM|SYMBOL)," string)))
+  (let* ((matches (append (list-matches "\nscm ([a-z_0-9]+) = [{](SCM)," string)
+                          (list-matches "\nscm ([a-z_0-9]+) = [{](SYMBOL)," string))))
     (map (cut match:substring <> 1) matches)))
 
 (define (snarf-functions string)
