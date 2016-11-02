@@ -10,8 +10,17 @@ Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
-* Changes in 0.1 (since progress report #2)
+* Changes in 0.2 since 0.1
+** Core
+*** Names of symbols and strings are list of characters [WAS: c-string].
+*** Macro expansion looks for sc-expand hook, enabling psyntax.
+** Language
+*** Mes now provides a subset of R6RS.
+*** Mes now provides psyntax-5.9f-based syntax-case.
+** Noteworthy bug fixes
+*** Using values as second parameter of builtin function yields first value.
 
+* Changes in 0.1 (since progress report #2)
 ** Core
 *** expand_macro is now a separate function.
 *** A smaller core can now compiled using BOOT=1.

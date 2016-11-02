@@ -14,12 +14,12 @@ metamorphose into R6RS.  It seemed to work but performance of the
 LISP-intepreted RRS was so bad (~1000x slower than initial LISP-1.5)
 that this track was abandoned after the initial ANNOUNCE.
 
-The route changed trying to strike a balance between core size and
-performance: still writing as much as possible in Scheme, but having a
+The route changed, trying to strike a balance between core size and
+performance: still writing as much as possible in Scheme but having a
 mescc compiler that takes not more than some seconds to run.
 
-Now that the important bits of R5RS are done and R6RS's syntax-case
-comes in scope, mes.c has grown into ~1500LOC, some effort must
+Now that portable R6RS syntax-case runs and mes.c has grown to
+~1200LOC with another ~300LOC of optional C code, some effort must
 probably be directed into making that smaller.
 
 ** Move mes.c into hex?
@@ -29,24 +29,8 @@ bootstrap into Scheme.
 
 ** Rewrite mes.c and generate hex?
 Another idea (thanks Rutger!) is to rewrite the mes.c core in a
-C/Assembly variant and have mescc produce the simple, annotated
+C/Assembly variant and thave mescc produce the simple, annotated
 bootstrap binary.
-
-** R6RS's syntax-case
-
-Having syntax-case should enable Mes to run [[https://savannah.gnu.org/projects/nyacc][nyacc]], which comes with a
-full C parser.
-
-*** Get Andre van Tonder's portable syntax-case up.
-    + This would avoid the psyntax.ss -> psyntax.pp -> psyntax.ss
-      bootstrap problem with an elegantly small implementation.
-
-    - Does this support the idea of a minimal mes.c core, or is too
-      much Scheme support required in the core?
-*** Get a version of portable psyntax.pp up.
-    + Fully standard complient R6RS macros.
-    + Minimal mes.c core required (not even quasiquote?).
-    - Sloooowwwww with intepreter?
 
 * Bugs
 ** Core is too fat
@@ -62,11 +46,15 @@ files to be prepended.  Previously, this information was put in
 GNUmakefile.
 ** Garbage collection?
 Mes is using malloc without freeing anything, memory is patient these
-days :-)
-** find/fix hygiene problem: see module/mes/match.scm ;; X vs x
-**
-** Actually do something useful, build: [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
+days :-) Sadly, a factor 10^6 less patient than the future that SICP
+authors were hoping for (we have 10^3 less memory and 10^3 more
+instructions).
 
+SICP's stop and copy Garbage Colletor (Jam Scraper?) algorithm is now
+available, but it cannot be hooked up yet as even in boot mode the
+core mes eval/apply is still running; it executes the Scheme based
+eval/apply.
+** Actually do something useful, build: [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
 * OLD: Booting from LISP-1.5 into Mes
 
 Mes started out experimenting with booting from a hex-coded minimal
