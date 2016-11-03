@@ -200,14 +200,7 @@ scm *
 set_env_x (scm *x, scm *e, scm *a)
 {
   cache_invalidate (x);
-  scm *p = assq (x, a);
-  if (p->type != PAIR)
-    {
-      fprintf (stderr, "set!: unbound variable:");
-      display_ (stderr, x);
-      fprintf (stderr, "\n");
-      assert (!"unbound variable");
-    }
+  scm *p = assert_defined (assq (x, a));
   return set_cdr_x (p, e);
 }
 
@@ -341,6 +334,19 @@ assq_ref_cache (scm *x, scm *a)
 #endif // ENV_CACHE
 
 scm *
+assert_defined (scm *e)
+{
+  if (e == &scm_undefined)
+    {
+      fprintf (stderr, "eval: unbound variable:");
+      display_ (stderr, e);
+      fprintf (stderr, "\n");
+      assert (!"unbound variable");
+    }
+  return e;
+}
+
+scm *
 evlis_env (scm *m, scm *a)
 {
   if (m == &scm_nil) return &scm_nil;
@@ -397,22 +403,14 @@ builtin_eval (scm *e, scm *a)
 {
   if (builtin_p (e) == &scm_t) return e;
   if (e->type == SCM) return e;
+  if (e->type == SYMBOL) return assert_defined (assq_ref_cache (e, a));
 
   e = expand_macro_env (e, a);
 
-  if (e->type == SYMBOL) {
-    scm *y = assq_ref_cache (e, a);
-    if (y == &scm_undefined) {
-      fprintf (stderr, "eval: unbound variable:");
-      display_ (stderr, e);
-      fprintf (stderr, "\n");
-      assert (!"unbound variable");
-    }
-    return y;
-  }
   else if (e->type != PAIR)
     return e;
   else if (e->car->type != PAIR)
+  if (e->type == SYMBOL) return assert_defined (assq_ref_cache (e, a));
     {
       if (e->car->type == STRING && string_to_symbol (e->car) == &symbol_noexpand)
         e = cadr (e);
