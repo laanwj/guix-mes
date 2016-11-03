@@ -805,69 +805,83 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
 {
   scm *r;
   fprintf (f, "%s", sep);
-  if (x->type == CHAR && x->value == char_nul.value) fprintf (f, "#\\%s", char_nul.name);
-  else if (x->type == CHAR && x->value == char_backspace.value) fprintf (f, "#\\%s", char_backspace.name);
-  else if (x->type == CHAR && x->value == char_tab.value) fprintf (f, "#\\%s", char_tab.name);
-  else if (x->type == CHAR && x->value == char_newline.value) fprintf (f, "#\\%s", char_newline.name);
-  else if (x->type == CHAR && x->value == char_vt.value) fprintf (f, "#\\%s", char_vt.name);
-  else if (x->type == CHAR && x->value == char_page.value) fprintf (f, "#\\%s", char_page.name);
-  else if (x->type == CHAR && x->value == char_return.value) fprintf (f, "#\\%s", char_return.name);
-  else if (x->type == CHAR && x->value == char_space.value) fprintf (f, "#\\%s", char_space.name);
-  else if (x->type == CHAR) fprintf (f, "#\\%c", x->value);
-  else if (x->type == MACRO) {
-    fprintf (f, "(*macro* ");
-    display_helper (f, x->macro, cont, sep, quote);
-    fprintf (f, ")");
-  }
-  else if (x->type == NUMBER) fprintf (f, "%d", x->value);
-  else if (x->type == PAIR) {
-    if (car (x) == &scm_circular) {
-      fprintf (f, "(*circ* . #-1#)");
-      return &scm_unspecified;
+  switch (x->type)
+    {
+    case CHAR:
+      {
+        char const *name = 0;
+        if (x->value == char_nul.value) name = char_nul.name;
+        else if (x->value == char_backspace.value) name = char_backspace.name;
+        else if (x->value == char_tab.value) name = char_tab.name;
+        else if (x->value == char_newline.value) name = char_newline.name;
+        else if (x->value == char_vt.value) name = char_vt.name;
+        else if (x->value == char_page.value) name = char_page.name;
+        else if (x->value == char_return.value) name = char_return.name;
+        else if (x->value == char_space.value) name = char_space.name;
+        if (name) fprintf (f, "#\\%s", name);
+        else fprintf (f, "#\\%c", x->value);
+        break;
+      }
+    case MACRO:
+      fprintf (f, "(*macro* ");
+      display_helper (f, x->macro, cont, sep, quote);
+      fprintf (f, ")");
+      break;
+    case NUMBER: fprintf (f, "%d", x->value); break;
+    case PAIR:
+      {
+        if (car (x) == &scm_circular) {
+          fprintf (f, "(*circ* . #-1#)");
+          return &scm_unspecified;
+        }
+        if (car (x) == &scm_closure) {
+          fprintf (f, "(*closure* . #-1#)");
+          return &scm_unspecified;
+        }
+        if (car (x) == &scm_quote) {
+          fprintf (f, "'");
+          return display_helper (f, car (cdr (x)), cont, "", true);
+        }
+        if (!cont) fprintf (f, "(");
+        display_ (f, car (x));
+        if (cdr (x)->type == PAIR)
+          display_helper (f, cdr (x), true, " ", false);
+        else if (cdr (x) != &scm_nil) {
+          fprintf (f, " . ");
+          display_ (f, cdr (x));
+        }
+        if (!cont) fprintf (f, ")");
+        break;
+      }
+    case VECTOR:
+      {
+        fprintf (f, "#(", x->length);
+        for (int i = 0; i < x->length; i++) {
+          if (x->vector[i].type == VECTOR
+              || (x->vector[i].type == REF
+                  && x->vector[i].ref->type == VECTOR))
+            fprintf (f, "%s#(...)", i ? " " : "");
+          else
+            display_helper (f, &x->vector[i], false, i ? " " : "", false);
+        }
+        fprintf (f, ")");
+        break;
+      }
+    case REF: display_helper (f, x->ref, cont, "", true); break;
+    case FUNCTION: fprintf (f, "#<procedure %s>", x->name); ;break;
+    default:
+      if (x->string)
+        {
+          scm *p = x->string;
+          assert (p);
+          while (p != &scm_nil) {
+            assert (p->car->type == CHAR);
+            fputc (p->car->value, f);
+            p = p->cdr;
+          }
+        }
+      else if (x->type != PAIR && x->name) fprintf (f, "%s", x->name);
     }
-    if (car (x) == &scm_closure) {
-      fprintf (f, "(*closure* . #-1#)");
-      return &scm_unspecified;
-    }
-    if (car (x) == &scm_quote) {
-      fprintf (f, "'");
-      return display_helper (f, car (cdr (x)), cont, "", true);
-    }
-    if (!cont) fprintf (f, "(");
-    display_ (f, car (x));
-    if (cdr (x)->type == PAIR)
-      display_helper (f, cdr (x), true, " ", false);
-    else if (cdr (x) != &scm_nil) {
-      fprintf (f, " . ");
-      display_ (f, cdr (x));
-    }
-    if (!cont) fprintf (f, ")");
-  }
-  else if (x->type == VECTOR) {
-    fprintf (f, "#(", x->length);
-    for (int i = 0; i < x->length; i++) {
-      if (x->vector[i].type == VECTOR
-          || (x->vector[i].type == REF
-              && x->vector[i].ref->type == VECTOR))
-        fprintf (f, "%s#(...)", i ? " " : "");
-      else
-        display_helper (f, &x->vector[i], false, i ? " " : "", false);
-    }
-    fprintf (f, ")");
-  }
-  else if (x->type == REF) display_helper (f, x->ref, cont, "", true);
-  else if (x->type == FUNCTION) fprintf (f, "#<procedure %s>", x->name);
-  else if (x->type != PAIR && x->string) {
-    scm *p = x->string;
-    assert (p);
-    while (p != &scm_nil) {
-      assert (p->car->type == CHAR);
-      fputc (p->car->value, f);
-      p = p->cdr;
-    }
-  }
-  else if (x->type != PAIR && x->name) fprintf (f, "%s", x->name);
-
   return &scm_unspecified;
 }
 
