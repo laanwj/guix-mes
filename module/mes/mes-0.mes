@@ -79,8 +79,8 @@
 (define (evlis-env m a)
   (cond
    ((null? m) '())
-   ((not (pair? m)) (eval m a))
-   (#t (cons (eval (car m) a) (evlis-env (cdr m) a)))))
+   ((not (pair? m)) (eval-env m a))
+   (#t (cons (eval-env (car m) a) (evlis-env (cdr m) a)))))
 
 (define (apply-env fn x a) 
   (cond
@@ -89,7 +89,7 @@
      ((builtin? fn) (call fn x))
      ((eq? fn 'call-with-values) (call call-with-values-env (append x (cons a '()))))
      ((eq? fn 'current-module) a)
-     (#t (apply-env (eval fn a) x a))))
+     (#t (apply-env (eval-env fn a) x a))))
    ((eq? (car fn) 'lambda)
     (let ((p (pairlis (cadr fn) x a)))
       (cache-invalidate-range p (cdr a))
@@ -106,7 +106,7 @@
           (cache-invalidate-range p (cdr a))
           r))))
    ;;((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
-   (#t (apply-env (eval fn a) x a))))
+   (#t (apply-env (eval-env fn a) x a))))
 
 (define (eval-expand e a)
   (cond
@@ -122,9 +122,9 @@
      ((eq? (car e) 'if) (eval-if-env (cdr e) a))
      ((eq? (car e) 'define) (env:define (cons (sexp:define e a) '()) a))
      ((eq? (car e) 'define-macro) (env:define (env:macro (sexp:define e a)) a))
-     ((eq? (car e) 'set!) (set-env! (cadr e) (eval (caddr e) a) a))
-     ((eq? (car e) 'apply-env) (apply-env (eval (cadr e) a) (evlis-env (caddr e) a) a))
-     ((eq? (car e) 'unquote) (eval (cadr e) a))
+     ((eq? (car e) 'set!) (set-env! (cadr e) (eval-env (caddr e) a) a))
+     ((eq? (car e) 'apply-env) (apply-env (eval-env (cadr e) a) (evlis-env (caddr e) a) a))
+     ((eq? (car e) 'unquote) (eval-env (cadr e) a))
      ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) (add-unquoters a)))
      (#t (apply-env (car e) (evlis-env (cdr e) a) a))))
    (#t (apply-env (car e) (evlis-env (cdr e) a) a))))
@@ -140,7 +140,7 @@
 (define (add-unquoters a)
   (cons %the-unquoters a))
 
-(define (eval e a)
+(define (eval-env e a)
   (eval-expand (expand-macro-env e a) a))
 
 (define (expand-macro-env e a)
@@ -152,27 +152,27 @@
 
 (define (eval-begin-env e a)
   (if (null? e) *unspecified*
-      (if (null? (cdr e)) (eval (car e) a)
+      (if (null? (cdr e)) (eval-env (car e) a)
           (begin
-            (eval (car e) a)
+            (eval-env (car e) a)
             (eval-begin-env (cdr e) a)))))
 
 (define (eval-if-env e a)
-  (if (eval (car e) a) (eval (cadr e) a)
-      (if (pair? (cddr e)) (eval (caddr e) a))))
+  (if (eval-env (car e) a) (eval-env (cadr e) a)
+      (if (pair? (cddr e)) (eval-env (caddr e) a))))
 
 (define (eval-quasiquote e a)
   (cond ((null? e) e)
         ((atom? e) e)
-        ((eq? (car e) 'unquote) (eval (cadr e) a))
+        ((eq? (car e) 'unquote) (eval-env (cadr e) a))
         ((and (pair? (car e))
               (eq? (caar e) 'unquote-splicing))
-         (append2 (eval (cadar e) a) (eval-quasiquote (cdr e) a)))
+         (append2 (eval-env (cadar e) a) (eval-quasiquote (cdr e) a)))
         (#t (cons (eval-quasiquote (car e) a) (eval-quasiquote (cdr e) a)))))
 
 (define (sexp:define e a)
-  (if (atom? (cadr e)) (cons (cadr e) (eval (caddr e) a))
-      (cons (caadr e) (eval (cons 'lambda (cons (cdadr e) (cddr e))) a))))
+  (if (atom? (cadr e)) (cons (cadr e) (eval-env (caddr e) a))
+      (cons (caadr e) (eval-env (cons 'lambda (cons (cdadr e) (cddr e))) a))))
 
 (define (env:define a+ a)
   (set-cdr! a+ (cdr a))

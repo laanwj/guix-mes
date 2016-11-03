@@ -355,8 +355,8 @@ scm *
 evlis_env (scm *m, scm *a)
 {
   if (m == &scm_nil) return &scm_nil;
-  if (m->type != PAIR) return builtin_eval (m, a);
-  scm *e = builtin_eval (car (m), a);
+  if (m->type != PAIR) return eval_env (m, a);
+  scm *e = eval_env (car (m), a);
   return cons (e, evlis_env (cdr (m), a));
 }
 
@@ -392,7 +392,7 @@ apply_env (scm *fn, scm *x, scm *a)
   else if (fn->car == &scm_label)
     return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
 #endif
-  scm *efn = builtin_eval (fn, a);
+  scm *efn = eval_env (fn, a);
   if (efn == &scm_f || efn == &scm_t) assert (!"apply bool");
   if (efn->type == NUMBER) assert (!"apply number");
   if (efn->type == STRING) assert (!"apply string");
@@ -401,37 +401,35 @@ apply_env (scm *fn, scm *x, scm *a)
 }
 
 scm *
-builtin_eval (scm *e, scm *a)
+eval_env (scm *e, scm *a)
 {
-  if (e->type == FUNCTION) return e;
-  if (e->type == SCM) return e;
-  if (e->type == SYMBOL) return assert_defined (assq_ref_cache (e, a));
-  if (e->type != PAIR) return e;
-  if (e->car->type != PAIR)
+  switch (e->type)
     {
-      if (e->car == &symbol_quote)
-        return cadr (e);
+    case PAIR:
+      {
+        if (e->car == &symbol_quote)
+          return cadr (e);
 #if QUASISYNTAX
-      if (e->car == &symbol_syntax)
-        return e;
+        if (e->car == &symbol_syntax)
+          return e;
 #endif
-      if (e->car == &symbol_begin)
-        return begin_env (e, a);
-      if (e->car == &symbol_lambda)
-        return make_closure (cadr (e), cddr (e), assq (&scm_closure, a));
-      if (e->car == &scm_closure)
-        return e;
-      if (e->car == &symbol_if)
-        return builtin_if (cdr (e), a);
+        if (e->car == &symbol_begin)
+          return begin_env (e, a);
+        if (e->car == &symbol_lambda)
+          return make_closure (cadr (e), cddr (e), assq (&scm_closure, a));
+        if (e->car == &scm_closure)
+          return e;
+        if (e->car == &symbol_if)
+          return builtin_if (cdr (e), a);
 #if !BOOT
-      if (e->car == &symbol_define)
-        return define_env (e, a);
-      if (e->car == &symbol_define_macro)
-        return define_env (e, a);
-      if (e->car == &symbol_primitive_load)
-        return load_env (a);
+        if (e->car == &symbol_define)
+          return define_env (e, a);
+        if (e->car == &symbol_define_macro)
+          return define_env (e, a);
+        if (e->car == &symbol_primitive_load)
+          return load_env (a);
 #else
-      if (e->car == &symbol_define) {
+if (e->car == &symbol_define) {
         fprintf (stderr, "C DEFINE: ");
         display_ (stderr,
                   e->cdr->car->type == SYMBOL
@@ -443,23 +441,26 @@ builtin_eval (scm *e, scm *a)
       assert (e->car != &symbol_define_macro);
 #endif
       if (e->car == &symbol_set_x)
-        return set_env_x (cadr (e), builtin_eval (caddr (e), a), a);
+        return set_env_x (cadr (e), eval_env (caddr (e), a), a);
 #if QUASIQUOTE
       if (e->car == &symbol_unquote)
-        return builtin_eval (cadr (e), a);
+        return eval_env (cadr (e), a);
       if (e->car == &symbol_quasiquote)
         return eval_quasiquote (cadr (e), add_unquoters (a));
 #endif //QUASIQUOTE
 #if QUASISYNTAX
       if (e->car == &symbol_unsyntax)
-        return builtin_eval (cadr (e), a);
+        return eval_env (cadr (e), a);
       if (e->car == &symbol_quasisyntax)
         return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
 #endif //QUASISYNTAX
       scm *x = expand_macro_env (e, a);
-      if (x != e) return builtin_eval (x, a);
+      if (x != e) return eval_env (x, a);
+      return apply_env (e->car, evlis_env (e->cdr, a), a);
+      }
+    case SYMBOL: return assert_defined (assq_ref_cache (e, a));
+    default: return e;
     }
-  return apply_env (e->car, evlis_env (e->cdr, a), a);
 }
 
 scm *
@@ -491,7 +492,7 @@ begin_env (scm *e, scm *a)
 {
   scm *r = &scm_unspecified;
   while (e != &scm_nil) {
-    r = builtin_eval (e->car, a);
+    r = eval_env (e->car, a);
     e = e->cdr;
   }
   return r;
@@ -500,10 +501,10 @@ begin_env (scm *e, scm *a)
 scm *
 builtin_if (scm *e, scm *a)
 {
-  if (builtin_eval (car (e), a) != &scm_f)
-    return builtin_eval (cadr (e), a);
+  if (eval_env (car (e), a) != &scm_f)
+    return eval_env (cadr (e), a);
   if (cddr (e) != &scm_nil)
-    return builtin_eval (caddr (e), a);
+    return eval_env (caddr (e), a);
   return &scm_unspecified;
 }
 

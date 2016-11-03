@@ -37,8 +37,8 @@
 ((label loop-0
         (lambda (r e a)
           ;; (display "***LOOP-0*** ... e=") (display e) (newline)
-          (if (null? e) (eval (cons 'begin (read-file-env (read-env a) a)) a)
-              (if (atom? e) (loop-0 (eval e a) (read-env a) a)
+          (if (null? e) (eval-env (cons 'begin (read-file-env (read-env a) a)) a)
+              (if (atom? e) (loop-0 (eval-env e a) (read-env a) a)
                   (if (eq? (car e) 'define)
                       ((lambda (aa)     ; env:define
                          ;; (display "0DEFINE name=") (display (cadr e)) (newline)
@@ -47,8 +47,8 @@
                          (set-cdr! (assq '*closure* a) a)
                          (loop-0 *unspecified* (read-env a) a))
                        (cons            ; sexp:define
-                        (if (atom? (cadr e)) (cons (cadr e) (eval (caddr e) a))
-                            (cons (caadr e) (eval (cons 'lambda (cons (cdadr e) (cddr e))) a)))
+                        (if (atom? (cadr e)) (cons (cadr e) (eval-env (caddr e) a))
+                            (cons (caadr e) (eval-env (cons 'lambda (cons (cdadr e) (cddr e))) a)))
                         '()))
                       (if (eq? (car e) 'define-macro)
                           ((lambda (name+entry) ; env:macro
@@ -64,10 +64,10 @@
                                                  (cdr name+entry)))
                                '())))
                                         ; sexp:define
-                           (if (atom? (cadr e)) (cons (cadr e) (eval (caddr e) a))
-                               (cons (caadr e) (eval (cons 'lambda (cons (cdadr e) (cddr e))) a)))
+                           (if (atom? (cadr e)) (cons (cadr e) (eval-env (caddr e) a))
+                               (cons (caadr e) (eval-env (cons 'lambda (cons (cdadr e) (cddr e))) a)))
                            '())
-                          (loop-0 (eval e a) (read-env a) a)))))))
+                          (loop-0 (eval-env e a) (read-env a) a)))))))
  *unspecified* (read-env '()) (current-module))
 
 ()
