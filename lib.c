@@ -51,7 +51,7 @@ last_pair (scm *x)
 }
 
 scm *
-list (scm *x) ///((args . n))
+list (scm *x) ///((arity . n))
 {
   return x;
 }

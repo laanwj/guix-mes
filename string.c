@@ -19,13 +19,13 @@
  */
 
 scm *
-string (scm *x) ///((args . n))
+string (scm *x) ///((arity . n))
 {
   return make_string (x);
 }
 
 scm *
-string_append (scm *x) ///((args . n))
+string_append (scm *x) ///((arity . n))
 {
   scm *p = &scm_nil;
   while (x != &scm_nil)
@@ -61,7 +61,7 @@ string_ref (scm *x, scm *k)
 }
 
 scm *
-substring (scm *x) ///((args . n))
+substring (scm *x) ///((arity . n))
 {
   assert (x->type == PAIR);
   assert (x->car->type == STRING);

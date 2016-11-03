@@ -71,12 +71,7 @@ vector_p (scm *x)
 scm *
 builtin_p (scm *x)
 {
-  return (x->type == FUNCTION0
-          || x->type == FUNCTION1
-          || x->type == FUNCTION2
-          || x->type == FUNCTION3
-          || x->type == FUNCTIONn)
-    ? &scm_t : &scm_f;
+  return x->type == FUNCTION ? &scm_t : &scm_f;
 }
 
 // Non-types

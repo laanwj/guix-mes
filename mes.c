@@ -31,15 +31,24 @@
 #define QUASIQUOTE 1
 //#define QUASISYNTAX 0
 
-enum type {CHAR, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR,
-           FUNCTION0, FUNCTION1, FUNCTION2, FUNCTION3, FUNCTIONn};
-struct scm_t;
+enum type {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SCM, STRING, SYMBOL, REF, VALUES, VECTOR};
+
 typedef struct scm_t* (*function0_t) (void);
 typedef struct scm_t* (*function1_t) (struct scm_t*);
 typedef struct scm_t* (*function2_t) (struct scm_t*, struct scm_t*);
 typedef struct scm_t* (*function3_t) (struct scm_t*, struct scm_t*, struct scm_t*);
 typedef struct scm_t* (*functionn_t) (struct scm_t*);
-
+typedef struct function_t {
+  union {
+    function0_t function0;
+    function1_t function1;
+    function2_t function2;
+    function3_t function3;
+    functionn_t functionn;
+  };
+  int arity;
+} function;
+struct scm_t;
 typedef struct scm_t {
   enum type type;
   union {
@@ -51,11 +60,7 @@ typedef struct scm_t {
   };
   union {
     int value;
-    function0_t function0;
-    function1_t function1;
-    function2_t function2;
-    function3_t function3;
-    functionn_t functionn;
+    function* function;
     struct scm_t* cdr;
     struct scm_t* macro;
     struct scm_t* vector;
@@ -360,11 +365,8 @@ apply_env (scm *fn, scm *x, scm *a)
 {
   if (fn->type != PAIR)
     {
-      if (fn == &scm_car) return x->car->car;
-      if (fn == &scm_cdr) return x->car->cdr;
-      if (builtin_p (fn) == &scm_t)
-        return call (fn, x);
-      if (eq_p (fn, &symbol_call_with_values) == &scm_t)
+      if (fn->type == FUNCTION) return call (fn, x);
+      if (fn == &symbol_call_with_values)
         return call (&scm_call_with_values_env, append2 (x, cons (a, &scm_nil)));
       if (fn == &symbol_current_module) return a;
     }
@@ -401,7 +403,7 @@ apply_env (scm *fn, scm *x, scm *a)
 scm *
 builtin_eval (scm *e, scm *a)
 {
-  if (builtin_p (e) == &scm_t) return e;
+  if (e->type == FUNCTION) return e;
   if (e->type == SCM) return e;
   if (e->type == SYMBOL) return assert_defined (assq_ref_cache (e, a));
   if (e->type != PAIR) return e;
@@ -508,7 +510,7 @@ builtin_if (scm *e, scm *a)
 //Helpers
 
 scm *
-display (scm *x) ///((args . n))
+display (scm *x) ///((arity . n))
 {
   scm *e = car (x);
   scm *p = cdr (x);
@@ -527,20 +529,20 @@ display_ (FILE* f, scm *x)
 scm *
 call (scm *fn, scm *x)
 {
-  if (fn->type == FUNCTION0)
-    return fn->function0 ();
-  if (x != &scm_nil && x->car->type == VALUES)
+  if ((fn->function->arity > 0 || fn->function->arity == -1)
+      && x != &scm_nil && car (x)->type == VALUES)
     x = cons (x->car->cdr->car, x->cdr);
-  if (fn->type == FUNCTION1)
-    return fn->function1 (car (x));
-  if (x != &scm_nil && x->cdr->car->type == VALUES)
+  if ((fn->function->arity > 1 || fn->function->arity == -1)
+      && x != &scm_nil && x->cdr->car->type == VALUES)
     x = cons (x->car, cons (x->cdr->car->cdr->car, x->cdr));
-  if (fn->type == FUNCTION2)
-    return fn->function2 (car (x), cadr (x));
-  if (fn->type == FUNCTION3)
-    return fn->function3 (car (x), cadr (x), caddr (x));
-  if (fn->type == FUNCTIONn)
-    return fn->functionn (x);
+  switch (fn->function->arity)
+    {
+    case 0: return fn->function->function0 ();
+    case 1: return fn->function->function1 (car (x)); 
+    case 2: return fn->function->function2 (car (x), cadr (x));
+    case 3: return fn->function->function3 (car (x), cadr (x), caddr (x)); 
+    case -1: return fn->function->functionn (x);
+    }
   return &scm_unspecified;
 }
 
@@ -553,7 +555,7 @@ append2 (scm *x, scm *y)
 }
 
 scm *
-append (scm *x) ///((args . n))
+append (scm *x) ///((arity . n))
  {
   if (x == &scm_nil) return &scm_nil;
   return append2 (car (x), append (cdr (x)));
@@ -664,7 +666,7 @@ make_vector (scm *n)
 }
 
 scm *
-values (scm *x) ///((args . n))
+values (scm *x) ///((arity . n))
 {
   scm *v = cons (0, x);
   v->type = VALUES;
@@ -779,7 +781,7 @@ list_to_vector (scm *x)
 }
 
 scm *
-newline (scm *p) ///((args . n))
+newline (scm *p) ///((arity . n))
 {
   int fd = 1;
   if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
@@ -789,7 +791,7 @@ newline (scm *p) ///((args . n))
 }
 
 scm *
-force_output (scm *p) ///((args . n))
+force_output (scm *p) ///((arity . n))
 {
   int fd = 1;
   if (p->type == PAIR && p->car->type == NUMBER) fd = p->car->value;
@@ -853,7 +855,7 @@ display_helper (FILE* f, scm *x, bool cont, char const *sep, bool quote)
     fprintf (f, ")");
   }
   else if (x->type == REF) display_helper (f, x->ref, cont, "", true);
-  else if (builtin_p (x) == &scm_t) fprintf (f, "#<procedure %s>", x->name);
+  else if (x->type == FUNCTION) fprintf (f, "#<procedure %s>", x->name);
   else if (x->type != PAIR && x->string) {
     scm *p = x->string;
     assert (p);
@@ -904,7 +906,7 @@ read_char ()
 }
 
 scm *
-write_char (scm *x) ///((args . n))
+write_char (scm *x) ///((arity . n))
 {
   scm *c = car (x);
   scm *p = cdr (x);

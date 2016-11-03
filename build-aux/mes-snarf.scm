@@ -73,11 +73,13 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define %builtin-prefix% "scm_")
 (define (function->header f)
-  (let* ((n (or (assoc-ref (.annotation f) 'args)
-                (if (string-null? (.formals f)) 0
-                    (length (string-split (.formals f) #\,))))))
+  (let* ((arity (or (assoc-ref (.annotation f) 'arity)
+                    (if (string-null? (.formals f)) 0
+                        (length (string-split (.formals f) #\,)))))
+         (n (if (eq? arity 'n) -1 arity)))
     (string-append (format #f "scm *~a (~a);\n" (.name f) (.formals f))
-                   (format #f "scm ~a = {FUNCTION~a, .name=~S, .function~a=&~a};\n" (function-builtin-name f) n (function-scm-name f) n (.name f)))))
+                   (format #f "function fun_~a = {.function~a=&~a, .arity=~a};\n" (.name f) arity (.name f) n)
+                   (format #f "scm ~a = {FUNCTION, .name=~S, .function=&fun_~a};\n" (function-builtin-name f) (function-scm-name f) (.name f)))))
 
 (define (snarf-symbols string)
   (let* ((matches (append (list-matches "\nscm ([a-z_0-9]+) = [{](SCM)," string)
@@ -114,13 +116,13 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
          (base-name (basename file-name ".c"))
          (header (make <file>
                    #:name (string-append base-name ".environment.h")
-                   #:content (string-join (map function->header functions))))
+                   #:content (string-join (map function->header functions) "")))
          (environment (make <file>
                         #:name (string-append base-name ".environment.i")
-                        #:content (string-join (map function->source (filter (negate no-environment?) functions)))))
+                        #:content (string-join (map function->source (filter (negate no-environment?) functions)) "")))
          (symbols (make <file>
                     #:name (string-append base-name ".symbols.i")
-                    #:content (string-join (map symbol->source symbols)))))
+                    #:content (string-join (map symbol->source symbols) ""))))
     (list header environment symbols)))
 
 (define (file-write file)

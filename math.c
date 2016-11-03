@@ -19,7 +19,7 @@
  */
 
 scm *
-greater_p (scm *x) ///((name . ">") (args . n))
+greater_p (scm *x) ///((name . ">") (arity . n))
 {
   int n = INT_MAX;
   while (x != &scm_nil)
@@ -33,7 +33,7 @@ greater_p (scm *x) ///((name . ">") (args . n))
 }
 
 scm *
-less_p (scm *x) ///((name . "<") (args . n))
+less_p (scm *x) ///((name . "<") (arity . n))
 {
   int n = INT_MIN;
   while (x != &scm_nil)
@@ -47,7 +47,7 @@ less_p (scm *x) ///((name . "<") (args . n))
 }
 
 scm *
-is_p (scm *x) ///((name . "=") (args . n))
+is_p (scm *x) ///((name . "=") (arity . n))
 {
   if (x == &scm_nil) return &scm_t;
   assert (x->car->type == NUMBER);
@@ -62,7 +62,7 @@ is_p (scm *x) ///((name . "=") (args . n))
 }
 
 scm *
-minus (scm *x) ///((name . "-") (args . n))
+minus (scm *x) ///((name . "-") (arity . n))
 {
   scm *a = car (x);
   assert (a->type == NUMBER);
@@ -80,7 +80,7 @@ minus (scm *x) ///((name . "-") (args . n))
 }
 
 scm *
-plus (scm *x) ///((name . "+") (args . n))
+plus (scm *x) ///((name . "+") (arity . n))
 {
   int n = 0;
   while (x != &scm_nil)
@@ -93,7 +93,7 @@ plus (scm *x) ///((name . "+") (args . n))
 }
 
 scm *
-divide (scm *x) ///((name . "/") (args . n))
+divide (scm *x) ///((name . "/") (arity . n))
 {
   int n = 1;
   if (x != &scm_nil) {
@@ -119,7 +119,7 @@ modulo (scm *a, scm *b)
 }
 
 scm *
-multiply (scm *x) ///((name . "*") (args . n))
+multiply (scm *x) ///((name . "*") (arity . n))
 {
   int n = 1;
   while (x != &scm_nil)
@@ -132,7 +132,7 @@ multiply (scm *x) ///((name . "*") (args . n))
 }
 
 scm *
-logior (scm *x) ///((args . n))
+logior (scm *x) ///((arity . n))
 {
   int n = 0;
   while (x != &scm_nil)
