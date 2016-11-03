@@ -404,18 +404,9 @@ builtin_eval (scm *e, scm *a)
   if (builtin_p (e) == &scm_t) return e;
   if (e->type == SCM) return e;
   if (e->type == SYMBOL) return assert_defined (assq_ref_cache (e, a));
-
-  e = expand_macro_env (e, a);
-
-  else if (e->type != PAIR)
-    return e;
-  else if (e->car->type != PAIR)
-  if (e->type == SYMBOL) return assert_defined (assq_ref_cache (e, a));
+  if (e->type != PAIR) return e;
+  if (e->car->type != PAIR)
     {
-      if (e->car->type == STRING && string_to_symbol (e->car) == &symbol_noexpand)
-        e = cadr (e);
-      else
-        e = sc_expand_env (e, a);
       if (e->car == &symbol_quote)
         return cadr (e);
 #if QUASISYNTAX
@@ -463,6 +454,8 @@ builtin_eval (scm *e, scm *a)
       if (e->car == &symbol_quasisyntax)
         return eval_quasisyntax (cadr (e), add_unsyntaxers (a));
 #endif //QUASISYNTAX
+      scm *x = expand_macro_env (e, a);
+      if (x != e) return builtin_eval (x, a);
     }
   return apply_env (e->car, evlis_env (e->cdr, a), a);
 }
@@ -470,40 +463,23 @@ builtin_eval (scm *e, scm *a)
 scm *
 expand_macro_env (scm *e, scm *a)
 {
+  if (car (e)->type == STRING && string_to_symbol (car (e)) == &symbol_noexpand)
+    return cadr (e);
+
   scm *macro;
   if (e->type == PAIR
       && (macro = lookup_macro (e->car, a)) != &scm_f)
-    return expand_macro_env (apply_env (macro, e->cdr, a), a);
-  return e;
-}
+    return apply_env (macro, e->cdr, a);
 
-scm *
-sc_expand_env (scm *e, scm *a)
-{
   scm *expanders;
-  scm *macro;
   if (e->type == PAIR
     && car (e)->type == SYMBOL
-
-    && car (e) != &symbol_lambda
-    && car (e) != &symbol_set_x
-    && car (e) != &symbol_if
-    && car (e) != &symbol_begin
-    && car (e) != &symbol_define
-
-    && car (e) != &symbol_quasiquote
-    && car (e) != &symbol_quote
-    && car (e) != &symbol_unquote
-    && car (e) != &symbol_unquote_splicing
     && ((expanders = assq_ref_cache (&symbol_sc_expander_alist, a)) != &scm_undefined)
     && ((macro = assq (car (e), expanders)) != &scm_f))
     {
       scm *sc_expand = assq_ref_cache (&symbol_expand_macro, a);
       if (sc_expand != &scm_undefined && sc_expand != &scm_f)
-        {
-          e = apply_env (sc_expand, cons (e, &scm_nil), a);
-          return expand_macro_env (e, a);
-        }
+        e = apply_env (sc_expand, cons (e, &scm_nil), a);
     }
   return e;
 }
