@@ -39,6 +39,9 @@ exit $?
 (begin (define *top-begin-a* '*top-begin-a*))
 (pass-if "top begin " (seq? *top-begin-a* '*top-begin-a*))
 
+(begin (begin (define *top-begin-begin-a* '*top-begin-begin-a*)))
+(pass-if "top begin begin " (seq? *top-begin-begin-a* '*top-begin-begin-a*))
+
 (pass-if "if" (seq? (if #t 'true) 'true))
 (pass-if "if 2" (seq? (if #f #f) *unspecified*))
 (pass-if "if 3" (seq? (if (seq? 0 '0) 'true 'false) 'true))
