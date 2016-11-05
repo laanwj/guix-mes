@@ -205,7 +205,7 @@ scm *
 set_env_x (scm *x, scm *e, scm *a)
 {
   cache_invalidate (x);
-  scm *p = assert_defined (assq (x, a));
+  scm *p = assert_defined (x, assq (x, a));
   return set_cdr_x (p, e);
 }
 
@@ -339,12 +339,12 @@ assq_ref_cache (scm *x, scm *a)
 #endif // ENV_CACHE
 
 scm *
-assert_defined (scm *e)
+assert_defined (scm *x, scm *e)
 {
   if (e == &scm_undefined)
     {
       fprintf (stderr, "eval: unbound variable:");
-      display_ (stderr, e);
+      display_ (stderr, x);
       fprintf (stderr, "\n");
       assert (!"unbound variable");
     }
@@ -458,7 +458,7 @@ if (e->car == &symbol_define) {
       if (x != e) return eval_env (x, a);
       return apply_env (e->car, evlis_env (e->cdr, a), a);
       }
-    case SYMBOL: return assert_defined (assq_ref_cache (e, a));
+    case SYMBOL: return assert_defined (e, assq_ref_cache (e, a));
     default: return e;
     }
 }
