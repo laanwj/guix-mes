@@ -392,12 +392,24 @@ apply_env (scm *fn, scm *x, scm *a)
   else if (fn->car == &scm_label)
     return apply_env (caddr (fn), x, cons (cons (cadr (fn), caddr (fn)), a));
 #endif
-  scm *efn = eval_env (fn, a);
-  if (efn == &scm_f || efn == &scm_t) assert (!"apply bool");
-  if (efn->type == NUMBER) assert (!"apply number");
-  if (efn->type == STRING) assert (!"apply string");
-  if (efn == &scm_unspecified) assert (!"apply *unspecified*");
-  return apply_env (efn, x, a);
+  scm *e = eval_env (fn, a);
+  char const* type = 0;
+  if (e == &scm_f || e == &scm_t) type = "bool";
+  if (e->type == CHAR) type = "char";
+  if (e->type == NUMBER) type = "number";
+  if (e->type == STRING) type = "string";
+  if (e == &scm_unspecified) type = "*unspecified*";
+  if (e == &scm_undefined) type =  "*undefined*";
+  if (type)
+    {
+      fprintf (stderr, "cannot apply: %s: ", type);
+      display_ (stderr, e);
+      fprintf (stderr, " (");
+      display_ (stderr, fn);
+      fprintf (stderr, ")\n");
+      assert (!"cannot apply");
+    }
+  return apply_env (e, x, a);
 }
 
 scm *
