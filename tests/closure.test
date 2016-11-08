@@ -79,4 +79,22 @@ exit $?
             ((foo)))
                #t))
 
+(define-macro (foo? q+q)
+  #t)
+(foo? 'cons)
+(pass-if-equal "closure 7" #f (defined? 'q+q))
+
+(let ((x 0))
+  (pass-if-equal "closure 8" #f (not (defined? 'x))))
+
+((lambda ()
+   (define sc-expand #f)
+   ((lambda (g38)
+      (set! sc-expand
+            ((lambda ()
+               (lambda ()
+                 (list g38))))))
+    "noexpand")
+   (pass-if "closure 9" (sc-expand))))
+
 (result 'report)
