@@ -75,11 +75,6 @@ builtin_p (SCM x)
 }
 
 // Non-types
-SCM
-null_p (SCM x)
-{
-  return x == cell_nil ? cell_t : cell_f;
-}
 
 SCM
 atom_p (SCM x)

@@ -26,6 +26,7 @@
 
 ;;; Code:
 
+#f ;; FIXME -- needed for --dump, then --load
 (define (primitive-eval e) (eval-env e (current-module)))
 (define eval eval-env)
 (define (expand-macro e) (expand-macro-env e (current-module)))

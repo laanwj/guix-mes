@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-echo -e 'EOF\n___P((()))' | cat $($(dirname $0)/include.mes $0) $0 /dev/stdin | $(dirname $0)/mes "$@"
+echo -e 'EOF\n___P((()))' | cat $($(dirname $0)/include.mes $0) $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
 chmod +x a.out
 exit $?
 !#

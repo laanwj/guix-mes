@@ -1,0 +1,45 @@
+#! /bin/sh
+# -*-scheme-*-
+# ***REMOVE THIS BLOCK COMMENT INITIALLY***
+echo ' ()' | cat $($(dirname $0)/../scripts/include.mes $0) $0 /dev/stdin | $(dirname $0)/../scripts/mes $MES_FLAGS "$@"
+#paredit:||
+exit $?
+!#
+
+;; FIXME
+(gc)
+
+
+0
+cons
+(cons 0 1)
+(display 0) (newline)
+#t
+#f
+(display #t) (newline)
+(display #f) (newline)
+'foo
+(display 'foo) (newline)
+(display #x16) (newline)
+(display #\A) (newline)
+(display #\newline) (newline)
+(display 'foo)(newline)
+(display '(foo))(newline)
+(display '('foo))(newline)
+(display (cdr '(car . cdr))) (newline)
+(display "foo bar") (newline)
+;;barf
+#!
+barf
+!#
+(display `(display ,display)) (newline)
+(display `(display ,@'(string port))) (newline)
+(display #(0 1 2)) (newline)
+(display (list '(foo
+            #! boo !#
+            ;;(bb 4)
+            )
+          ))
+(newline)
+
+;; TODO: syntax, unsyntax, unsyntax-splicing

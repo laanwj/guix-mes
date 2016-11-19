@@ -44,6 +44,7 @@ distclean: clean
 check: all guile-check mes-check
 
 TESTS:=\
+ tests/read.test\
  tests/base.test\
  tests/closure.test\
  tests/quasiquote.test\
@@ -60,9 +61,15 @@ TESTS:=\
 BASE-0:=module/mes/base-0.mes
 MES-0:=guile/mes-0.scm
 MES:=./mes
+# use module/mes/read-0.mes rather than C-core reader
+MES_FLAGS:=--load
+export MES_FLAGS
 
 mes-check: all
 	set -e; for i in $(TESTS); do ./$$i; done
+
+dump: all
+	./mes --dump < module/mes/read-0.mes > read-0.mo
 
 guile-check:
 	set -e; for i in $(TESTS); do\
@@ -84,6 +91,9 @@ guile-mescc: mescc.cat
 	cat $(MAIN_C) | guile -s $^ > a.out
 	chmod +x a.out
 	./a.out
+
+paren: all
+	scripts/paren.mes
 
 help: help-top
 

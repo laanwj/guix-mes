@@ -36,23 +36,13 @@
 #define MES_MINI 0 // 1 for gc-2a.test, gc-3.test
 
 #if MES_FULL
-int ARENA_SIZE = 400000000; // need this much for scripts/mescc.mes
-//int ARENA_SIZE = 300000000; // need this much for tests/match.scm
-//int ARENA_SIZE = 30000000; // need this much for tests/record.scm
-//int ARENA_SIZE = 500000; // enough for tests/scm.test
-//int ARENA_SIZE = 60000; // enough for tests/base.test
+int ARENA_SIZE = 200000000;
 int GC_SAFETY = 10000;
 int GC_FREE = 20000;
 #else
-//int ARENA_SIZE = 500; // MINI
-int ARENA_SIZE = 4000; // MES_MINI, gc-3.test
-//int ARENA_SIZE = 10000; // gc-2a.test
-//int ARENA_SIZE = 18000; // gc-2.test -->KRAK
-//int ARENA_SIZE = 23000; // gc-2.test OK
-// int GC_SAFETY = 1000;
-// int GC_FREE = 1000;
-int GC_SAFETY = 10;
-int GC_FREE = 10;
+int ARENA_SIZE = 15000;
+int GC_SAFETY = 1000;
+int GC_FREE = 100;
 #endif
 
 typedef long SCM;
@@ -154,6 +144,9 @@ scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm scm_symbol_current_module = {SYMBOL, "current-module"};
 scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 
+scm scm_symbol_the_unquoters = {SYMBOL, "*the-unquoters*"};
+
+scm char_eof = {CHAR, .name="*eof*", .value=-1};
 scm char_nul = {CHAR, .name="nul", .value=0};
 scm char_backspace = {CHAR, .name="backspace", .value=8};
 scm char_tab = {CHAR, .name="tab", .value=9};
@@ -669,11 +662,6 @@ vm_apply_env ()
     SCM body = cddr (r1);
     SCM p = pairlis (args, r2, r0);
     return call_lambda (body, p, p, r0);
-    // r2 = p;
-    // cache_invalidate_range (r2, g_cells[r0].cdr);
-    // SCM r = begin_env (cddr (r1), cons (cons (cell_closure, p), p));
-    // cache_invalidate_range (r2, g_cells[r0].cdr);
-    // return r;
   }
   else if (car (r1) == cell_closure) {
     SCM args = caddr (r1);
@@ -682,12 +670,6 @@ vm_apply_env ()
     aa = cdr (aa);
     SCM p = pairlis (args, r2, aa);
     return call_lambda (body, p, aa, r0);
-    // r2 = p;
-    // r3 = aa;
-    // cache_invalidate_range (r2, g_cells[r3].cdr);
-    // SCM r = begin_env (body, cons (cons (cell_closure, p), p));
-    // cache_invalidate_range (r2, g_cells[r3].cdr);
-    // return r;
   }
 #if BOOT
   else if (car (r1) == cell_symbol_label)
@@ -742,7 +724,7 @@ vm_eval_env ()
         if (car (r1) == cell_symbol_define_macro)
           return define_env (r1, r0);
         if (car (r1) == cell_symbol_primitive_load)
-          return load_env (r0);
+          return begin_env (read_input_file_env (r0), r0);
 #else
         if (car (r1) == cell_symbol_define) {
         fprintf (stderr, "C DEFINE: ");
@@ -878,9 +860,6 @@ SCM
 make_function (SCM name, SCM id, SCM arity)
 {
   g_cells[tmp_num3].value = FUNCTION;
-  // function fun_read_byte = {.function0=&read_byte, .arity=0};
-  // scm scm_read_byte = {FUNCTION, .name="read-int", .function=&fun_read_byte};
-  // SCM cell_read_byte = 93;
   function *f = (function*)malloc (sizeof (function));
   f->arity = VALUE (arity);
   g_cells[tmp_num4].value = (long)f;
@@ -924,6 +903,13 @@ cstring_to_list (char const* s)
   while (i--)
     p = cons (make_char (s[i]), p);
   return p;
+}
+
+/// read: from type.c
+SCM
+null_p (SCM x)
+{
+  return x == cell_nil ? cell_t : cell_f;
 }
 
 SCM
@@ -1036,6 +1022,20 @@ vector_set_x (SCM x, SCM i, SCM e)
 }
 
 SCM
+list_to_vector (SCM x)
+{
+  VALUE (tmp_num) = VALUE (length (x));
+  SCM v = make_vector (tmp_num);
+  SCM p = VECTOR (v);
+  while (x != cell_nil)
+    {
+      g_cells[p++] = g_cells[vector_entry (car (x))];
+      x = cdr (x);
+    }
+  return v;
+}
+
+SCM
 lookup (SCM s, SCM a)
 {
   if (isdigit (VALUE (car (s))) || (VALUE (car (s)) == '-' && cdr (s) != cell_nil)) {
@@ -1083,20 +1083,6 @@ SCM
 lookup_char (int c, SCM a)
 {
   return lookup (cons (make_char (c), cell_nil), a);
-}
-
-SCM
-list_to_vector (SCM x)
-{
-  g_cells[tmp_num].value = VALUE (length (x));
-  SCM v = make_vector (tmp_num);
-  SCM p = VECTOR (v);
-  while (x != cell_nil)
-    {
-      g_cells[p++] = g_cells[vector_entry (car (x))];
-      x = cdr (x);
-    }
-  return v;
 }
 
 SCM
@@ -1255,6 +1241,24 @@ peekchar ()
 }
 
 SCM
+peek_byte ()
+{
+  return make_number (peekchar ());
+}
+
+SCM
+read_byte ()
+{
+  return make_number (getchar ());
+}
+
+SCM
+unread_byte (SCM i)
+{
+  return ungetchar (VALUE (i));
+}
+
+SCM
 peek_char ()
 {
   return make_char (peekchar ());
@@ -1264,6 +1268,12 @@ SCM
 read_char ()
 {
   return make_char (getchar ());
+}
+
+SCM
+unread_char (SCM c)
+{
+  return ungetchar (VALUE (c));
 }
 
 SCM
@@ -1294,6 +1304,20 @@ symbol_to_list (SCM x)
   return STRING (x);
 }
 
+SCM
+char_to_integer (SCM x)
+{
+  assert (TYPE (x) == CHAR);
+  return make_number (VALUE (x));
+}
+
+SCM
+integer_to_char (SCM x)
+{
+  assert (TYPE (x) == NUMBER);
+  return make_char (VALUE (x));
+}
+
 int
 readcomment (int c)
 {
@@ -1316,7 +1340,7 @@ readword (int c, SCM w, SCM a)
   if (c == '\n' && VALUE (car (w)) == '.' && cdr (w) == cell_nil) return cell_dot;
   if (c == EOF || c == '\n') return lookup (w, a);
   if (c == ' ') return readword ('\n', w, a);
-  if (c == '"' && w == cell_nil) return readstring ();
+  if (c == '"' && w == cell_nil) return read_string ();
   if (c == '"') {ungetchar (c); return lookup (w, a);}
   if (c == '(' && w == cell_nil) return readlist (a);
   if (c == '(') {ungetchar (c); return lookup (w, a);}
@@ -1346,27 +1370,8 @@ readword (int c, SCM w, SCM a)
   if (c == '#' && peekchar () == 'x') {getchar (); return read_hex ();}
   if (c == '#' && peekchar () == '\\') {getchar (); return read_character ();}
   if (c == '#' && w == cell_nil && peekchar () == '(') {getchar (); return list_to_vector (readlist (a));}
-  if (c == '#' && peekchar () == '(') {ungetchar (c); return lookup (w, a);}
   if (c == '#' && peekchar () == '!') {getchar (); readblock (getchar ()); return readword (getchar (), w, a);}
   return readword (getchar (), append2 (w, cons (make_char (c), cell_nil)), a);
-}
-
-SCM
-read_hex ()
-{
-  int n = 0;
-  int c = peekchar ();
-  while ((c >= '0' && c <= '9')
-         || (c >= 'A' && c <= 'F')
-         || (c >= 'a' && c <= 'f')) {
-    n <<= 4;
-    if (c >= 'a') n += c - 'a' + 10;
-    else if (c >= 'A') n += c - 'A' + 10;
-    else n+= c - '0';
-    getchar ();
-    c = peekchar ();
-  }
-  return make_number (n);
 }
 
 SCM
@@ -1407,13 +1412,31 @@ read_character ()
 }
 
 SCM
+read_hex ()
+{
+  int n = 0;
+  int c = peekchar ();
+  while ((c >= '0' && c <= '9')
+         || (c >= 'A' && c <= 'F')
+         || (c >= 'a' && c <= 'f')) {
+    n <<= 4;
+    if (c >= 'a') n += c - 'a' + 10;
+    else if (c >= 'A') n += c - 'A' + 10;
+    else n+= c - '0';
+    getchar ();
+    c = peekchar ();
+  }
+  return make_number (n);
+}
+
+SCM
 append_char (SCM x, int i)
 {
   return append2 (x, cons (make_char (i), cell_nil));
 }
 
 SCM
-readstring ()
+read_string ()
 {
   SCM p = cell_nil;
   int c = getchar ();
@@ -1467,110 +1490,72 @@ add_environment (SCM a, char const *name, SCM x)
   return acons (make_symbol (cstring_to_list (name)), x, a);
 }
 
-SCM
-mes_environment () ///((internal))
+void
+print_f (scm *f)
 {
-  // setup GC
+  fprintf (stderr, "  g_function=%d; //%s\n", f->function, f->name);
+}
+
+SCM
+mes_symbols () ///((internal))
+{
   g_cells = (scm *)malloc (ARENA_SIZE*sizeof(scm));
   g_cells[0].type = VECTOR;
-  g_cells[0].length = ARENA_SIZE - 1;
-  g_cells[0].length = 10;
+  g_cells[0].length = 1000;
   g_cells[0].vector = 0;
   g_cells++;
-  // a = add_environment (a, "%free", &g_free); hihi, gets <3 moved
-  // a = add_environment (a, "%the-cells", g_cells);
-  // a = add_environment (a, "%new-cells", g_news);
-
-//#include "mes.symbols.i"
 
   g_cells[0].type = CHAR;
   g_cells[0].value = 'c';
   g_free.value = 1; // 0 is tricky
 
-#if !MES_MINI
 #include "mes.symbols.i"
-#else // MES_MINI
-  cell_nil = g_free.value++;
-  g_cells[cell_nil] = scm_nil;
-  cell_f = g_free.value++;
-  g_cells[cell_f] = scm_f;
-  cell_t = g_free.value++;
-  g_cells[cell_t] = scm_t;
-  cell_undefined = g_free.value++;
-  g_cells[cell_undefined] = scm_undefined;
-  cell_unspecified = g_free.value++;
-  g_cells[cell_unspecified] = scm_unspecified;
-  cell_closure = g_free.value++;
-  g_cells[cell_closure] = scm_closure;
-  cell_begin = g_free.value++;
-  g_cells[cell_begin] = scm_begin;
 
-  cell_symbol_begin = g_free.value++;
-  g_cells[cell_symbol_begin] = scm_symbol_begin;
-
-  cell_symbol_sc_expander_alist = g_free.value++;
-  g_cells[cell_symbol_sc_expander_alist] = scm_symbol_sc_expander_alist;
-  cell_symbol_sc_expand = g_free.value++;
-  g_cells[cell_symbol_sc_expand] = scm_symbol_sc_expand;
-
-  // cell_dot = g_free.value++;
-  // g_cells[cell_dot] = scm_dot;
-  // cell_circular = g_free.value++;
-  // g_cells[cell_circular] = scm_circular;
-  // cell_symbol_lambda = g_free.value++;
-  // g_cells[cell_symbol_lambda] = scm_symbol_lambda;
-  // cell_symbol_if = g_free.value++;
-  // g_cells[cell_symbol_if] = scm_symbol_if;
-  // cell_symbol_define = g_free.value++;
-  // g_cells[cell_symbol_define] = scm_symbol_define;
-  // cell_symbol_define_macro = g_free.value++;
-  // g_cells[cell_symbol_define_macro] = scm_symbol_define_macro;
-  
-#endif // MES_MINI
-  
   SCM symbol_max = g_free.value;
 
-#if MES_FULL
-#include "define.i"
-#include "lib.i"
-#include "math.i"
-#include "mes.i"
-#include "posix.i"
-#include "quasiquote.i"
-#include "string.i"
-#include "type.i"
-#else
-
-  cell_cons = g_free.value++;
-  cell_display = g_free.value++;
-  cell_eq_p = g_free.value++;
-  cell_newline = g_free.value++;
-
-  g_cells[cell_cons] = scm_cons;
-  g_cells[cell_display] = scm_display;
-  g_cells[cell_eq_p] = scm_eq_p;
-  g_cells[cell_newline] = scm_newline;
-
-  cell_make_vector = g_free.value++;
-  g_cells[cell_make_vector] = scm_make_vector;
-
-#endif
-  
   tmp = g_free.value++;
   tmp_num = g_free.value++;
   g_cells[tmp_num].type = NUMBER;
   tmp_num2 = g_free.value++;
   g_cells[tmp_num2].type = NUMBER;
+  tmp_num3 = g_free.value++;
+  g_cells[tmp_num3].type = NUMBER;
+  tmp_num4 = g_free.value++;
+  g_cells[tmp_num4].type = NUMBER;
 
   g_start = g_free.value;
 
   symbols = 0;
   for (int i=1; i<symbol_max; i++)
     symbols = cons (i, symbols);
-  
+
   SCM a = cell_nil;
 
-#if MES_FULL
+#if BOOT
+  a = acons (cell_symbol_label, cell_t, a);
+#endif
+  a = acons (cell_symbol_begin, cell_begin, a);
+  a = add_environment (a, "sc-expand", cell_f);
+  a = acons (cell_closure, a, a);
+
+  internal_lookup_symbol (cell_nil);
+
+  return a;
+}
+
+SCM
+mes_builtins (SCM a)
+{
+#include "mes.i"
+
+#include "define.i"
+#include "lib.i"
+#include "math.i"
+#include "posix.i"
+#include "quasiquote.i"
+#include "string.i"
+#include "type.i"
+
 #include "define.environment.i"
 #include "lib.environment.i"
 #include "math.environment.i"
@@ -1579,52 +1564,35 @@ mes_environment () ///((internal))
   //#include "quasiquote.environment.i"
 #include "string.environment.i"
 #include "type.environment.i"
-#else // !MES_FULL
 
-  a = add_environment (a, "cons", cell_cons);
-  a = add_environment (a, "display", cell_display);
-  a = add_environment (a, "eq?", cell_eq_p);
-  a = add_environment (a, "newline", cell_newline);
+  SCM cell_unquote = assq_ref_cache (cell_symbol_unquote, a);
+  SCM cell_unquote_splicing = assq_ref_cache (cell_symbol_unquote_splicing, a);
+  SCM the_unquoters = cons (cons (cell_symbol_unquote, cell_unquote),
+                            cons (cons (cell_symbol_unquote_splicing, cell_unquote_splicing),
+                                  cell_nil));
+  a = acons (cell_symbol_the_unquoters, the_unquoters, a);
 
-  a = add_environment (a, "make-vector", cell_make_vector);
+  a = add_environment (a, "*foo-bar-baz*", cell_nil); // FIXME: some off-by one?
 
-#if !MES_MINI
-   a = add_environment (a, "*", cell_multiply);
-   a = add_environment (a, "list", cell_list);
-   //
-   a = add_environment (a, "car", cell_car);
-   a = add_environment (a, "cdr", cell_cdr);
-   a = add_environment (a, "+", cell_plus);
-   a = add_environment (a, "quote", cell_quote);
-   a = add_environment (a, "null?", cell_null_p);
-   a = add_environment (a, "=", cell_is_p);
+  return a;
+}
 
-   // a = add_environment (a, "gc", cell_gc);
-   // a = add_environment (a, "apply-env", cell_apply_env);
-   // a = add_environment (a, "eval-env", cell_eval_env);
-   // a = add_environment (a, "cadr", cell_cadr);
-#endif // !MES_MINI
-#endif // !MES_FULL
-
-#if BOOT
-  ////symbols = cons (cell_symbol_label, symbols);
-  a = cons (cons (cell_symbol_label, cell_t), a);
-#endif
-  a = cons (cons (cell_symbol_begin, cell_begin), a);
-
-  a = add_environment (a, "sc-expand", cell_f);
-
-  a = cons (cons (cell_closure, a), a);
-
-  internal_lookup_symbol (cell_nil);
-
+SCM
+mes_stack (SCM a) ///((internal))
+{
   r0 = a;
   r1 = make_char (0);
   r2 = make_char (0);
   r3 = make_char (0);
   stack = cons (cell_nil, cell_nil);
+  return r0;
+}
 
-  return a;
+SCM
+mes_environment () ///((internal))
+{
+  SCM a = mes_symbols ();
+  return mes_stack (a);
 }
 
 SCM
@@ -1649,17 +1617,71 @@ lookup_macro (SCM x, SCM a)
 }
 
 SCM
-read_input_file_env (SCM e, SCM a)
+read_input_file_env_ (SCM e, SCM a)
 {
   if (e == cell_nil) return e;
-  return cons (e, read_input_file_env (read_env (a), a));
+  return cons (e, read_input_file_env_ (read_env (a), a));
 }
+
+SCM
+read_input_file_env (SCM a)
+{
+  gc_stack (stack);
+  return read_input_file_env_ (read_env (r0), r0);
+}
+
+bool g_dump_p = false;
 
 SCM
 load_env (SCM a)
 {
-  SCM p = read_input_file_env (read_env (a), a);
-  return begin_env (p, a);
+  r3 = read_input_file_env (r0);
+  if (g_dump_p && !g_function)
+    {
+      r1 = symbols;
+      SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
+      stack = cons (frame, stack);
+      stack = gc (stack);
+      gc_frame (stack);
+      char *p = (char*)g_cells;
+      fputc ('M', stdout);
+      fputc ('E', stdout);
+      fputc ('S', stdout);
+      fputc (stack >> 8, stdout);
+      fputc (stack % 256, stdout);
+      for (int i=0; i<g_free.value * sizeof(scm); i++)
+        fputc (*p++, stdout);
+      return 0;
+    }
+  if (!g_function)
+    r0 = mes_builtins (r0);
+  return begin_env (r3, r0);
+}
+
+SCM
+bload_env (SCM a)
+{
+  g_stdin = fopen ("read-0.mo", "r");
+  char *p = (char*)g_cells;
+  assert (getchar () == 'M');
+  assert (getchar () == 'E');
+  assert (getchar () == 'S');
+  stack = getchar () << 8;
+  stack += getchar ();
+  int c = getchar ();
+  while (c != EOF)
+    {
+      *p++ = c;
+      c = getchar ();
+    }
+  g_free.value = (p-(char*)g_cells) / sizeof (scm);
+  gc_frame (stack);
+  symbols = r1;
+  g_stdin = stdin;
+
+  r0 = mes_builtins (r0);
+
+  return begin_env (r3, r0);
 }
 
 #include "type.c"
@@ -1673,12 +1695,17 @@ load_env (SCM a)
 int
 main (int argc, char *argv[])
 {
+  if (argc > 1 && !strcmp (argv[1], "--dump")) g_dump_p = true;
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.2\n");
   g_stdin = stdin;
   SCM a = mes_environment ();
-  display_ (stderr, load_env (a));
+  if (argc > 1 && !strcmp (argv[1], "--load"))
+    display_ (stderr, bload_env (a));
+  else
+    display_ (stderr, load_env (a));
   fputs ("", stderr);
+  gc (stack);
   fprintf (stderr, "\nstats: [%d]\n", g_free.value);
   return 0;
 }

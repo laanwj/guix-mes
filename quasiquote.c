@@ -19,8 +19,6 @@
  */
 
 #if QUASIQUOTE
-SCM add_environment (SCM a, char const *name, SCM x);
-
 SCM
 unquote (SCM x) ///((no-environment))
 {
@@ -57,16 +55,10 @@ vm_eval_quasiquote ()
 }
 
 SCM
-the_unquoters = 0;
-
-SCM
 add_unquoters (SCM a)
 {
-  if (the_unquoters == 0)
-    the_unquoters = cons (cons (cell_symbol_unquote, cell_unquote),
-                          cons (cons (cell_symbol_unquote_splicing, cell_unquote_splicing),
-                                cell_nil));
-  return append2 (the_unquoters, a);
+  SCM q = assq_ref_cache (cell_symbol_the_unquoters, a);
+  return append2 (q, a);
 }
 #else // !QUASIQUOTE
 

@@ -16,7 +16,7 @@ Please send Mes bug reports to janneke@gnu.org.
 *** Garbage collector aka Jam scraper.
 A variant on SICP's stop and copy Garbage Colletor (Jam Scraper?)
 algorithm has been implemented.
-
+*** The reader has been moved to Scheme.
 * Changes in 0.2 since 0.1
 ** Core
 *** Names of symbols and strings are list of characters [WAS: c-string].

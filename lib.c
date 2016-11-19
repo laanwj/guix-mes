@@ -80,20 +80,6 @@ vector_to_list (SCM v)
 }
 
 SCM
-integer_to_char (SCM x)
-{
-  assert (TYPE (x) == NUMBER);
-  return make_char (VALUE (x));
-}
-
-SCM
-char_to_integer (SCM x)
-{
-  assert (TYPE (x) == CHAR);
-  return make_number (VALUE (x));
-}
-
-SCM
 builtin_exit (SCM x)
 {
   assert (TYPE (x) == NUMBER);
