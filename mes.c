@@ -84,13 +84,16 @@ typedef struct scm_t {
   };
   union {
     int value;
-    function* function;
+    int function;
     SCM cdr;
     SCM macro;
     SCM vector;
     int hits;
   };
 } scm;
+
+function functions[200];
+int g_function = 0;
 
 #include "mes.symbols.h"
 #include "define.h"
@@ -178,6 +181,8 @@ scm *g_news = 0;
 #define MACRO(x) g_cells[x].macro
 #define VALUE(x) g_cells[x].value
 #define VECTOR(x) g_cells[x].vector
+
+#define FUNCTION(x) functions[g_cells[x].function]
 
 #define NCAR(x) g_news[x].car
 #define NTYPE(x) g_news[x].type
@@ -388,6 +393,9 @@ make_cell (SCM type, SCM car, SCM cdr)
   g_cells[x].type = VALUE (type);
   if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
     if (car) g_cells[x].car = g_cells[car].car;
+    if (cdr) g_cells[x].cdr = g_cells[cdr].cdr;
+  } else if (VALUE (type) == FUNCTION) {
+    if (car) g_cells[x].car = car;
     if (cdr) g_cells[x].cdr = g_cells[cdr].cdr;
   } else {
     g_cells[x].car = car;
@@ -893,19 +901,19 @@ display_ (FILE* f, SCM x)
 SCM
 call (SCM fn, SCM x)
 {
-  if ((g_cells[fn].function->arity > 0 || g_cells[fn].function->arity == -1)
+  if ((FUNCTION (fn).arity > 0 || FUNCTION (fn).arity == -1)
       && x != cell_nil && TYPE (CAR (x)) == VALUES)
     x = cons (CADAR (x), CDR (x));
-  if ((g_cells[fn].function->arity > 1 || g_cells[fn].function->arity == -1)
+  if ((FUNCTION (fn).arity > 1 || FUNCTION (fn).arity == -1)
       && x != cell_nil && TYPE (CDR (x)) == PAIR && TYPE (CADR (x)) == VALUES)
     x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
-  switch (g_cells[fn].function->arity)
+  switch (FUNCTION (fn).arity)
     {
-    case 0: return g_cells[fn].function->function0 ();
-    case 1: return g_cells[fn].function->function1 (car (x));
-    case 2: return g_cells[fn].function->function2 (car (x), cadr (x));
-    case 3: return g_cells[fn].function->function3 (car (x), cadr (x), caddr (x));
-    case -1: return g_cells[fn].function->functionn (x);
+    case 0: return FUNCTION (fn).function0 ();
+    case 1: return FUNCTION (fn).function1 (car (x));
+    case 2: return FUNCTION (fn).function2 (car (x), cadr (x));
+    case 3: return FUNCTION (fn).function3 (car (x), cadr (x), caddr (x));
+    case -1: return FUNCTION (fn).functionn (x);
     }
   return cell_unspecified;
 }
@@ -931,6 +939,19 @@ make_char (int x)
   g_cells[tmp_num].value = CHAR;
   g_cells[tmp_num2].value = x;
   return make_cell (tmp_num, tmp_num2, tmp_num2);
+}
+
+SCM
+make_function (SCM name, SCM id, SCM arity)
+{
+  g_cells[tmp_num3].value = FUNCTION;
+  // function fun_read_byte = {.function0=&read_byte, .arity=0};
+  // scm scm_read_byte = {FUNCTION, .name="read-int", .function=&fun_read_byte};
+  // SCM cell_read_byte = 93;
+  function *f = (function*)malloc (sizeof (function));
+  f->arity = VALUE (arity);
+  g_cells[tmp_num4].value = (long)f;
+  return make_cell (tmp_num3, name, tmp_num4);
 }
 
 SCM
@@ -1233,7 +1254,18 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
         break;
       }
     case REF: display_helper (f, g_cells[x].ref, cont, "", true); break;
-    case FUNCTION: fprintf (f, "#<procedure %s>", g_cells[x].name); ;break;
+    case FUNCTION:
+      {
+        fprintf (f, "#<procedure ");
+        SCM p = g_cells[x].string;
+        char const* n = g_cells[x].name;
+        if (p < 0 || p >= g_free.value || g_cells[p].type != PAIR)
+          fprintf (f, "%s", g_cells[x].name);
+        else
+          display_ (f, g_cells[x].string);
+        fprintf (f, ">");
+        break;
+      }
     case BROKEN_HEART: fprintf (f, "<3"); break;
     default:
       if (STRING (x))

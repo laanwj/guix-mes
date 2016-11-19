@@ -70,15 +70,6 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 (define (function-cell-name f)
   (string-append %cell-prefix% (.name f)))
 
-(define (function->source f i)
-  (string-append
-   (format #f "cell_~a = g_free.value++;\n" (.name f))
-   (format #f "g_cells[cell_~a] = ~a;\n" (.name f) (function-builtin-name f))))
-
-(define (function->environment f i)
-  (string-append
-   (format #f "a = add_environment (a, ~S, ~a);\n" (function-scm-name f) (function-cell-name f))))
-
 (define %start 1)
 (define (symbol->header s i)
   (format #f "SCM cell_~a;\n" s))
@@ -86,17 +77,29 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 (define (symbol->source s i)
   (string-append
    (format #f "cell_~a = g_free.value++;\n" s)
-   (format #f "g_cells[cell_~a] = scm_~a;\n" s s)))
+   (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)))
 
 (define (function->header f i)
   (let* ((arity (or (assoc-ref (.annotation f) 'arity)
                     (if (string-null? (.formals f)) 0
                         (length (string-split (.formals f) #\,)))))
          (n (if (eq? arity 'n) -1 arity)))
-    (string-append (format #f "SCM ~a (~a);\n" (.name f) (.formals f))
-                   (format #f "function fun_~a = {.function~a=&~a, .arity=~a};\n" (.name f) arity (.name f) n)
-                   (format #f "scm ~a = {FUNCTION, .name=~S, .function=&fun_~a};\n" (function-builtin-name f) (function-scm-name f) (.name f))
-                   (format #f "SCM cell_~a = ~a;\n" (.name f) i))))
+    (string-append
+     (format #f "SCM ~a (~a);\n" (.name f) (.formals f))
+     (format #f "function fun_~a = {.function~a=&~a, .arity=~a};\n" (.name f) arity (.name f) n)
+     (format #f "scm ~a = {FUNCTION, .name=~S, .function=0};\n" (function-builtin-name f) (function-scm-name f))
+     (format #f "SCM cell_~a;\n\n" (.name f)))))
+
+(define (function->source f i)
+  (string-append
+   (format #f "~a.function = g_function;\n" (function-builtin-name f))
+   (format #f "functions[g_function++] = fun_~a;\n" (.name f))
+   (format #f "cell_~a = g_free.value++;\n" (.name f))
+   (format #f "g_cells[cell_~a] = ~a;\n\n" (.name f) (function-builtin-name f))))
+
+(define (function->environment f i)
+  (string-append
+   (format #f "a = add_environment (a, ~S, ~a);\n" (function-scm-name f) (function-cell-name f))))
 
 (define (snarf-symbols string)
   (let* ((matches (append (list-matches "\nscm scm_([a-z_0-9]+) = [{](SPECIAL)," string)
@@ -127,7 +130,6 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
   (let* ((string (with-input-from-file file-name read-string))
          (functions (snarf-functions string))
          (functions (delete-duplicates functions (lambda (a b) (equal? (.name a) (.name b)))))
-         (functions (sort functions (lambda (a b) (string< (.name a) (.name b)))))
          (functions (filter (negate internal?) functions))
          (symbols (snarf-symbols string))
          (base-name (basename file-name ".c"))
@@ -136,7 +138,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
                    #:content (string-join (map function->header functions (iota (length functions) (+ %start (length symbols)))) "")))
          (source (make <file>
                         #:name (string-append base-name ".i")
-                        #:content (string-join (map function->source (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))
+                        #:content (string-join (map function->source (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) ""))) 
          (environment (make <file>
                         #:name (string-append base-name ".environment.i")
                         #:content (string-join (map function->environment (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))
@@ -156,4 +158,3 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
     (map file-write (filter content? (append-map generate-includes files)))))
 
 ;;(define string (with-input-from-file "../mes.c" read-string))
-
