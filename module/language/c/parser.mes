@@ -61,7 +61,7 @@
            break case continue goto label
            return switch
            for
-           if else
+           If else
            (left: or && ! * / + -)
            (left: bool double float enum void int struct)
            (left: < > <= >=)

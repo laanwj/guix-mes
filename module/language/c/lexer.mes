@@ -220,7 +220,7 @@
     ("while" . while)
     ("continue" . continue)
     ("default" . default)
-    ("if" . if)
+    ("if" . If)
     ("do" . do)
 
     ;; these aren't exactly keywords, but hey
