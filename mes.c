@@ -1036,7 +1036,7 @@ int
 main (int argc, char *argv[])
 {
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
-  if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.0\n");
+  if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.1\n");
   scm *a = mes_environment ();
   display_ (stderr, begin (read_file (read_env (a), a), a));
   fputs ("", stderr);
