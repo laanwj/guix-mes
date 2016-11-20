@@ -2,7 +2,7 @@
 
 * Fully source-based bootstrapping
 
-** R5RS-like scheme interpreter
+** R6RS-like scheme interpreter
 This first part is prototyped in C by the mes.c core and Scheme
 bootstrap code in module/.  Of course, while mes.c is pretty small it
 cannot serve as a fully source-based solution.
@@ -14,7 +14,7 @@ metamorphose into R6RS.  It seemed to work but performance of the
 LISP-intepreted RRS was so bad (~1000x slower than initial LISP-1.5)
 that this track was abandoned after the initial ANNOUNCE.
 
-The route changed trying strike a balance between core size and
+The route changed trying to strike a balance between core size and
 performance: still writing as much as possible in Scheme, but having a
 mescc compiler that takes not more than some seconds to run.
 

@@ -4,7 +4,7 @@ Mes -- Maxwell Equations of Software
 Mes aims to create an entirely source-based bootstrapping path.  The
 target is to [have GuixSD] boostrap from a minimal, easily inspectable
 binary --that should be readable as source-- into something close to
-R5RS Scheme.
+R6RS Scheme.
 
 As bootstrapping is presumably easiest and probably most fun with
 Scheme, the next step for Mes is mescc: a C compiler/linker to

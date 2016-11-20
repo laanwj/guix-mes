@@ -76,7 +76,7 @@
      "Mes aims to create an entirely source-based bootstrapping path.
 The target is to [have GuixSD] boostrap from a minimal, easily
 inspectable binary --that should be readable as source-- into
-something close to R5RS Scheme.")
+something close to R6RS Scheme.")
     (home-page "https://gitlab.com/janneke/mes")
     (license gpl3+)))
 

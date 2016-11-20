@@ -30,6 +30,6 @@ these are provided from a Scheme version of implemented eval/apply.
 *** Macro expansion can be inspected in the REPL, e.g.:
     ,expand (and 0 1)
 ** Noteworthy bug fixes
-*** Performance of (e.g. scripts/mescc.mes) has been improved by a factor of 40.
+*** Performance: scripts/mescc.mes now takes 2s to compile main.c (was 1'20").
 *** Symbols are now truly unique.
   * '(), #t, #f are no longer symbols.
