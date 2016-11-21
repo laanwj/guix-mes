@@ -13,12 +13,22 @@ Please send Mes bug reports to janneke@gnu.org.
 * Changes in 0.2 since 0.1
 ** Core
 *** Names of symbols and strings are list of characters [WAS: c-string].
-*** Macro expansion looks for sc-expand hook, enabling psyntax.
+*** Sc-expand from pre-R6RS's psyntax has been integrated.
+*** Undefined variable error now shows the name of the undefined variable.
+*** There is now only one SCM type for builtin functions.
+*** Macro expansion has been cleaned-up.
 ** Language
 *** Mes now provides a subset of R6RS.
-*** Mes now provides psyntax-5.9f-based syntax-case.
+*** Mes now provides syntax-case.
+*** Mes now provides `load'.
 ** Noteworthy bug fixes
 *** Using values as second parameter of builtin function yields first value.
+*** Quoted internals (e.g. 'if 'lambda) are now symbols.
+*** Syntax error now exits.
+*** Make+Bash voodoo has been replaced by build-aux/mes-snarf.scm.
+*** Apply now accepts multiple list arguments.
+*** Apply of character, inernal, number, string is an error.
+*** Quasisyntax reading 
 
 * Changes in 0.1 (since progress report #2)
 ** Core
