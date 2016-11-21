@@ -36,6 +36,15 @@ string_to_cstring (SCM s)
 }
 
 SCM
+force_output (SCM p) ///((arity . n))
+{
+  int fd = 1;
+  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
+  FILE *f = fd == 1 ? stdout : stderr;
+  fflush (f);
+}
+
+SCM
 open_input_file (SCM file_name)
 {
   return make_number (open (string_to_cstring (file_name), O_RDONLY));

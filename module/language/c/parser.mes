@@ -55,6 +55,7 @@
    (mes-use-module (mes elf))
    (mes-use-module (mes libc-i386))))
 
+(gc)
 (define c-parser
   (lalr-parser
 

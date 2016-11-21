@@ -5,10 +5,10 @@ default: all
 	./configure
 
 OUT:=out
-#CFLAGS:=-std=c99 -O3 -finline-functions
+CFLAGS:=-std=c99 -O3 -finline-functions
 #CFLAGS:=-std=c99 -O0
 #CFLAGS:=-pg -std=c99 -O0
-CFLAGS:=-std=c99 -O0 -g
+#CFLAGS:=-std=c99 -O0 -g
 
 export BOOT
 ifneq ($(BOOT),)
@@ -24,11 +24,14 @@ all: mes
 
 mes.o: mes.c
 mes.o: mes.c mes.h mes.i mes.environment.i mes.symbols.i
+mes.o: cache.c cache.h cache.i cache.environment.i
 mes.o: define.c define.h define.i define.environment.i
+mes.o: display.c display.h display.i display.environment.i
 mes.o: lib.c lib.h lib.i lib.environment.i
 mes.o: math.c math.h math.i math.environment.i
 mes.o: posix.c posix.h posix.i posix.environment.i
 mes.o: quasiquote.c quasiquote.h quasiquote.i quasiquote.environment.i
+mes.o: reader.c reader.h reader.i reader.environment.i
 mes.o: string.c string.h string.i string.environment.i
 mes.o: type.c type.h type.i type.environment.i
 

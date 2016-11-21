@@ -75,7 +75,7 @@ exit $?
   (define local-answer 41))
 (pass-if-equal "begin 2" 41 (begin local-answer))
 
-;; (if (not guile?)
-;;   (pass-if-equal "load" 42 (begin (load "tests/data/load.scm") the-answer)))
+(if (not guile?)
+  (pass-if-equal "load" 42 (begin (load "tests/data/load.scm") the-answer)))
 
 (result 'report)
