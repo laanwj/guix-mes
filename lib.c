@@ -60,10 +60,10 @@ list (SCM x) ///((arity . n))
 SCM
 list_ref (SCM x, SCM k)
 {
-  assert (type (x) == PAIR);
-  assert (type (k) == NUMBER);
-  int n = value (k);
-  while (n-- && g_cells[x].cdr != cell_nil) x = g_cells[x].cdr;
+  assert (TYPE (x) == PAIR);
+  assert (TYPE (k) == NUMBER);
+  int n = VALUE (k);
+  while (n-- && CDR (x) != cell_nil) x = CDR (x);
   return x != cell_nil ? car (x) : cell_undefined;
 }
 
@@ -73,7 +73,7 @@ vector_to_list (SCM v)
   SCM x = cell_nil;
   for (int i = 0; i < LENGTH (v); i++) {
     SCM e = VECTOR (v)+i;
-    if (type (e) == REF) e = g_cells[e].ref;
+    if (TYPE (e) == REF) e = g_cells[e].ref;
     x = append2 (x, cons (e, cell_nil));
   }
   return x;
@@ -82,20 +82,20 @@ vector_to_list (SCM v)
 SCM
 integer_to_char (SCM x)
 {
-  assert (type (x) == NUMBER);
-  return make_char (value (x));
+  assert (TYPE (x) == NUMBER);
+  return make_char (VALUE (x));
 }
 
 SCM
 char_to_integer (SCM x)
 {
-  assert (type (x) == CHAR);
-  return make_number (value (x));
+  assert (TYPE (x) == CHAR);
+  return make_number (VALUE (x));
 }
 
 SCM
 builtin_exit (SCM x)
 {
-  assert (type (x) == NUMBER);
-  exit (value (x));
+  assert (TYPE (x) == NUMBER);
+  exit (VALUE (x));
 }

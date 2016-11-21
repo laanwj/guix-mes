@@ -25,15 +25,15 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define zero (gc-make-cell 2 0 0))
-(define one (gc-make-cell 2 0 1))
-(define pair (gc-make-cell 3 zero one)) 
-(define zero-list (gc-make-cell 3 zero '()))
-(define v (gc-make-vector 1))
+(define zero (make-cell 2 0 0))
+(define one (make-cell 2 0 1))
+(define pair (make-cell 3 zero one)) 
+(define zero-list (make-cell 3 zero '()))
+(define v (make-vector 1))
 (display v) (newline)
 (vector-set! v 0 88)
-(define zero-v-list (gc-make-cell 3 v zero-list))
-(define list (gc-make-cell 3 (gc-make-cell 3 zero one) zero-v-list))
+(define zero-v-list (make-cell 3 v zero-list))
+(define list (make-cell 3 (make-cell 3 zero one) zero-v-list))
 (display "list: ") (display list) (newline)
 (display "v: ") (display v) (newline)
 (gc)

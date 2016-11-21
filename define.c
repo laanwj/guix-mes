@@ -30,7 +30,7 @@ vm_define_env ()
 {
   SCM x;
   SCM name = cadr (r1);
-  if (type (name) != PAIR)
+  if (TYPE (name) != PAIR)
     x = eval_env (caddr (r1), cons (cons (cadr (r1), cadr (r1)), r0));
   else {
     name = car (name);

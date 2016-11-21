@@ -24,9 +24,9 @@ greater_p (SCM x) ///((name . ">") (arity . n))
   int n = INT_MAX;
   while (x != cell_nil)
     {
-      assert (g_cells[car (x)].type == NUMBER);
-      if (value (car (x)) >= n) return cell_f;
-      n = value (car (x));
+      assert (TYPE (car (x)) == NUMBER);
+      if (VALUE (car (x)) >= n) return cell_f;
+      n = VALUE (car (x));
       x = cdr (x);
     }
   return cell_t;
@@ -38,9 +38,9 @@ less_p (SCM x) ///((name . "<") (arity . n))
   int n = INT_MIN;
   while (x != cell_nil)
     {
-      assert (g_cells[car (x)].type == NUMBER);
-      if (value (car (x)) <= n) return cell_f;
-      n = value (car (x));
+      assert (TYPE (car (x)) == NUMBER);
+      if (VALUE (car (x)) <= n) return cell_f;
+      n = VALUE (car (x));
       x = cdr (x);
     }
   return cell_t;
@@ -50,12 +50,12 @@ SCM
 is_p (SCM x) ///((name . "=") (arity . n))
 {
   if (x == cell_nil) return cell_t;
-  assert (g_cells[car (x)].type == NUMBER);
-  int n = value (car (x));
+  assert (TYPE (car (x)) == NUMBER);
+  int n = VALUE (car (x));
   x = cdr (x);
   while (x != cell_nil)
     {
-      if (value (car (x)) != n) return cell_f;
+      if (VALUE (car (x)) != n) return cell_f;
       x = cdr (x);
     }
   return cell_t;
@@ -65,15 +65,15 @@ SCM
 minus (SCM x) ///((name . "-") (arity . n))
 {
   SCM a = car (x);
-  assert (g_cells[a].type == NUMBER);
-  int n = value (a);
+  assert (TYPE (a) == NUMBER);
+  int n = VALUE (a);
   x = cdr (x);
   if (x == cell_nil)
     n = -n;
   while (x != cell_nil)
     {
-      assert (g_cells[car (x)].type == NUMBER);
-      n -= value (car (x));
+      assert (TYPE (car (x)) == NUMBER);
+      n -= VALUE (car (x));
       x = cdr (x);
     }
   return make_number (n);
@@ -85,8 +85,8 @@ plus (SCM x) ///((name . "+") (arity . n))
   int n = 0;
   while (x != cell_nil)
     {
-      assert (g_cells[car (x)].type == NUMBER);
-      n += value (car (x));
+      assert (TYPE (car (x)) == NUMBER);
+      n += VALUE (car (x));
       x = cdr (x);
     }
   return make_number (n);
@@ -97,14 +97,14 @@ divide (SCM x) ///((name . "/") (arity . n))
 {
   int n = 1;
   if (x != cell_nil) {
-    assert (g_cells[car (x)].type == NUMBER);
-    n = value (car (x));
+    assert (TYPE (car (x)) == NUMBER);
+    n = VALUE (car (x));
     x = cdr (x);
   }
   while (x != cell_nil)
     {
-      assert (g_cells[car (x)].type == NUMBER);
-      n /= value (car (x));
+      assert (TYPE (car (x)) == NUMBER);
+      n /= VALUE (car (x));
       x = cdr (x);
     }
   return make_number (n);
@@ -113,9 +113,9 @@ divide (SCM x) ///((name . "/") (arity . n))
 SCM
 modulo (SCM a, SCM b)
 {
-  assert (g_cells[a].type == NUMBER);
-  assert (g_cells[b].type == NUMBER);
-  return make_number (value (a) % value (b));
+  assert (TYPE (a) == NUMBER);
+  assert (TYPE (b) == NUMBER);
+  return make_number (VALUE (a) % VALUE (b));
 }
 
 SCM
@@ -124,8 +124,8 @@ multiply (SCM x) ///((name . "*") (arity . n))
   int n = 1;
   while (x != cell_nil)
     {
-      assert (g_cells[car (x)].type == NUMBER);
-      n *= value (car (x));
+      assert (TYPE (car (x)) == NUMBER);
+      n *= VALUE (car (x));
       x = cdr (x);
     }
   return make_number (n);
@@ -137,8 +137,8 @@ logior (SCM x) ///((arity . n))
   int n = 0;
   while (x != cell_nil)
     {
-      assert (g_cells[car (x)].type == NUMBER);
-      n |= value (car (x));
+      assert (TYPE (car (x)) == NUMBER);
+      n |= VALUE (car (x));
       x = cdr (x);
     }
   return make_number (n);

@@ -46,7 +46,7 @@ vm_eval_quasiquote ()
   else if (atom_p (r1) == cell_t) return r1;
   else if (eq_p (car (r1), cell_symbol_unquote) == cell_t)
     return eval_env (cadr (r1), r0);
-  else if (type (r1) == PAIR && g_cells[car (r1)].type == PAIR
+  else if (TYPE (r1) == PAIR && TYPE (car (r1)) == PAIR
            && eq_p (caar (r1), cell_symbol_unquote_splicing) == cell_t)
     {
       r2 = eval_env (cadar (r1), r0);
@@ -101,7 +101,7 @@ eval_quasisyntax (SCM e, SCM a)
   else if (atom_p (e) == cell_t) return e;
   else if (eq_p (car (e), cell_symbol_unsyntax) == cell_t)
     return eval_env (cadr (e), a);
-  else if (g_cells[e].type == PAIR && g_cells[car (e)].type == PAIR
+  else if (TYPE (e) == PAIR && TYPE (car (e)) == PAIR
            && eq_p (caar (e), cell_symbol_unsyntax_splicing) == cell_t)
       return append2 (eval_env (cadar (e), a), eval_quasisyntax (cdr (e), a));
   return cons (eval_quasisyntax (car (e), a), eval_quasisyntax (cdr (e), a));

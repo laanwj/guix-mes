@@ -25,24 +25,24 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define first (gc-make-cell 0 0 #\F)) (newline)
+(define first (make-cell 0 0 #\F)) (newline)
 
-(define one (gc-make-cell 2 0 1))
+(define one (make-cell 2 0 1))
 (display "\n one=") (display one) (newline)
-(define two (gc-make-cell 2 0 2))
-(define pair2-nil (gc-make-cell 3 two '()))
+(define two (make-cell 2 0 2))
+(define pair2-nil (make-cell 3 two '()))
 (display "\npair2-nil=") (display pair2-nil) (newline)
 (gc-show)
 
-(define list1-2 (gc-make-cell 3 one pair2-nil))
+(define list1-2 (make-cell 3 one pair2-nil))
 (display "\nlist1-2=") (display list1-2) (newline)
 (gc-show)
 
-(define three (gc-make-cell 2 0 3))
-(define four (gc-make-cell 2 0 4))
-(define pair4-nil (gc-make-cell 3 four '()))
-(define list3-4 (gc-make-cell 3 three pair4-nil))
-(define list1234 (gc-make-cell 3 list1-2 list3-4))
+(define three (make-cell 2 0 3))
+(define four (make-cell 2 0 4))
+(define pair4-nil (make-cell 3 four '()))
+(define list3-4 (make-cell 3 three pair4-nil))
+(define list1234 (make-cell 3 list1-2 list3-4))
 (gc-show)
 (gc list1234)
 (gc-show)

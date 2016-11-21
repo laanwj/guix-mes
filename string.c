@@ -31,7 +31,7 @@ string_append (SCM x) ///((arity . n))
   while (x != cell_nil)
     {
       SCM s = car (x);
-      assert (g_cells[s].type == STRING);
+      assert (TYPE (s) == STRING);
       p = append2 (p, STRING (s));
       x = cdr (x);
     }
@@ -47,38 +47,38 @@ list_to_string (SCM x)
 SCM
 string_length (SCM x)
 {
-  assert (g_cells[x].type == STRING);
-  return make_number (value (length (STRING (x))));
+  assert (TYPE (x) == STRING);
+  return make_number (VALUE (length (STRING (x))));
 }
 
 SCM
 string_ref (SCM x, SCM k)
 {
-  assert (g_cells[x].type == STRING);
-  assert (g_cells[k].type == NUMBER);
-  g_cells[tmp_num].value = value (k);
-  return make_char (value (list_ref (STRING (x), tmp_num)));
+  assert (TYPE (x) == STRING);
+  assert (TYPE (k) == NUMBER);
+  VALUE (tmp_num) = VALUE (k);
+  return make_char (VALUE (list_ref (STRING (x), tmp_num)));
 }
 
 SCM
 substring (SCM x) ///((arity . n))
 {
-  assert (g_cells[x].type == PAIR);
-  assert (g_cells[car (x)].type == STRING);
-  SCM s = g_cells[car (x)].string;
-  assert (g_cells[cadr (x)].type == NUMBER);
-  int start = g_cells[cadr (x)].value;
-  int end = g_cells[length (s)].value;
-  if (g_cells[cddr (x)].type == PAIR) {
-    assert (g_cells[caddr (x)].type == NUMBER);
-    assert (g_cells[caddr (x)].value <= end);
-    end = g_cells[caddr (x)].value;
+  assert (TYPE (x) == PAIR);
+  assert (TYPE (car (x)) == STRING);
+  SCM s = STRING (car (x));
+  assert (TYPE (cadr (x)) == NUMBER);
+  int start = VALUE (cadr (x));
+  int end = VALUE (length (s));
+  if (TYPE (cddr (x)) == PAIR) {
+    assert (TYPE (caddr (x)) == NUMBER);
+    assert (VALUE (caddr (x)) <= end);
+    end = VALUE (caddr (x));
   }
   int n = end - start;
   while (start--) s = cdr (s);
   SCM p = cell_nil;
   while (n-- && s != cell_nil) {
-    p = append2 (p, cons (make_char (g_cells[car (s)].value), cell_nil));
+    p = append2 (p, cons (make_char (VALUE (car (s))), cell_nil));
     s = cdr (s);
   }
   return make_string (p);
@@ -87,8 +87,8 @@ substring (SCM x) ///((arity . n))
 SCM
 number_to_string (SCM x)
 {
-  assert (g_cells[x].type == NUMBER);
-  int n = value (x);
+  assert (TYPE (x) == NUMBER);
+  int n = VALUE (x);
   SCM p = n < 0 ? cons (make_char ('-'), cell_nil) : cell_nil;
   do {
     p = cons (make_char (n % 10 + '0'), p);
@@ -100,13 +100,13 @@ number_to_string (SCM x)
 SCM
 string_to_symbol (SCM x)
 {
-  assert (g_cells[x].type == STRING);
+  assert (TYPE (x) == STRING);
   return make_symbol (STRING (x));
 }
 
 SCM
 symbol_to_string (SCM x)
 {
-  assert (g_cells[x].type == SYMBOL);
+  assert (TYPE (x) == SYMBOL);
   return make_string (STRING (x));
 }

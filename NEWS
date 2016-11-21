@@ -10,6 +10,13 @@ Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.3 since 0.2
+** Core
+*** Number-based rather than pointer-based cells.
+*** Garbage collector aka Jam scraper.
+A variant on SICP's stop and copy Garbage Colletor (Jam Scraper?)
+algorithm has been implemented.
+
 * Changes in 0.2 since 0.1
 ** Core
 *** Names of symbols and strings are list of characters [WAS: c-string].

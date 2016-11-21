@@ -23,55 +23,55 @@
 SCM
 char_p (SCM x)
 {
-  return type (x) == CHAR ? cell_t : cell_f;
+  return TYPE (x) == CHAR ? cell_t : cell_f;
 }
 
 SCM
 macro_p (SCM x)
 {
-  return type (x) == MACRO ? cell_t : cell_f;
+  return TYPE (x) == MACRO ? cell_t : cell_f;
 }
 
 SCM
 number_p (SCM x)
 {
-  return type (x) == NUMBER ? cell_t : cell_f;
+  return TYPE (x) == NUMBER ? cell_t : cell_f;
 }
 
 SCM
 pair_p (SCM x)
 {
-  return type (x) == PAIR ? cell_t : cell_f;
+  return TYPE (x) == PAIR ? cell_t : cell_f;
 }
 
 SCM
 ref_p (SCM x)
 {
-  return type (x) == REF ? cell_t : cell_f;
+  return TYPE (x) == REF ? cell_t : cell_f;
 }
 
 SCM
 string_p (SCM x)
 {
-  return type (x) == STRING ? cell_t : cell_f;
+  return TYPE (x) == STRING ? cell_t : cell_f;
 }
 
 SCM
 symbol_p (SCM x)
 {
-  return type (x) == SYMBOL ? cell_t : cell_f;
+  return TYPE (x) == SYMBOL ? cell_t : cell_f;
 }
 
 SCM
 vector_p (SCM x)
 {
-  return type (x) == VECTOR ? cell_t : cell_f;
+  return TYPE (x) == VECTOR ? cell_t : cell_f;
 }
 
 SCM
 builtin_p (SCM x)
 {
-  return type (x) == FUNCTION ? cell_t : cell_f;
+  return TYPE (x) == FUNCTION ? cell_t : cell_f;
 }
 
 // Non-types
@@ -84,7 +84,7 @@ null_p (SCM x)
 SCM
 atom_p (SCM x)
 {
-  return (type (x) == PAIR ? cell_f : cell_t);
+  return (TYPE (x) == PAIR ? cell_f : cell_t);
 }
 
 SCM
@@ -98,5 +98,5 @@ SCM make_number (int);
 SCM
 mes_type_of (SCM x)
 {
-  return make_number (type (x));
+  return make_number (TYPE (x));
 }

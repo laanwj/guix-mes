@@ -28,7 +28,7 @@ string_to_cstring (SCM s)
   s = STRING (s);
   while (s != cell_nil)
     {
-      *p++ = value (car (s));
+      *p++ = VALUE (car (s));
       s = cdr (s);
     }
   *p = 0;
@@ -50,5 +50,5 @@ current_input_port ()
 SCM
 set_current_input_port (SCM port)
 {
-  g_stdin = fdopen (value (port), "r");
+  g_stdin = fdopen (VALUE (port), "r");
 }

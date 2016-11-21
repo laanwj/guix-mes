@@ -169,61 +169,38 @@ scm *g_news = 0;
 
 #define CAR(x) g_cells[x].car
 #define CDR(x) g_cells[x].cdr
+#define HITS(x) g_cells[x].hits
+#define LENGTH(x) g_cells[x].length
+#define NAME(x) g_cells[x].name
+#define STRING(x) g_cells[x].string
+#define TYPE(x) g_cells[x].type
+#define MACRO(x) g_cells[x].macro
+#define REF(x) g_cells[x].ref
+#define VALUE(x) g_cells[x].value
+#define VECTOR(x) g_cells[x].vector
+#define FUNCTION(x) functions[g_cells[x].function]
+#define NCAR(x) g_news[x].car
+#define NTYPE(x) g_news[x].type
+
 #define CAAR(x) CAR (CAR (x))
 #define CDAR(x) CDR (CAR (x))
 #define CAAR(x) CAR (CAR (x))
 #define CADAR(x) CAR (CDR (CAR (x)))
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 #define CADR(x) CAR (CDR (x))
-#define LENGTH(x) g_cells[x].length
-#define STRING(x) g_cells[x].string
-#define TYPE(x) g_cells[x].type
-#define MACRO(x) g_cells[x].macro
-#define VALUE(x) g_cells[x].value
-#define VECTOR(x) g_cells[x].vector
-
-#define FUNCTION(x) functions[g_cells[x].function]
-
-#define NCAR(x) g_news[x].car
-#define NTYPE(x) g_news[x].type
-
-enum type_t
-type (SCM x)
-{
-  return g_cells[x].type;
-}
 
 SCM
 car (SCM x)
 {
-  assert (g_cells[x].type == PAIR);
-  return g_cells[x].car;
+  assert (TYPE (x) == PAIR);
+  return CAR (x);
 }
 
 SCM
 cdr (SCM x)
 {
-  assert (g_cells[x].type == PAIR);
-  return g_cells[x].cdr;
-}
-
-long
-value (SCM x)
-{
-  return g_cells[x].value;
-}
-
-SCM
-alloc (int n)
-{
-#if GC
-  assert (g_free.value + n < ARENA_SIZE);
-  SCM x = g_free.value;
-  g_free.value += n;
-  return x;
-#else
-  return (SCM )malloc(n*sizeof (scm));
-#endif
+  assert (TYPE (x) == PAIR);
+  return CDR (x);
 }
 
 SCM
@@ -297,7 +274,7 @@ gc_loop (SCM scan)
 SCM
 gc_copy (SCM old)
 {
-  if (type (old) == BROKEN_HEART) return g_cells[old].car;
+  if (TYPE (old) == BROKEN_HEART) return g_cells[old].car;
   SCM new = g_free.value++;
   g_news[new] = g_cells[old];
   if (NTYPE (new) == VECTOR)
@@ -353,22 +330,6 @@ gc_show ()
   return cell_unspecified;
 }
 
-SCM
-gc_make_cell (SCM type, SCM car, SCM cdr)
-{
-  SCM x = gc_alloc (1);
-  assert (g_cells[type].type == NUMBER);
-  g_cells[x].type = value (type);
-  if (value (type) == CHAR || value (type) == NUMBER) {
-    if (car) g_cells[x].car = g_cells[car].car;
-    if (cdr) g_cells[x].cdr = g_cells[cdr].cdr;
-  } else {
-    g_cells[x].car = car;
-    g_cells[x].cdr = cdr;
-  }
-  return x;
-}
-
 SCM tmp;
 SCM tmp_num;
 SCM tmp_num2;
@@ -376,30 +337,20 @@ SCM tmp_num3;
 SCM tmp_num4;
 
 SCM
-gc_make_vector (SCM n)
-{
-  g_cells[tmp_num].value = VECTOR;
-  SCM v = gc_alloc (value (n));
-  SCM x = gc_make_cell (tmp_num, (SCM)(long)value (n), v);
-  for (int i=0; i<value (n); i++) g_cells[x+i].vector = vector_entry (cell_unspecified);
-  return x;
-}
-
-SCM
 make_cell (SCM type, SCM car, SCM cdr)
 {
-  SCM x = alloc (1);
-  assert (g_cells[type].type == NUMBER);
-  g_cells[x].type = VALUE (type);
+  SCM x = gc_alloc (1);
+  assert (TYPE (type) == NUMBER);
+  TYPE (x) = VALUE (type);
   if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
-    if (car) g_cells[x].car = g_cells[car].car;
-    if (cdr) g_cells[x].cdr = g_cells[cdr].cdr;
+    if (car) CAR (x) = CAR (car);
+    if (cdr) CDR (x) = CDR (cdr);
   } else if (VALUE (type) == FUNCTION) {
-    if (car) g_cells[x].car = car;
-    if (cdr) g_cells[x].cdr = g_cells[cdr].cdr;
+    if (car) CAR (x) = car;
+    if (cdr) CDR (x) = CDR (cdr);
   } else {
-    g_cells[x].car = car;
-    g_cells[x].cdr = cdr;
+    CAR (x) = car;
+    CDR (x) = cdr;
   }
   return x;
 }
@@ -415,9 +366,9 @@ SCM
 eq_p (SCM x, SCM y)
 {
   return (x == y
-          || (g_cells[x].type == CHAR && g_cells[y].type == CHAR
+          || (TYPE (x) == CHAR && TYPE (y) == CHAR
               && VALUE (x) == VALUE (y))
-          || (g_cells[x].type == NUMBER && g_cells[y].type == NUMBER
+          || (TYPE (x) == NUMBER && TYPE (y) == NUMBER
               && VALUE (x) == VALUE (y)))
     ? cell_t : cell_f;
 }
@@ -425,17 +376,17 @@ eq_p (SCM x, SCM y)
 SCM
 set_car_x (SCM x, SCM e)
 {
-  assert (g_cells[x].type == PAIR);
-  g_cells[x].car = e;
+  assert (TYPE (x) == PAIR);
+  CAR (x) = e;
   return cell_unspecified;
 }
 
 SCM
 set_cdr_x (SCM x, SCM e)
 {
-  assert (g_cells[x].type == PAIR);
+  assert (TYPE (x) == PAIR);
   cache_invalidate (cdr (x));
-  g_cells[x].cdr = e;
+  CDR (x) = e;
   return cell_unspecified;
 }
 
@@ -481,9 +432,9 @@ assq (SCM x, SCM a)
 {
   while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f)
     {
-      if (g_cells[a].type == BROKEN_HEART || g_cells[CAR (a)].type == BROKEN_HEART)
+      if (TYPE (a) == BROKEN_HEART || TYPE (CAR (a)) == BROKEN_HEART)
         fprintf (stderr, "oops, broken heart\n");
-      a = g_cells[a].cdr;
+      a = CDR (a);
     }
   return a != cell_nil ? car (a) : cell_f;
 }
@@ -681,9 +632,9 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
   r0 = cl;
   r2 = a;
   r3 = aa;
-  cache_invalidate_range (r0, g_cells[r3].cdr);
+  cache_invalidate_range (r0, CDR (r3));
   SCM r = vm_call_lambda ();
-  cache_invalidate_range (r0, g_cells[r3].cdr);
+  cache_invalidate_range (r0, CDR (r3));
   return r;
 }
 
@@ -691,7 +642,7 @@ SCM
 vm_evlis_env ()
 {
   if (r1 == cell_nil) return cell_nil;
-  if (type (r1) != PAIR) return eval_env (r1, r0);
+  if (TYPE (r1) != PAIR) return eval_env (r1, r0);
   r2 = eval_env (car (r1), r0);
   r1 = evlis_env (cdr (r1), r0);
   return cons (r2, r1);
@@ -706,9 +657,9 @@ vm_call_lambda ()
 SCM
 vm_apply_env ()
 {
-  if (type (r1) != PAIR)
+  if (TYPE (r1) != PAIR)
     {
-      if (type (r1) == FUNCTION) return call (r1, r2);
+      if (TYPE (r1) == FUNCTION) return call (r1, r2);
       if (r1 == cell_symbol_call_with_values)
         return call_with_values_env (car (r2), cadr (r2), r0);
       if (r1 == cell_symbol_current_module) return r0;
@@ -745,9 +696,9 @@ vm_apply_env ()
   SCM e = eval_env (r1, r0);
   char const* type = 0;
   if (e == cell_f || e == cell_t) type = "bool";
-  if (g_cells[e].type == CHAR) type = "char";
-  if (g_cells[e].type == NUMBER) type = "number";
-  if (g_cells[e].type == STRING) type = "string";
+  if (TYPE (e) == CHAR) type = "char";
+  if (TYPE (e) == NUMBER) type = "number";
+  if (TYPE (e) == STRING) type = "string";
   if (e == cell_unspecified) type = "*unspecified*";
   if (e == cell_undefined) type =  "*undefined*";
   if (type)
@@ -767,7 +718,7 @@ SCM cstring_to_list (char const* s);
 SCM
 vm_eval_env ()
 {
-  switch (type (r1))
+  switch (TYPE (r1))
     {
     case PAIR:
       {
@@ -796,9 +747,9 @@ vm_eval_env ()
         if (car (r1) == cell_symbol_define) {
         fprintf (stderr, "C DEFINE: ");
         display_ (stderr,
-                  g_cells[cadr (r1)].type == SYMBOL
-                  ? g_cells[cadr (r1)].string
-                  : g_cells[caadr (r1)].string);
+                  TYPE (cadr (r1)) == SYMBOL
+                  ? STRING (cadr (r1))
+                  : STRING (caadr (r1)));
         fprintf (stderr, "\n");
       }
       assert (car (r1) != cell_symbol_define);
@@ -825,7 +776,7 @@ vm_eval_env ()
       SCM x = expand_macro_env (r1, r0);
       if (x != r1)
           return eval_env (x, r0);
-      SCM m = evlis_env (g_cells[r1].cdr, r0);
+      SCM m = evlis_env (CDR (r1), r0);
       return apply_env (car (r1), m, r0);
       }
     case SYMBOL: return assert_defined (r1, assq_ref_cache (r1, r0));
@@ -861,10 +812,10 @@ vm_begin_env ()
 {
   SCM r = cell_unspecified;
   while (r1 != cell_nil) {
-    if (g_cells[r1].type == PAIR && g_cells[CAR (r1)].type == PAIR && caar (r1) == cell_symbol_begin)
+    if (TYPE (r1) == PAIR && TYPE (CAR (r1)) == PAIR && caar (r1) == cell_symbol_begin)
       r1 = append2 (cdar (r1), cdr (r1));
     r = eval_env (car (r1), r0);
-    r1 = g_cells[r1].cdr;
+    r1 = CDR (r1);
   }
   return r;
 }
@@ -878,24 +829,6 @@ vm_if_env ()
   if (cddr (r1) != cell_nil)
     return eval_env (caddr (r1), r0);
   return cell_unspecified;
-}
-
-//Helpers
-SCM
-display (SCM x) ///((arity . n))
-{
-  SCM e = car (x);
-  SCM p = cdr (x);
-  int fd = 1;
-  if (g_cells[p].type == PAIR && g_cells[car (p)].type == NUMBER) fd = g_cells[car (p)].hits;
-  FILE *f = fd == 1 ? stdout : stderr;
-  return display_helper (f, e, false, "", false);
-}
-
-SCM
-display_ (FILE* f, SCM x)
-{
-  return display_helper (f, x, false, "", false);
 }
 
 SCM
@@ -922,7 +855,7 @@ SCM
 append2 (SCM x, SCM y)
 {
   if (x == cell_nil) return y;
-  assert (g_cells[x].type == PAIR);
+  assert (TYPE (x) == PAIR);
   return cons (car (x), append2 (cdr (x), y));
 }
 
@@ -996,9 +929,9 @@ cstring_to_list (char const* s)
 SCM
 list_of_char_equal_p (SCM a, SCM b)
 {
-  while (a != cell_nil && b != cell_nil && g_cells[car (a)].value == g_cells[car (b)].value) {
-    assert (g_cells[car (a)].type == CHAR);
-    assert (g_cells[car (b)].type == CHAR);
+  while (a != cell_nil && b != cell_nil && VALUE (car (a)) == VALUE (car (b))) {
+    assert (TYPE (car (a)) == CHAR);
+    assert (TYPE (car (b)) == CHAR);
     a = cdr (a);
     b = cdr (b);
   }
@@ -1014,11 +947,10 @@ internal_lookup_symbol (SCM s)
     // static field initializer.  A string can only be mistaken for a
     // cell with type == PAIR for the one character long, zero-padded
     // #\etx.
-    SCM p = g_cells[car (x)].string;
-    char const* n = g_cells[car (x)].name;
-    if (p < 0 || p >= g_free.value || g_cells[p].type != PAIR)
-      g_cells[car (x)].string = cstring_to_list (g_cells[car (x)].name);
-    if (list_of_char_equal_p (g_cells[car (x)].string, s) == cell_t) break;
+    SCM p = STRING (car (x));
+    if (p < 0 || p >= g_free.value || TYPE (p) != PAIR)
+      STRING (car (x)) = cstring_to_list (NAME (car (x)));
+    if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
     x = cdr (x);
   }
   if (x) x = car (x);
@@ -1046,7 +978,7 @@ make_vector (SCM n)
 {
   int k = VALUE (n);
   g_cells[tmp_num].value = VECTOR;
-  SCM v = alloc (k);
+  SCM v = gc_alloc (k);
   SCM x = make_cell (tmp_num, k, v);
   for (int i=0; i<k; i++) g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
   return x;
@@ -1056,7 +988,7 @@ SCM
 values (SCM x) ///((arity . n))
 {
   SCM v = cons (0, x);
-  g_cells[v].type = VALUES;
+  TYPE (v) = VALUES;
   return v;
 }
 
@@ -1064,41 +996,41 @@ SCM
 call_with_values_env (SCM producer, SCM consumer, SCM a)
 {
   SCM v = apply_env (producer, cell_nil, a);
-  if (g_cells[v].type == VALUES)
-    v = g_cells[v].cdr;
+  if (TYPE (v) == VALUES)
+    v = CDR (v);
   return apply_env (consumer, v, a);
 }
 
 SCM
 vector_length (SCM x)
 {
-  assert (g_cells[x].type == VECTOR);
+  assert (TYPE (x) == VECTOR);
   return make_number (LENGTH (x));
 }
 
 SCM
 vector_ref (SCM x, SCM i)
 {
-  assert (g_cells[x].type == VECTOR);
-  assert (value (i) < LENGTH (x));
-  SCM e = VECTOR (x) + value (i);
-  if (g_cells[e].type == REF) e = g_cells[e].ref;
-  if (g_cells[e].type == CHAR) e = make_char (value (e));
-  if (g_cells[e].type == NUMBER) e = make_number (value (e));
+  assert (TYPE (x) == VECTOR);
+  assert (VALUE (i) < LENGTH (x));
+  SCM e = VECTOR (x) + VALUE (i);
+  if (TYPE (e) == REF) e = g_cells[e].ref;
+  if (TYPE (e) == CHAR) e = make_char (VALUE (e));
+  if (TYPE (e) == NUMBER) e = make_number (VALUE (e));
   return e;
 }
 
 SCM
 vector_entry (SCM x) {
-  if (g_cells[x].type == PAIR || g_cells[x].type == SPECIAL || g_cells[x].type == STRING || g_cells[x].type == SYMBOL || g_cells[x].type == VECTOR) x = make_ref (x);
+  if (TYPE (x) == PAIR || TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL || TYPE (x) == VECTOR) x = make_ref (x);
   return x;
 }
 
 SCM
 vector_set_x (SCM x, SCM i, SCM e)
 {
-  assert (g_cells[x].type == VECTOR);
-  assert (value (i) < LENGTH (x));
+  assert (TYPE (x) == VECTOR);
+  assert (VALUE (i) < LENGTH (x));
   g_cells[VECTOR (x)+g_cells[i].value] = g_cells[vector_entry (e)];
   return cell_unspecified;
 }
@@ -1106,17 +1038,17 @@ vector_set_x (SCM x, SCM i, SCM e)
 SCM
 lookup (SCM s, SCM a)
 {
-  if (isdigit (value (car (s))) || (value (car (s)) == '-' && cdr (s) != cell_nil)) {
+  if (isdigit (VALUE (car (s))) || (VALUE (car (s)) == '-' && cdr (s) != cell_nil)) {
     SCM p = s;
     int sign = 1;
-    if (value (car (s)) == '-') {
+    if (VALUE (car (s)) == '-') {
       sign = -1;
       p = cdr (s);
     }
     int n = 0;
-    while (p != cell_nil && isdigit (value  (car (p)))) {
+    while (p != cell_nil && isdigit (VALUE (car (p)))) {
       n *= 10;
-      n += value (car (p)) - '0';
+      n += VALUE (car (p)) - '0';
       p = cdr (p);
     }
     if (p == cell_nil) return make_number (n * sign);
@@ -1126,19 +1058,19 @@ lookup (SCM s, SCM a)
   if (x) return x;
 
   if (cdr (s) == cell_nil) {
-    if (value  (car (s)) == '\'') return cell_symbol_quote;
-    if (value  (car (s)) == '`') return cell_symbol_quasiquote;
-    if (value  (car (s)) == ',') return cell_symbol_unquote;
+    if (VALUE (car (s)) == '\'') return cell_symbol_quote;
+    if (VALUE (car (s)) == '`') return cell_symbol_quasiquote;
+    if (VALUE (car (s)) == ',') return cell_symbol_unquote;
   }
   else if (cddr (s) == cell_nil) {
-    if (value  (car (s)) == ',' && value  (cadr (s)) == '@') return cell_symbol_unquote_splicing;
-    if (value  (car (s)) == '#' && value  (cadr (s)) == '\'') return cell_symbol_syntax;
-    if (value  (car (s)) == '#' && value  (cadr (s)) == '`') return cell_symbol_quasisyntax;
-    if (value  (car (s)) == '#' && value  (cadr (s)) == ',') return cell_symbol_unsyntax;
+    if (VALUE (car (s)) == ',' && VALUE (cadr (s)) == '@') return cell_symbol_unquote_splicing;
+    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == '\'') return cell_symbol_syntax;
+    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == '`') return cell_symbol_quasisyntax;
+    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == ',') return cell_symbol_unsyntax;
   }
   else if (cdddr (s) == cell_nil) {
-    if (value  (car (s)) == '#' && value  (cadr (s)) == ',' && value (caddr (s)) == '@') return cell_symbol_unsyntax_splicing;
-        if (value  (car (s)) == 'E' && value  (cadr (s)) == 'O' && value (caddr (s)) == 'F') {
+    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == ',' && VALUE (caddr (s)) == '@') return cell_symbol_unsyntax_splicing;
+        if (VALUE (car (s)) == 'E' && VALUE (cadr (s)) == 'O' && VALUE (caddr (s)) == 'F') {
       fprintf (stderr, "mes: got EOF\n");
       return cell_nil; // `EOF': eval program, which may read stdin
     }
@@ -1168,22 +1100,39 @@ list_to_vector (SCM x)
 }
 
 SCM
-newline (SCM p) ///((arity . n))
-{
-  int fd = 1;
-  if (g_cells[p].type == PAIR && g_cells[car (p)].type == NUMBER) fd = g_cells[car (p)].value;
-  FILE *f = fd == 1 ? stdout : stderr;
-  fputs ("\n", f);
-  return cell_unspecified;
-}
-
-SCM
 force_output (SCM p) ///((arity . n))
 {
   int fd = 1;
-  if (g_cells[p].type == PAIR && g_cells[car (p)].type == NUMBER) fd = g_cells[car (p)].value;
+  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
   FILE *f = fd == 1 ? stdout : stderr;
   fflush (f);
+}
+
+SCM
+display_ (FILE* f, SCM x)
+{
+  return display_helper (f, x, false, "", false);
+}
+
+SCM
+display (SCM x) ///((arity . n))
+{
+  SCM e = car (x);
+  SCM p = cdr (x);
+  int fd = 1;
+  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = HITS (car (p));
+  FILE *f = fd == 1 ? stdout : stderr;
+  return display_helper (f, e, false, "", false);
+}
+
+SCM
+newline (SCM p) ///((arity . n))
+{
+  int fd = 1;
+  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
+  FILE *f = fd == 1 ? stdout : stderr;
+  fputs ("\n", f);
+  return cell_unspecified;
 }
 
 SCM
@@ -1191,21 +1140,21 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
 {
   SCM r;
   fprintf (f, "%s", sep);
-  switch (g_cells[x].type)
+  switch (TYPE (x))
     {
     case CHAR:
       {
         char const *name = 0;
-        if (value (x) == char_nul.value) name = char_nul.name;
-        else if (value (x) == char_backspace.value) name = char_backspace.name;
-        else if (value (x) == char_tab.value) name = char_tab.name;
-        else if (value (x) == char_newline.value) name = char_newline.name;
-        else if (value (x) == char_vt.value) name = char_vt.name;
-        else if (value (x) == char_page.value) name = char_page.name;
-        else if (value (x) == char_return.value) name = char_return.name;
-        else if (value (x) == char_space.value) name = char_space.name;
+        if (VALUE (x) == char_nul.value) name = char_nul.name;
+        else if (VALUE (x) == char_backspace.value) name = char_backspace.name;
+        else if (VALUE (x) == char_tab.value) name = char_tab.name;
+        else if (VALUE (x) == char_newline.value) name = char_newline.name;
+        else if (VALUE (x) == char_vt.value) name = char_vt.name;
+        else if (VALUE (x) == char_page.value) name = char_page.name;
+        else if (VALUE (x) == char_return.value) name = char_return.name;
+        else if (VALUE (x) == char_space.value) name = char_space.name;
         if (name) fprintf (f, "#\\%s", name);
-        else fprintf (f, "#\\%c", value (x));
+        else fprintf (f, "#\\%c", VALUE (x));
         break;
       }
     case MACRO:
@@ -1213,7 +1162,7 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
       display_helper (f, g_cells[x].macro, cont, sep, quote);
       fprintf (f, ")");
       break;
-    case NUMBER: fprintf (f, "%d", value (x)); break;
+    case NUMBER: fprintf (f, "%d", VALUE (x)); break;
     case PAIR:
       {
         if (car (x) == cell_circular) {
@@ -1230,7 +1179,7 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
         }
         if (!cont) fprintf (f, "(");
         display_ (f, car (x));
-        if (cdr (x) && g_cells[cdr (x)].type == PAIR)
+        if (cdr (x) && TYPE (cdr (x)) == PAIR)
           display_helper (f, cdr (x), true, " ", false);
         else if (cdr (x) != cell_nil) {
           fprintf (f, " . ");
@@ -1243,9 +1192,9 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
       {
         fprintf (f, "#(");
         for (int i = 0; i < LENGTH (x); i++) {
-          if (g_cells[VECTOR (x)+i].type == VECTOR
-              || (g_cells[VECTOR (x)+i].type == REF
-                  && g_cells[g_cells[VECTOR (x)+i].ref].type == VECTOR))
+          if (TYPE (VECTOR (x)+i) == VECTOR
+              || (TYPE (VECTOR (x)+i) == REF
+                  && TYPE (REF (VECTOR (x)+i)) == VECTOR))
             fprintf (f, "%s#(...)", i ? " " : "");
           else
             display_helper (f,VECTOR (x)+i, false, i ? " " : "", false);
@@ -1257,12 +1206,11 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
     case FUNCTION:
       {
         fprintf (f, "#<procedure ");
-        SCM p = g_cells[x].string;
-        char const* n = g_cells[x].name;
-        if (p < 0 || p >= g_free.value || g_cells[p].type != PAIR)
-          fprintf (f, "%s", g_cells[x].name);
+        SCM p = STRING (x);
+        if (p < 0 || p >= g_free.value || TYPE (p) != PAIR)
+          fprintf (f, "%s", NAME (x));
         else
-          display_ (f, g_cells[x].string);
+          display_ (f, STRING (x));
         fprintf (f, ">");
         break;
       }
@@ -1273,12 +1221,12 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
           SCM p = STRING (x);
           assert (p);
           while (p != cell_nil) {
-            assert (g_cells[car (p)].type == CHAR);
-            fputc (g_cells[car (p)].value, f);
+            assert (TYPE (car (p)) == CHAR);
+            fputc (VALUE (car (p)), f);
             p = cdr (p);
           }
         }
-      else if (g_cells[x].type != PAIR && g_cells[x].name) fprintf (f, "%s", g_cells[x].name);
+      else if (TYPE (x) != PAIR && NAME (x)) fprintf (f, "%s", NAME (x));
     }
   return cell_unspecified;
 }
@@ -1324,19 +1272,26 @@ write_char (SCM x) ///((arity . n))
   SCM c = car (x);
   SCM p = cdr (x);
   int fd = 1;
-  if (g_cells[p].type == PAIR && g_cells[car (p)].type == NUMBER) fd = g_cells[car (p)].value;
+  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
   FILE *f = fd == 1 ? stdout : stderr;
-  assert (g_cells[c].type == NUMBER || g_cells[c].type == CHAR);
-  fputc (value (c), f);
+  assert (TYPE (c) == NUMBER || TYPE (c) == CHAR);
+  fputc (VALUE (c), f);
   return c;
 }
 
 SCM
 unget_char (SCM c)
 {
-  assert (g_cells[c].type == NUMBER || g_cells[c].type == CHAR);
-  ungetchar (value (c));
+  assert (TYPE (c) == NUMBER || TYPE (c) == CHAR);
+  ungetchar (VALUE (c));
   return c;
+}
+
+SCM
+symbol_to_list (SCM x)
+{
+  assert (TYPE (x) == SYMBOL);
+  return STRING (x);
 }
 
 int
@@ -1358,7 +1313,7 @@ readword (int c, SCM w, SCM a)
 {
   if (c == EOF && w == cell_nil) return cell_nil;
   if (c == '\n' && w == cell_nil) return readword (getchar (), w, a);
-  if (c == '\n' && value (car (w)) == '.' && cdr (w) == cell_nil) return cell_dot;
+  if (c == '\n' && VALUE (car (w)) == '.' && cdr (w) == cell_nil) return cell_dot;
   if (c == EOF || c == '\n') return lookup (w, a);
   if (c == ' ') return readword ('\n', w, a);
   if (c == '"' && w == cell_nil) return readstring ();
@@ -1367,7 +1322,7 @@ readword (int c, SCM w, SCM a)
   if (c == '(') {ungetchar (c); return lookup (w, a);}
   if (c == ')' && w == cell_nil) {ungetchar (c); return cell_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
-  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (g_cells[cell_symbol_unquote_splicing].string, a),
+  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (STRING (cell_symbol_unquote_splicing), a),
                                                                    cons (readword (getchar (), w, a),
                                                                          cell_nil));}
   if ((c == '\''
@@ -1378,10 +1333,10 @@ readword (int c, SCM w, SCM a)
                                            cell_nil));}
   if (c == '#' && peekchar () == ',' && w == cell_nil) {
     getchar ();
-    if (peekchar () == '@'){getchar (); return cons (lookup (g_cells[cell_symbol_unsyntax_splicing].string, a),
+    if (peekchar () == '@'){getchar (); return cons (lookup (STRING (cell_symbol_unsyntax_splicing), a),
                                                      cons (readword (getchar (), w, a),
                                                            cell_nil));}
-    return cons (lookup (g_cells[cell_symbol_unsyntax].string, a), cons (readword (getchar (), w, a), cell_nil));
+    return cons (lookup (STRING (cell_symbol_unsyntax), a), cons (readword (getchar (), w, a), cell_nil));
   }
   if (c == '#' && (peekchar () == '\'' || peekchar () == '`') && w == cell_nil) {
     c = getchar ();
@@ -1687,7 +1642,7 @@ make_closure (SCM args, SCM body, SCM a)
 SCM
 lookup_macro (SCM x, SCM a)
 {
-  if (g_cells[x].type != SYMBOL) return cell_f;
+  if (TYPE (x) != SYMBOL) return cell_f;
   SCM m = assq_ref_cache (x, a);
   if (macro_p (m) == cell_t) return MACRO (m);
   return cell_f;

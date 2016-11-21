@@ -44,16 +44,6 @@ now include appropriate (mes-use-module ...) stanzas.
 This hack allows for scripts/includes.mes to generate the list of
 files to be prepended.  Previously, this information was put in
 GNUmakefile.
-** Garbage collection?
-Mes is using malloc without freeing anything, memory is patient these
-days :-) Sadly, a factor 10^6 less patient than the future that SICP
-authors were hoping for (we have 10^3 less memory and 10^3 more
-instructions).
-
-SICP's stop and copy Garbage Colletor (Jam Scraper?) algorithm is now
-available, but it cannot be hooked up yet as even in boot mode the
-core mes eval/apply is still running; it executes the Scheme based
-eval/apply.
 ** Actually do something useful, build: [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
 * OLD: Booting from LISP-1.5 into Mes
 
