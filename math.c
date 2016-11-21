@@ -18,127 +18,127 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-scm *
-greater_p (scm *x) ///((name . ">") (arity . n))
+SCM
+greater_p (SCM x) ///((name . ">") (arity . n))
 {
   int n = INT_MAX;
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      assert (x->car->type == NUMBER);
-      if (x->car->value >= n) return &scm_f;
-      n = x->car->value;
+      assert (g_cells[car (x)].type == NUMBER);
+      if (value (car (x)) >= n) return cell_f;
+      n = value (car (x));
       x = cdr (x);
     }
-  return &scm_t;
+  return cell_t;
 }
 
-scm *
-less_p (scm *x) ///((name . "<") (arity . n))
+SCM
+less_p (SCM x) ///((name . "<") (arity . n))
 {
   int n = INT_MIN;
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      assert (x->car->type == NUMBER);
-      if (x->car->value <= n) return &scm_f;
-      n = x->car->value;
+      assert (g_cells[car (x)].type == NUMBER);
+      if (value (car (x)) <= n) return cell_f;
+      n = value (car (x));
       x = cdr (x);
     }
-  return &scm_t;
+  return cell_t;
 }
 
-scm *
-is_p (scm *x) ///((name . "=") (arity . n))
+SCM
+is_p (SCM x) ///((name . "=") (arity . n))
 {
-  if (x == &scm_nil) return &scm_t;
-  assert (x->car->type == NUMBER);
-  int n = x->car->value;
+  if (x == cell_nil) return cell_t;
+  assert (g_cells[car (x)].type == NUMBER);
+  int n = value (car (x));
   x = cdr (x);
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      if (x->car->value != n) return &scm_f;
+      if (value (car (x)) != n) return cell_f;
       x = cdr (x);
     }
-  return &scm_t;
+  return cell_t;
 }
 
-scm *
-minus (scm *x) ///((name . "-") (arity . n))
+SCM
+minus (SCM x) ///((name . "-") (arity . n))
 {
-  scm *a = car (x);
-  assert (a->type == NUMBER);
-  int n = a->value;
+  SCM a = car (x);
+  assert (g_cells[a].type == NUMBER);
+  int n = value (a);
   x = cdr (x);
-  if (x == &scm_nil)
+  if (x == cell_nil)
     n = -n;
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      assert (x->car->type == NUMBER);
-      n -= x->car->value;
+      assert (g_cells[car (x)].type == NUMBER);
+      n -= value (car (x));
       x = cdr (x);
     }
   return make_number (n);
 }
 
-scm *
-plus (scm *x) ///((name . "+") (arity . n))
+SCM
+plus (SCM x) ///((name . "+") (arity . n))
 {
   int n = 0;
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      assert (x->car->type == NUMBER);
-      n += x->car->value;
+      assert (g_cells[car (x)].type == NUMBER);
+      n += value (car (x));
       x = cdr (x);
     }
   return make_number (n);
 }
 
-scm *
-divide (scm *x) ///((name . "/") (arity . n))
+SCM
+divide (SCM x) ///((name . "/") (arity . n))
 {
   int n = 1;
-  if (x != &scm_nil) {
-    assert (x->car->type == NUMBER);
-    n = x->car->value;
+  if (x != cell_nil) {
+    assert (g_cells[car (x)].type == NUMBER);
+    n = value (car (x));
     x = cdr (x);
   }
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      assert (x->car->type == NUMBER);
-      n /= x->car->value;
+      assert (g_cells[car (x)].type == NUMBER);
+      n /= value (car (x));
       x = cdr (x);
     }
   return make_number (n);
 }
 
-scm *
-modulo (scm *a, scm *b)
+SCM
+modulo (SCM a, SCM b)
 {
-  assert (a->type == NUMBER);
-  assert (b->type == NUMBER);
-  return make_number (a->value % b->value);
+  assert (g_cells[a].type == NUMBER);
+  assert (g_cells[b].type == NUMBER);
+  return make_number (value (a) % value (b));
 }
 
-scm *
-multiply (scm *x) ///((name . "*") (arity . n))
+SCM
+multiply (SCM x) ///((name . "*") (arity . n))
 {
   int n = 1;
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      assert (x->car->type == NUMBER);
-      n *= x->car->value;
+      assert (g_cells[car (x)].type == NUMBER);
+      n *= value (car (x));
       x = cdr (x);
     }
   return make_number (n);
 }
 
-scm *
-logior (scm *x) ///((arity . n))
+SCM
+logior (SCM x) ///((arity . n))
 {
   int n = 0;
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
-      assert (x->car->type == NUMBER);
-      n |= x->car->value;
+      assert (g_cells[car (x)].type == NUMBER);
+      n |= value (car (x));
       x = cdr (x);
     }
   return make_number (n);

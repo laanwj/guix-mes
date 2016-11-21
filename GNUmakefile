@@ -23,14 +23,14 @@ include make/install.make
 all: mes
 
 mes.o: mes.c
-mes.o: mes.c mes.environment.h mes.environment.i mes.symbols.i
-mes.o: define.c define.environment.h define.environment.i
-mes.o: lib.c lib.environment.h lib.environment.i
-mes.o: math.c math.environment.h math.environment.i
-mes.o: posix.c posix.environment.h posix.environment.i
-mes.o: quasiquote.c quasiquote.environment.h quasiquote.environment.i
-mes.o: string.c string.environment.h string.environment.i
-mes.o: type.c type.environment.h type.environment.i
+mes.o: mes.c mes.h mes.i mes.environment.i mes.symbols.i
+mes.o: define.c define.h define.i define.environment.i
+mes.o: lib.c lib.h lib.i lib.environment.i
+mes.o: math.c math.h math.i math.environment.i
+mes.o: posix.c posix.h posix.i posix.environment.i
+mes.o: quasiquote.c quasiquote.h quasiquote.i quasiquote.environment.i
+mes.o: string.c string.h string.i string.environment.i
+mes.o: type.c type.h type.i type.environment.i
 
 clean:
 	rm -f mes mes.o *.environment.i *.symbols.i *.environment.h *.cat a.out
@@ -38,7 +38,7 @@ clean:
 distclean: clean
 	rm -f .config.make
 
-%.environment.h %.environment.i %.symbols.i: %.c build-aux/mes-snarf.scm
+%.h %.i %.environment.i %.symbols.i: %.c build-aux/mes-snarf.scm
 	build-aux/mes-snarf.scm $<
 
 check: all guile-check mes-check

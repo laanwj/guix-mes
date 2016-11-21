@@ -21,34 +21,34 @@
 #include <fcntl.h>
 
 char const*
-string_to_cstring (scm *s)
+string_to_cstring (SCM s)
 {
   static char buf[1024];
   char *p = buf;
-  s = s->string;
-  while (s != &scm_nil)
+  s = STRING (s);
+  while (s != cell_nil)
     {
-      *p++ = s->car->value;
-      s = s->cdr;
+      *p++ = value (car (s));
+      s = cdr (s);
     }
   *p = 0;
   return buf;
 }
 
-scm *
-open_input_file (scm *file_name)
+SCM
+open_input_file (SCM file_name)
 {
   return make_number (open (string_to_cstring (file_name), O_RDONLY));
 }
 
-scm *
+SCM
 current_input_port ()
 {
   return make_number (fileno (g_stdin));
 }
 
-scm *
-set_current_input_port (scm *port)
+SCM
+set_current_input_port (SCM port)
 {
-  g_stdin = fdopen (port->value, "r");
+  g_stdin = fdopen (value (port), "r");
 }

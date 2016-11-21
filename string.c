@@ -18,78 +18,78 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-scm *
-string (scm *x) ///((arity . n))
+SCM
+string (SCM x) ///((arity . n))
 {
   return make_string (x);
 }
 
-scm *
-string_append (scm *x) ///((arity . n))
+SCM
+string_append (SCM x) ///((arity . n))
 {
-  scm *p = &scm_nil;
-  while (x != &scm_nil)
+  SCM p = cell_nil;
+  while (x != cell_nil)
     {
-      scm *s = car (x);
-      assert (s->type == STRING);
-      p = append2 (p, s->string);
+      SCM s = car (x);
+      assert (g_cells[s].type == STRING);
+      p = append2 (p, STRING (s));
       x = cdr (x);
     }
   return make_string (p);
 }
 
-scm *
-list_to_string (scm *x)
+SCM
+list_to_string (SCM x)
 {
   return make_string (x);
 }
 
-scm *
-string_length (scm *x)
+SCM
+string_length (SCM x)
 {
-  assert (x->type == STRING);
-  return make_number (length (x->string)->value);
+  assert (g_cells[x].type == STRING);
+  return make_number (value (length (STRING (x))));
 }
 
-scm *
-string_ref (scm *x, scm *k)
+SCM
+string_ref (SCM x, SCM k)
 {
-  assert (x->type == STRING);
-  assert (k->type == NUMBER);
-  scm n = {NUMBER, .value=k->value};
-  return make_char (list_ref (x->string, &n)->value);
+  assert (g_cells[x].type == STRING);
+  assert (g_cells[k].type == NUMBER);
+  g_cells[tmp_num].value = value (k);
+  return make_char (value (list_ref (STRING (x), tmp_num)));
 }
 
-scm *
-substring (scm *x) ///((arity . n))
+SCM
+substring (SCM x) ///((arity . n))
 {
-  assert (x->type == PAIR);
-  assert (x->car->type == STRING);
-  scm *s = x->car->string;
-  assert (x->cdr->car->type == NUMBER);
-  int start = x->cdr->car->value;
-  int end = length (s)->value;
-  if (x->cdr->cdr->type == PAIR) {
-    assert (x->cdr->cdr->car->type == NUMBER);
-    assert (x->cdr->cdr->car->value <= end);
-    end = x->cdr->cdr->car->value;
+  assert (g_cells[x].type == PAIR);
+  assert (g_cells[car (x)].type == STRING);
+  SCM s = g_cells[car (x)].string;
+  assert (g_cells[cadr (x)].type == NUMBER);
+  int start = g_cells[cadr (x)].value;
+  int end = g_cells[length (s)].value;
+  if (g_cells[cddr (x)].type == PAIR) {
+    assert (g_cells[caddr (x)].type == NUMBER);
+    assert (g_cells[caddr (x)].value <= end);
+    end = g_cells[caddr (x)].value;
   }
   int n = end - start;
-  while (start--) s = s->cdr;
-  scm *p = &scm_nil;
-  while (n-- && s != &scm_nil) {
-    p = append2 (p, cons (make_char (s->car->value), &scm_nil));
-    s = s->cdr;
+  while (start--) s = cdr (s);
+  SCM p = cell_nil;
+  while (n-- && s != cell_nil) {
+    p = append2 (p, cons (make_char (g_cells[car (s)].value), cell_nil));
+    s = cdr (s);
   }
   return make_string (p);
 }
 
-scm *
-number_to_string (scm *x)
+SCM
+number_to_string (SCM x)
 {
-  assert (x->type == NUMBER);
-  int n = x->value;
-  scm *p = n < 0 ? cons (make_char ('-'), &scm_nil) : &scm_nil;
+  assert (g_cells[x].type == NUMBER);
+  int n = value (x);
+  SCM p = n < 0 ? cons (make_char ('-'), cell_nil) : cell_nil;
   do {
     p = cons (make_char (n % 10 + '0'), p);
     n = n / 10;
@@ -97,16 +97,16 @@ number_to_string (scm *x)
   return make_string (p);
 }
 
-scm *
-string_to_symbol (scm *x)
+SCM
+string_to_symbol (SCM x)
 {
-  assert (x->type == STRING);
-  return make_symbol (x->string);
+  assert (g_cells[x].type == STRING);
+  return make_symbol (STRING (x));
 }
 
-scm *
-symbol_to_string (scm *x)
+SCM
+symbol_to_string (SCM x)
 {
-  assert (x->type == SYMBOL);
-  return make_string (x->string);
+  assert (g_cells[x].type == SYMBOL);
+  return make_string (STRING (x));
 }

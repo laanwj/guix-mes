@@ -18,24 +18,24 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-scm *caar (scm *x) {return car (car (x));}
-scm *cadr (scm *x) {return car (cdr (x));}
-scm *cdar (scm *x) {return cdr (car (x));}
-scm *cddr (scm *x) {return cdr (cdr (x));}
-scm *caaar (scm *x) {return car (car (car (x)));}
-scm *caadr (scm *x) {return car (car (cdr (x)));}
-scm *caddr (scm *x) {return car (cdr (cdr (x)));}
-scm *cdadr (scm *x) {return cdr (car (cdr (x)));}
-scm *cadar (scm *x) {return car (cdr (car (x)));}
-scm *cddar (scm *x) {return cdr (cdr (car (x)));}
-scm *cdddr (scm *x) {return cdr (cdr (cdr (x)));}
-scm *cadddr (scm *x) {return car (cdr (cdr (cdr (x))));}
+SCM caar (SCM x) {return car (car (x));}
+SCM cadr (SCM x) {return car (cdr (x));}
+SCM cdar (SCM x) {return cdr (car (x));}
+SCM cddr (SCM x) {return cdr (cdr (x));}
+SCM caaar (SCM x) {return car (car (car (x)));}
+SCM caadr (SCM x) {return car (car (cdr (x)));}
+SCM caddr (SCM x) {return car (cdr (cdr (x)));}
+SCM cdadr (SCM x) {return cdr (car (cdr (x)));}
+SCM cadar (SCM x) {return car (cdr (car (x)));}
+SCM cddar (SCM x) {return cdr (cdr (car (x)));}
+SCM cdddr (SCM x) {return cdr (cdr (cdr (x)));}
+SCM cadddr (SCM x) {return car (cdr (cdr (cdr (x))));}
 
-scm *
-length (scm *x)
+SCM
+length (SCM x)
 {
   int n = 0;
-  while (x != &scm_nil)
+  while (x != cell_nil)
     {
       n++;
       x = cdr (x);
@@ -43,59 +43,59 @@ length (scm *x)
   return make_number (n);
 }
 
-scm *
-last_pair (scm *x)
+SCM
+last_pair (SCM x)
 {
-  while (x != &scm_nil && cdr (x) != &scm_nil)
+  while (x != cell_nil && cdr (x) != cell_nil)
     x = cdr (x);
   return x;
 }
 
-scm *
-list (scm *x) ///((arity . n))
+SCM
+list (SCM x) ///((arity . n))
 {
   return x;
 }
 
-scm *
-list_ref (scm *x, scm *k)
+SCM
+list_ref (SCM x, SCM k)
 {
-  assert (x->type == PAIR);
-  assert (k->type == NUMBER);
-  int n = k->value;
-  while (n-- && x->cdr != &scm_nil) x = x->cdr;
-  return x != &scm_nil ? x->car : &scm_undefined;
+  assert (type (x) == PAIR);
+  assert (type (k) == NUMBER);
+  int n = value (k);
+  while (n-- && g_cells[x].cdr != cell_nil) x = g_cells[x].cdr;
+  return x != cell_nil ? car (x) : cell_undefined;
 }
 
-scm *
-vector_to_list (scm *v)
+SCM
+vector_to_list (SCM v)
 {
-  scm *x = &scm_nil;
-  for (int i = 0; i < v->length; i++) {
-    scm *e = &v->vector[i];
-    if (e->type == REF) e = e->ref;
-    x = append2 (x, cons (e, &scm_nil));
+  SCM x = cell_nil;
+  for (int i = 0; i < LENGTH (v); i++) {
+    SCM e = VECTOR (v)+i;
+    if (type (e) == REF) e = g_cells[e].ref;
+    x = append2 (x, cons (e, cell_nil));
   }
   return x;
 }
 
-scm *
-integer_to_char (scm *x)
+SCM
+integer_to_char (SCM x)
 {
-  assert (x->type == NUMBER);
-  return make_char (x->value);
+  assert (type (x) == NUMBER);
+  return make_char (value (x));
 }
 
-scm *
-char_to_integer (scm *x)
+SCM
+char_to_integer (SCM x)
 {
-  assert (x->type == CHAR);
-  return make_number (x->value);
+  assert (type (x) == CHAR);
+  return make_number (value (x));
 }
 
-scm *
-builtin_exit (scm *x)
+SCM
+builtin_exit (SCM x)
 {
-  assert (x->type == NUMBER);
-  exit (x->value);
+  assert (type (x) == NUMBER);
+  exit (value (x));
 }

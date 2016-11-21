@@ -19,35 +19,35 @@
  */
 
 #if QUASIQUOTE
-scm *add_environment (scm *a, char const *name, scm *x);
+SCM add_environment (SCM a, char const *name, SCM x);
 
-scm *
-unquote (scm *x) ///((no-environment))
+SCM
+unquote (SCM x) ///((no-environment))
 {
-  return cons (&symbol_unquote, x);
+  return cons (cell_symbol_unquote, x);
 }
 
-scm *
-unquote_splicing (scm *x) ///((no-environment))
+SCM
+unquote_splicing (SCM x) ///((no-environment))
 {
-  return cons (&symbol_unquote_splicing, x);
+  return cons (cell_symbol_unquote_splicing, x);
 }
 
-scm *
-eval_quasiquote (scm *e, scm *a)
+SCM
+eval_quasiquote (SCM e, SCM a)
 {
-  return vm_call (vm_eval_quasiquote, e, &scm_undefined, a);
+  return vm_call (vm_eval_quasiquote, e, cell_undefined, a);
 }
 
-scm *
+SCM
 vm_eval_quasiquote ()
 {
-  if (r1 == &scm_nil) return r1;
-  else if (atom_p (r1) == &scm_t) return r1;
-  else if (eq_p (car (r1), &symbol_unquote) == &scm_t)
+  if (r1 == cell_nil) return r1;
+  else if (atom_p (r1) == cell_t) return r1;
+  else if (eq_p (car (r1), cell_symbol_unquote) == cell_t)
     return eval_env (cadr (r1), r0);
-  else if (r1->type == PAIR && r1->car->type == PAIR
-           && eq_p (caar (r1), &symbol_unquote_splicing) == &scm_t)
+  else if (type (r1) == PAIR && g_cells[car (r1)].type == PAIR
+           && eq_p (caar (r1), cell_symbol_unquote_splicing) == cell_t)
     {
       r2 = eval_env (cadar (r1), r0);
       return append2 (r2, eval_quasiquote (cdr (r1), r0));
@@ -56,71 +56,71 @@ vm_eval_quasiquote ()
   return cons (r2, eval_quasiquote (cdr (r1), r0));
 }
 
-scm *
-the_unquoters = &scm_nil;
+SCM
+the_unquoters = 0;
 
-scm *
-add_unquoters (scm *a)
+SCM
+add_unquoters (SCM a)
 {
-  if (the_unquoters == &scm_nil)
-    the_unquoters = cons (cons (&symbol_unquote, &scm_unquote),
-                          cons (cons (&symbol_unquote_splicing, &scm_unquote_splicing),
-                                &scm_nil));
+  if (the_unquoters == 0)
+    the_unquoters = cons (cons (cell_symbol_unquote, cell_unquote),
+                          cons (cons (cell_symbol_unquote_splicing, cell_unquote_splicing),
+                                cell_nil));
   return append2 (the_unquoters, a);
 }
 #else // !QUASIQUOTE
 
-scm*add_unquoters (scm *a){}
-scm*eval_quasiquote (scm *e, scm *a){}
+SCM add_unquoters (SCM a){}
+SCM eval_quasiquote (SCM e, SCM a){}
 
 #endif // QUASIQUOTE
 
 #if QUASISYNTAX
-scm *
-syntax (scm *x)
+SCM
+syntax (SCM x)
 {
-  return cons (&symbol_syntax, x);
+  return cons (cell_symbol_syntax, x);
 }
 
-scm *
-unsyntax (scm *x) ///((no-environment))
+SCM
+unsyntax (SCM x) ///((no-environment))
 {
-  return cons (&symbol_unsyntax, x);
+  return cons (cell_symbol_unsyntax, x);
 }
 
-scm *
-unsyntax_splicing (scm *x) ///((no-environment))
+SCM
+unsyntax_splicing (SCM x) ///((no-environment))
 {
-  return cons (&symbol_unsyntax_splicing, x);
+  return cons (cell_symbol_unsyntax_splicing, x);
 }
 
-scm *
-eval_quasisyntax (scm *e, scm *a)
+SCM
+eval_quasisyntax (SCM e, SCM a)
 {
-  if (e == &scm_nil) return e;
-  else if (atom_p (e) == &scm_t) return e;
-  else if (eq_p (car (e), &symbol_unsyntax) == &scm_t)
+  if (e == cell_nil) return e;
+  else if (atom_p (e) == cell_t) return e;
+  else if (eq_p (car (e), cell_symbol_unsyntax) == cell_t)
     return eval_env (cadr (e), a);
-  else if (e->type == PAIR && e->car->type == PAIR
-           && eq_p (caar (e), &symbol_unsyntax_splicing) == &scm_t)
+  else if (g_cells[e].type == PAIR && g_cells[car (e)].type == PAIR
+           && eq_p (caar (e), cell_symbol_unsyntax_splicing) == cell_t)
       return append2 (eval_env (cadar (e), a), eval_quasisyntax (cdr (e), a));
   return cons (eval_quasisyntax (car (e), a), eval_quasisyntax (cdr (e), a));
 }
 
-scm *
-add_unsyntaxers (scm *a)
+SCM
+add_unsyntaxers (SCM a)
 {
-  a = cons (cons (&symbol_unsyntax, &scm_unsyntax), a);
-  a = cons (cons (&symbol_unsyntax_splicing, &scm_unsyntax_splicing), a);
+  a = cons (cons (cell_symbol_unsyntax, cell_unsyntax), a);
+  a = cons (cons (cell_symbol_unsyntax_splicing, cell_unsyntax_splicing), a);
   return a;
 }
 
 #else // !QUASISYNTAX
-scm*syntax (scm *x){}
-scm*unsyntax (scm *x){}
-scm*unsyntax_splicing (scm *x){}
-scm*add_unsyntaxers (scm *a){}
-scm*eval_unsyntax (scm *e, scm *a){}
-scm*eval_quasisyntax (scm *e, scm *a){}
+SCM syntax (SCM x){}
+SCM unsyntax (SCM x){}
+SCM unsyntax_splicing (SCM x){}
+SCM add_unsyntaxers (SCM a){}
+SCM eval_unsyntax (SCM e, SCM a){}
+SCM eval_quasisyntax (SCM e, SCM a){}
 
 #endif // !QUASISYNTAX

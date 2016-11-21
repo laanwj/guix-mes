@@ -1,8 +1,9 @@
 *-
 *.cat
 *.environment.h
-*.environment.i
 *.go
+*.h
+*.i
 *.o
 *.symbols.i
 *~

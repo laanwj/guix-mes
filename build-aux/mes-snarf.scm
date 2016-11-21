@@ -62,33 +62,50 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
         (regexp-replace "_p$" "?"))
        (.name f))))
 
+(define %builtin-prefix% "scm_")
 (define (function-builtin-name f)
   (string-append %builtin-prefix% (.name f)))
 
-(define (function->source f)
-  (format #f "a = add_environment (a, ~S, &~a);\n" (function-scm-name f) (function-builtin-name f)))
+(define %cell-prefix% "cell_")
+(define (function-cell-name f)
+  (string-append %cell-prefix% (.name f)))
 
-(define (symbol->source s)
-  (format #f "symbols = cons (&~a, symbols);\n" s))
+(define (function->source f i)
+  (string-append
+   (format #f "cell_~a = g_free.value++;\n" (.name f))
+   (format #f "g_cells[cell_~a] = ~a;\n" (.name f) (function-builtin-name f))))
 
-(define %builtin-prefix% "scm_")
-(define (function->header f)
+(define (function->environment f i)
+  (string-append
+   (format #f "a = add_environment (a, ~S, ~a);\n" (function-scm-name f) (function-cell-name f))))
+
+(define %start 1)
+(define (symbol->header s i)
+  (format #f "SCM cell_~a;\n" s))
+
+(define (symbol->source s i)
+  (string-append
+   (format #f "cell_~a = g_free.value++;\n" s)
+   (format #f "g_cells[cell_~a] = scm_~a;\n" s s)))
+
+(define (function->header f i)
   (let* ((arity (or (assoc-ref (.annotation f) 'arity)
                     (if (string-null? (.formals f)) 0
                         (length (string-split (.formals f) #\,)))))
          (n (if (eq? arity 'n) -1 arity)))
-    (string-append (format #f "scm *~a (~a);\n" (.name f) (.formals f))
+    (string-append (format #f "SCM ~a (~a);\n" (.name f) (.formals f))
                    (format #f "function fun_~a = {.function~a=&~a, .arity=~a};\n" (.name f) arity (.name f) n)
-                   (format #f "scm ~a = {FUNCTION, .name=~S, .function=&fun_~a};\n" (function-builtin-name f) (function-scm-name f) (.name f)))))
+                   (format #f "scm ~a = {FUNCTION, .name=~S, .function=&fun_~a};\n" (function-builtin-name f) (function-scm-name f) (.name f))
+                   (format #f "SCM cell_~a = ~a;\n" (.name f) i))))
 
 (define (snarf-symbols string)
-  (let* ((matches (append (list-matches "\nscm ([a-z_0-9]+) = [{](SCM)," string)
-                          (list-matches "\nscm ([a-z_0-9]+) = [{](SYMBOL)," string))))
+  (let* ((matches (append (list-matches "\nscm scm_([a-z_0-9]+) = [{](SPECIAL)," string)
+                          (list-matches "\nscm scm_([a-z_0-9]+) = [{](SYMBOL)," string))))
     (map (cut match:substring <> 1) matches)))
 
 (define (snarf-functions string)
   (let* ((matches (list-matches
-                   "\nscm [*]\n?([a-z0-9_]+) [(]((scm *[^,)]+|, )*)[)][^\n(]*([^\n]*)"
+                   "\nSCM[ \n]?([a-z0-9_]+) [(]((SCM ?[^,)]+|, )*)[)][^\n(]*([^\n]*)"
                    string)))
     (map (lambda (m)
            (make <function>
@@ -115,15 +132,21 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
          (symbols (snarf-symbols string))
          (base-name (basename file-name ".c"))
          (header (make <file>
-                   #:name (string-append base-name ".environment.h")
-                   #:content (string-join (map function->header functions) "")))
+                   #:name (string-append base-name ".h")
+                   #:content (string-join (map function->header functions (iota (length functions) (+ %start (length symbols)))) "")))
+         (source (make <file>
+                        #:name (string-append base-name ".i")
+                        #:content (string-join (map function->source (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))
          (environment (make <file>
                         #:name (string-append base-name ".environment.i")
-                        #:content (string-join (map function->source (filter (negate no-environment?) functions)) "")))
-         (symbols (make <file>
-                    #:name (string-append base-name ".symbols.i")
-                    #:content (string-join (map symbol->source symbols) ""))))
-    (list header environment symbols)))
+                        #:content (string-join (map function->environment (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))
+         (symbols.h (make <file>
+                      #:name (string-append base-name ".symbols.h")
+                      #:content (string-join (map symbol->header symbols (iota (length symbols) %start)) "")))
+         (symbols.i (make <file>
+                      #:name (string-append base-name ".symbols.i")
+                      #:content (string-join (map symbol->source symbols (iota (length symbols))) ""))))
+    (list header source environment symbols.h symbols.i)))
 
 (define (file-write file)
   (with-output-to-file (.name file) (lambda () (display (.content file)))))

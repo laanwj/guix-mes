@@ -20,84 +20,83 @@
 
 #if !TYPE0
 
-scm *
-char_p (scm *x)
+SCM
+char_p (SCM x)
 {
-  return x->type == CHAR ? &scm_t : &scm_f;
+  return type (x) == CHAR ? cell_t : cell_f;
 }
 
-scm *
-macro_p (scm *x)
+SCM
+macro_p (SCM x)
 {
-  return x->type == MACRO ? &scm_t : &scm_f;
+  return type (x) == MACRO ? cell_t : cell_f;
 }
 
-scm *
-number_p (scm *x)
+SCM
+number_p (SCM x)
 {
-  return x->type == NUMBER ? &scm_t : &scm_f;
+  return type (x) == NUMBER ? cell_t : cell_f;
 }
 
-scm *
-pair_p (scm *x)
+SCM
+pair_p (SCM x)
 {
-  return x->type == PAIR ? &scm_t : &scm_f;
+  return type (x) == PAIR ? cell_t : cell_f;
 }
 
-scm *
-ref_p (scm *x)
+SCM
+ref_p (SCM x)
 {
-  return x->type == REF ? &scm_t : &scm_f;
+  return type (x) == REF ? cell_t : cell_f;
 }
 
-scm *
-string_p (scm *x)
+SCM
+string_p (SCM x)
 {
-  return x->type == STRING ? &scm_t : &scm_f;
+  return type (x) == STRING ? cell_t : cell_f;
 }
 
-scm *
-symbol_p (scm *x)
+SCM
+symbol_p (SCM x)
 {
-  return x->type == SYMBOL ? &scm_t : &scm_f;
+  return type (x) == SYMBOL ? cell_t : cell_f;
 }
 
-scm *
-vector_p (scm *x)
+SCM
+vector_p (SCM x)
 {
-  return x->type == VECTOR ? &scm_t : &scm_f;
+  return type (x) == VECTOR ? cell_t : cell_f;
 }
 
-scm *
-builtin_p (scm *x)
+SCM
+builtin_p (SCM x)
 {
-  return x->type == FUNCTION ? &scm_t : &scm_f;
+  return type (x) == FUNCTION ? cell_t : cell_f;
 }
 
 // Non-types
-scm *
-null_p (scm *x)
+SCM
+null_p (SCM x)
 {
-  return x == &scm_nil ? &scm_t : &scm_f;
+  return x == cell_nil ? cell_t : cell_f;
 }
 
-scm *
-atom_p (scm *x)
+SCM
+atom_p (SCM x)
 {
-  return (x->type == PAIR ? &scm_f : &scm_t);
+  return (type (x) == PAIR ? cell_f : cell_t);
 }
 
-scm *
-boolean_p (scm *x)
+SCM
+boolean_p (SCM x)
 {
-  return (x == &scm_t || x == &scm_f) ? &scm_t : &scm_f;
+  return (x == cell_t || x == cell_f) ? cell_t : cell_f;
 }
 #endif
 
-scm*make_number (int);
-scm *
-mes_type_of (scm *x)
+SCM make_number (int);
+SCM
+mes_type_of (SCM x)
 {
-  return make_number (x->type);
+  return make_number (type (x));
 }
-
