@@ -35,7 +35,6 @@ vm_define_env ()
   else {
     r2 = car (r2);
     SCM p = pairlis (cadr (r1), cadr (r1), r0);
-    cache_invalidate_range (p, r0);
     x = eval_env (make_lambda (cdadr (r1), cddr (r1)), p);
   }
   if (eq_p (car (r1), cell_symbol_define_macro) == cell_t)

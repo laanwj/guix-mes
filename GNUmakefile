@@ -24,7 +24,6 @@ all: mes
 
 mes.o: mes.c
 mes.o: mes.c mes.h mes.i mes.environment.i mes.symbols.i
-mes.o: cache.c cache.h cache.i cache.environment.i
 mes.o: define.c define.h define.i define.environment.i
 mes.o: display.c display.h display.i display.environment.i
 mes.o: lib.c lib.h lib.i lib.environment.i

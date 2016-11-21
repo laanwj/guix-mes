@@ -31,7 +31,8 @@
 #define DEBUG 0
 #define QUASIQUOTE 1
 #define QUASISYNTAX 0
-#define ENV_CACHE 1
+#define ENV_CACHE 0
+#define FIXED_PRIMITIVES 1
 
 int ARENA_SIZE = 100000;
 int MAX_ARENA_SIZE = 20000000;
@@ -78,7 +79,6 @@ function functions[200];
 int g_function = 0;
 
 #include "mes.symbols.h"
-#include "cache.h"
 #include "define.h"
 #include "display.h"
 #include "lib.h"
@@ -144,6 +144,12 @@ scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 
 scm scm_symbol_the_unquoters = {SYMBOL, "*the-unquoters*"};
 
+scm scm_symbol_car = {SYMBOL, "car"};
+scm scm_symbol_cdr = {SYMBOL, "cdr"};
+scm scm_symbol_null_p = {SYMBOL, "null?"};
+scm scm_symbol_eq_p = {SYMBOL, "eq?"};
+scm scm_symbol_cons = {SYMBOL, "cons"};
+
 scm char_eof = {CHAR, .name="*eof*", .value=-1};
 scm char_nul = {CHAR, .name="nul", .value=0};
 scm char_backspace = {CHAR, .name="backspace", .value=8};
@@ -177,6 +183,7 @@ scm *g_news = 0;
 #define CDAR(x) CDR (CAR (x))
 #define CAAR(x) CAR (CAR (x))
 #define CADAR(x) CAR (CDR (CAR (x)))
+#define CADDR(x) CAR (CDR (CDR (x)))
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 #define CADR(x) CAR (CDR (x))
 
@@ -255,7 +262,6 @@ SCM
 set_cdr_x (SCM x, SCM e)
 {
   assert (TYPE (x) == PAIR);
-  cache_invalidate (cdr (x));
   CDR (x) = e;
   return cell_unspecified;
 }
@@ -263,7 +269,6 @@ set_cdr_x (SCM x, SCM e)
 SCM
 set_env_x (SCM x, SCM e, SCM a)
 {
-  cache_invalidate (x);
   SCM p = assert_defined (x, assq (x, a));
   return set_cdr_x (p, e);
 }
@@ -309,7 +314,6 @@ assq (SCM x, SCM a)
   return a != cell_nil ? car (a) : cell_f;
 }
 
-#if! ENV_CACHE
 SCM
 assq_ref_cache (SCM x, SCM a)
 {
@@ -317,7 +321,6 @@ assq_ref_cache (SCM x, SCM a)
   if (x == cell_f) return cell_undefined;
   return cdr (x);
 }
-#endif // !ENV_CACHE
 
 SCM
 assert_defined (SCM x, SCM e)
@@ -356,10 +359,7 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
   r0 = cl;
   r2 = a;
   r3 = aa;
-  cache_invalidate_range (r0, CDR (r3));
-  SCM r = vm_call_lambda ();
-  cache_invalidate_range (r0, CDR (r3));
-  return r;
+  return vm_call_lambda ();
 }
 
 SCM
@@ -417,6 +417,18 @@ vm_eval_env ()
     {
     case PAIR:
       {
+#if FIXED_PRIMITIVES
+        if (car (r1) == cell_symbol_car)
+          return car (eval_env (CADR (r1), r0));
+        if (car (r1) == cell_symbol_cdr)
+          return cdr (eval_env (CADR (r1), r0));
+        if (car (r1) == cell_symbol_cons) {
+          SCM m = evlis_env (CDR (r1), r0);
+          return cons (CAR (m), CADR (m));
+        }
+        if (car (r1) == cell_symbol_null_p)
+          return null_p (eval_env (CADR (r1), r0));
+#endif // FIXED_PRIMITIVES
         if (car (r1) == cell_symbol_quote)
           return cadr (r1);
 #if QUASISYNTAX
@@ -589,10 +601,7 @@ vm_call (function0_t f, SCM p1, SCM p2, SCM a)
   r2 = p2;
   r0 = a;
   if (g_free.value + GC_SAFETY > ARENA_SIZE)
-    {
-      cache_invalidate_range (r0, cell_nil);
-      gc_stack (stack);
-    }
+    gc_stack (stack);
 
   SCM r = f ();
   frame = gc_frame (stack);
@@ -1086,7 +1095,6 @@ mes_builtins (SCM a)
 {
 #include "mes.i"
 
-#include "cache.i"
 #include "define.i"
 #include "display.i"
 #include "lib.i"
@@ -1097,7 +1105,6 @@ mes_builtins (SCM a)
 #include "string.i"
 #include "type.i"
 
-#include "cache.environment.i"
 #include "define.environment.i"
 #include "display.environment.i"
 #include "lib.environment.i"
@@ -1228,7 +1235,6 @@ bload_env (SCM a)
 }
 
 #include "type.c"
-#include "cache.c"
 #include "define.c"
 #include "display.c"
 #include "lib.c"
