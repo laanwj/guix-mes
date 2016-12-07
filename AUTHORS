@@ -5,6 +5,7 @@ All files except the files listed below
 Based on Scheme48's scheme/alt
 module/mes/record.mes
 module/srfi/srfi-9.mes
+module/mes/syntax.mes
 
 Based on Guile ECMAScript
 module/language/c/lexer.mes
