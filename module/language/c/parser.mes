@@ -27,31 +27,12 @@
 
 (cond-expand
   (guile
-   (use-modules (srfi srfi-1))
-   ;;(use-modules (system base lalr))
-   (use-modules (ice-9 match)))
+   ;;(use-modules (srfi srfi-1))
+   (use-modules (system base lalr))
+   ;;(use-modules (ice-9 match))
+   )
   (mes
-   (mes-use-module (mes base-0))
-   (mes-use-module (mes base))
-   (mes-use-module (mes quasiquote))
-   (mes-use-module (mes let))
-   (mes-use-module (mes scm))
-
-   (mes-use-module (srfi srfi-0))
-
-   (mes-use-module (mes syntax))
-
-   (mes-use-module (mes record-0))
-   (mes-use-module (mes record))
-   (mes-use-module (srfi srfi-9))
-   (mes-use-module (mes lalr-0))
-   (mes-use-module (mes lalr))
-   (mes-use-module (srfi srfi-1))
-   (mes-use-module (mes match))
-
-   (mes-use-module (rnrs bytevectors))
-   (mes-use-module (mes elf))
-   (mes-use-module (mes libc-i386))))
+   (mes-use-module (mes lalr))))
 
 (gc)
 (define c-parser

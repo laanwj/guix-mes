@@ -1,3 +1,13 @@
+#! /bin/sh
+# -*-scheme-*-
+set -x
+#echo ' ()' | cat $(dirname $0)/../module/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/../scripts/mes "$@"
+#paredit:||
+cat module/mes/base-0.mes $0 | $(dirname $0)/../scripts/mes "$@"
+#paredit:|
+exit $?
+!#
+
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
@@ -18,12 +28,9 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+(mes-use-module (mes test))
 
-;;; srfi-9.mes - records.
+(pass-if "first dummy" #t)
+(pass-if-not "second dummy" #f)
 
-(mes-use-module (mes scm))
-(mes-use-module (mes syntax))
-(mes-use-module (mes record-0))
-(mes-use-module (mes record))
-(mes-use-module (srfi srfi-9.upstream))
+(result 'report)

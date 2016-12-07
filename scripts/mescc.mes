@@ -1,6 +1,7 @@
 #! /bin/sh
 # -*-scheme-*-
-cat ${1-$(dirname $(dirname $0))/share/doc/mes/examples/main.c} | cat $($(dirname $0)/include.mes $0) $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@" > a.out
+prefix=module/
+cat ${1-$(dirname $(dirname $0))/share/doc/mes/examples/main.c} | cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@" > a.out
 chmod +x a.out
 exit $?
 !#
@@ -33,25 +34,6 @@ exit $?
 
 ;;; Code:
 
-(mes-use-module (mes base-0))
-(mes-use-module (mes base))
-(mes-use-module (mes quasiquote))
-(mes-use-module (mes let))
-(mes-use-module (mes scm))
-(mes-use-module (mes syntax))
-(mes-use-module (srfi srfi-0))
-(mes-use-module (mes record-0))
-(mes-use-module (mes record))
-(mes-use-module (srfi srfi-9))
-(mes-use-module (mes lalr-0))
-(mes-use-module (mes lalr))
-(mes-use-module (srfi srfi-1))
-(mes-use-module (mes match))
-(mes-use-module (rnrs bytevectors))
-(mes-use-module (mes elf))
-(mes-use-module (mes libc-i386))
-(mes-use-module (language c lexer))
-(mes-use-module (language c parser))
 (mes-use-module (language c compiler))
 
 (compile)

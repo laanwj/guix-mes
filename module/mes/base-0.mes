@@ -3,7 +3,7 @@
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; base-0.mes: This file is part of Mes.
+;;; This file is part of Mes.
 ;;;
 ;;; Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 ;;; Code:
 
 #f ;; FIXME -- needed for --dump, then --load
+
 (define (primitive-eval e) (eval-env e (current-module)))
 (define eval eval-env)
 (define (expand-macro e) (expand-macro-env e (current-module)))
@@ -97,9 +98,47 @@
      (set! ,stack (cdr ,stack))
      o))
 (define-macro (load file)
-  `(primitive-eval
-    (begin
-      (push! *input-ports* (current-input-port))
-      (set-current-input-port (open-input-file ,file))
-      (primitive-load)
-      (set-current-input-port (pop! *input-ports*)))))
+  `(begin
+     (push! *input-ports* (current-input-port))
+     (set-current-input-port (open-input-file ,file))
+     (primitive-load)
+     (set-current-input-port (pop! *input-ports*))))
+
+(define (memq x lst)
+  (if (null? lst) #f
+      (if (eq? x (car lst)) lst
+          (memq x (cdr lst)))))
+
+(define (string-join lst infix)
+  (if (null? (cdr lst)) (car lst)
+      (string-append (car lst) infix (string-join (cdr lst) infix))))
+
+(define *mes-prefix* "module/")
+(define (module->file o)
+  (string-append (string-join (map symbol->string o) "/") ".mes"))
+
+(define *modules* '(mes/base-0.mes))
+(define (mes-load-module-env module a)
+  (push! *input-ports* (current-input-port))
+  (set-current-input-port (open-input-file (string-append *mes-prefix* (module->file module))))
+  (let ((x (eval-env (append (cons 'begin (read-input-file-env #f a))
+                             '((current-module)))
+                     a)))
+    (set-current-input-port (pop! *input-ports*))
+    x))
+(define-macro (mes-use-module module)
+  `(begin
+     (if (not (memq (string->symbol ,(module->file module)) *modules*))
+         (begin
+           (set! *modules* (cons (string->symbol ,(module->file module)) *modules*))
+           ;; (display "loading file=" (current-error-port))
+           ;; (display ,(module->file module) (current-error-port))
+           ;; (newline (current-error-port))
+           (load ,(string-append *mes-prefix* (module->file module)))))))
+
+(define (not x)
+  (if x #f #t))
+
+(mes-use-module (srfi srfi-0))
+(mes-use-module (mes base))
+(mes-use-module (mes scm))

@@ -4,7 +4,7 @@
 ;;; Copyright (c) 1993-2004 by Richard Kelsey and Jonathan Rees.
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; syntax.mes: This file is part of Mes.
+;;; This file is part of Mes.
 ;;;
 ;;; Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by

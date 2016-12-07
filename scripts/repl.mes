@@ -2,7 +2,8 @@
 # -*-scheme-*-
 MES_ARENA=${MES_ARENA-5000000}
 export MES_ARENA
-cat $($(dirname $0)/include.mes $0) $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
+prefix=module/
+cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
 #paredit:|
 exit $?
 !#
@@ -25,14 +26,8 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(mes-use-module (mes base-0))
-(mes-use-module (mes base))
-(mes-use-module (mes quasiquote))
-(mes-use-module (mes let))
 (mes-use-module (mes scm))
-(mes-use-module (srfi srfi-0))
 (mes-use-module (mes syntax))
-(mes-use-module (mes match))
 (mes-use-module (mes repl))
 
 (repl)

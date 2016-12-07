@@ -17,6 +17,12 @@ Please send Mes bug reports to janneke@gnu.org.
 A variant on SICP's stop and copy Garbage Colletor (Jam Scraper?)
 algorithm has been implemented.
 *** The reader has been moved to Scheme.
+** Language
+*** Simple loadable modules.
+*** Srfi-9 and match use handwritten syntax-rules (mes-use-module (mes syntax)).
+*** Optional syntax-case using psyntax (mes-use-module (mes psyntax)).
+** Noteworthy bug fixes
+*** Srfi-0 has been fixed.
 * Changes in 0.2 since 0.1
 ** Core
 *** Names of symbols and strings are list of characters [WAS: c-string].

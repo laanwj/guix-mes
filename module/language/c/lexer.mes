@@ -1,3 +1,5 @@
+;;; -*-scheme-*-
+
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -63,10 +65,7 @@
    
    )
   (mes
-
-      
-   )
-  )
+   (mes-use-module (mes lalr))))
 
 (define (read-delimited delims port handle-delim)
      (let ((stop (string->list delims)))

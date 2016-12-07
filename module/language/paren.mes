@@ -4,7 +4,7 @@
 ;;; Copyright © 2008 Derek Peschel
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; paren.mes: This file is part of Mes.
+;;; This file is part of Mes.
 ;;;
 ;;; Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -31,22 +31,10 @@
 
 (cond-expand
   (guile
-    (use-modules (system base lalr))
-   )
+   (use-modules (system base lalr)))
   (mes
-   (mes-use-module (mes base-0))
-   (mes-use-module (mes base))
-   (mes-use-module (mes quasiquote))
-   (mes-use-module (mes let))
-   (mes-use-module (mes scm))
-   (mes-use-module (mes syntax))
-   (mes-use-module (srfi srfi-0))
-   (mes-use-module (mes record-0))
-   (mes-use-module (mes record))
    (mes-use-module (srfi srfi-9))
-   (mes-use-module (mes lalr-0))
-   (mes-use-module (mes lalr))
-   ))
+   (mes-use-module (mes lalr))))
 
 ;;; Taken from http://gambitscheme.org/wiki/index.php/Lalr_example
 ;;; LGPL 2.1 / Apache 2.0

@@ -522,8 +522,13 @@ vm_begin_env ()
 {
   SCM r = cell_unspecified;
   while (r1 != cell_nil) {
-    if (TYPE (r1) == PAIR && TYPE (CAR (r1)) == PAIR && caar (r1) == cell_symbol_begin)
-      r1 = append2 (cdar (r1), cdr (r1));
+    if (TYPE (r1) == PAIR && TYPE (CAR (r1)) == PAIR)
+      {
+        if (caar (r1) == cell_symbol_begin)
+          r1 = append2 (cdar (r1), cdr (r1));
+        else if (caar (r1) == cell_symbol_primitive_load)
+          r1 = append2 (read_input_file_env (r0), cdr (r1));
+      }
     r = eval_env (car (r1), r0);
     r1 = CDR (r1);
   }
@@ -1211,7 +1216,8 @@ load_env (SCM a)
 SCM
 bload_env (SCM a)
 {
-  g_stdin = fopen ("read-0.mo", "r");
+  g_stdin = fopen ("module/mes/read-0.mo", "r");
+  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
   char *p = (char*)g_cells;
   assert (getchar () == 'M');
   assert (getchar () == 'E');

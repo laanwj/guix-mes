@@ -59,5 +59,5 @@ current_input_port ()
 SCM
 set_current_input_port (SCM port)
 {
-  g_stdin = fdopen (VALUE (port), "r");
+  g_stdin = VALUE (port) ? fdopen (VALUE (port), "r") : stdin;
 }

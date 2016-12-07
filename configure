@@ -199,7 +199,7 @@ Usage: ./configure [OPTION]...
         (stdout "GUILE_EV:=~a\n" GUILE_EV)
         (stdout "PACKAGE:=~a\n" PACKAGE)
         (stdout "VERSION:=~a\n" VERSION)
-        (stdout "PREFIX:=~a\n" prefix)
+        (stdout "PREFIX:=~a\n" (gulp-pipe (string-append "echo " prefix)))
         (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
     (stdout "\nRun:
   make            to build mes

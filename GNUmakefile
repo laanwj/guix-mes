@@ -10,18 +10,21 @@ CFLAGS:=-std=c99 -O3 -finline-functions
 #CFLAGS:=-pg -std=c99 -O0
 #CFLAGS:=-std=c99 -O0 -g
 
-export BOOT
-ifneq ($(BOOT),)
-CFLAGS+=-DBOOT=1
-endif
-
 include .config.make
--include .local.make
 include make/install.make
 
+CPPFLAGS+=-DPREFIX='"$(PREFIX)"'
 
-all: mes
+export BOOT
+ifneq ($(BOOT),)
+CPPFLAGS+=-DBOOT=1
+endif
 
+-include .local.make
+
+all: mes module/mes/read-0.mo
+
+mes.o: GNUmakefile
 mes.o: mes.c
 mes.o: mes.c mes.h mes.i mes.environment.i mes.symbols.i
 mes.o: define.c define.h define.i define.environment.i
@@ -72,15 +75,14 @@ export MES_DEBUG
 mes-check: all
 	set -e; for i in $(TESTS); do ./$$i; done
 
-dump: all
-	./mes --dump < module/mes/read-0.mes > read-0.mo
+module/mes/read-0.mo: module/mes/read-0.mes mes 
+	./mes --dump < $< > $@
+
+dump: module/mes/read-0.mo
 
 guile-check:
 	set -e; for i in $(TESTS); do\
 		guile -s <(cat $(MES-0) module/mes/test.mes $$i);\
-	done
-	set -e; for i in $(TESTS); do\
-		guile -s <(cat $(MES-0) $$(scripts/include.mes $$i | grep -Ev 'let.mes|quasiquote.mes|match.mes|base-0|loop-0|psyntax-|srfi-0') $$i);\
 	done
 
 MAIN_C:=doc/examples/main.c

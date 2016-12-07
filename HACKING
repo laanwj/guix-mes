@@ -37,13 +37,6 @@ bootstrap binary.
 mes.c is ~1500 lines (~10,000LOC Assembly) which seems much too big to
 start translating it to assembly/hex.
 
-** (mes-use-module ...) is a fake, see module/mes/base.mes.
-All top level scripts and test files (scripts/*.mes tests/*.test)
-now include appropriate (mes-use-module ...) stanzas.
-
-This hack allows for scripts/includes.mes to generate the list of
-files to be prepended.  Previously, this information was put in
-GNUmakefile.
 ** Actually do something useful, build: [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
 * OLD: Booting from LISP-1.5 into Mes
 

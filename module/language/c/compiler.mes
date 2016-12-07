@@ -25,6 +25,13 @@
 
 ;;; Code:
 
+(mes-use-module (mes elf))
+(mes-use-module (mes libc-i386))
+(mes-use-module (mes match))
+(mes-use-module (srfi srfi-1))
+(mes-use-module (language c lexer))
+(mes-use-module (language c parser))
+
 (define mescc
   (let ((errorp
          (lambda args

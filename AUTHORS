@@ -4,8 +4,8 @@ All files except the files listed below
 
 Based on Scheme48's scheme/alt
 module/mes/record.mes
-module/srfi/srfi-9.mes
-module/mes/syntax.mes
+module/mes/syntax.upstream.mes
+module/srfi/srfi-9.upstream.mes
 
 Based on Guile ECMAScript
 module/language/c/lexer.mes
@@ -14,10 +14,10 @@ Included verbatim from gnulib
 build-aux/gitlog-to-changelog
 
 Portable hygienic pattern matcher
-module/mes/match.mes
+module/mes/match.upstream.mes
 
 Portable LALR(1) parser generator
-module/mes/lalr.mes
+module/mes/lalr.upstream.mes
 
 Portable syntax-case from Chez Scheme
 module/mes/psyntax.ss
