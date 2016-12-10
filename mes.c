@@ -32,7 +32,9 @@
 #define QUASISYNTAX 0
 #define ENV_CACHE 1
 
-int ARENA_SIZE = 200000000;
+//int ARENA_SIZE = 200000000;
+//               30101417
+int ARENA_SIZE = 30000000;
 int GC_SAFETY = 10000;
 int GC_FREE = 20000;
 
@@ -89,7 +91,7 @@ int g_function = 0;
 #include "string.h"
 #include "type.h"
 
-SCM symbols = 0;
+SCM g_symbols = 0;
 SCM stack = 0;
 SCM r0 = 0; // a/env
 SCM r1 = 0; // param 1
@@ -451,7 +453,10 @@ vm_eval_env ()
 #endif
 #if 1 //!BOOT
       if (car (r1) == cell_symbol_set_x)
-        return set_env_x (cadr (r1), eval_env (caddr (r1), r0), r0);
+        {
+          SCM x = eval_env (caddr (r1), r0);
+          return set_env_x (cadr (r1), x, r0);
+        }
 #else
       assert (car (r1) != cell_symbol_set_x);
 #endif
@@ -526,6 +531,15 @@ vm_if_env ()
 }
 
 SCM
+vm_call_with_values_env ()
+{
+  SCM v = apply_env (r1, cell_nil, r0);
+  if (TYPE (v) == VALUES)
+    v = CDR (v);
+  return apply_env (r2, v, r0);
+}
+
+SCM
 call (SCM fn, SCM x)
 {
   if ((FUNCTION (fn).arity > 0 || FUNCTION (fn).arity == -1)
@@ -579,7 +593,6 @@ vm_call (function0_t f, SCM p1, SCM p2, SCM a)
     {
       cache_invalidate_range (r0, cell_nil);
       gc_stack (stack);
-      frame = car (stack);
     }
 
   SCM r = f ();
@@ -622,6 +635,12 @@ SCM
 if_env (SCM e, SCM a)
 {
   return vm_call (vm_if_env, e, cell_undefined, a);
+}
+
+SCM
+call_with_values_env (SCM producer, SCM consumer, SCM a)
+{
+  return vm_call (vm_call_with_values_env, producer, consumer, a);
 }
 
 SCM
@@ -707,7 +726,7 @@ internal_make_symbol (SCM s)
 {
   g_cells[tmp_num].value = SYMBOL;
   SCM x = make_cell (tmp_num, s, 0);
-  symbols = cons (x, symbols);
+  g_symbols = cons (x, g_symbols);
   return x;
 }
 
@@ -735,15 +754,6 @@ values (SCM x) ///((arity . n))
   SCM v = cons (0, x);
   TYPE (v) = VALUES;
   return v;
-}
-
-SCM
-call_with_values_env (SCM producer, SCM consumer, SCM a)
-{
-  SCM v = apply_env (producer, cell_nil, a);
-  if (TYPE (v) == VALUES)
-    v = CDR (v);
-  return apply_env (consumer, v, a);
 }
 
 SCM
@@ -867,8 +877,23 @@ integer_to_char (SCM x)
   return make_char (VALUE (x));
 }
 
+void
+make_tmps (scm* cells)
+{
+  tmp = g_free.value++;
+  cells[tmp].type = CHAR;
+  tmp_num = g_free.value++;
+  cells[tmp_num].type = NUMBER;
+  tmp_num2 = g_free.value++;
+  cells[tmp_num2].type = NUMBER;
+  tmp_num3 = g_free.value++;
+  cells[tmp_num3].type = NUMBER;
+  tmp_num4 = g_free.value++;
+  cells[tmp_num4].type = NUMBER;
+}
+
 // Jam Collector
-SCM g_start;
+SCM g_symbol_max;
 scm *
 gc_news ()
 {
@@ -882,18 +907,21 @@ gc_news ()
   return g_news;
 }
 
+bool g_debug = false;
+
 SCM
 gc ()
 {
-  fprintf (stderr, "***gc[%d]...", g_free.value);
+  if (g_debug) fprintf (stderr, "***gc[%d]...", g_free.value);
   g_free.value = 1;
   if (!g_news)
     gc_news ();
-  for (int i=g_free.value; i<g_start; i++)
+  for (int i=g_free.value; i<g_symbol_max; i++)
     gc_copy (i);
-  symbols = gc_copy (symbols);
+  make_tmps (g_news);
+  g_symbols = gc_copy (g_symbols);
   SCM new = gc_copy (stack);
-  fprintf (stderr, "new=%d, start=%d\n", new, stack);
+  if (g_debug) fprintf (stderr, "new=%d\n", new, stack);
   stack = new;
   return gc_loop (1);
 }
@@ -906,10 +934,10 @@ gc_loop (SCM scan)
       if (NTYPE (scan) == MACRO
           || NTYPE (scan) == PAIR
           || NTYPE (scan) == REF
-          || scan == 1
-          || ((NTYPE (scan) == SPECIAL && TYPE (NCAR (scan)) == PAIR)
-              || (NTYPE (scan) == STRING && TYPE (NCAR (scan)) == PAIR)
-              || (NTYPE (scan) == SYMBOL && TYPE (NCAR (scan)) == PAIR)))
+          || scan == 1 // null
+          || NTYPE (scan) == SPECIAL
+          || NTYPE (scan) == STRING
+          || NTYPE (scan) == SYMBOL)
         {
           SCM car = gc_copy (g_news[scan].car);
           gc_relocate_car (scan, car);
@@ -964,7 +992,7 @@ gc_flip ()
   scm *cells = g_cells;
   g_cells = g_news;
   g_news = cells;
-  fprintf (stderr, " => jam[%d]\n", g_free.value);
+  if (g_debug) fprintf (stderr, " => jam[%d]\n", g_free.value);
   return stack;
 }
 
@@ -1014,23 +1042,12 @@ mes_symbols () ///((internal))
 
 #include "mes.symbols.i"
 
-  SCM symbol_max = g_free.value;
+  g_symbol_max = g_free.value;
+  make_tmps (g_cells);
 
-  tmp = g_free.value++;
-  tmp_num = g_free.value++;
-  g_cells[tmp_num].type = NUMBER;
-  tmp_num2 = g_free.value++;
-  g_cells[tmp_num2].type = NUMBER;
-  tmp_num3 = g_free.value++;
-  g_cells[tmp_num3].type = NUMBER;
-  tmp_num4 = g_free.value++;
-  g_cells[tmp_num4].type = NUMBER;
-
-  g_start = g_free.value;
-
-  symbols = 0;
-  for (int i=1; i<symbol_max; i++)
-    symbols = cons (i, symbols);
+  g_symbols = 0;
+  for (int i=1; i<g_symbol_max; i++)
+    g_symbols = cons (i, g_symbols);
 
   SCM a = cell_nil;
 
@@ -1146,7 +1163,7 @@ load_env (SCM a)
   r3 = read_input_file_env (r0);
   if (g_dump_p && !g_function)
     {
-      r1 = symbols;
+      r1 = g_symbols;
       SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
       stack = cons (frame, stack);
       stack = gc (stack);
@@ -1184,7 +1201,7 @@ bload_env (SCM a)
     }
   g_free.value = (p-(char*)g_cells) / sizeof (scm);
   gc_frame (stack);
-  symbols = r1;
+  g_symbols = r1;
   g_stdin = stdin;
 
   r0 = mes_builtins (r0);
@@ -1206,6 +1223,7 @@ bload_env (SCM a)
 int
 main (int argc, char *argv[])
 {
+  g_debug = getenv ("MES_DEBUG");
   if (argc > 1 && !strcmp (argv[1], "--dump")) g_dump_p = true;
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.2\n");
@@ -1217,6 +1235,6 @@ main (int argc, char *argv[])
     display_ (stderr, load_env (a));
   fputs ("", stderr);
   gc (stack);
-  fprintf (stderr, "\nstats: [%d]\n", g_free.value);
+  if (g_debug) fprintf (stderr, "\nstats: [%d]\n", g_free.value);
   return 0;
 }

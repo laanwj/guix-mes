@@ -270,7 +270,7 @@ list_of_char_equal_p (SCM a, SCM b)
 SCM
 internal_lookup_symbol (SCM s)
 {
-  SCM x = symbols;
+  SCM x = g_symbols;
   while (x) {
     // .string and .name is the same field; .name is used as a handy
     // static field initializer.  A string can only be mistaken for a

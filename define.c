@@ -29,19 +29,19 @@ SCM
 vm_define_env ()
 {
   SCM x;
-  SCM name = cadr (r1);
-  if (TYPE (name) != PAIR)
+  r2 = cadr (r1);
+  if (TYPE (r2) != PAIR)
     x = eval_env (caddr (r1), cons (cons (cadr (r1), cadr (r1)), r0));
   else {
-    name = car (name);
+    r2 = car (r2);
     SCM p = pairlis (cadr (r1), cadr (r1), r0);
     cache_invalidate_range (p, r0);
     x = eval_env (make_lambda (cdadr (r1), cddr (r1)), p);
   }
   if (eq_p (car (r1), cell_symbol_define_macro) == cell_t)
-    x = make_macro (name, x);
+    x = make_macro (r2, x);
 
-  SCM entry = cons (name, x);
+  SCM entry = cons (r2, x);
   SCM aa = cons (entry, cell_nil);
   set_cdr_x (aa, cdr (r0));
   set_cdr_x (r0, aa);

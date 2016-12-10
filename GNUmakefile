@@ -67,6 +67,8 @@ MES:=./mes
 # use module/mes/read-0.mes rather than C-core reader
 MES_FLAGS:=--load
 export MES_FLAGS
+MES_DEBUG:=1
+export MES_DEBUG
 
 mes-check: all
 	set -e; for i in $(TESTS); do ./$$i; done
