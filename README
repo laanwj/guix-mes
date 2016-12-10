@@ -32,4 +32,12 @@ General Public Licence version 3 or later.  See the file COPYING.
 
 * Mescc compiler
 
-   scripts/mescc.mes doc/examples/main.c
+   scripts/mescc.mes doc/examples/main.c > a.out
+
+* Other
+
+   make check
+   make guile-check
+   make mes-check
+   make paren
+   make mescc

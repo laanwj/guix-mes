@@ -81,6 +81,8 @@ edx, esi, edi, ebp respectively.
 *** [[http://www.muppetlabs.com/~breadbox/software/tiny/][Small ELF programs]]
 *** [[http://www.cirosantilli.com/elf-hello-world/][Elf hello world]]
 
+** SC - c as s-expressions
+sc: http://sph.mn/content/3d3
 ** RNRS
 *** [[http://www.scheme-reports.org/][Scheme Reports]] 
 *** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-349.pdf][Scheme - Report on Scheme]]

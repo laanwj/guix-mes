@@ -40,3 +40,6 @@ Let's just say for now that it gets awkward without a shell.
 * Install it
 
    make install
+* Guix it...
+
+   guix package -f guix.scm
