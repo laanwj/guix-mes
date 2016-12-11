@@ -42,6 +42,7 @@ force_output (SCM p) ///((arity . n))
   if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
   FILE *f = fd == 1 ? stdout : stderr;
   fflush (f);
+  return cell_unspecified;
 }
 
 SCM
@@ -60,4 +61,5 @@ SCM
 set_current_input_port (SCM port)
 {
   g_stdin = VALUE (port) ? fdopen (VALUE (port), "r") : stdin;
+  return current_input_port ();
 }
