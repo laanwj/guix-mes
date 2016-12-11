@@ -21,6 +21,7 @@
 #define _GNU_SOURCE
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,11 +33,8 @@
 #define QUASISYNTAX 0
 #define ENV_CACHE 1
 
-//int ARENA_SIZE = 200000000;
-//               30101417
-int ARENA_SIZE = 30000000;
-int GC_SAFETY = 10000;
-int GC_FREE = 20000;
+int ARENA_SIZE = 100000;
+int GC_SAFETY = 100;
 
 typedef long SCM;
 enum type_t {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SPECIAL, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
@@ -894,28 +892,29 @@ make_tmps (scm* cells)
 
 // Jam Collector
 SCM g_symbol_max;
-scm *
-gc_news ()
-{
-  g_news = (scm *)malloc (ARENA_SIZE*sizeof(scm));
-  g_news[0].type = VECTOR;
-  g_news[0].length = 1000;
-  g_news[0].vector = 0;
-  g_news++;
-  g_news[0].type = CHAR;
-  g_news[0].value = 'n';
-  return g_news;
-}
-
 bool g_debug = false;
+
+SCM
+gc_up_arena ()
+{
+  ARENA_SIZE *= 2;
+  void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(scm));
+  if (!p)
+    {
+      if (g_debug) fprintf (stderr, "cannot up arena: %s: arena=%d\n", strerror (errno), 2*ARENA_SIZE);
+      return cell_unspecified;
+    }
+  g_cells = (scm*)p;
+  g_cells++;
+  gc_init_news ();
+}
 
 SCM
 gc ()
 {
   if (g_debug) fprintf (stderr, "***gc[%d]...", g_free.value);
   g_free.value = 1;
-  if (!g_news)
-    gc_news ();
+  if (g_cells < g_news) gc_up_arena ();
   for (int i=g_free.value; i<g_symbol_max; i++)
     gc_copy (i);
   make_tmps (g_news);
@@ -1028,17 +1027,35 @@ add_environment (SCM a, char const *name, SCM x)
 }
 
 SCM
-mes_symbols () ///((internal))
+gc_init_cells ()
 {
-  g_cells = (scm *)malloc (ARENA_SIZE*sizeof(scm));
+  g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
   g_cells[0].type = VECTOR;
   g_cells[0].length = 1000;
   g_cells[0].vector = 0;
   g_cells++;
-
   g_cells[0].type = CHAR;
   g_cells[0].value = 'c';
   g_free.value = 1; // 0 is tricky
+}
+
+SCM
+gc_init_news ()
+{
+  g_news = g_cells-1 + ARENA_SIZE;
+  g_news[0].type = VECTOR;
+  g_news[0].length = 1000;
+  g_news[0].vector = 0;
+  g_news++;
+  g_news[0].type = CHAR;
+  g_news[0].value = 'n';
+}
+
+SCM
+mes_symbols () ///((internal))
+{
+  gc_init_cells ();
+  gc_init_news ();
 
 #include "mes.symbols.i"
 
