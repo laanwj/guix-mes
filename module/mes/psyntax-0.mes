@@ -20,16 +20,8 @@
 
 (define (interaction-environment) (current-module))
 
-;; (define c:eval (assq-ref %builtins 'eval))
-;; (define (eval x . environment)
-;;   (display "***EVAL x=***=\n")
-;;   (display x)
-;;   (newline)
-;;   (c:eval (if (and (pair? x)
-;;                    (equal? (car x) "noexpand"))
-;;               (cadr x)
-;;               (sc-expand x))
-;;           (interaction-environment)))
+(define (eval x . environment)
+  (eval-env x (if (null? environment) (current-module) (car environment))))
 
 (define annotation? (lambda (x) #f))
 (define (self-evaluating? x)
@@ -41,6 +33,14 @@
 (define sc-expand #f)
 (define sc-chi #f)
 (define sc-expand3 #f)
+(define $sc-put-cte #f)
+(define $make-environment #f)
+(define environment? #f)
+(define syntax->list #f)
+(define syntax->vector #f)
+(define literal-identifier=? #f)
+(define $syntax-dispatch #f)
+(define eval-when #f)
 (define install-global-transformer #f)
 (define syntax-dispatch #f)
 (define syntax-error #f)
@@ -77,6 +77,7 @@
 
 (define putprop #f)
 (define getprop #f)
+(define remprop #f)
 (define properties-alist #f)
 
 (let ((properties '()))
@@ -101,7 +102,11 @@
                       (cdr couple)
                       #f))
                 #f))))
+  (set! remprop
+        (lambda (symbol key)
+          (putprop symbol key #f)))
   (set! properties-alist (lambda () *sc-expander-alist*)))
+
 ;; (define fx+ +)
 ;; (define fx- -)
 ;; (define fx= =)
