@@ -34,6 +34,7 @@
 #define ENV_CACHE 1
 
 int ARENA_SIZE = 100000;
+int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
 typedef long SCM;
@@ -914,7 +915,7 @@ gc ()
 {
   if (g_debug) fprintf (stderr, "***gc[%d]...", g_free.value);
   g_free.value = 1;
-  if (g_cells < g_news) gc_up_arena ();
+  if (g_cells < g_news && ARENA_SIZE < MAX_ARENA_SIZE) gc_up_arena ();
   for (int i=g_free.value; i<g_symbol_max; i++)
     gc_copy (i);
   make_tmps (g_news);
