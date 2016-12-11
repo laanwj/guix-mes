@@ -1121,12 +1121,14 @@ mes_builtins (SCM a)
 #include "string.environment.i"
 #include "type.environment.i"
 
+#if QUASIQUOTE
   SCM cell_unquote = assq_ref_cache (cell_symbol_unquote, a);
   SCM cell_unquote_splicing = assq_ref_cache (cell_symbol_unquote_splicing, a);
   SCM the_unquoters = cons (cons (cell_symbol_unquote, cell_unquote),
                             cons (cons (cell_symbol_unquote_splicing, cell_unquote_splicing),
                                   cell_nil));
   a = acons (cell_symbol_the_unquoters, the_unquoters, a);
+#endif
 
   a = add_environment (a, "*foo-bar-baz*", cell_nil); // FIXME: some off-by one?
 

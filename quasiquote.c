@@ -65,6 +65,10 @@ add_unquoters (SCM a)
 SCM add_unquoters (SCM a){}
 SCM eval_quasiquote (SCM e, SCM a){}
 
+SCM unquote (SCM x){}
+SCM unquote_splicing (SCM x){}
+SCM vm_eval_quasiquote () {}
+
 #endif // QUASIQUOTE
 
 #if QUASISYNTAX
@@ -112,7 +116,6 @@ SCM syntax (SCM x){}
 SCM unsyntax (SCM x){}
 SCM unsyntax_splicing (SCM x){}
 SCM add_unsyntaxers (SCM a){}
-SCM eval_unsyntax (SCM e, SCM a){}
 SCM eval_quasisyntax (SCM e, SCM a){}
 
 #endif // !QUASISYNTAX

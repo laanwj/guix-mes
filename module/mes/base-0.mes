@@ -90,20 +90,21 @@
 
 (define *input-ports* '())
 (define-macro (push! stack o)
-  `(begin
-     (set! ,stack (cons ,o ,stack))
-     ,stack))
+  (cons
+   'begin
+   (list
+    (list 'set! stack (list cons o stack))
+    stack)))
 (define-macro (pop! stack)
-  `(let ((o (car ,stack)))
-     (set! ,stack (cdr ,stack))
-     o))
+  (list 'let (list (list 'o (list car stack)))
+        (list 'set! stack (list cdr stack))
+        'o))
 (define-macro (load file)
-  `(begin
-     (push! *input-ports* (current-input-port))
-     (set-current-input-port (open-input-file ,file))
-     (primitive-load)
-     (set-current-input-port (pop! *input-ports*))))
-
+  (list 'begin
+     (list 'push! '*input-ports* (list current-input-port))
+     (list 'set-current-input-port (list open-input-file file))
+     (list 'primitive-load)
+     (list 'set-current-input-port (list 'pop! '*input-ports*))))
 (define (memq x lst)
   (if (null? lst) #f
       (if (eq? x (car lst)) lst
@@ -126,18 +127,19 @@
                      a)))
     (set-current-input-port (pop! *input-ports*))
     x))
-(define-macro (mes-use-module module)
-  `(begin
-     (if (not (memq (string->symbol ,(module->file module)) *modules*))
-         (begin
-           (set! *modules* (cons (string->symbol ,(module->file module)) *modules*))
-           ;; (display "loading file=" (current-error-port))
-           ;; (display ,(module->file module) (current-error-port))
-           ;; (newline (current-error-port))
-           (load ,(string-append *mes-prefix* (module->file module)))))))
-
 (define (not x)
   (if x #f #t))
+(define-macro (mes-use-module module)
+  (list
+   'begin
+   (list 'if (list 'not (list 'memq (list string->symbol (module->file module)) '*modules*))
+         (list
+          'begin
+          (list 'set! '*modules* (list cons (list string->symbol (module->file module)) '*modules*))
+          ;; (list display "loading file=" (list current-error-port))
+          ;; (list display (module->file module) (list current-error-port))
+          ;; (list newline (list current-error-port))
+          (list 'load (list string-append '*mes-prefix* (module->file module)))))))
 
 (mes-use-module (srfi srfi-0))
 (mes-use-module (mes base))

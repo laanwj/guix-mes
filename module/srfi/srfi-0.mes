@@ -32,4 +32,4 @@
       (cond-expand-expander (cdr clauses))))
 
 (define-macro (cond-expand . clauses)
-  `(begin ,@(cond-expand-expander clauses)))
+  (cons 'begin (cond-expand-expander clauses)))
