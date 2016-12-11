@@ -101,7 +101,7 @@ SCM
 string_to_symbol (SCM x)
 {
   assert (TYPE (x) == STRING);
-  return make_symbol (STRING (x));
+  return STRING (x) == cell_nil ? cell_nil : make_symbol (STRING (x));
 }
 
 SCM

@@ -58,6 +58,7 @@ TESTS:=\
  tests/scm.test\
  tests/cwv.test\
  tests/srfi-1.test\
+ tests/srfi-13.test\
  tests/srfi-14.test\
  tests/optargs.test\
  tests/fluids.test\
