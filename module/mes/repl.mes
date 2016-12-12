@@ -27,7 +27,7 @@
 (mes-use-module (mes scm))
 
 (define welcome
-  "Mes 0.2
+  "Mes 0.3
 Copyright (C) 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Mes comes with ABSOLUTELY NO WARRANTY; for details type `,show w'.

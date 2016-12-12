@@ -1260,7 +1260,7 @@ main (int argc, char *argv[])
     ARENA_SIZE = atoi (getenv ("MES_ARENA"));
   if (argc > 1 && !strcmp (argv[1], "--dump")) g_dump_p = true;
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
-  if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.2\n");
+  if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.3\n");
   g_stdin = stdin;
   SCM a = mes_environment ();
   if (argc > 1 && !strcmp (argv[1], "--load"))
