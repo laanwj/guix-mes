@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-exec guile -L $(pwd)/module -e '(mes)' -s "$0" "$@"
+exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
@@ -49,7 +49,7 @@ exec guile -L $(pwd)/module -e '(mes)' -s "$0" "$@"
                                 module-define!
                                 resolve-interface
 
-                                ;; PRIMITIVES
+                                ;; PRIMITIVE BUILTINS
                                 car
                                 cdr
                                 cons
@@ -57,9 +57,17 @@ exec guile -L $(pwd)/module -e '(mes)' -s "$0" "$@"
                                 null?
                                 pair?
 
-                                ;; ADDITIONAL PRIMITIVES
+                                ;; READER
+                                char->integer
+                                integer->char
+                                read-char
+                                unread-char
+                                
+                                ;; non-primitive BUILTINS
+                                char?
                                 number?
                                 procedure?
+                                string?
                                 <
                                 -
                                 )
@@ -94,37 +102,35 @@ exec guile -L $(pwd)/module -e '(mes)' -s "$0" "$@"
 (define null? guile:null?)
 (define pair? guile:pair?)
 (define builtin? guile:procedure?)
+(define char? guile:char?)
 (define number? guile:number?)
+(define string? guile:number?)
 (define call guile:apply)
+(define (peek-byte)
+  (unread-byte (read-byte)))
+(define (read-byte)
+  (guile:char->integer (guile:read-char)))
+(define (unread-byte x)
+  (guile:unread-char (guile:integer->char x))
+  x)
+(define (lookup x a)
+  ;; TODO
+  (stderr "lookup x=~a\n" x)
+  x)
 
-(include-from-path "mes/mes.mes")
+(include "mes.mes")
 
-(define (pairlis x y a)
-  ;;(debug "pairlis x=~a y=~a a=~a\n" x y a)
-  (cond
-   ((null? x) a)
-   ((atom? x) (cons (cons x y) a))
-   (#t (cons (cons (car x) (car y))
-             (pairlis (cdr x) (cdr y) a)))))
-
-(define (assq x a)
-  ;;(stderr "assq x=~a\n" x)
-  ;;(debug "assq x=~a a=~a\n" x a)
-  (cond
-   ((null? a) #f)
-   ((eq? (caar a) x) (car a))
-   (#t (assq x (cdr a)))))
-
-(define (append x y)
+(define (append2 x y)
   (cond ((null? x) y)
-        (#t (cons (car x) (append (cdr x) y)))))
+        (#t (cons (car x) (append2 (cdr x) y)))))
 
 (define (eval-environment e a)
-  (eval e (append a environment)))
+  (eval e (append2 a environment)))
 
 (define (apply-environment fn e a)
-  (apply-env fn e (append a environment)))
+  (apply-env fn e (append2 a environment)))
 
+;; READER: TODO lookup
 (define (readenv a)
   (let ((x (guile:read)))
     (if (guile:eof-object? x) '()
@@ -180,7 +186,7 @@ exec guile -L $(pwd)/module -e '(mes)' -s "$0" "$@"
     (cddar . ,cddar)
     (cdddr . ,cdddr)
 
-    (append . ,append)
+    (append2 . ,append2)
     (exit . ,guile:exit)
 
     (*macro* . ())
@@ -215,7 +221,7 @@ exec guile -L $(pwd)/module -e '(mes)' -s "$0" "$@"
         (#t (loop (eval e a) (readenv a) a))))
 
 (define (main arguments)
-  (let ((a (append environment `((*a* . ,environment)))))
+  (let ((a (append2 environment `((*a* . ,environment)))))
     ;;(guile:display (eval (readenv a) a))
     (guile:display (loop *unspecified* (readenv a) a))
     )
