@@ -14,6 +14,9 @@ Please send Mes bug reports to janneke@gnu.org.
 
 ** Core
 *** expand_macro is now a separate function.
+*** A smaller core can now compiled using BOOT=1.
+The smaller core does not provide define, define-macro, or quasiquote;
+these are provided from a Scheme version of implemented eval/apply.
 ** Language
 *** Mes now provides a subset of R5RS.
 *** Mes now provides let-syntax.
@@ -29,3 +32,4 @@ Please send Mes bug reports to janneke@gnu.org.
 ** Noteworthy bug fixes
 *** Performance of (e.g. scripts/mescc.mes) has been improved by a factor of 40.
 *** Symbols are now truly unique.
+  * '(), #t, #f are no longer symbols.
