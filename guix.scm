@@ -48,15 +48,15 @@
 (define-public mes
   (package
     (name "mes")
-    (version "0.1.3849c48f")
+    (version "0.2.376bb5d6")
     (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url "https://gitlab.com/janneke/mes")
-                    (commit "3849c48f7963b1e009ff0d2d95a9e0730e87ab93")))
+                    (commit "376bb5d62b564521734a758ceb901db59d8e563a")))
               (file-name (string-append name "-" version))
               (sha256
-               (base32 "115jycdz8i1r5sj2fsjqcrh456mayxzaykb8cxxxc3wxfkj8nagf"))))
+               (base32 "09axqivywpw0l9lm7pk1ncp6690vfv658z731z674ih73yqs5qma"))))
     (build-system gnu-build-system)
     (native-inputs
      `(("git" ,git)
