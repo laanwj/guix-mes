@@ -92,19 +92,13 @@
      (#t (apply-env (eval-env fn a) x a))))
    ((eq? (car fn) 'lambda)
     (let ((p (pairlis (cadr fn) x a)))
-      (cache-invalidate-range p (cdr a))
-      (let ((r (eval-begin-env (cddr fn) (cons (cons '*closure* p) p))))
-        (cache-invalidate-range p (cdr a))
-        r)))
+      (eval-begin-env (cddr fn) (cons (cons '*closure* p) p))))
    ((eq? (car fn) '*closure*)
     (let ((args (caddr fn))
           (body (cdddr fn))
           (a (cddr (cadr fn))))
       (let ((p (pairlis args x a)))
-        (cache-invalidate-range p (cdr a))
-        (let ((r (eval-begin-env body (cons (cons '*closure* p) p))))
-          (cache-invalidate-range p (cdr a))
-          r))))
+        (eval-begin-env body (cons (cons '*closure* p) p)))))
    ;;((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
    (#t (apply-env (eval-env fn a) x a))))
 
@@ -187,5 +181,4 @@
    '()))
 
 ;; boot into loop-0
-(cache-invalidate-range (current-module) '())
 ()

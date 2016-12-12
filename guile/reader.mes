@@ -20,12 +20,7 @@
 
 ;;; Commentary:
 
-;;; read-0.mes - bootstrap reader from Scheme.  Use
-;;;    ./mes --dump < module/mes/read-0.mes > read-0.mo
-;;; to read, garbage collect, and dump this reader; then
-;;;    ./mes --load < tests/gc-3.test
-;;; to use this reader to read and run the minimal gc-3.test
-;;; TODO: complete this reader, remove reader from C.
+;;; copy of mes/read-0.mes, comment-out read-input-file
 
 ;;; Code:
 
@@ -119,7 +114,7 @@
                    ((eq? (peek-byte) 40) (read-byte) (list->vector (read-list a)))
                    ((eq? (peek-byte) 92) (read-byte) (read-character))
                    ((eq? (peek-byte) 120) (read-byte) (read-hex))
-                   (else (read-word (read-byte) (append w (cons (integer->char c) '())) a))))
+                   (else (read-word (read-byte) (append2 w (cons (integer->char c) '())) a))))
       ((eq? c 39) (if (null? w) (cons (lookup (cons (integer->char c) '()) a)
                                       (cons (read-word (read-byte) w a) '()))
                       (begin (unread-byte c) (lookup w a))))
@@ -137,9 +132,10 @@
                                                         '())))))
       ((eq? c 96) (cons (lookup-char c a) (cons (read-word (read-byte) w a) '())))
       ((eq? c 59) (read-line-comment c) (read-word 10 w a))
-      (else (read-word (read-byte) (append w (cons (integer->char c) '())) a))))
+      (else (read-word (read-byte) (append2 w (cons (integer->char c) '())) a))))
 
-  ((lambda (p)
-     ;;(display 'program=) (display p) (newline)
-     (begin-env p (current-module)))
-   (read-input-file)))
+  ;; ((lambda (p)
+  ;;    ;;(display 'program=) (display p) (newline)
+  ;;    (begin-env p (current-module)))
+  ;;  (read-input-file))
+  )

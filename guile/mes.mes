@@ -46,6 +46,10 @@
    ((eq? (caar a) x) (car a))
    (#t (assq x (cdr a)))))
 
+(define (assq-ref-cache x a)
+  (let ((e (assq x a)))
+    (if (eq? e #f) '*undefined* (cdr e))))
+
 ;; Page 13
 (define (evcon c a)
   (cond
@@ -60,131 +64,106 @@
                a))))
    (#t (evcon (cdr c) a))))
 
-(define (evlis m a)
+(define (evlis-env m a)
   (cond
    ((null? m) '())
-   (#t (cons (eval (car m) a) (evlis (cdr m) a)))))
-
+   ((not (pair? m)) (eval-env m a))
+   (#t (cons (eval-env (car m) a) (evlis-env (cdr m) a)))))
 
 (define (apply-env fn x a) 
   (cond
    ((atom? fn)
     (cond
-     ((eq? fn 'current-module)
-      (c:apply-env current-module '() a))
-     ((eq? fn 'call-with-values)
-      (c:apply-env 'call-with-values x a))
-     ((builtin? fn)
-      (call fn x))
-     (#t (apply-env (eval fn a) x a))))
+     ((builtin? fn) (call fn x))
+     ((eq? fn 'call-with-values) (call call-with-values-env (append x (cons a '()))))
+     ((eq? fn 'current-module) a)))
    ((eq? (car fn) 'lambda)
-    (begin-env (cddr fn) (pairlis (cadr fn) x a)))
-   ((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn)
-                                                         (caddr fn)) a)))))
+    (let ((p (pairlis (cadr fn) x a)))
+      (eval-begin-env (cddr fn) (cons (cons '*closure* p) p))))
+   ((eq? (car fn) '*closure*)
+    (let ((args (caddr fn))
+          (body (cdddr fn))
+          (a (cddr (cadr fn))))
+      (let ((p (pairlis args x a)))
+        (eval-begin-env body (cons (cons '*closure* p) p)))))
+   ;;((eq? (car fn) 'label) (apply-env (caddr fn) x (cons (cons (cadr fn) (caddr fn)) a)))
+   (#t (apply-env (eval-env fn a) x a))))
 
-(define (begin-env body a)
-  (cond ((null? body) *unspecified*)
-        ((null? (cdr body)) (eval (car body) a))
-        (#t (eval (car body) a)
-            (begin-env (cdr body) a))))
-
-(define (set-env! x e a)
-  (set-cdr! (assq x a) e))
-
-(define (eval e a)
+(define (eval-expand e a)
   (cond
-   ((eq? e #t) #t)
-   ((eq? e #f) #f)
-   ((char? e) e)
-   ((number? e) e)
-   ((string? e) e)
-   ((vector? e) e)
-   ((atom? e) (cdr (assq e a)))
-   ((builtin? e) e)
+   ((eq? e '*undefined*) e)
+   ((symbol? e) (assq-ref-cache e a))
+   ((atom? e) e)
    ((atom? (car e))
     (cond
      ((eq? (car e) 'quote) (cadr e))
-     ((eq? (car e) 'begin) (begin-env (cdr e) a))
-     ((eq? (car e) 'lambda) e)
-     ((eq? (car e) 'set!) (set-env! (cadr e) (caddr e) a))
-     ((eq? (car e) 'unquote) (eval (cadr e) a))
-     ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) a))
-     ((eq? (car e) 'cond) (evcon (cdr e) a))
-     ((pair? (assq (car e) (cdr (assq '*macro* a))))
-      (c:eval
-       (c:apply-env
-        (cdr (assq (car e) (cdr (assq '*macro* a))))
-        (cdr e)
-        a)
-       a))
-     (#t (apply-env (car e) (evlis (cdr e) a) a))))
-   (#t (apply-env (car e) (evlis (cdr e) a) a))))
+     ((eq? (car e) 'syntax) (cadr e))
+     ((eq? (car e) 'begin) (eval-begin-env e a))
+     ((eq? (car e) 'lambda) (make-closure (cadr e) (cddr e) (assq '*closure* a)))
+     ((eq? (car e) '*closure*) e)
+     ((eq? (car e) 'if) (eval-if-env (cdr e) a))
+     ((eq? (car e) 'define) (env:define (cons (sexp:define e a) '()) a))
+     ((eq? (car e) 'define-macro) (env:define (env:macro (sexp:define e a)) a))
+     ((eq? (car e) 'set!) (set-env! (cadr e) (eval-env (caddr e) a) a))
+     ((eq? (car e) 'apply-env) (apply-env (eval-env (cadr e) a) (evlis-env (caddr e) a) a))
+     ((eq? (car e) 'unquote) (eval-env (cadr e) a))
+     ((eq? (car e) 'quasiquote) (eval-quasiquote (cadr e) (add-unquoters a)))
+     (#t (apply-env (eval-env (car e) a) (evlis-env (cdr e) a) a))))
+   (#t (apply-env (eval-env (car e) a) (evlis-env (cdr e) a) a))))
+
+(define (unquote x) (cons 'unquote x))
+(define (unquote-splicing x) (cons 'quasiquote x))
+
+(define %the-unquoters
+  (cons
+   (cons 'unquote unquote)
+   (cons (cons 'unquote-splicing unquote-splicing) '())))
+
+(define (add-unquoters a)
+  (cons %the-unquoters a))
+
+(define (eval-env e a)
+  (eval-expand (expand-macro-env e a) a))
+
+(define (expand-macro-env e a)
+  (if (pair? e) ((lambda (macro)
+                   (if macro (expand-macro-env (apply-env macro (cdr e) a) a)
+                       e))
+                 (lookup-macro (car e) a))
+      e))
+
+(define (eval-begin-env e a)
+  (if (null? e) *unspecified*
+      (if (null? (cdr e)) (eval-env (car e) a)
+          (begin
+            (eval-env (car e) a)
+            (eval-begin-env (cdr e) a)))))
+
+(define (eval-if-env e a)
+  (if (eval-env (car e) a) (eval-env (cadr e) a)
+      (if (pair? (cddr e)) (eval-env (caddr e) a))))
 
 (define (eval-quasiquote e a)
   (cond ((null? e) e)
         ((atom? e) e)
-        ((atom? (car e)) (cons (car e) (eval-quasiquote (cdr e) a)))
-        ((eq? (caar e) 'unquote) (cons (eval (cadar e) a) '()))
-        ((eq? (caar e) 'quote) (cons (cadar e) '()))
-        ((eq? (caar e) 'quasiquote) (cons (cadar e) '()))
-        (#t (cons (car e) (eval-quasiquote (cdr e) a)))))
+        ((eq? (car e) 'unquote) (eval-env (cadr e) a))
+        ((and (pair? (car e))
+              (eq? (caar e) 'unquote-splicing))
+         (append2 (eval-env (cadar e) a) (eval-quasiquote (cdr e) a)))
+        (#t (cons (eval-quasiquote (car e) a) (eval-quasiquote (cdr e) a)))))
 
-(define (readenv a)
-  (readword (read-byte) '() a))
+(define (sexp:define e a)
+  (if (atom? (cadr e)) (cons (cadr e) (eval-env (caddr e) a))
+      (cons (caadr e) (eval-env (cons 'lambda (cons (cdadr e) (cddr e))) a))))
 
-(define (readword c w a)
-  (cond ((eq? c -1) ;; eof
-         (cond ((eq? w '()) '())
-               (#t (lookup w a))))
-        ((eq? c 10) ;; \n
-         (cond ((eq? w '()) (readword (read-byte) w a))
-               ;; DOT ((eq? w '(*dot*)) (car (readword (read-byte) '() a)))
-               (#t (lookup w a))))
-        ((eq? c 32) ;; \space
-         (readword 10 w a))
-        ((eq? c 40) ;; (
-         (cond ((eq? w '()) (readlist a))
-               (#t (unread-byte c) (lookup w a))))
-        ((eq? c 41) ;; )
-         (cond ((eq? w '()) (unread-byte c) w)
-               (#t (unread-byte c) (lookup w a))))
-        ((eq? c 39) ;; '
-         (cond ((eq? w '())
-                (cons (lookup (cons c '()) a)
-                      (cons (readword (read-byte) w a) '())))
-               (#t (unread-byte c) (lookup w a))))
-        ((eq? c 59) ;; ;
-         (readcomment c)
-         (readword 10 w a))
-        ((eq? c 35) ;; #
-         (cond ((eq? (peek-byte) 33) ;; !
-                (read-byte)
-                (readblock (read-byte))
-                (readword 10 w a))
-               ;; TODO: char, vector
-               (#t (readword (read-byte) (append2 w (cons c '())) a))))
-        (#t (readword (read-byte) (append2 w (cons c '())) a))))
+(define (env:define a+ a)
+  (set-cdr! a+ (cdr a))
+  (set-cdr! a a+)
+  (set-cdr! (assq '*closure* a) a))
 
-(define (readblock c)
-  (cond ((eq? c 33) (cond ((eq? (peek-byte) 35) (read-byte))
-                         (#t (readblock (read-byte)))))
-        (#t (readblock (read-byte)))))
-
-(define (eat-whitespace)
-  (cond ((eq? (peek-byte) 10) (read-byte) (eat-whitespace))
-        ((eq? (peek-byte) 32) (read-byte) (eat-whitespace))
-        ((eq? (peek-byte) 35) (read-byte) (eat-whitespace))
-        (#t #t)))
-
-(define (readlist a)
-  (eat-whitespace)
-  (cond ((eq? (peek-byte) 41) ;; )
-         (read-byte)
-         '())
-        ;; TODO *dot*
-        (#t (cons (readword (read-byte) '() a) (readlist a)))))
-
-(define (readcomment c)
-  (cond ((eq? c 10) ;; \n
-         c)
-        (#t (readcomment (read-byte)))))
+(define (env:macro name+entry)
+  (cons
+   (cons (car name+entry)
+         (make-macro (car name+entry)
+                     (cdr name+entry)))
+   '()))
