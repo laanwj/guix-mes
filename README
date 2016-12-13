@@ -10,10 +10,16 @@ As bootstrapping is presumably easiest and probably most fun with
 Scheme, the next step for Mes is mescc: a C compiler/linker to
 boostrap into GNU Gcc and GNU Guile, possibly via Tiny-CC.
 
+It currently has an interpreter written in C (mes) with Garbage
+Collector (Jam Scraper), a library of loadable Scheme modules with
+test suite just barely enough to support a simple REPL (repl.mes) and
+a proof-of-concept c-compiler (mescc.mes) that produces an elf from
+the simplest of C files.
+
 Mes is inspired by The Maxwell Equations of Software: [[http://www.softwarepreservation.org/projects/LISP/book/LISP%25201.5%2520Programmers%2520Manual.pdf][LISP-1.5]] -- John
 McCarthy page 13.
 
-Mes is free software, it is distributed unde the terms of the GNU
+Mes is free software, it is distributed under the terms of the GNU
 General Public Licence version 3 or later.  See the file COPYING.
 
 * Get it
