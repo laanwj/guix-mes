@@ -211,6 +211,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
     (exit . guile:exit)
 
     (*macro* . (guile:list))
+    (*dot* . '.)
 
     ;;
     (stderr . stderr))))

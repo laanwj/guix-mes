@@ -33,8 +33,13 @@
 #define QUASISYNTAX 0
 #define ENV_CACHE 0
 #define FIXED_PRIMITIVES 1
+#define READER 1
 
+#if READER
+int ARENA_SIZE = 1000000;
+#else
 int ARENA_SIZE = 100000;
+#endif
 int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
@@ -141,6 +146,7 @@ scm scm_symbol_unsyntax_splicing = {SYMBOL, "unsyntax-splicing"};
 scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm scm_symbol_current_module = {SYMBOL, "current-module"};
 scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
+scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
 
 scm scm_symbol_the_unquoters = {SYMBOL, "*the-unquoters*"};
 
@@ -527,7 +533,10 @@ vm_begin_env ()
         if (caar (r1) == cell_symbol_begin)
           r1 = append2 (cdar (r1), cdr (r1));
         else if (caar (r1) == cell_symbol_primitive_load)
-          r1 = append2 (read_input_file_env (r0), cdr (r1));
+          {
+            SCM f = read_input_file_env (r0);
+            r1 = append2 (f, cdr (r1));
+          }
       }
     r = eval_env (car (r1), r0);
     r1 = CDR (r1);
@@ -1130,6 +1139,7 @@ mes_builtins (SCM a)
   a = acons (cell_symbol_the_unquoters, the_unquoters, a);
 #endif
 
+  a = add_environment (a, "*dot*", cell_dot);
   a = add_environment (a, "*foo-bar-baz*", cell_nil); // FIXME: some off-by one?
 
   return a;
@@ -1184,39 +1194,29 @@ read_input_file_env_ (SCM e, SCM a)
 SCM
 read_input_file_env (SCM a)
 {
+  r0 = a;
+#if READER
   return read_input_file_env_ (read_env (r0), r0);
+#endif
+  return apply_env (cell_symbol_read_input_file, cell_nil, r0);
 }
 
-bool g_dump_p = false;
-
 SCM
-load_env (SCM a)
+load_env (SCM a) ///((internal))
 {
+  r0 =a;
+#if !READER
+  g_stdin = fopen ("module/mes/read-0.mes", "r");
+  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
+#endif
+  if (!g_function) r0 = mes_builtins (r0);
   r3 = read_input_file_env (r0);
-  if (g_dump_p && !g_function)
-    {
-      r1 = g_symbols;
-      SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
-      stack = cons (frame, stack);
-      stack = gc (stack);
-      gc_frame (stack);
-      char *p = (char*)g_cells;
-      fputc ('M', stdout);
-      fputc ('E', stdout);
-      fputc ('S', stdout);
-      fputc (stack >> 8, stdout);
-      fputc (stack % 256, stdout);
-      for (int i=0; i<g_free.value * sizeof(scm); i++)
-        fputc (*p++, stdout);
-      return 0;
-    }
-  if (!g_function)
-    r0 = mes_builtins (r0);
-  return begin_env (r3, r0);
+  g_stdin = stdin;
+  return r3;
 }
 
 SCM
-bload_env (SCM a)
+bload_env (SCM a) ///((internal))
 {
   g_stdin = fopen ("module/mes/read-0.mo", "r");
   g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
@@ -1238,8 +1238,26 @@ bload_env (SCM a)
   g_stdin = stdin;
 
   r0 = mes_builtins (r0);
+  return r3;
+}
 
-  return begin_env (r3, r0);
+int
+dump ()
+{
+  r1 = g_symbols;
+  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
+  stack = cons (frame, stack);
+  stack = gc (stack);
+  gc_frame (stack);
+  char *p = (char*)g_cells;
+  fputc ('M', stdout);
+  fputc ('E', stdout);
+  fputc ('S', stdout);
+  fputc (stack >> 8, stdout);
+  fputc (stack % 256, stdout);
+  for (int i=0; i<g_free.value * sizeof(scm); i++)
+    fputc (*p++, stdout);
+  return 0;
 }
 
 #include "type.c"
@@ -1256,17 +1274,15 @@ int
 main (int argc, char *argv[])
 {
   g_debug = getenv ("MES_DEBUG");
-  if (getenv ("MES_ARENA"))
-    ARENA_SIZE = atoi (getenv ("MES_ARENA"));
-  if (argc > 1 && !strcmp (argv[1], "--dump")) g_dump_p = true;
+  if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.3\n");
   g_stdin = stdin;
-  SCM a = mes_environment ();
-  if (argc > 1 && !strcmp (argv[1], "--load"))
-    display_ (stderr, bload_env (a));
-  else
-    display_ (stderr, load_env (a));
+  r0 = mes_environment ();
+  SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
+    ? bload_env (r0) : load_env (r0);
+  if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
+  display_ (stderr, begin_env (program, r0));
   fputs ("", stderr);
   gc (stack);
   if (g_debug) fprintf (stderr, "\nstats: [%d]\n", g_free.value);

@@ -10,6 +10,12 @@ Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.4 since 0.3
+** Core
+*** Smaller C-reader
+The C-reader needs only support reading of words and lists
+(s-expressions), line-comments.  Quoting, characters, strings,
+block-comments are all handled by the Scheme reader later.
 * Changes in 0.3 since 0.2
 ** Core
 *** Number-based rather than pointer-based cells.

@@ -114,7 +114,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
         (print-sexp? #t))
     
     (define (expand)
-      (let ((sexp (read-env (current-module))))
+      (let ((sexp (read)))
         (when #t print-sexp?
               (display "[sexp=")
               (display sexp)
@@ -124,7 +124,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
         (newline)))
 
     (define (scexpand)
-      (let ((sexp (read-env (current-module))))
+      (let ((sexp (read)))
         (when #t print-sexp?
               (display "[sexp=")
               (display sexp)
@@ -142,7 +142,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
         (display (assoc-ref topic-alist topic))))
     (define (use a)
       (lambda ()
-        (let ((module (read-env (current-module))))
+        (let ((module (read)))
           (mes-load-module-env module a))))
     (define (meta command a)
       (let ((command-alist `((expand . ,expand)
