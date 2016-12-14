@@ -43,7 +43,7 @@ int ARENA_SIZE = 100000;
 int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
-typedef long SCM;
+typedef int SCM;
 enum type_t {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SPECIAL, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
@@ -79,34 +79,6 @@ typedef struct scm_t {
     int hits;
   };
 } scm;
-
-function functions[200];
-int g_function = 0;
-
-#include "mes.symbols.h"
-#include "define.h"
-#include "display.h"
-#include "lib.h"
-#include "math.h"
-#include "mes.h"
-#include "posix.h"
-#include "quasiquote.h"
-#include "reader.h"
-#include "string.h"
-#include "type.h"
-
-SCM g_symbols = 0;
-SCM stack = 0;
-SCM r0 = 0; // a/env
-SCM r1 = 0; // param 1
-SCM r2 = 0; // param 2
-SCM r3 = 0; // param 3
-
-SCM tmp;
-SCM tmp_num;
-SCM tmp_num2;
-SCM tmp_num3;
-SCM tmp_num4;
 
 scm scm_nil = {SPECIAL, "()"};
 scm scm_f = {SPECIAL, "#f"};
@@ -169,6 +141,35 @@ scm char_space = {CHAR, .name="space", .value=32};
 scm g_free = {NUMBER, .value=0};
 scm *g_cells;
 scm *g_news = 0;
+
+#include "mes.symbols.h"
+
+SCM tmp;
+SCM tmp_num;
+SCM tmp_num2;
+SCM tmp_num3;
+SCM tmp_num4;
+
+function functions[200];
+int g_function = 0;
+
+SCM g_symbols = 0;
+SCM stack = 0;
+SCM r0 = 0; // a/env
+SCM r1 = 0; // param 1
+SCM r2 = 0; // param 2
+SCM r3 = 0; // param 3
+
+#include "define.h"
+#include "display.h"
+#include "lib.h"
+#include "math.h"
+#include "mes.h"
+#include "posix.h"
+#include "quasiquote.h"
+#include "reader.h"
+#include "string.h"
+#include "type.h"
 
 #define CAR(x) g_cells[x].car
 #define CDR(x) g_cells[x].cdr
@@ -378,24 +379,30 @@ vm_apply_env ()
         return call_with_values_env (car (r2), cadr (r2), r0);
       if (r1 == cell_symbol_current_module) return r0;
     }
-  else if (car (r1) == cell_symbol_lambda) {
-    SCM args = cadr (r1);
-    SCM body = cddr (r1);
-    SCM p = pairlis (args, r2, r0);
-    return call_lambda (body, p, p, r0);
-  }
-  else if (car (r1) == cell_closure) {
-    SCM args = caddr (r1);
-    SCM body = cdddr (r1);
-    SCM aa = cdadr (r1);
-    aa = cdr (aa);
-    SCM p = pairlis (args, r2, aa);
-    return call_lambda (body, p, aa, r0);
-  }
+  else
+    switch (car (r1))
+      {
+      case cell_symbol_lambda:
+        {
+          SCM args = cadr (r1);
+          SCM body = cddr (r1);
+          SCM p = pairlis (args, r2, r0);
+          return call_lambda (body, p, p, r0);
+        }
+      case cell_closure:
+        {
+          SCM args = caddr (r1);
+          SCM body = cdddr (r1);
+          SCM aa = cdadr (r1);
+          aa = cdr (aa);
+          SCM p = pairlis (args, r2, aa);
+          return call_lambda (body, p, aa, r0);
+        }
 #if BOOT
-  else if (car (r1) == cell_symbol_label)
-    return apply_env (caddr (r1), r2, cons (cons (cadr (r1), caddr (r1)), r0));
+      case cell_symbol_label:
+        return apply_env (caddr (r1), r2, cons (cons (cadr (r1), caddr (r1)), r0));
 #endif
+      }
   SCM e = eval_env (r1, r0);
   char const* type = 0;
   if (e == cell_f || e == cell_t) type = "bool";
@@ -423,77 +430,48 @@ vm_eval_env ()
     {
     case PAIR:
       {
+        switch (car (r1))
+          {
 #if FIXED_PRIMITIVES
-        if (car (r1) == cell_symbol_car)
-          return car (eval_env (CADR (r1), r0));
-        if (car (r1) == cell_symbol_cdr)
-          return cdr (eval_env (CADR (r1), r0));
-        if (car (r1) == cell_symbol_cons) {
-          SCM m = evlis_env (CDR (r1), r0);
-          return cons (CAR (m), CADR (m));
-        }
-        if (car (r1) == cell_symbol_null_p)
-          return null_p (eval_env (CADR (r1), r0));
+          case cell_symbol_car: return car (eval_env (CADR (r1), r0));
+          case cell_symbol_cdr: return cdr (eval_env (CADR (r1), r0));
+          case cell_symbol_cons: {SCM m = evlis_env (CDR (r1), r0);
+              return cons (CAR (m), CADR (m));}
+          case cell_symbol_null_p: return null_p (eval_env (CADR (r1), r0));
 #endif // FIXED_PRIMITIVES
-        if (car (r1) == cell_symbol_quote)
-          return cadr (r1);
+          case cell_symbol_quote: return cadr (r1);
 #if QUASISYNTAX
-        if (car (r1) == cell_symbol_syntax)
-          return r1;
+          case cell_symbol_syntax: return r1;
 #endif
-        if (car (r1) == cell_symbol_begin)
-          return begin_env (r1, r0);
-        if (car (r1) == cell_symbol_lambda)
-          return make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
-        if (car (r1) == cell_closure)
-          return r1;
-        if (car (r1) == cell_symbol_if)
-          return if_env (cdr (r1), r0);
+          case cell_symbol_begin: return begin_env (r1, r0);
+          case cell_symbol_lambda:
+            return make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
+          case cell_closure: return r1;
+          case cell_symbol_if: return if_env (cdr (r1), r0);
 #if !BOOT
-        if (car (r1) == cell_symbol_define)
-          return define_env (r1, r0);
-        if (car (r1) == cell_symbol_define_macro)
-          return define_env (r1, r0);
-        if (car (r1) == cell_symbol_primitive_load)
-          return begin_env (read_input_file_env (r0), r0);
-#else
-        if (car (r1) == cell_symbol_define) {
-        fprintf (stderr, "C DEFINE: ");
-        display_ (stderr,
-                  TYPE (cadr (r1)) == SYMBOL
-                  ? STRING (cadr (r1))
-                  : STRING (caadr (r1)));
-        fprintf (stderr, "\n");
-      }
-      assert (car (r1) != cell_symbol_define);
-      assert (car (r1) != cell_symbol_define_macro);
+          case cell_symbol_define: return define_env (r1, r0);
+          case cell_symbol_define_macro: return define_env (r1, r0);
 #endif
 #if 1 //!BOOT
-      if (car (r1) == cell_symbol_set_x)
-        {
-          SCM x = eval_env (caddr (r1), r0);
-          return set_env_x (cadr (r1), x, r0);
-        }
-#else
-      assert (car (r1) != cell_symbol_set_x);
+          case cell_symbol_set_x: {
+            SCM x = eval_env (caddr (r1), r0); return set_env_x (cadr (r1), x, r0);
+          }
 #endif
 #if QUASIQUOTE
-      if (car (r1) == cell_symbol_unquote)
-        return eval_env (cadr (r1), r0);
-      if (car (r1) == cell_symbol_quasiquote)
-        return eval_quasiquote (cadr (r1), add_unquoters (r0));
+          case cell_symbol_unquote: return eval_env (cadr (r1), r0);
+          case cell_symbol_quasiquote: return eval_quasiquote (cadr (r1), add_unquoters (r0));
 #endif //QUASIQUOTE
 #if QUASISYNTAX
-      if (car (r1) == cell_symbol_unsyntax)
-        return eval_env (cadr (r1), r0);
-      if (car (r1) == cell_symbol_quasisyntax)
-        return eval_quasisyntax (cadr (r1), add_unsyntaxers (r0));
+          case cell_symbol_unsyntax: return eval_env (cadr (r1), r0);
+          case cell_symbol_quasisyntax: return eval_quasisyntax (cadr (r1), add_unsyntaxers (r0));
 #endif //QUASISYNTAX
-      SCM x = expand_macro_env (r1, r0);
-      if (x != r1)
-          return eval_env (x, r0);
-      SCM m = evlis_env (CDR (r1), r0);
-      return apply_env (car (r1), m, r0);
+          default: {
+            SCM x = expand_macro_env (r1, r0);
+            if (x != r1) return eval_env (x, r0);
+            SCM m = evlis_env (CDR (r1), r0);
+            return apply_env (car (r1), m, r0);
+          }
+          }
       }
     case SYMBOL: return assert_defined (r1, assq_ref_cache (r1, r0));
     default: return r1;
@@ -1060,7 +1038,6 @@ gc_init_cells ()
   g_cells++;
   g_cells[0].type = CHAR;
   g_cells[0].value = 'c';
-  g_free.value = 1; // 0 is tricky
 }
 
 SCM

@@ -72,11 +72,11 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define %start 1)
 (define (symbol->header s i)
-  (format #f "SCM cell_~a;\n" s))
+  (format #f "#define cell_~a ~a\n" s i))
 
 (define (symbol->source s i)
   (string-append
-   (format #f "cell_~a = g_free.value++;\n" s)
+   (format #f "g_free.value++;\n")
    (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)))
 
 (define (function->header f i)
