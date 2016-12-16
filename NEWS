@@ -19,6 +19,7 @@ block-comments are all handled by the Scheme reader later.
 ** Language
 *** Keywords are supported.
 *** Cond now supports =>.
+*** Lambda* and define* are now supported.
 * Changes in 0.3 since 0.2
 ** Core
 *** Number-based rather than pointer-based cells.
