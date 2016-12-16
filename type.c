@@ -27,6 +27,12 @@ char_p (SCM x)
 }
 
 SCM
+keyword_p (SCM x)
+{
+  return TYPE (x) == KEYWORD ? cell_t : cell_f;
+}
+
+SCM
 macro_p (SCM x)
 {
   return TYPE (x) == MACRO ? cell_t : cell_f;

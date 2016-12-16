@@ -110,3 +110,17 @@ symbol_to_string (SCM x)
   assert (TYPE (x) == SYMBOL);
   return make_string (STRING (x));
 }
+
+SCM
+keyword_to_symbol (SCM x)
+{
+  assert (TYPE (x) == KEYWORD);
+  return make_symbol (STRING (x));
+}
+
+SCM
+symbol_to_keyword (SCM x)
+{
+  assert (TYPE (x) == SYMBOL);
+  return make_keyword (STRING (x));
+}

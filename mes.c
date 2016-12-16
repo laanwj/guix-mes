@@ -44,7 +44,7 @@ int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
 typedef int SCM;
-enum type_t {CHAR, FUNCTION, MACRO, NUMBER, PAIR, SPECIAL, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
+enum type_t {CHAR, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, SPECIAL, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
@@ -250,6 +250,8 @@ SCM
 eq_p (SCM x, SCM y)
 {
   return (x == y
+          || ((TYPE (x) == KEYWORD && TYPE (y) == KEYWORD
+               && STRING (x) == STRING (y)))
           || (TYPE (x) == CHAR && TYPE (y) == CHAR
               && VALUE (x) == VALUE (y))
           || (TYPE (x) == NUMBER && TYPE (y) == NUMBER
@@ -677,6 +679,15 @@ make_function (SCM name, SCM id, SCM arity)
 }
 
 SCM
+make_keyword (SCM s)
+{
+  SCM x = internal_lookup_symbol (s);
+  x = x ? x : internal_make_symbol (s);
+  g_cells[tmp_num].value = KEYWORD;
+  return make_cell (tmp_num, STRING (x), 0);
+}
+
+SCM
 make_macro (SCM name, SCM x)
 {
   g_cells[tmp_num].value = MACRO;
@@ -932,7 +943,8 @@ gc_loop (SCM scan)
 {
   while (scan < g_free.value)
     {
-      if (NTYPE (scan) == MACRO
+      if (NTYPE (scan) == KEYWORD
+          || NTYPE (scan) == MACRO
           || NTYPE (scan) == PAIR
           || NTYPE (scan) == REF
           || scan == 1 // null

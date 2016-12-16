@@ -127,6 +127,8 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
         break;
       }
     case BROKEN_HEART: fprintf (f, "<3"); break;
+    case KEYWORD:
+      fprintf (f, "#:");
     default:
       if (STRING (x))
         {

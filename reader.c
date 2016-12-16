@@ -224,6 +224,8 @@ lookup (SCM s, SCM a)
     if (p == cell_nil) return make_number (n * sign);
   }
 
+  if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == ':') return make_keyword (cddr (s));
+
   SCM x = internal_lookup_symbol (s);
   if (x) return x;
 
