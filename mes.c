@@ -84,6 +84,7 @@ scm scm_nil = {SPECIAL, "()"};
 scm scm_f = {SPECIAL, "#f"};
 scm scm_t = {SPECIAL, "#t"};
 scm scm_dot = {SPECIAL, "."};
+scm scm_arrow = {SPECIAL, "=>"};
 scm scm_undefined = {SPECIAL, "*undefined*"};
 scm scm_unspecified = {SPECIAL, "*unspecified*"};
 scm scm_closure = {SPECIAL, "*closure*"};

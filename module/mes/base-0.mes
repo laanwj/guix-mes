@@ -60,18 +60,20 @@
       (apply f (apply cons* (cons h t)))))
 
 (define-macro (cond . clauses)
-  (list 'if (null? clauses) *unspecified*
-        (if (null? (cdr clauses))
-           (list 'if (car (car clauses))
-                 (list (cons 'lambda (cons '() (cons (car (car clauses)) (cdr (car clauses))))))
-                 *unspecified*)
-           (if (eq? (car (cadr clauses)) 'else)
-               (list 'if (car (car clauses))
-                   (list (cons 'lambda (cons '() (car clauses))))
-                   (list (cons 'lambda (cons '() (cons *unspecified* (cdr (cadr clauses)))))))
-               (list 'if (car (car clauses))
-                   (list (cons 'lambda (cons '() (car clauses))))
-                   (cons 'cond (cdr clauses)))))))
+  (list 'if (pair? clauses)
+        (list (cons
+               'lambda
+               (cons
+                '(test)
+                (list (list 'if 'test
+                            (if (pair? (cdar clauses))
+                                (if (eq? (cadar clauses) '=>)
+                                    (append2 (cddar clauses) '(test))
+                                    (list (cons 'lambda (cons '() (car clauses)))))
+                                (list (cons 'lambda (cons '() (car clauses)))))
+                            (if (pair? (cdr clauses))
+                                (cons 'cond (cdr clauses)))))))
+              (car (car clauses)))))
 
 (define else #t)
 

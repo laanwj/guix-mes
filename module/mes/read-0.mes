@@ -54,19 +54,16 @@
     (helper (read)))
 
   (define-macro (cond . clauses)
-    (list (quote if) (null? clauses) *unspecified*
-          (if (null? (cdr clauses))
-              (list (quote if) (car (car clauses))
-                    (list (cons (quote lambda) (cons (list) (cons (car (car clauses)) (cdr (car clauses))))))
-                    *unspecified*)
-              (if (eq? (car (cadr clauses)) (quote else))
-                  (list (quote if) (car (car clauses))
-                        (list (cons (quote lambda) (cons (list) (car clauses))))
-                        (list (cons (quote lambda) (cons (list) (cons *unspecified* (cdr (cadr clauses)))))))
-                  (list (quote if) (car (car clauses))
-                        (list (cons (quote lambda) (cons (list) (car clauses))))
-                        (cons (quote cond) (cdr clauses)))))))
-
+    (list 'if (pair? clauses)
+          (list 'if (car (car clauses))
+                (if (pair? (cdar clauses))
+                    (if (eq? (cadar clauses) '=>)
+                        (append2 (cddar clauses) (list (caar clauses)))
+                        (list (cons 'lambda (cons '() (car clauses)))))
+                    (list (cons 'lambda (cons '() (car clauses)))))
+              (if (pair? (cdr clauses))
+                  (cons 'cond (cdr clauses))))))
+  
   (define (eat-whitespace)
     (cond
      ((eq? (peek-byte) 9) (read-byte) (eat-whitespace))
@@ -130,7 +127,7 @@
                            (read-byte)
                            (cons (lookup (symbol->list (quote unsyntax-splicing)) a)
                                  (cons (read-word (read-byte) w a) (list))))
-                          (else
+                          (#t
                            (cons (lookup (symbol->list (quote unsyntax)) a)
                                  (cons (read-word (read-byte) w a) (list))))))
                    ((eq? (peek-byte) 39) (read-byte)
@@ -139,7 +136,7 @@
                    ((eq? (peek-byte) 96) (read-byte)
                     (cons (lookup (cons (integer->char 35) (cons (integer->char 96) (list))) a)
                           (cons (read-word (read-byte) w a) (list))))
-                   (else (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
+                   (#t (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
       ((eq? c 39) (if (null? w) (cons (lookup (cons (integer->char c) (list)) a)
                                       (cons (read-word (read-byte) w a) (list)))
                       (begin (unread-byte c) (lookup w a))))
@@ -153,11 +150,11 @@
                                                 (cons
                                                  (lookup (symbol->list (quote unquote-splicing)) a)
                                                  (cons (read-word (read-byte) w a) (list)))))
-                   (else  (cons (lookup-char c a) (cons (read-word (read-byte) w a)
+                   (#t (cons (lookup-char c a) (cons (read-word (read-byte) w a)
                                                         (list))))))
       ((eq? c 96) (cons (lookup-char c a) (cons (read-word (read-byte) w a) (list))))
       ((eq? c 59) (read-line-comment c) (read-word 10 w a))
-      (else (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
+      (#t (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
 
   ((lambda (p)
      ;;(display (quote scheme-program=)) (display p) (newline)

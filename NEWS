@@ -18,6 +18,7 @@ The C-reader needs only support reading of words and lists
 block-comments are all handled by the Scheme reader later.
 ** Language
 *** Keywords are supported.
+*** Cond now supports =>.
 * Changes in 0.3 since 0.2
 ** Core
 *** Number-based rather than pointer-based cells.

@@ -52,8 +52,14 @@ exit $?
       (pass-if "cond" (seq? (cond (#t)) #t))
       (pass-if "cond 2" (seq? (cond (#f)) *unspecified*))
       (pass-if "cond 3" (seq? (cond (#t 0)) 0))
-      (pass-if "cond 3" (seq? (cond (#f 1) (#t 0)) 0)))
-    )
+      (pass-if "cond 3" (seq? (cond (#f 1) (#t 0)) 0))
+      (pass-if-equal "cond => "
+          0 (let ((lst '(0 1 2)))
+              (define (next)
+                (let ((r (car lst)))
+                  (set! lst (cdr lst))
+                  r))
+              (cond ((next) => identity))))))
 
 (pass-if "and" (seq? (and 1) 1))
 (pass-if "and 2" (seq? (and 1 (= 0 1) #f) #f))
