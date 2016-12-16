@@ -93,22 +93,31 @@ unsyntax_splicing (SCM x) ///((no-environment))
 SCM
 eval_quasisyntax (SCM e, SCM a)
 {
-  if (e == cell_nil) return e;
-  else if (atom_p (e) == cell_t) return e;
-  else if (eq_p (car (e), cell_symbol_unsyntax) == cell_t)
-    return eval_env (cadr (e), a);
-  else if (TYPE (e) == PAIR && TYPE (car (e)) == PAIR
-           && eq_p (caar (e), cell_symbol_unsyntax_splicing) == cell_t)
-      return append2 (eval_env (cadar (e), a), eval_quasisyntax (cdr (e), a));
-  return cons (eval_quasisyntax (car (e), a), eval_quasisyntax (cdr (e), a));
+  return vm_call (vm_eval_quasisyntax, e, cell_undefined, a);
+}
+
+SCM
+vm_eval_quasisyntax ()
+{
+  if (r1 == cell_nil) return r1;
+  else if (atom_p (r1) == cell_t) return r1;
+  else if (eq_p (car (r1), cell_symbol_unsyntax) == cell_t)
+    return eval_env (cadr (r1), r0);
+  else if (TYPE (r1) == PAIR && TYPE (car (r1)) == PAIR
+           && eq_p (caar (r1), cell_symbol_unsyntax_splicing) == cell_t)
+    {
+      r2 = eval_env (cadar (r1), r0);
+      return append2 (r2, eval_quasisyntax (cdr (r1), r0));
+    }
+  r2 = eval_quasisyntax (car (r1), r0);
+  return cons (r2, eval_quasisyntax (cdr (r1), r0));
 }
 
 SCM
 add_unsyntaxers (SCM a)
 {
-  a = cons (cons (cell_symbol_unsyntax, cell_unsyntax), a);
-  a = cons (cons (cell_symbol_unsyntax_splicing, cell_unsyntax_splicing), a);
-  return a;
+  SCM q = assq_ref_cache (cell_symbol_the_unsyntaxers, a);
+  return append2 (q, a);
 }
 
 #else // !QUASISYNTAX
@@ -117,5 +126,6 @@ SCM unsyntax (SCM x){}
 SCM unsyntax_splicing (SCM x){}
 SCM add_unsyntaxers (SCM a){}
 SCM eval_quasisyntax (SCM e, SCM a){}
+SCM vm_eval_quasisyntax () {}
 
 #endif // !QUASISYNTAX

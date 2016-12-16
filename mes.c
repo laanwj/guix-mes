@@ -122,6 +122,7 @@ scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
 
 scm scm_symbol_the_unquoters = {SYMBOL, "*the-unquoters*"};
+scm scm_symbol_the_unsyntaxers = {SYMBOL, "*the-unsyntaxers*"};
 
 scm scm_symbol_car = {SYMBOL, "car"};
 scm scm_symbol_cdr = {SYMBOL, "cdr"};
@@ -445,7 +446,7 @@ vm_eval_env ()
 #endif // FIXED_PRIMITIVES
           case cell_symbol_quote: return cadr (r1);
 #if QUASISYNTAX
-          case cell_symbol_syntax: return r1;
+          case cell_symbol_syntax: return cadr (r1);
 #endif
           case cell_symbol_begin: return begin_env (r1, r0);
           case cell_symbol_lambda:
@@ -1128,6 +1129,14 @@ mes_builtins (SCM a)
                             cons (cons (cell_symbol_unquote_splicing, cell_unquote_splicing),
                                   cell_nil));
   a = acons (cell_symbol_the_unquoters, the_unquoters, a);
+#endif
+#if QUASISYNTAX
+  SCM cell_unsyntax = assq_ref_cache (cell_symbol_unsyntax, a);
+  SCM cell_unsyntax_splicing = assq_ref_cache (cell_symbol_unsyntax_splicing, a);
+  SCM the_unsyntaxers = cons (cons (cell_symbol_unsyntax, cell_unsyntax),
+                              cons (cons (cell_symbol_unsyntax_splicing, cell_unsyntax_splicing),
+                                  cell_nil));
+  a = acons (cell_symbol_the_unsyntaxers, the_unsyntaxers, a);
 #endif
 
   a = add_environment (a, "*dot*", cell_dot);
