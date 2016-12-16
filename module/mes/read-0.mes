@@ -71,6 +71,7 @@
     (cond
      ((eq? (peek-byte) 9) (read-byte) (eat-whitespace))
      ((eq? (peek-byte) 10) (read-byte) (eat-whitespace))
+     ((eq? (peek-byte) 12) (read-byte) (eat-whitespace))
      ((eq? (peek-byte) 13) (read-byte) (eat-whitespace))
      ((eq? (peek-byte) 32) (read-byte) (eat-whitespace))
      ((eq? (peek-byte) 59) (begin (read-line-comment (read-byte))
@@ -112,6 +113,7 @@
       ((eq? c -1) (list))
       ((eq? c 10) (if (null? w) (read-word (read-byte) (list) a)
                       (lookup w a)))
+      ((eq? c 12) (read-word 10 w a))
       ((eq? c 32) (read-word 10 w a))
       ((eq? c 34) (if (null? w) (read-string)
                       (begin (unread-byte c) (lookup w a))))

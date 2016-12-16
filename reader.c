@@ -57,6 +57,8 @@ SCM
 read_word (int c, SCM w, SCM a)
 {
   if (c == EOF && w == cell_nil) return cell_nil;
+  if (c == '\t') return read_word ('\n', w, a);
+  if (c == '\f') return read_word ('\n', w, a);
   if (c == '\n' && w == cell_nil) return read_word (getchar (), w, a);
   if (c == '\n' && VALUE (car (w)) == '.' && cdr (w) == cell_nil) return cell_dot;
   if (c == EOF || c == '\n') return lookup (w, a);
@@ -177,7 +179,7 @@ read_string ()
 int
 eat_whitespace (int c)
 {
-  while (c == ' ' || c == '\t' || c == '\n') c = getchar ();
+  while (c == ' ' || c == '\t' || c == '\n' || c == '\f') c = getchar ();
   if (c == ';') return eat_whitespace (read_line_comment (c));
 #if READER
   if (c == '#' && peekchar () == '!') {getchar (); read_block_comment (getchar ()); return eat_whitespace (getchar ());}
