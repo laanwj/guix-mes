@@ -87,7 +87,10 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
         }
         if (car (x) == cell_symbol_quote) {
           fprintf (f, "'");
-          return display_helper (f, car (cdr (x)), cont, "", true);
+          x = cdr (x);
+          if (TYPE (x) != FUNCTION)
+            x = car (x);
+          return display_helper (f, x, cont, "", true);
         }
         if (!cont) fprintf (f, "(");
         display_ (f, car (x));
