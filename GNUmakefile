@@ -60,6 +60,7 @@ TESTS:=\
  tests/scm.test\
  tests/cwv.test\
  tests/optargs.test\
+ tests/fluids.test\
  tests/psyntax.test\
  tests/let-syntax.test\
  tests/record.test\
