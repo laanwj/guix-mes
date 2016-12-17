@@ -32,6 +32,14 @@
 
 (define (list . rest) rest)
 
+(define (list-head x n)
+  (if (= 0 n) '()
+      (cons (car x) (list-head (cdr x) (- n 1)))))
+
+(define (list-tail x n)
+  (if (= 0 n) x
+      (list-tail (cdr x) (- n 1))))
+
 (define-macro (case val . args)
   (if (null? args) #f
       (let ((clause (car args)))
