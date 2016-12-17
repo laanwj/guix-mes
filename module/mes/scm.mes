@@ -40,6 +40,17 @@
   (if (= 0 n) x
       (list-tail (cdr x) (- n 1))))
 
+(define (string-prefix? prefix string)
+  (and
+   (>= (string-length string) (string-length prefix))
+   (equal? (substring string 0 (string-length prefix)) prefix)))
+
+(define (symbol-prefix? prefix symbol)
+  (string-prefix? (symbol->string prefix) (symbol->string symbol)))
+
+(define (symbol-append . rest)
+  (string->symbol (apply string-append (map symbol->string rest))))
+
 (define-macro (case val . args)
   (if (null? args) #f
       (let ((clause (car args)))
