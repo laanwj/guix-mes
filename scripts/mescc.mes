@@ -30,7 +30,6 @@ exit $?
 ;;;
 ;;; Run with Guile:
 ;;;    make guile-mescc
-;;; BROKEN? cat doc/examples/main.c | guile -s <(echo '(compile)' | cat guile/mes-0.scm module/mes/lalr.mes module/mes/elf.mes module/mes/libc-i386.mes module/rnrs/bytevectors.mes module/language/c/lexer.mes module/language/c/parser.mes module/language/c/compiler.mes -)
 
 ;;; Code:
 

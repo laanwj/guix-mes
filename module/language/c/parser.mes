@@ -27,10 +27,7 @@
 
 (cond-expand
   (guile
-   ;;(use-modules (srfi srfi-1))
-   (use-modules (system base lalr))
-   ;;(use-modules (ice-9 match))
-   )
+   (use-modules (system base lalr)))
   (mes
    (mes-use-module (mes lalr))))
 

@@ -25,6 +25,15 @@
 
 ;;; Code:
 
+(cond-expand
+  (guile
+   (use-modules (srfi srfi-1))
+   (use-modules (system base lalr))
+   (use-modules (ice-9 match))
+   (set-port-encoding! (current-output-port) "ISO-8859-1"))
+  (mes
+   (mes-use-module (mes lalr))))
+
 (mes-use-module (mes elf))
 (mes-use-module (mes libc-i386))
 (mes-use-module (mes match))

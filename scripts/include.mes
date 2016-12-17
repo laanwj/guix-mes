@@ -17,7 +17,7 @@ if [ -n "$BOOT" ]; then
     fi
     echo $prefix/module/mes/mes-0.mes
 fi
-cat $1 \
+cat $@ \
   | grep -Eo '^\(mes-use-module \([^ ()]+ [^()]+))' \
   | grep -Eo ' \([^)]+\)' \
   | sed -e "s@^ *(@${prefix}/module/@" -e 's@ @/@g' -e 's@)@.mes@'

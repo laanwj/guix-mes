@@ -4,5 +4,5 @@ int main ()
   puts ("Hi Mes!\n");
   for (i = 0; i < 4; ++i)
     puts ("  Hello, world!\n");
-  return 1;
+  return 42;
 }

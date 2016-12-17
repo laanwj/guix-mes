@@ -4,6 +4,8 @@ default: all
 .config.make: configure GNUmakefile
 	./configure
 
+GUILE:=guile
+export GUILE
 OUT:=out
 CFLAGS:=-std=c99 -O3 -finline-functions
 #CFLAGS:=-std=c99 -O0
@@ -88,16 +90,18 @@ guile-check:
 
 MAIN_C:=doc/examples/main.c
 mescc: all
+	rm -f a.out
 	scripts/mescc.mes $(MAIN_C)
-	./a.out
+	./a.out; r=$$?; [ $$r = 42 ]
 
-mescc.cat: $(MES-0) module/mes/lalr.mes module/mes/elf.mes module/mes/libc-i386.mes $(shell scripts/include.mes scripts/mescc.mes | grep -Ev '/mes/|/srfi/')
-	echo '(compile)' | cat $^ - > $@
+mescc.cat: all $(MES-0) module/rnrs/bytevectors.mes module/mes/elf.mes module/mes/libc-i386.mes module/language/c/lexer.mes module/language/c/parser.mes module/language/c/compiler.mes
+	echo '(compile)' | cat $(filter %.scm %.mes, $^) - > $@
 
 guile-mescc: mescc.cat
-	cat $(MAIN_C) | guile -s $^ > a.out
+	rm -f a.out
+	cat $(MAIN_C) | $(GUILE) -s $^ > a.out
 	chmod +x a.out
-	./a.out
+	./a.out; r=$$?; [ $$r = 42 ]
 
 paren: all
 	scripts/paren.mes
