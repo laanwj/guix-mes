@@ -169,7 +169,8 @@ read_string ()
   int c = getchar ();
   while (true) {
     if (c == '"') break;
-    if (c == '\\' && peekchar () == '"') p = append_char (p, getchar ());
+    if (c == '\\' && peekchar () == '\\') p = append_char (p, getchar ());
+    else if (c == '\\' && peekchar () == '"') p = append_char (p, getchar ());
     else if (c == '\\' && peekchar () == 'n') {getchar (); p = append_char (p, '\n');}
     else if (c == EOF) assert (!"EOF in string");
     else p = append_char (p, c);

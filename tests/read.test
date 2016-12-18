@@ -23,6 +23,17 @@ cons
 (display #x16) (newline)
 (display #\A) (newline)
 (display #\newline) (newline)
+#\alarm
+#\backspace
+#\tab
+#\newline
+#\vtab
+#\page
+#\return
+#\space
+(display "\"")
+(display "\\")
+(display "\\\"\"\\")
 (display 'foo)(newline)
 (display '(foo))(newline)
 (display '('foo))(newline)
