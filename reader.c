@@ -37,10 +37,10 @@ unread_char (SCM c)
 }
 
 int
-read_block_comment (int c)
+read_block_comment (int s, int c)
 {
-  if (c == '!' && peekchar () == '#') return getchar ();
-  return read_block_comment (getchar ());
+  if (c == s && peekchar () == '#') return getchar ();
+  return read_block_comment (s, getchar ());
 }
 
 int
@@ -95,7 +95,7 @@ read_word (int c, SCM w, SCM a)
   if (c == '#' && peekchar () == '\\') {getchar (); return read_character ();}
   if (c == '#' && w == cell_nil && peekchar () == '(') {getchar (); return list_to_vector (read_list (a));}
   if (c == '#' && peekchar () == ';') {getchar (); read_word (getchar (), w, a); return read_word (getchar (), w, a);}
-  if (c == '#' && peekchar () == '!') {getchar (); read_block_comment (getchar ()); return read_word (getchar (), w, a);}
+  if (c == '#' && (peekchar () == '!' || peekchar () == '|')) {c = getchar (); read_block_comment (c, getchar ()); return read_word (getchar (), w, a);}
 #endif //READER
   return read_word (getchar (), append2 (w, cons (make_char (c), cell_nil)), a);
 }
@@ -183,7 +183,7 @@ eat_whitespace (int c)
   while (c == ' ' || c == '\t' || c == '\n' || c == '\f') c = getchar ();
   if (c == ';') return eat_whitespace (read_line_comment (c));
 #if READER
-  if (c == '#' && peekchar () == '!') {getchar (); read_block_comment (getchar ()); return eat_whitespace (getchar ());}
+  if (c == '#' && (peekchar () == '!' || peek_char () == '|')) {c=getchar (); read_block_comment (c, getchar ()); return eat_whitespace (getchar ());}
 #endif
   return c;
 }

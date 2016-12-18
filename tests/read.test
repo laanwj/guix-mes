@@ -32,6 +32,9 @@ cons
 #!
 barf
 !#
+#|
+burp
+|#
 #;(bla) (display "must see!\n")
 (display `(display ,display)) (newline)
 (display `(display ,@'(string port))) (newline)
