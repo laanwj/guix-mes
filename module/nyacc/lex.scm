@@ -419,7 +419,7 @@
 	       ((eq? px (string-length ps))
 		(if (and (not eat-newline) (eq? #\newline (car sl)))
 		    (unread-char #\newline))
-		(if (and (pair? cl) (eqv? (car cl) #\cr)) ;; rem trailing \r 
+		(if (and (pair? cl) (eqv? (car cl) #\return)) ;; rem trailing \r 
 		    (cons tval (list->string (reverse (cdr cl))))
 		    (cons tval (list->string (reverse cl)))))
 	       ((null? il) (find-end cl sl (cons (mc-read-char) il) ps px))
