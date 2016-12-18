@@ -81,6 +81,8 @@ MES_DEBUG:=1
 
 mes-check: all
 	set -e; for i in $(TESTS); do ./$$i; done
+	scripts/nyacc.mes
+	scripts/nyacc-calc.mes
 
 module/mes/read-0.mo: module/mes/read-0.mes mes 
 	./mes --dump < $< > $@
@@ -91,6 +93,8 @@ guile-check:
 	set -e; for i in $(TESTS); do\
 		$(GUILE) -s <(cat $(MES-0) module/mes/test.mes $$i);\
 	done
+	guile/nyacc.scm
+	guile/nyacc-calc.scm
 
 MAIN_C:=doc/examples/main.c
 mescc: all

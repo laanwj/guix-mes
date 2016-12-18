@@ -1,15 +1,12 @@
 #! /bin/sh
 # -*-scheme-*-
-prefix=module/
-echo -e 'EOF\n___P((()))' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
-chmod +x a.out
-exit $?
+exec guile -L $(pwd)/module -e '(nyacc)' -s "$0" "$@"
 !#
 
-;;; Mes --- Maxwell Equations of Software
+;;; Mes --- The Maxwell Equations of Software
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; This file is part of Mes.
+;;; This file is part of GNU Guix.
 ;;;
 ;;; Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -24,17 +21,18 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+;; The Maxwell Equations of Software -- John McCarthy page 13
+;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
-;;; paren.mes is a simple yet full lalr test for Mes taken from the
-;;; Gambit wiki.
-;;;
-;;; Run with Guile:
-;;;    echo '___P((()))' | guile -s <(echo '(paren-depth)' | cat module/language/paren.mes -)
+(define-module (nyacc)
+  #:use-module (nyacc lang c99 parser)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 pretty-print)
+  #:export (main))
 
-;;; Code:
-
-(mes-use-module (language paren))
-
-(paren-depth)
-()
+(define (main arguments)
+  (let* ((file (if (> (length arguments) 1) (cadr arguments)
+                   "doc/examples/main.c"))
+         (ast (with-input-from-file file
+                (lambda () (parse-c99 #:inc-dirs '())))))
+    (pretty-print ast)))

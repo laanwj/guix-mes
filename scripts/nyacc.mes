@@ -1,8 +1,10 @@
 #! /bin/sh
 # -*-scheme-*-
+MES_ARENA=${MES_ARENA-50000000}
+export MES_ARENA
 prefix=module/
-echo -e 'EOF\n___P((()))' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
-chmod +x a.out
+cat $prefix/mes/base-0.mes $0 | $(dirname $0)/mes $MES_FLAGS "$@"
+# |
 exit $?
 !#
 
@@ -26,15 +28,31 @@ exit $?
 
 ;;; Commentary:
 
-;;; paren.mes is a simple yet full lalr test for Mes taken from the
-;;; Gambit wiki.
+;;; nyacc.mes 
 ;;;
 ;;; Run with Guile:
-;;;    echo '___P((()))' | guile -s <(echo '(paren-depth)' | cat module/language/paren.mes -)
+;;;    guile/nyacc.scm
 
 ;;; Code:
 
-(mes-use-module (language paren))
+(mes-use-module (mes scm))
+(mes-use-module (srfi srfi-9-psyntax))
+(mes-use-module (mes optargs))
+(mes-use-module (mes fluids))
+(mes-use-module (mes catch))
 
-(paren-depth)
+(mes-use-module (mes guile))
+(mes-use-module (mes pretty-print))
+
+(mes-use-module (nyacc lang c99 parser))
+
+;;(open-input-file "doc/examples/main.c")
+(define (main arguments)
+  (let* ((file (if (> (length arguments) 1) (cadr arguments)
+                   "doc/examples/main.c"))
+         (ast (with-input-from-file file
+                (lambda () (parse-c99 #:inc-dirs '())))))
+    (pretty-print ast)
+    (newline)))
+(main '())
 ()
