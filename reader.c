@@ -94,6 +94,7 @@ read_word (int c, SCM w, SCM a)
   if (c == '#' && peekchar () == 'x') {getchar (); return read_hex ();}
   if (c == '#' && peekchar () == '\\') {getchar (); return read_character ();}
   if (c == '#' && w == cell_nil && peekchar () == '(') {getchar (); return list_to_vector (read_list (a));}
+  if (c == '#' && peekchar () == ';') {getchar (); read_word (getchar (), w, a); return read_word (getchar (), w, a);}
   if (c == '#' && peekchar () == '!') {getchar (); read_block_comment (getchar ()); return read_word (getchar (), w, a);}
 #endif //READER
   return read_word (getchar (), append2 (w, cons (make_char (c), cell_nil)), a);
