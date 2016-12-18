@@ -158,7 +158,7 @@
             ((#\n) #\newline)
             ((#\r) #\return)
             ((#\t) #\tab)
-            ((#\v) #\vt)
+            ((#\v) #\vtab)
             ((#\0)
              (let ((next (peek-char)))
                (cond
@@ -402,7 +402,7 @@
     ;;(display "next-token c=") (display c) (newline)
 
     (case c
-      ((#\tab #\vt #\page #\space ;;#\x00A0
+      ((#\tab #\vtab #\page #\space ;;#\x00A0
         ) ; whitespace
        (read-char)
        (next-token div?))

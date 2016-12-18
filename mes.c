@@ -131,10 +131,11 @@ scm scm_symbol_cons = {SYMBOL, "cons"};
 
 scm char_eof = {CHAR, .name="*eof*", .value=-1};
 scm char_nul = {CHAR, .name="nul", .value=0};
+scm char_alarm = {CHAR, .name="alarm", .value=8};
 scm char_backspace = {CHAR, .name="backspace", .value=8};
 scm char_tab = {CHAR, .name="tab", .value=9};
 scm char_newline = {CHAR, .name="newline", .value=10};
-scm char_vt = {CHAR, .name="vt", .value=11};
+scm char_vtab = {CHAR, .name="vtab", .value=11};
 scm char_page = {CHAR, .name="page", .value=12};
 scm char_return = {CHAR, .name="return", .value=13};
 scm char_space = {CHAR, .name="space", .value=32};

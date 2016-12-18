@@ -58,10 +58,11 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
       {
         char const *name = 0;
         if (VALUE (x) == char_nul.value) name = char_nul.name;
+        else if (VALUE (x) == char_alarm.value) name = char_alarm.name;
         else if (VALUE (x) == char_backspace.value) name = char_backspace.name;
         else if (VALUE (x) == char_tab.value) name = char_tab.name;
         else if (VALUE (x) == char_newline.value) name = char_newline.name;
-        else if (VALUE (x) == char_vt.value) name = char_vt.name;
+        else if (VALUE (x) == char_vtab.value) name = char_vtab.name;
         else if (VALUE (x) == char_page.value) name = char_page.name;
         else if (VALUE (x) == char_return.value) name = char_return.name;
         else if (VALUE (x) == char_space.value) name = char_space.name;

@@ -122,10 +122,11 @@ read_character ()
     }
     *p = 0;
     if (!strcmp (buf, char_nul.name)) c = char_nul.value;
+    else if (!strcmp (buf, char_alarm.name)) c = char_alarm.value;
     else if (!strcmp (buf, char_backspace.name)) c = char_backspace.value;
     else if (!strcmp (buf, char_tab.name)) c = char_tab.value;
     else if (!strcmp (buf, char_newline.name)) c = char_newline.value;
-    else if (!strcmp (buf, char_vt.name)) c = char_vt.value;
+    else if (!strcmp (buf, char_vtab.name)) c = char_vtab.value;
     else if (!strcmp (buf, char_page.name)) c = char_page.value;
     else if (!strcmp (buf, char_return.name)) c = char_return.value;
     else if (!strcmp (buf, char_space.name)) c = char_space.value;
