@@ -25,6 +25,7 @@
 	    cpp-expand-text
 	    expand-cpp-mref
 	    )
+  #:use-module (ice-9 syncase)
   #:use-module (nyacc parse)
   #:use-module (nyacc lex)
   #:use-module (nyacc lang util)

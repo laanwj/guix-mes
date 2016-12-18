@@ -49,6 +49,8 @@
 	    like-c-ident?
 	    filter-mt remove-mt map-mt make-ident-like-p 
 	    c:ws c:if c:ir)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 syncase)
   #:use-module ((srfi srfi-1) #:select (remove append-reverse))
   #:use-module (ice-9 pretty-print)
   )

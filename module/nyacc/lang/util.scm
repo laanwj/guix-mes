@@ -21,6 +21,7 @@
 	    ;; for ???
 	    move-if-changed
             fmterr)
+  #:use-module (ice-9 optargs)
   #:use-module ((srfi srfi-1) #:select(find))
   )
 

@@ -35,7 +35,11 @@
 	    looking-at first-item
 	    terminal? non-terminal?
 	    range-next
+            process-spec
+            reserved?
 	    )
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 syncase)
   #:use-module ((srfi srfi-1) #:select (fold fold-right remove lset-union
 					     lset-intersection lset-difference))
   #:use-module ((srfi srfi-9) #:select (define-record-type))

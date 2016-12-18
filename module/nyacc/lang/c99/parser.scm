@@ -19,6 +19,8 @@
 
 (define-module (nyacc lang c99 parser)
   #:export (parse-c parse-c99 def-xdef? std-dict)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 syncase)
   #:use-module (nyacc lex)
   #:use-module (nyacc parse)
   #:use-module (nyacc lang util)
