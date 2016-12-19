@@ -33,7 +33,7 @@
 
 (define annotation? (lambda (x) #f))
 (define (self-evaluating? x)
-  (or (boolean? x) (number? x) (string? x) (char? x) (null? x)))
+  (or (boolean? x) (number? x) (string? x) (char? x) (null? x) (closure? x)))
 
 (define (void) (if #f #f))
 

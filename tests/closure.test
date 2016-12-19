@@ -95,4 +95,10 @@ exit $?
     "noexpand")
    (pass-if "closure 9" (sc-expand))))
 
+(pass-if "closure is procedure"
+             (procedure? (lambda () #t)))
+
+(pass-if-not "closure is not a pair"
+             (pair? (lambda () #t)))
+
 (result 'report)

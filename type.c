@@ -27,6 +27,24 @@ char_p (SCM x)
 }
 
 SCM
+closure_p (SCM x)
+{
+  return (TYPE (x) == PAIR && CAR (x) == cell_closure) ? cell_t : cell_f;
+}
+
+SCM
+mes_car (SCM x)
+{
+  return CAR (x);
+}
+
+SCM
+mes_cdr (SCM x)
+{
+  return CDR (x);
+}
+
+SCM
 keyword_p (SCM x)
 {
   return TYPE (x) == KEYWORD ? cell_t : cell_f;
@@ -47,7 +65,7 @@ number_p (SCM x)
 SCM
 pair_p (SCM x)
 {
-  return TYPE (x) == PAIR ? cell_t : cell_f;
+  return (TYPE (x) == PAIR && CAR (x) != cell_closure) ? cell_t : cell_f;
 }
 
 SCM
