@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-exec guile -L $(pwd)/module -e '(nyacc)' -s "$0" "$@"
+exec ${GUILE-guile} -L $(pwd)/module -e '(nyacc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
@@ -24,6 +24,11 @@ exec guile -L $(pwd)/module -e '(nyacc)' -s "$0" "$@"
 ;; The Maxwell Equations of Software -- John McCarthy page 13
 ;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
+#!
+Run with Guile-1.8:
+GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/nyacc.scm
+!#
+
 ;; Tcalc.scm - calculator
 ;;
 ;; Copyright (C) 2015 Matthew R. Wette
@@ -34,6 +39,8 @@ exec guile -L $(pwd)/module -e '(nyacc)' -s "$0" "$@"
 ;; without any warranty.
 
 (define-module (nyacc)
+  #:use-module (ice-9 syncase) ;; guile-1.8
+  #:use-module (ice-9 optargs) ;; guile-1.8
   #:use-module (nyacc lalr)
   #:use-module (nyacc lex)
   #:use-module (nyacc parse)
