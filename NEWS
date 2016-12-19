@@ -22,6 +22,7 @@ block-comments are all handled by the Scheme reader later.
 *** Lambda* and define* are now supported.
 *** #;-comment is now supported.
 *** Non-nested #| |#-comment is now supported.
+*** R7RS syntax-rules with custom ellipsis, with-ellipsis are now supported.
 ** Noteworthy bug fixes
 *** Closure is not a pair.
 * Changes in 0.3 since 0.2

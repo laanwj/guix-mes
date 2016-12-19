@@ -110,6 +110,11 @@ guile-mescc: mescc.cat
 paren: all
 	scripts/paren.mes
 
+GUILE_GIT:=$(HOME)/src/guile
+psyntax-import:
+	git --git-dir=$(GUILE_GIT)/.git --work-tree=$(GUILE_GIT) show ba8a709:ice-9/psyntax.ss > module/mes/psyntax.ss
+	git --git-dir=$(GUILE_GIT)/.git --work-tree=$(GUILE_GIT) show ba8a709:ice-9/psyntax.pp > module/mes/psyntax-pp.mes
+
 help: help-top
 
 install: all

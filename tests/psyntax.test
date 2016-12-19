@@ -168,4 +168,40 @@ exit $?
                  body ...)))))
       (string-let foo (list foo foo)))))
 
+  ;; (pass-if-equal "custom ellipsis within normal ellipsis"
+  ;;     '((((a x) (a y) (a …))
+  ;;        ((b x) (b y) (b …))
+  ;;        ((c x) (c y) (c …)))
+  ;;       (((a x) (b x) (c x))
+  ;;        ((a y) (b y) (c y))
+  ;;        ((a …) (b …) (c …))))
+  ;;   (let ()
+  ;;     (define-syntax foo
+  ;;       (syntax-rules ()
+  ;;         ((_ y ...)
+  ;;          (syntax-rules … ()
+  ;;            ((_ x …)
+  ;;             '((((x y) ...) …)
+  ;;               (((x y) …) ...)))))))
+  ;;     (define-syntax bar (foo x y …))
+  ;;     (bar a b c)))
+
+(let ()
+ (define-syntax define-quotation-macros
+   (lambda (x)
+     (syntax-case x ()
+       ((_ (macro-name head-symbol) ...)
+        #'(begin (define-syntax macro-name
+                   (lambda (x)
+                     (with-ellipsis :::
+                                    (syntax-case x ()
+                                      ((_ x :::)
+                                       #'(quote (head-symbol x :::)))))))
+                 ...)))))
+ (define-quotation-macros (quote-a a) (quote-b b) (quote-c c))
+
+ (pass-if-equal "with-ellipsis"
+     '(a 1 2 3)
+     (quote-a 1 2 3)))
+
 (result 'report)

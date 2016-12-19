@@ -1,6 +1,31 @@
+;;;; -*-scheme-*-
+;;;;
+;;;; 	Copyright (C) 2001, 2003, 2006 Free Software Foundation, Inc.
+;;;; 
+;;;; This library is free software; you can redistribute it and/or
+;;;; modify it under the terms of the GNU Lesser General Public
+;;;; License as published by the Free Software Foundation; either
+;;;; version 2.1 of the License, or (at your option) any later version.
+;;;; 
+;;;; This library is distributed in the hope that it will be useful,
+;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;;;; Lesser General Public License for more details.
+;;;; 
+;;;; You should have received a copy of the GNU Lesser General Public
+;;;; License along with this library; if not, write to the Free Software
+;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+;;;; 
+
+
 ;;; Portable implementation of syntax-case
 ;;; Extracted from Chez Scheme Version 5.9f
 ;;; Authors: R. Kent Dybvig, Oscar Waddell, Bob Hieb, Carl Bruggeman
+
+;;; Modified by Mikael Djurfeldt <djurfeldt@nada.kth.se> according
+;;; to the ChangeLog distributed in the same directory as this file:
+;;; 1997-08-19, 1997-09-03, 1997-09-10, 2000-08-13, 2000-08-24,
+;;; 2000-09-12, 2001-03-08
 
 ;;; Copyright (c) 1992-1997 Cadence Research Systems
 ;;; Permission to copy this software, in whole or in part, to use this
@@ -102,6 +127,13 @@
 ;;; evaluator/expander that no expansion is necessary, since expr has
 ;;; already been fully expanded to core forms.
 ;;;
+;;; eval will not be invoked during the loading of psyntax.pp.  After
+;;; psyntax.pp has been loaded, the expansion of any macro definition,
+;;; whether local or global, will result in a call to eval.  If, however,
+;;; sc-expand has already been registered as the expander to be used
+;;; by eval, and eval accepts one argument, nothing special must be done
+;;; to support the "noexpand" flag, since it is handled by sc-expand.
+;;;
 ;;; (error who format-string why what)
 ;;; where who is either a symbol or #f, format-string is always "~a ~s",
 ;;; why is always a string, and what may be any object.  error should
@@ -126,6 +158,12 @@
 ;;; change the hooks and constructors defined toward the beginning of
 ;;; the code below, but to avoid bootstrapping problems, do so only
 ;;; after you have a working version of the expander.
+
+;;; Chez Scheme allows the syntactic form (syntax <template>) to be
+;;; abbreviated to #'<template>, just as (quote <datum>) may be
+;;; abbreviated to '<datum>.  The #' syntax makes programs written
+;;; using syntax-case shorter and more readable and draws out the
+;;; intuitive connection between syntax and quote.
 
 ;;; If you find that this code loads or runs slowly, consider
 ;;; switching to faster hardware or a faster implementation of
@@ -284,11 +322,11 @@
 
 (define top-level-eval-hook
   (lambda (x)
-    (eval `(,noexpand ,x))))
+    (eval `(,noexpand ,x) (interaction-environment))))
 
 (define local-eval-hook
   (lambda (x)
-    (eval `(,noexpand ,x))))
+    (eval `(,noexpand ,x) (interaction-environment))))
 
 (define error-hook
   (lambda (who why what)
@@ -355,15 +393,29 @@
     ((_ src name) name)
     ((_ src level name) name)))
 
-(define-syntax build-data
-  (syntax-rules ()
-    ((_ src exp) `',exp)))
+(define (build-data src exp)
+  (if (and (self-evaluating? exp)
+	   (not (vector? exp)))
+      exp
+      (list 'quote exp)))
 
 (define build-sequence
   (lambda (src exps)
     (if (null? (cdr exps))
         (car exps)
         `(begin ,@exps))))
+
+(define build-let
+  (lambda (src vars val-exps body-exp)
+    (if (null? vars)
+	body-exp
+	`(let ,(map list vars val-exps) ,body-exp))))
+
+(define build-named-let
+  (lambda (src vars val-exps body-exp)
+    (if (null? vars)
+	body-exp
+	`(let ,(car vars) ,(map list (cdr vars) val-exps) ,body-exp))))
 
 (define build-letrec
   (lambda (src vars val-exps body-exp)
@@ -373,13 +425,7 @@
 
 (define-syntax build-lexical-var
   (syntax-rules ()
-    ((_ src id) (gensym))))
-
-(define-syntax self-evaluating?
-  (syntax-rules ()
-    ((_ e)
-     (let ((x e))
-       (or (boolean? x) (number? x) (string? x) (char? x) (null? x))))))
+    ((_ src id) (gensym (symbol->string id)))))
 )
 
 (define-structure (syntax-object expression wrap))
@@ -429,6 +475,7 @@
 
 ;;; <binding> ::= (macro . <procedure>)           macros
 ;;;               (core . <procedure>)            core forms
+;;;               (external-macro . <procedure>)  external-macro
 ;;;               (begin)                         begin
 ;;;               (define)                        define
 ;;;               (define-syntax)                 define-syntax
@@ -495,7 +542,7 @@
     (if (null? r)
         '()
         (let ((a (car r)))
-          (if (eq? (cadr a) 'macro)
+          (if (memq (cadr a) '(macro ellipsis))
               (cons a (macros-only-env (cdr r)))
               (macros-only-env (cdr r)))))))
 
@@ -843,6 +890,7 @@
 ;;;    type                   value         explanation
 ;;;    -------------------------------------------------------------------
 ;;;    core                   procedure     core form (including singleton)
+;;;    external-macro         procedure     external macro
 ;;;    lexical                name          lexical variable reference
 ;;;    global                 name          global variable reference
 ;;;    begin                  none          begin keyword
@@ -896,7 +944,7 @@
                  ((macro)
                   (syntax-type (chi-macro (binding-value b) e r w rib)
                     r empty-wrap s rib))
-                 ((core) (values type (binding-value b) e w s))
+                 ((core external-macro) (values type (binding-value b) e w s))
                  ((local-syntax)
                   (values 'local-syntax-form (binding-value b) e w s))
                  ((begin) (values 'begin-form #f e w s))
@@ -924,6 +972,10 @@
                      (id? (syntax name))
                      (values 'define-syntax-form (syntax name)
                        (syntax val) w s))))
+                 ((ellipsis)
+                  (values 'ellipsis
+                          (make-syntax-object (syntax-object-expression value)
+                                              (anti-mark (syntax-object-wrap value)))))
                  (else (values 'call #f e w s))))
              (values 'call #f e w s))))
       ((syntax-object? e)
@@ -1002,15 +1054,20 @@
                       (chi-install-global n (chi e r w))))
                 (chi-void)))))
           ((define-form)
-           (let ((n (id-var-name value w)))
-             (case (binding-type (lookup n r))
+           (let* ((n (id-var-name value w))
+		  (type (binding-type (lookup n r))))
+             (case type
                ((global)
                 (eval-if-c&e m
                   (build-global-definition s n (chi e r w))))
                ((displaced-lexical)
                 (syntax-error (wrap value w) "identifier out of context"))
-               (else (syntax-error (wrap value w)
-                       "cannot define keyword at top level")))))
+               (else
+		(if (eq? type 'external-macro)
+		    (eval-if-c&e m
+				 (build-global-definition s n (chi e r w)))
+		    (syntax-error (wrap value w)
+				  "cannot define keyword at top level"))))))
           (else (eval-if-c&e m (chi-expr type value e r w s))))))))
 
 (define chi
@@ -1025,7 +1082,7 @@
     (case type
       ((lexical)
        (build-lexical-reference 'value s value))
-      ((core) (value e r w s))
+      ((core external-macro) (value e r w s))
       ((lexical-call)
        (chi-application
          (build-lexical-reference 'fun (source-annotation (car e)) value)
@@ -1276,16 +1333,28 @@
     (let ((p (local-eval-hook expanded)))
       (if (procedure? p)
           p
-          (syntax-error p "nonprocedure transfomer")))))
+          (syntax-error p "nonprocedure transformer")))))
 
 (define chi-void
   (lambda ()
     (build-application no-source (build-primref no-source 'void) '())))
 
 (define ellipsis?
-  (lambda (x)
-    (and (nonsymbol-id? x)
-         (free-id=? x (syntax (... ...))))))
+  (lambda (e r)
+    (and (nonsymbol-id? e)
+         ;; If there is a binding for the special identifier
+         ;; #{ $sc-ellipsis }# in the lexical environment of E,
+         ;; and if the associated binding type is 'ellipsis',
+         ;; then the binding's value specifies the custom ellipsis
+         ;; identifier within that lexical environment, and the
+         ;; comparison is done using 'bound-id=?'.
+         (let* ((id (make-syntax-object '$sc-ellipsis
+                                        (syntax-object-wrap e)))
+                (n (id-var-name id empty-wrap))
+                (b (lookup n r)))
+           (if (eq? (binding-type b) 'ellipsis)
+               (bound-id=? e (binding-value b))
+               (free-id=? e (syntax (... ...))))))))
 
 ;;; data
 
@@ -1418,17 +1487,17 @@
                         (let ((var.lev (binding-value b)))
                           (gen-ref src (car var.lev) (cdr var.lev) maps)))
                       (lambda (var maps) (values `(ref ,var) maps)))
-                    (if (ellipsis? e)
+                    (if (ellipsis? e r)
                         (syntax-error src "misplaced ellipsis in syntax form")
                         (values `(quote ,e) maps)))))
             (syntax-case e ()
               ((dots e)
-               (ellipsis? (syntax dots))
-               (gen-syntax src (syntax e) r maps (lambda (x) #f)))
+               (ellipsis? (syntax dots) r)
+               (gen-syntax src (syntax e) r maps (lambda (e r) #f)))
               ((x dots . y)
                ; this could be about a dozen lines of code, except that we
                ; choose to handle (syntax (x ... ...)) forms
-               (ellipsis? (syntax dots))
+               (ellipsis? (syntax dots) r)
                (let f ((y (syntax y))
                        (k (lambda (maps)
                             (call-with-values
@@ -1443,7 +1512,7 @@
                                             (cdr maps))))))))
                  (syntax-case y ()
                    ((dots . y)
-                    (ellipsis? (syntax dots))
+                    (ellipsis? (syntax dots) r)
                     (f (syntax y)
                        (lambda (maps)
                          (call-with-values
@@ -1579,6 +1648,56 @@
             (lambda (vars body) (build-lambda s vars body)))))))
 
 
+(global-extend 'core 'with-ellipsis
+ (lambda (e r w s)
+   (let* ((tmp e) (tmp (syntax-dispatch tmp '(_ any any . each-any))))
+     (if (and tmp (apply (lambda (dots e1 e2) (id? dots)) tmp))
+         (apply (lambda (dots e1 e2)
+                  (let ((id (if (symbol? dots)
+                                '$sc-ellipsis
+                                (make-syntax-object
+                                 '$sc-ellipsis
+                                 (syntax-object-wrap dots)))))
+                    (let ((ids (list id))
+                          (labels (list (gen-label)))
+                          (bindings (list (cons 'ellipsis (source-wrap dots w s)))))
+                      (let ((nw (make-binding-wrap ids labels w))
+                            (nr (extend-env labels bindings r)))
+                        (chi-body (cons e1 e2) (source-wrap e nw s) nr nw)))))
+                tmp)
+         (syntax-error 'with-ellipsis "bad syntax")))))
+
+(global-extend 'core 'let
+  (let ()
+    (define (chi-let e r w s constructor ids vals exps)
+      (if (not (valid-bound-ids? ids))
+	  (syntax-error e "duplicate bound variable in")
+	  (let ((labels (gen-labels ids))
+		(new-vars (map gen-var ids)))
+	    (let ((nw (make-binding-wrap ids labels w))
+		  (nr (extend-var-env labels new-vars r)))
+	      (constructor s
+			   new-vars
+			   (map (lambda (x) (chi x r w)) vals)
+			   (chi-body exps (source-wrap e nw s) nr nw))))))
+    (lambda (e r w s)
+      (syntax-case e ()
+	((_ ((id val) ...) e1 e2 ...)
+	 (chi-let e r w s
+		  build-let
+		  (syntax (id ...))
+		  (syntax (val ...))
+		  (syntax (e1 e2 ...))))
+	((_ f ((id val) ...) e1 e2 ...)
+	 (id? (syntax f))
+	 (chi-let e r w s
+		  build-named-let
+		  (syntax (f id ...))
+		  (syntax (val ...))
+		  (syntax (e1 e2 ...))))
+	(_ (syntax-error (source-wrap e w s)))))))
+
+
 (global-extend 'core 'letrec
   (lambda (e r w s)
     (syntax-case e ()
@@ -1595,21 +1714,6 @@
                    (map (lambda (x) (chi x r w)) (syntax (val ...)))
                    (chi-body (syntax (e1 e2 ...)) (source-wrap e w s) r w)))))))
       (_ (syntax-error (source-wrap e w s))))))
-
-(global-extend 'core 'if
-   (lambda (e r w s)
-      (syntax-case e ()
-         ((_ test then)
-          (build-conditional s
-             (chi (syntax test) r w)
-             (chi (syntax then) r w)
-             (chi-void)))
-         ((_ test then else)
-          (build-conditional s
-             (chi (syntax test) r w)
-             (chi (syntax then) r w)
-             (chi (syntax else) r w)))
-         (_ (syntax-error (source-wrap e w s))))))
 
 
 (global-extend 'core 'set!
@@ -1628,6 +1732,11 @@
               (syntax-error (wrap (syntax id) w)
                 "identifier out of context"))
              (else (syntax-error (source-wrap e w s)))))))
+      ((_ (getter arg ...) val)
+       (build-application s
+			  (chi (syntax (setter getter)) r w)
+			  (map (lambda (e) (chi e r w))
+			       (syntax (arg ... val)))))
       (_ (syntax-error (source-wrap e w s))))))
 
 (global-extend 'begin 'begin '())
@@ -1643,7 +1752,7 @@
     (define convert-pattern
       ; accepts pattern & keys
       ; returns syntax-dispatch pattern & ids
-      (lambda (pattern keys)
+      (lambda (pattern keys ellipsis?)
         (let cvt ((p pattern) (n 0) (ids '()))
           (if (id? p)
               (if (bound-id-member? p keys)
@@ -1693,13 +1802,13 @@
     (define gen-clause
       (lambda (x keys clauses r pat fender exp)
         (call-with-values
-          (lambda () (convert-pattern pat keys))
+          (lambda () (convert-pattern pat keys (lambda (e) (ellipsis? e r))))
           (lambda (p pvars)
             (cond
               ((not (distinct-bound-ids? (map car pvars)))
                (syntax-error pat
                  "duplicate pattern variable in syntax-case pattern"))
-              ((not (andmap (lambda (x) (not (ellipsis? (car x)))) pvars))
+              ((not (andmap (lambda (x) (not (ellipsis? (car x) r))) pvars))
                (syntax-error pat
                  "misplaced ellipsis in syntax-case pattern"))
               (else
@@ -1758,7 +1867,7 @@
       (let ((e (source-wrap e w s)))
         (syntax-case e ()
           ((_ val (key ...) m ...)
-           (if (andmap (lambda (x) (and (id? x) (not (ellipsis? x))))
+           (if (andmap (lambda (x) (and (id? x) (not (ellipsis? x r))))
                        (syntax (key ...)))
                (let ((x (gen-var 'tmp)))
                  ; fat finger binding and references to temp variable x
@@ -1786,13 +1895,25 @@
           (cadr x)
           (chi-top x null-env top-wrap m esew)))))
 
+(set! sc-expand3
+  (let ((m 'e) (esew '(eval)))
+    (lambda (x . rest)
+      (if (and (pair? x) (equal? (car x) noexpand))
+          (cadr x)
+          (chi-top x
+		   null-env
+		   top-wrap
+		   (if (null? rest) m (car rest))
+		   (if (or (null? rest) (null? (cdr rest)))
+		       esew
+		       (cadr rest)))))))
+
 (set! identifier?
   (lambda (x)
     (nonsymbol-id? x)))
 
 (set! datum->syntax-object
   (lambda (id datum)
-    (arg-check nonsymbol-id? id 'datum->syntax-object)
     (make-syntax-object datum (syntax-object-wrap id))))
 
 (set! syntax-object->datum
@@ -1891,6 +2012,7 @@
   (lambda (p r)
     (cond
       ((null? p) r)
+      ((eq? p '_) r)
       ((eq? p 'any) (cons '() r))
       ((pair? p) (match-empty (car p) (match-empty (cdr p) r)))
       ((eq? p 'each-any) (cons '() r))
@@ -1930,6 +2052,7 @@
   (lambda (e p w r)
     (cond
       ((not r) #f)
+      ((eq? p '_) r)
       ((eq? p 'any) (cons (wrap e w) r))
       ((syntax-object? e)
        (match*
@@ -1943,10 +2066,13 @@
   (lambda (e p)
     (cond
       ((eq? p 'any) (list e))
+      ((eq? p '_) '())
       ((syntax-object? e)
        (match* (unannotate (syntax-object-expression e))
          p (syntax-object-wrap e) '()))
       (else (match* (unannotate e) p empty-wrap '())))))
+
+(set! sc-chi chi)
 ))
 )
 
@@ -1954,47 +2080,58 @@
    (lambda (x)
       (syntax-case x ()
          ((_ () e1 e2 ...)
-          (syntax (begin e1 e2 ...)))
+          (syntax (let () e1 e2 ...)))
          ((_ ((out in)) e1 e2 ...)
-          (syntax (syntax-case in () (out (begin e1 e2 ...)))))
+          (syntax (syntax-case in () (out (let () e1 e2 ...)))))
          ((_ ((out in) ...) e1 e2 ...)
           (syntax (syntax-case (list in ...) ()
-                     ((out ...) (begin e1 e2 ...))))))))
+                     ((out ...) (let () e1 e2 ...))))))))
 
 (define-syntax syntax-rules
+  (lambda (xx)
+    (define (expand-syntax-rules dots keys docstrings clauses)
+      (with-syntax
+          (((k ...) keys)
+           ((docstring ...) docstrings)
+           ((((keyword . pattern) template) ...) clauses))
+        (with-syntax
+            ((form (syntax (lambda (x)
+                             docstring ...     ; optional docstring
+                             ;; #((macro-type . syntax-rules)
+                             ;;   (patterns pattern ...)) ; embed patterns as procedure metadata
+                             (syntax-case x (k ...)
+                               ((dummy . pattern) (syntax template))
+                               ...)))))
+          (if dots
+              (with-syntax ((dots dots))
+                (syntax (with-ellipsis dots form)))
+              (syntax form)))))
+    (syntax-case xx ()
+      ((_ (k ...) ((keyword . pattern) template) ...)
+       (expand-syntax-rules #f (syntax (k ...)) (syntax ()) (syntax (((keyword . pattern) template) ...))))
+      ((_ (k ...) docstring ((keyword . pattern) template) ...)
+       (string? (syntax-object->datum (syntax docstring)))
+       (expand-syntax-rules #f (syntax (k ...)) (syntax (docstring)) (syntax (((keyword . pattern) template) ...))))
+      ((_ dots (k ...) ((keyword . pattern) template) ...)
+       (identifier? (syntax dots))
+       (expand-syntax-rules (syntax dots) (syntax (k ...)) (syntax ()) (syntax (((keyword . pattern) template) ...))))
+      ((_ dots (k ...) docstring ((keyword . pattern) template) ...)
+       (and (identifier? (syntax dots)) (string? (syntax-object->datum (syntax docstring))))
+       (expand-syntax-rules (syntax dots) (syntax (k ...)) (syntax (docstring)) (syntax (((keyword . pattern) template) ...)))))))
+
+(define-syntax define-syntax-rule
   (lambda (x)
     (syntax-case x ()
-      ((_ (k ...) ((keyword . pattern) template) ...)
-       (syntax (lambda (x)
-                (syntax-case x (k ...)
-                  ((dummy . pattern) (syntax template))
-                  ...)))))))
-
-(define-syntax or
-   (lambda (x)
-      (syntax-case x ()
-         ((_) (syntax #f))
-         ((_ e) (syntax e))
-         ((_ e1 e2 e3 ...)
-          (syntax (let ((t e1)) (if t t (or e2 e3 ...))))))))
-
-(define-syntax and
-   (lambda (x)
-      (syntax-case x ()
-         ((_ e1 e2 e3 ...) (syntax (if e1 (and e2 e3 ...) #f)))
-         ((_ e) (syntax e))
-         ((_) (syntax #t)))))
-
-(define-syntax let
-   (lambda (x)
-      (syntax-case x ()
-         ((_ ((x v) ...) e1 e2 ...)
-          (andmap identifier? (syntax (x ...)))
-          (syntax ((lambda (x ...) e1 e2 ...) v ...)))
-         ((_ f ((x v) ...) e1 e2 ...)
-          (andmap identifier? (syntax (f x ...)))
-          (syntax ((letrec ((f (lambda (x ...) e1 e2 ...))) f)
-                    v ...))))))
+      ((_ (name . pattern) template)
+       (syntax (define-syntax name
+                 (syntax-rules ()
+                   ((_ . pattern) template)))))
+      ((_ (name . pattern) docstring template)
+       (string? (syntax-object->datum (syntax docstring)))
+       (syntax (define-syntax name
+                 (syntax-rules ()
+                   docstring
+                   ((_ . pattern) template))))))))
 
 (define-syntax let*
   (lambda (x)
@@ -2007,25 +2144,6 @@
              (with-syntax ((body (f (cdr bindings)))
                            (binding (car bindings)))
                (syntax (let (binding) body)))))))))
-
-(define-syntax cond
-  (lambda (x)
-    (syntax-case x ()
-      ((_ m1 m2 ...)
-       (let f ((clause (syntax m1)) (clauses (syntax (m2 ...))))
-         (if (null? clauses)
-             (syntax-case clause (else =>)
-               ((else e1 e2 ...) (syntax (begin e1 e2 ...)))
-               ((e0) (syntax (let ((t e0)) (if t t))))
-               ((e0 => e1) (syntax (let ((t e0)) (if t (e1 t)))))
-               ((e0 e1 e2 ...) (syntax (if e0 (begin e1 e2 ...))))
-               (_ (syntax-error x)))
-             (with-syntax ((rest (f (car clauses) (cdr clauses))))
-               (syntax-case clause (else =>)
-                 ((e0) (syntax (let ((t e0)) (if t t rest))))
-                 ((e0 => e1) (syntax (let ((t e0)) (if t (e1 t) rest))))
-                 ((e0 e1 e2 ...) (syntax (if e0 (begin e1 e2 ...) rest)))
-                 (_ (syntax-error x))))))))))
 
 (define-syntax do
    (lambda (orig-x)
@@ -2080,19 +2198,19 @@
         (lambda (p lev)
            (syntax-case p (unquote unquote-splicing quasiquote)
               ((unquote p)
-               (if (fx= lev 0)
+               (if (= lev 0)
                    (syntax p)
                    (quasicons (syntax (quote unquote))
-                              (quasi (syntax (p)) (fx- lev 1)))))
+                              (quasi (syntax (p)) (- lev 1)))))
               (((unquote-splicing p) . q)
-               (if (fx= lev 0)
+               (if (= lev 0)
                    (quasiappend (syntax p) (quasi (syntax q) lev))
                    (quasicons (quasicons (syntax (quote unquote-splicing))
-                                         (quasi (syntax (p)) (fx- lev 1)))
+                                         (quasi (syntax (p)) (- lev 1)))
                               (quasi (syntax q) lev))))
               ((quasiquote p)
                (quasicons (syntax (quote quasiquote))
-                          (quasi (syntax (p)) (fx+ lev 1))))
+                          (quasi (syntax (p)) (+ lev 1))))
               ((p . q)
                (quasicons (quasi (syntax p) lev) (quasi (syntax q) lev)))
               (#(x ...) (quasivector (quasi (syntax (x ...)) lev)))
@@ -2122,16 +2240,16 @@
       (syntax-case x ()
          ((_ e)
           (error 'unquote
-                 "expression ,~s not valid outside of quasiquote"
-                 (syntax-object->datum (syntax e)))))))
+		 "expression ,~s not valid outside of quasiquote"
+		 (syntax-object->datum (syntax e)))))))
 
 (define-syntax unquote-splicing
    (lambda (x)
       (syntax-case x ()
          ((_ e)
           (error 'unquote-splicing
-                 "expression ,@~s not valid outside of quasiquote"
-                 (syntax-object->datum (syntax e)))))))
+		 "expression ,@~s not valid outside of quasiquote"
+		 (syntax-object->datum (syntax e)))))))
 
 (define-syntax case
   (lambda (x)
@@ -2166,4 +2284,3 @@
               (syntax e))
              ((_ x (... ...))
               (syntax (e x (... ...)))))))))))
-

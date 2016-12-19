@@ -28,8 +28,3 @@
 (define datum->syntax datum->syntax-object)
 (define syntax->datum syntax-object->datum)
 (set! expand-macro sc-expand)
-
-(define-macro (define-syntax-rule id-pattern . template)
-  `(define-syntax ,(car id-pattern)
-     (syntax-rules ()
-       ((,(car id-pattern) . ,(cdr id-pattern)) ,@template))))
