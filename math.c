@@ -143,3 +143,13 @@ logior (SCM x) ///((arity . n))
     }
   return make_number (n);
 }
+
+SCM
+ash (SCM n, SCM count)
+{
+  assert (TYPE (n) == NUMBER);
+  assert (TYPE (count) == NUMBER);
+  int cn = VALUE (n);
+  int ccount = VALUE (count);
+  return make_number ((ccount < 0) ? cn >> -ccount : cn << ccount);
+}
