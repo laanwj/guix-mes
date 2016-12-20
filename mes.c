@@ -854,7 +854,8 @@ read_byte ()
 SCM
 unread_byte (SCM i)
 {
-  return ungetchar (VALUE (i));
+  ungetchar (VALUE (i));
+  return i;
 }
 
 SCM
