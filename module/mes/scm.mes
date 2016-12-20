@@ -151,6 +151,12 @@
 (define (remainder x y)
   (- x (* (quotient x y) y)))
 
+(define (even? x)
+  (= 0 (remainder x 2)))
+
+(define (odd? x)
+  (= 1 (remainder x 2)))
+
 (define (expt x y)
   (let loop ((s 1) (count y))
     (if (= 0 count) s
