@@ -91,6 +91,15 @@
       (if (= i n) '()
           (cons (string-ref s i) (loop (+ i 1)))))))
 
+(define (string->number s . radix)
+  (if (and (pair? radix) (not (= (car radix) 10))) '*STRING->NUMBER:RADIX-NOT-SUPPORTED
+      (let* ((lst (string->list s))
+             (sign (if (char=? (car lst) #\-) -1 1))
+             (lst (if (= sign -1) (cdr lst) lst)))
+        (let loop ((lst lst) (n 0))
+          (if (null? lst) (* sign n)
+              (loop (cdr lst) (+ (* n 10) (- (char->integer (car lst)) (char->integer #\0)))))))))
+
 (define (vector . rest) (list->vector rest))
 (define c:make-vector make-vector)
 (define (make-vector n . x)
