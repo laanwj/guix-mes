@@ -185,6 +185,9 @@
 (define (1- x)
   (- x 1))
 
+(define (abs x)
+  (if (>= x 0) x (- x)))
+
 (define (expt x y)
   (let loop ((s 1) (count y))
     (if (= 0 count) s
