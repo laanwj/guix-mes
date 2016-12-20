@@ -67,6 +67,10 @@
   `(if ,expr
        ((lambda () ,@body))))
 
+(define-macro (unless expr . body)
+  `(if (not ,expr)
+       ((lambda () ,@body))))
+
 (define-macro (do init test . body)
   `(let loop ((,(caar init) ,(cadar init)))
      (when (not ,@test)
