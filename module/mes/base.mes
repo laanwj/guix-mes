@@ -41,6 +41,8 @@
           (list 'if (car x) (cons 'and (cdr x))
                 #f))))
 
+(define eqv? eq?)
+
 (define (equal? a b) ;; FIXME: only 2 arg
   (if (and (null? a) (null? b)) #t
       (if (and (pair? a) (pair? b))
