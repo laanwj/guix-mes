@@ -132,10 +132,8 @@
           (member x (cdr lst)))))
 
 (define (for-each f l . r)
-  (if (null? l) '() ;; IF
-      (if (null? r) (begin (f (car l)) (for-each f (cdr l)))
-          (if (null? (cdr r))
-              (for-each f (cdr l) (cdar r))))))
+  (if (pair? l) (if (null? r) (begin (f (car l)) (for-each f (cdr l)))
+                    (if (null? (cdr r)) (begin (f (car l) (caar r)) (for-each f (cdr l) (cdar r)))))))
 
 (define (<= . rest)
   (or (apply < rest)
