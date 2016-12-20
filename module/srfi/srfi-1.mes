@@ -39,3 +39,35 @@
 
 (define (append-map f lst)
   (apply append (map f lst)))
+
+;;; nyacc requirements
+
+(define (fold proc init lst1 . rest)
+  (if (null? rest)
+      (let loop ((lst lst1) (result init))
+        (if (null? lst) result
+            (loop (cdr lst) (proc (car lst) result))))
+      '*FOLD-n-NOT-SUPPORTED))
+
+(define (fold-right proc init lst1 . rest)
+  (if (null? rest)
+      (let loop ((lst lst1))
+        (if (null? lst) init
+            (proc (car lst) (loop (cdr lst)))))
+      '*FOLD-RIGHT-n-NOT-SUPPORTED))
+
+(define (remove pred lst) (filter (lambda (x) (not (pred x))) lst))
+
+(define (append-reverse rev-head tail)
+  (let loop ((rev-head rev-head) (tail tail))
+    (if (null? rev-head) tail
+	(loop (cdr rev-head) (cons (car rev-head) tail)))))
+
+(define (reverse! lst)
+  (let loop ((lst lst) (result '()))
+    (if (null? lst) result
+        (let ((tail (cdr lst)))
+          (set-cdr! lst result)
+          (loop tail lst)))))
+
+(mes-use-module (srfi srfi-1.upstream))

@@ -59,6 +59,7 @@ TESTS:=\
  tests/vector.test\
  tests/scm.test\
  tests/cwv.test\
+ tests/srfi-1.test\
  tests/optargs.test\
  tests/fluids.test\
  tests/catch.test\
