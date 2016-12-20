@@ -41,6 +41,7 @@
           (list 'if (car x) (cons 'and (cdr x))
                 #f))))
 
+(define (and=> value procedure) (and value (procedure value)))
 (define eqv? eq?)
 
 (define (equal? a b) ;; FIXME: only 2 arg
