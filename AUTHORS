@@ -28,3 +28,6 @@ module/mes/optargs.upstream.mes
 
 Srfi-1 bits from Guile
 module/srfi/srfi-1.upstream.mes
+
+Sxml xpath from Guile
+module/sxml/xpath.upstream.mes
