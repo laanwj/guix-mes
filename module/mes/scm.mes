@@ -229,6 +229,22 @@
   (if (null? lst) '()
       (append (reverse (cdr lst)) (cons (car lst) '()))))
 
+(define (filter pred lst)
+  (let loop ((lst lst))
+    (if (null? lst) '()
+        (if (pred (car lst))
+            (cons (car lst) (loop (cdr lst)))
+            (loop (cdr lst))))))
+
+(define (delete x lst)
+  (filter (lambda (e) (not (equal? e x))) lst))
+
+(define (delq x lst)
+  (filter (lambda (e) (not (eq? e x))) lst))
+
+(define (vector-copy x)
+  (list->vector (vector->list x)))
+
 (define (eof-object? x)
   (or (and (number? x) (= x -1))
       (and (char? x) (eof-object? (char->integer x)))))
