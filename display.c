@@ -78,6 +78,12 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
     case NUMBER: fprintf (f, "%d", VALUE (x)); break;
     case PAIR:
       {
+        if (car (x) == cell_closure) {
+          fprintf (f, "#<procedure #f ");
+          display_ (f, (caddr (x)));
+          fprintf (f, ">");
+          return cell_unspecified;
+        }
         if (car (x) == cell_circular) {
           fprintf (f, "(*circ* . #-1#)");
           return cell_unspecified;
@@ -127,6 +133,15 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
           fprintf (f, "%s", NAME (x));
         else
           display_ (f, STRING (x));
+        fprintf (f, " ");
+        switch (FUNCTION (x).arity)
+          {
+          case -1: fprintf (f, "(. x)"); break;
+          case 0: fprintf (f, "()"); break;
+          case 1: fprintf (f, "(x)"); break;
+          case 2: fprintf (f, "(x y)"); break;
+          case 3: fprintf (f, "(x y z)"); break;
+          }
         fprintf (f, ">");
         break;
       }
