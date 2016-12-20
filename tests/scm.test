@@ -115,6 +115,15 @@ exit $?
 ;;      (circular-list? x))
 ;;    #t))
 
+(pass-if-equal "iota"
+    '(0 1 2) (iota 3))
+
+(pass-if-equal "iota 0"
+    '() (iota 0))
+
+(pass-if-equal "iota -1"
+    '() (iota -1))
+
 (pass-if "reverse" (sequal? (reverse '(1 2 3)) '(3 2 1)))
 
 (pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes) (guile (display ": pass: *GUILE*") 'mes)) 'mes))

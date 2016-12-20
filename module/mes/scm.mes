@@ -219,6 +219,10 @@
     (if (= 0 k) (car lst)
         (loop (cdr lst) (- k 1)))))
 
+(define (iota n)
+  (if (<= n 0) '()
+      (append2 (iota (- n 1)) (list (- n 1)))))
+
 ;; srfi-1
 (define (last-pair lst)
   (let loop ((lst lst))

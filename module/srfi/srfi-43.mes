@@ -25,7 +25,7 @@
 ;;; Code:
 
 (define (vector-map f v)
-  (list->vector (map f (vector->list v) (iota (vector-length v)))))
+  (list->vector (map f (iota (vector-length v)) (vector->list v))))
 
 (define (vector-for-each f v)
-  (for-each f (vector->list v) (iota (vector-length v))))
+  (for-each f (iota (vector-length v)) (vector->list v)))
