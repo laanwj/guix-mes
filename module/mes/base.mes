@@ -52,8 +52,6 @@
                   (equal? (vector->list a) (vector->list b))
                   (eq? a b))))))
 
-(define guile? (not (pair? (current-module))))
-
 (define (list? x)
   (or (null? x)
       (and (pair? x) (list? (cdr x)))))

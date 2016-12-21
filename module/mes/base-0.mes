@@ -26,7 +26,11 @@
 
 ;;; Code:
 
-#f ;; FIXME -- needed for --dump, then --load
+(define (effective-version) "0.3")
+(define mes? #t)
+(define guile? #f)
+(define guile-1.8? #f)
+(define guile-2? #f)
 
 (define (primitive-eval e) (eval-env e (current-module)))
 (define eval eval-env)

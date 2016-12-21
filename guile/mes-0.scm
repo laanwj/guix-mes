@@ -27,5 +27,9 @@
 
 (define-macro (mes-use-module . rest) #t)
 (define builtin? procedure?) ; not strictly true, but ok for tests/*.test
+(define mes? (pair? (current-module)))
 (define guile? (not (pair? (current-module))))
+(define guile-1.8? (equal? (effective-version) "1.8"))
+(define guile-2? (and (not mes?) (not guile-1.8?)))
+(if guile-1.8? (use-modules (ice-9 syncase)))
 (define EOF (if #f #f))

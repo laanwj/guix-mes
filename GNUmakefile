@@ -85,7 +85,7 @@ dump: module/mes/read-0.mo
 
 guile-check:
 	set -e; for i in $(TESTS); do\
-		guile -s <(cat $(MES-0) module/mes/test.mes $$i);\
+		$(GUILE) -s <(cat $(MES-0) module/mes/test.mes $$i);\
 	done
 
 MAIN_C:=doc/examples/main.c
