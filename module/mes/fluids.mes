@@ -24,24 +24,19 @@
 
 (mes-use-module (mes scm))
 
-(define (env:define a+ a)
+(define (f:env:define a+ a)
   (set-cdr! a+ (cdr a))
   (set-cdr! a a+)
   ;;(set-cdr! (assq '*closure* a) a+)
   )
 
-(define (env:escape-closure a)
-  (let loop ((a a) (n 1))
-    (if (eq? (caar a) '*closure*) (if (= 0 n) a
-                                      (loop (cdr a) (- n 1)))
-        (loop (cdr a) n))))
-
-(define (sexp:define e a)
-  (if (atom? (cadr e)) (cons (cadr e) (eval-env (caddr e) a))
-      (cons (caadr e) (eval-env (cons 'lambda (cons (cdadr e) (cddr e))) a))))
+(define (env:escape-closure a n)
+  (if (closure? (car a)) (if (= 0 n) a
+                             (env:escape-closure (cdr a) (- n 1)))
+      (env:escape-closure (cdr a) n)))
 
 (define-macro (module-define! name value a)
-  `(env:define (cons (sexp:define (cons 'define (cons ',name (cons ,value '()))) ,a) '()) (env:escape-closure ,a)))
+  `(f:env:define (cons (sexp:define (cons 'define (cons ',name (cons ,value '()))) ,a) '()) (env:escape-closure ,a 1)))
 
 (define-macro (make-fluid . default)
   `(begin

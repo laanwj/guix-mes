@@ -163,7 +163,6 @@ SCM r1 = 0; // param 1
 SCM r2 = 0; // param 2
 SCM r3 = 0; // param 3
 
-#include "define.h"
 #include "display.h"
 #include "lib.h"
 #include "math.h"
@@ -453,10 +452,6 @@ vm_eval_env ()
             return make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
           case cell_closure: return r1;
           case cell_symbol_if: return if_env (cdr (r1), r0);
-#if !BOOT
-          case cell_symbol_define: return define_env (r1, r0);
-          case cell_symbol_define_macro: return define_env (r1, r0);
-#endif
 #if 1 //!BOOT
           case cell_symbol_set_x: {
             SCM x = eval_env (caddr (r1), r0); return set_env_x (cadr (r1), x, r0);
@@ -1102,7 +1097,6 @@ mes_builtins (SCM a)
 {
 #include "mes.i"
 
-#include "define.i"
 #include "display.i"
 #include "lib.i"
 #include "math.i"
@@ -1112,7 +1106,6 @@ mes_builtins (SCM a)
 #include "string.i"
 #include "type.i"
 
-#include "define.environment.i"
 #include "display.environment.i"
 #include "lib.environment.i"
 #include "math.environment.i"
@@ -1206,7 +1199,7 @@ SCM
 load_env (SCM a) ///((internal))
 {
   r0 =a;
-#if !READER
+#if 1 //!READER
   g_stdin = fopen ("module/mes/read-0.mes", "r");
   g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
 #endif
@@ -1262,7 +1255,6 @@ dump ()
 }
 
 #include "type.c"
-#include "define.c"
 #include "display.c"
 #include "lib.c"
 #include "math.c"

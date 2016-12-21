@@ -52,11 +52,9 @@
 (define (ftell port) 0)
 (define (false-if-exception x) x)
 
-(define (cons* x . rest)
-  (define (loop rest)
-    (if (null? (cdr rest)) (car rest)
-        (cons (car rest) (loop (cdr rest)))))
-  (loop (cons x rest)))
+(define (cons* . rest)
+  (if (null? (cdr rest)) (car rest)
+      (cons (car rest) (apply-env cons* (cdr rest) (current-module)))))
 
 (define (apply f h . t) (apply-env f (cons h t) (current-module)))
 (define (apply f h . t)
