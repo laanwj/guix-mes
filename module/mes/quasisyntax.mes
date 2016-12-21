@@ -22,7 +22,6 @@
 
 ;;; Code:
 
-(mes-use-module (mes psyntax-0))
-(mes-use-module (mes psyntax-pp))
-(mes-use-module (mes psyntax-1))
-(mes-use-module (mes quasisyntax))
+(mes-use-module (mes psyntax))
+(define syntax-violation error)
+(mes-use-module (mes quasisyntax.upstream))
