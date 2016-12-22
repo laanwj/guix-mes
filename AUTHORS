@@ -26,6 +26,9 @@ module/mes/psyntax.pp [generated]
 Optargs from Guile
 module/mes/optargs.scm
 
+Pmatch from Guile
+module/mes/pmatch.scm
+
 Srfi-1 bits from Guile
 module/srfi/srfi-1.scm
 
