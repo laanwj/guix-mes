@@ -350,12 +350,6 @@ vm_evlis_env ()
 }
 
 SCM
-vm_call_lambda ()
-{
-  return vm_call (vm_begin_env, r1, cell_undefined, r0);
-}
-
-SCM
 call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 {
   SCM cl = cons (cons (cell_closure, x), x);
@@ -363,7 +357,7 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
   r0 = cl;
   r2 = a;
   r3 = aa;
-  return vm_call_lambda ();
+  return vm_begin_env ();
 }
 
 SCM
