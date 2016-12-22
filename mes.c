@@ -350,8 +350,7 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
   r0 = cl;
   r2 = a;
   r3 = aa;
-  g_target = BEGIN;
-  return eval_apply ();
+  return cell_unspecified;
 }
 
 SCM
@@ -370,7 +369,7 @@ eval_apply ()
 
  evlis:
   if (r1 == cell_nil) return cell_nil;
-  if (TYPE (r1) != PAIR) goto eval; // (r1, r0);
+  if (TYPE (r1) != PAIR) goto eval;
   r2 = eval_env (car (r1), r0);
   r1 = evlis_env (cdr (r1), r0);
   return cons (r2, r1);
@@ -380,7 +379,11 @@ eval_apply ()
     {
       if (TYPE (r1) == FUNCTION) return call (r1, r2);
       if (r1 == cell_symbol_call_with_values)
-        return call_with_values_env (car (r2), cadr (r2), r0);
+        {
+          r1 = car (r2);
+          r2 = cadr (r2);
+          goto call_with_values;
+        }
       if (r1 == cell_symbol_current_module) return r0;
     }
   else
@@ -391,7 +394,8 @@ eval_apply ()
           SCM args = cadr (r1);
           SCM body = cddr (r1);
           SCM p = pairlis (args, r2, r0);
-          return call_lambda (body, p, p, r0);
+          call_lambda (body, p, p, r0);
+          goto begin;
         }
       case cell_closure:
         {
@@ -400,11 +404,16 @@ eval_apply ()
           SCM aa = cdadr (r1);
           aa = cdr (aa);
           SCM p = pairlis (args, r2, aa);
-          return call_lambda (body, p, aa, r0);
+          call_lambda (body, p, aa, r0);
+          goto begin;
         }
 #if BOOT
       case cell_symbol_label:
-        return apply_env (caddr (r1), r2, cons (cons (cadr (r1), caddr (r1)), r0));
+        {
+          r0 = cons (cons (cadr (r1), caddr (r1)), r0);
+          r1 = caddr (r1);
+          goto apply;
+        }
 #endif
       }
   SCM e = eval_env (r1, r0);
@@ -424,7 +433,8 @@ eval_apply ()
       fprintf (stderr, "]\n");
       assert (!"cannot apply");
     }
-  return apply_env (e, r2, r0);
+  r1 = e;
+  goto apply;
 
  eval:
   switch (TYPE (r1))
@@ -441,19 +451,14 @@ eval_apply ()
           case cell_symbol_null_p: return null_p (eval_env (CADR (r1), r0));
 #endif // FIXED_PRIMITIVES
           case cell_symbol_quote: return cadr (r1);
-#if QUASISYNTAX
-          case cell_symbol_syntax: return cadr (r1);
-#endif
-          case cell_symbol_begin: return begin_env (r1, r0);
+          case cell_symbol_begin: goto begin;
           case cell_symbol_lambda:
             return make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
           case cell_closure: return r1;
-          case cell_symbol_if: return if_env (cdr (r1), r0);
-#if 1 //!BOOT
+          case cell_symbol_if: {r1=cdr (r1); goto label_if;}
           case cell_symbol_set_x: {
             SCM x = eval_env (caddr (r1), r0); return set_env_x (cadr (r1), x, r0);
           }
-#endif
           default: {
             SCM x = macro_expand_env (r1, r0);
             if (x != r1)
@@ -463,12 +468,13 @@ eval_apply ()
                     set_cdr_x (r1, cdr (x));
                     set_car_x (r1, car (x));
                   }
-                else
-                  r1 = x;
-                return eval_env (x, r0);
+                r1 = x;
+                goto eval;
               }
             SCM m = evlis_env (CDR (r1), r0);
-            return apply_env (car (r1), m, r0);
+            r1 = car (r1);
+            r2 = m;
+            goto apply;
           }
           }
       }
@@ -484,7 +490,11 @@ eval_apply ()
   SCM expanders;
   if (TYPE (r1) == PAIR
       && (macro = lookup_macro (car (r1), r0)) != cell_f)
-    return apply_env (macro, CDR (r1), r0);
+    {
+      r2 = CDR (r1);
+      r1 = macro;
+      goto apply;
+    }
   else if (TYPE (r1) == PAIR
            && TYPE (CAR (r1)) == SYMBOL
            && ((expanders = assq_ref_cache (cell_symbol_sc_expander_alist, r0)) != cell_undefined)
@@ -492,7 +502,11 @@ eval_apply ()
     {
       SCM sc_expand = assq_ref_cache (cell_symbol_macro_expand, r0);
       if (sc_expand != cell_undefined && sc_expand != cell_f)
-        r1 = apply_env (sc_expand, cons (r1, cell_nil), r0);
+        {
+          r2 = cons (r1, cell_nil);
+          r1 = sc_expand;
+          goto apply;
+        }
     }
   return r1;
 
@@ -510,6 +524,11 @@ eval_apply ()
             r1 = append2 (f, cdr (r1));
           }
       }
+    if (CDR (r1) == cell_nil)
+      {
+        r1 = car (r1);
+        goto eval;
+      }
     r = eval_env (car (r1), r0);
     r1 = CDR (r1);
   }
@@ -519,9 +538,15 @@ eval_apply ()
  label_if:
   x = eval_env (car (r1), r0);
   if (x != cell_f)
-    return eval_env (cadr (r1), r0);
+    {
+      r1 = cadr (r1);
+      goto eval;
+    }
   if (cddr (r1) != cell_nil)
-    return eval_env (caddr (r1), r0);
+    {
+      r1 = caddr (r1);
+      goto eval;
+    }
   return cell_unspecified;
 
   SCM v;
@@ -529,7 +554,9 @@ eval_apply ()
   v = apply_env (r1, cell_nil, r0);
   if (TYPE (v) == VALUES)
     v = CDR (v);
-  return apply_env (r2, v, r0);
+  r1 = r2;
+  r2 = v;
+  goto apply;
 }
 
 SCM
