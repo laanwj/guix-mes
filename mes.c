@@ -30,7 +30,7 @@
 
 #define DEBUG 0
 #define FIXED_PRIMITIVES 1
-#define READER 1
+#define READER 0
 
 #if READER
 int ARENA_SIZE = 1000000;
@@ -1195,10 +1195,9 @@ SCM
 read_input_file_env (SCM a)
 {
   r0 = a;
-#if READER
+  if (assq_ref_cache (cell_symbol_read_input_file, r0) != cell_undefined)
+    return apply_env (cell_symbol_read_input_file, cell_nil, r0);
   return read_input_file_env_ (read_env (r0), r0);
-#endif
-  return apply_env (cell_symbol_read_input_file, cell_nil, r0);
 }
 
 SCM
