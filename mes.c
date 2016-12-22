@@ -29,7 +29,7 @@
 #include <stdbool.h>
 
 #define DEBUG 0
-#define QUASIQUOTE 1
+#define QUASIQUOTE 0
 #define QUASISYNTAX 0
 #define ENV_CACHE 0
 #define FIXED_PRIMITIVES 1
