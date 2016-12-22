@@ -467,7 +467,17 @@ vm_eval_env ()
 #endif //QUASISYNTAX
           default: {
             SCM x = expand_macro_env (r1, r0);
-            if (x != r1) return eval_env (x, r0);
+            if (x != r1)
+              {
+                if (TYPE (x) == PAIR)
+                  {
+                    set_cdr_x (r1, cdr (x));
+                    set_car_x (r1, car (x));
+                  }
+                else
+                  r1 = x;
+                return eval_env (x, r0);
+              }
             SCM m = evlis_env (CDR (r1), r0);
             return apply_env (car (r1), m, r0);
           }
