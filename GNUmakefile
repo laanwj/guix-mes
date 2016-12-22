@@ -67,6 +67,7 @@ TESTS:=\
  tests/let-syntax.test\
  tests/record.test\
  tests/match.test\
+ tests/peg.test\
 #
 
 BASE-0:=module/mes/base-0.mes

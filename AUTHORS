@@ -26,6 +26,9 @@ module/mes/psyntax.pp [generated]
 Optargs from Guile
 module/mes/optargs.scm
 
+PEG from Guile
+module/mes/peg/
+
 Pmatch from Guile
 module/mes/pmatch.scm
 
