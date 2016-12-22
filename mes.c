@@ -29,9 +29,6 @@
 #include <stdbool.h>
 
 #define DEBUG 0
-#define QUASIQUOTE 0
-#define QUASISYNTAX 0
-#define ENV_CACHE 0
 #define FIXED_PRIMITIVES 1
 #define READER 1
 
@@ -121,9 +118,6 @@ scm scm_symbol_current_module = {SYMBOL, "current-module"};
 scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
 
-scm scm_symbol_the_unquoters = {SYMBOL, "*the-unquoters*"};
-scm scm_symbol_the_unsyntaxers = {SYMBOL, "*the-unsyntaxers*"};
-
 scm scm_symbol_car = {SYMBOL, "car"};
 scm scm_symbol_cdr = {SYMBOL, "cdr"};
 scm scm_symbol_null_p = {SYMBOL, "null?"};
@@ -168,7 +162,6 @@ SCM r3 = 0; // param 3
 #include "math.h"
 #include "mes.h"
 #include "posix.h"
-#include "quasiquote.h"
 #include "reader.h"
 #include "string.h"
 #include "type.h"
@@ -457,14 +450,6 @@ vm_eval_env ()
             SCM x = eval_env (caddr (r1), r0); return set_env_x (cadr (r1), x, r0);
           }
 #endif
-#if QUASIQUOTE
-          case cell_symbol_unquote: return eval_env (cadr (r1), r0);
-          case cell_symbol_quasiquote: return eval_quasiquote (cadr (r1), add_unquoters (r0));
-#endif //QUASIQUOTE
-#if QUASISYNTAX
-          case cell_symbol_unsyntax: return eval_env (cadr (r1), r0);
-          case cell_symbol_quasisyntax: return eval_quasisyntax (cadr (r1), add_unsyntaxers (r0));
-#endif //QUASISYNTAX
           default: {
             SCM x = expand_macro_env (r1, r0);
             if (x != r1)
@@ -1112,7 +1097,6 @@ mes_builtins (SCM a)
 #include "lib.i"
 #include "math.i"
 #include "posix.i"
-#include "quasiquote.i"
 #include "reader.i"
 #include "string.i"
 #include "type.i"
@@ -1122,27 +1106,9 @@ mes_builtins (SCM a)
 #include "math.environment.i"
 #include "mes.environment.i"
 #include "posix.environment.i"
-  //#include "quasiquote.environment.i"
 #include "reader.environment.i"
 #include "string.environment.i"
 #include "type.environment.i"
-
-#if QUASIQUOTE
-  SCM cell_unquote = assq_ref_cache (cell_symbol_unquote, a);
-  SCM cell_unquote_splicing = assq_ref_cache (cell_symbol_unquote_splicing, a);
-  SCM the_unquoters = cons (cons (cell_symbol_unquote, cell_unquote),
-                            cons (cons (cell_symbol_unquote_splicing, cell_unquote_splicing),
-                                  cell_nil));
-  a = acons (cell_symbol_the_unquoters, the_unquoters, a);
-#endif
-#if QUASISYNTAX
-  SCM cell_unsyntax = assq_ref_cache (cell_symbol_unsyntax, a);
-  SCM cell_unsyntax_splicing = assq_ref_cache (cell_symbol_unsyntax_splicing, a);
-  SCM the_unsyntaxers = cons (cons (cell_symbol_unsyntax, cell_unsyntax),
-                              cons (cons (cell_symbol_unsyntax_splicing, cell_unsyntax_splicing),
-                                  cell_nil));
-  a = acons (cell_symbol_the_unsyntaxers, the_unsyntaxers, a);
-#endif
 
   a = add_environment (a, "*dot*", cell_dot);
   a = add_environment (a, "*foo-bar-baz*", cell_nil); // FIXME: some off-by one?
@@ -1270,7 +1236,6 @@ dump ()
 #include "lib.c"
 #include "math.c"
 #include "posix.c"
-#include "quasiquote.c"
 #include "reader.c"
 #include "string.c"
 

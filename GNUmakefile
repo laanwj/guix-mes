@@ -33,7 +33,6 @@ mes.o: display.c display.h display.i display.environment.i
 mes.o: lib.c lib.h lib.i lib.environment.i
 mes.o: math.c math.h math.i math.environment.i
 mes.o: posix.c posix.h posix.i posix.environment.i
-mes.o: quasiquote.c quasiquote.h quasiquote.i quasiquote.environment.i
 mes.o: reader.c reader.h reader.i reader.environment.i
 mes.o: string.c string.h string.i string.environment.i
 mes.o: type.c type.h type.i type.environment.i
