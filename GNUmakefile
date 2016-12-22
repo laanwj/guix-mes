@@ -113,10 +113,12 @@ guile-mescc: mescc.cat
 paren: all
 	scripts/paren.mes
 
-GUILE_GIT:=$(HOME)/src/guile
-psyntax-import:
-	git --git-dir=$(GUILE_GIT)/.git --work-tree=$(GUILE_GIT) show ba8a709:ice-9/psyntax.ss > module/mes/psyntax.ss
-	git --git-dir=$(GUILE_GIT)/.git --work-tree=$(GUILE_GIT) show ba8a709:ice-9/psyntax.pp > module/mes/psyntax-pp.mes
+GUILE_GIT:=$(HOME)/src/guile-1.8
+GUILE_COMMIT:=ba8a709
+psyntax-import: module/mes/psyntax.ss module/mes/psyntax.pp
+
+module/mes/psyntax.%: $(GUILE_GIT)/ice-9/psyntax.%
+	git --git-dir=$(GUILE_GIT)/.git --work-tree=$(GUILE_GIT) show $(GUILE_COMMIT):ice-9/$(@F > $@
 
 help: help-top
 

@@ -19,9 +19,9 @@ module/mes/match.scm
 Portable LALR(1) parser generator
 module/mes/lalr.scm
 
-Portable syntax-case from Chez Scheme
+Portable syntax-case from Chez Scheme; patches from Guile
 module/mes/psyntax.ss
-module/mes/psyntax-pp.mes [generated]
+module/mes/psyntax.pp [generated]
 
 Optargs from Guile
 module/mes/optargs.scm

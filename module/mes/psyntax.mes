@@ -23,6 +23,6 @@
 ;;; Code:
 
 (mes-use-module (mes psyntax-0))
-(mes-use-module (mes psyntax-pp))
+(include-from-path "mes/psyntax.pp")
 (mes-use-module (mes psyntax-1))
 (mes-use-module (mes quasisyntax))
