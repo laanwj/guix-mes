@@ -34,7 +34,7 @@
 
 (define (primitive-eval e) (eval-env e (current-module)))
 (define eval eval-env)
-(define (expand-macro e) (expand-macro-env e (current-module)))
+(define (macro-expand e) (macro-expand-env e (current-module)))
 
 (define quotient /)
 

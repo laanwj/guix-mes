@@ -105,7 +105,7 @@ scm scm_symbol_unquote = {SYMBOL, "unquote"};
 scm scm_symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
 
 scm scm_symbol_sc_expand = {SYMBOL, "sc-expand"};
-scm scm_symbol_expand_macro = {SYMBOL, "expand-macro"};
+scm scm_symbol_macro_expand = {SYMBOL, "macro-expand"};
 scm scm_symbol_sc_expander_alist = {SYMBOL, "*sc-expander-alist*"};
 scm scm_symbol_noexpand = {SYMBOL, "noexpand"};
 scm scm_symbol_syntax = {SYMBOL, "syntax"};
@@ -339,15 +339,8 @@ assert_defined (SCM x, SCM e)
   return e;
 }
 
-SCM
-vm_evlis_env ()
-{
-  if (r1 == cell_nil) return cell_nil;
-  if (TYPE (r1) != PAIR) return eval_env (r1, r0);
-  r2 = eval_env (car (r1), r0);
-  r1 = evlis_env (cdr (r1), r0);
-  return cons (r2, r1);
-}
+enum eval_apply_t {EVLIS, APPLY, EVAL, MACRO_EXPAND, BEGIN, IF, CALL_WITH_VALUES};
+enum eval_apply_t g_target;
 
 SCM
 call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
@@ -357,12 +350,32 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
   r0 = cl;
   r2 = a;
   r3 = aa;
-  return vm_begin_env ();
+  g_target = BEGIN;
+  return eval_apply ();
 }
 
 SCM
-vm_apply_env ()
+eval_apply ()
 {
+  switch (g_target)
+    {
+    case EVLIS: goto evlis;
+    case APPLY: goto apply;
+    case EVAL: goto eval;
+    case MACRO_EXPAND: goto macro_expand;
+    case BEGIN: goto begin;
+    case IF: goto label_if;
+    case CALL_WITH_VALUES: goto call_with_values;
+    }
+
+ evlis:
+  if (r1 == cell_nil) return cell_nil;
+  if (TYPE (r1) != PAIR) goto eval; // (r1, r0);
+  r2 = eval_env (car (r1), r0);
+  r1 = evlis_env (cdr (r1), r0);
+  return cons (r2, r1);
+
+ apply:
   if (TYPE (r1) != PAIR)
     {
       if (TYPE (r1) == FUNCTION) return call (r1, r2);
@@ -412,11 +425,8 @@ vm_apply_env ()
       assert (!"cannot apply");
     }
   return apply_env (e, r2, r0);
-}
 
-SCM
-vm_eval_env ()
-{
+ eval:
   switch (TYPE (r1))
     {
     case PAIR:
@@ -445,7 +455,7 @@ vm_eval_env ()
           }
 #endif
           default: {
-            SCM x = expand_macro_env (r1, r0);
+            SCM x = macro_expand_env (r1, r0);
             if (x != r1)
               {
                 if (TYPE (x) == PAIR)
@@ -465,11 +475,8 @@ vm_eval_env ()
     case SYMBOL: return assert_defined (r1, assq_ref_cache (r1, r0));
     default: return r1;
     }
-}
 
-SCM
-vm_expand_macro_env ()
-{
+ macro_expand:
   if (TYPE (CAR (r1)) == STRING && string_to_symbol (CAR (r1)) == cell_symbol_noexpand)
     return cadr (r1);
 
@@ -483,17 +490,15 @@ vm_expand_macro_env ()
            && ((expanders = assq_ref_cache (cell_symbol_sc_expander_alist, r0)) != cell_undefined)
            && ((macro = assq (CAR (r1), expanders)) != cell_f))
     {
-      SCM sc_expand = assq_ref_cache (cell_symbol_expand_macro, r0);
+      SCM sc_expand = assq_ref_cache (cell_symbol_macro_expand, r0);
       if (sc_expand != cell_undefined && sc_expand != cell_f)
         r1 = apply_env (sc_expand, cons (r1, cell_nil), r0);
     }
   return r1;
-}
 
-SCM
-vm_begin_env ()
-{
-  SCM r = cell_unspecified;
+  SCM r;
+ begin:
+  r = cell_unspecified;
   while (r1 != cell_nil) {
     if (TYPE (r1) == PAIR && TYPE (CAR (r1)) == PAIR)
       {
@@ -509,23 +514,19 @@ vm_begin_env ()
     r1 = CDR (r1);
   }
   return r;
-}
 
-SCM
-vm_if_env ()
-{
-  SCM x = eval_env (car (r1), r0);
+  SCM x;
+ label_if:
+  x = eval_env (car (r1), r0);
   if (x != cell_f)
     return eval_env (cadr (r1), r0);
   if (cddr (r1) != cell_nil)
     return eval_env (caddr (r1), r0);
   return cell_unspecified;
-}
 
-SCM
-vm_call_with_values_env ()
-{
-  SCM v = apply_env (r1, cell_nil, r0);
+  SCM v;
+ call_with_values:
+  v = apply_env (r1, cell_nil, r0);
   if (TYPE (v) == VALUES)
     v = CDR (v);
   return apply_env (r2, v, r0);
@@ -593,43 +594,50 @@ vm_call (function0_t f, SCM p1, SCM p2, SCM a)
 SCM
 evlis_env (SCM m, SCM a)
 {
-  return vm_call (vm_evlis_env, m, cell_undefined, a);
+  g_target = EVLIS;
+  return vm_call (eval_apply, m, cell_undefined, a);
 }
 
 SCM
 apply_env (SCM fn, SCM x, SCM a)
 {
-  return vm_call (vm_apply_env, fn, x, a);
+  g_target = APPLY;
+  return vm_call (eval_apply, fn, x, a);
 }
 
 SCM
 eval_env (SCM e, SCM a)
 {
-  return vm_call (vm_eval_env, e, cell_undefined, a);
+  g_target = EVAL;
+  return vm_call (eval_apply, e, cell_undefined, a);
 }
 
 SCM
-expand_macro_env (SCM e, SCM a)
+macro_expand_env (SCM e, SCM a)
 {
-  return vm_call (vm_expand_macro_env, e, cell_undefined, a);
+  g_target = MACRO_EXPAND;
+  return vm_call (eval_apply, e, cell_undefined, a);
 }
 
 SCM
 begin_env (SCM e, SCM a)
 {
-  return vm_call (vm_begin_env, e, cell_undefined, a);
+  g_target = BEGIN;
+  return vm_call (eval_apply, e, cell_undefined, a);
 }
 
 SCM
 if_env (SCM e, SCM a)
 {
-  return vm_call (vm_if_env, e, cell_undefined, a);
+  g_target = IF;
+  return vm_call (eval_apply, e, cell_undefined, a);
 }
 
 SCM
 call_with_values_env (SCM producer, SCM consumer, SCM a)
 {
-  return vm_call (vm_call_with_values_env, producer, consumer, a);
+  g_target = CALL_WITH_VALUES;
+  return vm_call (eval_apply, producer, consumer, a);
 }
 
 SCM

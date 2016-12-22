@@ -123,11 +123,11 @@
   (cons %the-unquoters a))
 
 (define (eval-env e a)
-  (eval-expand (expand-macro-env e a) a))
+  (eval-expand (macro-expand-env e a) a))
 
-(define (expand-macro-env e a)
+(define (macro-expand-env e a)
   (if (pair? e) ((lambda (macro)
-                   (if macro (expand-macro-env (apply-env macro (cdr e) a) a)
+                   (if macro (macro-expand-env (apply-env macro (cdr e) a) a)
                        e))
                  (lookup-macro (car e) a))
       e))

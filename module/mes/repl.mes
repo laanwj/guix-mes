@@ -120,7 +120,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
               (display sexp)
               (display "]")
               (newline))
-        (display (expand-macro sexp))
+        (display (macro-expand sexp))
         (newline)))
 
     (define (scexpand)
