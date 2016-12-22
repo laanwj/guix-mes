@@ -26,7 +26,7 @@
 
 ;;; Code:
 (mes-use-module (mes scm))
-(mes-use-module (mes syntax.upstream))
+(include-from-path "mes/syntax.scm")
 
 (define (syntax-error message thing)
   (display "syntax-error:" (current-error-port))

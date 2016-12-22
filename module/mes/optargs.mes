@@ -31,4 +31,5 @@
 
 (define-macro (set-procedure-property! proc key value)
   proc)
-(mes-use-module (mes optargs.upstream))
+
+(include-from-path "mes/optargs.scm")

@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-exec ${GUILE-guile} -L $(pwd)/module -e '(nyacc)' -s "$0" "$@"
+exec ${GUILE-guile} -L $(pwd)/guile/mes -e '(nyacc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software

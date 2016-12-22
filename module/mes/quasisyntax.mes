@@ -24,4 +24,4 @@
 
 (mes-use-module (mes psyntax))
 (define syntax-violation error)
-(mes-use-module (mes quasisyntax.upstream))
+(include-from-path "mes/quasisyntax.scm")

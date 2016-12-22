@@ -26,4 +26,4 @@
 (mes-use-module (mes psyntax))
 (mes-use-module (mes record-0))
 (mes-use-module (mes record))
-(mes-use-module (srfi srfi-9.upstream))
+(include-from-path "srfi/srfi-9.scm")

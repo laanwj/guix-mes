@@ -23,4 +23,4 @@
 ;;; portable matcher
 
 (mes-use-module (mes syntax))
-(mes-use-module (mes match.upstream))
+(include-from-path "mes/match.scm")

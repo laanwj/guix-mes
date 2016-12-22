@@ -25,4 +25,4 @@
 (mes-use-module (mes scm))
 (mes-use-module (mes syntax))
 (mes-use-module (srfi srfi-9))
-(mes-use-module (mes lalr.upstream))
+(include-from-path "mes/lalr.scm")

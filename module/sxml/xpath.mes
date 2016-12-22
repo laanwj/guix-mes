@@ -23,4 +23,4 @@
 ;;; xpath
 
 (mes-use-module (mes scm))
-(mes-use-module (sxml xpath.upstream))
+(include-from-path "sxml/xpath.scm")
