@@ -665,6 +665,7 @@ SCM
 append (SCM x) ///((arity . n))
  {
   if (x == cell_nil) return cell_nil;
+  if (cdr (x) == cell_nil) return car (x);
   return append2 (car (x), append (cdr (x)));
  }
 
