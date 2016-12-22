@@ -30,13 +30,9 @@
 
 #define DEBUG 0
 #define FIXED_PRIMITIVES 1
-#define READER 0
 
-#if READER
-int ARENA_SIZE = 1000000;
-#else
 int ARENA_SIZE = 100000;
-#endif
+
 int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
@@ -1204,10 +1200,8 @@ SCM
 load_env (SCM a) ///((internal))
 {
   r0 =a;
-#if 1 //!READER
   g_stdin = fopen ("module/mes/read-0.mes", "r");
   g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
-#endif
   if (!g_function) r0 = mes_builtins (r0);
   r3 = read_input_file_env (r0);
   g_stdin = stdin;

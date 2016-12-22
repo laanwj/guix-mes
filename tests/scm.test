@@ -74,7 +74,7 @@ exit $?
 (pass-if "string-ref" (seq? (string-ref "hello world" 4) #\o))
 (pass-if "eq?" (not (eq? (string-append "a" "b" "c") "abc")))
 (pass-if "string-length" (seq? (string-length (string-append "a" "b" "c")) 3))
-(pass-if "string->list" (sequal? (string->list "abc\n") '(#\a #\b #\c #\newline)))
+(pass-if-equal "string->list" '(#\a #\b #\c #\newline) (string->list "abc\n"))
 (pass-if "char" (seq? (char->integer #\A) 65))
 (pass-if "char 2" (seq? (char->integer #\101) (char->integer #\A)))
 (pass-if "char 3" (seq? (integer->char 10) #\newline))

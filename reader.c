@@ -37,13 +37,6 @@ unread_char (SCM c)
 }
 
 int
-read_block_comment (int s, int c)
-{
-  if (c == s && peekchar () == '#') return getchar ();
-  return read_block_comment (s, getchar ());
-}
-
-int
 read_line_comment (int c)
 {
   if (c == '\n') return c;
@@ -68,115 +61,7 @@ read_word (int c, SCM w, SCM a)
   if (c == ')' && w == cell_nil) {ungetchar (c); return cell_nil;}
   if (c == ')') {ungetchar (c); return lookup (w, a);}
   if (c == ';') {read_line_comment (c); return read_word ('\n', w, a);}
-#if READER
-  if (c == '"' && w == cell_nil) return read_string ();
-  if (c == '"') {ungetchar (c); return lookup (w, a);}
-  if (c == ',' && peekchar () == '@') {getchar (); return cons (lookup (STRING (cell_symbol_unquote_splicing), a),
-                                                                   cons (read_word (getchar (), w, a),
-                                                                         cell_nil));}
-  if ((c == '\''
-       || c == '`'
-       || c == ',')
-      && w == cell_nil) {return cons (lookup_char (c, a),
-                                     cons (read_word (getchar (), w, a),
-                                           cell_nil));}
-  if (c == '#' && peekchar () == ',' && w == cell_nil) {
-    getchar ();
-    if (peekchar () == '@'){getchar (); return cons (lookup (STRING (cell_symbol_unsyntax_splicing), a),
-                                                     cons (read_word (getchar (), w, a),
-                                                           cell_nil));}
-    return cons (lookup (STRING (cell_symbol_unsyntax), a), cons (read_word (getchar (), w, a), cell_nil));
-  }
-  if (c == '#' && (peekchar () == '\'' || peekchar () == '`') && w == cell_nil) {
-    c = getchar ();
-    return cons (lookup (cons (make_char ('#'), cons (make_char (c), cell_nil)), a),
-                 cons (read_word (getchar (), w, a), cell_nil));}
-  if (c == '#' && peekchar () == 'x') {getchar (); return read_hex ();}
-  if (c == '#' && peekchar () == '\\') {getchar (); return read_character ();}
-  if (c == '#' && w == cell_nil && peekchar () == '(') {getchar (); return list_to_vector (read_list (a));}
-  if (c == '#' && peekchar () == ';') {getchar (); read_word (getchar (), w, a); return read_word (getchar (), w, a);}
-  if (c == '#' && (peekchar () == '!' || peekchar () == '|')) {c = getchar (); read_block_comment (c, getchar ()); return read_word (getchar (), w, a);}
-#endif //READER
   return read_word (getchar (), append2 (w, cons (make_char (c), cell_nil)), a);
-}
-
-SCM
-read_character ()
-{
-  int c = getchar ();
-  if (c >= '0' && c <= '7'
-      && peekchar () >= '0' && peekchar () <= '7') {
-    c = c - '0';
-    while (peekchar () >= '0' && peekchar () <= '7') {
-      c <<= 3;
-      c += getchar () - '0';
-    }
-  }
-  else if (c >= 'a' && c <= 'z'
-      && peekchar () >= 'a' && peekchar () <= 'z') {
-    char buf[10];
-    char *p = buf;
-    *p++ = c;
-    while (peekchar () >= 'a' && peekchar () <= 'z') {
-      *p++ = getchar ();
-    }
-    *p = 0;
-    if (!strcmp (buf, char_nul.name)) c = char_nul.value;
-    else if (!strcmp (buf, char_alarm.name)) c = char_alarm.value;
-    else if (!strcmp (buf, char_backspace.name)) c = char_backspace.value;
-    else if (!strcmp (buf, char_tab.name)) c = char_tab.value;
-    else if (!strcmp (buf, char_newline.name)) c = char_newline.value;
-    else if (!strcmp (buf, char_vtab.name)) c = char_vtab.value;
-    else if (!strcmp (buf, char_page.name)) c = char_page.value;
-    else if (!strcmp (buf, char_return.name)) c = char_return.value;
-    else if (!strcmp (buf, char_space.name)) c = char_space.value;
-    else {
-      fprintf (stderr, "char not supported: %s\n", buf);
-      assert (!"char not supported");
-    }
-  }
-  return make_char (c);
-}
-
-SCM
-read_hex ()
-{
-  int n = 0;
-  int c = peekchar ();
-  while ((c >= '0' && c <= '9')
-         || (c >= 'A' && c <= 'F')
-         || (c >= 'a' && c <= 'f')) {
-    n <<= 4;
-    if (c >= 'a') n += c - 'a' + 10;
-    else if (c >= 'A') n += c - 'A' + 10;
-    else n+= c - '0';
-    getchar ();
-    c = peekchar ();
-  }
-  return make_number (n);
-}
-
-SCM
-append_char (SCM x, int i)
-{
-  return append2 (x, cons (make_char (i), cell_nil));
-}
-
-SCM
-read_string ()
-{
-  SCM p = cell_nil;
-  int c = getchar ();
-  while (true) {
-    if (c == '"') break;
-    if (c == '\\' && peekchar () == '\\') p = append_char (p, getchar ());
-    else if (c == '\\' && peekchar () == '"') p = append_char (p, getchar ());
-    else if (c == '\\' && peekchar () == 'n') {getchar (); p = append_char (p, '\n');}
-    else if (c == EOF) assert (!"EOF in string");
-    else p = append_char (p, c);
-    c = getchar ();
-  }
-  return make_string (p);
 }
 
 int
@@ -184,9 +69,6 @@ eat_whitespace (int c)
 {
   while (c == ' ' || c == '\t' || c == '\n' || c == '\f') c = getchar ();
   if (c == ';') return eat_whitespace (read_line_comment (c));
-#if READER
-  if (c == '#' && (peekchar () == '!' || peek_char () == '|')) {c=getchar (); read_block_comment (c, getchar ()); return eat_whitespace (getchar ());}
-#endif
   return c;
 }
 

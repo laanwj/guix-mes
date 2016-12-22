@@ -20,14 +20,9 @@
 
 ;;; Commentary:
 
-;;; read-0.mes - bootstrap reader from Scheme.  Use
-;;;    ./mes --dump < module/mes/read-0.mes > read-0.mo
-;;; to read, garbage collect, and dump this reader; then
-;;;    ./mes --load < tests/gc-3.test
-;;; to use this reader to read and run the minimal gc-3.test
-;;; TODO: complete this reader, remove reader from C.
-
-;;; copy of mes/read-0.mes, comment-out read-input-file
+;;; read-0.mes - bootstrap reader.  This file is read by a minimal
+;;; core reader.  It only supports s-exps and line-comments; quotes,
+;;; character literals, string literals cannot be used here.
 
 ;;; Code:
 
@@ -129,8 +124,8 @@
                         (append2 (cddar clauses) (list (caar clauses)))
                         (list (cons (quote lambda) (cons (list) (car clauses)))))
                     (list (cons (quote lambda) (cons (list) (car clauses)))))
-              (if (pair? (cdr clauses))
-                  (cons (quote cond) (cdr clauses))))))
+                (if (pair? (cdr clauses))
+                    (cons (quote cond) (cdr clauses))))))
 
   (define (eat-whitespace)
     ((lambda (c)
@@ -141,7 +136,7 @@
         ((eq? c 12) (read-byte) (eat-whitespace))
         ((eq? c 13) (read-byte) (eat-whitespace))
         ((eq? c 59) (begin (read-line-comment (read-byte))
-                                     (eat-whitespace)))
+                           (eat-whitespace)))
         ((eq? c 35) (begin (read-byte)
                            (cond ((eq? (peek-byte) 33)
                                   (read-byte)
@@ -163,10 +158,6 @@
                       (read-block-comment s (read-byte)))
         (read-block-comment s (read-byte))))
 
-  ;; (define (read-hex c)
-  ;;   (if (eq? c 10) c
-  ;;       (read-line-comment (read-byte))))
-
   (define (read-line-comment c)
     (if (eq? c 10) c
         (read-line-comment (read-byte))))
@@ -179,70 +170,143 @@
                (cons w (read-list a))))
          (read-word (read-byte) (list) a))))
 
-  ;;(define (read-string))
+  (define-macro (and . x)
+    (if (null? x) #t
+        (if (null? (cdr x)) (car x)
+            (list (quote if) (car x) (cons (quote and) (cdr x))
+                  #f))))
 
+  (define-macro (or . x)
+    (if (null? x) #f
+        (if (null? (cdr x)) (car x)
+            (list (quote if) (car x) (car x)
+                  (cons (quote or) (cdr x))))))
+  (define (not x)
+    (if x #f #t))
+  
+  (define (list->symbol lst) (make-symbol lst))
+
+  (define (read-character)
+    (define (read-octal c p n)
+      (if (not (and (> p 47) (< p 56))) n
+          (read-octal (read-byte) (peek-byte) (+ (ash n 3) (- p 48)))))
+
+    (define (read-name c p n)
+      (define (lookup-char n)
+        (cond ((assq n (quote ((*foe* . -1)
+                               (lun . 0)
+                               (mrala . 7)
+                               (ecapskcab . 8)
+                               (bat . 9)
+                               (enilwen . 10)
+                               (batv . 11)
+                               (egap . 12)
+                               (nruter . 13)
+                               (ecaps . 32)))) => cdr)
+              (#t (display (quote char-not-supported:)) (display n) (newline) (exit 1))))
+      (if (not (and (> p 96) (< p 123))) (integer->char (lookup-char (list->symbol (cons (integer->char c) n))))
+          (read-name (read-byte) (peek-byte) (cons (integer->char c) n))))
+
+    ((lambda (c p)
+       (cond ((and (> c 47) (< c 56) (> p 47) (< p 56))
+              (integer->char (read-octal c p (- c 48))))
+             ((and (> c 96) (< c 123) (> p 96) (< p 123)) (read-name c p (list)))
+             (#t (integer->char c))))
+     (read-byte) (peek-byte)))
+
+  (define (read-hex)
+    (define (calc c)
+      (cond ((and (> c 64) (< c 71)) (+ (- c 65) 10))
+            ((and (> c 96) (< c 103)) (+ (- c 97) 10))
+            ((and (> c 47) (< c 58)) (- c 48))
+            (#t 0)))
+    (define (read-hex c p n)
+      (if (not (or (and (> p 64) (< p 71))
+                   (and (> p 96) (< p 103))
+                   (and (> p 47) (< p 58)))) (+ (ash n 4) (calc c))
+                   (read-hex (read-byte) (peek-byte) (+ (ash n 4) (calc c)))))
+    ((lambda (c p)
+       (read-hex c p 0))
+     (read-byte) (peek-byte)))
+
+  (define (read-string)
+    (define (append-char s c)
+      (append2 s (cons (integer->char c) (list))))
+    (define (read-string c p s)
+      (cond
+       ((and (eq? c 92) (or (eq? p 92) (eq? p 34)))
+        ((lambda (c)
+           (read-string (read-byte) (peek-byte) (append-char s c)))
+         (read-byte)))
+       ((and (eq? c 92) (eq? p 110))
+        (read-byte)
+        (read-string (read-byte) (peek-byte) (append-char s 10)))
+       ((eq? c 34) s)
+       ((eq? c -1) (display (quote EOF-in-string)) (newline) (exit 1))
+       (#t (read-string (read-byte) (peek-byte) (append-char s c)))))
+    (list->string (read-string (read-byte) (peek-byte) (list))))
+  
   (define (lookup-char c a)
     (lookup (cons (integer->char c) (list)) a))
 
   (define (read-word c w a)
     (cond
-      ((eq? c 32) (if (null? w) (read-word (read-byte) (list) a)
-                      (lookup w a)))
-      ((eq? c 10) (read-word 32 w a))
-      ((eq? c 9) (read-word 32 w a))
-      ((eq? c 12) (read-word 32 w a))
-      ((eq? c 34) (if (null? w) (read-string)
-                      (begin (unread-byte c) (lookup w a))))
-      ((eq? c 35) (cond
-                   ((eq? (peek-byte) 33) (begin (read-byte)
-                                                (read-block-comment 33 (read-byte))
+     ((eq? c 32) (if (null? w) (read-word (read-byte) (list) a)
+                     (lookup w a)))
+     ((eq? c 10) (read-word 32 w a))
+     ((eq? c 9) (read-word 32 w a))
+     ((eq? c 12) (read-word 32 w a))
+     ((eq? c 34) (if (null? w) (read-string)
+                     (begin (unread-byte c) (lookup w a))))
+     ((eq? c 35) (cond
+                  ((eq? (peek-byte) 33) (begin (read-byte)
+                                               (read-block-comment 33 (read-byte))
+                                               (read-word (read-byte) w a)))
+                  ((eq? (peek-byte) 124) (begin (read-byte)
+                                                (read-block-comment 124 (read-byte))
                                                 (read-word (read-byte) w a)))
-                   ((eq? (peek-byte) 124) (begin (read-byte)
-                                                 (read-block-comment 124 (read-byte))
-                                                 (read-word (read-byte) w a)))
-                   ((eq? (peek-byte) 40) (read-byte) (list->vector (read-list a)))
-                   ((eq? (peek-byte) 92) (read-byte) (read-character))
-                   ((eq? (peek-byte) 120) (read-byte) (read-hex))
-                   ((eq? (peek-byte) 44)
-                    (read-byte)
-                    (cond ((eq? (peek-byte) 64)
-                           (read-byte)
-                           (cons (lookup (symbol->list (quote unsyntax-splicing)) a)
-                                 (cons (read-word (read-byte) w a) (list))))
-                          (#t
-                           (cons (lookup (symbol->list (quote unsyntax)) a)
-                                 (cons (read-word (read-byte) w a) (list))))))
-                   ((eq? (peek-byte) 39) (read-byte)
-                    (cons (lookup (cons (integer->char 35) (cons (integer->char 39) (list))) a)
-                          (cons (read-word (read-byte) w a) (list))))
-                   ((eq? (peek-byte) 59) (read-byte)
-                    (read-word (read-byte) w a)
-                    (read-word (read-byte) w a))
-                   ((eq? (peek-byte) 96) (read-byte)
-                    (cons (lookup (cons (integer->char 35) (cons (integer->char 96) (list))) a)
-                          (cons (read-word (read-byte) w a) (list))))
-                   (#t (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
-      ((eq? c 39) (if (null? w) (cons (lookup (cons (integer->char c) (list)) a)
-                                      (cons (read-word (read-byte) w a) (list)))
-                      (begin (unread-byte c) (lookup w a))))
-      ((eq? c 40) (if (null? w) (read-list a)
-                      (begin (unread-byte c) (lookup w a))))
-      ((eq? c 41) (if (null? w) (cons (lookup (cons (integer->char c) (list)) a)
-                                      (cons (read-word (read-byte) w a) (list)))
-                      (begin (unread-byte c) (lookup w a))))
-      ((eq? c 44) (cond
-                   ((eq? (peek-byte) 64) (begin (read-byte)
-                                                (cons
-                                                 (lookup (symbol->list (quote unquote-splicing)) a)
-                                                 (cons (read-word (read-byte) w a) (list)))))
-                   (#t (cons (lookup-char c a) (cons (read-word (read-byte) w a)
-                                                        (list))))))
-      ((eq? c 96) (cons (lookup-char c a) (cons (read-word (read-byte) w a) (list))))
-      ((eq? c 59) (read-line-comment c) (read-word 10 w a))
-      ((eq? c -1) (list))
-      (#t (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
+                  ((eq? (peek-byte) 40) (read-byte) (list->vector (read-list a)))
+                  ((eq? (peek-byte) 92) (read-byte) (read-character))
+                  ((eq? (peek-byte) 120) (read-byte) (read-hex))
+                  ((eq? (peek-byte) 44)
+                   (read-byte)
+                   (cond ((eq? (peek-byte) 64)
+                          (read-byte)
+                          (cons (lookup (symbol->list (quote unsyntax-splicing)) a)
+                                (cons (read-word (read-byte) w a) (list))))
+                         (#t
+                          (cons (lookup (symbol->list (quote unsyntax)) a)
+                                (cons (read-word (read-byte) w a) (list))))))
+                  ((eq? (peek-byte) 39) (read-byte)
+                   (cons (lookup (cons (integer->char 35) (cons (integer->char 39) (list))) a)
+                         (cons (read-word (read-byte) w a) (list))))
+                  ((eq? (peek-byte) 59) (read-byte)
+                   (read-word (read-byte) w a)
+                   (read-word (read-byte) w a))
+                  ((eq? (peek-byte) 96) (read-byte)
+                   (cons (lookup (cons (integer->char 35) (cons (integer->char 96) (list))) a)
+                         (cons (read-word (read-byte) w a) (list))))
+                  (#t (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
+     ((eq? c 39) (if (null? w) (cons (lookup (cons (integer->char c) (list)) a)
+                                     (cons (read-word (read-byte) w a) (list)))
+                     (begin (unread-byte c) (lookup w a))))
+     ((eq? c 40) (if (null? w) (read-list a)
+                     (begin (unread-byte c) (lookup w a))))
+     ((eq? c 41) (if (null? w) (cons (lookup (cons (integer->char c) (list)) a)
+                                     (cons (read-word (read-byte) w a) (list)))
+                     (begin (unread-byte c) (lookup w a))))
+     ((eq? c 44) (cond
+                  ((eq? (peek-byte) 64) (begin (read-byte)
+                                               (cons
+                                                (lookup (symbol->list (quote unquote-splicing)) a)
+                                                (cons (read-word (read-byte) w a) (list)))))
+                  (#t (cons (lookup-char c a) (cons (read-word (read-byte) w a)
+                                                    (list))))))
+     ((eq? c 96) (cons (lookup-char c a) (cons (read-word (read-byte) w a) (list))))
+     ((eq? c 59) (read-line-comment c) (read-word 10 w a))
+     ((eq? c -1) (list))
+     (#t (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
 
   ((lambda (p)
-     ;;(display (quote scheme-program=)) (display p) (newline)
      (begin-env p (current-module)))
    (read-input-file)))
