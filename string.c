@@ -21,7 +21,7 @@
 SCM
 string (SCM x) ///((arity . n))
 {
-  return make_string (x);
+  return MAKE_STRING (x);
 }
 
 SCM
@@ -35,13 +35,13 @@ string_append (SCM x) ///((arity . n))
       p = append2 (p, STRING (s));
       x = cdr (x);
     }
-  return make_string (p);
+  return MAKE_STRING (p);
 }
 
 SCM
 list_to_string (SCM x)
 {
-  return make_string (x);
+  return MAKE_STRING (x);
 }
 
 SCM
@@ -81,7 +81,7 @@ substring (SCM x) ///((arity . n))
     p = append2 (p, cons (MAKE_CHAR (VALUE (car (s))), cell_nil));
     s = cdr (s);
   }
-  return make_string (p);
+  return MAKE_STRING (p);
 }
 
 SCM
@@ -94,7 +94,7 @@ number_to_string (SCM x)
     p = cons (MAKE_CHAR (n % 10 + '0'), p);
     n = n / 10;
   } while (n);
-  return make_string (p);
+  return MAKE_STRING (p);
 }
 
 SCM
@@ -108,7 +108,7 @@ SCM
 symbol_to_string (SCM x)
 {
   assert (TYPE (x) == SYMBOL);
-  return make_string (STRING (x));
+  return MAKE_STRING (STRING (x));
 }
 
 SCM

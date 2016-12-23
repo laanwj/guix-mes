@@ -184,6 +184,7 @@ SCM r3 = 0; // param 3
 #define MAKE_CHAR(n) make_cell (tmp_num_ (CHAR), 0, tmp_num2_ (n))
 #define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
 #define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0);
+#define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0);
 
 SCM display_ (FILE* f, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);
@@ -691,13 +692,6 @@ tmp_num2_ (int x)
 {
   g_cells[tmp_num2].value = x;
   return tmp_num2;
-}
-
-SCM
-make_string (SCM x)
-{
-  g_cells[tmp_num].value = STRING;
-  return make_cell (tmp_num, x, 0);
 }
 
 SCM
