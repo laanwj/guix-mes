@@ -51,12 +51,12 @@ read_word (int c, SCM w, SCM a)
   if (c == '\f') return read_word ('\n', w, a);
   if (c == '\n' && w == cell_nil) return read_word (getchar (), w, a);
   if (c == '\n' && VALUE (car (w)) == '.' && cdr (w) == cell_nil) return cell_dot;
-  if (c == EOF || c == '\n') return lookup (w, a);
+  if (c == EOF || c == '\n') return lookup_ (w, a);
   if (c == ' ') return read_word ('\n', w, a);
   if (c == '(' && w == cell_nil) return read_list (a);
-  if (c == '(') {ungetchar (c); return lookup (w, a);}
+  if (c == '(') {ungetchar (c); return lookup_ (w, a);}
   if (c == ')' && w == cell_nil) {ungetchar (c); return cell_nil;}
-  if (c == ')') {ungetchar (c); return lookup (w, a);}
+  if (c == ')') {ungetchar (c); return lookup_ (w, a);}
   if (c == ';') {read_line_comment (c); return read_word ('\n', w, a);}
   return read_word (getchar (), append2 (w, cons (make_char (c), cell_nil)), a);
 }
@@ -88,7 +88,7 @@ read_env (SCM a)
 }
 
 SCM
-lookup (SCM s, SCM a)
+lookup_ (SCM s, SCM a)
 {
   if (isdigit (VALUE (car (s))) || (VALUE (car (s)) == '-' && cdr (s) != cell_nil)) {
     SCM p = s;
@@ -106,31 +106,8 @@ lookup (SCM s, SCM a)
     if (p == cell_nil) return make_number (n * sign);
   }
 
-  if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == ':') return make_keyword (cddr (s));
-
-  SCM x = internal_lookup_symbol (s);
-  if (x) return x;
-
-  if (cdr (s) == cell_nil) {
-    if (VALUE (car (s)) == '\'') return cell_symbol_quote;
-    if (VALUE (car (s)) == '`') return cell_symbol_quasiquote;
-    if (VALUE (car (s)) == ',') return cell_symbol_unquote;
-  }
-  else if (cddr (s) == cell_nil) {
-    if (VALUE (car (s)) == ',' && VALUE (cadr (s)) == '@') return cell_symbol_unquote_splicing;
-    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == '\'') return cell_symbol_syntax;
-    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == '`') return cell_symbol_quasisyntax;
-    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == ',') return cell_symbol_unsyntax;
-  }
-  else if (cdddr (s) == cell_nil) {
-    if (VALUE (car (s)) == '#' && VALUE (cadr (s)) == ',' && VALUE (caddr (s)) == '@') return cell_symbol_unsyntax_splicing;
-        if (VALUE (car (s)) == 'E' && VALUE (cadr (s)) == 'O' && VALUE (caddr (s)) == 'F') {
-      fprintf (stderr, "mes: got EOF\n");
-      return cell_nil; // `EOF': eval program, which may read stdin
-    }
-  }
-
-  return internal_make_symbol (s);
+  SCM x = lookup_symbol_ (s);
+  return x ? x : make_symbol_ (s);
 }
 
 SCM
@@ -146,7 +123,7 @@ list_of_char_equal_p (SCM a, SCM b)
 }
 
 SCM
-internal_lookup_symbol (SCM s)
+lookup_symbol_ (SCM s)
 {
   SCM x = g_symbols;
   while (x) {

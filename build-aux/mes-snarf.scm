@@ -51,16 +51,18 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define (function-scm-name f)
   (or (assoc-ref (.annotation f) 'name)
-      ((compose
-        (regexp-replace "_" "-")
-        (regexp-replace "_" "-")
-        (regexp-replace "_" "-")
-        (regexp-replace "_" "-")
-        (regexp-replace "^builtin_" "")
-        (regexp-replace "_to_" "->")
-        (regexp-replace "_x$" "!")
-        (regexp-replace "_p$" "?"))
-       (.name f))))
+      (let ((name ((compose
+                    (regexp-replace "_" "-")
+                    (regexp-replace "_" "-")
+                    (regexp-replace "_" "-")
+                    (regexp-replace "_" "-")
+                    (regexp-replace "^builtin_" "")
+                    (regexp-replace "_to_" "->")
+                    (regexp-replace "_x$" "!")
+                    (regexp-replace "_p$" "?"))
+                   (.name f))))
+        (if (not (string-suffix? "-" name)) name
+            (string-append "core:" (string-drop-right name 1))))))
 
 (define %builtin-prefix% "scm_")
 (define (function-builtin-name f)

@@ -32,7 +32,6 @@
 #define FIXED_PRIMITIVES 1
 
 int ARENA_SIZE = 100000;
-
 int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
@@ -697,8 +696,8 @@ make_function (SCM name, SCM id, SCM arity)
 SCM
 make_keyword (SCM s)
 {
-  SCM x = internal_lookup_symbol (s);
-  x = x ? x : internal_make_symbol (s);
+  SCM x = lookup_symbol_ (s);
+  x = x ? x : make_symbol_ (s);
   g_cells[tmp_num].value = KEYWORD;
   return make_cell (tmp_num, STRING (x), 0);
 }
@@ -749,7 +748,7 @@ null_p (SCM x)
 }
 
 SCM
-internal_make_symbol (SCM s)
+make_symbol_ (SCM s)
 {
   g_cells[tmp_num].value = SYMBOL;
   SCM x = make_cell (tmp_num, s, 0);
@@ -760,8 +759,8 @@ internal_make_symbol (SCM s)
 SCM
 make_symbol (SCM s)
 {
-  SCM x = internal_lookup_symbol (s);
-  return x ? x : internal_make_symbol (s);
+  SCM x = lookup_symbol_ (s);
+  return x ? x : make_symbol_ (s);
 }
 
 SCM
