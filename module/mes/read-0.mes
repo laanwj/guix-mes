@@ -43,8 +43,8 @@
           (set-cdr! (assq (quote *closure*) a) a+)
           (car a+)))
 
-  (env:define (cons (cons (quote <cell:macro>) 3) (list)) (current-module))
-  (env:define (cons (cons (quote <cell:pair>) 5) (list)) (current-module))
+  (env:define (cons (cons (quote <cell:macro>) 4) (list)) (current-module))
+  (env:define (cons (cons (quote <cell:pair>) 6) (list)) (current-module))
   (env:define (cons (cons (quote sexp:define) #f) (list)) (current-module))
   (env:define (cons (cons (quote env:macro) #f) (list)) (current-module))
   (env:define (cons (cons (quote cons*) #f) (list)) (current-module))
@@ -104,7 +104,7 @@
                (quote ((current-module))))))
      (current-module))) (current-module))
 
-  (define <cell:keyword> 2)
+  (define <cell:keyword> 3)
 
   (define (read)
     (read-word (read-byte) (list) (current-module)))

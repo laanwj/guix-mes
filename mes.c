@@ -36,7 +36,7 @@ int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
 typedef int SCM;
-enum type_t {CHAR, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
+enum type_t {CHAR, CLOSURE, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
@@ -66,6 +66,7 @@ typedef struct scm_t {
     int value;
     int function;
     SCM cdr;
+    SCM closure;
     SCM macro;
     SCM vector;
     int hits;
@@ -165,6 +166,7 @@ SCM r3 = 0; // param 3
 #define NAME(x) g_cells[x].name
 #define STRING(x) g_cells[x].string
 #define TYPE(x) g_cells[x].type
+#define CLOSURE(x) g_cells[x].closure
 #define MACRO(x) g_cells[x].macro
 #define REF(x) g_cells[x].ref
 #define VALUE(x) g_cells[x].value
@@ -392,47 +394,54 @@ eval_apply ()
   return cons (r2, r1);
 
  apply:
-  if (TYPE (r1) != PAIR)
+  switch (TYPE (r1))
     {
-      if (TYPE (r1) == FUNCTION) return call (r1, r2);
-      if (r1 == cell_symbol_call_with_values)
-        {
-          r1 = car (r2);
-          r2 = cadr (r2);
-          goto call_with_values;
-        }
-      if (r1 == cell_symbol_current_module) return r0;
-    }
-  else
-    switch (car (r1))
+    case FUNCTION: return call (r1, r2);
+    case CLOSURE:
       {
-      case cell_symbol_lambda:
-        {
-          SCM args = cadr (r1);
-          SCM body = cddr (r1);
-          SCM p = pairlis (args, r2, r0);
-          call_lambda (body, p, p, r0);
-          goto begin;
-        }
-      case cell_closure:
-        {
-          SCM args = caddr (r1);
-          SCM body = cdddr (r1);
-          SCM aa = cdadr (r1);
-          aa = cdr (aa);
-          SCM p = pairlis (args, r2, aa);
-          call_lambda (body, p, aa, r0);
-          goto begin;
-        }
-#if BOOT
-      case cell_symbol_label:
-        {
-          r0 = cons (cons (cadr (r1), caddr (r1)), r0);
-          r1 = caddr (r1);
-          goto apply;
-        }
-#endif
+        SCM cl = CLOSURE (r1);
+        SCM args = cadr (cl);
+        SCM body = cddr (cl);
+        SCM aa = cdar (cl);
+        aa = cdr (aa);
+        SCM p = pairlis (args, r2, aa);
+        call_lambda (body, p, aa, r0);
+        goto begin;
       }
+    case SYMBOL:
+      {
+        if (r1 == cell_symbol_call_with_values)
+          {
+            r1 = car (r2);
+            r2 = cadr (r2);
+            goto call_with_values;
+          }
+        if (r1 == cell_symbol_current_module) return r0;
+        break;
+      }
+    case PAIR:
+      {
+        switch (car (r1))
+          {
+          case cell_symbol_lambda:
+            {
+              SCM args = cadr (r1);
+              SCM body = cddr (r1);
+              SCM p = pairlis (args, r2, r0);
+              call_lambda (body, p, p, r0);
+              goto begin;
+            }
+#if BOOT
+          case cell_symbol_label:
+            {
+              r0 = cons (cons (cadr (r1), caddr (r1)), r0);
+              r1 = caddr (r1);
+              goto apply;
+            }
+#endif
+          }
+      }
+    }
   SCM e = eval_env (r1, r0);
   char const* type = 0;
   if (e == cell_f || e == cell_t) type = "bool";
@@ -471,7 +480,6 @@ eval_apply ()
           case cell_symbol_begin: goto begin;
           case cell_symbol_lambda:
             return make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
-          case cell_closure: return r1;
           case cell_symbol_if: {r1=cdr (r1); goto label_if;}
           case cell_symbol_set_x: {
             SCM x = eval_env (caddr (r1), r0); return set_env_x (cadr (r1), x, r0);
@@ -928,7 +936,8 @@ gc_loop (SCM scan)
 {
   while (scan < g_free.value)
     {
-      if (NTYPE (scan) == KEYWORD
+      if (NTYPE (scan) == CLOSURE
+          || NTYPE (scan) == KEYWORD
           || NTYPE (scan) == MACRO
           || NTYPE (scan) == PAIR
           || NTYPE (scan) == REF
@@ -940,7 +949,8 @@ gc_loop (SCM scan)
           SCM car = gc_copy (g_news[scan].car);
           gc_relocate_car (scan, car);
         }
-      if ((NTYPE (scan) == MACRO
+      if ((NTYPE (scan) == CLOSURE
+           || NTYPE (scan) == MACRO
            || NTYPE (scan) == PAIR
            || NTYPE (scan) == VALUES)
           && g_news[scan].cdr) // allow for 0 terminated list of symbols
@@ -1099,7 +1109,7 @@ mes_environment () ///((internal))
 SCM
 make_closure (SCM args, SCM body, SCM a)
 {
-  return cons (cell_closure, cons (cons (cell_circular, a), cons (args, body)));
+  return make_cell (tmp_num_ (CLOSURE), cell_f, cons (cons (cell_circular, a), cons (args, body)));
 }
 
 SCM

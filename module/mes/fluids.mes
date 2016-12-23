@@ -31,8 +31,8 @@
   )
 
 (define (env:escape-closure a n)
-  (if (closure? (car a)) (if (= 0 n) a
-                             (env:escape-closure (cdr a) (- n 1)))
+  (if (eq? (caar a) '*closure*) (if (= 0 n) a
+                                    (env:escape-closure (cdr a) (- n 1)))
       (env:escape-closure (cdr a) n)))
 
 (define-macro (module-define! name value a)

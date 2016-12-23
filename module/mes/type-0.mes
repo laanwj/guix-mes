@@ -23,21 +23,23 @@
 ;;; Code:
 
 (define <cell:char> 0)
-(define <cell:function> 1)
-(define <cell:keyword> 2)
-(define <cell:macro> 3)
-(define <cell:number> 4)
-(define <cell:pair> 5)
-(define <cell:ref> 6)
-(define <cell:special> 7)
-(define <cell:string> 8)
-(define <cell:symbol> 9)
-(define <cell:values> 10)
-(define <cell:vector> 11)
-(define <cell:broken-heart> 12)
+(define <cell:closure> 1)
+(define <cell:function> 2)
+(define <cell:keyword> 3)
+(define <cell:macro> 4)
+(define <cell:number> 5)
+(define <cell:pair> 6)
+(define <cell:ref> 7)
+(define <cell:special> 8)
+(define <cell:string> 9)
+(define <cell:symbol> 10)
+(define <cell:values> 11)
+(define <cell:vector> 12)
+(define <cell:broken-heart> 13)
 
 (define cell:type-alist
   (list (cons <cell:char> (quote <cell:char>))
+        (cons <cell:closure> (quote <cell:closure>))
         (cons <cell:function> (quote <cell:function>))
         (cons <cell:keyword> (quote <cell:keyword>))
         (cons <cell:macro> (quote <cell:macro>))
@@ -57,6 +59,9 @@
 (define (char? x)
   (eq? (core:type x) <cell:char>))
 
+(define (closure? x)
+  (eq? (core:type x) <cell:closure>))
+
 (define (function? x)
   (eq? (core:type x) <cell:function>))
 
@@ -75,8 +80,7 @@
   (eq? (core:type x) <cell:pair>))
 
 (define (pair? x)
-  (and (eq? (core:type x) <cell:pair>)
-       (not (eq? (car x) '*closure*))))
+  (eq? (core:type x) <cell:pair>))
 
 (define (special? x)
   (eq? (core:type x) <cell:special>))
@@ -98,9 +102,6 @@
 ;; In core
 ;; (define (null? x)
 ;;   (eq? x '()))
-
-(define (closure? x)
-  (and (eq? (core:type x) <cell:pair>) (eq? (car x) '*closure*)))
 
 (define (atom? x)
   (not (pair? x)))
