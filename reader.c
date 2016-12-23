@@ -43,9 +43,6 @@ read_line_comment (int c)
   return read_line_comment (getchar ());
 }
 
-
-SCM lookup_char (int c, SCM a);
-
 SCM
 read_word (int c, SCM w, SCM a)
 {
@@ -134,12 +131,6 @@ lookup (SCM s, SCM a)
   }
 
   return internal_make_symbol (s);
-}
-
-SCM
-lookup_char (int c, SCM a)
-{
-  return lookup (cons (make_char (c), cell_nil), a);
 }
 
 SCM

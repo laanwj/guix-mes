@@ -246,9 +246,6 @@
        (#t (read-string (read-byte) (peek-byte) (append-char s c)))))
     (list->string (read-string (read-byte) (peek-byte) (list))))
   
-  (define (lookup-char c a)
-    (lookup (cons (integer->char c) (list)) a))
-
   (define (read-word c w a)
     (cond
      ((eq? c 32) (if (null? w) (read-word (read-byte) (list) a)
@@ -300,9 +297,9 @@
                                                (cons
                                                 (lookup (symbol->list (quote unquote-splicing)) a)
                                                 (cons (read-word (read-byte) w a) (list)))))
-                  (#t (cons (lookup-char c a) (cons (read-word (read-byte) w a)
-                                                    (list))))))
-     ((eq? c 96) (cons (lookup-char c a) (cons (read-word (read-byte) w a) (list))))
+                  (#t (cons (quote unquote) (cons (read-word (read-byte) w a)
+                                                      (list))))))
+     ((eq? c 96) (cons (quote quasiquote) (cons (read-word (read-byte) w a) (list))))
      ((eq? c 59) (read-line-comment c) (read-word 10 w a))
      ((eq? c -1) (list))
      (#t (read-word (read-byte) (append2 w (cons (integer->char c) (list))) a))))
