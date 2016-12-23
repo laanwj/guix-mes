@@ -44,38 +44,8 @@ length (SCM x)
 }
 
 SCM
-last_pair (SCM x)
-{
-  while (x != cell_nil && cdr (x) != cell_nil)
-    x = cdr (x);
-  return x;
-}
-
-SCM
 list (SCM x) ///((arity . n))
 {
-  return x;
-}
-
-SCM
-list_ref (SCM x, SCM k)
-{
-  assert (TYPE (x) == PAIR);
-  assert (TYPE (k) == NUMBER);
-  int n = VALUE (k);
-  while (n-- && CDR (x) != cell_nil) x = CDR (x);
-  return x != cell_nil ? car (x) : cell_undefined;
-}
-
-SCM
-vector_to_list (SCM v)
-{
-  SCM x = cell_nil;
-  for (int i = 0; i < LENGTH (v); i++) {
-    SCM e = VECTOR (v)+i;
-    if (TYPE (e) == REF) e = g_cells[e].ref;
-    x = append2 (x, cons (e, cell_nil));
-  }
   return x;
 }
 

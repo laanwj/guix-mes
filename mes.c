@@ -807,6 +807,18 @@ list_to_vector (SCM x)
   return v;
 }
 
+SCM
+vector_to_list (SCM v)
+{
+  SCM x = cell_nil;
+  for (int i = 0; i < LENGTH (v); i++) {
+    SCM e = VECTOR (v)+i;
+    if (TYPE (e) == REF) e = g_cells[e].ref;
+    x = append2 (x, cons (e, cell_nil));
+  }
+  return x;
+}
+
 FILE *g_stdin;
 int
 getchar ()

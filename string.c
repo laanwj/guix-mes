@@ -52,15 +52,6 @@ string_length (SCM x)
 }
 
 SCM
-string_ref (SCM x, SCM k)
-{
-  assert (TYPE (x) == STRING);
-  assert (TYPE (k) == NUMBER);
-  VALUE (tmp_num) = VALUE (k);
-  return MAKE_CHAR (VALUE (list_ref (STRING (x), tmp_num)));
-}
-
-SCM
 substring (SCM x) ///((arity . n))
 {
   assert (TYPE (x) == PAIR);

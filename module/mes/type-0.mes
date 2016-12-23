@@ -20,6 +20,9 @@
 
 ;;; Commentary:
 
+;;; Implement core functionality that depends on implementation
+;;; specifics of Mes cell types.
+
 ;;; Code:
 
 (define <cell:char> 0)
@@ -108,3 +111,8 @@
 
 (define (boolean? x)
   (or (eq? x #f) (eq? x #t)))
+
+
+;;; core: accessors
+(define (string->list s)
+  (core:car s))

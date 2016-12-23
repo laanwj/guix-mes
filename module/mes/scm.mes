@@ -30,27 +30,6 @@
 
 (define (cadddr x) (car (cdddr x)))
 
-(define (list . rest) rest)
-
-(define (list-head x n)
-  (if (= 0 n) '()
-      (cons (car x) (list-head (cdr x) (- n 1)))))
-
-(define (list-tail x n)
-  (if (= 0 n) x
-      (list-tail (cdr x) (- n 1))))
-
-(define (string-prefix? prefix string)
-  (and
-   (>= (string-length string) (string-length prefix))
-   (equal? (substring string 0 (string-length prefix)) prefix)))
-
-(define (symbol-prefix? prefix symbol)
-  (string-prefix? (symbol->string prefix) (symbol->string symbol)))
-
-(define (symbol-append . rest)
-  (string->symbol (apply string-append (map symbol->string rest))))
-
 (define-macro (case val . args)
   (if (null? args) #f
       (let ((clause (car args)))
@@ -77,28 +56,32 @@
        ,@body
        (loop ,@(cddar init)))))
 
+(define (for-each f l . r)
+  (if (pair? l) (if (null? r) (begin (f (car l)) (for-each f (cdr l)))
+                    (if (null? (cdr r)) (begin (f (car l) (caar r)) (for-each f (cdr l) (cdar r)))))))
+
+(define (error who . rest)
+  (display "error:" (current-error-port))
+  (display who (current-error-port))
+  (display ":" (current-error-port))
+  (display rest (current-error-port))
+  (newline (current-error-port))
+  (display "exiting...\n" (current-error-port))
+  (exit 1))
+
+(define (syntax-error message . rest)
+  (display "syntax-error:" (current-error-port))
+  (display message (current-error-port))
+  (display ":" (current-error-port))
+  (display rest (current-error-port))
+  (newline (current-error-port)))
+
+
 (define integer? number?)
 
-(define (make-list n . x)
-  (let ((fill (if (pair? x) (car x) *unspecified*)))
-    (let loop ((n n))
-      (if (= 0 n) '()
-          (cons fill (loop (- n 1)))))))
-
-(define (string->list s)
-  (let ((n (string-length s)))
-    (let loop ((i 0))
-      (if (= i n) '()
-          (cons (string-ref s i) (loop (+ i 1)))))))
-
-(define (string->number s . radix)
-  (if (and (pair? radix) (not (= (car radix) 10))) '*STRING->NUMBER:RADIX-NOT-SUPPORTED
-      (let* ((lst (string->list s))
-             (sign (if (char=? (car lst) #\-) -1 1))
-             (lst (if (= sign -1) (cdr lst) lst)))
-        (let loop ((lst lst) (n 0))
-          (if (null? lst) (* sign n)
-              (loop (cdr lst) (+ (* n 10) (- (char->integer (car lst)) (char->integer #\0)))))))))
+(define (eof-object? x)
+  (or (and (number? x) (= x -1))
+      (and (char? x) (eof-object? (char->integer x)))))
 
 (define (peek-char)
   (integer->char (peek-byte)))
@@ -109,19 +92,6 @@
 (define (unread-char c)
   (unread-byte (char->integer c))
   c)
-
-(define (char<? a b) (< (char->integer a) (char->integer b)))
-(define (char>? a b) (> (char->integer a) (char->integer b)))
-(define (char<=? a b) (<= (char->integer a) (char->integer b)))
-(define (char>=? a b) (>= (char->integer a) (char->integer b)))
-
-
-;; Vector
-(define (vector . rest) (list->vector rest))
-(define c:make-vector make-vector)
-(define (make-vector n . x)
-  (if (null? x) (c:make-vector n)
-      (list->vector (apply make-list (cons n x)))))
 
 (define (assq-set! alist key val)
   (let ((entry (assq key alist)))
@@ -158,10 +128,124 @@
       (if (equal? x (car lst)) lst
           (member x (cdr lst)))))
 
-(define (for-each f l . r)
-  (if (pair? l) (if (null? r) (begin (f (car l)) (for-each f (cdr l)))
-                    (if (null? (cdr r)) (begin (f (car l) (caar r)) (for-each f (cdr l) (cdar r)))))))
+
+;;; Lists
+(define (list . rest) rest)
 
+(define (make-list n . x)
+  (let ((fill (if (pair? x) (car x) *unspecified*)))
+    (let loop ((n n))
+      (if (= 0 n) '()
+          (cons fill (loop (- n 1)))))))
+
+(define (list-ref lst k)
+  (let loop ((lst lst) (k k))
+    (if (= 0 k) (car lst)
+        (loop (cdr lst) (- k 1)))))
+
+(define (list-head x n)
+  (if (= 0 n) '()
+      (cons (car x) (list-head (cdr x) (- n 1)))))
+
+(define (list-tail x n)
+  (if (= 0 n) x
+      (list-tail (cdr x) (- n 1))))
+
+(define (last-pair lst)
+  (let loop ((lst lst))
+    (if (or (null? lst) (null? (cdr lst))) lst
+        (loop (cdr lst)))))
+
+(define (iota n)
+  (if (<= n 0) '()
+      (append2 (iota (- n 1)) (list (- n 1)))))
+
+(define (reverse lst)
+  (if (null? lst) '()
+      (append (reverse (cdr lst)) (cons (car lst) '()))))
+
+(define (filter pred lst)
+  (let loop ((lst lst))
+    (if (null? lst) '()
+        (if (pred (car lst))
+            (cons (car lst) (loop (cdr lst)))
+            (loop (cdr lst))))))
+
+(define (delete x lst)
+  (filter (lambda (e) (not (equal? e x))) lst))
+
+(define (delq x lst)
+  (filter (lambda (e) (not (eq? e x))) lst))
+
+
+;; Vector
+(define (vector . rest) (list->vector rest))
+(define c:make-vector make-vector)
+(define (make-vector n . x)
+  (if (null? x) (c:make-vector n)
+      (list->vector (apply make-list (cons n x)))))
+
+(define (vector-copy x)
+  (list->vector (vector->list x)))
+
+
+;;; Strings/srfi-13
+(define (string-ref s k)
+  (list-ref (string->list s) k))
+
+(define (string-prefix? prefix string)
+  (and
+   (>= (string-length string) (string-length prefix))
+   (equal? (substring string 0 (string-length prefix)) prefix)))
+
+(define (string->number s . radix)
+  (if (and (pair? radix) (not (= (car radix) 10))) '*STRING->NUMBER:RADIX-NOT-SUPPORTED
+      (let* ((lst (string->list s))
+             (sign (if (char=? (car lst) #\-) -1 1))
+             (lst (if (= sign -1) (cdr lst) lst)))
+        (let loop ((lst lst) (n 0))
+          (if (null? lst) (* sign n)
+              (loop (cdr lst) (+ (* n 10) (- (char->integer (car lst)) (char->integer #\0)))))))))
+
+
+;;; Symbols
+(define (symbol-prefix? prefix symbol)
+  (string-prefix? (symbol->string prefix) (symbol->string symbol)))
+
+(define (symbol-append . rest)
+  (string->symbol (apply string-append (map symbol->string rest))))
+
+(define gensym
+  (let ((counter 0))
+    (lambda (. rest)
+      (let ((value (number->string counter)))
+        (set! counter (+ counter 1))
+        (string->symbol (string-append "g" value))))))
+
+
+;;; Characters
+(define (char=? x y)
+  (and (char? x) (char? y)
+       (eq? x y)))
+
+(define (char<? a b) (< (char->integer a) (char->integer b)))
+(define (char>? a b) (> (char->integer a) (char->integer b)))
+(define (char<=? a b) (<= (char->integer a) (char->integer b)))
+(define (char>=? a b) (>= (char->integer a) (char->integer b)))
+
+(define (char-alphabetic? x)
+  (and (char? x)
+       (let ((i (char->integer x)))
+        (or (and (>= i (char->integer #\A)) (<= i (char->integer #\Z)))
+            (and (>= i (char->integer #\a)) (<= i (char->integer #\z)))))))
+
+(define (char-numeric? x)
+  (and (char? x)
+       (let ((i (char->integer x)))
+         (and (>= i (char->integer #\0)) (<= i (char->integer #\9))))))
+
+
+;;; Math
 (define (<= . rest)
   (or (apply < rest)
       (apply = rest)))
@@ -169,11 +253,6 @@
 (define (>= . rest)
   (or (apply > rest)
       (apply = rest)))
-
-;; (define (>= . rest)
-;;   (if (apply > rest) #t
-;;       (if (apply = rest) #t
-;;           #f)))
 
 (define (remainder x y)
   (- x (* (quotient x y) y)))
@@ -218,82 +297,3 @@
       (let ((y (car rest)))
         (let ((z (if (< x y) x y)))
           (apply min (cons z (cdr rest)))))))
-
-(define gensym
-  (let ((counter 0))
-    (lambda (. rest)
-      (let ((value (number->string counter)))
-        (set! counter (+ counter 1))
-        (string->symbol (string-append "g" value))))))
-
-(define else #t)
-
-(define (error who . rest)
-  (display "error:" (current-error-port))
-  (display who (current-error-port))
-  (display ":" (current-error-port))
-  (display rest (current-error-port))
-  (newline (current-error-port))
-  (display "exiting...\n" (current-error-port))
-  (exit 1))
-
-(define (syntax-error message . rest)
-  (display "syntax-error:" (current-error-port))
-  (display message (current-error-port))
-  (display ":" (current-error-port))
-  (display rest (current-error-port))
-  (newline (current-error-port)))
-
-(define (list-ref lst k)
-  (let loop ((lst lst) (k k))
-    (if (= 0 k) (car lst)
-        (loop (cdr lst) (- k 1)))))
-
-(define (iota n)
-  (if (<= n 0) '()
-      (append2 (iota (- n 1)) (list (- n 1)))))
-
-;; srfi-1
-(define (last-pair lst)
-  (let loop ((lst lst))
-    (if (or (null? lst) (null? (cdr lst))) lst
-        (loop (cdr lst)))))
-
-(define (reverse lst)
-  (if (null? lst) '()
-      (append (reverse (cdr lst)) (cons (car lst) '()))))
-
-(define (filter pred lst)
-  (let loop ((lst lst))
-    (if (null? lst) '()
-        (if (pred (car lst))
-            (cons (car lst) (loop (cdr lst)))
-            (loop (cdr lst))))))
-
-(define (delete x lst)
-  (filter (lambda (e) (not (equal? e x))) lst))
-
-(define (delq x lst)
-  (filter (lambda (e) (not (eq? e x))) lst))
-
-(define (vector-copy x)
-  (list->vector (vector->list x)))
-
-(define (eof-object? x)
-  (or (and (number? x) (= x -1))
-      (and (char? x) (eof-object? (char->integer x)))))
-
-(define (char=? x y)
-  (and (char? x) (char? y)
-       (eq? x y)))
-
-(define (char-alphabetic? x)
-  (and (char? x)
-       (let ((i (char->integer x)))
-        (or (and (>= i (char->integer #\A)) (<= i (char->integer #\Z)))
-            (and (>= i (char->integer #\a)) (<= i (char->integer #\z)))))))
-
-(define (char-numeric? x)
-  (and (char? x)
-       (let ((i (char->integer x)))
-         (and (>= i (char->integer #\0)) (<= i (char->integer #\9))))))
