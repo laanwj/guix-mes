@@ -19,13 +19,6 @@
  */
 
 SCM
-string_length (SCM x)
-{
-  assert (TYPE (x) == STRING);
-  return MAKE_NUMBER (VALUE (length (STRING (x))));
-}
-
-SCM
 substring (SCM x) ///((arity . n))
 {
   assert (TYPE (x) == PAIR);
