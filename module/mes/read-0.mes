@@ -104,6 +104,7 @@
   ;; * lookup in Scheme
   ;; * read characters, quote, strings
 
+  (define <cell:keyword> 2)
   (define (read)
     (read-word (read-byte) (list) (current-module)))
 
@@ -283,7 +284,7 @@
                   ((eq? (peek-byte) 39) (read-byte)
                    (cons (quote syntax) (cons (read-word (read-byte) w a) (list))))
                   ((eq? (peek-byte) 58) (read-byte)
-                   (make-keyword (symbol->list (read-word (read-byte) (list) a))))
+                   (make-cell <cell:keyword> (symbol->list (read-word (read-byte) (list) a)) 0))
                   ((eq? (peek-byte) 59) (read-byte)
                    (read-word (read-byte) w a)
                    (read-word (read-byte) w a))

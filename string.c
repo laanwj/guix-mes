@@ -122,5 +122,6 @@ SCM
 symbol_to_keyword (SCM x)
 {
   assert (TYPE (x) == SYMBOL);
-  return make_keyword (STRING (x));
+  g_cells[tmp_num].value = KEYWORD;
+  return make_cell (tmp_num, STRING (x), 0);
 }

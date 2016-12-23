@@ -694,15 +694,6 @@ make_function (SCM name, SCM id, SCM arity)
 }
 
 SCM
-make_keyword (SCM s)
-{
-  SCM x = lookup_symbol_ (s);
-  x = x ? x : make_symbol_ (s);
-  g_cells[tmp_num].value = KEYWORD;
-  return make_cell (tmp_num, STRING (x), 0);
-}
-
-SCM
 make_number (int x)
 {
   g_cells[tmp_num].value = NUMBER;
