@@ -684,16 +684,6 @@ make_char (int x)
 }
 
 SCM
-make_function (SCM name, SCM id, SCM arity)
-{
-  g_cells[tmp_num3].value = FUNCTION;
-  function *f = (function*)malloc (sizeof (function));
-  f->arity = VALUE (arity);
-  g_cells[tmp_num4].value = (long)f;
-  return make_cell (tmp_num3, name, tmp_num4);
-}
-
-SCM
 make_number (int x)
 {
   g_cells[tmp_num].value = NUMBER;
