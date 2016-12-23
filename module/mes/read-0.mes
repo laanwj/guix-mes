@@ -105,6 +105,10 @@
      (current-module))) (current-module))
 
   (define <cell:keyword> 3)
+  (define <cell:string> 9)
+
+  (define (list->string lst)
+    (make-cell <cell:string> lst 0))
 
   (define (read)
     (read-word (read-byte) (list) (current-module)))

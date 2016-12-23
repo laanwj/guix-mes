@@ -19,12 +19,6 @@
  */
 
 SCM
-list_to_string (SCM x)
-{
-  return MAKE_STRING (x);
-}
-
-SCM
 string_length (SCM x)
 {
   assert (TYPE (x) == STRING);
