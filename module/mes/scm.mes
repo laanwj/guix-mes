@@ -115,14 +115,13 @@
 (define (char<=? a b) (<= (char->integer a) (char->integer b)))
 (define (char>=? a b) (>= (char->integer a) (char->integer b)))
 
+
+;; Vector
 (define (vector . rest) (list->vector rest))
 (define c:make-vector make-vector)
 (define (make-vector n . x)
   (if (null? x) (c:make-vector n)
       (list->vector (apply make-list (cons n x)))))
-
-(define (acons key value alist)
-  (cons (cons key value) alist))
 
 (define (assq-set! alist key val)
   (let ((entry (assq key alist)))

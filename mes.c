@@ -84,6 +84,7 @@ scm scm_circular = {SPECIAL, "*circular*"};
 scm scm_label = {SPECIAL, "label"};
 scm scm_begin = {SPECIAL, "*begin*"};
 
+scm scm_symbol_dot = {SYMBOL, "*dot*"};
 scm scm_symbol_lambda = {SYMBOL, "lambda"};
 scm scm_symbol_begin = {SYMBOL, "begin"};
 scm scm_symbol_if = {SYMBOL, "if"};
@@ -1014,12 +1015,6 @@ acons (SCM key, SCM value, SCM alist)
 }
 
 SCM
-add_environment (SCM a, char const *name, SCM x)
-{
-  return acons (make_symbol (cstring_to_list (name)), x, a);
-}
-
-SCM
 gc_init_cells ()
 {
   g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
@@ -1065,8 +1060,9 @@ mes_symbols () ///((internal))
 #if BOOT
   a = acons (cell_symbol_label, cell_t, a);
 #endif
+  a = acons (cell_symbol_dot, cell_dot, a);
   a = acons (cell_symbol_begin, cell_begin, a);
-  a = add_environment (a, "sc-expand", cell_f);
+  a = acons (cell_symbol_sc_expand, cell_f, a);
   a = acons (cell_closure, a, a);
 
   return a;
@@ -1093,9 +1089,6 @@ mes_builtins (SCM a)
 #include "reader.environment.i"
 #include "string.environment.i"
 #include "type.environment.i"
-
-  a = add_environment (a, "*dot*", cell_dot);
-  a = add_environment (a, "*foo-bar-baz*", cell_nil); // FIXME: some off-by one?
 
   return a;
 }
