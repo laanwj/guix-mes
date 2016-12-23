@@ -183,6 +183,7 @@ SCM r3 = 0; // param 3
 
 #define MAKE_CHAR(n) make_cell (tmp_num_ (CHAR), 0, tmp_num2_ (n))
 #define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
+#define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0);
 
 SCM display_ (FILE* f, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);
@@ -693,13 +694,6 @@ tmp_num2_ (int x)
 }
 
 SCM
-make_ref (SCM x)
-{
-  g_cells[tmp_num].value = REF;
-  return make_cell (tmp_num, x, x);
-}
-
-SCM
 make_string (SCM x)
 {
   g_cells[tmp_num].value = STRING;
@@ -778,7 +772,7 @@ vector_ref (SCM x, SCM i)
 
 SCM
 vector_entry (SCM x) {
-  if (TYPE (x) == PAIR || TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL || TYPE (x) == VECTOR) x = make_ref (x);
+  if (TYPE (x) == PAIR || TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL || TYPE (x) == VECTOR) x = MAKE_REF (x);
   return x;
 }
 
