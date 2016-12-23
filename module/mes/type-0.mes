@@ -114,8 +114,11 @@
 
 
 ;;; core: accessors
+(define (string . lst)
+  (make-cell <cell:string> lst 0))
+
 (define (string->list s)
   (core:car s))
 
-(define (string . lst)
-  (make-cell <cell:string> lst 0))
+(define (string-append . rest)
+  (apply string (apply append (map1 string->list rest))))

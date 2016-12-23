@@ -19,20 +19,6 @@
  */
 
 SCM
-string_append (SCM x) ///((arity . n))
-{
-  SCM p = cell_nil;
-  while (x != cell_nil)
-    {
-      SCM s = car (x);
-      assert (TYPE (s) == STRING);
-      p = append2 (p, STRING (s));
-      x = cdr (x);
-    }
-  return MAKE_STRING (p);
-}
-
-SCM
 list_to_string (SCM x)
 {
   return MAKE_STRING (x);

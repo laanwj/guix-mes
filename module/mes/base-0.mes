@@ -112,6 +112,13 @@
      (list 'set-current-input-port (list open-input-file file))
      (list 'primitive-load)
      (list 'set-current-input-port (list 'pop! '*input-ports*))))
+
+(define include load)
+(define-macro (include-from-path file)
+  (list 'load (list string-append "module/" file)))
+
+(include "module/mes/type-0.mes")
+
 (define (memq x lst)
   (if (null? lst) #f
       (if (eq? x (car lst)) lst
@@ -148,11 +155,6 @@
           ;; (list newline (list current-error-port))
           (list 'load (list string-append '*mes-prefix* (module->file module)))))))
 
-(define include load)
-(define-macro (include-from-path file)
-  (list 'load (list string-append "module/" file)))
-
-(mes-use-module (mes type-0))
 (mes-use-module (srfi srfi-0))
 (mes-use-module (mes base))
 (mes-use-module (mes quasiquote))
