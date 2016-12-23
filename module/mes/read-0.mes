@@ -43,6 +43,7 @@
           (set-cdr! (assq (quote *closure*) a) a+)
           (car a+)))
 
+  (env:define (cons (cons (quote <cell:macro>) 3) (list)) (current-module))
   (env:define (cons (cons (quote sexp:define) #f) (list)) (current-module))
   (env:define (cons (cons (quote env:macro) #f) (list)) (current-module))
   (env:define (cons (cons (quote cons*) #f) (list)) (current-module))
@@ -56,8 +57,7 @@
         (lambda (name+entry)
           (cons
            (cons (car name+entry)
-                 (make-macro (car name+entry)
-                             (cdr name+entry)))
+                 (make-cell <cell:macro> (core:car (car name+entry)) (cdr name+entry)))
            (list))))
 
   (set! cons*

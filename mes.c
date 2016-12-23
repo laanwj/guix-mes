@@ -703,13 +703,6 @@ make_keyword (SCM s)
 }
 
 SCM
-make_macro (SCM name, SCM x)
-{
-  g_cells[tmp_num].value = MACRO;
-  return make_cell (tmp_num, STRING (name), x);
-}
-
-SCM
 make_number (int x)
 {
   g_cells[tmp_num].value = NUMBER;

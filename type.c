@@ -33,13 +33,13 @@ closure_p (SCM x)
 }
 
 SCM
-mes_car (SCM x)
+car_ (SCM x)
 {
   return CAR (x);
 }
 
 SCM
-mes_cdr (SCM x)
+cdr_ (SCM x)
 {
   return CDR (x);
 }
