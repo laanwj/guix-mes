@@ -181,6 +181,7 @@ SCM r3 = 0; // param 3
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 #define CADR(x) CAR (CDR (x))
 
+#define MAKE_CHAR(n) make_cell (tmp_num_ (CHAR), 0, tmp_num2_ (n))
 #define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
 
 SCM display_ (FILE* f, SCM x);
@@ -678,14 +679,6 @@ append (SCM x) ///((arity . n))
  }
 
 SCM
-make_char (int x)
-{
-  g_cells[tmp_num].value = CHAR;
-  g_cells[tmp_num2].value = x;
-  return make_cell (tmp_num, tmp_num2, tmp_num2);
-}
-
-SCM
 tmp_num_ (int x)
 {
   g_cells[tmp_num].value = x;
@@ -719,7 +712,7 @@ cstring_to_list (char const* s)
   SCM p = cell_nil;
   int i = strlen (s);
   while (i--)
-    p = cons (make_char (s[i]), p);
+    p = cons (MAKE_CHAR (s[i]), p);
   return p;
 }
 
@@ -778,7 +771,7 @@ vector_ref (SCM x, SCM i)
   assert (VALUE (i) < LENGTH (x));
   SCM e = VECTOR (x) + VALUE (i);
   if (TYPE (e) == REF) e = g_cells[e].ref;
-  if (TYPE (e) == CHAR) e = make_char (VALUE (e));
+  if (TYPE (e) == CHAR) e = MAKE_CHAR (VALUE (e));
   if (TYPE (e) == NUMBER) e = MAKE_NUMBER (VALUE (e));
   return e;
 }
@@ -883,7 +876,7 @@ SCM
 integer_to_char (SCM x)
 {
   assert (TYPE (x) == NUMBER);
-  return make_char (VALUE (x));
+  return MAKE_CHAR (VALUE (x));
 }
 
 void
@@ -1123,9 +1116,9 @@ SCM
 mes_stack (SCM a) ///((internal))
 {
   r0 = a;
-  r1 = make_char (0);
-  r2 = make_char (0);
-  r3 = make_char (0);
+  r1 = MAKE_CHAR (0);
+  r2 = MAKE_CHAR (0);
+  r3 = MAKE_CHAR (0);
   stack = cons (cell_nil, cell_nil);
   return r0;
 }

@@ -18,24 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SCM
-peek_char ()
-{
-  return make_char (peekchar ());
-}
-
-SCM
-read_char ()
-{
-  return make_char (getchar ());
-}
-
-SCM
-unread_char (SCM c)
-{
-  return ungetchar (VALUE (c));
-}
-
 int
 read_line_comment (int c)
 {
@@ -58,7 +40,7 @@ read_word (int c, SCM w, SCM a)
   if (c == ')' && w == cell_nil) {ungetchar (c); return cell_nil;}
   if (c == ')') {ungetchar (c); return lookup_ (w, a);}
   if (c == ';') {read_line_comment (c); return read_word ('\n', w, a);}
-  return read_word (getchar (), append2 (w, cons (make_char (c), cell_nil)), a);
+  return read_word (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
 }
 
 int

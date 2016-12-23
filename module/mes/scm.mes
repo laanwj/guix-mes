@@ -100,6 +100,16 @@
           (if (null? lst) (* sign n)
               (loop (cdr lst) (+ (* n 10) (- (char->integer (car lst)) (char->integer #\0)))))))))
 
+(define (peek-char)
+  (integer->char (peek-byte)))
+
+(define (read-char)
+  (integer->char (read-byte)))
+
+(define (unread-char c)
+  (unread-byte (char->integer c))
+  c)
+
 (define (char<? a b) (< (char->integer a) (char->integer b)))
 (define (char>? a b) (> (char->integer a) (char->integer b)))
 (define (char<=? a b) (<= (char->integer a) (char->integer b)))

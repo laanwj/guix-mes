@@ -57,7 +57,7 @@ string_ref (SCM x, SCM k)
   assert (TYPE (x) == STRING);
   assert (TYPE (k) == NUMBER);
   VALUE (tmp_num) = VALUE (k);
-  return make_char (VALUE (list_ref (STRING (x), tmp_num)));
+  return MAKE_CHAR (VALUE (list_ref (STRING (x), tmp_num)));
 }
 
 SCM
@@ -78,7 +78,7 @@ substring (SCM x) ///((arity . n))
   while (start--) s = cdr (s);
   SCM p = cell_nil;
   while (n-- && s != cell_nil) {
-    p = append2 (p, cons (make_char (VALUE (car (s))), cell_nil));
+    p = append2 (p, cons (MAKE_CHAR (VALUE (car (s))), cell_nil));
     s = cdr (s);
   }
   return make_string (p);
@@ -89,9 +89,9 @@ number_to_string (SCM x)
 {
   assert (TYPE (x) == NUMBER);
   int n = VALUE (x);
-  SCM p = n < 0 ? cons (make_char ('-'), cell_nil) : cell_nil;
+  SCM p = n < 0 ? cons (MAKE_CHAR ('-'), cell_nil) : cell_nil;
   do {
-    p = cons (make_char (n % 10 + '0'), p);
+    p = cons (MAKE_CHAR (n % 10 + '0'), p);
     n = n / 10;
   } while (n);
   return make_string (p);
