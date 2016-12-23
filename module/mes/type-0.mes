@@ -20,72 +20,90 @@
 
 ;;; Commentary:
 
-;;; type-0.mes - to be loaded after loop-0.mes if type.i is not
-;;; included in core.
-
-;;; This code is only loaded if environment variable TYPE0 is set.
-;;; There are two copies of the type enum, with manual numbering.  Not
-;;; good.
-
-
 ;;; Code:
 
-(define <char> 0)
-(define <function> 1)
-(define <macro> 2)
-(define <number> 3)
-(define <pair> 4)
-(define <scm> 5)
-(define <string> 6)
-(define <symbol> 7)
-(define <values> 8)
-(define <vector> 9)
+(define <cell:char> 0)
+(define <cell:function> 1)
+(define <cell:keyword> 2)
+(define <cell:macro> 3)
+(define <cell:number> 4)
+(define <cell:pair> 5)
+(define <cell:ref> 6)
+(define <cell:special> 7)
+(define <cell:string> 8)
+(define <cell:symbol> 9)
+(define <cell:values> 10)
+(define <cell:vector> 11)
+(define <cell:broken-heart> 12)
 
-(define mes-type-alist
-  `((,<char> . <char>)
-    (,<function> . <function>)
-    (,<macro> . <macro>)
-    (,<number> . <number>)
-    (,<pair> . <pair>)
-    (,<scm> . <scm>)
-    (,<string> . <string>)
-    (,<symbol> . <symbol>)
-    (,<char> . <char>)
-    (,<values> . <values>)))
-  
-(define (class-of x)
-  (assq (mes-type-of x) mes-type-alist))
+(define cell:type-alist
+  (list (cons <cell:char> (quote <cell:char>))
+        (cons <cell:function> (quote <cell:function>))
+        (cons <cell:keyword> (quote <cell:keyword>))
+        (cons <cell:macro> (quote <cell:macro>))
+        (cons <cell:number> (quote <cell:number>))
+        (cons <cell:pair> (quote <cell:pair>))
+        (cons <cell:ref> (quote <cell:ref>))
+        (cons <cell:special> (quote <cell:special>))
+        (cons <cell:string> (quote <cell:string>))
+        (cons <cell:symbol> (quote <cell:symbol>))
+        (cons <cell:values> (quote <cell:values>))
+        (cons <cell:vector> (quote <cell:vector>))
+        (cons <cell:broken-heart> (quote <cell:broken-heart>))))
+
+(define (cell:type-name x)
+  (cond ((assq (core:type x) cell:type-alist) => cdr)))
+
+(define (char? x)
+  (eq? (core:type x) <cell:char>))
+
+(define (function? x)
+  (eq? (core:type x) <cell:function>))
+
+(define builtin? function?)
+
+(define (keyword? x)
+  (eq? (core:type x) <cell:keyword>))
+
+(define (macro? x)
+  (eq? (core:type x) <cell:macro>))
+
+(define (number? x)
+  (eq? (core:type x) <cell:number>))
+
+(define (pair? x)
+  (eq? (core:type x) <cell:pair>))
+
+(define (pair? x)
+  (and (eq? (core:type x) <cell:pair>)
+       (not (eq? (car x) '*closure*))))
+
+(define (special? x)
+  (eq? (core:type x) <cell:special>))
+
+(define (string? x)
+  (eq? (core:type x) <cell:string>))
+
+(define (symbol? x)
+  (eq? (core:type x) <cell:symbol>))
+
+;; Hmm?
+(define (values? x)
+  (eq? (core:type x) <cell:values>))
+
+(define (vector? x)
+  (eq? (core:type x) <cell:vector>))
+
+;; Non-types
+;; In core
+;; (define (null? x)
+;;   (eq? x '()))
+
+(define (closure? x)
+  (and (eq? (core:type x) <cell:pair>) (eq? (car x) '*closure*)))
 
 (define (atom? x)
   (not (pair? x)))
 
 (define (boolean? x)
-  (if (eq? x #f) #t
-      (if (eq? x #t) #t
-          #f)))
-
-(define (char? x)
-  (eq? (mes-type-of x) <char>))
-
-;; pair? is not needed as a primitive from C
-;; but it gives a factor 2 speedup
-;; (define (pair? x)
-;;   (eq? (mes-type-of x) <pair>))
-
-(define (number? x)
-  (eq? (mes-type-of x) <number>))
-
-(define (internal? x)
-  (eq? (mes-type-of x) <scm>))
-
-(define (string? x)
-  (eq? (mes-type-of x) <string>))
-
-(define (symbol? x)
-  (eq? (mes-type-of x) <symbol>))
-
-(define (vector? x)
-  (eq? (mes-type-of x) <vector>))
-
-(define (null? x)
-  (eq? x '()))
+  (or (eq? x #f) (eq? x #t)))

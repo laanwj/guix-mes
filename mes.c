@@ -36,7 +36,7 @@ int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
 typedef int SCM;
-enum type_t {CHAR, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, SPECIAL, STRING, SYMBOL, REF, VALUES, VECTOR, BROKEN_HEART};
+enum type_t {CHAR, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
@@ -157,7 +157,6 @@ SCM r3 = 0; // param 3
 #include "posix.h"
 #include "reader.h"
 #include "string.h"
-#include "type.h"
 
 #define CAR(x) g_cells[x].car
 #define CDR(x) g_cells[x].cdr
@@ -189,6 +188,20 @@ SCM r3 = 0; // param 3
 
 SCM display_ (FILE* f, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);
+
+SCM
+tmp_num_ (int x)
+{
+  g_cells[tmp_num].value = x;
+  return tmp_num;
+}
+
+SCM
+tmp_num2_ (int x)
+{
+  g_cells[tmp_num2].value = x;
+  return tmp_num2;
+}
 
 SCM
 alloc (int n)
@@ -237,6 +250,30 @@ cdr (SCM x)
 {
   assert (TYPE (x) == PAIR);
   return CDR (x);
+}
+
+SCM
+type_ (SCM x)
+{
+  return MAKE_NUMBER (TYPE (x));
+}
+
+SCM
+car_ (SCM x)
+{
+  return (TYPE (CAR (x)) == PAIR
+          || TYPE (CAR (x)) == REF
+          || TYPE (CAR (x)) == SYMBOL
+          || TYPE (CAR (x)) == STRING) ? CAR (x) : MAKE_NUMBER (CAR (x));
+}
+
+SCM
+cdr_ (SCM x)
+{
+  return (TYPE (CDR (x)) == PAIR
+          || TYPE (CDR (x)) == REF
+          || TYPE (CDR (x)) == SYMBOL
+          || TYPE (CDR (x)) == STRING) ? CDR (x) : MAKE_NUMBER (CDR (x));
 }
 
 SCM
@@ -298,7 +335,7 @@ pairlis (SCM x, SCM y, SCM a)
 {
   if (x == cell_nil)
     return a;
-  if (pair_p (x) == cell_f)
+  if (TYPE (x) != PAIR)
     return cons (cons (x, y), a);
   return cons (cons (car (x), car (y)),
                pairlis (cdr (x), cdr (y), a));
@@ -682,20 +719,6 @@ append (SCM x) ///((arity . n))
  }
 
 SCM
-tmp_num_ (int x)
-{
-  g_cells[tmp_num].value = x;
-  return tmp_num;
-}
-
-SCM
-tmp_num2_ (int x)
-{
-  g_cells[tmp_num2].value = x;
-  return tmp_num2;
-}
-
-SCM
 cstring_to_list (char const* s)
 {
   SCM p = cell_nil;
@@ -1061,7 +1084,6 @@ mes_builtins (SCM a)
 #include "posix.i"
 #include "reader.i"
 #include "string.i"
-#include "type.i"
 
 #include "display.environment.i"
 #include "lib.environment.i"
@@ -1070,7 +1092,6 @@ mes_builtins (SCM a)
 #include "posix.environment.i"
 #include "reader.environment.i"
 #include "string.environment.i"
-#include "type.environment.i"
 
   return a;
 }
@@ -1110,7 +1131,7 @@ lookup_macro (SCM x, SCM a)
 {
   if (TYPE (x) != SYMBOL) return cell_f;
   SCM m = assq_ref_cache (x, a);
-  if (macro_p (m) == cell_t) return MACRO (m);
+  if (TYPE (m) == MACRO) return MACRO (m);
   return cell_f;
 }
 
@@ -1187,7 +1208,6 @@ dump ()
   return 0;
 }
 
-#include "type.c"
 #include "display.c"
 #include "lib.c"
 #include "math.c"

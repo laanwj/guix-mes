@@ -44,9 +44,19 @@
           (car a+)))
 
   (env:define (cons (cons (quote <cell:macro>) 3) (list)) (current-module))
+  (env:define (cons (cons (quote <cell:pair>) 5) (list)) (current-module))
   (env:define (cons (cons (quote sexp:define) #f) (list)) (current-module))
   (env:define (cons (cons (quote env:macro) #f) (list)) (current-module))
   (env:define (cons (cons (quote cons*) #f) (list)) (current-module))
+  (env:define (cons (cons (quote not)
+                          (lambda (x) (if x #f #t)))
+                    (list)) (current-module))
+  (env:define (cons (cons (quote pair?)
+                          (lambda (x) (eq? (core:type x) <cell:pair>)))
+                    (list)) (current-module))
+  (env:define (cons (cons (quote atom?)
+                          (lambda (x) (not (pair? x))))
+                    (list)) (current-module))
 
   (set! sexp:define
         (lambda (e a)
@@ -94,17 +104,8 @@
                (quote ((current-module))))))
      (current-module))) (current-module))
 
-  ;; (define car (make-function 'car 0))
-  ;; (define cdr (make-function 'cdr 1))
-  ;; (define cons (make-function 'cons 1))
-
-  ;; TODO:
-  ;; * use case/cond, expand
-  ;; * etc int/char?
-  ;; * lookup in Scheme
-  ;; * read characters, quote, strings
-
   (define <cell:keyword> 2)
+
   (define (read)
     (read-word (read-byte) (list) (current-module)))
 

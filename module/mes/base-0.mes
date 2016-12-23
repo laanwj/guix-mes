@@ -152,6 +152,8 @@
 (define-macro (include-from-path file)
   (list 'load (list string-append "module/" file)))
 
+(mes-use-module (mes type-0))
 (mes-use-module (srfi srfi-0))
 (mes-use-module (mes base))
+(mes-use-module (mes quasiquote))
 (mes-use-module (mes scm))
