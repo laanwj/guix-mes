@@ -157,7 +157,6 @@ SCM r3 = 0; // param 3
 #include "mes.h"
 #include "posix.h"
 #include "reader.h"
-#include "string.h"
 
 #define CAR(x) g_cells[x].car
 #define CDR(x) g_cells[x].cdr
@@ -507,12 +506,9 @@ eval_apply ()
     default: return r1;
     }
 
- macro_expand:
-  if (TYPE (CAR (r1)) == STRING && string_to_symbol (CAR (r1)) == cell_symbol_noexpand)
-    return cadr (r1);
-
   SCM macro;
   SCM expanders;
+ macro_expand:
   if (TYPE (r1) == PAIR
       && (macro = lookup_macro (car (r1), r0)) != cell_f)
     {
@@ -1087,7 +1083,6 @@ mes_builtins (SCM a)
 #include "math.i"
 #include "posix.i"
 #include "reader.i"
-#include "string.i"
 
 #include "display.environment.i"
 #include "lib.environment.i"
@@ -1095,7 +1090,6 @@ mes_builtins (SCM a)
 #include "mes.environment.i"
 #include "posix.environment.i"
 #include "reader.environment.i"
-#include "string.environment.i"
 
   return a;
 }
@@ -1211,7 +1205,6 @@ dump ()
 #include "math.c"
 #include "posix.c"
 #include "reader.c"
-#include "string.c"
 
 int
 main (int argc, char *argv[])

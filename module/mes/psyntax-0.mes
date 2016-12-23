@@ -21,7 +21,8 @@
 (define (interaction-environment) (current-module))
 
 (define (eval x . environment)
-  (eval-env x (if (null? environment) (current-module) (car environment))))
+  (eval-env (if (and (pair? x) (equal? (car x) "noexpand")) (cadr x) x)
+            (if (null? environment) (current-module) (car environment))))
 
 (define annotation? (lambda (x) #f))
 (define (self-evaluating? x)

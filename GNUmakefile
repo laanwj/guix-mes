@@ -34,7 +34,6 @@ mes.o: lib.c lib.h lib.i lib.environment.i
 mes.o: math.c math.h math.i math.environment.i
 mes.o: posix.c posix.h posix.i posix.environment.i
 mes.o: reader.c reader.h reader.i reader.environment.i
-mes.o: string.c string.h string.i string.environment.i
 
 clean:
 	rm -f mes mes.o *.environment.i *.symbols.i *.environment.h *.cat a.out

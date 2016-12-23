@@ -120,5 +120,15 @@
 (define (string->list s)
   (core:car s))
 
+(define (string->symbol s)
+  (if (not (pair? (core:car s))) '()
+      (make-symbol (core:car s))))
+
+(define (symbol->list s)
+  (core:car s))
+
+(define (symbol->string s)
+  (apply string (symbol->list s)))
+
 (define (string-append . rest)
   (apply string (apply append (map1 string->list rest))))
