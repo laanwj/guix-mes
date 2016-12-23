@@ -103,7 +103,7 @@ lookup_ (SCM s, SCM a)
       n += VALUE (car (p)) - '0';
       p = cdr (p);
     }
-    if (p == cell_nil) return make_number (n * sign);
+    if (p == cell_nil) return MAKE_NUMBER (n * sign);
   }
 
   SCM x = lookup_symbol_ (s);

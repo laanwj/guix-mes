@@ -181,6 +181,8 @@ SCM r3 = 0; // param 3
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 #define CADR(x) CAR (CDR (x))
 
+#define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
+
 SCM display_ (FILE* f, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);
 
@@ -684,11 +686,17 @@ make_char (int x)
 }
 
 SCM
-make_number (int x)
+tmp_num_ (int x)
 {
-  g_cells[tmp_num].value = NUMBER;
+  g_cells[tmp_num].value = x;
+  return tmp_num;
+}
+
+SCM
+tmp_num2_ (int x)
+{
   g_cells[tmp_num2].value = x;
-  return make_cell (tmp_num, tmp_num2, tmp_num2);
+  return tmp_num2;
 }
 
 SCM
@@ -760,7 +768,7 @@ SCM
 vector_length (SCM x)
 {
   assert (TYPE (x) == VECTOR);
-  return make_number (LENGTH (x));
+  return MAKE_NUMBER (LENGTH (x));
 }
 
 SCM
@@ -771,7 +779,7 @@ vector_ref (SCM x, SCM i)
   SCM e = VECTOR (x) + VALUE (i);
   if (TYPE (e) == REF) e = g_cells[e].ref;
   if (TYPE (e) == CHAR) e = make_char (VALUE (e));
-  if (TYPE (e) == NUMBER) e = make_number (VALUE (e));
+  if (TYPE (e) == NUMBER) e = MAKE_NUMBER (VALUE (e));
   return e;
 }
 
@@ -828,13 +836,13 @@ peekchar ()
 SCM
 peek_byte ()
 {
-  return make_number (peekchar ());
+  return MAKE_NUMBER (peekchar ());
 }
 
 SCM
 read_byte ()
 {
-  return make_number (getchar ());
+  return MAKE_NUMBER (getchar ());
 }
 
 SCM
@@ -868,7 +876,7 @@ SCM
 char_to_integer (SCM x)
 {
   assert (TYPE (x) == CHAR);
-  return make_number (VALUE (x));
+  return MAKE_NUMBER (VALUE (x));
 }
 
 SCM

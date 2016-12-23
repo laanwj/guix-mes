@@ -48,13 +48,13 @@ force_output (SCM p) ///((arity . n))
 SCM
 open_input_file (SCM file_name)
 {
-  return make_number (open (string_to_cstring (file_name), O_RDONLY));
+  return MAKE_NUMBER (open (string_to_cstring (file_name), O_RDONLY));
 }
 
 SCM
 current_input_port ()
 {
-  return make_number (fileno (g_stdin));
+  return MAKE_NUMBER (fileno (g_stdin));
 }
 
 SCM

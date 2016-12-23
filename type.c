@@ -113,9 +113,8 @@ boolean_p (SCM x)
 }
 #endif
 
-SCM make_number (int);
 SCM
 mes_type_of (SCM x)
 {
-  return make_number (TYPE (x));
+  return MAKE_NUMBER (TYPE (x));
 }

@@ -40,7 +40,7 @@ length (SCM x)
       n++;
       x = cdr (x);
     }
-  return make_number (n);
+  return MAKE_NUMBER (n);
 }
 
 SCM

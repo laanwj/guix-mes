@@ -48,7 +48,7 @@ SCM
 string_length (SCM x)
 {
   assert (TYPE (x) == STRING);
-  return make_number (VALUE (length (STRING (x))));
+  return MAKE_NUMBER (VALUE (length (STRING (x))));
 }
 
 SCM

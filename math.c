@@ -76,7 +76,7 @@ minus (SCM x) ///((name . "-") (arity . n))
       n -= VALUE (car (x));
       x = cdr (x);
     }
-  return make_number (n);
+  return MAKE_NUMBER (n);
 }
 
 SCM
@@ -89,7 +89,7 @@ plus (SCM x) ///((name . "+") (arity . n))
       n += VALUE (car (x));
       x = cdr (x);
     }
-  return make_number (n);
+  return MAKE_NUMBER (n);
 }
 
 SCM
@@ -107,7 +107,7 @@ divide (SCM x) ///((name . "/") (arity . n))
       n /= VALUE (car (x));
       x = cdr (x);
     }
-  return make_number (n);
+  return MAKE_NUMBER (n);
 }
 
 SCM
@@ -115,7 +115,7 @@ modulo (SCM a, SCM b)
 {
   assert (TYPE (a) == NUMBER);
   assert (TYPE (b) == NUMBER);
-  return make_number (VALUE (a) % VALUE (b));
+  return MAKE_NUMBER (VALUE (a) % VALUE (b));
 }
 
 SCM
@@ -128,7 +128,7 @@ multiply (SCM x) ///((name . "*") (arity . n))
       n *= VALUE (car (x));
       x = cdr (x);
     }
-  return make_number (n);
+  return MAKE_NUMBER (n);
 }
 
 SCM
@@ -141,7 +141,7 @@ logior (SCM x) ///((arity . n))
       n |= VALUE (car (x));
       x = cdr (x);
     }
-  return make_number (n);
+  return MAKE_NUMBER (n);
 }
 
 SCM
@@ -151,5 +151,5 @@ ash (SCM n, SCM count)
   assert (TYPE (count) == NUMBER);
   int cn = VALUE (n);
   int ccount = VALUE (count);
-  return make_number ((ccount < 0) ? cn >> -ccount : cn << ccount);
+  return MAKE_NUMBER ((ccount < 0) ? cn >> -ccount : cn << ccount);
 }
