@@ -82,10 +82,7 @@ scm scm_undefined = {SPECIAL, "*undefined*"};
 scm scm_unspecified = {SPECIAL, "*unspecified*"};
 scm scm_closure = {SPECIAL, "*closure*"};
 scm scm_circular = {SPECIAL, "*circular*"};
-#if BOOT
-scm scm_label = {
-  SPECIAL, "label"};
-#endif
+scm scm_label = {SPECIAL, "label"};
 scm scm_begin = {SPECIAL, "*begin*"};
 
 scm scm_symbol_lambda = {SYMBOL, "lambda"};
@@ -1101,14 +1098,14 @@ mes_symbols () ///((internal))
 
   SCM a = cell_nil;
 
+#include "mes.symbol-names.i"
+
 #if BOOT
   a = acons (cell_symbol_label, cell_t, a);
 #endif
   a = acons (cell_symbol_begin, cell_begin, a);
   a = add_environment (a, "sc-expand", cell_f);
   a = acons (cell_closure, a, a);
-
-  internal_lookup_symbol (cell_nil);
 
   return a;
 }

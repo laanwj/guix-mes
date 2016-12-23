@@ -38,7 +38,7 @@
    (lbrace rbrace lparen rparen lbracket rbracket semicolon colon dot comma
            =
            Identifier NumericLiteral StringLiteral
-           break case continue goto label
+           break case continue goto Label
            return switch
            for
            If else

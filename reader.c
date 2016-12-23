@@ -159,13 +159,6 @@ internal_lookup_symbol (SCM s)
 {
   SCM x = g_symbols;
   while (x) {
-    // .string and .name is the same field; .name is used as a handy
-    // static field initializer.  A string can only be mistaken for a
-    // cell with type == PAIR for the one character long, zero-padded
-    // #\etx.
-    SCM p = STRING (car (x));
-    if (p < 0 || p >= g_free.value || TYPE (p) != PAIR)
-      STRING (car (x)) = cstring_to_list (NAME (car (x)));
     if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
     x = cdr (x);
   }

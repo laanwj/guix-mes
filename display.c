@@ -92,7 +92,7 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
           fprintf (f, "(*closure* . #-1#)");
           return cell_unspecified;
         }
-        if (car (x) == cell_symbol_quote) {
+        if (car (x) == cell_symbol_quote && TYPE (cdr (x)) != PAIR) {
           fprintf (f, "'");
           x = cdr (x);
           if (TYPE (x) != FUNCTION)
@@ -100,10 +100,10 @@ display_helper (FILE* f, SCM x, bool cont, char const *sep, bool quote)
           return display_helper (f, x, cont, "", true);
         }
         if (!cont) fprintf (f, "(");
-        display_ (f, car (x));
+        if (x && x!= cell_nil) display_ (f, car (x));
         if (cdr (x) && TYPE (cdr (x)) == PAIR)
           display_helper (f, cdr (x), true, " ", false);
-        else if (cdr (x) != cell_nil) {
+        else if (cdr (x) && cdr (x) != cell_nil) {
           fprintf (f, " . ");
           display_ (f, cdr (x));
         }

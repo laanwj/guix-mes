@@ -79,6 +79,10 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
    (format #f "g_free.value++;\n")
    (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)))
 
+(define (symbol->names s i)
+  (string-append
+   (format #f "g_cells[cell_~a].car = cstring_to_list (scm_~a.name);\n" s s)))
+
 (define (function->header f i)
   (let* ((arity (or (assoc-ref (.annotation f) 'arity)
                     (if (string-null? (.formals f)) 0
@@ -99,7 +103,10 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define (function->environment f i)
   (string-append
-   (format #f "a = add_environment (a, ~S, ~a);\n" (function-scm-name f) (function-cell-name f))))
+   (format #f "scm_~a.string = cstring_to_list (scm_~a.name);\n" (.name f) (.name f))
+   (format #f "a = acons (make_symbol (scm_~a.string), ~a, a);\n" (.name f) (function-cell-name f))
+   ;;(format #f "a = add_environment (a, ~S, ~a);\n" (function-scm-name f) (function-cell-name f))
+   ))
 
 (define (snarf-symbols string)
   (let* ((matches (append (list-matches "\nscm scm_([a-z_0-9]+) = [{](SPECIAL)," string)
@@ -147,8 +154,11 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
                       #:content (string-join (map symbol->header symbols (iota (length symbols) %start)) "")))
          (symbols.i (make <file>
                       #:name (string-append base-name ".symbols.i")
-                      #:content (string-join (map symbol->source symbols (iota (length symbols))) ""))))
-    (list header source environment symbols.h symbols.i)))
+                      #:content (string-join (map symbol->source symbols (iota (length symbols))) "")))
+         (symbol-names.i (make <file>
+                          #:name (string-append base-name ".symbol-names.i")
+                          #:content (string-join (map symbol->names symbols (iota (length symbols))) ""))))
+    (list header source environment symbols.h symbols.i symbol-names.i)))
 
 (define (file-write file)
   (with-output-to-file (.name file) (lambda () (display (.content file)))))
