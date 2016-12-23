@@ -238,6 +238,11 @@
         (string->symbol (string-append "g" value))))))
 
 
+;;; Keywords
+(define (keyword->symbol s)
+  (list->symbol (keyword->list s)))
+
+
 ;;; Characters
 (define (char=? x y)
   (and (char? x) (char? y)

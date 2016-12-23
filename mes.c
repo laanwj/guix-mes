@@ -868,27 +868,6 @@ write_char (SCM x) ///((arity . n))
   return c;
 }
 
-SCM
-symbol_to_list (SCM x)
-{
-  assert (TYPE (x) == SYMBOL);
-  return STRING (x);
-}
-
-SCM
-char_to_integer (SCM x)
-{
-  assert (TYPE (x) == CHAR);
-  return MAKE_NUMBER (VALUE (x));
-}
-
-SCM
-integer_to_char (SCM x)
-{
-  assert (TYPE (x) == NUMBER);
-  return MAKE_CHAR (VALUE (x));
-}
-
 void
 make_tmps (scm* cells)
 {

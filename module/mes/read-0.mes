@@ -104,12 +104,24 @@
                (quote ((current-module))))))
      (current-module))) (current-module))
 
+  (define <cell:character> 0)
   (define <cell:keyword> 3)
   (define <cell:string> 9)
+
+  (define (list->symbol lst) (make-symbol lst))
+
+  (define (symbol->list s)
+    (core:car s))
 
   (define (list->string lst)
     (make-cell <cell:string> lst 0))
 
+  (define (integer->char x)
+    (make-cell <cell:character> 0 x))
+
+  (define (symbol->keyword s)
+    (make-cell <cell:keyword> (symbol->list s) 0))
+  
   (define (read)
     (read-word (read-byte) (list) (current-module)))
 
@@ -190,8 +202,6 @@
   (define (not x)
     (if x #f #t))
   
-  (define (list->symbol lst) (make-symbol lst))
-
   (define (read-character)
     (define (read-octal c p n)
       (if (not (and (> p 47) (< p 56))) n
@@ -289,7 +299,7 @@
                   ((eq? (peek-byte) 39) (read-byte)
                    (cons (quote syntax) (cons (read-word (read-byte) w a) (list))))
                   ((eq? (peek-byte) 58) (read-byte)
-                   (make-cell <cell:keyword> (symbol->list (read-word (read-byte) (list) a)) 0))
+                   (symbol->keyword (read-word (read-byte) (list) a)))
                   ((eq? (peek-byte) 59) (read-byte)
                    (read-word (read-byte) w a)
                    (read-word (read-byte) w a))
