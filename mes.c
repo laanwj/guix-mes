@@ -989,24 +989,6 @@ gc_flip ()
   return stack;
 }
 
-SCM
-gc_show ()
-{
-  fprintf (stderr, "cells: ");
-  scm *t = g_cells;
-  display_ (stderr, -1);
-  fprintf (stderr, "\n");
-  if (g_news)
-    {
-      fprintf (stderr, "news: ");
-      g_cells = g_news;
-      display_ (stderr, -1);
-      fprintf (stderr, "\n");
-    }
-  g_cells = t;
-  return cell_unspecified;
-}
-
 // Environment setup
 SCM
 acons (SCM key, SCM value, SCM alist)
