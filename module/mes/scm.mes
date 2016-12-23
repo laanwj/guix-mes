@@ -194,6 +194,12 @@
 (define (string-ref s k)
   (list-ref (string->list s) k))
 
+(define (substring s start . rest)
+  (let* ((end (and (pair? rest) (car rest)))
+         (lst (list-tail (string->list s) start)))
+    (list->string (if (not end) lst
+                      (list-head lst (- end start))))))
+
 (define (string-prefix? prefix string)
   (and
    (>= (string-length string) (string-length prefix))

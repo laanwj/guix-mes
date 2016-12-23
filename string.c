@@ -19,30 +19,6 @@
  */
 
 SCM
-substring (SCM x) ///((arity . n))
-{
-  assert (TYPE (x) == PAIR);
-  assert (TYPE (car (x)) == STRING);
-  SCM s = STRING (car (x));
-  assert (TYPE (cadr (x)) == NUMBER);
-  int start = VALUE (cadr (x));
-  int end = VALUE (length (s));
-  if (TYPE (cddr (x)) == PAIR) {
-    assert (TYPE (caddr (x)) == NUMBER);
-    assert (VALUE (caddr (x)) <= end);
-    end = VALUE (caddr (x));
-  }
-  int n = end - start;
-  while (start--) s = cdr (s);
-  SCM p = cell_nil;
-  while (n-- && s != cell_nil) {
-    p = append2 (p, cons (MAKE_CHAR (VALUE (car (s))), cell_nil));
-    s = cdr (s);
-  }
-  return MAKE_STRING (p);
-}
-
-SCM
 number_to_string (SCM x)
 {
   assert (TYPE (x) == NUMBER);
