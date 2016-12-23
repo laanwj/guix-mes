@@ -313,24 +313,6 @@ set_env_x (SCM x, SCM e, SCM a)
 }
 
 SCM
-quote (SCM x)
-{
-  return cons (cell_symbol_quote, x);
-}
-
-SCM
-quasiquote (SCM x)
-{
-  return cons (cell_symbol_quasiquote, x);
-}
-
-SCM
-quasisyntax (SCM x)
-{
-  return cons (cell_symbol_quasisyntax, x);
-}
-
-SCM
 pairlis (SCM x, SCM y, SCM a)
 {
   if (x == cell_nil)
