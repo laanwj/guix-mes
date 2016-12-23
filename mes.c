@@ -1115,12 +1115,6 @@ mes_environment () ///((internal))
 }
 
 SCM
-make_lambda (SCM args, SCM body)
-{
-  return cons (cell_symbol_lambda, cons (args, body));
-}
-
-SCM
 make_closure (SCM args, SCM body, SCM a)
 {
   return cons (cell_closure, cons (cons (cell_circular, a), cons (args, body)));
