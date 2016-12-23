@@ -130,8 +130,6 @@
 
 
 ;;; Lists
-(define (list . rest) rest)
-
 (define (make-list n . x)
   (let ((fill (if (pair? x) (car x) *unspecified*)))
     (let loop ((n n))

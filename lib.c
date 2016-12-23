@@ -50,7 +50,7 @@ list (SCM x) ///((arity . n))
 }
 
 SCM
-builtin_exit (SCM x)
+exit_ (SCM x) ///((name . "exit"))
 {
   assert (TYPE (x) == NUMBER);
   exit (VALUE (x));
