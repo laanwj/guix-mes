@@ -19,19 +19,6 @@
  */
 
 SCM
-number_to_string (SCM x)
-{
-  assert (TYPE (x) == NUMBER);
-  int n = VALUE (x);
-  SCM p = n < 0 ? cons (MAKE_CHAR ('-'), cell_nil) : cell_nil;
-  do {
-    p = cons (MAKE_CHAR (n % 10 + '0'), p);
-    n = n / 10;
-  } while (n);
-  return MAKE_STRING (p);
-}
-
-SCM
 string_to_symbol (SCM x)
 {
   assert (TYPE (x) == STRING);

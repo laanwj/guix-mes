@@ -214,6 +214,14 @@
           (if (null? lst) (* sign n)
               (loop (cdr lst) (+ (* n 10) (- (char->integer (car lst)) (char->integer #\0)))))))))
 
+(define (number->string n)
+  (let ((sign (if (< n 0) '(#\-) '())))
+    (let loop ((n (abs n)) (lst '()))
+      (let* ((lst (cons (integer->char (+ (remainder n 10) (char->integer #\0))) lst))
+             (n (quotient n 10)))
+        (if (= 0 n) (list->string (append sign lst))
+            (loop n lst))))))
+
 
 ;;; Symbols
 (define (symbol-prefix? prefix symbol)
