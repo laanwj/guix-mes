@@ -116,3 +116,6 @@
 ;;; core: accessors
 (define (string->list s)
   (core:car s))
+
+(define (string . lst)
+  (make-cell <cell:string> lst 0))

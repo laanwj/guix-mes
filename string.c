@@ -19,12 +19,6 @@
  */
 
 SCM
-string (SCM x) ///((arity . n))
-{
-  return MAKE_STRING (x);
-}
-
-SCM
 string_append (SCM x) ///((arity . n))
 {
   SCM p = cell_nil;
