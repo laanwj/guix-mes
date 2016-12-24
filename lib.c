@@ -124,3 +124,61 @@ check_apply (SCM f, SCM e)
     }
   return cell_unspecified;
 }
+
+FILE *g_stdin;
+int
+dump ()
+{
+  r1 = g_symbols;
+  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
+  stack = cons (frame, stack);
+  stack = gc (stack);
+  gc_frame (stack);
+  char *p = (char*)g_cells;
+  fputc ('M', stdout);
+  fputc ('E', stdout);
+  fputc ('S', stdout);
+  fputc (stack >> 8, stdout);
+  fputc (stack % 256, stdout);
+  for (int i=0; i<g_free.value * sizeof(scm); i++)
+    fputc (*p++, stdout);
+  return 0;
+}
+
+SCM
+load_env (SCM a) ///((internal))
+{
+  r0 =a;
+  g_stdin = fopen ("module/mes/read-0.mes", "r");
+  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
+  if (!g_function) r0 = mes_builtins (r0);
+  r3 = read_input_file_env (r0);
+  g_stdin = stdin;
+  return r3;
+}
+
+SCM
+bload_env (SCM a) ///((internal))
+{
+  g_stdin = fopen ("module/mes/read-0.mo", "r");
+  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
+  char *p = (char*)g_cells;
+  assert (getchar () == 'M');
+  assert (getchar () == 'E');
+  assert (getchar () == 'S');
+  stack = getchar () << 8;
+  stack += getchar ();
+  int c = getchar ();
+  while (c != EOF)
+    {
+      *p++ = c;
+      c = getchar ();
+    }
+  g_free.value = (p-(char*)g_cells) / sizeof (scm);
+  gc_frame (stack);
+  g_symbols = r1;
+  g_stdin = stdin;
+
+  r0 = mes_builtins (r0);
+  return r3;
+}
