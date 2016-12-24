@@ -1,13 +1,10 @@
 #! /bin/sh
 # -*-scheme-*-
 # ***REMOVE THIS BLOCK COMMENT INITIALLY***
-echo ' ()' | cat $0 /dev/stdin | $(dirname $0)/../scripts/mes $MES_FLAGS "$@"
+echo ' ()' | cat $(dirname $0)/../module/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/../scripts/mes $MES_FLAGS "$@"
 #paredit:||
 exit $?
 !#
-
-;; FIXME
-(gc)
 
 0
 cons

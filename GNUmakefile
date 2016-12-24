@@ -53,6 +53,7 @@ TESTS:=\
  tests/let.test\
  tests/vector.test\
  tests/scm.test\
+ tests/display.test\
  tests/cwv.test\
  tests/srfi-1.test\
  tests/srfi-13.test\

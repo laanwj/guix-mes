@@ -838,7 +838,7 @@ unread_byte (SCM i)
 }
 
 SCM
-write_char (SCM x) ///((arity . n))
+write_byte (SCM x) ///((arity . n))
 {
   SCM c = car (x);
   SCM p = cdr (x);
