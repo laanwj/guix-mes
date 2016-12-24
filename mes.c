@@ -89,23 +89,13 @@ scm scm_symbol_dot = {SYMBOL, "*dot*"};
 scm scm_symbol_lambda = {SYMBOL, "lambda"};
 scm scm_symbol_begin = {SYMBOL, "begin"};
 scm scm_symbol_if = {SYMBOL, "if"};
-scm scm_symbol_define = {SYMBOL, "define"};
-scm scm_symbol_define_macro = {SYMBOL, "define-macro"};
 scm scm_symbol_set_x = {SYMBOL, "set!"};
 
 scm scm_symbol_quote = {SYMBOL, "quote"};
-scm scm_symbol_quasiquote = {SYMBOL, "quasiquote"};
-scm scm_symbol_unquote = {SYMBOL, "unquote"};
-scm scm_symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
 
 scm scm_symbol_sc_expand = {SYMBOL, "sc-expand"};
 scm scm_symbol_macro_expand = {SYMBOL, "macro-expand"};
 scm scm_symbol_sc_expander_alist = {SYMBOL, "*sc-expander-alist*"};
-scm scm_symbol_noexpand = {SYMBOL, "noexpand"};
-scm scm_symbol_syntax = {SYMBOL, "syntax"};
-scm scm_symbol_quasisyntax = {SYMBOL, "quasisyntax"};
-scm scm_symbol_unsyntax = {SYMBOL, "unsyntax"};
-scm scm_symbol_unsyntax_splicing = {SYMBOL, "unsyntax-splicing"};
 
 scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm scm_symbol_current_module = {SYMBOL, "current-module"};
