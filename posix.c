@@ -20,6 +20,58 @@
 
 #include <fcntl.h>
 
+int
+getchar ()
+{
+  return getc (g_stdin);
+}
+
+int
+ungetchar (int c)
+{
+  return ungetc (c, g_stdin);
+}
+
+int
+peekchar ()
+{
+  int c = getchar ();
+  ungetchar (c);
+  return c;
+}
+
+SCM
+peek_byte ()
+{
+  return MAKE_NUMBER (peekchar ());
+}
+
+SCM
+read_byte ()
+{
+  return MAKE_NUMBER (getchar ());
+}
+
+SCM
+unread_byte (SCM i)
+{
+  ungetchar (VALUE (i));
+  return i;
+}
+
+SCM
+write_byte (SCM x) ///((arity . n))
+{
+  SCM c = car (x);
+  SCM p = cdr (x);
+  int fd = 1;
+  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
+  FILE *f = fd == 1 ? stdout : stderr;
+  assert (TYPE (c) == NUMBER || TYPE (c) == CHAR);
+  fputc (VALUE (c), f);
+  return c;
+}
+
 SCM
 stderr_ (SCM x)
 {

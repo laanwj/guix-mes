@@ -787,59 +787,6 @@ vector_to_list (SCM v)
   return x;
 }
 
-FILE *g_stdin;
-int
-getchar ()
-{
-  return getc (g_stdin);
-}
-
-int
-ungetchar (int c)
-{
-  return ungetc (c, g_stdin);
-}
-
-int
-peekchar ()
-{
-  int c = getchar ();
-  ungetchar (c);
-  return c;
-}
-
-SCM
-peek_byte ()
-{
-  return MAKE_NUMBER (peekchar ());
-}
-
-SCM
-read_byte ()
-{
-  return MAKE_NUMBER (getchar ());
-}
-
-SCM
-unread_byte (SCM i)
-{
-  ungetchar (VALUE (i));
-  return i;
-}
-
-SCM
-write_byte (SCM x) ///((arity . n))
-{
-  SCM c = car (x);
-  SCM p = cdr (x);
-  int fd = 1;
-  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
-  FILE *f = fd == 1 ? stdout : stderr;
-  assert (TYPE (c) == NUMBER || TYPE (c) == CHAR);
-  fputc (VALUE (c), f);
-  return c;
-}
-
 void
 make_tmps (scm* cells)
 {
@@ -1077,22 +1024,7 @@ lookup_macro (SCM x, SCM a)
   return cell_f;
 }
 
-SCM
-read_input_file_env_ (SCM e, SCM a)
-{
-  if (e == cell_nil) return e;
-  return cons (e, read_input_file_env_ (read_env (a), a));
-}
-
-SCM
-read_input_file_env (SCM a)
-{
-  r0 = a;
-  if (assq_ref_cache (cell_symbol_read_input_file, r0) != cell_undefined)
-    return apply_env (cell_symbol_read_input_file, cell_nil, r0);
-  return read_input_file_env_ (read_env (r0), r0);
-}
-
+FILE *g_stdin;
 SCM
 load_env (SCM a) ///((internal))
 {

@@ -18,6 +18,23 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+SCM
+read_input_file_env_ (SCM e, SCM a)
+{
+  if (e == cell_nil) return e;
+  return cons (e, read_input_file_env_ (read_env (a), a));
+}
+
+SCM
+read_input_file_env (SCM a)
+{
+  r0 = a;
+  if (assq_ref_cache (cell_symbol_read_input_file, r0) != cell_undefined)
+    return apply_env (cell_symbol_read_input_file, cell_nil, r0);
+  return read_input_file_env_ (read_env (r0), r0);
+}
+
 int
 read_line_comment (int c)
 {
