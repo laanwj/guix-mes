@@ -101,6 +101,7 @@ scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm scm_symbol_current_module = {SYMBOL, "current-module"};
 scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
+scm scm_symbol_write = {SYMBOL, "write"};
 scm scm_symbol_display = {SYMBOL, "display"};
 
 scm scm_symbol_car = {SYMBOL, "car"};

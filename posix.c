@@ -82,8 +82,10 @@ write_byte (SCM x) ///((arity . n))
 SCM
 stderr_ (SCM x)
 {
-  SCM display;
-  if ((display = assq_ref_cache (cell_symbol_display, r0)) != cell_undefined)
+  SCM write;
+  if (TYPE (x) == STRING)
+    fprintf (stderr, string_to_cstring (x));
+  else if ((write = assq_ref_cache (cell_symbol_write, r0)) != cell_undefined)
     apply_env (assq_ref_cache (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
   else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
     fprintf (stderr, string_to_cstring (x));
