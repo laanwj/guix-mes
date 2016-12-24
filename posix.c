@@ -41,6 +41,13 @@ peekchar ()
 }
 
 SCM
+getenv_ (SCM s) ///((name . "getenv"))
+{
+  char *p = getenv (string_to_cstring (s));
+  return p ? MAKE_STRING (cstring_to_list (p)) : cell_f;
+}
+
+SCM
 peek_byte ()
 {
   return MAKE_NUMBER (peekchar ());

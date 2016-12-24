@@ -163,8 +163,8 @@ SCM r3 = 0; // param 3
 
 #define MAKE_CHAR(n) make_cell (tmp_num_ (CHAR), 0, tmp_num2_ (n))
 #define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
-#define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0);
-#define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0);
+#define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0)
+#define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0)
 
 int error (char const* msg, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);

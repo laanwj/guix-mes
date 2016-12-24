@@ -108,9 +108,11 @@
         'o))
 (define-macro (load file)
   (list 'begin
-          (list core:stderr "read ")
-          (list core:stderr file)
-          (list core:stderr "\n")
+        (list 'if (list getenv "MES_DEBUG")
+              (list 'begin
+                    (list core:stderr "read ")
+                    (list core:stderr file)
+                    (list core:stderr "\n")))
      (list 'push! '*input-ports* (list current-input-port))
      (list 'set-current-input-port (list open-input-file file))
      (list 'primitive-load)
@@ -153,9 +155,6 @@
          (list
           'begin
           (list 'set! '*modules* (list cons (list string->symbol (module->file module)) '*modules*))
-          ;; (list core:stderr "read ")
-          ;; (list core:stderr file)
-          ;; (list core:stderr "\n")
           (list 'load (list string-append '*mes-prefix* (module->file module)))))))
 
 (mes-use-module (srfi srfi-0))
