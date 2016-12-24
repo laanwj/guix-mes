@@ -35,5 +35,8 @@ module/mes/pmatch.scm
 Srfi-1 bits from Guile
 module/srfi/srfi-1.scm
 
+Srfi-26 from Guile
+module/srfi/srfi-26.scm
+
 Sxml bits from Guile
 module/sxml/xpath.scm
