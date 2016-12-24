@@ -29,7 +29,6 @@ all: mes module/mes/read-0.mo
 mes.o: GNUmakefile
 mes.o: mes.c
 mes.o: mes.c mes.h mes.i mes.environment.i mes.symbols.i
-mes.o: display.c display.h display.i display.environment.i
 mes.o: lib.c lib.h lib.i lib.environment.i
 mes.o: math.c math.h math.i math.environment.i
 mes.o: posix.c posix.h posix.i posix.environment.i

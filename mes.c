@@ -111,23 +111,13 @@ scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
 scm scm_symbol_current_module = {SYMBOL, "current-module"};
 scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
+scm scm_symbol_display = {SYMBOL, "display"};
 
 scm scm_symbol_car = {SYMBOL, "car"};
 scm scm_symbol_cdr = {SYMBOL, "cdr"};
 scm scm_symbol_null_p = {SYMBOL, "null?"};
 scm scm_symbol_eq_p = {SYMBOL, "eq?"};
 scm scm_symbol_cons = {SYMBOL, "cons"};
-
-scm char_eof = {CHAR, .name="*eof*", .value=-1};
-scm char_nul = {CHAR, .name="nul", .value=0};
-scm char_alarm = {CHAR, .name="alarm", .value=8};
-scm char_backspace = {CHAR, .name="backspace", .value=8};
-scm char_tab = {CHAR, .name="tab", .value=9};
-scm char_newline = {CHAR, .name="newline", .value=10};
-scm char_vtab = {CHAR, .name="vtab", .value=11};
-scm char_page = {CHAR, .name="page", .value=12};
-scm char_return = {CHAR, .name="return", .value=13};
-scm char_space = {CHAR, .name="space", .value=32};
 
 scm g_free = {NUMBER, .value=0};
 scm *g_cells;
@@ -151,7 +141,6 @@ SCM r1 = 0; // param 1
 SCM r2 = 0; // param 2
 SCM r3 = 0; // param 3
 
-#include "display.h"
 #include "lib.h"
 #include "math.h"
 #include "mes.h"
@@ -187,7 +176,6 @@ SCM r3 = 0; // param 3
 #define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0);
 #define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0);
 
-SCM display_ (FILE* f, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);
 
 SCM
@@ -344,19 +332,6 @@ assq_ref_cache (SCM x, SCM a)
   return cdr (x);
 }
 
-SCM
-assert_defined (SCM x, SCM e)
-{
-  if (e == cell_undefined)
-    {
-      fprintf (stderr, "eval: unbound variable:");
-      display_ (stderr, x);
-      fprintf (stderr, "\n");
-      assert (!"unbound variable");
-    }
-  return e;
-}
-
 enum eval_apply_t {EVLIS, APPLY, EVAL, MACRO_EXPAND, BEGIN, IF, CALL_WITH_VALUES};
 enum eval_apply_t g_target;
 
@@ -452,9 +427,9 @@ eval_apply ()
   if (type)
     {
       fprintf (stderr, "cannot apply: %s: ", type);
-      display_ (stderr, e);
+      stderr_ (e);
       fprintf (stderr, " [");
-      display_ (stderr, r1);
+      stderr_ (r1);
       fprintf (stderr, "]\n");
       assert (!"cannot apply");
     }
@@ -748,6 +723,13 @@ make_vector (SCM n)
 }
 
 SCM
+arity_ (SCM x)
+{
+  assert (TYPE (x) == FUNCTION);
+  return MAKE_NUMBER (FUNCTION (x).arity);
+}
+
+SCM
 values (SCM x) ///((arity . n))
 {
   SCM v = cons (0, x);
@@ -924,6 +906,7 @@ gc_loop (SCM scan)
   while (scan < g_free.value)
     {
       if (NTYPE (scan) == CLOSURE
+          || NTYPE (scan) == FUNCTION
           || NTYPE (scan) == KEYWORD
           || NTYPE (scan) == MACRO
           || NTYPE (scan) == PAIR
@@ -1057,13 +1040,11 @@ mes_builtins (SCM a)
 {
 #include "mes.i"
 
-#include "display.i"
 #include "lib.i"
 #include "math.i"
 #include "posix.i"
 #include "reader.i"
 
-#include "display.environment.i"
 #include "lib.environment.i"
 #include "math.environment.i"
 #include "mes.environment.i"
@@ -1179,7 +1160,6 @@ dump ()
   return 0;
 }
 
-#include "display.c"
 #include "lib.c"
 #include "math.c"
 #include "posix.c"
@@ -1197,7 +1177,7 @@ main (int argc, char *argv[])
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
-  display_ (stderr, begin_env (program, r0));
+  stderr_ (begin_env (program, r0));
   fputs ("", stderr);
   gc (stack);
   if (g_debug) fprintf (stderr, "\nstats: [%d]\n", g_free.value);

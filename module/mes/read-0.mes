@@ -108,6 +108,9 @@
   (define <cell:keyword> 3)
   (define <cell:string> 9)
 
+  (define (newline) (core:stderr (integer->char 10)))
+  (define (display x . reset) #f)
+  
   (define (list->symbol lst) (make-symbol lst))
 
   (define (symbol->list s)
@@ -219,7 +222,7 @@
                                (egap . 12)
                                (nruter . 13)
                                (ecaps . 32)))) => cdr)
-              (#t (display (quote char-not-supported:)) (display n) (newline) (exit 1))))
+              (#t (core:stderr (quote char-not-supported:)) (core:stderr n) (newline) (exit 1))))
       (if (not (and (> p 96) (< p 123))) (integer->char (lookup-char (list->symbol (cons (integer->char c) n))))
           (read-name (read-byte) (peek-byte) (cons (integer->char c) n))))
 
@@ -258,7 +261,7 @@
         (read-byte)
         (read-string (read-byte) (peek-byte) (append-char s 10)))
        ((eq? c 34) s)
-       ((eq? c -1) (display (quote EOF-in-string)) (newline) (exit 1))
+       ((eq? c -1) (core:stderr (quote EOF-in-string)) (newline) (exit 1))
        (#t (read-string (read-byte) (peek-byte) (append-char s c)))))
     (list->string (read-string (read-byte) (peek-byte) (list))))
 

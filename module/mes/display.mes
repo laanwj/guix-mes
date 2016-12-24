@@ -1,0 +1,113 @@
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; Code:
+
+(mes-use-module (mes scm))
+
+(define (newline . rest)
+  (apply display (cons "\n" rest)))
+
+(define (display x . rest)
+  (let* ((port (if (null? rest) (current-output-port) (car rest)))
+         (write? (and (pair? rest) (pair? (cdr rest)))))
+    
+    (define-macro (cut f slot port)
+      `(lambda (slot) (,f slot ,port)))
+
+    (define (d x cont? sep)
+      (for-each (cut write-char <> port) (string->list sep))
+      (cond
+       ((char? x)
+        (write-char #\# port)
+        (write-char #\\ port)
+        (let ((name (and=> (assq x '((#\*eof* . *eof*)
+                                     (#\nul . nul)
+                                     (#\alarm . alarm)
+                                     (#\backspace . backspace)
+                                     (#\tab . tab)
+                                     (#\newline . newline)
+                                     (#\vtab . vtab)
+                                     (#\page . page)
+                                     (#\return . return)
+                                     (#\space . space)))
+                           cdr)))
+          (if name (display name)
+              (write-char x port))))
+       ((closure? x)
+        (display "<#procedure #f " port)
+        (display (cadr (core:cdr x)) port)
+        (display ">" port))
+       ((macro? x)
+        (display "<#macro " port)
+        (display (core:cdr x) port)
+        (display ">" port))
+       ((number? x) (display (number->string x) port))
+       ((pair? x)
+        (if (not cont?) (write-char #\( port))
+        (cond ((eq? (car x) '*circular*)
+               (display "(*circ* . #-1#)" port))
+              ((eq? (car x) '*closure*)
+               (display "(*closure* . #-1#)" port))
+              (#t
+               (display (car x) port write?)
+               (if (pair? (cdr x)) (d (cdr x) #t " ")
+                   (if (and (cdr x) (not (null? (cdr x))))
+                       (begin
+                         (display " . " port)
+                         (display (cdr x) port write?))))
+               (if (not cont?) (write-char #\) port)))))
+       ((or (keyword? x) (special? x) (string? x) (symbol? x))
+        (if (and (string? x) write?) (write-char #\" port))
+        (if (keyword? x) (display "#:" port))
+        (for-each (cut write-char <> port) (string->list x))
+        (if (and (string? x) write?) (write-char #\" port)))
+       ((vector? x)
+        (display "#(" port)
+        (for-each (lambda (i)
+                    (let ((x (vector-ref x i)))
+                      (if (vector? x)
+                          (begin
+                            (display (if (= i 0) "" " ") port)
+                            (display "#(...)" port))
+                          (d x #f (if (= i 0) "" " ")))))
+                  (iota (vector-length x)))
+        (display ")" port))
+       ((function? x)
+        (display "<#procedure " port)
+        (display (core:car x) port)
+        (display " " port)
+        (display
+         (case (core:arity x)
+           ((-1) "(. x)")
+           ((0) "()")
+           ((1) "(x)")
+           ((2) "(x y)")
+           ((3) "(x y z)"))
+         port)
+        (display ">" port))
+       ((broken-heart? x)
+        (display "<3" port))
+       (#t
+        (display "TODO type=") (display (cell:type-name x)) (newline)))
+      *unspecified*)
+    (d x #f "")))

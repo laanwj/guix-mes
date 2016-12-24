@@ -55,3 +55,30 @@ exit_ (SCM x) ///((name . "exit"))
   assert (TYPE (x) == NUMBER);
   exit (VALUE (x));
 }
+
+char const*
+string_to_cstring (SCM s)
+{
+  static char buf[1024];
+  char *p = buf;
+  s = STRING (s);
+  while (s != cell_nil)
+    {
+      *p++ = VALUE (car (s));
+      s = cdr (s);
+    }
+  *p = 0;
+  return buf;
+}
+
+SCM
+assert_defined (SCM x, SCM e)
+{
+  if (e == cell_undefined)
+    {
+      fprintf (stderr, "eval: unbound variable:");
+      stderr_ (x);
+      assert (!"unbound variable");
+    }
+  return e;
+}

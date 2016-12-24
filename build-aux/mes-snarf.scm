@@ -106,6 +106,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 (define (function->environment f i)
   (string-append
    (format #f "scm_~a.string = cstring_to_list (scm_~a.name);\n" (.name f) (.name f))
+   (format #f "g_cells[cell_~a].string = MAKE_STRING (scm_~a.string);\n" (.name f) (.name f))
    (format #f "a = acons (make_symbol (scm_~a.string), ~a, a);\n" (.name f) (function-cell-name f))
    ;;(format #f "a = add_environment (a, ~S, ~a);\n" (function-scm-name f) (function-cell-name f))
    ))

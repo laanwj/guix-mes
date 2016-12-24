@@ -20,19 +20,17 @@
 
 #include <fcntl.h>
 
-char const*
-string_to_cstring (SCM s)
+SCM
+stderr_ (SCM x)
 {
-  static char buf[1024];
-  char *p = buf;
-  s = STRING (s);
-  while (s != cell_nil)
-    {
-      *p++ = VALUE (car (s));
-      s = cdr (s);
-    }
-  *p = 0;
-  return buf;
+  SCM display;
+  if ((display = assq_ref_cache (cell_symbol_display, r0)) != cell_undefined)
+    apply_env (assq_ref_cache (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
+  else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
+    fprintf (stderr, string_to_cstring (x));
+  else
+    fprintf (stderr, "display: undefined\n");
+  return cell_unspecified;
 }
 
 SCM
