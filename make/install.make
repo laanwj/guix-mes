@@ -48,6 +48,8 @@ install: all ChangeLog
 	install scripts/elf.mes $(DESTDIR)$(PREFIX)/bin/elf.mes
 	install scripts/include.mes $(DESTDIR)$(PREFIX)/bin/include.mes
 	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/mescc.mes
+	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/nyacc.mes
+	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/nyacc-calc.mes
 	install scripts/repl.mes $(DESTDIR)$(PREFIX)/bin/repl.mes
 	install scripts/paren.mes $(DESTDIR)$(PREFIX)/bin/paren.mes
 	mkdir -p $(DESTDIR)$(PREFIX)/share/mes
@@ -58,6 +60,8 @@ install: all ChangeLog
 		$(DESTDIR)$(PREFIX)/share/mes/module/mes/base-0.mes \
 		$(DESTDIR)$(PREFIX)/bin/elf.mes \
 		$(DESTDIR)$(PREFIX)/bin/mescc.mes \
+		$(DESTDIR)$(PREFIX)/bin/nyacc.mes \
+		$(DESTDIR)$(PREFIX)/bin/nyacc-calc.mes \
 		$(DESTDIR)$(PREFIX)/bin/repl.mes \
 		$(DESTDIR)$(PREFIX)/bin/paren.mes
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/mes
