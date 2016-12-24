@@ -73,8 +73,7 @@
 		(if (null? acc)
 		    (set! acc lst)
 		    (for-each (lambda (elem)
-				(if (not (member elem acc
-						 (lambda (x y) (= y x))))
+				(if (not (member elem acc =))
 				    (set! acc (cons elem acc))))
 			      lst)))
 	      rest)

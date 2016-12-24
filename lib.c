@@ -38,6 +38,7 @@ length (SCM x)
   while (x != cell_nil)
     {
       n++;
+      if (TYPE (x) != PAIR) return MAKE_NUMBER (-1);
       x = cdr (x);
     }
   return MAKE_NUMBER (n);
@@ -71,14 +72,55 @@ string_to_cstring (SCM s)
   return buf;
 }
 
+int
+error (char const* msg, SCM x)
+{
+  fprintf (stderr, msg);
+  if (x) stderr_ (x);
+  fprintf (stderr, "\n");
+  assert(!msg);
+}
+
 SCM
 assert_defined (SCM x, SCM e)
 {
-  if (e == cell_undefined)
-    {
-      fprintf (stderr, "eval: unbound variable:");
-      stderr_ (x);
-      assert (!"unbound variable");
-    }
+  if (e == cell_undefined) error ("eval: unbound variable: ", x);
   return e;
+}
+
+SCM
+check_formals (SCM f, SCM formals, SCM args)
+{
+  int flen = (TYPE (formals) == NUMBER) ? VALUE (formals) : VALUE (length (formals));
+  int alen = VALUE (length (args));
+  if (alen != flen && alen != -1 && flen != -1)
+    {
+      char buf[1024];
+      sprintf (buf, "apply: wrong number of arguments; expected: %d, got: %d: ", flen, alen);
+      error (buf, f);
+    }
+  return cell_unspecified;
+}
+
+SCM
+check_apply (SCM f, SCM e)
+{
+  char const* type = 0;
+  if (f == cell_f || f == cell_t) type = "bool";
+  if (TYPE (f) == CHAR) type = "char";
+  if (TYPE (f) == NUMBER) type = "number";
+  if (TYPE (f) == STRING) type = "string";
+  if (f == cell_unspecified) type = "*unspecified*";
+  if (f == cell_undefined) type =  "*undefined*";
+
+  if (type)
+    {
+      char buf[1024];
+      sprintf (buf, "cannot apply: %s:", type);
+      fprintf (stderr, " [");
+      stderr_ (e);
+      fprintf (stderr, "]\n");
+      error (buf, f);
+    }
+  return cell_unspecified;
 }

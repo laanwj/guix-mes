@@ -166,6 +166,7 @@ SCM r3 = 0; // param 3
 #define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0);
 #define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0);
 
+int error (char const* msg, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);
 
 SCM
@@ -220,14 +221,14 @@ cons (SCM x, SCM y)
 SCM
 car (SCM x)
 {
-  assert (TYPE (x) == PAIR);
+  if (TYPE (x) != PAIR) error ("car: not pair: ", x);
   return CAR (x);
 }
 
 SCM
 cdr (SCM x)
 {
-  assert (TYPE (x) == PAIR);
+  if (TYPE (x) != PAIR) error ("cdr: not pair: ", x);
   return CDR (x);
 }
 
@@ -279,7 +280,7 @@ set_car_x (SCM x, SCM e)
 SCM
 set_cdr_x (SCM x, SCM e)
 {
-  assert (TYPE (x) == PAIR);
+  if (TYPE (x) != PAIR) error ("set-cdr!: not pair: ", x);
   CDR (x) = e;
   return cell_unspecified;
 }
@@ -288,6 +289,7 @@ SCM
 set_env_x (SCM x, SCM e, SCM a)
 {
   SCM p = assert_defined (x, assq (x, a));
+  if (TYPE (p) != PAIR) error ("set-env!: not pair: ", x);
   return set_cdr_x (p, e);
 }
 
@@ -360,15 +362,19 @@ eval_apply ()
  apply:
   switch (TYPE (r1))
     {
-    case FUNCTION: return call (r1, r2);
+    case FUNCTION: {
+      check_formals (r1, MAKE_NUMBER (FUNCTION (r1).arity), r2);
+      return call (r1, r2);
+    }
     case CLOSURE:
       {
         SCM cl = CLOSURE (r1);
-        SCM args = cadr (cl);
+        SCM formals = cadr (cl);
         SCM body = cddr (cl);
         SCM aa = cdar (cl);
         aa = cdr (aa);
-        SCM p = pairlis (args, r2, aa);
+        check_formals (r1, formals, r2);
+        SCM p = pairlis (formals, r2, aa);
         call_lambda (body, p, aa, r0);
         goto begin;
       }
@@ -389,9 +395,10 @@ eval_apply ()
           {
           case cell_symbol_lambda:
             {
-              SCM args = cadr (r1);
+              SCM formals = cadr (r1);
               SCM body = cddr (r1);
-              SCM p = pairlis (args, r2, r0);
+              SCM p = pairlis (formals, r2, r0);
+              check_formals (r1, formals, r2);
               call_lambda (body, p, p, r0);
               goto begin;
             }
@@ -407,22 +414,7 @@ eval_apply ()
       }
     }
   SCM e = eval_env (r1, r0);
-  char const* type = 0;
-  if (e == cell_f || e == cell_t) type = "bool";
-  if (TYPE (e) == CHAR) type = "char";
-  if (TYPE (e) == NUMBER) type = "number";
-  if (TYPE (e) == STRING) type = "string";
-  if (e == cell_unspecified) type = "*unspecified*";
-  if (e == cell_undefined) type =  "*undefined*";
-  if (type)
-    {
-      fprintf (stderr, "cannot apply: %s: ", type);
-      stderr_ (e);
-      fprintf (stderr, " [");
-      stderr_ (r1);
-      fprintf (stderr, "]\n");
-      assert (!"cannot apply");
-    }
+  check_apply (e, r1);
   r1 = e;
   goto apply;
 
@@ -562,6 +554,7 @@ call (SCM fn, SCM x)
     case 3: return FUNCTION (fn).function3 (car (x), cadr (x), caddr (x));
     case -1: return FUNCTION (fn).functionn (x);
     }
+
   return cell_unspecified;
 }
 
@@ -811,11 +804,7 @@ gc_up_arena ()
 {
   ARENA_SIZE *= 2;
   void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(scm));
-  if (!p)
-    {
-      if (g_debug) fprintf (stderr, "cannot up arena: %s: arena=%d\n", strerror (errno), 2*ARENA_SIZE);
-      return cell_unspecified;
-    }
+  if (!p) error (strerror (errno), MAKE_NUMBER (g_free.value));
   g_cells = (scm*)p;
   g_cells++;
   gc_init_news ();

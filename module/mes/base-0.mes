@@ -139,7 +139,7 @@
 (define (mes-load-module-env module a)
   (push! *input-ports* (current-input-port))
   (set-current-input-port (open-input-file (string-append *mes-prefix* (module->file module))))
-  (let ((x (eval-env (append (cons 'begin (read-input-file-env #f a))
+  (let ((x (eval-env (append (cons 'begin (read-input-file-env a))
                              '((current-module)))
                      a)))
     (set-current-input-port (pop! *input-ports*))

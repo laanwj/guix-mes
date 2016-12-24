@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-MES_ARENA=${MES_ARENA-10000000}
+MES_ARENA=${MES_ARENA-20000000}
 export MES_ARENA
 prefix=module/
 cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"

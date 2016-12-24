@@ -48,4 +48,11 @@ exit $?
                '(3 2 1 4 5 6)
                (append-reverse '(1 2 3) '(4 5 6)))
 
+(pass-if-equal "member lambda"
+    '(4)
+  (member 2 '(1 4) (lambda (x y) (even? y))))
+
+(pass-if-not "member ="
+             (member 2 '(1 4) =))
+
 (result 'report)
