@@ -18,26 +18,36 @@ The route changed, trying to strike a balance between core size and
 performance: still writing as much as possible in Scheme but having a
 mescc compiler that takes not more than some seconds to run.
 
-Now that portable R6RS syntax-case runs and mes.c has grown to
-~1200LOC with another ~300LOC of optional C code, some effort must
-probably be directed into making that smaller.
+Now that we have [[https://github.com/schemeway/lalr-scm][Dominique Boucher's LALR]], a [[https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html][Pre-R6RS portable
+syntax-case]] with R7RS ellipsis, [[http://www.nongnu.org/nyacc/][Nyacc]] and [[https://www.gnu.org/software/guile/docs/master/guile.html/PEG-Parsing.html][Guile's PEG]] parsers, it's
+time to start doing something useful.
 
-** Move mes.c into hex?
+* Bugs
+** The Scheme reader is very slow.
+** Catch/throw are a syntax only hack for Nyacc.
+** Fluids are a hack for Nyacc.
+** Prototype mes.c depends on a C compiler.
+*** Translate C-prototype mes.c into annotated hex?
 One idea is to use OrianJ's amazing self-hosting [[https://github.com/oriansj/stage0][stage0]] hex assembler
 and minimal bootstrap binaries and rewrite the mes.c core to directly
 bootstrap into Scheme.
 
-** Rewrite mes.c and generate hex?
-Another idea (thanks Rutger!) is to rewrite the mes.c core in a
+*** Rewrite mes.c in Schemy/Sexp-C and generate annotated hex?
+Another idea (thanks Rutger!) is to rewrite the mes.c core in a s-exp
 C/Assembly variant and thave mescc produce the simple, annotated
 bootstrap binary.
 
-* Bugs
-** Core is too fat
-mes.c is ~1500 lines (~10,000LOC Assembly) which seems much too big to
-start translating it to assembly/hex.
+** Actually do something useful
+*** Rewrite the mescc compiler to work on the Nyacc AST.
+The proof-of-concept mescc compiler uses a simple, whoefully
+incomplete AST produced by a simplistic LALR-based C-parser.
+*** Implement more bits of the compiler.
+As Mes now runs Nyacc, and Guile runs the mescc compiler, this
+compiler can be developed using Guile.
+*** Compile mes.c using mescc.
+A first milestone, next up is...
+*** Compile the [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
 
-** Actually do something useful, build: [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
 * OLD: Booting from LISP-1.5 into Mes
 
 Mes started out experimenting with booting from a hex-coded minimal
@@ -87,4 +97,3 @@ sc: http://sph.mn/content/3d3
 *** [[http://www.scheme-reports.org/][Scheme Reports]] 
 *** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-349.pdf][Scheme - Report on Scheme]]
 *** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-452.pdf][RRS - Revised Report on Scheme]]
-
