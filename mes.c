@@ -438,7 +438,7 @@ eval_apply ()
             return make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
           case cell_symbol_if: {r1=cdr (r1); goto label_if;}
           case cell_symbol_set_x: {
-            SCM x = eval_env (caddr (r1), r0); return set_env_x (cadr (r1), x, r0);
+            SCM x = eval_env (car (cddr (r1)), r0); return set_env_x (cadr (r1), x, r0);
           }
           default: {
             SCM x = macro_expand_env (r1, r0);
@@ -522,7 +522,7 @@ eval_apply ()
     }
   if (cddr (r1) != cell_nil)
     {
-      r1 = caddr (r1);
+      r1 = car (cddr (r1));
       goto eval;
     }
   return cell_unspecified;
@@ -551,7 +551,7 @@ call (SCM fn, SCM x)
     case 0: return FUNCTION (fn).function0 ();
     case 1: return FUNCTION (fn).function1 (car (x));
     case 2: return FUNCTION (fn).function2 (car (x), cadr (x));
-    case 3: return FUNCTION (fn).function3 (car (x), cadr (x), caddr (x));
+    case 3: return FUNCTION (fn).function3 (car (x), cadr (x), car (cddr (x)));
     case -1: return FUNCTION (fn).functionn (x);
     }
 
@@ -564,8 +564,8 @@ gc_frame (SCM stack)
   SCM frame = car (stack);
   r1 = car (frame);
   r2 = cadr (frame);
-  r3 = caddr (frame);
-  r0 = cadddr (frame);
+  r3 = car (cddr (frame));
+  r0 = cadr (cddr (frame));
   return frame;
 }
 

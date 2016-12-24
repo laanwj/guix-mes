@@ -60,8 +60,8 @@
 
   (set! sexp:define
         (lambda (e a)
-          (if (atom? (cadr e)) (cons (cadr e) (eval-env (caddr e) a))
-              (cons (caadr e) (eval-env (cons (quote lambda) (cons (cdadr e) (cddr e))) a)))))
+          (if (atom? (cadr e)) (cons (cadr e) (eval-env (car (cddr e)) a))
+              (cons (car (cadr e)) (eval-env (cons (quote lambda) (cons (cdr (cadr e)) (cddr e))) a)))))
 
   (set! env:macro
         (lambda (name+entry)
@@ -141,8 +141,8 @@
     (list (quote if) (pair? clauses)
           (list (quote if) (car (car clauses))
                 (if (pair? (cdar clauses))
-                    (if (eq? (cadar clauses) (quote =>))
-                        (append2 (cddar clauses) (list (caar clauses)))
+                    (if (eq? (car (cdar clauses)) (quote =>))
+                        (append2 (cdr (cdar clauses)) (list (caar clauses)))
                         (list (cons (quote lambda) (cons (list) (car clauses)))))
                     (list (cons (quote lambda) (cons (list) (car clauses)))))
                 (if (pair? (cdr clauses))

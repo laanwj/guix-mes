@@ -22,14 +22,6 @@ SCM caar (SCM x) {return car (car (x));}
 SCM cadr (SCM x) {return car (cdr (x));}
 SCM cdar (SCM x) {return cdr (car (x));}
 SCM cddr (SCM x) {return cdr (cdr (x));}
-SCM caaar (SCM x) {return car (car (car (x)));}
-SCM caadr (SCM x) {return car (car (cdr (x)));}
-SCM caddr (SCM x) {return car (cdr (cdr (x)));}
-SCM cdadr (SCM x) {return cdr (car (cdr (x)));}
-SCM cadar (SCM x) {return car (cdr (car (x)));}
-SCM cddar (SCM x) {return cdr (cdr (car (x)));}
-SCM cdddr (SCM x) {return cdr (cdr (cdr (x)));}
-SCM cadddr (SCM x) {return car (cdr (cdr (cdr (x))));}
 
 SCM
 length (SCM x)
