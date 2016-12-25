@@ -51,7 +51,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 
 (define *shell* "sh")
 (define PACKAGE "mes")
-(define VERSION "0.4")
+(define VERSION "0.5")
 (define PREFIX "/usr/local")
 (define GUILE_EFFECTIVE_VERSION (effective-version))
 (define GUILE (or (getenv "guile") "guile"))
