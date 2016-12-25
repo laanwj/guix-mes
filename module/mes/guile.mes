@@ -25,6 +25,13 @@
 (define-macro (define-module module . rest) #t)
 (define-macro (use-modules . rest) #t)
 
+(define (make-string n . fill)
+  (list->string (apply make-list n fill)))
+
+(define (object->string x . rest)
+  (with-output-to-string
+    (lambda () ((if (pair? rest) (car rest) write) x))))
+
 (define (port-filename p) "<stdin>")
 (define (port-line p) 0)
 (define (simple-format port format . rest) (map (lambda (x) (display x port)) rest))
