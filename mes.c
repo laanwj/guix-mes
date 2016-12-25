@@ -246,6 +246,7 @@ car_ (SCM x)
 {
   return (TYPE (CAR (x)) == PAIR
           || TYPE (CAR (x)) == REF
+          || TYPE (CAR (x)) == SPECIAL
           || TYPE (CAR (x)) == SYMBOL
           || TYPE (CAR (x)) == STRING) ? CAR (x) : MAKE_NUMBER (CAR (x));
 }
@@ -255,6 +256,7 @@ cdr_ (SCM x)
 {
   return (TYPE (CDR (x)) == PAIR
           || TYPE (CDR (x)) == REF
+          || TYPE (CAR (x)) == SPECIAL
           || TYPE (CDR (x)) == SYMBOL
           || TYPE (CDR (x)) == STRING) ? CDR (x) : MAKE_NUMBER (CDR (x));
 }
