@@ -20,10 +20,8 @@
 
 ;;; Commentary:
 
-;;; base-0.mes is the first file being loaded from the Mes core.  It
-;;; provides primitives that use Mes internals to create the illusion
-;;; of compatibility with Guile.  It is not safe to be run by Guile.
-
 ;;; Code:
 
-(define pretty-print display)
+(mes-use-module (mes guile))
+(mes-use-module (mes optargs))
+(include-from-path "mes/pretty-print.scm")

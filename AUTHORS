@@ -32,6 +32,9 @@ module/mes/peg/
 Pmatch from Guile
 module/mes/pmatch.scm
 
+Pretty-print from Guile
+module/mes/pretty-print.scm
+
 Srfi-1 bits from Guile
 module/srfi/srfi-1.scm
 
