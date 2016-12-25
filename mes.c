@@ -104,6 +104,9 @@ scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
 scm scm_symbol_write = {SYMBOL, "write"};
 scm scm_symbol_display = {SYMBOL, "display"};
 
+scm scm_symbol_mes_version = {SYMBOL, "%version"};
+scm scm_symbol_mes_prefix = {SYMBOL, "%prefix"};
+
 scm scm_symbol_car = {SYMBOL, "car"};
 scm scm_symbol_cdr = {SYMBOL, "cdr"};
 scm scm_symbol_null_p = {SYMBOL, "null?"};
@@ -951,6 +954,9 @@ mes_symbols () ///((internal))
 
 #include "mes.symbol-names.i"
 
+  a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
+  a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
+
 #if BOOT
   a = acons (cell_symbol_label, cell_t, a);
 #endif
@@ -1025,8 +1031,8 @@ main (int argc, char *argv[])
 {
   g_debug = getenv ("MES_DEBUG");
   if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
-  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes < FILE\n");
-  if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes 0.3\n");
+  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
+  if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes " VERSION);
   g_stdin = stdin;
   r0 = mes_environment ();
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))

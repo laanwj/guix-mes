@@ -16,6 +16,7 @@ include .config.make
 include make/install.make
 
 CPPFLAGS+=-DPREFIX='"$(PREFIX)"'
+CPPFLAGS+=-DVERSION='"$(VERSION)"'
 
 export BOOT
 ifneq ($(BOOT),)

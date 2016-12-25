@@ -26,7 +26,7 @@
 
 ;;; Code:
 
-(define (effective-version) "0.3")
+(define (effective-version) %version)
 (define mes? #t)
 (define guile? #f)
 (define guile-1.8? #f)
