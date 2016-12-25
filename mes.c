@@ -132,7 +132,6 @@ SCM r1 = 0; // param 1
 SCM r2 = 0; // param 2
 SCM r3 = 0; // param 3
 
-#include "display.h"
 #include "lib.h"
 #include "math.h"
 #include "mes.h"
@@ -968,13 +967,11 @@ mes_builtins (SCM a)
 {
 #include "mes.i"
 
-#include "display.i"
 #include "lib.i"
 #include "math.i"
 #include "posix.i"
 #include "reader.i"
 
-#include "display.environment.i"
 #include "lib.environment.i"
 #include "math.environment.i"
 #include "mes.environment.i"
@@ -1018,7 +1015,6 @@ lookup_macro (SCM x, SCM a)
 }
 
 FILE *g_stdin;
-#include "display.c"
 #include "lib.c"
 #include "math.c"
 #include "posix.c"
