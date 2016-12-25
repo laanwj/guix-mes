@@ -26,12 +26,13 @@ exit $?
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (cond-expand
- (guile
-  ;;(use-modules (ice-9 syncase))
+ (guile-2
   (define sc-expand identity)
   (define syntax-object->datum syntax->datum)
-  (define datum->syntax-object datum->syntax)
-  )
+  (define datum->syntax-object datum->syntax))
+ (guile
+  (use-modules (ice-9 syncase))
+  (define sc-expand identity))
  (mes
   (mes-use-module (mes psyntax))
   (mes-use-module (mes test))))
