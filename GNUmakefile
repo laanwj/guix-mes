@@ -21,9 +21,6 @@ export BOOT
 ifneq ($(BOOT),)
 CPPFLAGS+=-DBOOT=1
 endif
-ifneq ($(FAT_C_READER),)
-CPPFLAGS+=-DFAT_C_READER=1
-endif
 
 -include .local.make
 

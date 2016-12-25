@@ -115,15 +115,6 @@ scm *g_cells;
 scm *g_news = 0;
 
 #include "mes.symbols.h"
-#if 1//FAT_C_READER
-scm scm_symbol_quasiquote = {SYMBOL, "quasiquote"};
-scm scm_symbol_unquote = {SYMBOL, "unquote"};
-scm scm_symbol_unquote_splicing = {SYMBOL, "unquote-splicing"};
-scm scm_symbol_syntax = {SYMBOL, "syntax"};
-scm scm_symbol_quasisyntax = {SYMBOL, "quasisyntax"};
-scm scm_symbol_unsyntax = {SYMBOL, "unsyntax"};
-scm scm_symbol_unsyntax_splicing = {SYMBOL, "unsyntax-splicing"};
-#endif
 
 SCM tmp;
 SCM tmp_num;
