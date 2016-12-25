@@ -46,6 +46,10 @@ barf
 burp
 |#
 #;(bla) (display "must see!\n")
+(display
+  (lambda (x)
+   #;()#t)
+  )
 (display #(0 1 2)) (newline)
 (display (list '(foo
             #! boo !#
@@ -53,5 +57,4 @@ burp
             )
           ))
 (newline)
-
 ;; TODO: syntax, unsyntax, unsyntax-splicing
