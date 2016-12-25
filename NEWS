@@ -27,7 +27,7 @@ block-comments.
 *** Reduced size.
 Total C size: ~1500LOC.  The main Mes evaluator is now ~1000LOC
 including cell creation and garbage collector.  This code is able to
-execute a Scheme progam that has been loaded into memory.  Another
+execute a Scheme program that has been loaded into memory.  Another
 ~500LOC is spent to load a minimal Scheme program and to dump it, to
 provide a small posix interface, math functions and do some error
 reporting.
