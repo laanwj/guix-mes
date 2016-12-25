@@ -141,6 +141,11 @@
     (if (= 0 k) (car lst)
         (loop (cdr lst) (- k 1)))))
 
+(define (list-set! lst k v)
+  (let loop ((lst lst) (k k))
+    (if (= 0 k) (set-car! lst v)
+        (loop (cdr lst) (- k 1)))))
+
 (define (list-head x n)
   (if (= 0 n) '()
       (cons (car x) (list-head (cdr x) (- n 1)))))
@@ -193,6 +198,9 @@
 
 (define (string-ref s k)
   (list-ref (string->list s) k))
+
+(define (string-set! s k v)
+  (list->string (list-set! (string->list s) k v)))
 
 (define (substring s start . rest)
   (let* ((end (and (pair? rest) (car rest)))
