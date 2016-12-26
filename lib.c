@@ -129,16 +129,13 @@ int
 dump ()
 {
   r1 = g_symbols;
-  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
-  stack = cons (frame, stack);
-  stack = gc (stack);
-  gc_frame (stack);
+  gc (gc_push_frame ());
   char *p = (char*)g_cells;
   fputc ('M', stdout);
   fputc ('E', stdout);
   fputc ('S', stdout);
-  fputc (stack >> 8, stdout);
-  fputc (stack % 256, stdout);
+  fputc (g_stack >> 8, stdout);
+  fputc (g_stack % 256, stdout);
   for (int i=0; i<g_free.value * sizeof(scm); i++)
     fputc (*p++, stdout);
   return 0;
@@ -165,8 +162,8 @@ bload_env (SCM a) ///((internal))
   assert (getchar () == 'M');
   assert (getchar () == 'E');
   assert (getchar () == 'S');
-  stack = getchar () << 8;
-  stack += getchar ();
+  g_stack = getchar () << 8;
+  g_stack += getchar ();
   int c = getchar ();
   while (c != EOF)
     {
@@ -174,10 +171,9 @@ bload_env (SCM a) ///((internal))
       c = getchar ();
     }
   g_free.value = (p-(char*)g_cells) / sizeof (scm);
-  gc_frame (stack);
+  gc_peek_frame ();
   g_symbols = r1;
   g_stdin = stdin;
-
   r0 = mes_builtins (r0);
   return r3;
 }

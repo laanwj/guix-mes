@@ -129,7 +129,7 @@ function functions[200];
 int g_function = 0;
 
 SCM g_symbols = 0;
-SCM stack = 0;
+SCM g_stack = 0;
 SCM r0 = 0; // a/env
 SCM r1 = 0; // param 1
 SCM r2 = 0; // param 2
@@ -558,9 +558,9 @@ call (SCM fn, SCM x)
 }
 
 SCM
-gc_frame (SCM stack)
+gc_peek_frame ()
 {
-  SCM frame = car (stack);
+  SCM frame = car (g_stack);
   r1 = car (frame);
   r2 = cadr (frame);
   r3 = car (cddr (frame));
@@ -569,30 +569,32 @@ gc_frame (SCM stack)
 }
 
 SCM
-gc_stack (SCM a)
+gc_pop_frame ()
+{
+  SCM frame = gc_peek_frame (g_stack);
+  g_stack = cdr (g_stack);
+  return frame;
+}
+
+SCM
+gc_push_frame ()
 {
   SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
-  stack = cons (frame, stack);
-  stack = gc (stack);
-  gc_frame (stack);
-  stack = cdr (stack);
-  return stack;
+  return g_stack = cons (frame, g_stack);
 }
 
 SCM
 vm_call (function0_t f, SCM p1, SCM p2, SCM a)
 {
-  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
-  stack = cons (frame, stack);
+  gc_push_frame ();
   r1 = p1;
   r2 = p2;
   r0 = a;
   if (g_free.value + GC_SAFETY > ARENA_SIZE)
-    gc_stack (stack);
+    gc_pop_frame (gc (gc_push_frame ()));
 
   SCM r = f ();
-  frame = gc_frame (stack);
-  stack = cdr (stack);
+  gc_pop_frame ();
   return r;
 }
 
@@ -819,9 +821,9 @@ gc ()
     gc_copy (i);
   make_tmps (g_news);
   g_symbols = gc_copy (g_symbols);
-  SCM new = gc_copy (stack);
-  if (g_debug) fprintf (stderr, "new=%d\n", new, stack);
-  stack = new;
+  SCM new = gc_copy (g_stack);
+  if (g_debug) fprintf (stderr, "new=%d\n", new, g_stack);
+  g_stack = new;
   return gc_loop (1);
 }
 
@@ -896,7 +898,7 @@ gc_flip ()
   g_cells = g_news;
   g_news = cells;
   if (g_debug) fprintf (stderr, " => jam[%d]\n", g_free.value);
-  return stack;
+  return g_stack;
 }
 
 // Environment setup
@@ -983,13 +985,13 @@ mes_builtins (SCM a)
 }
 
 SCM
-mes_stack (SCM a) ///((internal))
+mes_g_stack (SCM a) ///((internal))
 {
   r0 = a;
   r1 = MAKE_CHAR (0);
   r2 = MAKE_CHAR (0);
   r3 = MAKE_CHAR (0);
-  stack = cons (cell_nil, cell_nil);
+  g_stack = cons (cell_nil, cell_nil);
   return r0;
 }
 
@@ -997,7 +999,7 @@ SCM
 mes_environment () ///((internal))
 {
   SCM a = mes_symbols ();
-  return mes_stack (a);
+  return mes_g_stack (a);
 }
 
 SCM
@@ -1035,7 +1037,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
   stderr_ (begin_env (program, r0));
   fputs ("", stderr);
-  gc (stack);
+  gc (g_stack);
   if (g_debug) fprintf (stderr, "\nstats: [%d]\n", g_free.value);
   return 0;
 }
