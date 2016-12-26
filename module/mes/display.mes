@@ -23,6 +23,22 @@
 ;;; Code:
 
 (mes-use-module (mes scm))
+;;(mes-use-module (mes srfi srfi-1))
+
+(define (srfi-1:member x lst eq)
+  (if (null? lst) #f
+      (if (eq x (car lst)) lst
+          (srfi-1:member x (cdr lst) eq))))
+
+(define (next-xassq x a)
+  (and=> (srfi-1:member x a (lambda (x e) (eq? x (cdr e))))
+         (lambda (a) (xassq x (cdr a)))))
+
+(define (next-xassq2 x a)
+  (and=> (srfi-1:member x a (lambda (x e) (eq? x (cdr e))))
+         (lambda (a)
+           (and=> (srfi-1:member x (cdr a) (lambda (x e) (eq? x (cdr e))))
+                  (lambda (a) (xassq x (cdr a)))))))
 
 (define (display x . rest)
   (let* ((port (if (null? rest) (current-output-port) (car rest)))
@@ -64,7 +80,10 @@
               (if name (display name)
                   (write-char x port)))))
        ((closure? x)
-        (display "#<procedure #f " port)
+        (display "#<procedure " port)
+        (let ((name (and=> (next-xassq2 x (current-module)) car)))
+          (display name port))
+        (display " " port)
         (display (cadr (core:cdr x)) port)
         (display ">" port))
        ((macro? x)

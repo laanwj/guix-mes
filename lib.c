@@ -24,6 +24,13 @@ SCM cdar (SCM x) {return cdr (car (x));}
 SCM cddr (SCM x) {return cdr (cdr (x));}
 
 SCM
+xassq (SCM x, SCM a) ///for speed in core only
+{
+  while (a != cell_nil && x != CDAR (a)) a = CDR (a);
+  return a != cell_nil ? CAR (a) : cell_f;
+}
+
+SCM
 length (SCM x)
 {
   int n = 0;

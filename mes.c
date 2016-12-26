@@ -311,12 +311,7 @@ pairlis (SCM x, SCM y, SCM a)
 SCM
 assq (SCM x, SCM a)
 {
-  while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f)
-    {
-      if (TYPE (a) == BROKEN_HEART || TYPE (CAR (a)) == BROKEN_HEART)
-        fprintf (stderr, "oops, broken heart\n");
-      a = CDR (a);
-    }
+  while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
   return a != cell_nil ? car (a) : cell_f;
 }
 
