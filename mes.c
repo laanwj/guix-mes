@@ -82,7 +82,6 @@ scm scm_undefined = {SPECIAL, "*undefined*"};
 scm scm_unspecified = {SPECIAL, "*unspecified*"};
 scm scm_closure = {SPECIAL, "*closure*"};
 scm scm_circular = {SPECIAL, "*circular*"};
-scm scm_label = {SPECIAL, "label"};
 scm scm_begin = {SPECIAL, "*begin*"};
 
 scm scm_symbol_dot = {SYMBOL, "*dot*"};
@@ -132,8 +131,7 @@ SCM g_symbols = 0;
 SCM g_stack = 0;
 SCM r0 = 0; // a/env
 SCM r1 = 0; // param 1
-SCM r2 = 0; // param 2
-SCM r3 = 0; // param 3
+SCM r2 = 0; // save 2+load/dump
 
 #include "lib.h"
 #include "math.h"
@@ -171,7 +169,7 @@ SCM r3 = 0; // param 3
 #define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0)
 
 int error (char const* msg, SCM x);
-SCM vm_call (function0_t f, SCM p1, SCM p2, SCM a);
+SCM vm_call (function0_t f, SCM p1, SCM a);
 
 SCM
 tmp_num_ (int x)
@@ -332,8 +330,6 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
   SCM cl = cons (cons (cell_closure, x), x);
   r1 = e;
   r0 = cl;
-  r2 = a;
-  r3 = aa;
   return cell_unspecified;
 }
 
@@ -359,62 +355,53 @@ eval_apply ()
   return cons (r2, r1);
 
  apply:
-  switch (TYPE (r1))
+  switch (TYPE (car (r1)))
     {
     case FUNCTION: {
-      check_formals (r1, MAKE_NUMBER (FUNCTION (r1).arity), r2);
-      return call (r1, r2);
+      check_formals (car (r1), MAKE_NUMBER (FUNCTION (car (r1)).arity), cdr (r1));
+      return call (car (r1), cdr (r1));
     }
     case CLOSURE:
       {
-        SCM cl = CLOSURE (r1);
+        SCM cl = CLOSURE (car (r1));
         SCM formals = cadr (cl);
         SCM body = cddr (cl);
         SCM aa = cdar (cl);
         aa = cdr (aa);
-        check_formals (r1, formals, r2);
-        SCM p = pairlis (formals, r2, aa);
+        check_formals (car (r1), formals, cdr (r1));
+        SCM p = pairlis (formals, cdr (r1), aa);
         call_lambda (body, p, aa, r0);
         goto begin;
       }
     case SYMBOL:
       {
-        if (r1 == cell_symbol_call_with_values)
+        if (car (r1) == cell_symbol_call_with_values)
           {
-            r1 = car (r2);
-            r2 = cadr (r2);
+            r1 = cdr (r1);
             goto call_with_values;
           }
-        if (r1 == cell_symbol_current_module) return r0;
+        if (car (r1) == cell_symbol_current_module) return r0;
         break;
       }
     case PAIR:
       {
-        switch (car (r1))
+        switch (caar (r1))
           {
           case cell_symbol_lambda:
             {
-              SCM formals = cadr (r1);
-              SCM body = cddr (r1);
-              SCM p = pairlis (formals, r2, r0);
-              check_formals (r1, formals, r2);
+              SCM formals = cadr (car (r1));
+              SCM body = cddr (car (r1));
+              SCM p = pairlis (formals, cdr (r1), r0);
+              check_formals (r1, formals, cdr (r1));
               call_lambda (body, p, p, r0);
               goto begin;
             }
-#if BOOT
-          case cell_symbol_label:
-            {
-              r0 = cons (cons (cadr (r1), caddr (r1)), r0);
-              r1 = caddr (r1);
-              goto apply;
-            }
-#endif
           }
       }
     }
-  SCM e = eval_env (r1, r0);
-  check_apply (e, r1);
-  r1 = e;
+  SCM e = eval_env (car (r1), r0);
+  check_apply (e, car (r1));
+  r1 = cons (e, cdr (r1));
   goto apply;
 
  eval:
@@ -452,8 +439,7 @@ eval_apply ()
                 goto eval;
               }
             SCM m = evlis_env (CDR (r1), r0);
-            r1 = car (r1);
-            r2 = m;
+            r1 = cons (car (r1), m);
             goto apply;
           }
           }
@@ -468,8 +454,7 @@ eval_apply ()
   if (TYPE (r1) == PAIR
       && (macro = lookup_macro (car (r1), r0)) != cell_f)
     {
-      r2 = CDR (r1);
-      r1 = macro;
+      r1 = cons (macro, CDR (r1));
       goto apply;
     }
   else if (TYPE (r1) == PAIR
@@ -480,8 +465,7 @@ eval_apply ()
       SCM sc_expand = assq_ref_cache (cell_symbol_macro_expand, r0);
       if (sc_expand != cell_undefined && sc_expand != cell_f)
         {
-          r2 = cons (r1, cell_nil);
-          r1 = sc_expand;
+          r1 = cons (sc_expand, cons (r1, cell_nil));
           goto apply;
         }
     }
@@ -528,11 +512,10 @@ eval_apply ()
 
   SCM v;
  call_with_values:
-  v = apply_env (r1, cell_nil, r0);
+  v = apply_env (car (r1), cell_nil, r0);
   if (TYPE (v) == VALUES)
     v = CDR (v);
-  r1 = r2;
-  r2 = v;
+  r1 = cons (cadr (r1), v);
   goto apply;
 }
 
@@ -563,7 +546,6 @@ gc_peek_frame ()
   SCM frame = car (g_stack);
   r1 = car (frame);
   r2 = cadr (frame);
-  r3 = car (cddr (frame));
   r0 = cadr (cddr (frame));
   return frame;
 }
@@ -579,16 +561,15 @@ gc_pop_frame ()
 SCM
 gc_push_frame ()
 {
-  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
+  SCM frame = cons (r1, cons (r2, cons (r0, cell_nil)));
   return g_stack = cons (frame, g_stack);
 }
 
 SCM
-vm_call (function0_t f, SCM p1, SCM p2, SCM a)
+vm_call (function0_t f, SCM p1, SCM a)
 {
   gc_push_frame ();
   r1 = p1;
-  r2 = p2;
   r0 = a;
   if (g_free.value + GC_SAFETY > ARENA_SIZE)
     gc_pop_frame (gc (gc_push_frame ()));
@@ -602,49 +583,49 @@ SCM
 evlis_env (SCM m, SCM a)
 {
   g_target = EVLIS;
-  return vm_call (eval_apply, m, cell_undefined, a);
+  return vm_call (eval_apply, m, a);
 }
 
 SCM
 apply_env (SCM fn, SCM x, SCM a)
 {
   g_target = APPLY;
-  return vm_call (eval_apply, fn, x, a);
+  return vm_call (eval_apply, cons (fn, x), a);
 }
 
 SCM
 eval_env (SCM e, SCM a)
 {
   g_target = EVAL;
-  return vm_call (eval_apply, e, cell_undefined, a);
+  return vm_call (eval_apply, e, a);
 }
 
 SCM
 macro_expand_env (SCM e, SCM a)
 {
   g_target = MACRO_EXPAND;
-  return vm_call (eval_apply, e, cell_undefined, a);
+  return vm_call (eval_apply, e, a);
 }
 
 SCM
 begin_env (SCM e, SCM a)
 {
   g_target = BEGIN;
-  return vm_call (eval_apply, e, cell_undefined, a);
+  return vm_call (eval_apply, e, a);
 }
 
 SCM
 if_env (SCM e, SCM a)
 {
   g_target = IF;
-  return vm_call (eval_apply, e, cell_undefined, a);
+  return vm_call (eval_apply, e, a);
 }
 
 SCM
 call_with_values_env (SCM producer, SCM consumer, SCM a)
 {
   g_target = CALL_WITH_VALUES;
-  return vm_call (eval_apply, producer, consumer, a);
+  return vm_call (eval_apply, cons (producer, cons (consumer, cell_nil)), a);
 }
 
 SCM
@@ -990,7 +971,6 @@ mes_g_stack (SCM a) ///((internal))
   r0 = a;
   r1 = MAKE_CHAR (0);
   r2 = MAKE_CHAR (0);
-  r3 = MAKE_CHAR (0);
   g_stack = cons (cell_nil, cell_nil);
   return r0;
 }

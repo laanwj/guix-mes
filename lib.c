@@ -148,9 +148,9 @@ load_env (SCM a) ///((internal))
   g_stdin = fopen ("module/mes/read-0.mes", "r");
   g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
   if (!g_function) r0 = mes_builtins (r0);
-  r3 = read_input_file_env (r0);
+  r2 = read_input_file_env (r0);
   g_stdin = stdin;
-  return r3;
+  return r2;
 }
 
 SCM
@@ -175,5 +175,5 @@ bload_env (SCM a) ///((internal))
   g_symbols = r1;
   g_stdin = stdin;
   r0 = mes_builtins (r0);
-  return r3;
+  return r2;
 }
