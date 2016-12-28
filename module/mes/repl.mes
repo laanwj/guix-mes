@@ -120,7 +120,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
               (display sexp)
               (display "]")
               (newline))
-        (display (macro-expand sexp))
+        (display (core:macro-expand sexp))
         (newline)))
 
     (define (scexpand)
@@ -170,7 +170,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
                        (loop a))))
                 ((and (pair? sexp) (eq? (car sexp) 'mes-use-module))
                  (loop (mes-load-module-env (cadr sexp) a)))
-                (else (let ((e (eval-env sexp a)))
+                (else (let ((e (eval sexp a)))
                         (if (eq? e *unspecified*) (loop a)
                             (let ((id (string->symbol (string-append "$" (number->string count)))))
                               (set! count (+ count 1))

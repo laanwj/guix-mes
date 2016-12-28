@@ -21,8 +21,8 @@
 (define (interaction-environment) (current-module))
 
 (define (eval x . environment)
-  (eval-env (if (and (pair? x) (equal? (car x) "noexpand")) (cadr x) x)
-            (if (null? environment) (current-module) (car environment))))
+  (core:eval (if (and (pair? x) (equal? (car x) "noexpand")) (cadr x) x)
+             (if (null? environment) (current-module) (car environment))))
 
 (define annotation? (lambda (x) #f))
 (define (self-evaluating? x)
@@ -30,7 +30,7 @@
 
 (define (void) (if #f #f))
 
-
+(define macro-expand #f)
 (define sc-expand #f)
 (define sc-chi #f)
 (define sc-expand3 #f)

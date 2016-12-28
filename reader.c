@@ -31,7 +31,7 @@ read_input_file_env (SCM a)
 {
   r0 = a;
   if (assq_ref_cache (cell_symbol_read_input_file, r0) != cell_undefined)
-    return apply_env (cell_symbol_read_input_file, cell_nil, r0);
+    return apply (cell_symbol_read_input_file, cell_nil, r0);
   return read_input_file_env_ (read_env (r0), r0);
 }
 

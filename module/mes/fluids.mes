@@ -84,7 +84,7 @@
 ;;     (define (expand bindings a)
 ;;       (if (null? bindings)
 ;;           (cons (car bindings) (expand (cdr bindings) a))))
-;;     (eval-env (begin ,@bodies) (expand ',bindings (current-module)))))
+;;     (eval (begin ,@bodies) (expand ',bindings (current-module)))))
 
 (define (dynamic-wind in-guard thunk out-guard)
   (in-guard)

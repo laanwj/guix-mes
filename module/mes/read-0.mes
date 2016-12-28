@@ -60,8 +60,8 @@
 
   (set! sexp:define
         (lambda (e a)
-          (if (atom? (cadr e)) (cons (cadr e) (eval-env (car (cddr e)) a))
-              (cons (car (cadr e)) (eval-env (cons (quote lambda) (cons (cdr (cadr e)) (cddr e))) a)))))
+          (if (atom? (cadr e)) (cons (cadr e) (core:eval (car (cddr e)) a))
+              (cons (car (cadr e)) (core:eval (cons (quote lambda) (cons (cdr (cadr e)) (cddr e))) a)))))
 
   (set! env:macro
         (lambda (name+entry)
@@ -73,7 +73,7 @@
   (set! cons*
         (lambda (. rest)
           (if (null? (cdr rest)) (car rest)
-              (cons (car rest) (apply-env cons* (cdr rest) (current-module))))))
+              (cons (car rest) (core:apply cons* (cdr rest) (current-module))))))
 
   (env:define
    (env:macro
@@ -124,7 +124,7 @@
 
   (define (symbol->keyword s)
     (make-cell <cell:keyword> (symbol->list s) 0))
-  
+
   (define (read)
     (read-word (read-byte) (list) (current-module)))
 
@@ -299,7 +299,9 @@
      ((or (and (> c 96) (< c 123))
           (eq? c 45)
           (eq? c 63)
-          (and (> c 47) (< c 58))) (read-word (read-byte) (append2 w (cons c (list))) a))
+          (and (> c 47) (< c 58)))
+      (read-word (read-byte) (append2 w (cons c (list))) a))
+     ((eq? c 10) (if (null? w) (read-word (read-byte) (list) a) (lookup w a)))
      ((eq? c 40) (if (null? w) (read-list a)
                      (begin (unread-byte c) (lookup w a))))
      ((eq? c 41) (if (null? w) (quote *FOOBAR*)
@@ -328,5 +330,5 @@
      (#t (read-word (read-byte) (append2 w (cons c (list))) a))))
 
   ((lambda (p)
-     (begin-env p (current-module)))
+     (core:eval (cons (quote begin) p) (current-module)))
    (read-input-file)))

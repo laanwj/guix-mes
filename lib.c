@@ -144,7 +144,7 @@ dump ()
 SCM
 load_env (SCM a) ///((internal))
 {
-  r0 =a;
+  r0 = a;
   g_stdin = fopen ("module/mes/read-0.mes", "r");
   g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
   if (!g_function) r0 = mes_builtins (r0);

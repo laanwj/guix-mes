@@ -122,6 +122,34 @@ scm scm_symbol_null_p = {SYMBOL, "null?"};
 scm scm_symbol_eq_p = {SYMBOL, "eq?"};
 scm scm_symbol_cons = {SYMBOL, "cons"};
 
+scm scm_vm_evlis = {SPECIAL, "*vm-evlis*"};
+scm scm_vm_evlis2 = {SPECIAL, "*vm-evlis2*"};
+scm scm_vm_evlis3 = {SPECIAL, "*vm-evlis3*"};
+scm scm_vm_apply = {SPECIAL, "core:apply"};
+scm scm_vm_apply2 = {SPECIAL, "*vm-apply2*"};
+scm scm_vm_eval = {SPECIAL, "core:eval"};
+
+#if FIXED_PRIMITIVES
+scm scm_vm_eval_car = {SPECIAL, "*vm-eval-car*"};
+scm scm_vm_eval_cdr = {SPECIAL, "*vm-eval-cdr*"};
+scm scm_vm_eval_cons = {SPECIAL, "*vm-eval-cons*"};
+scm scm_vm_eval_null_p = {SPECIAL, "*vm-eval-null-p*"};
+#endif
+
+scm scm_vm_eval_set_x = {SPECIAL, "*vm-eval-set!*"};
+scm scm_vm_eval_macro = {SPECIAL, "*vm-eval-macro*"};
+scm scm_vm_eval2 = {SPECIAL, "*vm-eval2*"};
+scm scm_vm_macro_expand = {SPECIAL, "core:macro-expand"};
+scm scm_vm_begin = {SPECIAL, "*vm-begin*"};
+scm scm_vm_begin_read_input_file = {SPECIAL, "*vm-begin-read-input-file*"};
+scm scm_vm_begin2 = {SPECIAL, "*vm-begin2*"};
+scm scm_vm_if = {SPECIAL, "*vm-if*"};
+scm scm_vm_if_expr = {SPECIAL, "*vm-if-expr*"};
+scm scm_vm_call_with_values2 = {SPECIAL, "*vm-call-with-values2*"};
+scm scm_vm_return = {SPECIAL, "*vm-return*"};
+
+scm scm_test = {SYMBOL, "test"};
+
 int g_free = 0;
 scm *g_cells;
 scm *g_news = 0;
@@ -169,6 +197,7 @@ SCM r3 = 0; // continuation
 #define CAAR(x) CAR (CAR (x))
 #define CADAR(x) CAR (CDR (CAR (x)))
 #define CADDR(x) CAR (CDR (CDR (x)))
+#define CDDDR(x) CDR (CDR (CDR (x)))
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 #define CADR(x) CAR (CDR (x))
 
@@ -331,9 +360,6 @@ assq_ref_cache (SCM x, SCM a)
   return cdr (x);
 }
 
-enum eval_apply_t {EVLIS, APPLY, EVAL, MACRO_EXPAND, BEGIN, IF, CALL_WITH_VALUES};
-enum eval_apply_t g_target;
-
 SCM
 call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 {
@@ -344,32 +370,76 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 }
 
 SCM
+push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
+{
+  SCM x = r3;
+  r3 = c;
+  r2 = p2;
+  gc_push_frame ();
+  r1 = p1;
+  r0 = a;
+  r3 = x;
+  return cell_unspecified;
+}
+
+SCM
 eval_apply ()
 {
-  switch (g_target)
+ eval_apply:
+  if (g_free + GC_SAFETY > ARENA_SIZE)
+    gc_pop_frame (gc (gc_push_frame ()));
+
+  switch (r3)
     {
-    case EVLIS: goto evlis;
-    case APPLY: goto apply;
-    case EVAL: goto eval;
-    case MACRO_EXPAND: goto macro_expand;
-    case BEGIN: goto begin;
-    case IF: goto label_if;
-    case CALL_WITH_VALUES: goto call_with_values;
+    case cell_vm_evlis: goto evlis;
+    case cell_vm_evlis2: goto evlis2;
+    case cell_vm_evlis3: goto evlis3;
+    case cell_vm_apply: goto apply;
+    case cell_vm_apply2: goto apply2;
+    case cell_vm_eval: goto eval;
+#if FIXED_PRIMITIVES
+    case cell_vm_eval_car: goto eval_car;
+    case cell_vm_eval_cdr: goto eval_cdr;
+    case cell_vm_eval_cons: goto eval_cons;
+    case cell_vm_eval_null_p: goto eval_null_p;
+#endif
+    case cell_vm_eval_set_x: goto eval_set_x;
+    case cell_vm_eval_macro: goto eval_macro;
+    case cell_vm_eval2: goto eval2;
+    case cell_vm_macro_expand: goto macro_expand;
+    case cell_vm_begin: goto begin;
+    case cell_vm_begin_read_input_file: goto begin_read_input_file;
+    case cell_vm_begin2: goto begin2;
+    case cell_vm_if: goto vm_if;
+    case cell_vm_if_expr: goto if_expr;
+    case cell_vm_call_with_values2: goto call_with_values2;
+    case cell_vm_return: goto vm_return;
+    case cell_unspecified: return r1;
+    default:
+      assert (0);
     }
 
+  SCM x = cell_nil;
+  SCM y = cell_nil;
  evlis:
-  if (r1 == cell_nil) return cell_nil;
+  if (r1 == cell_nil) goto vm_return;
   if (TYPE (r1) != PAIR) goto eval;
-  r2 = eval_env (car (r1), r0);
-  r1 = evlis_env (cdr (r1), r0);
-  return cons (r2, r1);
+  push_cc (car (r1), r1, r0, cell_vm_evlis2);
+  goto eval;
+ evlis2:
+  push_cc (cdr (r2), r1, r0, cell_vm_evlis3);
+  goto evlis;
+ evlis3:
+  r1 = cons (r2, r1);
+  goto vm_return;
 
  apply:
   switch (TYPE (car (r1)))
     {
     case FUNCTION: {
       check_formals (car (r1), MAKE_NUMBER (FUNCTION (car (r1)).arity), cdr (r1));
-      return call (car (r1), cdr (r1));
+      r1 = call (car (r1), cdr (r1)); /// FIXME: move into eval_apply
+      goto vm_return;
     }
     case CLOSURE:
       {
@@ -383,6 +453,23 @@ eval_apply ()
         call_lambda (body, p, aa, r0);
         goto begin;
       }
+    case SPECIAL:
+      {
+        switch (car (r1))
+          {
+          case cell_vm_apply:
+            {
+              push_cc (cons (CADR (r1), CADDR (r1)), r1, r0, cell_vm_return);
+              goto apply;
+            }
+          case cell_vm_eval:
+            {
+              push_cc (CADR (r1), r1, CADDR (r1), cell_vm_return);
+              goto eval;
+            }
+          default: error ("cannot apply special: ", car (r1));
+          }
+      }
     case SYMBOL:
       {
         if (car (r1) == cell_symbol_call_with_values)
@@ -390,7 +477,11 @@ eval_apply ()
             r1 = cdr (r1);
             goto call_with_values;
           }
-        if (car (r1) == cell_symbol_current_module) return r0;
+        if (car (r1) == cell_symbol_current_module)
+          {
+            r1 = r0;
+            goto vm_return;
+          }
         break;
       }
     case PAIR:
@@ -409,9 +500,11 @@ eval_apply ()
           }
       }
     }
-  SCM e = eval_env (car (r1), r0);
-  check_apply (e, car (r1));
-  r1 = cons (e, cdr (r1));
+  push_cc (car (r1), r1, r0, cell_vm_apply2);
+  goto eval;
+ apply2:
+  check_apply (r1, car (r2));
+  r1 = cons (r1, cdr (r2));
   goto apply;
 
  eval:
@@ -422,40 +515,86 @@ eval_apply ()
         switch (car (r1))
           {
 #if FIXED_PRIMITIVES
-          case cell_symbol_car: return car (eval_env (CADR (r1), r0));
-          case cell_symbol_cdr: return cdr (eval_env (CADR (r1), r0));
-          case cell_symbol_cons: {SCM m = evlis_env (CDR (r1), r0);
-              return cons (CAR (m), CADR (m));}
-          case cell_symbol_null_p: return null_p (eval_env (CADR (r1), r0));
+          case cell_symbol_car:
+            {
+              push_cc (CADR (r1), r1, r0, cell_vm_eval_car); goto eval;
+            eval_car:
+              x = r1; gc_pop_frame (); r1 = car (x); goto eval_apply;
+            }
+          case cell_symbol_cdr:
+            {
+              push_cc (CADR (r1), r1, r0, cell_vm_eval_cdr); goto eval;
+            eval_cdr:
+              x = r1; gc_pop_frame (); r1 = cdr (x); goto eval_apply;
+            }
+          case cell_symbol_cons: {
+            push_cc (CDR (r1), r1, r0, cell_vm_eval_cons); goto evlis;
+            eval_cons:
+            x = r1;
+            gc_pop_frame ();
+            r1 = cons (CAR (x), CADR (x));
+            goto eval_apply;
+          }
+          case cell_symbol_null_p:
+            {
+              push_cc (CADR (r1), r1, r0, cell_vm_eval_null_p);
+              goto eval;
+            eval_null_p:
+              x = r1; gc_pop_frame (); r1 = null_p (x); goto eval_apply;
+            }
 #endif // FIXED_PRIMITIVES
-          case cell_symbol_quote: return cadr (r1);
+          case cell_symbol_quote:
+            {
+              x = r1; gc_pop_frame (); r1 = cadr (x); goto eval_apply;
+            }
           case cell_symbol_begin: goto begin;
           case cell_symbol_lambda:
-            return make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
-          case cell_symbol_if: {r1=cdr (r1); goto label_if;}
-          case cell_symbol_set_x: {
-            SCM x = eval_env (car (cddr (r1)), r0); return set_env_x (cadr (r1), x, r0);
-          }
+            {
+              r1 = make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
+              goto vm_return;
+            }
+          case cell_symbol_if: {r1=cdr (r1); goto vm_if;}
+          case cell_symbol_set_x:
+            {
+              push_cc (car (cddr (r1)), r1, r0, cell_vm_eval_set_x);
+              goto eval;
+            eval_set_x:
+              x = r2;
+              r1 = set_env_x (cadr (x), r1, r0);
+              goto vm_return;
+            }
+          case cell_vm_macro_expand:
+            {
+              push_cc (cadr (r1), r1, r0, cell_vm_return);
+              goto macro_expand;
+            }
           default: {
-            SCM x = macro_expand_env (r1, r0);
-            if (x != r1)
+            push_cc (r1, r1, r0, cell_vm_eval_macro);
+            goto macro_expand;
+            eval_macro:
+            x = r2;
+            if (r1 != r2)
               {
-                if (TYPE (x) == PAIR)
+                if (TYPE (r1) == PAIR)
                   {
-                    set_cdr_x (r1, cdr (x));
-                    set_car_x (r1, car (x));
+                    set_cdr_x (r2, cdr (r1));
+                    set_car_x (r2, car (r1));
                   }
-                r1 = x;
                 goto eval;
               }
-            SCM m = evlis_env (CDR (r1), r0);
-            r1 = cons (car (r1), m);
+            push_cc (CDR (r1), r1, r0, cell_vm_eval2); goto evlis;
+            eval2:
+            r1 = cons (car (r2), r1);
             goto apply;
           }
           }
       }
-    case SYMBOL: return assert_defined (r1, assq_ref_cache (r1, r0));
-    default: return r1;
+    case SYMBOL:
+      {
+        r1 = assert_defined (r1, assq_ref_cache (r1, r0));
+        goto vm_return;
+      }
+    default: goto vm_return;
     }
 
   SCM macro;
@@ -479,11 +618,10 @@ eval_apply ()
           goto apply;
         }
     }
-  return r1;
+  goto vm_return;
 
-  SCM r;
  begin:
-  r = cell_unspecified;
+  x = cell_unspecified;
   while (r1 != cell_nil) {
     if (TYPE (r1) == PAIR && TYPE (CAR (r1)) == PAIR)
       {
@@ -491,8 +629,10 @@ eval_apply ()
           r1 = append2 (cdar (r1), cdr (r1));
         else if (caar (r1) == cell_symbol_primitive_load)
           {
-            SCM f = read_input_file_env (r0);
-            r1 = append2 (f, cdr (r1));
+            push_cc (cons (cell_symbol_read_input_file, cell_nil), r1, r0, cell_vm_begin_read_input_file);
+            goto apply;
+          begin_read_input_file:
+            r1 = append2 (r1, cdr (r2));
           }
       }
     if (CDR (r1) == cell_nil)
@@ -500,14 +640,21 @@ eval_apply ()
         r1 = car (r1);
         goto eval;
       }
-    r = eval_env (car (r1), r0);
-    r1 = CDR (r1);
+    push_cc (CAR (r1), r1, r0, cell_vm_begin2);
+    goto eval;
+  begin2:
+    x = r1;
+    r1 = CDR (r2);
   }
-  return r;
+  r1 = x;
+  goto vm_return;
 
-  SCM x;
- label_if:
-  x = eval_env (car (r1), r0);
+ vm_if:
+  push_cc (car (r1), r1, r0, cell_vm_if_expr);
+  goto eval;
+ if_expr:
+  x = r1;
+  r1 = r2;
   if (x != cell_f)
     {
       r1 = cadr (r1);
@@ -518,15 +665,23 @@ eval_apply ()
       r1 = car (cddr (r1));
       goto eval;
     }
-  return cell_unspecified;
+  r1 = cell_unspecified;
+  goto vm_return;
 
-  SCM v;
  call_with_values:
-  v = apply_env (car (r1), cell_nil, r0);
-  if (TYPE (v) == VALUES)
-    v = CDR (v);
-  r1 = cons (cadr (r1), v);
+  push_cc (cons (car (r1), cell_nil), r1, r0, cell_vm_call_with_values2);
   goto apply;
+ call_with_values2:
+  if (TYPE (r1) == VALUES)
+    r1 = CDR (r1);
+  r1 = cons (cadr (r2), r1);
+  goto apply;
+
+ vm_return:
+  x = r1;
+  gc_pop_frame ();
+  r1 = x;
+  goto eval_apply;
 }
 
 SCM
@@ -577,66 +732,11 @@ gc_push_frame ()
 }
 
 SCM
-vm_call (function0_t f, SCM p1, SCM a)
+apply (SCM f, SCM x, SCM a) ///((internal))
 {
-  gc_push_frame ();
-  r1 = p1;
-  r0 = a;
-  if (g_free + GC_SAFETY > ARENA_SIZE)
-    gc_pop_frame (gc (gc_push_frame ()));
-
-  SCM r = f ();
-  gc_pop_frame ();
-  return r;
-}
-
-SCM
-evlis_env (SCM m, SCM a)
-{
-  g_target = EVLIS;
-  return vm_call (eval_apply, m, a);
-}
-
-SCM
-apply_env (SCM fn, SCM x, SCM a)
-{
-  g_target = APPLY;
-  return vm_call (eval_apply, cons (fn, x), a);
-}
-
-SCM
-eval_env (SCM e, SCM a)
-{
-  g_target = EVAL;
-  return vm_call (eval_apply, e, a);
-}
-
-SCM
-macro_expand_env (SCM e, SCM a)
-{
-  g_target = MACRO_EXPAND;
-  return vm_call (eval_apply, e, a);
-}
-
-SCM
-begin_env (SCM e, SCM a)
-{
-  g_target = BEGIN;
-  return vm_call (eval_apply, e, a);
-}
-
-SCM
-if_env (SCM e, SCM a)
-{
-  g_target = IF;
-  return vm_call (eval_apply, e, a);
-}
-
-SCM
-call_with_values_env (SCM producer, SCM consumer, SCM a)
-{
-  g_target = CALL_WITH_VALUES;
-  return vm_call (eval_apply, cons (producer, cons (consumer, cell_nil)), a);
+  push_cc (cons (f, x), cell_unspecified, r0, cell_unspecified);
+  r3 = cell_vm_apply;
+  return eval_apply ();
 }
 
 SCM
@@ -1023,6 +1123,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);return 0;};
   g_stdin = stdin;
   r0 = mes_environment ();
+
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
@@ -1031,7 +1132,10 @@ main (int argc, char *argv[])
   for (int i=argc; i; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i-1])), lst);
   r0 = acons (cell_symbol_argv, lst, r0);
 
-  stderr_ (begin_env (program, r0));
+  push_cc (r2, cell_unspecified, r0, cell_unspecified);
+  r3 = cell_vm_begin;
+  r1 = eval_apply ();
+  stderr_ (r1);
   fputs ("", stderr);
   gc (g_stack);
 #if __GNUC__

@@ -32,9 +32,8 @@
 (define guile-1.8? #f)
 (define guile-2? #f)
 
-(define (primitive-eval e) (eval-env e (current-module)))
-(define eval eval-env)
-(define (macro-expand e) (macro-expand-env e (current-module)))
+(define (primitive-eval e) (core:eval e (current-module)))
+(define eval core:eval)
 
 (define quotient /)
 
@@ -54,11 +53,11 @@
 
 (define (cons* . rest)
   (if (null? (cdr rest)) (car rest)
-      (cons (car rest) (apply-env cons* (cdr rest) (current-module)))))
+      (cons (car rest) (core:apply cons* (cdr rest) (current-module)))))
 
 (define (apply f h . t) (apply-env f (cons h t) (current-module)))
 (define (apply f h . t)
-  (if (null? t) (apply-env f h (current-module))
+  (if (null? t) (core:apply f h (current-module))
       (apply f (apply cons* (cons h t)))))
 
 (define-macro (cond . clauses)
@@ -141,9 +140,9 @@
 (define (mes-load-module-env module a)
   (push! *input-ports* (current-input-port))
   (set-current-input-port (open-input-file (string-append *mes-prefix* (module->file module))))
-  (let ((x (eval-env (append (cons 'begin (read-input-file-env a))
-                             '((current-module)))
-                     a)))
+  (let ((x (core:eval (append (cons 'begin (read-input-file-env a))
+                              '((current-module)))
+                      a)))
     (set-current-input-port (pop! *input-ports*))
     x))
 (define (not x)
