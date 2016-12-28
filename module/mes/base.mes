@@ -43,7 +43,7 @@
 (define (identity x) x)
 (define call/cc call-with-current-continuation)
 
-(define (command-line) argv)
+(define (command-line) %argv)
 
 (define-macro (or . x)
   (if (null? x) #f

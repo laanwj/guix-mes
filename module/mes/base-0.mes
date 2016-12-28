@@ -163,3 +163,4 @@
 (mes-use-module (mes scm))
 (mes-use-module (srfi srfi-13))
 (mes-use-module (mes display))
+(mes-use-module (mes catch))

@@ -114,10 +114,11 @@ scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
 scm scm_symbol_write = {SYMBOL, "write"};
 scm scm_symbol_display = {SYMBOL, "display"};
-scm scm_symbol_argv = {SYMBOL, "argv"};
+scm scm_symbol_throw = {SYMBOL, "throw"};
 
-scm scm_symbol_mes_version = {SYMBOL, "%version"};
+scm scm_symbol_argv = {SYMBOL, "%argv"};
 scm scm_symbol_mes_prefix = {SYMBOL, "%prefix"};
+scm scm_symbol_mes_version = {SYMBOL, "%version"};
 
 scm scm_symbol_car = {SYMBOL, "car"};
 scm scm_symbol_cdr = {SYMBOL, "cdr"};

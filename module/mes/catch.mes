@@ -19,25 +19,29 @@
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (mes-use-module (mes let))
+(mes-use-module (mes fluids))
 
-(define (make-exception key . args)
-  (cons* '*exception* key args))
-
-(define (exception? o)
-  (and (pair? o) (eq? (car o) '*exception*)))
-
-(define (exception-key o)
-  (if (exception? o) (cadr o)))
-
-(define (exception-args o)
-  (if (exception? o) (cddr o)))
+(define %eh (make-fluid
+             (lambda (key . args)
+               (format (current-error-port) "unhandled exception: ~a ~a\n" key args)
+               (exit 1))))
 
 (define (catch key thunk handler)
-  (let ((result (thunk)))
-    (if (and (exception? result)
-             (or (eq? key (exception-key result))
-                 (eq? key #t)))
-        (handler (exception-key result) (exception-args result))
-        result)))
+  (let ((previous-eh (fluid-ref %eh)))
+    (with-fluid*
+        %eh #f
+        (lambda ()
+          (call/cc
+           (lambda (cc)
+             (fluid-set! %eh
+                         (lambda (k . args)
+                           (let ((handler (if (or (eq? key #t) (eq? key k)) handler
+                                              previous-eh)))
+                             (cc
+                              (lambda (x)
+                                (apply handler (cons k args)))))))
+             (thunk)))))))
 
-(define throw make-exception)
+(define (throw key . args)
+  (let ((handler (fluid-ref %eh)))
+    (apply handler (cons key args))))

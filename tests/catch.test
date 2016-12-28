@@ -31,17 +31,40 @@ exit $?
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
 
-(when (not guile?)
-  (pass-if "throw"
-    (exception? (make-exception #t))))
-(pass-if "catch"
+(pass-if-equal "catch"
+    789
   (catch #t
     (lambda ()
-      (throw #t)
-      ;;#f
-      )
+      (throw 'test-exception "foo!")
+      #f)
     (lambda (key . args)
-      #t)))
+      789)))
+
+(define (throw-22)
+  (throw 'twenty-two "hahah"))
+
+(pass-if-equal "catch 22"
+    789
+  (catch #t
+    (lambda ()
+      (throw-22)
+      #f)
+    (lambda (key . args)
+      789)))
+
+(if mes?
+    (pass-if-equal "catch feel"
+        1
+      (let ((save-exit exit))
+        (set! exit (lambda (x)
+                     (set! exit save-exit)
+                     1))
+        (catch 'boo
+          (lambda ()
+            (throw-22)
+            11)
+          (lambda (key . args)
+            22)))))
 
 (result 'report)
 

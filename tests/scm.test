@@ -116,10 +116,12 @@ exit $?
   (pass-if "builtin? eval" (not (builtin? not))))
 (pass-if "procedure?" (procedure? builtin?))
 (pass-if "procedure?" (procedure? procedure?))
-(when (not guile?)
-  (pass-if "gensym" (seq? (gensym) 'g0))
-  (pass-if "gensym" (seq? (gensym) 'g1))
-  (pass-if "gensym" (seq? (gensym) 'g2)))
+(pass-if "gensym"
+  (symbol? (gensym)))
+(pass-if "gensym 1"
+  (not (eq? (gensym) (gensym))))
+(pass-if "gensym 2"
+  (not (eq? (gensym) (gensym))))
 
 (pass-if "last-pair " (sequal? (last-pair '(1 2 3 4)) '(4)))
 (pass-if "last-pair 2" (seq? (last-pair '()) '()))
