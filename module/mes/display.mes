@@ -165,3 +165,22 @@
     (let ((r (apply string stdout)))
       (set! write-byte save-write-byte)
       r)))
+
+(define (simple-format destination format . rest)
+  (let ((port (if (boolean? destination) (current-output-port) destination))
+        (lst (string->list format)))
+    (define (simple-format lst args)
+      (if (pair? lst)
+          (let ((c (car lst)))
+            (if (not (eq? c #\~)) (begin (write-char (car lst) port)
+                                         (simple-format (cdr lst) args))
+                (let ((c (cadr lst)))
+                  (case c
+                    ((#\a) (display (car args) port))
+                    ((#\s) (write (car args) port)))
+                  (simple-format (cddr lst) (cdr args)))))))
+    
+    (if destination (simple-format lst rest)
+        (with-output-to-string
+          (lambda () (simple-format lst rest))))))
+(define format simple-format)
