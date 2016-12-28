@@ -89,4 +89,13 @@ exit $?
 (if (not guile?)
   (pass-if-equal "load" 42 (begin (load "tests/data/load.scm") the-answer)))
 
+(pass-if-equal "call/cc"
+    0
+  (let ((cont #f)
+        (seen? #f))
+    (+ 1 (call/cc (lambda (c) (set! cont c) 1)))
+    (if seen? 0
+        (begin (set! seen? #t)
+               (cont 2)))))
+
 (result 'report)

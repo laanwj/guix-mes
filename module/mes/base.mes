@@ -41,6 +41,7 @@
 (define (cadddr x) (car (cdr (cdr (cdr x)))))
 
 (define (identity x) x)
+(define call/cc call-with-current-continuation)
 
 (define (command-line) argv)
 

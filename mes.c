@@ -46,7 +46,7 @@ int MAX_ARENA_SIZE = 20000000;
 int GC_SAFETY = 100;
 
 typedef int SCM;
-enum type_t {CHAR, CLOSURE, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
+enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
@@ -77,6 +77,7 @@ typedef struct scm_struct {
     int function;
     SCM cdr;
     SCM closure;
+    SCM continuation;
     SCM macro;
     SCM vector;
     int hits;
@@ -106,6 +107,8 @@ scm scm_symbol_macro_expand = {SYMBOL, "macro-expand"};
 scm scm_symbol_sc_expander_alist = {SYMBOL, "*sc-expander-alist*"};
 
 scm scm_symbol_call_with_values = {SYMBOL, "call-with-values"};
+scm scm_call_with_current_continuation = {SPECIAL, "*call/cc*"};
+scm scm_symbol_call_with_current_continuation = {SYMBOL, "call-with-current-continuation"};
 scm scm_symbol_current_module = {SYMBOL, "current-module"};
 scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
@@ -146,6 +149,7 @@ scm scm_vm_begin2 = {SPECIAL, "*vm-begin2*"};
 scm scm_vm_if = {SPECIAL, "*vm-if*"};
 scm scm_vm_if_expr = {SPECIAL, "*vm-if-expr*"};
 scm scm_vm_call_with_values2 = {SPECIAL, "*vm-call-with-values2*"};
+scm scm_vm_call_with_current_continuation2 = {SPECIAL, "*vm-call-with-current-continuation2*"};
 scm scm_vm_return = {SPECIAL, "*vm-return*"};
 
 scm scm_test = {SYMBOL, "test"};
@@ -163,6 +167,7 @@ SCM tmp_num2;
 function_t functions[200];
 int g_function = 0;
 
+SCM g_continuations = 0;
 SCM g_symbols = 0;
 SCM g_stack = 0;
 SCM r0 = 0; // a/env
@@ -178,6 +183,7 @@ SCM r3 = 0; // continuation
 
 #define CAR(x) g_cells[x].car
 #define CDR(x) g_cells[x].cdr
+#define CONTINUATION(x) g_cells[x].cdr
 #define HITS(x) g_cells[x].hits
 #define LENGTH(x) g_cells[x].length
 #define NAME(x) g_cells[x].name
@@ -202,6 +208,7 @@ SCM r3 = 0; // continuation
 #define CADR(x) CAR (CDR (x))
 
 #define MAKE_CHAR(n) make_cell (tmp_num_ (CHAR), 0, tmp_num2_ (n))
+#define MAKE_CONTINUATION(n) make_cell (tmp_num_ (CONTINUATION), n, g_stack)
 #define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
 #define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0)
 #define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0)
@@ -293,11 +300,12 @@ type_ (SCM x)
 SCM
 car_ (SCM x)
 {
-  return (TYPE (CAR (x)) == PAIR
-          || TYPE (CAR (x)) == REF
-          || TYPE (CAR (x)) == SPECIAL
-          || TYPE (CAR (x)) == SYMBOL
-          || TYPE (CAR (x)) == STRING) ? CAR (x) : MAKE_NUMBER (CAR (x));
+  return (TYPE (x) != CONTINUATION
+          && (TYPE (CAR (x)) == PAIR // FIXME: this is weird
+              || TYPE (CAR (x)) == REF
+              || TYPE (CAR (x)) == SPECIAL
+              || TYPE (CAR (x)) == SYMBOL
+              || TYPE (CAR (x)) == STRING)) ? CAR (x) : MAKE_NUMBER (CAR (x));
 }
 
 SCM
@@ -412,6 +420,7 @@ eval_apply ()
     case cell_vm_begin2: goto begin2;
     case cell_vm_if: goto vm_if;
     case cell_vm_if_expr: goto if_expr;
+    case cell_vm_call_with_current_continuation2: goto call_with_current_continuation2;
     case cell_vm_call_with_values2: goto call_with_values2;
     case cell_vm_return: goto vm_return;
     case cell_unspecified: return r1;
@@ -453,6 +462,14 @@ eval_apply ()
         call_lambda (body, p, aa, r0);
         goto begin;
       }
+      case CONTINUATION:
+        {
+          x = r1;
+          g_stack = CONTINUATION (CAR (r1));
+          gc_pop_frame ();
+          r1 = cadr (x);
+          goto eval_apply;
+        }
     case SPECIAL:
       {
         switch (car (r1))
@@ -466,6 +483,11 @@ eval_apply ()
             {
               push_cc (CADR (r1), r1, CADDR (r1), cell_vm_return);
               goto eval;
+            }
+          case cell_call_with_current_continuation:
+            {
+              r1 = cdr (r1);
+              goto call_with_current_continuation;
             }
           default: error ("cannot apply special: ", car (r1));
           }
@@ -666,6 +688,16 @@ eval_apply ()
       goto eval;
     }
   r1 = cell_unspecified;
+  goto vm_return;
+
+ call_with_current_continuation:
+  gc_push_frame ();
+  x = MAKE_CONTINUATION (g_continuations++);
+  gc_pop_frame ();
+  push_cc (cons (car (r1), cons (x, cell_nil)), x, r0, cell_vm_call_with_current_continuation2);
+  goto apply;
+ call_with_current_continuation2:
+  CONTINUATION (r2) = g_stack;
   goto vm_return;
 
  call_with_values:
@@ -921,6 +953,7 @@ gc_loop (SCM scan)
   while (scan < g_free)
     {
       if (NTYPE (scan) == CLOSURE
+          || NTYPE (scan) == CONTINUATION
           || NTYPE (scan) == FUNCTION
           || NTYPE (scan) == KEYWORD
           || NTYPE (scan) == MACRO
@@ -935,6 +968,7 @@ gc_loop (SCM scan)
           gc_relocate_car (scan, car);
         }
       if ((NTYPE (scan) == CLOSURE
+           || NTYPE (scan) == CONTINUATION
            || NTYPE (scan) == MACRO
            || NTYPE (scan) == PAIR
            || NTYPE (scan) == VALUES)
@@ -1047,6 +1081,7 @@ mes_symbols () ///((internal))
 #endif
   a = acons (cell_symbol_dot, cell_dot, a);
   a = acons (cell_symbol_begin, cell_begin, a);
+  a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
   a = acons (cell_symbol_sc_expand, cell_f, a);
   a = acons (cell_closure, a, a);
 
