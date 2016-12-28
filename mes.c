@@ -114,7 +114,13 @@ scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
 scm scm_symbol_write = {SYMBOL, "write"};
 scm scm_symbol_display = {SYMBOL, "display"};
+
 scm scm_symbol_throw = {SYMBOL, "throw"};
+scm scm_symbol_not_a_pair = {SYMBOL, "not-a-pair"};
+scm scm_symbol_system_error = {SYMBOL, "system-error"};
+scm scm_symbol_wrong_number_of_args = {SYMBOL, "wrong-number-of-args"};
+scm scm_symbol_wrong_type_arg = {SYMBOL, "wrong-type-arg"};
+scm scm_symbol_unbound_variable = {SYMBOL, "unbound-variable"};
 
 scm scm_symbol_argv = {SYMBOL, "%argv"};
 scm scm_symbol_mes_prefix = {SYMBOL, "%prefix"};
@@ -214,7 +220,6 @@ SCM r3 = 0; // continuation
 #define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0)
 #define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0)
 
-int error (char const* msg, SCM x);
 SCM vm_call (function0_t f, SCM p1, SCM a);
 
 SCM
@@ -269,14 +274,14 @@ cons (SCM x, SCM y)
 SCM
 car (SCM x)
 {
-  if (TYPE (x) != PAIR) error ("car: not pair: ", x);
+  if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_car));
   return CAR (x);
 }
 
 SCM
 cdr (SCM x)
 {
-  if (TYPE (x) != PAIR) error ("cdr: not pair: ", x);
+  if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_cdr));
   return CDR (x);
 }
 SCM
@@ -330,7 +335,7 @@ set_car_x (SCM x, SCM e)
 SCM
 set_cdr_x (SCM x, SCM e)
 {
-  if (TYPE (x) != PAIR) error ("set-cdr!: not pair: ", x);
+  if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_set_cdr_x));
   CDR (x) = e;
   return cell_unspecified;
 }
@@ -339,7 +344,7 @@ SCM
 set_env_x (SCM x, SCM e, SCM a)
 {
   SCM p = assert_defined (x, assq (x, a));
-  if (TYPE (p) != PAIR) error ("set-env!: not pair: ", x);
+  if (TYPE (p) != PAIR)  error (cell_symbol_not_a_pair, cons (p, x));
   return set_cdr_x (p, e);
 }
 
@@ -490,7 +495,7 @@ eval_apply ()
               r1 = cdr (r1);
               goto call_with_current_continuation;
             }
-          default: error ("cannot apply special: ", car (r1));
+          default: check_apply (cell_f, car (r1));
           }
       }
     case SYMBOL:
@@ -926,7 +931,7 @@ gc_up_arena ()
 {
   ARENA_SIZE *= 2;
   void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(scm));
-  if (!p) error (strerror (errno), MAKE_NUMBER (g_free));
+  if (!p) error (cell_symbol_system_error, cons (MAKE_STRING (cstring_to_list (strerror (errno))), MAKE_NUMBER (g_free)));
   g_cells = (scm*)p;
   g_cells++;
   gc_init_news ();
