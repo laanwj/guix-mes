@@ -1,16 +1,13 @@
 #! /bin/sh
 # -*-scheme-*-
-prefix=module/
-echo '()' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
-#paredit:||
-chmod +x a.out
-exit $?
+export GUILE_AUTO_COMPILE=0
+exec ${GUILE-guile} -L $(pwd)/guile -e '(mescc)' -s "$0" "$@"
 !#
 
-;;; Mes --- Maxwell Equations of Software
+;;; Mes --- The Maxwell Equations of Software
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; This file is part of Mes.
+;;; This file is part of GNU Guix.
 ;;;
 ;;; Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -25,17 +22,19 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+;; The Maxwell Equations of Software -- John McCarthy page 13
+;; http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
 
-;;; mescc.mes is a proof-of-concept simplistic C compiler and linker
+#!
+Run with Guile-1.8:
+GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
+!#
 
-;;; Code:
-
-;;LALR
-;;(mes-use-module (language c compiler))
-;;Nyacc
-(mes-use-module (mes guile))
-(mes-use-module (language c99 compiler))
+(define-module (mescc)
+  #:use-module (language c99 compiler)
+  #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 pretty-print)
+  #:export (main))
 
 (define (main arguments)
   (let* ((files (cdr arguments))
@@ -43,6 +42,3 @@ exit $?
                    (car files))))
     (with-input-from-file file
       compile)))
-
-(main '("mes"))
-()

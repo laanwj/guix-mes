@@ -1,6 +1,7 @@
 #! /bin/sh
 # -*-scheme-*-
-exec ${GUILE-guile} -L $(pwd)/guile/mes -e '(nyacc)' -s "$0" "$@"
+export GUILE_AUTO_COMPILE=0
+exec ${GUILE-guile} -L $(pwd)/guile -e '(nyacc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
@@ -38,9 +39,13 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/nyacc.scm
 ;; notice and this notice are preserved.  This file is offered as-is,
 ;; without any warranty.
 
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase))
+  (use-modules (ice-9 optargs))))
+
 (define-module (nyacc)
-  #:use-module (ice-9 syncase) ;; guile-1.8
-  #:use-module (ice-9 optargs) ;; guile-1.8
   #:use-module (nyacc lalr)
   #:use-module (nyacc lex)
   #:use-module (nyacc parse)

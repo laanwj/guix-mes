@@ -23,6 +23,7 @@
 ;;; Code:
 
 (mes-use-module (mes guile))
+(mes-use-module (mes fluids))
 (mes-use-module (mes optargs))
 (mes-use-module (srfi srfi-1))
 (include-from-path "nyacc/lang/util.scm")

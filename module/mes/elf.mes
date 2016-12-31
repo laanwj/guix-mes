@@ -24,7 +24,10 @@
 
 ;;; Code:
 
-(mes-use-module (rnrs bytevectors))
+(cond-expand
+ (guile)
+ (mes
+  (mes-use-module (mes bytevectors))))
 
 (define (int->bv32 value)
   (let ((bv (make-bytevector 4)))

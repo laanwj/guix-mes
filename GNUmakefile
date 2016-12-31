@@ -96,17 +96,14 @@ guile-check:
 	guile/nyacc-calc.scm
 
 MAIN_C:=doc/examples/main.c
-mescc: all
+mescc: all $(MAIN_C)
 	rm -f a.out
-	scripts/mescc.mes $(MAIN_C)
+	scripts/mescc.mes $(MAIN_C) > a.out
 	./a.out; r=$$?; [ $$r = 42 ]
 
-mescc.cat: all $(MES-0) module/rnrs/bytevectors.mes module/mes/elf.mes module/mes/libc-i386.mes module/language/c/lexer.mes module/language/c/parser.mes module/language/c/compiler.mes
-	echo '(compile)' | cat $(filter %.scm %.mes, $^) - > $@
-
-guile-mescc: mescc.cat
+guile-mescc: $(MAIN_C)
 	rm -f a.out
-	cat $(MAIN_C) | $(GUILE) -s $^ > a.out
+	guile/mescc.scm $(MAIN_C) > a.out
 	chmod +x a.out
 	./a.out; r=$$?; [ $$r = 42 ]
 

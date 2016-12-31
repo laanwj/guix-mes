@@ -34,6 +34,20 @@
 
 ;;; Code:
 
+;; (pmatch exp <clause> ...[<else-clause>])
+;; <clause> ::= (<pattern> <guard> exp ...)
+;; <else-clause> ::= (else exp ...)
+;; <guard> ::= boolean exp | ()
+;; <pattern> :: =
+;;        ,var  -- matches always and binds the var
+;;                 pattern must be linear! No check is done
+;;         _    -- matches always
+;;        'exp  -- comparison with exp (using equal?)    REMOVED (August 8, 2012)
+;;        exp   -- comparison with exp (using equal?)
+;;        (<pattern1> <pattern2> ...) -- matches the list of patterns
+;;        (<pattern1> . <pattern2>)  -- ditto
+;;        ()    -- matches the empty list
+
 (define-module (system base pmatch)
   #:export-syntax (pmatch))
 

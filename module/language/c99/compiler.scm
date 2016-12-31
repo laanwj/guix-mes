@@ -1,11 +1,4 @@
-#! /bin/sh
-# -*-scheme-*-
-prefix=module/
-echo '()' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
-#paredit:||
-chmod +x a.out
-exit $?
-!#
+;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
@@ -27,22 +20,21 @@ exit $?
 
 ;;; Commentary:
 
-;;; mescc.mes is a proof-of-concept simplistic C compiler and linker
-
 ;;; Code:
 
-;;LALR
-;;(mes-use-module (language c compiler))
-;;Nyacc
-(mes-use-module (mes guile))
-(mes-use-module (language c99 compiler))
+(define-module (language c99 compiler)
+  #:use-module (srfi srfi-1)
+  #:use-module (system base pmatch)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (mes elf)
+  #:use-module (mes libc-i386)
+  #:use-module (nyacc lang c99 parser)
+  #:export (compile))
 
-(define (main arguments)
-  (let* ((files (cdr arguments))
-         (file (if (null? files) "doc/examples/main.c"
-                   (car files))))
-    (with-input-from-file file
-      compile)))
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase)))
+ (mes))
 
-(main '("mes"))
-()
+(include-from-path "language/c99/compiler.mes")
