@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -21,17 +21,21 @@
 #define MES_MINI 1
 
 #if __GNUC__
+#define FIXME_NYACC 1
 #define  __NYACC__ 0
-#define NYACC
-#define NYACC2
+#define NYACC_CAR
+#define NYACC_CDR
 #else
 #define  __NYACC__ 1
-#define NYACC nyacc
-#define NYACC2 nyacc2
+#define NYACC_CAR nyacc_car
+#define NYACC_CDR nyacc_cdr
 #endif
 
 typedef long size_t;
 void *malloc (size_t i);
+
+
+#if __GNUC__
 
 int
 open (char const *s, int mode)
@@ -82,6 +86,7 @@ free (void *p)
   int *n = (int*)p-1;
   //munmap ((void*)p, *n);
 }
+#endif // __GNUC__
 
 #define EOF -1
 #define STDIN 0
@@ -105,8 +110,8 @@ strlen (char const* s)
 int
 strcmp (char const* a, char const* b)
 {
-  while (*a && *b && *a == *b) {*a++;b++;}
-  return *a == *b;
+  while (*a && *b && *a == *b) {a++;b++;}
+  return *a - *b;
 }
 
 int
@@ -161,7 +166,12 @@ assert_fail (char* s)
   *((int*)0) = 0;
 }
 
-#define assert(x) ((x) ? (void)0 : assert_fail(#x))
+#if __NYACC__ || FIXME_NYACC
+#define assert(x) ((x) ? (void)0 : assert_fail(0))
+// #else
+// NYACC
+// #define assert(x) ((x) ? (void)0 : assert_fail(#x))
+#endif
 #define false 0
 #define true 1
 typedef int bool;
@@ -169,7 +179,11 @@ typedef int bool;
 int ARENA_SIZE = 100000;
 
 typedef int SCM;
+#if __NYACC__ || FIXME_NYACC
+enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
+#else
 enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
+#endif
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
@@ -195,7 +209,7 @@ typedef struct scm_struct {
     SCM car;
     SCM ref;
     int length;
-  } NYACC;
+  } NYACC_CAR;
   union {
     int value;
     int function;
@@ -205,7 +219,7 @@ typedef struct scm_struct {
     SCM macro;
     SCM vector;
     int hits;
-  } NYACC2;
+  } NYACC_CDR;
 } scm;
 
 scm scm_nil = {SPECIAL, "()"};
@@ -284,7 +298,7 @@ SCM cell_cdr;
 // scm scm_eq_p = {FUNCTION, "eq?", 0};
 // SCM cell_eq_p;
 
-#define TYPE(x) g_cells[x].type
+#define TYPE(x) (g_cells[x].type)
 
 #define CAR(x) g_cells[x].car
 #define LENGTH(x) g_cells[x].length
@@ -298,7 +312,12 @@ SCM cell_cdr;
 //#define MAKE_CONTINUATION(n) make_cell (tmp_num_ (CONTINUATION), n, g_stack)
 //#define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
 //#define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0)
-#define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0)
+
+#if __NYACC__ || FIXME_NYACC
+#define MAKE_STRING(x) make_cell (tmp_num_ (TSTRING), x, 0)
+// #else
+// #define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0)
+#endif
 
 SCM
 alloc (int n)
@@ -317,13 +336,13 @@ make_cell (SCM type, SCM car, SCM cdr)
   TYPE (x) = VALUE (type);
   if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
     if (car) CAR (x) = CAR (car);
-    if (cdr) CDR (x) = CDR (cdr);
+    if (cdr) CDR(x) = CDR(cdr);
   } else if (VALUE (type) == FUNCTION) {
     if (car) CAR (x) = car;
-    if (cdr) CDR (x) = CDR (cdr);
+    if (cdr) CDR(x) = CDR(cdr);
   } else {
     CAR (x) = car;
-    CDR (x) = cdr;
+    CDR(x) = cdr;
   }
   return x;
 }
@@ -353,7 +372,8 @@ SCM
 car (SCM x)
 {
 #if MES_MINI
-  assert("!car");
+  //Nyacc
+  //assert ("!car");
 #else
   if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_car));
 #endif
@@ -364,25 +384,13 @@ SCM
 cdr (SCM x)
 {
 #if MES_MINI
-  assert("!car");
+  //Nyacc
+  //assert ("!cdr");
 #else
   if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_cdr));
 #endif
-  return CDR (x);
+  return CDR(x);
 }
-
-// SCM
-// eq_p (SCM x, SCM y)
-// {
-//   return (x == y
-//           || ((TYPE (x) == KEYWORD && TYPE (y) == KEYWORD
-//                && STRING (x) == STRING (y)))
-//           || (TYPE (x) == CHAR && TYPE (y) == CHAR
-//               && VALUE (x) == VALUE (y))
-//           || (TYPE (x) == NUMBER && TYPE (y) == NUMBER
-//               && VALUE (x) == VALUE (y)))
-//     ? cell_t : cell_f;
-// }
 
 SCM
 gc_push_frame ()
@@ -486,11 +494,15 @@ SCM
 gc_init_cells ()
 {
   g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
-  g_cells[0].type = VECTOR;
+#if __NYACC__ || FIXME_NYACC
+  TYPE (0) = TVECTOR;
+// #else
+//   TYPE (0) = VECTOR;
+#endif
   LENGTH (0) = 1000;
   VECTOR (0) = 0;
   g_cells++;
-  g_cells[0].type = CHAR;
+  TYPE (0) = CHAR;
   VALUE (0) = 'c';
 }
 
@@ -584,8 +596,8 @@ mes_environment () ///((internal))
 SCM
 mes_builtins (SCM a)
 {
-#if __GNUC__ && 0 // FIXME: Nyacc
-// #include "mes.i"
+#if __GNUC__
+//#include "mes.i"
 
 // #include "lib.i"
 // #include "math.i"
@@ -618,12 +630,6 @@ functions[g_function++] = fun_cdr;
 cell_cdr = g_free++;
 g_cells[cell_cdr] = scm_cdr;
 
-// scm_eq_p.function = g_function;
-// functions[g_function++] = fun_eq_p;
-// cell_eq_p = g_free++;
-// g_cells[cell_eq_p] = scm_eq_p;
-
-
 scm_make_cell.string = cstring_to_list (scm_make_cell.name);
 g_cells[cell_make_cell].string = MAKE_STRING (scm_make_cell.string);
 a = acons (make_symbol (scm_make_cell.string), cell_make_cell, a);
@@ -639,11 +645,6 @@ a = acons (make_symbol (scm_car.string), cell_car, a);
 scm_cdr.string = cstring_to_list (scm_cdr.name);
 g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
 a = acons (make_symbol (scm_cdr.string), cell_cdr, a);
-
-// scm_eq_p.string = cstring_to_list (scm_eq_p.name);
-// g_cells[cell_eq_p].string = MAKE_STRING (scm_eq_p.string);
-// a = acons (make_symbol (scm_eq_p.string), cell_eq_p, a);
-
 #endif
   return a;
 }
@@ -686,7 +687,7 @@ string_to_cstring (SCM s)
 {
   static char buf[1024];
   char *p = buf;
-  s = STRING (s);
+  s = STRING(s);
   while (s != cell_nil)
     {
       *p++ = VALUE (car (s));
@@ -700,11 +701,19 @@ SCM
 stderr_ (SCM x)
 {
   //SCM write;
-  if (TYPE (x) == STRING)
+#if __NYACC__ || FIXME_NYACC
+  if (TYPE (x) == TSTRING)
+// #else
+//   if (TYPE (x) == STRING)
+#endif
     eputs (string_to_cstring (x));
   // else if ((write = assq_ref_cache (cell_symbol_write, r0)) != cell_undefined)
   //   apply (assq_ref_cache (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
-  else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
+#if __NYACC__ || FIXME_NYACC
+  else if (TYPE (x) == SPECIAL || TYPE (x) == TSTRING || TYPE (x) == SYMBOL)
+// #else
+//   else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
+#endif
     eputs (string_to_cstring (x));
   else if (TYPE (x) == NUMBER)
     eputs (itoa (VALUE (x)));
@@ -716,11 +725,6 @@ stderr_ (SCM x)
 int
 main (int argc, char *argv[])
 {
-  eputs (itoa (234));
-  eputs ("\n");
-  assert(!"boo");
-  return 33;
-  
 #if __GNUC__
   //g_debug = getenv ("MES_DEBUG");
 #endif
