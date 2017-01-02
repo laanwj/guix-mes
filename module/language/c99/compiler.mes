@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -36,16 +36,18 @@
   (mes-use-module (mes elf))
   (mes-use-module (mes libc-i386))))
 
-;;(define (gnuc-xdef? name mode) (if (equal? name "__GNUC__") #f (env? mode 'code)))
+(define (gnuc-xdef? name mode) (if (equal? name "__GNUC__") #f (eq? mode 'code)))
 ;;(define (gnuc-xdef? name mode) (equal? name "__GNUC__"))
-(define (gnuc-xdef? name mode)
-  (cond ((equal? name "__GNUC__") #t)
-        ((equal? name "asm") #f)))
+;; (define (gnuc-xdef? name mode)
+;;   (cond ((equal? name "__GNUC__") #t)
+;;         ((equal? name "asm") #f)))
 
 (define (mescc)
   (parse-c99 #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
-             #:cpp-defs '(("__GNUC__" . "0"))
-             #:xdef? gnuc-xdef?))
+             #:cpp-defs '(("__GNUC__" . "0") ("__NYACC__" . "1"))
+             #:xdef? gnuc-xdef?
+             #:mode 'code
+             ))
 
 (define (write-any x)
   (write-char (if (char? x) x (integer->char (if (>= x 0) x (+ x 256))))))
@@ -55,11 +57,13 @@
 
 (define (.name o)
   (pmatch o
-    ((fctn-defn _ (ftn-declr (ident ,name) _) _) name)))
+    ((fctn-defn _ (ftn-declr (ident ,name) _) _) name)
+    ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) _) name)))
 
 (define (.statements o)
   (pmatch o
-    ((fctn-defn _ (ftn-declr (ident ,name) _) (compd-stmt (block-item-list . ,statements))) statements)))
+    ((fctn-defn _ (ftn-declr (ident ,name) _) (compd-stmt (block-item-list . ,statements))) statements)
+    ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)))
 
 (define (expr->arg symbols) ;; FIXME: get Mes curried-definitions
   (lambda (o)
@@ -110,7 +114,7 @@
         
         ((return (p-expr (fixed ,value)))
          (let ((value (string->number value)))
-           (make-text+symbols (append text (list (lambda _ (i386:ret)))) symbols)))
+           (make-text+symbols (append text (list (lambda _ (i386:ret value)))) symbols)))
 
        (_
         (format (current-error-port) "SKIPPING S=~a\n" o)
@@ -123,21 +127,29 @@
 (define (.formals o)
   (pmatch o
     ((fctn-defn _ (ftn-declr _ ,formals) _) formals)
+    ((fctn-defn _ (ptr-declr (pointer) (ftn-declr _ ,formals)) _) formals)
     (_ (format (current-error-port) ".formals: no match: ~a\n" o)
        barf)))
 
-(define (formal->text o)
-  '(#x58))  ;; pop %eax
+(define (formal->text n)
+  (lambda (o i)
+    (case i
+      ((0) (list #x8b #x5d (* n 4)))          ; mov    $00(%ebp),%ebx
+      ((1) (list #x8b #x4d (* (- n 1) 4)))    ; mov    $00(%ebp),%ecx
+      ((2) (list #x8b #x55 (* (- n 2) 4)))    ; mov    $00(%ebp),%edx
+      ((3) (list #x8b #x45 (* (- n 3) 4)))))) ; mov    $00(%ebp),%eax FIXME
 
 (define (formals->text o)
   (pmatch o
     ((param-list . ,formals)
-     (list (lambda (s t d)
-             (append
-              '(#x5f) ;; pop %edi
-              (append-map formal->text formals)
-              '(#x57) ;; push %edi
-              ))))
+     (let ((n (length formals)))
+       (list (lambda (s t d)
+              (append
+               '(#x55                   ; push   %ebp
+                 #x89 #xe5)             ; mov    %esp,%ebp
+               (append-map (formal->text n) formals (iota n))
+               '(#x83 #xec #x10)        ; sub    $0x10,%esp -- 4 local vars
+               )))))
     (_ (format (current-error-port) "formals->text+data: no match: ~a\n" o)
        barf)))
 

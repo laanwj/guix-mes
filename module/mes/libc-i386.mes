@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -27,45 +27,96 @@
 (define (push-arg o)
   `(#x68 ,@(int->bv32 o)))              ; push o
 
-(define (i386:ret)
-  '(
-    #xc3                                ; ret
+(define (i386:ret . rest)
+  `(
+    ,@(if (null? rest) '()
+          `(#xb8                        ; mov    $00,%eax
+            ,@(int->bv32 (car rest))))
+    #xc9                                        ; leave
+    #xc3                               ; ret
     ))
 
+;; #x83 #xec #x10                      ; sub    $0x10,%esp
+
+;; #x8b #x45 #x04                      ; mov    0x4(%ebp),%eax
+
+;; #x8b #x5d #x04                      ; mov    0x4(%ebp),%ebx
+;; #x8b #x45 #x08                      ; mov    0x8(%ebp),%eax
+
+;; #x8b #x4d #x04                      ; mov    0xc(%ebp),%ecx
+;; #x8b #x5d #x08                      ; mov    0x4(%ebp),%ebx
+;; #x8b #x45 #x0c                      ; mov    0x8(%ebp),%eax
+
+;; #x8b #x55 #xfc             	       ; mov    0x4(%ebp),%edx
+
+
+
+;; #x8b #x5d #x08                      ; mov    $0x8(%ebp),%ebx
+
+;; #x8b #x4d #x08                      ; mov    $0x8(%ebp),%ecx
+;; #x8b #x5d #x0c                      ; mov    $0xc(%ebp),%ebx
+
+;; #x8b #x55 #x08             	       ; mov    $0x8(%ebp),%edx
+;; #x8b #x4d #x0c                      ; mov    $0xc(%ebp),%ecx
+;; #x8b #x5d #x10                      ; mov    $0x10(%ebp),%ebx
+
+
 (define (i386:call address . arguments)
-  (let ((pushes (append-map push-arg arguments)))
+  (let* ((pushes (append-map push-arg arguments))
+         (s (length pushes))
+         (n (length arguments)))
    `(
-     ,@pushes                                         ; push args
-     #xe8 ,@(int->bv32 (- address 5 (length pushes))) ; call relative
+     ,@pushes                           ; push args
+     #xe8 ,@(int->bv32 (- address 5 s)) ; call relative
+     #x83 #xc4 ,(* n 4)                 ; add    $00,%esp
      )))
   
 (define (i386:eputs s t d)
   `(
-    #x5f                                ; pop    %edi
-    #xba #x01 #x00 #x00 #x00    	; mov    0xa,%edx
-    #x59                                ; pop    %ecx
-    #x57                                ; push   %edi
+    #x55                                ; push   %ebp
+    #x89 #xe5                           ; mov    %esp,%ebp
+
+    ;;;#x59                                ; pop    %ecx
+
+    #x8b #x4d #x08                      ; mov    $0x8(%ebp),%ecx
+    ;;#x8b #x5d #x0c                      ; mov    $0xc(%ebp),%ebx
+
+    #xba #x01 #x00 #x00 #x00    	; mov    $0x1,%edx
+
+
     #xbb #x02 #x00 #x00 #x00            ; mov    $0x1,%ebx
     #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
     #xcd #x80                           ; int    $0x80
+
+    #xc9                                ; leave
     #xc3                                ; ret
     ))
 
 (define (i386:exit s t d)
   `(
-    #x5f                                ; pop    %edi
+    #x5b                                ; pop    %ebx
+    #x5b                                ; pop    %ebx
+    ;; FIXME: hack to get return value 41
+    ;; without local variable support in _start
+    #x89 #xc3                           ; mov    %eax,%ebx
     #xb8 #x01 #x00 #x00 #x00            ; mov    $0x1,%eax
     #xcd #x80                           ; int    $0x80
     ))
 
 (define (i386:puts s t d)
   `(
-    #x5f                                ; pop    %edi
-    #xba #x0a #x00 #x00 #x00    	; mov    0xa,%edx
-    #x59                                ; pop    %ecx
-    #x57                                ; push   %edi
+    #x55                                ; push   %ebp
+    #x89 #xe5                           ; mov    %esp,%ebp
+
+    #x8b #x4d #x08                      ; mov    $0x8(%ebp),%ecx
+    ;; #x8b #x5d #x0c                      ; mov    $0xc(%ebp),%ebx
+
+    #xba #x0a #x00 #x00 #x00    	; mov    $0xa,%edx
+    ;; #x59                                ; pop    %ecx
+
     #xbb #x01 #x00 #x00 #x00            ; mov    $0x1,%ebx
     #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
     #xcd #x80                           ; int    $0x80
+    #xc9                                ; leave
     #xc3                                ; ret
     ))
