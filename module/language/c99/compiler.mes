@@ -36,6 +36,14 @@
   (mes-use-module (mes elf))
   (mes-use-module (mes libc-i386))))
 
+(define (logf port string . rest)
+  (apply format (cons* port string rest))
+  (force-output port)
+  #t)
+
+(define (stderr string . rest)
+  (apply logf (cons* (current-error-port) string rest)))
+
 (define (gnuc-xdef? name mode) (if (equal? name "__GNUC__") #f (eq? mode 'code)))
 ;;(define (gnuc-xdef? name mode) (equal? name "__GNUC__"))
 ;; (define (gnuc-xdef? name mode)
@@ -58,67 +66,215 @@
 (define (.name o)
   (pmatch o
     ((fctn-defn _ (ftn-declr (ident ,name) _) _) name)
-    ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) _) name)))
+    ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) _) name)
+    ((param-decl _ (param-declr (ident ,name))) name)
+    ((param-decl _ (param-declr (ptr-declr (pointer) (ident ,name)))) name)
+    ((param-decl _ (param-declr (ptr-declr (pointer) (array-of (ident ,name))))) name)
+    (_
+     (format (current-error-port) "SKIP .name =~a\n" o))))
 
 (define (.statements o)
   (pmatch o
     ((fctn-defn _ (ftn-declr (ident ,name) _) (compd-stmt (block-item-list . ,statements))) statements)
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)))
 
-(define (expr->arg symbols) ;; FIXME: get Mes curried-definitions
+(define (ident-ref locals)
+  (lambda (o)
+    (i386:ref-local (assoc-ref locals o))))
+
+(define (global-ref symbols)
+  (lambda (o)
+    (lambda (s t d)
+      (i386:ref-global (+ (data-offset o symbols) d)))))
+
+(define (expr->arg symbols locals) ;; FIXME: get Mes curried-definitions
   (lambda (o)
     (pmatch o
       ((p-expr (fixed ,value)) (string->number value))
-      ((p-expr (string ,string)) (data-offset symbols string))
+      ((p-expr (string ,string)) ((global-ref symbols) string))
+      ((p-expr (ident ,name)) ((ident-ref locals) name))
       (_
-       (format (current-error-port) "SKIPPING expr=~a\n" o)     
+       (format (current-error-port) "SKIP expr->arg=~a\n" o)     
        0))))
+
+(define (ident->accu locals)
+  (lambda (o)
+    (i386:local->accu (assoc-ref locals o))))
+
+(define (ident->base locals)
+  (lambda (o)
+    (i386:local->base (assoc-ref locals o))))
+
+;; (define (global-accu symbols)
+;;   (lambda (o)
+;;     (lambda (s t d)
+;;       (i386:accu-global (+ (data-offset o symbols) d)))))
+
+(define (expr->accu symbols locals)
+  (lambda (o)
+    (pmatch o
+      ((p-expr (fixed ,value)) (string->number value))
+      ((p-expr (ident ,name)) ((ident->accu locals) name))
+      (_
+       (format (current-error-port) "SKIP expr-accu=~a\n" o)
+       0)
+      )))
 
 (define (expr->symbols o)
   (pmatch o
     ((p-expr (string ,string)) (string->symbols string))
     (_ #f)))
 
-(define make-text+symbols cons)
+(define make-text+symbols+locals cons*)
 (define .text car)
-(define .symbols cdr)
+(define .symbols cadr)
+(define .locals cddr)
 
 (define (dec->hex o)
   (number->string o 16))
 
-(define (statement->text+symbols text+symbols)
+(define (text->list o)
+  (append-map (lambda (f) (f '() 0 0)) o))
+
+(define (statement->text+symbols+locals text+symbols+locals)
   (lambda (o)
-    (let* ((text (.text text+symbols))
-           (symbols (.symbols text+symbols))
-           (text-list (append-map (lambda (f) (f '() 0 0)) text))
+    ;;(stderr "S=~a\n" o)
+    (let* ((text (.text text+symbols+locals))
+           (symbols (.symbols text+symbols+locals))
+           (locals (.locals text+symbols+locals))
+           (text-list (text->list text))
            (prefix-list (symbols->text symbols 0 0))
            (statement-offset (- (+ (length prefix-list) (length text-list)))))
+      ;; (stderr "   tsl=~a\n" text+symbols+locals)
+      ;; (stderr "   locals=~s\n" locals)
       (pmatch o
         ((expr-stmt (fctn-call (p-expr (ident ,name))
                                (expr-list (p-expr (string ,string)))))
-         (make-text+symbols
+         ;;(stderr "S1 string=~a\n" string)
+         (make-text+symbols+locals
           (append text
                   (list (lambda (s t d)
-                          (i386:call (+ t
-                                                      (function-offset name s)
-                                                      statement-offset)
-                                                   (+ d (data-offset string s))))))
-          (append symbols (list (string->symbols string)))));; FIXME: ->symbolSXX
+                          (i386:call s t d
+                                     (+ t (function-offset name s)
+                                          statement-offset)
+                                     (+ d (data-offset string s))))))
+          (append symbols (list (string->symbols string)))
+          locals))
         
         ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
-         (let ((args (map (expr->arg symbols) expr-list)))
-           (make-text+symbols
+         ;;(stderr "S1 expr-list=~a\n" expr-list)
+         (let* ((symbols (append symbols (filter-map expr->symbols expr-list)))
+                (args (map (expr->arg symbols locals) expr-list)))
+           (make-text+symbols+locals
             (append text
-                    (list (lambda (s t d) (apply i386:call (cons (+ t (function-offset name s) statement-offset) args)))))
-            (append symbols (filter-map expr->symbols expr-list)))))
+                    (list (lambda (s t d) (apply i386:call (cons* s t d (+ t (function-offset name s) statement-offset) args)))))
+            symbols
+            locals)))
         
-        ((return (p-expr (fixed ,value)))
+        ((while ,test ,body)
+         (let* ((t+s+l (make-text+symbols+locals '() symbols locals))
+
+                (body-t+s+l ((statement->text+symbols+locals t+s+l) body))
+                (body-text (.text body-t+s+l))
+                ;;(body-symbols (.symbols body-t+s+l))
+                (symbols (.symbols body-t+s+l))
+                (body-locals (.locals body-t+s+l))
+                (body-length (length (text->list body-text)))
+
+                (test-t+s+l ((statement->text+symbols+locals t+s+l) test))
+                (test-text (.text test-t+s+l))
+                (test-symbols (.symbols test-t+s+l))
+                (test-locals (.locals test-t+s+l))
+                (test-length (length (text->list test-text))))
+
+           (make-text+symbols+locals
+            (append text
+                    (list (lambda (s t d) (i386:jump body-length)))
+                    body-text
+                    test-text
+                    (list (lambda (s t d) (i386:test-jump (- (+ body-length test-length))))))
+            symbols
+            locals)))
+
+        ((array-ref (p-expr (ident ,name)) (p-expr (ident ,index)))
+         (make-text+symbols+locals
+          (append
+           text
+           (list
+            (lambda (s t d)
+              (append
+               ((ident->base locals) name)
+               ((ident->accu locals) index)
+               (i386:mem-byte->accu)))))
+          symbols
+          locals))
+         
+        ((expr-stmt (post-inc (p-expr (ident ,name))))
+         (make-text+symbols+locals
+          (append text
+                  (list (lambda (s t d) (i386:local-add (assoc-ref locals name) 1))))
+          symbols
+          locals))
+
+        ((return ,expr)
+           (make-text+symbols+locals
+            (append text (list (i386:ret ((expr->accu symbols locals) expr))))
+            symbols
+            locals))
+
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
+         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
+           (make-text+symbols+locals text symbols locals)))
+
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (fixed ,value))))))
+         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals))
+               (value (string->number value)))
+           (make-text+symbols+locals
+            (append
+             text
+             (list (lambda (s t d) (i386:local-assign (assoc-ref locals name) value))))
+            symbols
+            locals)))
+
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (fctn-call . ,call)))))
+         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
+           (let* ((t+s+l (make-text+symbols+locals text symbols locals))
+                  (t+s+l ((statement->text+symbols+locals t+s+l)
+                          `(expr-stmt (fctn-call ,@call))))
+                  (text (.text t+s+l))
+                  (symbols (.symbols t+s+l))
+                  (locals (.locals t+s+l)))
+             (make-text+symbols+locals
+              (append
+               text
+               (list (lambda (s t d) (i386:ret-local (assoc-ref locals name)))))
+              symbols
+              locals))))
+        
+        ((expr-stmt (assn-expr (p-expr (ident ,name)) (op _) (p-expr (fixed ,value))))
+
+         (stderr "RET LOCAL[~a]: ~a\n" name (assoc-ref locals name))
+
          (let ((value (string->number value)))
-           (make-text+symbols (append text (list (lambda _ (i386:ret value)))) symbols)))
+           (make-text+symbols+locals
+            (append text (list (lambda (s t d) (i386:local-assign (assoc-ref locals name) value))))
+            symbols
+            locals)))
+        
+        ((expr-stmt (assn-expr (p-expr (ident ,name)) (op _) (fctn-call . ,call)))
+         (let* ((t+s+l ((statement->text+symbols+locals text+symbols+locals)
+                        `(expr-stmt (fctn-call ,@call))))
+                (text (.text t+s+l))
+                (symbols (.symbols t+s+l))
+                (locals (.locals t+s+l)))
+           (make-text+symbols+locals
+            (append text (list (lambda (s t d) (i386:ret-local (assoc-ref locals name)))))
+            symbols
+            locals)))
 
        (_
-        (format (current-error-port) "SKIPPING S=~a\n" o)
-        text+symbols)))))
+        (format (current-error-port) "SKIP statement=~a\n" o)
+        text+symbols+locals)))))
 
 (define (symbols->exe symbols)
   (display "dumping elf\n" (current-error-port))
@@ -133,58 +289,139 @@
 
 (define (formal->text n)
   (lambda (o i)
-    (case i
-      ((0) (list #x8b #x5d (* n 4)))          ; mov    $00(%ebp),%ebx
-      ((1) (list #x8b #x4d (* (- n 1) 4)))    ; mov    $00(%ebp),%ecx
-      ((2) (list #x8b #x55 (* (- n 2) 4)))    ; mov    $00(%ebp),%edx
-      ((3) (list #x8b #x45 (* (- n 3) 4)))))) ; mov    $00(%ebp),%eax FIXME
+    ;;(i386:formal i n)
+    '()
+    ))
 
 (define (formals->text o)
   (pmatch o
     ((param-list . ,formals)
      (let ((n (length formals)))
        (list (lambda (s t d)
-              (append
-               '(#x55                   ; push   %ebp
-                 #x89 #xe5)             ; mov    %esp,%ebp
-               (append-map (formal->text n) formals (iota n))
-               '(#x83 #xec #x10)        ; sub    $0x10,%esp -- 4 local vars
-               )))))
-    (_ (format (current-error-port) "formals->text+data: no match: ~a\n" o)
+               (append
+                (i386:function-preamble)
+                (append-map (formal->text n) formals (iota n))
+                (i386:function-locals))))))
+    (_ (format (current-error-port) "formals->text: no match: ~a\n" o)
+       barf)))
+
+(define (formals->locals o)
+  (pmatch o
+    ((param-list . ,formals)
+     (let ((n (length formals)))
+      (map cons (map .name formals) (iota n (1- (- n))))))
+    (_ (format (current-error-port) "formals->symbols: no match: ~a\n" o)
        barf)))
 
 (define (string->symbols string)
-  (make-data string (string->list string)))
+  (make-data string (append (string->list string) (list #\nul))))
 
 (define (function->symbols symbols)
   (lambda (o)
     (format (current-error-port) "compiling ~a\n" (.name o))
+    ;;(stderr "formals=~a\n" (.formals o))
     (let* ((text (formals->text (.formals o)))
+           (locals (formals->locals (.formals o)))
            (text-offset (length (symbols->text symbols 0 0))))
       (let loop ((statements (.statements o))
-                 (text+symbols (make-text+symbols text symbols)))
-        (if (null? statements) (append (.symbols text+symbols) (list (make-function (.name o) (.text text+symbols))))
+                 (text+symbols+locals (make-text+symbols+locals text symbols locals)))
+        (if (null? statements) (append (.symbols text+symbols+locals) (list (make-function (.name o) (.text text+symbols+locals))))
             (let* ((statement (car statements)))
               (loop (cdr statements)
-                    ((statement->text+symbols text+symbols) (car statements)))))))))
+                    ((statement->text+symbols+locals text+symbols+locals) (car statements)))))))))
 
 (define _start
   (let* ((ast (with-input-from-string
-                  "int _start () {main(0,0);exit (0);}"
+                  "int _start () {int i;i=main (0,0);exit (i);}"
                 parse-c99))
          (functions (filter ast:function? (cdr ast))))
+    ;;(pretty-print ast (current-error-port))
     (list (find (lambda (x) (equal? (.name x) "_start")) functions))))
 
-(define libc
+(define strlen
+  (let* ((ast (with-input-from-string
+                  "
+int
+strlen (char const* s)
+{
+  int i = 0;
+  while (s[i]) i++;
+    return i;
+}
+"
+                parse-c99))
+         (functions (filter ast:function? (cdr ast))))
+    ;;(pretty-print ast (current-error-port))
+    (list (find (lambda (x) (equal? (.name x) "strlen")) functions))))
+
+(define eputs
+  (let* ((ast (with-input-from-string
+                  "
+int
+eputs (char const* s)
+{
+  //write (STDERR, s, strlen (s));
+  //write (2, s, strlen (s));
+  int i = strlen (s);
+  write (2, s, i);
+  return 0;
+}
+"
+                parse-c99))
+         (functions (filter ast:function? (cdr ast))))
+    ;;(pretty-print ast (current-error-port))
+    (list (find (lambda (x) (equal? (.name x) "eputs")) functions))))
+
+(define fputs
+  (let* ((ast (with-input-from-string
+                  "
+int
+fputs (char const* s, int fd)
+{
+  int i = strlen (s);
+  write (fd, s, i);
+  return 0;
+}
+"
+                parse-c99))
+         (functions (filter ast:function? (cdr ast))))
+    ;;(pretty-print ast (current-error-port))
+    (list (find (lambda (x) (equal? (.name x) "fputs")) functions))))
+
+(define puts
+  (let* ((ast (with-input-from-string
+                  "
+int
+puts (char const* s)
+{
+  //write (STDERR, s, strlen (s));
+  //int i = write (STDERR, s, strlen (s));
+  int i = strlen (s);
+  write (1, s, i);
+  return 0;
+}
+"
+                parse-c99))
+         (functions (filter ast:function? (cdr ast))))
+    ;;(pretty-print ast (current-error-port))
+    (list (find (lambda (x) (equal? (.name x) "puts")) functions))))
+
+(define i386:libc
   (list
-   (make-function "eputs" (list i386:eputs))
    (make-function "exit" (list i386:exit))
-   (make-function "puts" (list i386:puts))))
+   (make-function "write" (list i386:write))))
+
+(define libc
+  (append
+   strlen
+   eputs
+   fputs
+   puts))
 
 (define (compile)
   (let* ((ast (mescc))
          (functions (filter ast:function? (cdr ast)))
-         (functions (append functions _start)))
-    (let loop ((functions functions) (symbols libc))
+         (functions (append libc functions _start)))
+    (let loop ((functions functions) (symbols i386:libc))
       (if (null? functions) (symbols->exe symbols)
           (loop (cdr functions) ((function->symbols symbols) (car functions)))))))

@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -29,10 +29,23 @@
   #:use-module (mes elf)
   #:export (i386:call
             i386:exit
-            i386:for
+            i386:formal
+            i386:function-preamble
+            i386:function-locals
             i386:eputs
+            i386:jump
+            i386:local-add
+            i386:local-assign
+            i386:local->accu
+            i386:local->base
+            i386:mem-byte->accu
             i386:puts
+            i386:ref-global
+            i386:ref-local
             i386:ret
+            i386:ret-local
+            i386:test-jump
+            i386:write
             ))
 
 (cond-expand

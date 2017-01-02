@@ -24,45 +24,71 @@
 
 ;;; Code:
 
-(define (push-arg o)
-  `(#x68 ,@(int->bv32 o)))              ; push o
+(define (i386:function-preamble)
+  '(#x55                                ; push   %ebp
+    #x89 #xe5))                         ; mov    %esp,%ebp
+
+(define (i386:function-locals)
+  '(#x83 #xec #x10))               ; sub    $0x10,%esp -- 4 local vars
+
+;; (define (i386:formal i n)
+;;   (case i
+;;     ((0) (list #x8b #x5d (* (- n 2) 4)))       ; mov    $00(%ebp),%ebx
+;;     ((1) (list #x8b #x4d (* (- n 3) 4)))    ; mov    $00(%ebp),%ecx
+;;     ((2) (list #x8b #x55 (* (- n 4) 4)))    ; mov    $00(%ebp),%edx
+;;     ((3) (list #x8b #x45 (* (- n 5) 4)))))  ; mov    $00(%ebp),%eax FIXME
+
+(define (i386:ref-global o)
+  `(#x68 ,@(int->bv32 o)))               ; push  $0x<o>
+
+(define (i386:ref-local n)
+  `(#xff #x75 ,(- 0 (* 4 n))))          ; pushl  0x<n>(%ebp)
+
+(define (i386:push-arg s t d)
+  (lambda (o)
+    (cond ((number? o)
+           `(#x68 ,@(int->bv32 o)))       ; push $<o>
+          ((pair? o) o)
+          ((procedure? o) (o s t d)))))
 
 (define (i386:ret . rest)
+  (lambda (s t d)
+    `(
+      ,@(cond ((null? rest) '())
+              ((number? (car rest))
+               `(#xb8                     ; mov    $<>,%eax
+                 ,@(int->bv32 (car rest))))
+              ((pair? (car rest)) (car rest))
+              ((procedure? (car rest))
+               ((car rest) s t d)))
+    #xc9                                ; leave
+    #xc3                                ; ret
+    )))
+
+(define (i386:local->accu n)
+  `(#x8b #x45 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%eax
+
+(define (i386:local->base n)
+  `(#x8b #x55 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%edx
+
+(define (i386:mem-byte->accu)
+  '(#x01 #xd0                           ; add    %edx,%eax
+         #x0f #xb6 #x00))               ; movzbl (%eax),%eax
+
+(define (i386:local-add n v)
+  `(#x83 #x45 ,(- 0 (* 4 n)) ,v))       ; addl   $<v>,0x<n>(%ebp)
+    
+(define (i386:local-assign n v)
+  `(#xc7 #x45 ,(- 0 (* 4 n))            ; movl   $<v>,0x<n>(%ebp)
+         ,@(int->bv32 v)))
+
+(define (i386:ret-local n)
   `(
-    ,@(if (null? rest) '()
-          `(#xb8                        ; mov    $00,%eax
-            ,@(int->bv32 (car rest))))
-    #xc9                                        ; leave
-    #xc3                               ; ret
+    #x89 #x45 ,(- 0 (* 4 n))            ; mov    %eax,-0x<n>(%ebp)
     ))
 
-;; #x83 #xec #x10                      ; sub    $0x10,%esp
-
-;; #x8b #x45 #x04                      ; mov    0x4(%ebp),%eax
-
-;; #x8b #x5d #x04                      ; mov    0x4(%ebp),%ebx
-;; #x8b #x45 #x08                      ; mov    0x8(%ebp),%eax
-
-;; #x8b #x4d #x04                      ; mov    0xc(%ebp),%ecx
-;; #x8b #x5d #x08                      ; mov    0x4(%ebp),%ebx
-;; #x8b #x45 #x0c                      ; mov    0x8(%ebp),%eax
-
-;; #x8b #x55 #xfc             	       ; mov    0x4(%ebp),%edx
-
-
-
-;; #x8b #x5d #x08                      ; mov    $0x8(%ebp),%ebx
-
-;; #x8b #x4d #x08                      ; mov    $0x8(%ebp),%ecx
-;; #x8b #x5d #x0c                      ; mov    $0xc(%ebp),%ebx
-
-;; #x8b #x55 #x08             	       ; mov    $0x8(%ebp),%edx
-;; #x8b #x4d #x0c                      ; mov    $0xc(%ebp),%ecx
-;; #x8b #x5d #x10                      ; mov    $0x10(%ebp),%ebx
-
-
-(define (i386:call address . arguments)
-  (let* ((pushes (append-map push-arg arguments))
+(define (i386:call s t d address . arguments)
+  (let* ((pushes (append-map (i386:push-arg s t d) arguments))
          (s (length pushes))
          (n (length arguments)))
    `(
@@ -71,52 +97,33 @@
      #x83 #xc4 ,(* n 4)                 ; add    $00,%esp
      )))
   
-(define (i386:eputs s t d)
-  `(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
-
-    ;;;#x59                                ; pop    %ecx
-
-    #x8b #x4d #x08                      ; mov    $0x8(%ebp),%ecx
-    ;;#x8b #x5d #x0c                      ; mov    $0xc(%ebp),%ebx
-
-    #xba #x01 #x00 #x00 #x00    	; mov    $0x1,%edx
-
-
-    #xbb #x02 #x00 #x00 #x00            ; mov    $0x1,%ebx
-    #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
-    #xcd #x80                           ; int    $0x80
-
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
-
 (define (i386:exit s t d)
   `(
     #x5b                                ; pop    %ebx
     #x5b                                ; pop    %ebx
-    ;; FIXME: hack to get return value 41
-    ;; without local variable support in _start
-    #x89 #xc3                           ; mov    %eax,%ebx
     #xb8 #x01 #x00 #x00 #x00            ; mov    $0x1,%eax
     #xcd #x80                           ; int    $0x80
     ))
 
-(define (i386:puts s t d)
+(define (i386:write s t d)
   `(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x4d #x08                      ; mov    $0x8(%ebp),%ecx
-    ;; #x8b #x5d #x0c                      ; mov    $0xc(%ebp),%ebx
+    #x8b #x5d #x10                      ; mov    $0x8(%ebp),%ebx
+    #x8b #x4d #x0c                      ; mov    $0xc(%ebp),%ecx
+    #x8b #x55 #x08                      ; mov    $0x4(%ebp),%edx
 
-    #xba #x0a #x00 #x00 #x00    	; mov    $0xa,%edx
-    ;; #x59                                ; pop    %ecx
-
-    #xbb #x01 #x00 #x00 #x00            ; mov    $0x1,%ebx
     #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
     #xcd #x80                           ; int    $0x80
+
     #xc9                                ; leave
     #xc3                                ; ret
     ))
+
+(define (i386:jump n)
+  `(#xeb ,(if (>= n 0) n (- n 2))))     ; jmp <n>
+
+(define (i386:test-jump n)
+  `(#x84 #xc0                           ; test   %al,%al
+    #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>

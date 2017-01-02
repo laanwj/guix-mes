@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -148,6 +148,27 @@ eputs (char const* s)
   return 0;
 }
 
+int g_a;
+int g_b;
+
+#if 0
+void
+eputs2 (char const* s, int a)
+{
+  g_a = a;
+  write (STDERR, s, strlen (s));
+  //return 0;
+}
+
+void
+eputs3 (char const* s, int a, int b)
+{
+  g_a = a;
+  g_b = b;
+  write (STDERR, s, strlen (s));
+  //return 0;
+}
+
 char const*
 itoa (int x)
 {
@@ -170,6 +191,7 @@ itoa (int x)
 
   return p+1;
 }
+#endif
 
 void
 assert_fail (char* s)
@@ -191,28 +213,41 @@ int
 main (int argc, char *argv[])
 {
   puts ("Hello main!\n");
-  //eputs (itoa (123));
-  eputs ("\n");
-  puts ("Bye micro!!\n");
-  //assert(!"boo");
-  return 41;
+  eputs ("Strlen...\n");
+  puts ("Bye micro\n");
+  int i = strlen ("02013");
+  return i;
 }
 
 #if __GNUC__
+// int
+// test1()
+// {
+//   return 9;
+// }
+
+// void
+// test()
+// {
+//   int r;
+//   r=7;
+//   r=test1();
+// }
+
 void
 _start ()
 {
   puts ("Hello micro-mes!\n");
-  int r;
-  asm (
-       "push $0\n\t"
-       "push $0\n\t"
-       "call main\n\t"
-       "movl %%eax,%0\n\t"
-       : "=r" (r)
-       : //no inputs "" (&main)
-       );
-
-  exit (r);
+  int i;
+  i = main (0,0);
+  // asm (
+  //      "push $0\n\t"
+  //      "push $0\n\t"
+  //      "call main\n\t"
+  //      "movl %%eax,%0\n\t"
+  //      : "=r" (r)
+  //      : //no inputs "" (&main)
+  //      );
+  exit (i);
 }
 #endif
