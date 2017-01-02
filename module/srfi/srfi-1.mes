@@ -81,4 +81,17 @@
   (if (null? rest) (mes:member x lst)
       (srfi-1:member x lst (car rest))))
 
+(define mes:iota iota)
+
+(define (srfi-1:iota n start step)
+  (if (<= n 0) '()
+      (cons start (srfi-1:iota (- n 1) (+ start step) step))))
+
+(define (iota n . rest)
+  (if (null? rest) (mes:iota n)
+      (let ((start (car rest))
+            (step (if (null? (cdr rest)) 1
+                      (cadr rest))))
+        (srfi-1:iota n start step))))
+
 (include-from-path "srfi/srfi-1.scm")
