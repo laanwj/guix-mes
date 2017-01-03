@@ -101,7 +101,7 @@
 (define-module (sxml xpath)
   #:use-module (ice-9 pretty-print)
   #:export (nodeset? node-typeof? node-eq? node-equal? node-pos
-            filter take-until take-after map-union node-reverse
+            xpath:filter take-until take-after map-union node-reverse
             node-trace select-kids node-self node-join node-reduce
             node-or node-closure node-parent
             sxpath))
@@ -181,11 +181,11 @@
       (or (positive? n) (error "yikes!"))
       ((node-pos (1- n)) (cdr nodeset))))))
 
-; filter:: Converter -> Converter
-; A filter applicator, which introduces a filtering context. The argument
+; xpath:filter:: Converter -> Converter
+; A xpath:filter applicator, which introduces a xpath:filtering context. The argument
 ; converter is considered a predicate, with either #f or nil result meaning
 ; failure.
-(define (filter pred?)
+(define (xpath:filter pred?)
   (lambda (lst)	; a nodeset or a node (will be converted to a singleton nset)
     (let loop ((lst (if (nodeset? lst) lst (list lst))) (res '()))
       (if (null? lst)
@@ -202,12 +202,12 @@
 ; each element of the nodeset, until the predicate yields anything but #f or
 ; nil. Return the elements of the input nodeset that have been processed
 ; till that moment (that is, which fail the predicate).
-; take-until is a variation of the filter above: take-until passes
+; take-until is a variation of the xpath:filter above: take-until passes
 ; elements of an ordered input set till (but not including) the first
 ; element that satisfies the predicate.
 ; The nodeset returned by ((take-until (not pred)) nset) is a subset -- 
 ; to be more precise, a prefix -- of the nodeset returned by
-; ((filter pred) nset)
+; ((xpath:filter pred) nset)
 
 (define (take-until pred?)
   (lambda (lst)	; a nodeset or a node (will be converted to a singleton nset)
@@ -290,7 +290,7 @@
 ; such patterns that together implement XPath location path
 ; specification. As it turns out, all these combinators can be built
 ; from a small number of basic blocks: regular functional composition,
-; map-union and filter applicators, and the nodeset union.
+; map-union and xpath:filter applicators, and the nodeset union.
 
 
 
@@ -310,7 +310,7 @@
      ((null? node) node)
      ((not (pair? node)) '())   ; No children
      ((symbol? (car node))
-      ((filter test-pred?) (cdr node)))	; it's a single node
+      ((xpath:filter test-pred?) (cdr node)))	; it's a single node
      (else (map-union (select-kids test-pred?) node)))))
 
 
@@ -319,7 +319,7 @@
 ; Similar to select-kids but apply to the Node itself rather
 ; than to its children. The resulting Nodeset will contain either one
 ; component, or will be empty (if the Node failed the Pred).
-(define node-self filter)
+(define node-self xpath:filter)
 
 
 ; node-join:: [LocPath] -> Node|Nodeset -> Nodeset, or
@@ -447,7 +447,7 @@
 ; (sxpath1 '(path reducer ...)) ->
 ;		(node-reduce (sxpath path) (sxpathr reducer) ...)
 ; (sxpathr number)      -> (node-pos number)
-; (sxpathr path-filter) -> (filter (sxpath path-filter))
+; (sxpathr path-xpath:filter) -> (xpath:filter (sxpath path-xpath:filter))
 
 (define (sxpath path)
   (lambda (nodeset)
@@ -484,7 +484,7 @@
 	  (reducer ((node-pos (car reducing-path)) nodeset)
 		   (cdr reducing-path)))
 	 (else
-	  (reducer ((filter (sxpath (car reducing-path))) nodeset)
+	  (reducer ((xpath:filter (sxpath (car reducing-path))) nodeset)
 		   (cdr reducing-path))))))
      (else
       (error "Invalid path step: " (car path)))))))
