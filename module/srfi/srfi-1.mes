@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -39,6 +39,12 @@
 
 (define (append-map f lst)
   (apply append (map f lst)))
+
+(define (filter-map f lst)
+  (if (null? lst) (list)
+      (let ((r (f (car lst))))
+        (if r (cons r (filter-map f (cdr lst)))
+            (filter-map f (cdr lst))))))
 
 ;;; nyacc requirements
 
