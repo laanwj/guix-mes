@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -234,7 +234,7 @@
   (define SHT-NOTE 7)
 
   (define SHF-WRITE 1)
-  (define SHF-ALLOC 4)
+  (define SHF-ALLOC 2)
   (define SHF-EXEC 4)
   (define SHF-STRINGS #x20)
 
@@ -248,8 +248,8 @@
     (define (section-headers)
     (append
      (section-header 0 0 0 0 '() 0 0 0)
-     (section-header 1 SHT-PROGBITS (logior SHF-WRITE SHF-ALLOC) text-offset text 0 0 0)
-     (section-header 7 SHT-PROGBITS (logior SHF-WRITE SHF-ALLOC) data-offset data 0 0 0)
+     (section-header 1 SHT-PROGBITS (logior SHF-WRITE SHF-EXEC) text-offset text 0 0 0)
+     (section-header 7 SHT-PROGBITS (logior SHF-WRITE) data-offset data 0 0 0)
      (section-header 13 SHT-NOTE 0 note-offset note 0 0 0)
      (section-header 19 SHT-STRTAB SHF-STRINGS shstr-offset shstr 0 0 0)
      (section-header 29 SHT-SYMTAB SHF-ALLOC sym-offset sym 6 0 (length (symbol-table-entry 0 0 0 0 0 0)))
