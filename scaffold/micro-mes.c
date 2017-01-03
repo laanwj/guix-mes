@@ -137,14 +137,20 @@ getc ()
 int
 puts (char const* s)
 {
-  write (STDOUT, s, strlen (s));
+  //write (STDOUT, s, strlen (s));
+  //int i = write (STDOUT, s, strlen (s));
+  int i = strlen (s);
+  write (1, s, i);
   return 0;
 }
 
 int
 eputs (char const* s)
 {
-  write (STDERR, s, strlen (s));
+  //write (STDERR, s, strlen (s));
+  //int i = write (STDERR, s, strlen (s));
+  int i = strlen (s);
+  write (2, s, i);
   return 0;
 }
 
@@ -212,10 +218,13 @@ typedef int bool;
 int
 main (int argc, char *argv[])
 {
-  puts ("Hello main!\n");
+  puts ("arg0=");
+  puts (argv[0]);
+  puts ("\narg1=");
+  puts (argv[1]);
+  puts ("\n");
   eputs ("Strlen...\n");
   puts ("Bye micro\n");
-  int i = strlen ("02013");
   int i = argc;
   return i;
 }
@@ -238,17 +247,22 @@ main (int argc, char *argv[])
 void
 _start ()
 {
-  puts ("Hello micro-mes!\n");
-  int i;
-  i = main (0,0);
-  // asm (
-  //      "push $0\n\t"
-  //      "push $0\n\t"
-  //      "call main\n\t"
-  //      "movl %%eax,%0\n\t"
-  //      : "=r" (r)
-  //      : //no inputs "" (&main)
-  //      );
-  exit (i);
+  int r;
+  asm (
+       "mov %%ebp,%%eax\n\t"
+       "addl $8,%%eax\n\t"
+       "push %%eax\n\t"
+
+       "mov %%ebp,%%eax\n\t"
+       "addl $4,%%eax\n\t"
+       "movzbl (%%eax),%%eax\n\t"
+       "push %%eax\n\t"
+
+       "call main\n\t"
+       "movl %%eax,%0\n\t"
+       : "=r" (r)
+       : //no inputs "" (&main)
+       );
+  exit (r);
 }
 #endif

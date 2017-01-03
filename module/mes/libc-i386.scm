@@ -39,6 +39,7 @@
             i386:local-assign
             i386:local->accu
             i386:local->base
+            i386:mem->accu
             i386:mem-byte->accu
             i386:push-accu
             i386:puts
@@ -47,6 +48,7 @@
             i386:ret
             i386:ret-local
             i386:test-jump
+            i386:value->accu
             i386:write
             ))
 

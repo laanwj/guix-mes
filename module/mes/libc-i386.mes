@@ -81,6 +81,13 @@
   '(#x01 #xd0                           ; add    %edx,%eax
          #x0f #xb6 #x00))               ; movzbl (%eax),%eax
 
+(define (i386:mem->accu)
+  '(#x01 #xd0                           ; add    %edx,%eax
+         #x8b #x00))                    ; mov    (%eax),%eax
+
+(define (i386:value->accu v)
+  `(#xb8 ,@(int->bv32 v)))              ; mov    $<v>,%eax
+
 (define (i386:local-add n v)
   `(#x83 #x45 ,(- 0 (* 4 n)) ,v))       ; addl   $<v>,0x<n>(%ebp)
     
@@ -94,7 +101,7 @@
     ))
 
 (define (i386:call s t d address . arguments)
-  (let* ((pushes (append-map (i386:push-arg s t d) arguments))
+  (let* ((pushes (append-map (i386:push-arg s t d) (reverse arguments)))
          (s (length pushes))
          (n (length arguments)))
    `(
@@ -136,9 +143,9 @@
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x5d #x10                      ; mov    $0x8(%ebp),%ebx
+    #x8b #x5d #x08                      ; mov    $0x8(%ebp),%ebx
     #x8b #x4d #x0c                      ; mov    $0xc(%ebp),%ecx
-    #x8b #x55 #x08                      ; mov    $0x4(%ebp),%edx
+    #x8b #x55 #x10                      ; mov    $0x4(%ebp),%edx
 
     #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
     #xcd #x80                           ; int    $0x80

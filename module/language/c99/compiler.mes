@@ -80,6 +80,7 @@
 
 (define (ident-ref locals)
   (lambda (o)
+    ;; (stderr "IDENT REF[~a]: ~a => ~a\n" o (assoc-ref locals o) (i386:ref-local (assoc-ref locals o)))
     (i386:ref-local (assoc-ref locals o))))
 
 (define (global-ref symbols)
@@ -95,12 +96,13 @@
       ((p-expr (ident ,name)) ((ident-ref locals) name))
 
       ((array-ref (p-expr (fixed ,value)) (p-expr (ident ,name)))
-       (let ((value (string->number value)))
+       (let ((value (string->number value))
+             (size 4)) ;; FIXME: type: int
          (lambda (s t d)
            (append
             ((ident->base locals) name)
-            (i386:local-assign (assoc-ref locals name) value)
-            (i386:mem-byte->accu)
+            (i386:value->accu (* size value)) ;; FIXME: type: int
+            (i386:mem->accu) ;; FIXME: type: int
             (i386:push-accu) ;; hmm
             ))))
 
@@ -238,8 +240,8 @@
               (lambda (s t d)
                 (append
                  ((ident->base locals) name)
-                 (i386:local-assign (assoc-ref locals name) value)
-                 (i386:mem-byte->accu)))))
+                 (i386:value->accu value)
+                 (i386:mem-byte->accu))))) ; FIXME: type: char
             symbols
             locals)))
         
@@ -252,7 +254,7 @@
               (append
                ((ident->base locals) name)
                ((ident->accu locals) index)
-               (i386:mem-byte->accu)))))
+               (i386:mem-byte->accu))))) ; FIXME: type: char
           symbols
           locals))
          
@@ -264,34 +266,12 @@
           locals))
 
         ((return ,expr)
-           (make-text+symbols+locals
-            (append text (list (i386:ret ((expr->accu symbols locals) expr))))
-            symbols
-            locals))
+         (make-text+symbols+locals
+          (append text (list (i386:ret ((expr->accu symbols locals) expr))))
+          symbols
+          locals))
 
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
-         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
-           (make-text+symbols+locals
-            (append
-             text
-             (list (lambda (s t d)
-                     ((ident->accu locals) local)
-                     ((accu->ident locals) name))))
-            symbols
-            locals)))
-        
-        ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
-         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
-           (make-text+symbols+locals
-            (append
-             text
-             ((ident->accu locals) name)
-             (list (lambda (s t d)
-                     ((ident->accu locals) local)
-                     ((accu->ident locals) name))))
-            symbols
-            locals)))
-        
+        ;; int i;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
          (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
            (make-text+symbols+locals text symbols locals)))
@@ -306,6 +286,33 @@
             symbols
             locals)))
 
+        ;; int i = argc;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
+         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
+           (make-text+symbols+locals
+            (append
+             text
+             (list (lambda (s t d)
+                     (append
+                      ((ident->accu locals) local)
+                      ((accu->ident locals) name)))))
+            symbols
+            locals)))
+        
+        ;; SCM i = argc;
+        ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
+         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
+           (make-text+symbols+locals
+            (append
+             text
+             (list (lambda (s t d)
+                     (append
+                      ((ident->accu locals) local)
+                      ((accu->ident locals) name)))))
+            symbols
+            locals)))
+        
+        ;; int i = f ();
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (fctn-call . ,call)))))
          (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
            (let* ((t+s+l (make-text+symbols+locals text symbols locals))
@@ -321,10 +328,9 @@
               symbols
               locals))))
         
+        ;; i = 0;
         ((expr-stmt (assn-expr (p-expr (ident ,name)) (op _) (p-expr (fixed ,value))))
-
          ;;(stderr "RET LOCAL[~a]: ~a\n" name (assoc-ref locals name))
-
          (let ((value (string->number value)))
            (make-text+symbols+locals
             (append text (list (lambda (s t d) (i386:local-assign (assoc-ref locals name) value))))
@@ -342,9 +348,9 @@
             symbols
             locals)))
 
-       (_
-        (format (current-error-port) "SKIP statement=~a\n" o)
-        text+symbols+locals)))))
+        (_
+         (format (current-error-port) "SKIP statement=~a\n" o)
+         text+symbols+locals)))))
 
 (define (symbols->exe symbols)
   (display "dumping elf\n" (current-error-port))
@@ -379,7 +385,8 @@
   (pmatch o
     ((param-list . ,formals)
      (let ((n (length formals)))
-      (map cons (map .name formals) (iota n (1- (- n))))))
+       ;;(stderr "FORMALS: ~a ==> ~a\n" formals n)
+      (map cons (map .name formals) (iota n -2 -1))))
     (_ (format (current-error-port) "formals->symbols: no match: ~a\n" o)
        barf)))
 
@@ -388,11 +395,13 @@
 
 (define (function->symbols symbols)
   (lambda (o)
+    ;;(stderr "\n")
     (format (current-error-port) "compiling ~a\n" (.name o))
     ;;(stderr "formals=~a\n" (.formals o))
     (let* ((text (formals->text (.formals o)))
            (locals (formals->locals (.formals o)))
            (text-offset (length (symbols->text symbols 0 0))))
+      ;;(stderr "locals=~a\n" locals)
       (let loop ((statements (.statements o))
                  (text+symbols+locals (make-text+symbols+locals text symbols locals)))
         (if (null? statements) (append (.symbols text+symbols+locals) (list (make-function (.name o) (.text text+symbols+locals))))
@@ -475,8 +484,8 @@ fputs (char const* s, int fd)
 int
 puts (char const* s)
 {
-  //write (STDERR, s, strlen (s));
-  //int i = write (STDERR, s, strlen (s));
+  //write (STDOUT, s, strlen (s));
+  //int i = write (STDOUT, s, strlen (s));
   int i = strlen (s);
   write (1, s, i);
   return 0;
