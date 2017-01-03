@@ -44,6 +44,9 @@
 (define (i386:ref-local n)
   `(#xff #x75 ,(- 0 (* 4 n))))          ; pushl  0x<n>(%ebp)
 
+(define (i386:push-accu)
+  `(#x50))                              ; push %eax
+
 (define (i386:push-arg s t d)
   (lambda (o)
     (cond ((number? o)
@@ -64,6 +67,9 @@
     #xc9                                ; leave
     #xc3                                ; ret
     )))
+
+(define (i386:accu->local n)
+  `(#x89 #x45 ,(- 0 (* 4 n))))          ; mov    ,%eax,-<0xn>(%ebp)
 
 (define (i386:local->accu n)
   `(#x8b #x45 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%eax
@@ -105,6 +111,26 @@
     #xcd #x80                           ; int    $0x80
     ))
 
+;; (define (i386:_start s t d)
+;;   (let* ((prefix
+;;           `(
+;;             #x55                         ; push   %ebp
+;;             #x89 #xe5                    ; mov    %esp,%ebp
+      
+;;             ;;#x83 #xec #x10                 ; sub    $0x10,%esp -- 4 local vars
+            
+;;             #xe8 ,@(int->bv32 (- address 5 s)) ; call relative
+
+;;             #xb8 #x04 #x00 #x00 #x00     ; mov    $0x4,%eax
+;;             #xcd #x80                    ; int    $0x80
+      
+;;             #xc9                         ; leave
+;;             #xc3                         ; ret
+;;             ))
+;;          (text-list (text->list t))
+;;          (statement-offset (- (+ (length prefix) (length text-list))))
+;;          (address (+ t (function-offset "main" s))))))
+
 (define (i386:write s t d)
   `(
     #x55                                ; push   %ebp
@@ -127,3 +153,52 @@
 (define (i386:test-jump n)
   `(#x84 #xc0                           ; test   %al,%al
     #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
+
+#!
+int
+strcmp (char const* a, char const* b)
+{
+  while (*a && *b && *a == *b) {*a++;b++;}
+  return *a == *b;
+}
+08048150 <strcmp>:
+ 8048150:	55                   	push   %ebp
+ 8048151:	89 e5                	mov    %esp,%ebp
+ 8048153:	eb 0d                	jmp    8048162 <strcmp+0x12>
+
+<body>
+ 8048155:	8b 45 08             	mov    0x8(%ebp),%eax
+ 8048158:	83 c0 01             	add    $0x1,%eax
+ 804815b:	89 45 08             	mov    %eax,0x8(%ebp)
+ 804815e:	83 45 0c 01          	addl   $0x1,0xc(%ebp)
+
+<test>
+ 8048162:	8b 45 08             	mov    0x8(%ebp),%eax
+ 8048165:	0f b6 00             	movzbl (%eax),%eax
+ 8048168:	84 c0                	test   %al,%al
+ 804816a:	74 1a                	je     8048186 <strcmp+0x36>
+
+ 804816c:	8b 45 0c             	mov    0xc(%ebp),%eax
+ 804816f:	0f b6 00             	movzbl (%eax),%eax
+ 8048172:	84 c0                	test   %al,%al
+ 8048174:	74 10                	je     8048186 <strcmp+0x36>
+
+ 8048176:	8b 45 08             	mov    0x8(%ebp),%eax
+ 8048179:	0f b6 10             	movzbl (%eax),%edx
+ 804817c:	8b 45 0c             	mov    0xc(%ebp),%eax
+ 804817f:	0f b6 00             	movzbl (%eax),%eax
+ 8048182:	38 c2                	cmp    %al,%dl
+ 8048184:	74 cf                	je     8048155 <strcmp+0x5>
+
+<done>
+ 8048186:	8b 45 08             	mov    0x8(%ebp),%eax
+ 8048189:	0f b6 10             	movzbl (%eax),%edx
+ 804818c:	8b 45 0c             	mov    0xc(%ebp),%eax
+ 804818f:	0f b6 00             	movzbl (%eax),%eax
+ 8048192:	38 c2                	cmp    %al,%dl
+ 8048194:	0f 94 c0             	sete   %al
+ 8048197:	0f b6 c0             	movzbl %al,%eax
+ 804819a:	5d                   	pop    %ebp
+ 804819b:	c3                   	ret    
+!#
+

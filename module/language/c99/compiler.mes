@@ -112,6 +112,10 @@
   (lambda (o)
     (i386:local->accu (assoc-ref locals o))))
 
+(define (accu->ident locals)
+  (lambda (o)
+    (i386:accu->local (assoc-ref locals o))))
+
 (define (ident->base locals)
   (lambda (o)
     (i386:local->base (assoc-ref locals o))))
@@ -225,6 +229,20 @@
             symbols
             locals)))
 
+        ((array-ref (p-expr (fixed ,value)) (p-expr (ident ,name)))
+         (let ((value (string->number value)))
+           (make-text+symbols+locals
+            (append
+             text
+             (list
+              (lambda (s t d)
+                (append
+                 ((ident->base locals) name)
+                 (i386:local-assign (assoc-ref locals name) value)
+                 (i386:mem-byte->accu)))))
+            symbols
+            locals)))
+        
         ((array-ref (p-expr (ident ,name)) (p-expr (ident ,index)))
          (make-text+symbols+locals
           (append
@@ -251,6 +269,29 @@
             symbols
             locals))
 
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
+         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
+           (make-text+symbols+locals
+            (append
+             text
+             (list (lambda (s t d)
+                     ((ident->accu locals) local)
+                     ((accu->ident locals) name))))
+            symbols
+            locals)))
+        
+        ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
+         (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
+           (make-text+symbols+locals
+            (append
+             text
+             ((ident->accu locals) name)
+             (list (lambda (s t d)
+                     ((ident->accu locals) local)
+                     ((accu->ident locals) name))))
+            symbols
+            locals)))
+        
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
          (let ((locals (acons name (1+ (or (and=> (member 1 (map cdr locals)) length) 0)) locals)))
            (make-text+symbols+locals text symbols locals)))
@@ -360,8 +401,19 @@
                     ((statement->text+symbols+locals text+symbols+locals) (car statements)))))))))
 
 (define _start
-  (let* ((ast (with-input-from-string
-                  "int _start () {int i;i=main (0,0);exit (i);}"
+  (let* ((argc-argv
+          (string-append ".byte"
+                         " 0x89 0xe8"      ; mov    %ebp,%eax
+                         " 0x83 0xc0 0x08" ; add    $0x8,%eax
+                         " 0x50"           ; push   %eax
+                         " 0x89 0xe8"      ; mov    %ebp,%eax
+                         " 0x83 0xc0 0x04" ; add    $0x4,%eax
+                         " 0x0f 0xb6 0x00" ; movzbl (%eax),%eax
+                         " 0x50"           ; push   %eax
+                         ))
+         (ast (with-input-from-string
+                  
+                  (string-append "int _start () {int i;asm(\"" argc-argv "\");i=main ();exit (i);}")
                 parse-c99))
          (functions (filter ast:function? (cdr ast))))
     ;;(pretty-print ast (current-error-port))

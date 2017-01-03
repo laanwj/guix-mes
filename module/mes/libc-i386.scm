@@ -27,7 +27,8 @@
 (define-module (mes libc-i386)
   #:use-module (srfi srfi-1)
   #:use-module (mes elf)
-  #:export (i386:call
+  #:export (i386:accu->local
+            i386:call
             i386:exit
             i386:formal
             i386:function-preamble

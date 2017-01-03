@@ -124,8 +124,8 @@ strlen (char const* s)
 int
 strcmp (char const* a, char const* b)
 {
-  while (*a && *b && *a == *b) {*a++;b++;}
-  return *a == *b;
+  while (*a && *b && *a == *b) {a++;b++;}
+  return *a - *b;
 }
 
 int
@@ -216,6 +216,7 @@ main (int argc, char *argv[])
   eputs ("Strlen...\n");
   puts ("Bye micro\n");
   int i = strlen ("02013");
+  int i = argc;
   return i;
 }
 
