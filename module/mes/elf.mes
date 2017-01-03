@@ -46,7 +46,7 @@
 (define elf32-off int->bv32)
 (define elf32-word int->bv32)
 
-(define (make-elf symbols)
+(define (make-elf globals)
   (define vaddress #x08048000)
 
   (define ei-magic `(#x7f ,@(string->list "ELF")))
@@ -171,15 +171,15 @@
       ,@(string->list ".strtab") #x00   ; 37
       ))
 
-  (define (str symbols)
+  (define (str globals)
     (cons
      0
      (append-map
       (lambda (s) (append (string->list s) (list 0)))
-      (map car symbols))))
+      (map car globals))))
 
   (define text-length
-    (length (symbols->text symbols 0 0)))
+    (length (globals->text globals 0 0)))
 
   (define data-offset
     (+ text-offset text-length))
@@ -195,23 +195,23 @@
      (list st-other)
      (elf32-half st-shndx)))
 
-  (define (sym symbols)
+  (define (sym globals)
     (define (symbol->table-entry o)
       (let* ((name (car o))
-             (offset (function-offset name symbols))
-            (len (length (append-map (lambda (f) (f symbols 0 0)) (cddr o))))
-            (str (append-map (lambda (x) (cons 0 (string->list x))) (cdr (member name (reverse (map car symbols))))))
+             (offset (function-offset name globals))
+            (len (length (append-map (lambda (f) (f globals 0 0)) (cddr o))))
+            (str (append-map (lambda (x) (cons 0 (string->list x))) (cdr (member name (reverse (map car globals))))))
             (i (1+ (length str))))
         (symbol-table-entry i (+ vaddress text-offset offset) len stt-func 0 1)))
     (append
      (symbol-table-entry 0 0 0 0 0 0)
-     (append-map symbol->table-entry symbols)))
+     (append-map symbol->table-entry globals)))
 
   (define data-address (+ data-offset vaddress))
   (define text-address (+ text-offset vaddress))
 
   (define data-length
-    (length (symbols->data symbols)))
+    (length (globals->data globals)))
 
   (define note-length
     (length note))
@@ -238,10 +238,10 @@
   (define SHF-EXEC 4)
   (define SHF-STRINGS #x20)
 
-  (let* ((text (symbols->text symbols 0 data-address))
-         (data (symbols->data symbols))
-         (entry (+ text-offset (function-offset "_start" symbols)))
-         (functions (filter function-entry? symbols))
+  (let* ((text (globals->text globals 0 data-address))
+         (data (globals->data globals))
+         (entry (+ text-offset (function-offset "_start" globals)))
+         (functions (filter function-entry? globals))
          (sym (sym functions))
          (str (str functions)))
 

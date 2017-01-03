@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -49,30 +49,30 @@
 (define (data-entry? x)
   (data-symbol? (cdr x)))
 
-(define (symbols->functions symbols)
-  (append-map cdr (filter function-symbol? (map cdr symbols))))
+(define (globals->functions globals)
+  (append-map cdr (filter function-symbol? (map cdr globals))))
 
-(define (symbols->text symbols t d)
-  (let loop ((functions (symbols->functions symbols)) (text '()))
+(define (globals->text globals t d)
+  (let loop ((functions (globals->functions globals)) (text '()))
     (if (null? functions) text
         (loop (cdr functions)
-              (append text ((car functions) symbols (- (length text)) d))))))
+              (append text ((car functions) globals (- (length text)) d))))))
 
-(define (function-offset name symbols)
-  (let* ((functions (filter function-entry? symbols))
+(define (function-offset name globals)
+  (let* ((functions (filter function-entry? globals))
          (prefix (member name (reverse functions)
                          (lambda (a b)
                            (equal? (car b) name)))))
-    (if prefix (length (symbols->text (cdr prefix) 0 0))
+    (if prefix (length (globals->text (cdr prefix) 0 0))
         0)))
 
-(define (data-offset name symbols)
-  (let* ((globals (filter data-entry? symbols))
+(define (data-offset name globals)
+  (let* ((globals (filter data-entry? globals))
          (prefix (member name (reverse globals)
                          (lambda (a b)
                            (equal? (car b) name)))))
-    (if prefix (length (symbols->data (cdr prefix)))
+    (if prefix (length (globals->data (cdr prefix)))
         0)))
 
-(define (symbols->data symbols)
-  (append-map cdr (filter data-symbol? (map cdr symbols))))
+(define (globals->data globals)
+  (append-map cdr (filter data-symbol? (map cdr globals))))

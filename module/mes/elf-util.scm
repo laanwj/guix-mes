@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -32,9 +32,9 @@
             function-symbol?
             data-offset
             function-offset
-            symbols->functions
-            symbols->data
-            symbols->text))
+            globals->functions
+            globals->data
+            globals->text))
 
 (cond-expand
  (guile-2)
