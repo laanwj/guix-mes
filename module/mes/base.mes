@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -41,6 +41,8 @@
 (define (cadddr x) (car (cdr (cdr (cdr x)))))
 
 (define (identity x) x)
+
+(define (command-line) argv)
 
 (define-macro (or . x)
   (if (null? x) #f

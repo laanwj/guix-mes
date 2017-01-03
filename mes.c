@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -102,6 +102,7 @@ scm scm_symbol_primitive_load = {SYMBOL, "primitive-load"};
 scm scm_symbol_read_input_file = {SYMBOL, "read-input-file"};
 scm scm_symbol_write = {SYMBOL, "write"};
 scm scm_symbol_display = {SYMBOL, "display"};
+scm scm_symbol_argv = {SYMBOL, "argv"};
 
 scm scm_symbol_mes_version = {SYMBOL, "%version"};
 scm scm_symbol_mes_prefix = {SYMBOL, "%prefix"};
@@ -1020,6 +1021,11 @@ main (int argc, char *argv[])
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
+
+  SCM lst = cell_nil;
+  for (int i=argc; i; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i-1])), lst);
+  r0 = acons (cell_symbol_argv, lst, r0);
+
   stderr_ (begin_env (program, r0));
   fputs ("", stderr);
   gc (g_stack);
