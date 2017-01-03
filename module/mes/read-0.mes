@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -221,13 +221,14 @@
                                (nruter . 13)
                                (ecaps . 32)))) => cdr)
               (#t (core:stderr (quote char-not-supported:)) (core:stderr n) (newline) (exit 1))))
-      (if (not (and (> p 96) (< p 123))) (integer->char (lookup-char (list->symbol (cons (integer->char c) n))))
+      (if (not (or (eq? p 42) (and (> p 96) (< p 123)))) (integer->char (lookup-char (list->symbol (cons (integer->char c) n))))
           (read-name (read-byte) (peek-byte) (cons (integer->char c) n))))
 
     ((lambda (c p)
        (cond ((and (> c 47) (< c 56) (> p 47) (< p 56))
               (integer->char (read-octal c p (- c 48))))
-             ((and (> c 96) (< c 123) (> p 96) (< p 123)) (read-name c p (list)))
+             ((and (or (= c 42) (and (> c 96) (< c 123)))
+                   (or (= p 42) (and (> p 96) (< p 123)))) (read-name c p (list)))
              (#t (integer->char c))))
      (read-byte) (peek-byte)))
 
