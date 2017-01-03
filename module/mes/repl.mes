@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -157,10 +157,10 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
     (let loop ((a (current-module)))
       (display "mes> ")
       (force-output)
-      (let ((sexp (read-env a)))
-        (when (not (eq? sexp '()))
-          (catch #t
-            (lambda ()
+      (catch #t
+        (lambda ()
+          (let ((sexp (read-env a)))
+            (when (not (eq? sexp '()))
               (when print-sexp?
                 (display "[sexp=")
                 (display sexp)
@@ -181,7 +181,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
                              (display " = ")
                              (display e)
                              (newline)
-                             (loop (acons id e a))))))))
-            (lambda (key . args)
-              (format (current-error-port) "exception: ~a ~a\n" key args)
-              (loop a))))))))
+                             (loop (acons id e a))))))))))
+        (lambda (key . args)
+          (format (current-error-port) "exception: ~a ~a\n" key args)
+          (loop a))))))

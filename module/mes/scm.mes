@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -60,6 +60,8 @@
   (if (pair? l) (if (null? r) (begin (f (car l)) (for-each f (cdr l)))
                     (if (null? (cdr r)) (begin (f (car l) (caar r)) (for-each f (cdr l) (cdar r)))))))
 
+(define core:error error)
+
 (define (error who . rest)
   (display "error:" (current-error-port))
   (display who (current-error-port))
@@ -67,14 +69,15 @@
   (display rest (current-error-port))
   (newline (current-error-port))
   (display "exiting...\n" (current-error-port))
-  (exit 1))
+  (core:error (if (symbol? who) who 'error) (cons who rest)))
 
 (define (syntax-error message . rest)
   (display "syntax-error:" (current-error-port))
   (display message (current-error-port))
   (display ":" (current-error-port))
   (display rest (current-error-port))
-  (newline (current-error-port)))
+  (newline (current-error-port))
+  (core:error 'syntax-error (cons message rest)))
 
 
 (define integer? number?)

@@ -220,7 +220,7 @@
                                (egap . 12)
                                (nruter . 13)
                                (ecaps . 32)))) => cdr)
-              (#t (core:stderr (quote char-not-supported:)) (core:stderr n) (newline) (exit 1))))
+              (#t (error (quote char-not-supported) n))))
       (if (not (or (eq? p 42) (and (> p 96) (< p 123)))) (integer->char (lookup-char (list->symbol (cons (integer->char c) n))))
           (read-name (read-byte) (peek-byte) (cons (integer->char c) n))))
 
@@ -260,7 +260,7 @@
         (read-byte)
         (read-string (read-byte) (peek-byte) (append-char s 10)))
        ((eq? c 34) s)
-       ((eq? c -1) (core:stderr (quote EOF-in-string)) (newline) (exit 1))
+       ((eq? c -1) (error (quote EOF-in-string)))
        (#t (read-string (read-byte) (peek-byte) (append-char s c)))))
     (list->string (read-string (read-byte) (peek-byte) (list))))
 
