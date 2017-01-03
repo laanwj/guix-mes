@@ -220,8 +220,11 @@ main (int argc, char *argv[])
 {
   puts ("arg0=");
   puts (argv[0]);
-  puts ("\narg1=");
-  puts (argv[1]);
+  if (argc > 1)
+    {
+      puts ("\narg1=");
+      puts (argv[1]);
+    }
   puts ("\n");
   eputs ("Strlen...\n");
   puts ("Bye micro\n");

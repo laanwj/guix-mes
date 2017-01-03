@@ -58,7 +58,9 @@
              ))
 
 (define (write-any x)
-  (write-char (if (char? x) x (integer->char (if (>= x 0) x (+ x 256))))))
+  (write-char (cond ((char? x) x)
+                    ((number? x) (integer->char (if (>= x 0) x (+ x 256))))
+                    (else (stderr "write-any: ~a\n" x) barf))))
 
 (define (ast:function? o)
   (and (pair? o) (eq? (car o) 'fctn-defn)))
@@ -167,10 +169,7 @@
     ;;(stderr "S=~a\n" o)
     (let* ((text (.text text+symbols+locals))
            (symbols (.symbols text+symbols+locals))
-           (locals (.locals text+symbols+locals))
-           (text-list (text->list text))
-           (prefix-list (symbols->text symbols 0 0))
-           (statement-offset (- (+ (length prefix-list) (length text-list)))))
+           (locals (.locals text+symbols+locals)))
       ;; (stderr "   tsl=~a\n" text+symbols+locals)
       ;; (stderr "   locals=~s\n" locals)
       (pmatch o
@@ -190,8 +189,7 @@
               (append text
                       (list (lambda (s t d)
                               (i386:call s t d
-                                         (+ t (function-offset name s)
-                                              statement-offset)
+                                         (+ t (function-offset name s))
                                          (+ d (data-offset string s))))))
               (append symbols (list (string->symbols string)))
               locals)))
@@ -202,10 +200,40 @@
                 (args (map (expr->arg symbols locals) expr-list)))
            (make-text+symbols+locals
             (append text
-                    (list (lambda (s t d) (apply i386:call (cons* s t d (+ t (function-offset name s) statement-offset) args)))))
+                    (list (lambda (s t d) (apply i386:call (cons* s t d (+ t (function-offset name s)) args)))))
             symbols
             locals)))
-        
+
+        ((compd-stmt (block-item-list . ,statements))
+         (let loop ((statements statements)
+                    (text+symbols+locals (make-text+symbols+locals text symbols locals)))
+           (if (null? statements) text+symbols+locals
+               (let* ((statement (car statements))
+                      (r ((statement->text+symbols+locals text+symbols+locals) statement)))
+                 (loop (cdr statements) r)))))
+
+        ((if (gt (p-expr (ident ,name)) (p-expr (fixed ,value))) ,body)
+         (let* ((value (string->number value))
+
+                (t+s+l (make-text+symbols+locals '() symbols locals))
+
+                (body-t+s+l ((statement->text+symbols+locals t+s+l) body))
+                (body-text (.text body-t+s+l))
+                ;;(body-symbols (.symbols body-t+s+l))
+                (symbols (.symbols body-t+s+l))
+                (body-locals (.locals body-t+s+l))
+                (body-length (length (text->list body-text))))
+
+           (make-text+symbols+locals
+            (append text
+                    (list (lambda (s t d)
+                            (append
+                             (i386:local-test (assoc-ref locals name) value)
+                             (i386:jump-le body-length))))
+                    body-text)
+            symbols
+            locals)))
+
         ((while ,test ,body)
          (let* ((t+s+l (make-text+symbols+locals '() symbols locals))
 
@@ -227,7 +255,7 @@
                     (list (lambda (s t d) (i386:jump body-length)))
                     body-text
                     test-text
-                    (list (lambda (s t d) (i386:test-jump (- (+ body-length test-length))))))
+                    (list (lambda (s t d) (i386:jump-nz (- (+ body-length test-length))))))
             symbols
             locals)))
 
@@ -399,8 +427,7 @@
     (format (current-error-port) "compiling ~a\n" (.name o))
     ;;(stderr "formals=~a\n" (.formals o))
     (let* ((text (formals->text (.formals o)))
-           (locals (formals->locals (.formals o)))
-           (text-offset (length (symbols->text symbols 0 0))))
+           (locals (formals->locals (.formals o))))
       ;;(stderr "locals=~a\n" locals)
       (let loop ((statements (.statements o))
                  (text+symbols+locals (make-text+symbols+locals text symbols locals)))

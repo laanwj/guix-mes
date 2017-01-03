@@ -53,7 +53,10 @@
   (append-map cdr (filter function-symbol? (map cdr symbols))))
 
 (define (symbols->text symbols t d)
-  (append-map (lambda (f) (f symbols t d)) (symbols->functions symbols)))
+  (let loop ((functions (symbols->functions symbols)) (text '()))
+    (if (null? functions) text
+        (loop (cdr functions)
+              (append text ((car functions) symbols (- (length text)) d))))))
 
 (define (function-offset name symbols)
   (let* ((functions (filter function-entry? symbols))

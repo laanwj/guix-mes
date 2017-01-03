@@ -95,6 +95,9 @@
   `(#xc7 #x45 ,(- 0 (* 4 n))            ; movl   $<v>,0x<n>(%ebp)
          ,@(int->bv32 v)))
 
+(define (i386:local-test n v)
+  `(#x83 #x7d ,(- 0 (* 4 n)) ,v))       ; cmpl   $<v>,0x<n>(%ebp)
+
 (define (i386:ret-local n)
   `(
     #x89 #x45 ,(- 0 (* 4 n))            ; mov    %eax,-0x<n>(%ebp)
@@ -157,7 +160,10 @@
 (define (i386:jump n)
   `(#xeb ,(if (>= n 0) n (- n 2))))     ; jmp <n>
 
-(define (i386:test-jump n)
+(define (i386:jump-le n)
+  `(#x7e ,(if (>= n 0) n (- n 4))))     ; jle <n>
+
+(define (i386:jump-nz n)
   `(#x84 #xc0                           ; test   %al,%al
     #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 
@@ -165,7 +171,8 @@
 int
 strcmp (char const* a, char const* b)
 {
-  while (*a && *b && *a == *b) {*a++;b++;}
+ while (*a && *b && *a == *b) {*a++;b++;
+                               }
   return *a == *b;
 }
 08048150 <strcmp>:
@@ -208,4 +215,3 @@ strcmp (char const* a, char const* b)
  804819a:	5d                   	pop    %ebp
  804819b:	c3                   	ret    
 !#
-
