@@ -93,6 +93,17 @@
       ((p-expr (fixed ,value)) (string->number value))
       ((p-expr (string ,string)) ((global-ref symbols) string))
       ((p-expr (ident ,name)) ((ident-ref locals) name))
+
+      ((array-ref (p-expr (fixed ,value)) (p-expr (ident ,name)))
+       (let ((value (string->number value)))
+         (lambda (s t d)
+           (append
+            ((ident->base locals) name)
+            (i386:local-assign (assoc-ref locals name) value)
+            (i386:mem-byte->accu)
+            (i386:push-accu) ;; hmm
+            ))))
+
       (_
        (format (current-error-port) "SKIP expr->arg=~a\n" o)     
        0))))
@@ -136,6 +147,15 @@
 (define (text->list o)
   (append-map (lambda (f) (f '() 0 0)) o))
 
+(define (byte->hex o)
+  (string->number (string-drop o 2) 16))
+
+(define (asm->hex o)
+  (let ((prefix ".byte "))
+   (if (not (string-prefix? prefix o)) (begin (stderr "SKIP:~a\n" o)'())
+       (let ((s (string-drop o (string-length prefix))))
+         (map byte->hex (string-split s #\space))))))
+
 (define (statement->text+symbols+locals text+symbols+locals)
   (lambda (o)
     ;;(stderr "S=~a\n" o)
@@ -148,18 +168,27 @@
       ;; (stderr "   tsl=~a\n" text+symbols+locals)
       ;; (stderr "   locals=~s\n" locals)
       (pmatch o
+
         ((expr-stmt (fctn-call (p-expr (ident ,name))
                                (expr-list (p-expr (string ,string)))))
          ;;(stderr "S1 string=~a\n" string)
-         (make-text+symbols+locals
-          (append text
-                  (list (lambda (s t d)
-                          (i386:call s t d
-                                     (+ t (function-offset name s)
-                                          statement-offset)
-                                     (+ d (data-offset string s))))))
-          (append symbols (list (string->symbols string)))
-          locals))
+         (if (equal? name "asm")
+             (make-text+symbols+locals
+              (append
+               text
+               (list (lambda (s t d) (asm->hex string))))
+              symbols
+              locals)
+             
+             (make-text+symbols+locals
+              (append text
+                      (list (lambda (s t d)
+                              (i386:call s t d
+                                         (+ t (function-offset name s)
+                                              statement-offset)
+                                         (+ d (data-offset string s))))))
+              (append symbols (list (string->symbols string)))
+              locals)))
         
         ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
          ;;(stderr "S1 expr-list=~a\n" expr-list)
@@ -253,7 +282,7 @@
         
         ((expr-stmt (assn-expr (p-expr (ident ,name)) (op _) (p-expr (fixed ,value))))
 
-         (stderr "RET LOCAL[~a]: ~a\n" name (assoc-ref locals name))
+         ;;(stderr "RET LOCAL[~a]: ~a\n" name (assoc-ref locals name))
 
          (let ((value (string->number value)))
            (make-text+symbols+locals

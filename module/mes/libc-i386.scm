@@ -39,6 +39,7 @@
             i386:local->accu
             i386:local->base
             i386:mem-byte->accu
+            i386:push-accu
             i386:puts
             i386:ref-global
             i386:ref-local
