@@ -24,17 +24,12 @@
 
 (define-module (mes elf-util)
   #:use-module (srfi srfi-1)
-  #:export (make-data
-            make-function
-            data-entry?
-            data-symbol?
-            function-entry?
-            function-symbol?
-            data-offset
+  #:export (data-offset
             function-offset
-            globals->functions
-            globals->data
-            globals->text))
+            functions->lambdas
+            functions->text
+            text->list
+            globals->data))
 
 (cond-expand
  (guile-2)

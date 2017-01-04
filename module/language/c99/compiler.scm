@@ -25,6 +25,7 @@
 (define-module (language c99 compiler)
   #:use-module (srfi srfi-1)
   #:use-module (system base pmatch)
+  #:use-module (ice-9 optargs)
   #:use-module (ice-9 pretty-print)
   #:use-module (mes elf)
   #:use-module (mes elf-util)

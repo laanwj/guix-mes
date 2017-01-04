@@ -42,20 +42,21 @@
   `(#x68 ,@(int->bv32 o)))               ; push  $0x<o>
 
 (define (i386:ref-local n)
+  (or n rl)
   `(#xff #x75 ,(- 0 (* 4 n))))          ; pushl  0x<n>(%ebp)
 
 (define (i386:push-accu)
   `(#x50))                              ; push %eax
 
-(define (i386:push-arg s t d)
+(define (i386:push-arg f g t d)
   (lambda (o)
     (cond ((number? o)
            `(#x68 ,@(int->bv32 o)))       ; push $<o>
           ((pair? o) o)
-          ((procedure? o) (o s t d)))))
+          ((procedure? o) (o f g t d)))))
 
 (define (i386:ret . rest)
-  (lambda (s t d)
+  (lambda (f g t d)
     `(
       ,@(cond ((null? rest) '())
               ((number? (car rest))
@@ -63,18 +64,21 @@
                  ,@(int->bv32 (car rest))))
               ((pair? (car rest)) (car rest))
               ((procedure? (car rest))
-               ((car rest) s t d)))
+               ((car rest) f g t d)))
     #xc9                                ; leave
     #xc3                                ; ret
     )))
 
 (define (i386:accu->local n)
+  (or n al)
   `(#x89 #x45 ,(- 0 (* 4 n))))          ; mov    ,%eax,-<0xn>(%ebp)
 
 (define (i386:local->accu n)
+  (or n la)
   `(#x8b #x45 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%eax
 
 (define (i386:local->base n)
+  (or n lb)
   `(#x8b #x55 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%edx
 
 (define (i386:mem-byte->accu)
@@ -89,22 +93,26 @@
   `(#xb8 ,@(int->bv32 v)))              ; mov    $<v>,%eax
 
 (define (i386:local-add n v)
+  (or n ladd)
   `(#x83 #x45 ,(- 0 (* 4 n)) ,v))       ; addl   $<v>,0x<n>(%ebp)
     
 (define (i386:local-assign n v)
+  (or n lassign)
   `(#xc7 #x45 ,(- 0 (* 4 n))            ; movl   $<v>,0x<n>(%ebp)
          ,@(int->bv32 v)))
 
 (define (i386:local-test n v)
+  (or n lt)
   `(#x83 #x7d ,(- 0 (* 4 n)) ,v))       ; cmpl   $<v>,0x<n>(%ebp)
 
 (define (i386:ret-local n)
+  (or n rl)
   `(
     #x89 #x45 ,(- 0 (* 4 n))            ; mov    %eax,-0x<n>(%ebp)
     ))
 
-(define (i386:call s t d address . arguments)
-  (let* ((pushes (append-map (i386:push-arg s t d) (reverse arguments)))
+(define (i386:call f g t d address . arguments)
+  (let* ((pushes (append-map (i386:push-arg f g t d) (reverse arguments)))
          (s (length pushes))
          (n (length arguments)))
    `(
@@ -113,7 +121,7 @@
      #x83 #xc4 ,(* n 4)                 ; add    $00,%esp
      )))
   
-(define (i386:exit s t d)
+(define (i386:exit f g t d)
   `(
     #x5b                                ; pop    %ebx
     #x5b                                ; pop    %ebx
@@ -121,7 +129,7 @@
     #xcd #x80                           ; int    $0x80
     ))
 
-;; (define (i386:_start s t d)
+;; (define (i386:_start f g t d)
 ;;   (let* ((prefix
 ;;           `(
 ;;             #x55                         ; push   %ebp
@@ -141,7 +149,7 @@
 ;;          (statement-offset (- (+ (length prefix) (length text-list))))
 ;;          (address (+ t (function-offset "main" s))))))
 
-(define (i386:write s t d)
+(define (i386:write f g t d)
   `(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp

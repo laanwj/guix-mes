@@ -31,48 +31,31 @@
  (mes
   (mes-use-module (srfi srfi-1))))
 
-(define (make-function key value)
-  (cons key (cons 'function value)))
+(define (functions->lambdas functions)
+  (append-map cdr functions))
 
-(define (make-data key value)
-  (cons key (cons 'data value)))
+(define (text->list o)
+  (append-map (lambda (f) (f '() '() 0 0)) o))
 
-(define (function-symbol? x)
-  (eq? (car x) 'function))
+(define (functions->text functions globals t d)
+  (let loop ((lambdas (functions->lambdas functions)) (text '()))
+    (if (null? lambdas) text
+        (loop (cdr lambdas)
+              (append text ((car lambdas) functions globals (- (length text)) d))))))
 
-(define (function-entry? x)
-  (function-symbol? (cdr x)))
-
-(define (data-symbol? x)
-  (eq? (car x) 'data))
-
-(define (data-entry? x)
-  (data-symbol? (cdr x)))
-
-(define (globals->functions globals)
-  (append-map cdr (filter function-symbol? (map cdr globals))))
-
-(define (globals->text globals t d)
-  (let loop ((functions (globals->functions globals)) (text '()))
-    (if (null? functions) text
-        (loop (cdr functions)
-              (append text ((car functions) globals (- (length text)) d))))))
-
-(define (function-offset name globals)
-  (let* ((functions (filter function-entry? globals))
-         (prefix (member name (reverse functions)
+(define (function-offset name functions)
+  (let* ((prefix (member name (reverse functions)
                          (lambda (a b)
                            (equal? (car b) name)))))
-    (if prefix (length (globals->text (cdr prefix) 0 0))
+    (if prefix (length (functions->text (cdr prefix) '() 0 0))
         0)))
 
+(define (globals->data globals)
+  (append-map cdr globals))
+
 (define (data-offset name globals)
-  (let* ((globals (filter data-entry? globals))
-         (prefix (member name (reverse globals)
+  (let* ((prefix (member name (reverse globals)
                          (lambda (a b)
                            (equal? (car b) name)))))
     (if prefix (length (globals->data (cdr prefix)))
         0)))
-
-(define (globals->data globals)
-  (append-map cdr (filter data-symbol? (map cdr globals))))

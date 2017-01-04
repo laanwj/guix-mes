@@ -46,7 +46,7 @@
 (define elf32-off int->bv32)
 (define elf32-word int->bv32)
 
-(define (make-elf globals)
+(define (make-elf functions globals)
   (define vaddress #x08048000)
 
   (define ei-magic `(#x7f ,@(string->list "ELF")))
@@ -171,15 +171,15 @@
       ,@(string->list ".strtab") #x00   ; 37
       ))
 
-  (define (str globals)
+  (define (str functions)
     (cons
      0
      (append-map
       (lambda (s) (append (string->list s) (list 0)))
-      (map car globals))))
+      (map car functions))))
 
   (define text-length
-    (length (globals->text globals 0 0)))
+    (length (functions->text functions globals 0 0)))
 
   (define data-offset
     (+ text-offset text-length))
@@ -195,17 +195,17 @@
      (list st-other)
      (elf32-half st-shndx)))
 
-  (define (sym globals)
+  (define (sym functions globals)
     (define (symbol->table-entry o)
       (let* ((name (car o))
-             (offset (function-offset name globals))
-            (len (length (append-map (lambda (f) (f globals 0 0)) (cddr o))))
-            (str (append-map (lambda (x) (cons 0 (string->list x))) (cdr (member name (reverse (map car globals))))))
+             (offset (function-offset name functions))
+            (len (length (append-map (lambda (f) (f functions globals 0 0)) (cddr o))))
+            (str (append-map (lambda (x) (cons 0 (string->list x))) (cdr (member name (reverse (map car functions))))))
             (i (1+ (length str))))
         (symbol-table-entry i (+ vaddress text-offset offset) len stt-func 0 1)))
     (append
      (symbol-table-entry 0 0 0 0 0 0)
-     (append-map symbol->table-entry globals)))
+     (append-map symbol->table-entry functions)))
 
   (define data-address (+ data-offset vaddress))
   (define text-address (+ text-offset vaddress))
@@ -238,11 +238,10 @@
   (define SHF-EXEC 4)
   (define SHF-STRINGS #x20)
 
-  (let* ((text (globals->text globals 0 data-address))
+  (let* ((text (functions->text functions globals 0 data-address))
          (data (globals->data globals))
-         (entry (+ text-offset (function-offset "_start" globals)))
-         (functions (filter function-entry? globals))
-         (sym (sym functions))
+         (entry (+ text-offset (function-offset "_start" functions)))
+         (sym (sym functions globals))
          (str (str functions)))
 
     (define (section-headers)
