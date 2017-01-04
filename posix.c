@@ -89,6 +89,8 @@ stderr_ (SCM x)
     apply_env (assq_ref_cache (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
   else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
     fprintf (stderr, string_to_cstring (x));
+  else if (TYPE (x) == NUMBER)
+    fprintf (stderr, "%d", VALUE (x));
   else
     fprintf (stderr, "display: undefined\n");
   return cell_unspecified;
