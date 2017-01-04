@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -29,17 +29,18 @@
   (when (not (= 0 index)) (error "bytevector-u32-native-set! index not zero: " index " value: " value))
   (let ((x (list
             (modulo value #x100)
-            (quotient (modulo value #x10000) #x100)
-            (quotient (modulo value #x1000000) #x10000)
-            (quotient value #x1000000))))
+            (modulo (ash value -8) #x100)
+            (modulo (ash value -16) #x100)
+            (modulo (ash value -24) #x100))))
     (set-car! bv (car x))
     (set-cdr! bv (cdr x))
     x))
 
 (define (bytevector-u16-native-set! bv index value)
   (when (not (= 0 index)) (error "bytevector-u16-native-set! index not zero: " index " value: " value))
-  (let ((x (list (modulo value #x100)
-                 (quotient (modulo value #x10000) #x100))))
+  (let ((x (list
+            (modulo value #x100)
+            (modulo (ash value -8) #x100))))
     (set-car! bv (car x))
     (set-cdr! bv (cdr x))
     x))

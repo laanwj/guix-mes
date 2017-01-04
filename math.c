@@ -115,7 +115,9 @@ modulo (SCM a, SCM b)
 {
   assert (TYPE (a) == NUMBER);
   assert (TYPE (b) == NUMBER);
-  return MAKE_NUMBER (VALUE (a) % VALUE (b));
+  int x = VALUE (a);
+  while (x < 0) x += VALUE (b);
+  return MAKE_NUMBER (x % VALUE (b));
 }
 
 SCM
