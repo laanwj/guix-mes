@@ -37,8 +37,8 @@
             (cons (car lst) (loop (cdr lst)))
             (loop (cdr lst))))))
 
-(define (append-map f lst)
-  (apply append (map f lst)))
+(define (append-map f lst . rest)
+  (apply append (apply map f (cons lst rest))))
 
 (define (filter-map f lst)
   (if (null? lst) (list)
