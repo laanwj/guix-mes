@@ -34,7 +34,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
              (cut regexp-substitute #f <> 'pre replace 'post))
       string))
 
-(define GCC? #t)
+(define GCC? #f)
 ;; (define-record-type function (make-function name formals annotation)
 ;;   function?
 ;;   (name .name)
