@@ -132,6 +132,7 @@ SCM g_stack = 0;
 SCM r0 = 0; // a/env
 SCM r1 = 0; // param 1
 SCM r2 = 0; // save 2+load/dump
+SCM r3 = 0; // continuation
 
 #include "lib.h"
 #include "math.h"
@@ -546,6 +547,7 @@ gc_peek_frame ()
   SCM frame = car (g_stack);
   r1 = car (frame);
   r2 = cadr (frame);
+  r3 = car (cddr (frame));
   r0 = cadr (cddr (frame));
   return frame;
 }
@@ -561,7 +563,7 @@ gc_pop_frame ()
 SCM
 gc_push_frame ()
 {
-  SCM frame = cons (r1, cons (r2, cons (r0, cell_nil)));
+  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
   return g_stack = cons (frame, g_stack);
 }
 
@@ -971,6 +973,7 @@ mes_g_stack (SCM a) ///((internal))
   r0 = a;
   r1 = MAKE_CHAR (0);
   r2 = MAKE_CHAR (0);
+  r3 = MAKE_CHAR (0);
   g_stack = cons (cell_nil, cell_nil);
   return r0;
 }
