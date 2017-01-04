@@ -52,3 +52,9 @@
           (loop (cdr rest)
                 (append result
                         (list (list->string (list-head lst (- (length lst) (length rest)))))))))))
+
+(define (string-take s n)
+  (list->string (list-head (string->list s) n)))
+
+(define (string-drop s n)
+  (list->string (list-tail (string->list s) n)))
