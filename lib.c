@@ -136,7 +136,7 @@ dump ()
   fputc ('S', stdout);
   fputc (g_stack >> 8, stdout);
   fputc (g_stack % 256, stdout);
-  for (int i=0; i<g_free.value * sizeof(scm); i++)
+  for (int i=0; i<g_free * sizeof(scm); i++)
     fputc (*p++, stdout);
   return 0;
 }
@@ -170,7 +170,7 @@ bload_env (SCM a) ///((internal))
       *p++ = c;
       c = getchar ();
     }
-  g_free.value = (p-(char*)g_cells) / sizeof (scm);
+  g_free = (p-(char*)g_cells) / sizeof (scm);
   gc_peek_frame ();
   g_symbols = r1;
   g_stdin = stdin;

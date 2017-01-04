@@ -34,6 +34,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
              (cut regexp-substitute #f <> 'pre replace 'post))
       string))
 
+(define GCC? #t)
 ;; (define-record-type function (make-function name formals annotation)
 ;;   function?
 ;;   (name .name)
@@ -78,7 +79,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define (symbol->source s i)
   (string-append
-   (format #f "g_free.value++;\n")
+   (format #f "g_free++;\n")
    (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)))
 
 (define (symbol->names s i)
@@ -92,28 +93,29 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
          (n (if (eq? arity 'n) -1 arity)))
     (string-append
      (format #f "SCM ~a (~a);\n" (.name f) (.formals f))
-     (format #f "function fun_~a = {.function~a=&~a, .arity=~a};\n" (.name f) arity (.name f) n)
-     (format #f "scm ~a = {FUNCTION, .name=~S, .function=0};\n" (function-builtin-name f) (function-scm-name f))
+     (if GCC?
+         (format #f "function_t fun_~a = {.function~a=&~a, .arity=~a};\n" (.name f) arity (.name f) n)
+         (format #f "function_t fun_~a = {&~a, ~a};\n" (.name f) (.name f) n))
+     (if GCC?
+         (format #f "scm ~a = {FUNCTION, .name=~S, .function=0};\n" (function-builtin-name f) (function-scm-name f))
+         (format #f "scm ~a = {FUNCTION, ~S, 0};\n" (function-builtin-name f) (function-scm-name f)))
      (format #f "SCM cell_~a;\n\n" (.name f)))))
 
 (define (function->source f i)
   (string-append
    (format #f "~a.function = g_function;\n" (function-builtin-name f))
    (format #f "functions[g_function++] = fun_~a;\n" (.name f))
-   (format #f "cell_~a = g_free.value++;\n" (.name f))
+   (format #f "cell_~a = g_free++;\n" (.name f))
    (format #f "g_cells[cell_~a] = ~a;\n\n" (.name f) (function-builtin-name f))))
 
 (define (function->environment f i)
   (string-append
    (format #f "scm_~a.string = cstring_to_list (scm_~a.name);\n" (.name f) (.name f))
    (format #f "g_cells[cell_~a].string = MAKE_STRING (scm_~a.string);\n" (.name f) (.name f))
-   (format #f "a = acons (make_symbol (scm_~a.string), ~a, a);\n" (.name f) (function-cell-name f))
-   ;;(format #f "a = add_environment (a, ~S, ~a);\n" (function-scm-name f) (function-cell-name f))
-   ))
+   (format #f "a = acons (make_symbol (scm_~a.string), ~a, a);\n\n" (.name f) (function-cell-name f))))
 
 (define (snarf-symbols string)
-  (let* ((matches (append (list-matches "\nscm scm_([a-z_0-9]+) = [{](SPECIAL)," string)
-                          (list-matches "\nscm scm_([a-z_0-9]+) = [{](SYMBOL)," string))))
+  (let* ((matches (list-matches "\nscm scm_([a-z_0-9]+) = [{](SPECIAL|SYMBOL)," string)))
     (map (cut match:substring <> 1) matches)))
 
 (define (snarf-functions string)

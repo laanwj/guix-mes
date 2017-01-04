@@ -19,6 +19,10 @@
  */
 
 #define _GNU_SOURCE
+#if __GNUC__
+#define  __NYACC__ 0
+#define NYACC
+#define NYACC2
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -27,6 +31,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#else
+typedef int bool;
+#define  __NYACC__ 1
+#define NYACC nyacc
+#define NYACC2 nyacc2
+#endif
 
 #define DEBUG 0
 #define FIXED_PRIMITIVES 1
@@ -42,18 +52,18 @@ typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
 typedef SCM (*function3_t) (SCM, SCM, SCM);
 typedef SCM (*functionn_t) (SCM);
-typedef struct function_t {
+typedef struct function_struct {
   union {
     function0_t function0;
     function1_t function1;
     function2_t function2;
     function3_t function3;
     functionn_t functionn;
-  };
+  } NYACC;
   int arity;
-} function;
-struct scm_t;
-typedef struct scm_t {
+} function_t;
+struct scm;
+typedef struct scm_struct {
   enum type_t type;
   union {
     char const *name;
@@ -61,7 +71,7 @@ typedef struct scm_t {
     SCM car;
     SCM ref;
     int length;
-  };
+  } NYACC;
   union {
     int value;
     int function;
@@ -70,7 +80,7 @@ typedef struct scm_t {
     SCM macro;
     SCM vector;
     int hits;
-  };
+  } NYACC2;
 } scm;
 
 scm scm_nil = {SPECIAL, "()"};
@@ -88,9 +98,8 @@ scm scm_symbol_dot = {SYMBOL, "*dot*"};
 scm scm_symbol_lambda = {SYMBOL, "lambda"};
 scm scm_symbol_begin = {SYMBOL, "begin"};
 scm scm_symbol_if = {SYMBOL, "if"};
-scm scm_symbol_set_x = {SYMBOL, "set!"};
-
 scm scm_symbol_quote = {SYMBOL, "quote"};
+scm scm_symbol_set_x = {SYMBOL, "set!"};
 
 scm scm_symbol_sc_expand = {SYMBOL, "sc-expand"};
 scm scm_symbol_macro_expand = {SYMBOL, "macro-expand"};
@@ -113,7 +122,7 @@ scm scm_symbol_null_p = {SYMBOL, "null?"};
 scm scm_symbol_eq_p = {SYMBOL, "eq?"};
 scm scm_symbol_cons = {SYMBOL, "cons"};
 
-scm g_free = {NUMBER, .value=0};
+int g_free = 0;
 scm *g_cells;
 scm *g_news = 0;
 
@@ -122,10 +131,8 @@ scm *g_news = 0;
 SCM tmp;
 SCM tmp_num;
 SCM tmp_num2;
-SCM tmp_num3;
-SCM tmp_num4;
 
-function functions[200];
+function_t functions[200];
 int g_function = 0;
 
 SCM g_symbols = 0;
@@ -190,9 +197,9 @@ tmp_num2_ (int x)
 SCM
 alloc (int n)
 {
-  assert (g_free.value + n < ARENA_SIZE);
-  SCM x = g_free.value;
-  g_free.value += n;
+  assert (g_free + n < ARENA_SIZE);
+  SCM x = g_free;
+  g_free += n;
   return x;
 }
 
@@ -235,6 +242,18 @@ cdr (SCM x)
   if (TYPE (x) != PAIR) error ("cdr: not pair: ", x);
   return CDR (x);
 }
+SCM
+eq_p (SCM x, SCM y)
+{
+  return (x == y
+          || ((TYPE (x) == KEYWORD && TYPE (y) == KEYWORD
+               && STRING (x) == STRING (y)))
+          || (TYPE (x) == CHAR && TYPE (y) == CHAR
+              && VALUE (x) == VALUE (y))
+          || (TYPE (x) == NUMBER && TYPE (y) == NUMBER
+              && VALUE (x) == VALUE (y)))
+    ? cell_t : cell_f;
+}
 
 SCM
 type_ (SCM x)
@@ -260,19 +279,6 @@ cdr_ (SCM x)
           || TYPE (CAR (x)) == SPECIAL
           || TYPE (CDR (x)) == SYMBOL
           || TYPE (CDR (x)) == STRING) ? CDR (x) : MAKE_NUMBER (CDR (x));
-}
-
-SCM
-eq_p (SCM x, SCM y)
-{
-  return (x == y
-          || ((TYPE (x) == KEYWORD && TYPE (y) == KEYWORD
-               && STRING (x) == STRING (y)))
-          || (TYPE (x) == CHAR && TYPE (y) == CHAR
-              && VALUE (x) == VALUE (y))
-          || (TYPE (x) == NUMBER && TYPE (y) == NUMBER
-              && VALUE (x) == VALUE (y)))
-    ? cell_t : cell_f;
 }
 
 SCM
@@ -576,7 +582,7 @@ vm_call (function0_t f, SCM p1, SCM a)
   gc_push_frame ();
   r1 = p1;
   r0 = a;
-  if (g_free.value + GC_SAFETY > ARENA_SIZE)
+  if (g_free + GC_SAFETY > ARENA_SIZE)
     gc_pop_frame (gc (gc_push_frame ()));
 
   SCM r = f ();
@@ -770,16 +776,12 @@ vector_to_list (SCM v)
 void
 make_tmps (scm* cells)
 {
-  tmp = g_free.value++;
+  tmp = g_free++;
   cells[tmp].type = CHAR;
-  tmp_num = g_free.value++;
+  tmp_num = g_free++;
   cells[tmp_num].type = NUMBER;
-  tmp_num2 = g_free.value++;
+  tmp_num2 = g_free++;
   cells[tmp_num2].type = NUMBER;
-  tmp_num3 = g_free.value++;
-  cells[tmp_num3].type = NUMBER;
-  tmp_num4 = g_free.value++;
-  cells[tmp_num4].type = NUMBER;
 }
 
 // Jam Collector
@@ -791,7 +793,7 @@ gc_up_arena ()
 {
   ARENA_SIZE *= 2;
   void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(scm));
-  if (!p) error (strerror (errno), MAKE_NUMBER (g_free.value));
+  if (!p) error (strerror (errno), MAKE_NUMBER (g_free));
   g_cells = (scm*)p;
   g_cells++;
   gc_init_news ();
@@ -800,10 +802,10 @@ gc_up_arena ()
 SCM
 gc ()
 {
-  if (g_debug) fprintf (stderr, "***gc[%d]...", g_free.value);
-  g_free.value = 1;
+  if (g_debug) fprintf (stderr, "***gc[%d]...", g_free);
+  g_free = 1;
   if (g_cells < g_news && ARENA_SIZE < MAX_ARENA_SIZE) gc_up_arena ();
-  for (int i=g_free.value; i<g_symbol_max; i++)
+  for (int i=g_free; i<g_symbol_max; i++)
     gc_copy (i);
   make_tmps (g_news);
   g_symbols = gc_copy (g_symbols);
@@ -816,7 +818,7 @@ gc ()
 SCM
 gc_loop (SCM scan)
 {
-  while (scan < g_free.value)
+  while (scan < g_free)
     {
       if (NTYPE (scan) == CLOSURE
           || NTYPE (scan) == FUNCTION
@@ -850,13 +852,13 @@ SCM
 gc_copy (SCM old)
 {
   if (TYPE (old) == BROKEN_HEART) return g_cells[old].car;
-  SCM new = g_free.value++;
+  SCM new = g_free++;
   g_news[new] = g_cells[old];
   if (NTYPE (new) == VECTOR)
     {
-      g_news[new].vector = g_free.value;
+      g_news[new].vector = g_free;
       for (int i=0; i<LENGTH (old); i++)
-        g_news[g_free.value++] = g_cells[VECTOR (old)+i];
+        g_news[g_free++] = g_cells[VECTOR (old)+i];
     }
   g_cells[old].type = BROKEN_HEART;
   g_cells[old].car = new;
@@ -883,7 +885,7 @@ gc_flip ()
   scm *cells = g_cells;
   g_cells = g_news;
   g_news = cells;
-  if (g_debug) fprintf (stderr, " => jam[%d]\n", g_free.value);
+  if (g_debug) fprintf (stderr, " => jam[%d]\n", g_free);
   return g_stack;
 }
 
@@ -926,7 +928,7 @@ mes_symbols () ///((internal))
 
 #include "mes.symbols.i"
 
-  g_symbol_max = g_free.value;
+  g_symbol_max = g_free;
   make_tmps (g_cells);
 
   g_symbols = 0;
@@ -1012,10 +1014,13 @@ FILE *g_stdin;
 int
 main (int argc, char *argv[])
 {
+#if __GNUC__
   g_debug = getenv ("MES_DEBUG");
+#else
+#endif
   if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
-  if (argc > 1 && !strcmp (argv[1], "--version")) return puts ("Mes " VERSION);
+  if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);return 0;};
   g_stdin = stdin;
   r0 = mes_environment ();
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
@@ -1029,6 +1034,9 @@ main (int argc, char *argv[])
   stderr_ (begin_env (program, r0));
   fputs ("", stderr);
   gc (g_stack);
-  if (g_debug) fprintf (stderr, "\nstats: [%d]\n", g_free.value);
+#if __GNUC__
+  if (g_debug) fprintf (stderr, "\nstats: [%d]\n", g_free);
+#else
+#endif
   return 0;
 }
