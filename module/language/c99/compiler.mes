@@ -235,8 +235,7 @@
                       (append text (list (lambda (f g t d)
                                            (i386:call f g t d
                                                       (+ t (function-offset name f))
-                                                      (+ d (data-offset string globals
-                                                                        ))))))
+                                                      (+ d (data-offset string g))))))
                       #:globals globals))))
         
         ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
@@ -264,6 +263,50 @@
                                    (i386:jump-le body-length))))
                           body-text)
                   #:globals (.globals body-info))))
+
+        (;;(for ,init ,test ,step ,body)
+         (for ,init
+              ;; FIXME: ,test
+              (lt (p-expr (ident ,name)) (p-expr (fixed ,value)))
+              ,step ,body)
+         (let* ((value (string->number value))
+                (info (clone info #:text '()))
+
+                (info ((ast->info info) init))
+
+                (init-text (.text info))
+                (init-locals (.locals info))
+                (info (clone info #:text '()))
+
+                (body-info ((ast->info info) body))
+                (body-text (.text body-info))
+                (body-length (length (text->list body-text)))
+
+                (step-info ((ast->info info) `(expr-stmt ,step)))
+                (step-text (.text step-info))
+                (step-length (length (text->list step-text)))
+
+                ;; (test-info ((ast->info info) test))
+                ;; (test-text (.text test-info))
+                ;; (test-length (length (text->list test-text)))
+                )
+
+           (clone info #:text
+                  (append text
+                          init-text
+                          (list (lambda (f g t d) (i386:jump body-length)))
+                          body-text
+                          step-text
+                          ;;test-text
+                          ;;(list (lambda (f g t d) (i386:jump-nz (- (+ body-length test-length)))))
+                          (list (lambda (f g t d)
+                                  (append
+                                   (i386:local-test (assoc-ref init-locals name) value)
+                                   (i386:jump-le (- (+ body-length step-length 2) ;;test-length
+                                                    )))))
+                          )
+                  #:globals (append globals (.globals body-info))
+                  #:locals locals)))
 
         ((while ,test ,body)
          (let* ((info (clone info #:text '()))
@@ -300,7 +343,14 @@
                                       ((ident->accu locals) index)
                                       (i386:mem-byte->accu))))))) ; FIXME: type: char
         
+        ;; i++
         ((expr-stmt (post-inc (p-expr (ident ,name))))
+         (clone info #:text
+                (append text (list (lambda (f g t d)
+                                     (i386:local-add (assoc-ref locals name) 1))))))
+
+        ;; ++i -- same for now FIXME
+        ((expr-stmt (pre-inc (p-expr (ident ,name))))
          (clone info #:text
                 (append text (list (lambda (f g t d)
                                      (i386:local-add (assoc-ref locals name) 1))))))

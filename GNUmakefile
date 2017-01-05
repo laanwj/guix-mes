@@ -45,6 +45,11 @@ micro-mes: doc/examples/micro-mes.c GNUmakefile
 	gcc -nostdlib --std=gnu99 -m32 -o micro-mes '-DVERSION="0.4"' $<
 	chmod +x $@
 
+main: doc/examples/main.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -o main '-DVERSION="0.4"' $<
+	chmod +x $@
+
 clean:
 	rm -f mes mes.o *.environment.i *.symbols.i *.environment.h *.cat a.out
 
