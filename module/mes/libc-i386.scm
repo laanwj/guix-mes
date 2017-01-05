@@ -35,6 +35,8 @@
             i386:function-locals
             i386:eputs
             i386:jump
+            i386:jump-byte-nz
+            i386:jump-byte-z
             i386:jump-nz
             i386:jump-le
             i386:local-add
@@ -44,6 +46,7 @@
             i386:local-test
             i386:mem->accu
             i386:mem-byte->accu
+            i386:Xmem-byte->accu
             i386:push-accu
             i386:puts
             i386:ref-global
@@ -52,6 +55,11 @@
             i386:ret-local
             i386:value->accu
             i386:write
+
+            i386:test-byte-base
+            i386:Xmem-byte->base
+            i386:Xjump-byte-z
+            i386:sub-byte-base
             ))
 
 (cond-expand

@@ -179,8 +179,10 @@
     (pmatch o
       ((p-expr (fixed ,value)) (string->number value))
       ((p-expr (ident ,name)) ((ident->accu (.locals info)) name))
+      ((fctn-call . _) ((ast->info info) `(expr-stmt ,o)))
+      ((sub . _) ((ast->info info) o)) ;; FIXME: expr-stmt
       (_
-       (format (current-error-port) "SKIP expr-accu=~a\n" o)
+       (format (current-error-port) "SKIP expr->accu=~a\n" o)
        0)
       )))
 
@@ -221,7 +223,7 @@
         ((fctn-defn . _) ((function->info info) o))
         ((comment . _) info)
         ((cpp-stmt (define (name ,name) (repl ,value)))
-         (stderr "SKIP: #define ~a ~a\n" name value)
+         (stderr "SKIP: #define ~s ~s\n" name value)
          info)
 
         ((compd-stmt (block-item-list . ,statements)) ((ast-list->info info) statements))
@@ -264,6 +266,24 @@
                           body-text)
                   #:globals (.globals body-info))))
 
+        ((if (not (fctn-call . ,call)) ,body)
+         (let* ((call-info ((ast->info info) `(expr-stmt (fctn-call . ,call))))
+                (info (clone info #:text '()))
+                (body-info ((ast->info info) body))
+                (body-text (.text body-info))
+                (body-length (length (text->list body-text))))
+
+           (clone info #:text
+                  (append (.text call-info)
+                          (list (lambda (f g t d)
+                                  (append
+                                   ;;(i386:local-test (assoc-ref locals name) 0)
+                                   ;;(i386:accu-test (assoc-ref locals name) 0)
+                                   (i386:jump-nz body-length))))
+                          body-text)
+                  #:globals (append (.globals call-info)
+                                    (.globals body-info)))))
+
         (;;(for ,init ,test ,step ,body)
          (for ,init
               ;; FIXME: ,test
@@ -298,7 +318,7 @@
                           body-text
                           step-text
                           ;;test-text
-                          ;;(list (lambda (f g t d) (i386:jump-nz (- (+ body-length test-length)))))
+                          ;;(list (lambda (f g t d) (i386:jump-byte-nz (- (+ body-length test-length)))))
                           (list (lambda (f g t d)
                                   (append
                                    (i386:local-test (assoc-ref init-locals name) value)
@@ -323,8 +343,55 @@
                           (list (lambda (f g t d) (i386:jump body-length)))
                           body-text
                           test-text
-                          (list (lambda (f g t d) (i386:jump-nz (- (+ body-length test-length))))))
-                  #:globals (.globals body-info))))
+                          (list (lambda (f g t d) (i386:jump-byte-nz (- (+ body-length test-length))))))
+                  #:globals (append globals (.globals body-info)))))
+
+        ;;(and (and (de-ref (p-expr (ident "a"))) (de-ref (p-expr (ident "b")))) (eq (de-ref (p-expr (ident "a"))) (de-ref (p-expr (ident "b")))))
+        
+        ((de-ref (p-expr (ident ,name)))
+         (clone info #:text
+                (append text
+                        (list (lambda (f g t d)
+                                (append (i386:local->accu (assoc-ref locals name))
+                                        (i386:Xmem-byte->accu)))))))
+
+        ((and ,a ,b)
+         (let* ((info (clone info #:text '()))
+                (a-info ((ast->info info) a))
+                (a-text (.text a-info))
+                (a-length (length (text->list a-text)))
+
+                (b-info ((ast->info info) b))
+                (b-text (.text b-info))
+                (b-length (length (text->list b-text))))
+
+           (clone info #:text
+                  (append text
+                          a-text
+                          (list (lambda (f g t d) (i386:jump-byte-z (+ b-length
+                                                                       2))))  ;; FIXME: need jump after last test
+                          b-text))))
+
+        ((eq (de-ref (p-expr (ident ,a))) (de-ref (p-expr (ident ,b))))
+           (clone info #:text
+                  (append text
+                          (list (lambda (f g t d)
+                                  (append
+                                   (append (i386:local->accu (assoc-ref locals a))
+                                           (i386:Xmem-byte->base)
+                                           (i386:local->accu (assoc-ref locals b))
+                                           (i386:Xmem-byte->accu)
+                                           (i386:test-byte-base))))))))
+
+        ((sub (de-ref (p-expr (ident ,a))) (de-ref (p-expr (ident ,b))))
+         (clone info #:text
+                (append text
+                        (list (lambda (f g t d)
+                                (append (i386:local->accu (assoc-ref locals a))
+                                        (i386:Xmem-byte->base)
+                                        (i386:local->accu (assoc-ref locals b))
+                                        (i386:Xmem-byte->accu)
+                                        (i386:sub-byte-base)))))))
 
         ((array-ref (p-expr (fixed ,value)) (p-expr (ident ,name)))
          (let ((value (string->number value)))
@@ -356,8 +423,12 @@
                                      (i386:local-add (assoc-ref locals name) 1))))))
 
         ((return ,expr)
-         (clone info #:text
-                (append text (list (i386:ret ((expr->accu info) expr))))))
+         (let ((accu ((expr->accu info) expr)))
+           (if (info? accu)
+               (clone accu #:text
+                      (append (.text accu) (list (i386:ret (lambda _ '())))))
+               (clone info #:text
+                      (append text (list (i386:ret ((expr->accu info) expr))))))))
 
         ;; int i;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
@@ -414,7 +485,7 @@
            (clone info #:text (append (.text info) (list (lambda (f g t d) (i386:ret-local (assoc-ref locals name))))))))
 
         (_
-         (format (current-error-port) "SKIP statement=~a\n" o)
+         (format (current-error-port) "SKIP statement=~s\n" o)
          info)))))
 
 (define (info->exe info)
@@ -557,6 +628,23 @@ puts (char const* s)
                 parse-c99)))
     ast))
 
+(define strcmp
+  (let* ((ast (with-input-from-string
+                  "
+int
+strcmp (char const* a, char const* b)
+{
+  while (*a && *b && *a == *b) 
+    {
+      a++;b++;
+    }
+  return *a - *b;
+}
+"
+;;paredit:"
+                parse-c99)))
+    ast))
+
 (define i386:libc
   (list
    (cons "exit" (list i386:exit))
@@ -567,7 +655,8 @@ puts (char const* s)
    strlen
    eputs
    fputs
-   puts))
+   puts
+   strcmp))
 
 (define (compile)
   (let* ((ast (mescc))

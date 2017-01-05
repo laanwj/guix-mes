@@ -30,13 +30,13 @@
 #define NYACC2 nyacc2
 #endif
 
+#if __GNUC__
 typedef long size_t;
 void *malloc (size_t i);
 int open (char const *s, int mode);
 int read (int fd, int n);
 void write (int fd, char const* s, int n);
 
-#if __GNUC__
 void
 exit (int code)
 {
@@ -99,7 +99,6 @@ free (void *p)
   int *n = (int*)p-1;
   //munmap ((void*)p, *n);
 }
-#endif
 
 #define EOF -1
 #define STDIN 0
@@ -112,7 +111,6 @@ free (void *p)
 
 int g_stdin;
 
-#if __GNUC__
 size_t
 strlen (char const* s)
 {
@@ -224,29 +222,17 @@ main (int argc, char *argv[])
     {
       puts ("\narg1=");
       puts (argv[1]);
+      if (!strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
     }
   puts ("\n");
   eputs ("Strlen...\n");
   puts ("Bye micro\n");
   int i = argc;
+  //int i = strcmp (argv[1], "1");
   return i;
 }
 
 #if __GNUC__
-// int
-// test1()
-// {
-//   return 9;
-// }
-
-// void
-// test()
-// {
-//   int r;
-//   r=7;
-//   r=test1();
-// }
-
 void
 _start ()
 {
