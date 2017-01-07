@@ -122,6 +122,13 @@ test ()
   puts ("t: if (1 && 0)\n");
   if (1 && 0) return 1;
 
+  int i=0;
+  puts ("t: if (i++)\n");
+  if (i++) return 1;
+
+  puts ("t: if (--i)\n");
+  if (--i) return 1;
+
   puts ("t: if (1)\n");
   if (1) goto ok0;
   return 1;
@@ -167,8 +174,15 @@ test ()
   return 1;
  ok8:
 
+  puts ("t: if (++i)\n");
+  if (++i) goto ok9;
+ ok9:
+
+  puts ("t: if (i--)\n");
+  if (i--) goto ok10;
+ ok10:
+
   puts ("t: for (i=0; i<4; ++i)\n");
-  int i;
   for (i=0; i<4; ++i);
   if (i != 4) return i;
 
