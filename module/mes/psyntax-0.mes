@@ -26,7 +26,7 @@
 
 (define annotation? (lambda (x) #f))
 (define (self-evaluating? x)
-  (or (boolean? x) (number? x) (string? x) (char? x) (null? x) (closure? x)))
+  (or (null? x) (boolean? x) (char? x) (closure? x) (keyword? x) (number? x) (string? x)))
 
 (define (void) (if #f #f))
 

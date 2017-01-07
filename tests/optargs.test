@@ -56,4 +56,84 @@ exit $?
 (pass-if "optargs key" ((lambda* (#:key (foo #f)) foo) #:foo #t))
 (pass-if-equal "optargs key default" #f ((lambda* (#:key (foo #f)) foo)))
 
+(mes-use-module (mes pmatch))
+
+(define <info> '<info>)
+(define <functions> '<functions>)
+(define <globals> '<globals>)
+(define <locals> '<locals>)
+(define <text> '<text>)
+
+(define* (make o #:key (functions '()) (globals '()) (locals '()) (text '()))
+  (pmatch o
+    (<info> (list <info>
+                  (cons <functions> functions)
+                  (cons <globals> globals)
+                  (cons <locals> locals)
+                  (cons <text> text)))))
+
+;; (define* (make o #:key (functions '()) (globals '()) (locals '()) (text '()))
+;;   (format (current-error-port) "make\n")
+;;   ((cond ((info? o)
+;;           (list <info>
+;;                 (cons <functions> functions)
+;;                 (cons <globals> globals)
+;;                 (cons <locals> locals)
+;;                 (cons <text> text))))))
+
+(define (.functions o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <functions>))))
+
+(define (.globals o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <globals>))))
+
+(define (.locals o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <locals>))))
+
+(define (.text o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <text>))))
+
+(define (info? o)
+  (and (pair? o) (eq? (car o) <info>)))
+
+;; FIXME: psyntax+pmatch+optarg is broken; BINDINGS-> (g1234 g1234)
+;; iso (function function)
+;; (define (clone o . rest)
+;;   (pmatch o
+;;     ((<info>
+;;       (<functions> . ,functions)
+;;       (<globals> . ,globals)
+;;       (<locals> . ,locals)
+;;       (<text> . ,text))
+;;      (let-keywords rest
+;;                    #f
+;;                    ((functions functions)
+;;                     (globals globals)
+;;                     (locals locals)
+;;                     (text text))
+;;                    (make <info> #:functions functions #:globals globals #:locals locals #:text text)))))
+
+(define (clone o . rest)
+  (format (current-error-port) "clone rest=~a\n" rest)
+  (cond ((info? o)
+         (let ((functions (.functions o))
+               (globals (.globals o))
+               (locals (.locals o))
+               (text (.text o)))
+           (let-keywords rest
+                         #f
+                         ((functions functions)
+                          (globals globals)
+                          (locals locals)
+                          (text text))
+                         (make <info> #:functions functions #:globals globals #:locals locals #:text text))))))
+
+(pass-if-equal "clone <info>"
+    (make <info> #:functions '(0))
+  (clone (make <info>) #:functions '(0)))
+
 (result 'report)

@@ -173,11 +173,11 @@
 	      (cond
 	       ((memq first keywords)
 		(if (null? rest)
-		    (error "Keyword argument has no value.")
+                    (error "Keyword argument has no value:" first)
 		    (next (cons (cons (keyword->symbol first)
 				      (car rest)) accum))))
 	       ((not allow-other-keys?)
-		(error "Unknown keyword in arguments."))
+                (error "Unknown keyword in arguments:" first))
 	       (else (if (null? rest)
 			 accum
 			 (next accum))))
