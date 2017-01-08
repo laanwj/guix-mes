@@ -41,7 +41,7 @@ void
 exit (int code)
 {
   asm (
-       "movl $0,%%ebx\n\t"
+       "movl %0,%%ebx\n\t"
        "movl $1,%%eax\n\t"
        "int  $0x80"
        : // no outputs "=" (r)
@@ -49,6 +49,12 @@ exit (int code)
        );
   // not reached
   exit (0);
+}
+
+char const*
+getenv (char const* p)
+{
+  return 0;
 }
 
 int
@@ -74,7 +80,8 @@ write (int fd, char const* s, int n)
        "mov %0,%%ebx\n\t"
        "mov %1,%%ecx\n\t"
        "mov %2,%%edx\n\t"
-       "mov $0x4,%%eax\n\t"
+
+       "mov $0x4, %%eax\n\t"
        "int $0x80\n\t"
        : // no outputs "=" (r)
        : "" (fd), "" (s), "" (n)
@@ -151,7 +158,6 @@ eputs (char const* s)
   return 0;
 }
 
-#if __GNUC__
 char const*
 itoa (int x)
 {
@@ -174,7 +180,6 @@ itoa (int x)
 
   return p+1;
 }
-#endif
 
 void
 assert_fail (char* s)
@@ -187,14 +192,10 @@ assert_fail (char* s)
 #endif
 
 #define assert(x) ((x) ? (void)0 : assert_fail(#x))
-#define false 0
-#define true 1
-typedef int bool;
-
 typedef int SCM;
 
 #if __GNUC__
-bool g_debug = false;
+int g_debug = 0;
 #endif
 
 int g_free = 0;
@@ -222,18 +223,8 @@ bload_env (SCM a) ///((internal))
 int
 main (int argc, char *argv[])
 {
-  puts ("arg0=");
-  puts (argv[0]);
-  if (argc > 1)
-    {
-      puts ("\narg1=");
-      puts (argv[1]);
-      if (!strcmp (argv[1], "--help")) /*return*/ puts ("XXUsage: mes [--dump|--load] < FILE");
-    }
-  puts ("\n");
-
 #if __GNUC__
-  //g_debug = getenv ("MES_DEBUG");
+  g_debug = (int)getenv ("MES_DEBUG");
 #endif
   //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
 
@@ -246,8 +237,8 @@ main (int argc, char *argv[])
 #endif
 
 #if MES_MINI
-  SCM program = bload_env (r0);
   puts ("Hello micro-mes!\n");
+  SCM program = bload_env (r0);
 #else
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);

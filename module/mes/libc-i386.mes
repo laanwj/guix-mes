@@ -34,6 +34,9 @@
 (define (i386:ref-global o)
   `(#x68 ,@(int->bv32 o)))               ; push  $0x<o>
 
+(define (i386:global->accu o)
+  `(#xb8 ,@(int->bv32 o)))              ; mov    $<>,%eax
+
 (define (i386:ref-local n)
   (or n rl)
   `(#xff #x75 ,(- 0 (* 4 n))))          ; pushl  0x<n>(%ebp)
@@ -82,14 +85,17 @@
   (or n lb)
   `(#x8b #x55 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%edx
 
-(define (i386:byte-mem->accu)
+(define (i386:byte-base-mem->accu)
   '(#x01 #xd0                           ; add    %edx,%eax
          #x0f #xb6 #x00))               ; movzbl (%eax),%eax
+
+(define (i386:byte-mem->accu)
+  '(#x0f #xb6 #x00))                    ; movzbl (%eax),%eax
 
 (define (i386:byte-mem->base)
   '(#x0f #xb6 #x10))                    ; movzbl (%eax),%edx
 
-(define (i386:mem->accu)
+(define (i386:base-mem->accu)
   '(#x01 #xd0                           ; add    %edx,%eax
          #x8b #x00))                    ; mov    (%eax),%eax
 
@@ -128,12 +134,19 @@
      #x83 #xc4 ,(* n 4)                 ; add    $00,%esp
      )))
   
+(define (i386:accu-not)
+  `(#x0f #x94 #xc0                      ; sete %al
+         #x0f #xb6 #xc0))               ; movzbl %al,%eax
+
+(define (i386:xor-accu v)
+  `(#x35 ,@(int->bv32 v)))       	;xor    $0xff,%eax
+
 (define (i386:xor-zf)
   '(#x9f                                ; lahf   
     #x80 #xf4 #x40                      ; xor    $0x40,%ah
     #x9e))                              ; sahf   
 
-(define (i386:test-accu)
+(define (i386:accu-test)
   '(#x85 #xc0))                         ; test   %eax,%eax
 
 (define (i386:jump n)
@@ -211,3 +224,45 @@
     #xc9                                ; leave
     #xc3                                ; ret
     ))
+
+#!
+08048121 <strcmp>:
+ 8048121:	55                   	push   %ebp
+ 8048122:	89 e5                	mov    %esp,%ebp
+ 8048124:	83 ec 10             	sub    $0x10,%esp
+ 8048127:	eb 08                	jmp    8048131 <strcmp+0x10>
+
+<body>
+ 8048129:	83 45 08 01          	addl   $0x1,0x8(%ebp)
+ 804812d:	83 45 0c 01          	addl   $0x1,0xc(%ebp)
+
+<test> *a
+ 8048131:	8b 45 08             	mov    0x8(%ebp),%eax
+ 8048134:	0f b6 00             	movzbl (%eax),%eax
+ 8048137:	84 c0                	test   %al,%al
+ 8048139:	74 08                	je     8048143 <strcmp+0x22>
+
+<test1> *b
+ 804813b:	8b 45 0c             	mov    0xc(%ebp),%eax
+ 804813e:	0f b6 00             	movzbl (%eax),%eax
+ 8048141:	84 c0                	test   %al,%al
+ 8048143:	74 10                	je     8048155 <strcmp+0x34>
+
+<test2> *a == *b
+ 8048145:	8b 45 08             	mov    0x8(%ebp),%eax
+ 8048148:	0f b6 10             	movzbl (%eax),%edx
+ 804814b:	8b 45 0c             	mov    0xc(%ebp),%eax
+ 804814e:	0f b6 00             	movzbl (%eax),%eax
+ 8048151:	38 c2                	cmp    %al,%dl
+ 8048153:	84 c0                	test   %al,%al
+ 8048155:	75 d2                	jne    8048129 <strcmp+0x8>
+
+
+ 8048157:	8b 45 08             	mov    0x8(%ebp),%eax
+ 804815a:	0f b6 10             	movzbl (%eax),%edx
+ 804815d:	8b 45 0c             	mov    0xc(%ebp),%eax
+ 8048160:	0f b6 00             	movzbl (%eax),%eax
+ 8048163:	28 d0                	sub    %dl,%al
+ 8048165:	c9                   	leave
+ 8048166:	c3                   	ret  
+!#

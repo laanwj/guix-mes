@@ -78,18 +78,27 @@ strcmp (char const* a, char const* b)
   while (*a && *b && *a == *b) {a++;b++;}
   return *a - *b;
 }
-int test ();
+int test (char *p);
 #endif
 
 int
 main (int argc, char *argv[])
 {
+  char *p = "t.c\n";
   puts ("t.c\n");
-  return test ();
+
+  if (argc > 1 && !strcmp (argv[1], "--help")) return 1;
+  puts ("t: if (argc > 1 && !strcmp (argv[1], \"--help\")\n");
+
+  // FIXME mescc?!
+  if (argc > 1) if (!strcmp (argv[1], "--help")) return 1;
+
+  return test (p);
+  return 22;
 }
 
 int
-test ()
+test (char *p)
 {
   int f = 0;
   int t = 1;
@@ -107,8 +116,20 @@ test ()
   puts ("t: if (one < 0)\n");
   if (one < 0) return 1;
 
-  puts ("t: stlrlen (\"\")\n");
+  puts ("t: if (strlen (\"\"))\n");
   if (strlen ("")) return 1;
+
+  puts ("t: if (strlen (p) != 4)\n");
+  if (strlen (p) != 4) return 1;
+
+  puts ("t: if (!strlen (\".\"))\n");
+  if (!strlen (".")) return 1;
+
+  puts ("t: if (strcmp (p, \"foo\"))\n");
+  if (!strcmp (p, "foo")) return 1;
+
+  puts ("t: if (strcmp (p, \"t.c\\n\"))\n");
+  if (strcmp (p, "t.c\n")) return 1;
 
   puts ("t: if (!1)\n");
   if (!1) return 1;
@@ -121,6 +142,12 @@ test ()
 
   puts ("t: if (1 && 0)\n");
   if (1 && 0) return 1;
+
+  puts ("t: if (!t && f)\n");
+  if (!t && f) return 1;
+
+  puts ("t: if (t && !one)\n");
+  if (t && !one) return 1;
 
   int i=0;
   puts ("t: if (i++)\n");
@@ -153,6 +180,20 @@ test ()
   if (strlen (".")) goto ok4;
   return 1;
  ok4:
+
+  puts ("t: if (strlen (p) == 4)\n");
+  if (strlen (p) == 4) goto ok40;
+ ok40:
+
+  puts ("t: if (!strcmp (p, \"t.c\\n\"))\n");
+  if (!strcmp (p, "t.c\n")) goto ok41;
+  return 1;
+ ok41:
+
+  puts ("t: if (strcmp (p, \"foo\"))\n");
+  if (strcmp (p, "foo")) goto ok42;
+  return 1;
+ ok42:
 
   puts ("t: if (!0)\n");
   if (!0) goto ok5;

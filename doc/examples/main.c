@@ -20,14 +20,28 @@
 
 #if __GNUC__
 void
+exit (int code)
+{
+  asm (
+       "movl %0,%%ebx\n\t"
+       "movl $1,%%eax\n\t"
+       "int  $0x80"
+       : // no outputs "=" (r)
+       : "" (code)
+       );
+  // not reached
+  exit (0);
+}
+
+void
 write (int fd, char const* s, int n)
 {
   int r;
   //syscall (SYS_write, fd, s, n));
   asm (
-       "mov %0, %%ebx\n\t"
-       "mov %1, %%ecx\n\t"
-       "mov %2, %%edx\n\t"
+       "mov %0,%%ebx\n\t"
+       "mov %1,%%ecx\n\t"
+       "mov %2,%%edx\n\t"
 
        "mov $0x4, %%eax\n\t"
        "int $0x80\n\t"
@@ -35,20 +49,6 @@ write (int fd, char const* s, int n)
        : "" (fd), "" (s), "" (n)
        : "eax", "ebx", "ecx", "edx"
        );
-}
-
-void
-exit (int code)
-{
-  asm (
-       "movl %0, %%ebx\n\t"
-       "movl $1,  %%eax\n\t"
-       "int  $0x80"
-       : // no outputs "=" (r)
-       : "" (code)
-       );
-  // not reached
-  exit (0);
 }
 
 #define STDOUT 1
@@ -84,9 +84,8 @@ int
 //main ()
 main (int argc, char *argv[])
 {
-  int i = 0;
-  if (argc > 1 && !strcmp (argv[1], "--help")) puts ("argc > 1 && --help\n");
   puts ("Hi Mes!\n");
+  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("argc > 1 && --help\n");
   return 42;
 }
 

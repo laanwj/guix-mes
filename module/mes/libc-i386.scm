@@ -28,11 +28,15 @@
   #:use-module (srfi srfi-1)
   #:use-module (mes elf)
   #:export (
+            i386:accu-not
             i386:accu->local
             i386:accu-non-zero?
+            i386:accu-test
             i386:accu-zero?
             i386:base-sub
+            i386:base-mem->accu
             i386:byte-base-sub
+            i386:byte-base-mem->accu
             i386:byte-mem->accu
             i386:byte-mem->base
             i386:byte-test-base
@@ -41,6 +45,7 @@
             i386:formal
             i386:function-locals
             i386:function-preamble
+            i386:global->accu
             i386:jump
             i386:jump
             i386:jump-byte-nz
@@ -57,18 +62,17 @@
             i386:local-add
             i386:local-assign
             i386:local-test
-            i386:mem->accu
             i386:push-accu
             i386:ref-global
             i386:ref-local
             i386:ret
             i386:ret-local
             i386:sub-base
-            i386:test-accu
             i386:test-base
             i386:test-jump-z
             i386:value->accu
             i386:value->base
+            i386:xor-accu
             i386:xor-zf
 
             ;; libc
