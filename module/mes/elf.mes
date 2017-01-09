@@ -149,7 +149,7 @@
     (append
      (program-header 1 text-offset text)))
 
-  (define note
+  (define comment
     (string->list
      (string-append
       "MES"
@@ -165,10 +165,10 @@
       #x00                              ; 0
       ,@(string->list ".text") #x00     ; 1
       ,@(string->list ".data") #x00     ; 7
-      ,@(string->list ".note") #x00     ; 13
-      ,@(string->list ".shstrtab") #x00 ; 19
-      ,@(string->list ".symtab") #x00  ; 29
-      ,@(string->list ".strtab") #x00   ; 37
+      ,@(string->list ".comment") #x00     ; 13
+      ,@(string->list ".shstrtab") #x00 ; 22
+      ,@(string->list ".symtab") #x00  ; 32
+      ,@(string->list ".strtab") #x00   ; 40
       ))
 
   (define (str functions)
@@ -213,14 +213,14 @@
   (define data-length
     (length (globals->data globals)))
 
-  (define note-length
-    (length note))
+  (define comment-length
+    (length comment))
 
-  (define note-offset
+  (define comment-offset
     (+ data-offset data-length))
 
   (define shstr-offset
-    (+ note-offset note-length))
+    (+ comment-offset comment-length))
 
   (define shstr-length
     (length shstr))
@@ -247,12 +247,12 @@
     (define (section-headers)
     (append
      (section-header 0 0 0 0 '() 0 0 0)
-     (section-header 1 SHT-PROGBITS (logior SHF-WRITE SHF-EXEC) text-offset text 0 0 0)
-     (section-header 7 SHT-PROGBITS (logior SHF-WRITE) data-offset data 0 0 0)
-     (section-header 13 SHT-NOTE 0 note-offset note 0 0 0)
-     (section-header 19 SHT-STRTAB SHF-STRINGS shstr-offset shstr 0 0 0)
-     (section-header 29 SHT-SYMTAB SHF-ALLOC sym-offset sym 6 0 (length (symbol-table-entry 0 0 0 0 0 0)))
-     (section-header 37 SHT-STRTAB SHF-STRINGS str-offset str 0 0 0)))
+     (section-header 1 SHT-PROGBITS (logior SHF-ALLOC SHF-EXEC) text-offset text 0 0 0)
+     (section-header 7 SHT-PROGBITS (logior SHF-ALLOC SHF-WRITE) data-offset data 0 0 0)
+     (section-header 13 SHT-PROGBITS 0 comment-offset comment 0 0 0)
+     (section-header 22 SHT-STRTAB 0 shstr-offset shstr 0 0 0)
+     (section-header 32 SHT-SYMTAB 0 sym-offset sym 6 0 (length (symbol-table-entry 0 0 0 0 9 0)))
+     (section-header 40 SHT-STRTAB 0 str-offset str 0 0 0)))
 
 
     (define sym-length
@@ -277,7 +277,7 @@
      (program-headers text)
      text
      data
-     note
+     comment
      shstr
      sym
      str
