@@ -416,14 +416,7 @@
                   #:globals (.globals else-info))))
 
         ((for ,init ,test ,step ,body)
-         (let* ((jump (pmatch test
-                        ((lt ,a ,b) i386:jump-c)
-                        ((gt ,a ,b) i386:jump-c)
-                        (_ i386:jump-nz)))
-                (jump-text (lambda (body-length)
-                             (list (lambda (f g t d) (jump body-length)))))
-
-                (info (clone info #:text '()))
+         (let* ((info (clone info #:text '()))
 
                 (info ((ast->info info) init))
 
@@ -439,18 +432,25 @@
                 (step-text (.text step-info))
                 (step-length (length (text->list step-text)))
 
-                (test-info ((ast->info info) test))
-                (test-text (.text test-info))
-                (test-length (length (text->list test-text))))
+                (test-jump->info ((test->jump->info info) test))
+                (test+jump-info (test-jump->info 0))
+                (test-length (length (text->list (.text test+jump-info))))
+
+                (skip-body-text (list (lambda (f g t d) (i386:jump (+ 2 body-length step-length))))) ;; FIXME: 2
+
+                (jump-text (list (lambda (f g t d) (i386:jump (- (+ body-length step-length test-length))))))
+                (jump-length (length (text->list jump-text)))
+
+                (test-text (.text (test-jump->info jump-length))))
 
            (clone info #:text
                   (append text
                           init-text
-                          (list (lambda (f g t d) (i386:jump (+ 2 body-length)))) ;; FIXME: 2
+                          skip-body-text
                           body-text
                           step-text
                           test-text
-                          (jump-text (- (+ body-length step-length test-length))))
+                          jump-text)
                   #:globals (append globals (.globals body-info)) ;; FIXME
                   #:locals locals)))
 
