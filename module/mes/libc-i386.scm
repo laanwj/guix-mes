@@ -83,6 +83,8 @@
 
             ;; libc
             i386:exit
+            i386:open
+            i386:read
             i386:write
             ))
 
