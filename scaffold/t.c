@@ -156,6 +156,12 @@ test (char *p)
   puts ("t: if (--i)\n");
   if (--i) return 1;
 
+  puts ("t: (one == 1) ?");
+  (one == 1) ? 1 : exit (1);
+
+  puts ("t: (f) ?");
+  (f) ? exit (1) : 1;
+
   puts ("t: if (1)\n");
   if (1) goto ok0;
   return 1;
