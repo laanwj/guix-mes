@@ -219,9 +219,13 @@ void
 assert_fail (char* s)
 {
   eputs ("assert fail:");
+#if __GNUC__
   eputs (s);
+#endif
   eputs ("\n");
+#if __GNUC__
   *((int*)0) = 0;
+#endif
 }
 
 #if __GNUC__
@@ -246,56 +250,36 @@ SCM r1 = 0; // param 1
 SCM r2 = 0; // save 2+load/dump
 SCM r3 = 0; // continuation
 
-typedef int SCM;
 #if __NYACC__ || FIXME_NYACC
 enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
 #else
 enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
 #endif
-typedef SCM (*function0_t) (void);
-typedef SCM (*function1_t) (SCM);
-typedef SCM (*function2_t) (SCM, SCM);
-typedef SCM (*function3_t) (SCM, SCM, SCM);
-typedef SCM (*functionn_t) (SCM);
-typedef struct function_struct {
-  union {
-    function0_t function0;
-    function1_t function1;
-    function2_t function2;
-    function3_t function3;
-    functionn_t functionn;
-  } data;
-  int arity;
-} function_t;
-struct scm;
 
-typedef struct scm_struct {
+struct scm {
   enum type_t type;
-  union {
-    char const *name;
-    SCM string;
-    SCM car;
-    SCM ref;
-    int length;
-  } NYACC_CAR;
-  union {
-    int value;
-    int function;
-    SCM cdr;
-    SCM closure;
-    SCM continuation;
-    SCM macro;
-    SCM vector;
-    int hits;
-  } NYACC_CDR;
-} scm;
+  SCM car;
+  SCM cdr;
+};
 
-char arena[200000];
-scm *g_cells = (scm*)arena;
+#if 0
+char arena[200];
+struct scm *g_cells = (struct scm*)arena;
+#else
+struct scm g_cells[200];
+#endif
+
+#define cell_nil 1
+#define cell_f 2
+#define cell_t 3
+
+#define TYPE(x) (g_cells[x].type)
 
 #define CAR(x) g_cells[x].car
 
 #define CDR(x) g_cells[x].cdr
+//#define VALUE(x) g_cells[x].value
+#define VALUE(x) g_cells[x].cdr
 
 SCM
 car (SCM x)
@@ -351,56 +335,253 @@ mes_builtins (SCM a)
 }
 
 SCM
+fill ()
+{
+  TYPE (0) = 0x6c6c6168;
+  CAR (0) = 0x6a746f6f;
+  CDR (0) = 0x00002165;
+
+  TYPE (1) = SYMBOL;
+  CAR (1) = 0x2d2d2d2d;
+  CDR (1) = 0x3e3e3e3e;
+
+  TYPE (9) = 0x2d2d2d2d;
+  CAR (9) = 0x2d2d2d2d;
+  CDR (9) = 0x3e3e3e3e;
+#if 0
+  // (A(B))
+  TYPE (10) = PAIR;
+  CAR (10) = 11;
+  CDR (10) = 12;
+
+  TYPE (11) = CHAR;
+  CAR (11) = 0x58585858;
+  CDR (11) = 89;
+
+  TYPE (12) = PAIR;
+  CAR (12) = 13;
+  CDR (12) = 1;
+
+  TYPE (13) = CHAR;
+  CAR (11) = 0x58585858;
+  CDR (13) = 90;
+
+  TYPE (14) = 0x58585858;
+  CAR (14) = 0x58585858;
+  CDR (14) = 0x58585858;
+
+  TYPE (14) = 0x58585858;
+  CAR (14) = 0x58585858;
+  CDR (14) = 0x58585858;
+#else
+  // (cons 0 1)
+  TYPE (10) = PAIR;
+  CAR (10) = 11;
+  CDR (10) = 12;
+
+  TYPE (11) = FUNCTION;
+  CAR (11) = 0x58585858;
+  // 0 = make_cell
+  // 1 = cons
+  CDR (11) = 1;
+
+  TYPE (12) = PAIR;
+  CAR (12) = 13;
+  CDR (12) = 14;
+
+  TYPE (13) = NUMBER;
+  CAR (13) =0x58585858;
+  CDR (13) = 0;
+
+  TYPE (14) = PAIR;
+  CAR (14) = 15;
+  CDR (14) = 1;
+
+  TYPE (15) = NUMBER;
+  CAR (15) = 0x58585858;
+  CDR (15) = 1;
+
+#endif
+  TYPE (16) = 0x3c3c3c3c;
+  CAR (16) = 0x2d2d2d2d;
+  CDR (16) = 0x2d2d2d2d;
+  return 0;
+}
+
+SCM
+display_ (SCM x)
+{
+  //puts ("<display>\n");
+  switch (TYPE (x))
+    {
+    case CHAR:
+      {
+        //puts ("<char>\n");
+        puts ("#\\");
+        putchar (VALUE (x));
+        break;
+      }
+    case FUNCTION:
+      {
+        //puts ("<function>\n");
+        if (VALUE (x) == 0)
+          puts ("make-cell");
+        if (VALUE (x) == 1)
+          puts ("cons");
+        if (VALUE (x) == 2)
+          puts ("car");
+        if (VALUE (x) == 3)
+          puts ("cdr");
+        break;
+      }
+    case NUMBER:
+      {
+        //puts ("<number>\n");
+#if __GNUC__
+        putchar (48 + VALUE (x));
+#else
+        int i;
+        i = VALUE (x);
+        i = i + 48;
+        putchar (i);
+#endif
+        break;
+      }
+    case PAIR:
+      {
+        //puts ("<pair>\n");
+        //if (cont != cell_f) puts "(");
+        puts ("(");
+        if (x && x != cell_nil) display_ (CAR (x));
+        if (CDR (x) && CDR (x) != cell_nil)
+          {
+#if __GNUC__
+            if (TYPE (CDR (x)) != PAIR)
+              puts (" . ");
+#else
+            int c;
+            c = CDR (x);
+            c = TYPE (c);
+            if (c != PAIR)
+              puts (" . ");
+#endif
+            display_ (CDR (x));
+          }
+        //if (cont != cell_f) puts (")");
+        puts (")");
+        break;
+      }
+    default:
+      {
+        //puts ("<default>\n");
+        puts ("_");
+        break;
+      }
+    }
+  return 0;
+}
+
+SCM
 bload_env (SCM a) ///((internal))
 {
-  puts ("bload_env\n");
-  g_stdin = open ("module/mes/read-0.mo", 0);
-  if (g_stdin < 0) {eputs ("no such file: module/mes/read-0.mo\n");return 1;} 
+  //g_stdin = open ("module/mes/read-0-32.mo", 0);
+  g_stdin = open ("module/mes/hack-32.mo", 0);
+  if (g_stdin < 0) {eputs ("no such file: module/mes/read-0-32.mo\n");return 1;} 
+
+  int c;
+  char *p = (char*)g_cells;
+  char *q = (char*)g_cells;
+
+  puts ("q: ");
+  puts (q);
+  puts ("\n");
+
 #if __GNUC__
   puts ("fd: ");
   puts (itoa (g_stdin));
   puts ("\n");
-  //g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
 #endif
-  char *p = (char*)g_cells;
 
-  // int x;
-  // x = getchar ();
-  // if (x == 'M') puts ("M");
-  // x = getchar ();
-  // if (x == 'E') puts ("E");
-  // x = getchar ();
-  // if (x == 'S') puts ("S");
-  
+#if __GNUC__
   assert (getchar () == 'M');
   assert (getchar () == 'E');
   assert (getchar () == 'S');
-  puts ("GOT MES\n");
+  puts ("GOT MES!\n");
   g_stack = getchar () << 8;
   g_stack += getchar ();
-  int c = getchar ();
+  puts ("stack: ");
+  puts (itoa (g_stack));
+  puts ("\n");
+#else
+  c = getchar ();
+  putchar (c);
+  if (c != 'M') exit (10);
+  c = getchar ();
+  putchar (c);
+  if (c != 'E') exit (11);
+  c = getchar ();
+  putchar (c);
+  if (c != 'S') exit (12);
+  puts ("\n");
+  puts ("GOT MES!\n");
+  getchar ();
+  getchar ();
+#endif
+
+  c = getchar ();
   while (c != -1)
     {
       *p++ = c;
       c = getchar ();
     }
-  g_free = (p-(char*)g_cells) / sizeof (scm);
+
+  puts ("q: ");
+  puts (q);
+  puts ("\n");
+#if 0
+  //__GNUC__
+  g_free = (p-(char*)g_cells) / sizeof (struct scm);
   gc_peek_frame ();
   g_symbols = r1;
   g_stdin = STDIN;
   r0 = mes_builtins (r0);
 
-#if __GNUC__
   puts ("cells read: ");
   puts (itoa (g_free));
   puts ("\n");
+
+  puts ("symbols: ");
+  puts (itoa (g_symbols));
+  puts ("\n");
+  display_ (g_symbols);
+  puts ("\n");
+
+  r2 = 10;
+  puts ("\n");
+  puts ("program: ");
+  puts (itoa (r2));
+  puts ("\n");
+  display_ (r2);
+  puts ("\n");
+#else
+  display_ (10);
+  puts ("\n");
+  puts ("\n");
+  fill ();
+  display_ (10);
 #endif
+  puts ("\n");
   return r2;
 }
 
 int
 main (int argc, char *argv[])
 {
+  puts ("filled sexp:\n");
+  fill ();
+  display_ (10);
+  puts ("\n");
+
 #if __GNUC__
   g_debug = (int)getenv ("MES_DEBUG");
 #endif
@@ -420,6 +601,7 @@ main (int argc, char *argv[])
 #if MES_MINI
   puts ("Hello tiny-mes!\n");
   SCM program = bload_env (r0);
+
 #else
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
@@ -467,3 +649,4 @@ _start ()
   exit (r);
 }
 #endif
+

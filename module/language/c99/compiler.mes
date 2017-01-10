@@ -930,17 +930,19 @@
 
         ((eq (d-sel (ident ,field) . ,d-sel) (p-expr (fixed ,b)))
          (let* ((expr ((expr->Xaccu info) `(d-sel (ident ,field) ,@d-sel)))
-                (b (- (cstring->number b)))
+                (b (cstring->number b))
 
                 (struct-type "scm") ;; FIXME
                 (struct (assoc-ref (.types info) struct-type))
                 (size (length struct))
                 (field-size 4) ;; FIXME:4, not fixed
                 (offset (* field-size (1- (length (member field (reverse struct) (lambda (a b) (equal? a (cdr b)))))))))
-
            (clone info #:text (append (.text expr)
                                       (list (lambda (f g t d)
-                                              (i386:value->accu-ref+n offset b)))))))
+                                              (append
+                                               (i386:mem+n->accu offset)
+                                               (i386:value->base b)
+                                               (i386:test-base))))))))
 
         ((gt (p-expr (ident ,a)) (p-expr (fixed ,b)))
          (let ((b (cstring->number b)))

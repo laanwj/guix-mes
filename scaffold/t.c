@@ -147,6 +147,7 @@ test (char *p)
   int f = 0;
   int t = 1;
   int one = 1;
+  char c = 'C';
 
   puts ("t: if (0)\n");
   if (0) return 1;
@@ -206,10 +207,21 @@ test (char *p)
   puts ("t: (f) ?\n");
   (f) ? exit (1) : 1;
 
+  puts ("t: *g_cells != 'A'\n");
+  arena[0] = 'A';
+  if (*g_cells != 'A') return 1;
+
+  puts ("t: *x != 'A'\n");
+  char *x = g_cells;
+  if (*x != 'A') return 1;
+
   puts ("t: *x != 'Q'\n");
   g_cells[0] = 'Q';
-  char *x = g_cells;
   if (*x != 'Q') return 1;
+
+  puts ("t: *x++ != 'C'\n");
+  *x++ = c;
+  if (*g_cells != 'C') return 1;
 
   puts ("t: switch 0\n");
   if (swits (0) != 0) return swits (0);
@@ -281,11 +293,38 @@ test (char *p)
 
   puts ("t: if (++i)\n");
   if (++i) goto ok9;
+  return 1;
  ok9:
 
   puts ("t: if (i--)\n");
   if (i--) goto ok10;
+  return 1;
  ok10:
+
+  puts ("t: *g_cells == 'B'\n");
+  arena[0] = 'B';
+  if (*g_cells == 'B') goto ok11;
+  return 1;
+ ok11:
+
+  puts ("t: *x == 'B'\n");
+  x = g_cells;
+  if (*x == 'B') goto ok12;
+  return 1;
+ ok12:
+
+  puts ("t: *x == 'R'\n");
+  g_cells[0] = 'R';
+  x = g_cells;
+  if (*x == 'R') goto ok13;
+  return 1;
+ ok13:
+
+  puts ("t: *x++ == 'C'\n");
+  *x++ = c;
+  if (*g_cells == 'C') goto ok14;
+  return 1;
+ ok14:
 
   puts ("t: for (i=0; i<4; ++i)\n");
   for (i=0; i<4; ++i);

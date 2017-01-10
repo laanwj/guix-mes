@@ -139,6 +139,34 @@ dump ()
   fputc ('S', stdout);
   fputc (g_stack >> 8, stdout);
   fputc (g_stack % 256, stdout);
+  if (getenv ("MES_HACK"))
+    {
+      TYPE (9) = 0x2d2d2d2d;
+      CAR (9) = 0x2d2d2d2d;
+      CDR (9) = 0x3e3e3e3e;
+
+      TYPE (10) = PAIR;
+      CAR (10) = 11;
+      CDR (10) = 12;
+
+      TYPE (11) = CHAR;
+      CAR (11) = 0x58585858;
+      CDR (11) = 65;
+
+      TYPE (12) = PAIR;
+      CAR (12) = 13;
+      CDR (12) = 1;
+
+      TYPE (13) = CHAR;
+      CAR (11) = 0x58585858;
+      CDR (13) = 66;
+
+      TYPE (14) = 0x3c3c3c3c;
+      CAR (14) = 0x2d2d2d2d;
+      CDR (14) = 0x2d2d2d2d;
+
+      g_free = 15;
+    }
   for (int i=0; i<g_free * sizeof(scm); i++)
     fputc (*p++, stdout);
   return 0;

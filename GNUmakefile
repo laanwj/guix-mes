@@ -90,6 +90,14 @@ module/mes/read-0.mo: module/mes/read-0.mes mes
 
 dump: module/mes/read-0.mo
 
+mes-32:
+	rm -f mes mes.o
+	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
+	mv mes mes-32
+
+module/mes/hack-32.mo: mes-32
+	MES_HACK=1 ./mes-32 --dump < module/mes/read-0.mes > module/mes/hack-32.mo
+
 guile-check:
 	set -e; for i in $(TESTS); do\
 		$(GUILE) -s <(cat $(MES-0) module/mes/test.mes $$i);\

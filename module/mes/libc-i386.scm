@@ -30,6 +30,7 @@
   #:export (
             i386:accu-not
             i386:accu-cmp-value
+            i386:accu->base
             i386:accu->global
             i386:accu->local
             i386:accu-non-zero?
@@ -74,6 +75,8 @@
             i386:local-address->accu
             i386:local-ref->base
             i386:local-test
+            i386:mem->accu
+            i386:mem+n->accu
             i386:push-accu
             i386:push-global
             i386:push-global-ref
