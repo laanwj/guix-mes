@@ -89,19 +89,32 @@
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)))
 
 (define <info> '<info>)
+(define <types> '<types>)
+(define <constants> '<constants>)
 (define <functions> '<functions>)
 (define <globals> '<globals>)
 (define <locals> '<locals>)
 (define <function> '<function>)
 (define <text> '<text>)
-(define* (make o #:key (functions '()) (globals '()) (locals '()) (function #f) (text '()))
+
+(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (function #f) (text '()))
   (pmatch o
     (<info> (list <info>
+                  (cons <types> types)
+                  (cons <constants> constants)
                   (cons <functions> functions)
                   (cons <globals> globals)
                   (cons <locals> locals)
                   (cons <function> function)
                   (cons <text> text)))))
+
+(define (.types o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <types>))))
+
+(define (.constants o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <constants>))))
 
 (define (.functions o)
   (pmatch o
@@ -128,19 +141,23 @@
 
 (define (clone o . rest)
   (cond ((info? o)
-         (let ((functions (.functions o))
+         (let ((types (.types o))
+               (constants (.constants o))
+               (functions (.functions o))
                (globals (.globals o))
                (locals (.locals o))
                (function (.function o))
                (text (.text o)))
            (let-keywords rest
                          #f
-                         ((functions functions)
+                         ((types types)
+                          (constants constants)
+                          (functions functions)
                           (globals globals)
                           (locals locals)
                           (function function)
                           (text text))
-                         (make <info> #:functions functions #:globals globals #:locals locals #:function function #:text text))))))
+                         (make <info> #:types types #:constants constants #:functions functions #:globals globals #:locals locals #:function function #:text text))))))
 
 (define (push-global-ref globals)
   (lambda (o)
@@ -257,6 +274,12 @@
 
 (define (ident->global name value)
   (cons name (int->bv32 value)))
+
+(define (ident->constant name value)
+  (cons name value))
+
+(define (ident->type name value)
+  (cons name value))
 
 (define (expr->global o)
   (pmatch o
@@ -862,6 +885,13 @@
                     #:text
                     (append (.text info)
                             ((accu->ident info) name))))))
+
+        ;; enum 
+        ((decl (decl-spec-list (type-spec (enum-def (ident ,name) (enum-def-list . ,fields)))))
+         (let ((type (ident->type name "enum"))
+               (constants (map ident->constant (map cadadr fields) (iota (length fields)))))
+           (clone info #:types (append (.types info) (list type))
+                  #:constants (append constants (.constants info)))))
 
         ;; i = 0;
         ((expr-stmt (assn-expr (p-expr (ident ,name)) (op _) (p-expr (fixed ,value))))
