@@ -29,6 +29,7 @@
   #:use-module (mes elf)
   #:export (
             i386:accu-not
+            i386:accu->global
             i386:accu->local
             i386:accu-non-zero?
             i386:accu-test
@@ -46,6 +47,7 @@
             i386:function-locals
             i386:function-preamble
             i386:global->accu
+            i386:global->base
             i386:jump
             i386:jump
             i386:jump-byte-nz
@@ -60,17 +62,21 @@
             i386:local->accu
             i386:local->base
             i386:local-add
-            i386:local-assign
+            i386:local-address->accu
             i386:local-test
             i386:push-accu
-            i386:ref-global
-            i386:ref-local
+            i386:push-global
+            i386:push-global-ref
+            i386:push-local
+            i386:push-local-ref
             i386:ret
             i386:ret-local
             i386:sub-base
             i386:test-base
             i386:test-jump-z
             i386:value->accu
+            i386:value->global
+            i386:value->local
             i386:value->base
             i386:xor-accu
             i386:xor-zf
