@@ -47,14 +47,6 @@ todo:
   provide util to expand defines
 |#
 
-;;.@deffn skip-ws ch
-;; Helper for 
-(define (skip-ws ch)
-  (if (eof-object? ch) ch
-      (if (char-set-contains? c:ws ch)
-	  (skip-ws (read-char))
-	  ch)))
-
 ;; @deffn read-ellipsis ch
 ;; read ellipsis
 (define (read-ellipsis ch)
