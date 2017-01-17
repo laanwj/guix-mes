@@ -113,7 +113,7 @@
   (define e-flags (elf32-word 0))
   ;;(define e-ehsize (elf32-half 0))
   (define e-phentsize (elf32-half (length (program-header 0 0 '()))))
-  (define e-phnum (elf32-half 1))
+  (define e-phnum (elf32-half 2)) ; text+data
   (define e-shentsize (elf32-half (length (section-header 0 0 0 0 '() 0 0 0))))
   (define e-shnum (elf32-half 7))       ; sections: 7
   (define e-shstrndx (elf32-half 4))
@@ -140,14 +140,16 @@
     (length (elf-header 0 0 0)))
 
   (define program-header-size
-    (length (program-header 0 0 '())))
+    (* 2 (length (program-header 0 0 '()))))
 
   (define text-offset
     (+ elf-header-size program-header-size))
 
-  (define (program-headers text)
+  (define PT-LOAD 1)
+  (define (program-headers text data)
     (append
-     (program-header 1 text-offset text)))
+     (program-header PT-LOAD text-offset text)
+     (program-header PT-LOAD data-offset data)))
 
   (define comment
     (string->list
@@ -274,7 +276,7 @@
     (format (current-error-port) "_start=~a\n" (number->string entry 16))
     (append
      (elf-header elf-header-size entry section-headers-offset)
-     (program-headers text)
+     (program-headers text data)
      text
      data
      comment
