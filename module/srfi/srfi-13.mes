@@ -58,3 +58,8 @@
 
 (define (string-drop s n)
   (list->string (list-tail (string->list s) n)))
+
+(define (string-delete pred s)
+  (let ((p (if (procedure? pred) pred
+               (lambda (c) (not (eq? pred c))))))
+    (list->string (filter p (string->list s)))))
