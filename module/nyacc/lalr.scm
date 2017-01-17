@@ -42,8 +42,6 @@
 	    looking-at first-item
 	    terminal? non-terminal?
 	    range-next
-            process-spec
-            reserved?
 	    )
   #:use-module ((srfi srfi-1) #:select (fold fold-right remove lset-union
 					     lset-intersection lset-difference))
@@ -52,7 +50,7 @@
   #:use-module (nyacc util)
   )
 
-(define *nyacc-version* "0.74.3")
+(define *nyacc-version* "0.74.3+fixes")
 
 
 ;; @deffn proxy-? sym rhs
