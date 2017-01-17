@@ -29,16 +29,24 @@
   #:use-module (mes elf)
   #:export (
             i386:accu-not
+            i386:accu-cmp-value
             i386:accu->global
             i386:accu->local
             i386:accu-non-zero?
             i386:accu-test
             i386:accu-zero?
+            i386:accu+accu
+            i386:accu+base
+            i386:accu-shl
             i386:base-sub
+            i386:base->accu
+            i386:base->accu-ref
             i386:base-mem->accu
             i386:byte-base-sub
             i386:byte-base-mem->accu
+            i386:byte-local->accu
             i386:byte-mem->accu
+            i386:base-mem+n->accu
             i386:byte-mem->base
             i386:byte-test-base
             i386:byte-sub-base
@@ -68,6 +76,7 @@
             i386:push-global
             i386:push-global-ref
             i386:push-local
+            i386:push-local-de-ref
             i386:push-local-ref
             i386:ret
             i386:ret-local
@@ -75,11 +84,16 @@
             i386:test-base
             i386:test-jump-z
             i386:value->accu
+            i386:value->accu-ref
+            i386:value->accu-ref+n
             i386:value->global
             i386:value->local
             i386:value->base
             i386:xor-accu
             i386:xor-zf
+
+            i386:Xjump
+            i386:Xjump-nz
 
             ;; libc
             i386:exit

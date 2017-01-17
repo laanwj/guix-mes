@@ -73,6 +73,15 @@ puts (char const* s)
 }
 
 int
+putchar (int c)
+{
+  //write (STDOUT, s, strlen (s));
+  //int i = write (STDOUT, s, strlen (s));
+  write (1, (char*)&c, 1);
+  return 0;
+}
+
+int
 strcmp (char const* a, char const* b)
 {
   while (*a && *b && *a == *b) {a++;b++;}
@@ -80,6 +89,15 @@ strcmp (char const* a, char const* b)
 }
 int test (char *p);
 #endif
+
+// struct scm {
+//   int type;
+//   int car;
+//   int cdr;
+// };
+
+char arena[20];
+char *g_cells = arena;
 
 int
 main (int argc, char *argv[])
@@ -95,6 +113,32 @@ main (int argc, char *argv[])
 
   return test (p);
   return 22;
+}
+
+int
+swits (int c)
+{
+  int x = -1;
+  switch (c)
+    {
+      case 0:
+        {
+          x = 0;
+          c = 34;
+          break;
+        }
+      case 1:
+        {
+          x = 1;
+          break;
+        }
+      default:
+        {
+          x = 2;
+          break;
+        }
+    }
+  return x;
 }
 
 int
@@ -156,11 +200,25 @@ test (char *p)
   puts ("t: if (--i)\n");
   if (--i) return 1;
 
-  puts ("t: (one == 1) ?");
+  puts ("t: (one == 1) ?\n");
   (one == 1) ? 1 : exit (1);
 
-  puts ("t: (f) ?");
+  puts ("t: (f) ?\n");
   (f) ? exit (1) : 1;
+
+  puts ("t: *x != 'Q'\n");
+  g_cells[0] = 'Q';
+  char *x = g_cells;
+  if (*x != 'Q') return 1;
+
+  puts ("t: switch 0\n");
+  if (swits (0) != 0) return swits (0);
+
+  puts ("t: switch 1\n");
+  if (swits (1) != 1) return 1;
+
+  puts ("t: switch -1\n");
+  if (swits (-1) != 2) return 1;
 
   puts ("t: if (1)\n");
   if (1) goto ok0;

@@ -50,10 +50,15 @@
 (define (function-prefix name functions)
   (member name (reverse functions) (lambda (a b) (equal? (car b) name))))
 
-(define (function-offset name functions)
-  (let ((prefix (function-prefix name functions)))
-    (if prefix (length (functions->text (cdr prefix) '() 0 0))
-        0)))
+(define function-offset
+  (let ((cache '()))
+    (lambda (name functions)
+      (or (assoc-ref cache name)
+          (let* ((prefix (function-prefix name functions))
+                 (offset (if prefix (length (functions->text (cdr prefix) '() 0 0))
+                             0)))
+            (if (or (equal? name "exit") (> offset 0)) (set! cache (assoc-set! cache name offset)))
+            offset)))))
 
 (define (label-offset function label functions)
   (let ((prefix (function-prefix function functions)))

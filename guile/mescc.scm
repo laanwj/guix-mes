@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-export GUILE_AUTO_COMPILE=0
+export GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
 exec ${GUILE-guile} -L $(pwd)/guile -e '(mescc)' -s "$0" "$@"
 !#
 
