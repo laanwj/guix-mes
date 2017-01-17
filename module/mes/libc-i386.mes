@@ -116,12 +116,20 @@
   `(#x8b #x45 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%eax
 
 (define (i386:byte-local->accu n)
-  (or n local->accu)
+  (or n byte-local->accu)
   `(#x0f #xb6 #x45 ,(- 0 (* 4 n))))     ; movzbl 0x<n>(%ebp),%eax
 
 (define (i386:local->base n)
   (or n local->base)
   `(#x8b #x55 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%edx
+
+;; (define (i386:local-ref->base n)
+;;   (or n local-ref->base)
+;;   `(#x8b #x15 ,@(int->bv32 (- 0 (* 4 n))))) ; mov    0x<n>,%edx
+
+(define (i386:local-ref->base n)
+  (or n local-ref->base)
+  `(#x8d #x55 ,(- 0 (* 4 n))))          ; lea    0x<n>(%ebp),%edx
 
 (define (i386:global-ref->base n)
   (or n global->base)
@@ -166,6 +174,9 @@
 
 (define (i386:base->accu-ref)
   '(#x89 #x10))                         ; mov    %edx,(%eax)
+
+(define (i386:byte-base->accu-ref)
+  '(#x88 #x10))                         ; mov    %dl,(%eax)
 
 (define (i386:value->base v)
   `(#xba ,@(int->bv32 v)))              ; mov    $<v>,%edx

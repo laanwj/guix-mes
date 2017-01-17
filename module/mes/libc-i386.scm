@@ -43,6 +43,7 @@
             i386:base->accu-ref
             i386:base-mem->accu
             i386:byte-base-sub
+            i386:byte-base->accu-ref
             i386:byte-base-mem->accu
             i386:byte-local->accu
             i386:byte-mem->accu
@@ -71,6 +72,7 @@
             i386:local->base
             i386:local-add
             i386:local-address->accu
+            i386:local-ref->base
             i386:local-test
             i386:push-accu
             i386:push-global
