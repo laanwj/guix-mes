@@ -19,6 +19,7 @@
  */
 
 #define MES_MINI 1
+#define FIXED_PRIMITIVES 0
 
 #if __GNUC__
 #define FIXME_NYACC 1
@@ -31,18 +32,14 @@
 #define NYACC_CDR nyacc_cdr
 #endif
 
-typedef long size_t;
-void *malloc (size_t i);
-
+int g_stdin = 0;
 
 #if __GNUC__
-
-// #define __NR_restart_syscall 0
-// #define __NR_exit 1
-// #define __NR_fork 2
-// #define __NR_read 3
-// #define __NR_write 4
-// #define __NR_open 5
+typedef long size_t;
+void *malloc (size_t i);
+int open (char const *s, int mode);
+int read (int fd, void* buf, size_t n);
+void write (int fd, char const* s, int n);
 
 void
 exit (int code)
@@ -65,17 +62,49 @@ getenv (char const* p)
 }
 
 int
-open (char const *s, int mode)
+read (int fd, void* buf, size_t n)
 {
-  //return syscall (SYS_open, s, mode);
-  return 0;
+  int r;
+  //syscall (SYS_write, fd, s, n));
+  asm (
+       "movl %1,%%ebx\n\t"
+       "movl %2,%%ecx\n\t"
+       "movl %3,%%edx\n\t"
+       "movl $0x3,%%eax\n\t"
+       "int  $0x80\n\t"
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (fd), "" (buf), "" (n)
+       : "eax", "ebx", "ecx", "edx"
+       );
+  return r;
 }
 
 int
-read (int fd, int n)
+open (char const *s, int mode)
 {
-  //syscall (SYS_read, 1, 1);
-  return 0;
+  int r;
+  //syscall (SYS_open, mode));
+  asm (
+       "mov %1,%%ebx\n\t"
+       "mov %2,%%ecx\n\t"
+       "mov $0x5,%%eax\n\t"
+       "int $0x80\n\t"
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (s), "" (mode)
+       : "eax", "ebx", "ecx"
+       );
+  return r;
+}
+
+int
+getchar ()
+{
+  char c;
+  int r = read (g_stdin, &c, 1);
+  if (r < 1) return -1;
+  return c;
 }
 
 void
@@ -96,6 +125,15 @@ write (int fd, char const* s, int n)
        );
 }
 
+int
+putchar (int c)
+{
+  //write (STDOUT, s, strlen (s));
+  //int i = write (STDOUT, s, strlen (s));
+  write (1, (char*)&c, 1);
+  return 0;
+}
+
 void *
 malloc (size_t size)
 {
@@ -112,18 +150,11 @@ free (void *p)
   int *n = (int*)p-1;
   //munmap ((void*)p, *n);
 }
-#endif // __GNUC__
 
 #define EOF -1
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
-
-//#include <stdio.h>
-//#include <string.h>
-//#include <stdlib.h>
-
-int g_stdin;
 
 size_t
 strlen (char const* s)
@@ -138,12 +169,6 @@ strcmp (char const* a, char const* b)
 {
   while (*a && *b && *a == *b) {a++;b++;}
   return *a - *b;
-}
-
-int
-getchar ()
-{
-  return read (g_stdin, 1);
 }
 
 int
@@ -188,6 +213,7 @@ itoa (int x)
 
   return p+1;
 }
+#endif
 
 void
 assert_fail (char* s)
@@ -211,29 +237,46 @@ typedef int bool;
 int ARENA_SIZE = 100000;
 
 typedef int SCM;
+
+#if __GNUC__
+bool g_debug = false;
+#endif
+
+int g_free = 0;
+
+SCM g_symbols = 0;
+SCM g_stack = 0;
+SCM r0 = 0; // a/env
+SCM r1 = 0; // param 1
+SCM r2 = 0; // save 2+load/dump
+SCM r3 = 0; // continuation
+
 #if __NYACC__ || FIXME_NYACC
 enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
 #else
 enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
 #endif
+typedef int (*f_t) (void);
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
 typedef SCM (*function3_t) (SCM, SCM, SCM);
 typedef SCM (*functionn_t) (SCM);
 typedef struct function_struct {
-  union {
-    function0_t function0;
-    function1_t function1;
-    function2_t function2;
-    function3_t function3;
-    functionn_t functionn;
-  } data;
+  // union {
+  //   f_t function;
+  //   function0_t function0;
+  //   function1_t function1;
+  //   function2_t function2;
+  //   function3_t function3;
+  //   functionn_t functionn;
+  // } data;
+  f_t function;
   int arity;
 } function_t;
 struct scm;
 
-typedef struct scm_struct {
+typedef struct scm {
   enum type_t type;
   union {
     char const *name;
@@ -265,6 +308,16 @@ scm scm_closure = {SPECIAL, "*closure*"};
 scm scm_circular = {SPECIAL, "*circular*"};
 scm scm_begin = {SPECIAL, "*begin*"};
 
+scm scm_vm_apply = {SPECIAL, "core:apply"};
+scm scm_vm_apply2 = {SPECIAL, "*vm-apply2*"};
+
+scm scm_vm_eval = {SPECIAL, "core:eval"};
+
+scm scm_vm_begin = {SPECIAL, "*vm-begin*"};
+//scm scm_vm_begin_read_input_file = {SPECIAL, "*vm-begin-read-input-file*"};
+scm scm_vm_begin2 = {SPECIAL, "*vm-begin2*"};
+
+scm scm_vm_return = {SPECIAL, "*vm-return*"};
 
 //#include "mes.symbols.h"
 #define cell_nil 1
@@ -284,13 +337,27 @@ scm scm_begin = {SPECIAL, "*begin*"};
 #define cell_symbol_quote 15
 #define cell_symbol_set_x 16
 
-#if __GNUC__
-bool g_debug = false;
+#define cell_vm_apply 45
+#define cell_vm_apply2 46
+
+#define cell_vm_eval 47
+
+#define cell_vm_begin 56
+//#define cell_vm_begin_read_input_file 57
+#define cell_vm_begin2 58
+
+#define cell_vm_return 63
+
+#if 0
+char arena[200];
+struct scm *g_cells = (struct scm*)arena;
+#else
+struct scm g_cells[200];
 #endif
 
-int g_free = 0;
-scm *g_cells;
 //scm *g_news = 0;
+
+
 SCM tmp;
 SCM tmp_num;
 SCM tmp_num2;
@@ -298,12 +365,6 @@ SCM tmp_num2;
 function_t functions[200];
 int g_function = 0;
 
-SCM g_symbols = 0;
-SCM g_stack = 0;
-SCM r0 = 0; // a/env
-SCM r1 = 0; // param 1
-SCM r2 = 0; // save 2+load/dump
-SCM r3 = 0; // continuation
 
 SCM make_cell (SCM type, SCM car, SCM cdr);
 function_t fun_make_cell = {&make_cell, 3};
@@ -337,13 +398,26 @@ SCM cell_cdr;
 #define STRING(x) g_cells[x].string
 
 #define CDR(x) g_cells[x].cdr
+#define CLOSURE(x) g_cells[x].closure
+#define CONTINUATION(x) g_cells[x].cdr
+#define FUNCTION(x) functions[g_cells[x].function]
 #define VALUE(x) g_cells[x].value
 #define VECTOR(x) g_cells[x].vector
 
 #define MAKE_CHAR(n) make_cell (tmp_num_ (CHAR), 0, tmp_num2_ (n))
 //#define MAKE_CONTINUATION(n) make_cell (tmp_num_ (CONTINUATION), n, g_stack)
-//#define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
+#define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
 //#define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0)
+
+
+#define CAAR(x) CAR (CAR (x))
+// #define CDAR(x) CDR (CAR (x))
+#define CADAR(x) CAR (CDR (CAR (x)))
+// #define CADDR(x) CAR (CDR (CDR (x)))
+// #define CDDDR(x) CDR (CDR (CDR (x)))
+#define CDADAR(x) CAR (CDR (CAR (CDR (x))))
+#define CADR(x) CAR (CDR (x))
+
 
 #if __NYACC__ || FIXME_NYACC
 #define MAKE_STRING(x) make_cell (tmp_num_ (TSTRING), x, 0)
@@ -425,10 +499,67 @@ cdr (SCM x)
 }
 
 SCM
+eq_p (SCM x, SCM y)
+{
+  return (x == y
+          || ((TYPE (x) == KEYWORD && TYPE (y) == KEYWORD
+               && STRING (x) == STRING (y)))
+          || (TYPE (x) == CHAR && TYPE (y) == CHAR
+              && VALUE (x) == VALUE (y))
+          || (TYPE (x) == NUMBER && TYPE (y) == NUMBER
+              && VALUE (x) == VALUE (y)))
+    ? cell_t : cell_f;
+}
+
+SCM
 gc_push_frame ()
 {
   SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
   return g_stack = cons (frame, g_stack);
+}
+
+SCM
+append2 (SCM x, SCM y)
+{
+  if (x == cell_nil) return y;
+  assert (TYPE (x) == PAIR);
+  return cons (car (x), append2 (cdr (x), y));
+}
+
+SCM
+pairlis (SCM x, SCM y, SCM a)
+{
+  if (x == cell_nil)
+    return a;
+  if (TYPE (x) != PAIR)
+    return cons (cons (x, y), a);
+  return cons (cons (car (x), car (y)),
+               pairlis (cdr (x), cdr (y), a));
+}
+
+SCM
+assq (SCM x, SCM a)
+{
+  while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
+  return a != cell_nil ? car (a) : cell_f;
+}
+
+SCM
+assq_ref_env (SCM x, SCM a)
+{
+  x = assq (x, a);
+  if (x == cell_f) return cell_undefined;
+  return cdr (x);
+}
+
+SCM
+assert_defined (SCM x, SCM e)
+{
+  if (e != cell_undefined) return e;
+  // error (cell_symbol_unbound_variable, x);
+  puts ("unbound variable");
+  exit (33);
+  return e;
 }
 
 SCM
@@ -449,6 +580,381 @@ SCM cadr (SCM x) {return car (cdr (x));}
 SCM cdar (SCM x) {return cdr (car (x));}
 SCM cddr (SCM x) {return cdr (cdr (x));}
 
+SCM call (SCM,SCM);
+SCM gc_pop_frame ();
+
+SCM
+eval_apply ()
+{
+ eval_apply:
+  // if (g_free + GC_SAFETY > ARENA_SIZE)
+  //   gc_pop_frame (gc (gc_push_frame ()));
+
+  switch (r3)
+    {
+#if 0
+    case cell_vm_evlis: goto evlis;
+    case cell_vm_evlis2: goto evlis2;
+    case cell_vm_evlis3: goto evlis3;
+#endif
+    case cell_vm_apply: goto apply;
+    case cell_vm_apply2: goto apply2;
+ case cell_vm_eval: goto eval;
+#if 0
+#if FIXED_PRIMITIVES
+    case cell_vm_eval_car: goto eval_car;
+    case cell_vm_eval_cdr: goto eval_cdr;
+    case cell_vm_eval_cons: goto eval_cons;
+    case cell_vm_eval_null_p: goto eval_null_p;
+#endif
+    case cell_vm_eval_set_x: goto eval_set_x;
+    case cell_vm_eval_macro: goto eval_macro;
+    case cell_vm_eval2: goto eval2;
+    case cell_vm_macro_expand: goto macro_expand;
+#endif
+    case cell_vm_begin: goto begin;
+      ///case cell_vm_begin_read_input_file: goto begin_read_input_file;
+    case cell_vm_begin2: goto begin2;
+#if 0
+    case cell_vm_if: goto vm_if;
+    case cell_vm_if_expr: goto if_expr;
+    case cell_vm_call_with_current_continuation2: goto call_with_current_continuation2;
+    case cell_vm_call_with_values2: goto call_with_values2;
+    case cell_vm_return: goto vm_return;
+#endif
+    case cell_unspecified: return r1;
+    default:
+      assert (0);
+    }
+
+  SCM x = cell_nil;
+  SCM y = cell_nil;
+// #if 0
+//  evlis:
+//   if (r1 == cell_nil) goto vm_return;
+//   if (TYPE (r1) != PAIR) goto eval;
+//   push_cc (car (r1), r1, r0, cell_vm_evlis2);
+//   goto eval;
+//  evlis2:
+//   push_cc (cdr (r2), r1, r0, cell_vm_evlis3);
+//   goto evlis;
+//  evlis3:
+//   r1 = cons (r2, r1);
+//   goto vm_return;
+// #endif
+
+ apply:
+  switch (TYPE (car (r1)))
+    {
+    case FUNCTION: {
+      //check_formals (car (r1), MAKE_NUMBER (FUNCTION (car (r1)).arity), cdr (r1));
+      r1 = call (car (r1), cdr (r1)); /// FIXME: move into eval_apply
+      goto vm_return;
+    }
+//     case CLOSURE:
+//       {
+//         SCM cl = CLOSURE (car (r1));
+//         SCM formals = cadr (cl);
+//         SCM body = cddr (cl);
+//         SCM aa = cdar (cl);
+//         aa = cdr (aa);
+//         //check_formals (car (r1), formals, cdr (r1));
+//         SCM p = pairlis (formals, cdr (r1), aa);
+//         call_lambda (body, p, aa, r0);
+//         goto begin;
+//       }
+//       case CONTINUATION:
+//         {
+//           x = r1;
+//           g_stack = CONTINUATION (CAR (r1));
+//           gc_pop_frame ();
+//           r1 = cadr (x);
+//           goto eval_apply;
+//         }
+// #if 0
+//     case SPECIAL:
+//       {
+//         switch (car (r1))
+//           {
+//           case cell_vm_apply:
+//             {
+//               push_cc (cons (CADR (r1), CADDR (r1)), r1, r0, cell_vm_return);
+//               goto apply;
+//             }
+//           case cell_vm_eval:
+//             {
+//               push_cc (CADR (r1), r1, CADDR (r1), cell_vm_return);
+//               goto eval;
+//             }
+//           case cell_call_with_current_continuation:
+//             {
+//               r1 = cdr (r1);
+//               goto call_with_current_continuation;
+//             }
+//           default: check_apply (cell_f, car (r1));
+//           }
+//       }
+//     case SYMBOL:
+//       {
+//         if (car (r1) == cell_symbol_call_with_values)
+//           {
+//             r1 = cdr (r1);
+//             goto call_with_values;
+//           }
+//         if (car (r1) == cell_symbol_current_module)
+//           {
+//             r1 = r0;
+//             goto vm_return;
+//           }
+//         break;
+//       }
+// #endif
+//     case PAIR:
+//       {
+//         switch (caar (r1))
+//           {
+//           case cell_symbol_lambda:
+//             {
+//               SCM formals = cadr (car (r1));
+//               SCM body = cddr (car (r1));
+//               SCM p = pairlis (formals, cdr (r1), r0);
+//               check_formals (r1, formals, cdr (r1));
+//               call_lambda (body, p, p, r0);
+//               goto begin;
+//             }
+//           }
+//       }
+    }
+  push_cc (car (r1), r1, r0, cell_vm_apply2);
+  goto eval;
+ apply2:
+  //check_apply (r1, car (r2));
+  r1 = cons (r1, cdr (r2));
+  goto apply;
+
+ eval:
+  switch (TYPE (r1))
+    {
+    case PAIR:
+      {
+        switch (car (r1))
+          {
+// #if FIXED_PRIMITIVES
+//           case cell_symbol_car:
+//             {
+//               push_cc (CADR (r1), r1, r0, cell_vm_eval_car); goto eval;
+//             eval_car:
+//               x = r1; gc_pop_frame (); r1 = car (x); goto eval_apply;
+//             }
+//           case cell_symbol_cdr:
+//             {
+//               push_cc (CADR (r1), r1, r0, cell_vm_eval_cdr); goto eval;
+//             eval_cdr:
+//               x = r1; gc_pop_frame (); r1 = cdr (x); goto eval_apply;
+//             }
+//           case cell_symbol_cons: {
+//             push_cc (CDR (r1), r1, r0, cell_vm_eval_cons); goto evlis;
+//             eval_cons:
+//             x = r1;
+//             gc_pop_frame ();
+//             r1 = cons (CAR (x), CADR (x));
+//             goto eval_apply;
+//           }
+//           case cell_symbol_null_p:
+//             {
+//               push_cc (CADR (r1), r1, r0, cell_vm_eval_null_p);
+//               goto eval;
+//             eval_null_p:
+//               x = r1; gc_pop_frame (); r1 = null_p (x); goto eval_apply;
+//             }
+// #endif // FIXED_PRIMITIVES
+//           case cell_symbol_quote:
+//             {
+//               x = r1; gc_pop_frame (); r1 = cadr (x); goto eval_apply;
+//             }
+//           case cell_symbol_begin: goto begin;
+//           case cell_symbol_lambda:
+//             {
+//               r1 = make_closure (cadr (r1), cddr (r1), assq (cell_closure, r0));
+//               goto vm_return;
+//             }
+// #if 0
+//           case cell_symbol_if: {r1=cdr (r1); goto vm_if;}
+//           case cell_symbol_set_x:
+//             {
+//               push_cc (car (cddr (r1)), r1, r0, cell_vm_eval_set_x);
+//               goto eval;
+//             eval_set_x:
+//               x = r2;
+//               r1 = set_env_x (cadr (x), r1, r0);
+//               goto vm_return;
+//             }
+//           case cell_vm_macro_expand:
+//             {
+//               push_cc (cadr (r1), r1, r0, cell_vm_return);
+//               goto macro_expand;
+//             }
+// #endif
+          default: {
+#if 0
+            push_cc (r1, r1, r0, cell_vm_eval_macro);
+            goto macro_expand;
+            eval_macro:
+            x = r2;
+            if (r1 != r2)
+              {
+                if (TYPE (r1) == PAIR)
+                  {
+                    set_cdr_x (r2, cdr (r1));
+                    set_car_x (r2, car (r1));
+                  }
+                goto eval;
+              }
+            push_cc (CDR (r1), r1, r0, cell_vm_eval2); goto evlis;
+            eval2:
+#endif
+            r1 = cons (car (r2), r1);
+            goto apply;
+          }
+          }
+      }
+    case SYMBOL:
+      {
+        r1 = assert_defined (r1, assq_ref_env (r1, r0));
+        goto vm_return;
+      }
+    default: goto vm_return;
+    }
+
+//   SCM macro;
+//   SCM expanders;
+// #if 0
+//  macro_expand:
+//   if (TYPE (r1) == PAIR
+//       && (macro = lookup_macro (car (r1), r0)) != cell_f)
+//     {
+//       r1 = cons (macro, CDR (r1));
+//       goto apply;
+//     }
+//   else if (TYPE (r1) == PAIR
+//            && TYPE (CAR (r1)) == SYMBOL
+//            && ((expanders = assq_ref_env (cell_symbol_sc_expander_alist, r0)) != cell_undefined)
+//            && ((macro = assq (CAR (r1), expanders)) != cell_f))
+//     {
+//       SCM sc_expand = assq_ref_env (cell_symbol_macro_expand, r0);
+//       if (sc_expand != cell_undefined && sc_expand != cell_f)
+//         {
+//           r1 = cons (sc_expand, cons (r1, cell_nil));
+//           goto apply;
+//         }
+//     }
+//   goto vm_return;
+// #endif
+ begin:
+  x = cell_unspecified;
+  while (r1 != cell_nil) {
+    if (TYPE (r1) == PAIR && TYPE (CAR (r1)) == PAIR)
+      {
+        if (caar (r1) == cell_symbol_begin)
+          r1 = append2 (cdar (r1), cdr (r1));
+#if 0
+        else if (caar (r1) == cell_symbol_primitive_load)
+          {
+            push_cc (cons (cell_symbol_read_input_file, cell_nil), r1, r0, cell_vm_begin_read_input_file);
+            goto apply;
+          begin_read_input_file:
+            r1 = append2 (r1, cdr (r2));
+          }
+#endif
+      }
+    if (CDR (r1) == cell_nil)
+      {
+        r1 = car (r1);
+        goto eval;
+      }
+    push_cc (CAR (r1), r1, r0, cell_vm_begin2);
+    goto eval;
+  begin2:
+    x = r1;
+    r1 = CDR (r2);
+  }
+  r1 = x;
+  goto vm_return;
+
+// #if 0
+//  vm_if:
+//   push_cc (car (r1), r1, r0, cell_vm_if_expr);
+//   goto eval;
+//  if_expr:
+//   x = r1;
+//   r1 = r2;
+//   if (x != cell_f)
+//     {
+//       r1 = cadr (r1);
+//       goto eval;
+//     }
+//   if (cddr (r1) != cell_nil)
+//     {
+//       r1 = car (cddr (r1));
+//       goto eval;
+//     }
+//   r1 = cell_unspecified;
+//   goto vm_return;
+
+//  call_with_current_continuation:
+//   gc_push_frame ();
+//   x = MAKE_CONTINUATION (g_continuations++);
+//   gc_pop_frame ();
+//   push_cc (cons (car (r1), cons (x, cell_nil)), x, r0, cell_vm_call_with_current_continuation2);
+//   goto apply;
+//  call_with_current_continuation2:
+//   CONTINUATION (r2) = g_stack;
+//   goto vm_return;
+
+//  call_with_values:
+//   push_cc (cons (car (r1), cell_nil), r1, r0, cell_vm_call_with_values2);
+//   goto apply;
+//  call_with_values2:
+//   if (TYPE (r1) == VALUES)
+//     r1 = CDR (r1);
+//   r1 = cons (cadr (r2), r1);
+//   goto apply;
+// #endif
+
+ vm_return:
+  x = r1;
+  gc_pop_frame ();
+  r1 = x;
+  goto eval_apply;
+}
+
+SCM
+call (SCM fn, SCM x)
+{
+  if ((FUNCTION (fn).arity > 0 || FUNCTION (fn).arity == -1)
+      && x != cell_nil && TYPE (CAR (x)) == VALUES)
+    x = cons (CADAR (x), CDR (x));
+  if ((FUNCTION (fn).arity > 1 || FUNCTION (fn).arity == -1)
+      && x != cell_nil && TYPE (CDR (x)) == PAIR && TYPE (CADR (x)) == VALUES)
+    x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
+  function_t* f = &FUNCTION (fn);
+  switch (FUNCTION (fn).arity)
+    {
+    // case 0: return FUNCTION (fn).function0 ();
+    // case 1: return FUNCTION (fn).function1 (car (x));
+    // case 2: return FUNCTION (fn).function2 (car (x), cadr (x));
+    // case 3: return FUNCTION (fn).function3 (car (x), cadr (x), car (cddr (x)));
+    // case -1: return FUNCTION (fn).functionn (x);
+    case 0: return (FUNCTION (fn).function) ();
+    case 1: return ((SCM(*)(SCM))(FUNCTION (fn).function)) (car (x));
+    case 2: return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x));
+    case 3: return ((SCM(*)(SCM,SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x), car (cddr (x)));
+    case -1: return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);
+    }
+
+  return cell_unspecified;
+}
+
 SCM
 gc_peek_frame ()
 {
@@ -457,6 +963,14 @@ gc_peek_frame ()
   r2 = cadr (frame);
   r3 = car (cddr (frame));
   r0 = cadr (cddr (frame));
+  return frame;
+}
+
+SCM
+gc_pop_frame ()
+{
+  SCM frame = gc_peek_frame (g_stack);
+  g_stack = cdr (g_stack);
   return frame;
 }
 
@@ -525,17 +1039,19 @@ SCM g_symbol_max;
 SCM
 gc_init_cells ()
 {
-  g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
-#if __NYACC__ || FIXME_NYACC
-  TYPE (0) = TVECTOR;
-// #else
-//   TYPE (0) = VECTOR;
-#endif
-  LENGTH (0) = 1000;
-  VECTOR (0) = 0;
-  g_cells++;
-  TYPE (0) = CHAR;
-  VALUE (0) = 'c';
+  return 0;
+//   g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
+
+// #if __NYACC__ || FIXME_NYACC
+//   TYPE (0) = TVECTOR;
+// // #else
+// //   TYPE (0) = VECTOR;
+// #endif
+//   LENGTH (0) = 1000;
+//   VECTOR (0) = 0;
+//   g_cells++;
+//   TYPE (0) = CHAR;
+//   VALUE (0) = 'c';
 }
 
 // INIT NEWS
@@ -579,6 +1095,33 @@ g_cells[cell_circular] = scm_circular;
 g_free++;
 g_cells[cell_begin] = scm_begin;
 
+///
+g_free = 44;
+g_free++;
+g_cells[cell_vm_apply] = scm_vm_apply;
+
+g_free++;
+g_cells[cell_vm_apply2] = scm_vm_apply2;
+
+g_free++;
+g_cells[cell_vm_eval] = scm_vm_eval;
+
+///
+g_free = 55;
+g_free++;
+g_cells[cell_vm_begin] = scm_vm_begin;
+
+g_free++;
+// g_cells[cell_vm_begin_read_input_file] = scm_vm_begin_read_input_file;
+
+g_free++;
+g_cells[cell_vm_begin2] = scm_vm_begin2;
+
+///
+g_free = 62;
+g_free++;
+g_cells[cell_vm_return] = scm_vm_return;
+
 #endif
 
   g_symbol_max = g_free;
@@ -619,6 +1162,12 @@ g_cells[cell_begin].car = cstring_to_list (scm_begin.name);
 }
 
 SCM
+make_closure (SCM args, SCM body, SCM a)
+{
+  return make_cell (tmp_num_ (CLOSURE), cell_f, cons (cons (cell_circular, a), cons (args, body)));
+}
+
+SCM
 mes_environment () ///((internal))
 {
   SCM a = mes_symbols ();
@@ -628,7 +1177,8 @@ mes_environment () ///((internal))
 SCM
 mes_builtins (SCM a)
 {
-#if __GNUC__
+#if 0
+  //__GNUC__
 //#include "mes.i"
 
 // #include "lib.i"
@@ -662,21 +1212,21 @@ functions[g_function++] = fun_cdr;
 cell_cdr = g_free++;
 g_cells[cell_cdr] = scm_cdr;
 
-scm_make_cell.string = cstring_to_list (scm_make_cell.name);
-g_cells[cell_make_cell].string = MAKE_STRING (scm_make_cell.string);
-a = acons (make_symbol (scm_make_cell.string), cell_make_cell, a);
+// scm_make_cell.string = cstring_to_list (scm_make_cell.name);
+// g_cells[cell_make_cell].string = MAKE_STRING (scm_make_cell.string);
+// a = acons (make_symbol (scm_make_cell.string), cell_make_cell, a);
 
-scm_cons.string = cstring_to_list (scm_cons.name);
-g_cells[cell_cons].string = MAKE_STRING (scm_cons.string);
-a = acons (make_symbol (scm_cons.string), cell_cons, a);
+// scm_cons.string = cstring_to_list (scm_cons.name);
+// g_cells[cell_cons].string = MAKE_STRING (scm_cons.string);
+// a = acons (make_symbol (scm_cons.string), cell_cons, a);
 
-scm_car.string = cstring_to_list (scm_car.name);
-g_cells[cell_car].string = MAKE_STRING (scm_car.string);
-a = acons (make_symbol (scm_car.string), cell_car, a);
+// scm_car.string = cstring_to_list (scm_car.name);
+// g_cells[cell_car].string = MAKE_STRING (scm_car.string);
+// a = acons (make_symbol (scm_car.string), cell_car, a);
 
-scm_cdr.string = cstring_to_list (scm_cdr.name);
-g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
-a = acons (make_symbol (scm_cdr.string), cell_cdr, a);
+// scm_cdr.string = cstring_to_list (scm_cdr.name);
+// g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
+// a = acons (make_symbol (scm_cdr.string), cell_cdr, a);
 #endif
   return a;
 }
@@ -708,6 +1258,256 @@ bload_env (SCM a) ///((internal))
   return r2;
 }
 
+SCM
+fill ()
+{
+  TYPE (0) = 0x6c6c6168;
+  CAR (0) = 0x6a746f6f;
+  CDR (0) = 0x00002165;
+
+  TYPE (1) = SYMBOL;
+  CAR (1) = 0x2d2d2d2d;
+  CDR (1) = 0x3e3e3e3e;
+
+  TYPE (9) = 0x2d2d2d2d;
+  CAR (9) = 0x2d2d2d2d;
+  CDR (9) = 0x3e3e3e3e;
+#if 0
+  // (A(B))
+  TYPE (10) = PAIR;
+  CAR (10) = 11;
+  CDR (10) = 12;
+
+  TYPE (11) = CHAR;
+  CAR (11) = 0x58585858;
+  CDR (11) = 89;
+
+  TYPE (12) = PAIR;
+  CAR (12) = 13;
+  CDR (12) = 1;
+
+  TYPE (13) = CHAR;
+  CAR (11) = 0x58585858;
+  CDR (13) = 90;
+
+  TYPE (14) = 0x58585858;
+  CAR (14) = 0x58585858;
+  CDR (14) = 0x58585858;
+
+  TYPE (14) = 0x58585858;
+  CAR (14) = 0x58585858;
+  CDR (14) = 0x58585858;
+#else
+  // (cons 0 1)
+  TYPE (10) = PAIR;
+  CAR (10) = 11;
+  CDR (10) = 12;
+
+  TYPE (11) = FUNCTION;
+  CAR (11) = 0x58585858;
+  // 0 = make_cell
+  // 1 = cons
+  CDR (11) = 1;
+
+  TYPE (12) = PAIR;
+  CAR (12) = 13;
+  CDR (12) = 14;
+
+  TYPE (13) = NUMBER;
+  CAR (13) =0x58585858;
+  CDR (13) = 0;
+
+  TYPE (14) = PAIR;
+  CAR (14) = 15;
+  CDR (14) = 1;
+
+  TYPE (15) = NUMBER;
+  CAR (15) = 0x58585858;
+  CDR (15) = 1;
+
+#endif
+  TYPE (16) = 0x3c3c3c3c;
+  CAR (16) = 0x2d2d2d2d;
+  CDR (16) = 0x2d2d2d2d;
+  return 0;
+}
+
+SCM
+display_ (SCM x)
+{
+  //puts ("<display>\n");
+  switch (TYPE (x))
+    {
+    case CHAR:
+      {
+        //puts ("<char>\n");
+        puts ("#\\");
+        putchar (VALUE (x));
+        break;
+      }
+    case FUNCTION:
+      {
+        //puts ("<function>\n");
+        if (VALUE (x) == 0)
+          puts ("make-cell");
+        if (VALUE (x) == 1)
+          puts ("cons");
+        if (VALUE (x) == 2)
+          puts ("car");
+        if (VALUE (x) == 3)
+          puts ("cdr");
+        break;
+      }
+    case NUMBER:
+      {
+        //puts ("<number>\n");
+#if __GNUC__
+        putchar (48 + VALUE (x));
+#else
+        int i;
+        i = VALUE (x);
+        i = i + 48;
+        putchar (i);
+#endif
+        break;
+      }
+    case PAIR:
+      {
+        //puts ("<pair>\n");
+        //if (cont != cell_f) puts "(");
+        puts ("(");
+        if (x && x != cell_nil) display_ (CAR (x));
+        if (CDR (x) && CDR (x) != cell_nil)
+          {
+#if __GNUC__
+            if (TYPE (CDR (x)) != PAIR)
+              puts (" . ");
+#else
+            int c;
+            c = CDR (x);
+            c = TYPE (c);
+            if (c != PAIR)
+              puts (" . ");
+#endif
+            display_ (CDR (x));
+          }
+        //if (cont != cell_f) puts (")");
+        puts (")");
+        break;
+      }
+    default:
+      {
+        //puts ("<default>\n");
+        puts ("_");
+        break;
+      }
+    }
+  return 0;
+}
+
+SCM
+simple_bload_env (SCM a) ///((internal))
+{
+  //g_stdin = open ("module/mes/read-0-32.mo", 0);
+  g_stdin = open ("module/mes/hack-32.mo", 0);
+  if (g_stdin < 0) {eputs ("no such file: module/mes/read-0-32.mo\n");return 1;} 
+
+  int c;
+  char *p = (char*)g_cells;
+  char *q = (char*)g_cells;
+
+  puts ("q: ");
+  puts (q);
+  puts ("\n");
+
+#if __GNUC__
+  puts ("fd: ");
+  puts (itoa (g_stdin));
+  puts ("\n");
+#endif
+
+#if __GNUC__
+  assert (getchar () == 'M');
+  assert (getchar () == 'E');
+  assert (getchar () == 'S');
+  puts ("GOT MES!\n");
+  g_stack = getchar () << 8;
+  g_stack += getchar ();
+  puts ("stack: ");
+  puts (itoa (g_stack));
+  puts ("\n");
+#else
+  c = getchar ();
+  putchar (c);
+  if (c != 'M') exit (10);
+  c = getchar ();
+  putchar (c);
+  if (c != 'E') exit (11);
+  c = getchar ();
+  putchar (c);
+  if (c != 'S') exit (12);
+  puts ("\n");
+  puts ("GOT MES!\n");
+  getchar ();
+  getchar ();
+#endif
+
+  c = getchar ();
+  while (c != -1)
+    {
+      *p++ = c;
+      c = getchar ();
+    }
+
+  puts ("q: ");
+  puts (q);
+  puts ("\n");
+#if 1
+  //__GNUC__
+  g_free = (p-(char*)g_cells) / sizeof (struct scm);
+  // gc_peek_frame ();
+  // g_symbols = r1;
+  g_symbols = 1;
+  g_stdin = STDIN;
+  r0 = mes_builtins (r0);
+
+  puts ("cells read: ");
+  puts (itoa (g_free));
+  puts ("\n");
+
+  puts ("symbols: ");
+  puts (itoa (g_symbols));
+  puts ("\n");
+  display_ (g_symbols);
+  puts ("\n");
+
+  fill ();
+
+  r2 = 10;
+  puts ("\n");
+  puts ("program: ");
+  puts (itoa (r2));
+  puts ("\n");
+  display_ (r2);
+  puts ("\n");
+#else
+  display_ (10);
+  puts ("\n");
+  puts ("\n");
+  fill ();
+  display_ (10);
+#endif
+  puts ("\n");
+  g_stack = 20;
+  TYPE (20) = SYMBOL;
+  CAR (20) = 1;
+
+  r0 = 1;
+  //g_free = 21;
+  r2 = 10;
+  return r2;
+}
+
 char const*
 string_to_cstring (SCM s)
 {
@@ -733,8 +1533,8 @@ stderr_ (SCM x)
 //   if (TYPE (x) == STRING)
 #endif
     eputs (string_to_cstring (x));
-  // else if ((write = assq_ref_cache (cell_symbol_write, r0)) != cell_undefined)
-  //   apply (assq_ref_cache (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
+  // else if ((write = assq_ref_env (cell_symbol_write, r0)) != cell_undefined)
+  //   apply (assq_ref_env (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
 #if __NYACC__ || FIXME_NYACC
   else if (TYPE (x) == SPECIAL || TYPE (x) == TSTRING || TYPE (x) == SYMBOL)
 // #else
@@ -751,6 +1551,7 @@ stderr_ (SCM x)
 int
 main (int argc, char *argv[])
 {
+  puts ("mini-mes!\n");
 #if __GNUC__
   //g_debug = getenv ("MES_DEBUG");
 #endif
@@ -761,7 +1562,7 @@ main (int argc, char *argv[])
   r0 = mes_environment ();
 
 #if MES_MINI
-  SCM program = bload_env (r0);
+  SCM program = simple_bload_env (r0);
 #else  
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
@@ -769,9 +1570,11 @@ main (int argc, char *argv[])
 #endif
 
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
-  // r3 = cell_vm_begin;
-  // r1 = eval_apply ();
-  stderr_ (r1);
+  //r3 = cell_vm_begin;
+  r3 = cell_vm_apply;
+  r1 = eval_apply ();
+  //stderr_ (r1);
+  display_ (r1);
 
   eputs ("\n");
 #if !MES_MINI

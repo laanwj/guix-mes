@@ -284,6 +284,7 @@ cdr (SCM x)
   if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_cdr));
   return CDR (x);
 }
+
 SCM
 eq_p (SCM x, SCM y)
 {
