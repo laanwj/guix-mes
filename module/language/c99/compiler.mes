@@ -221,7 +221,8 @@
 
       ;; f (car (x))
       ((fctn-call . ,call)
-       (let ((info ((ast->info info) o)))
+       (let* ((empty (clone info #:text '()))
+              (info ((ast->info empty) o)))
          (append (.text info)
                  (list
                   (lambda (f g t d)
