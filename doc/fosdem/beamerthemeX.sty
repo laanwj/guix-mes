@@ -1,0 +1,19 @@
+\mode<presentation>
+
+\setbeamertemplate{navigation symbols}{}
+
+\newif\ifbeamer@secheader
+\beamer@secheaderfalse
+
+\DeclareOptionBeamer{secheader}{\beamer@secheadertrue}
+\ProcessOptionsBeamer
+
+\usecolortheme{X}
+\useinnertheme[shadow]{rounded}
+\useoutertheme{infolines}
+
+\ifbeamer@secheader\else\setbeamertemplate{headline}[default]\fi
+
+\mode
+<all>
+
