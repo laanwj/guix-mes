@@ -28,7 +28,7 @@ time to start doing something useful.
 ** Fluids are a hack for Nyacc.
 ** Prototype mes.c depends on a C compiler.
 *** Translate C-prototype mes.c into annotated hex?
-One idea is to use OrianJ's amazing self-hosting [[https://github.com/oriansj/stage0][stage0]] hex assembler
+One idea is to use OriansJ's amazing self-hosting [[https://github.com/oriansj/stage0][stage0]] hex assembler
 and minimal bootstrap binaries and rewrite the mes.c core to directly
 bootstrap into Scheme.
 
@@ -73,6 +73,16 @@ in scope as there is no mention of such things; only ML is mentioned
 while Guile is used for bootstrapping.
 
 * Assorted ideas and info 
+** Using GDB on assembly/a.out
+info registers
+p/x $eax
+p/x $edx
+set disassemble-next-line
+gdb-display-disassembly-buffer
+b *0x804a79d
+** Create memory dump with 32 bit Gcc compiled Mes
+guix environment --ad-hoc --system=i686-linux gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=${PATH%%/bin:*}/lib'
+MES_HACK=1 ./mes-32 --dump < module/mes/read-0.mes > module/mes/read-0-32.mo
 ** C parser/compiler
 *** [[https://savannah.gnu.org/projects/nyacc][nyacc]]
 *** PEG: [[http://piumarta.com/software/peg/][parse C using PEG]]
