@@ -96,7 +96,6 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
   "Help Commands:
 
   ,expand SEXP         - Expand SEXP
-  ,sc-expand SEXP      - SC-expand SEXP
   ,help                - Show this help
   ,show TOPIC          - Show info on TOPIC [c, w]
   ,use MODULE          - load MODULE
@@ -113,25 +112,16 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
   (let ((count 0)
         (print-sexp? #t))
     
-    (define (expand)
-      (let ((sexp (read)))
-        (when #t print-sexp?
-              (display "[sexp=")
-              (display sexp)
-              (display "]")
-              (newline))
-        (display (core:macro-expand sexp))
-        (newline)))
-
-    (define (scexpand)
-      (let ((sexp (read)))
-        (when #t print-sexp?
-              (display "[sexp=")
-              (display sexp)
-              (display "]")
-              (newline))
-        (display (sc-expand sexp))
-        (newline)))
+    (define (expand a)
+      (lambda ()
+        (let ((sexp (read)))
+          (when #t print-sexp?
+                (display "[sexp=")
+                (display sexp)
+                (display "]")
+                (newline))
+          (display (eval (list core:macro-expand sexp) a))
+          (newline))))
 
     (define (help . x) (display help-commands))
     (define (show . x)
@@ -145,8 +135,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
         (let ((module (read)))
           (mes-load-module-env module a))))
     (define (meta command a)
-      (let ((command-alist `((expand . ,expand)
-                             (sc-expand . ,scexpand)
+      (let ((command-alist `((expand . ,(expand a))
                              (help . ,help)
                              (show . ,show)
                              (use . ,(use a)))))
