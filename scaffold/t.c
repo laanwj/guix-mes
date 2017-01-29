@@ -87,34 +87,42 @@ strcmp (char const* a, char const* b)
   while (*a && *b && *a == *b) {a++;b++;}
   return *a - *b;
 }
-int test (char *p);
 #endif
 
-// struct scm {
-//   int type;
-//   int car;
-//   int cdr;
-// };
+struct scm {
+  int type;
+  int car;
+  int cdr;
+};
 
-char arena[20];
-char *g_cells = arena;
+char arena[200];
+struct scm *g_cells = arena;
+char *g_chars = arena;
+char buf[200];
 
-int
-main (int argc, char *argv[])
-{
-  char *p = "t.c\n";
-  puts ("t.c\n");
+int foo () {puts ("t: foo\n"); return 0;};
+int bar () {puts ("t: bar\n"); return 0;};
+struct function {
+  int (*function) (void);
+  int arity;
+};
+struct function g_fun = {&exit, 1};
+struct function g_foo = {&foo, 1};
+struct function g_bar = {&bar, 1};
 
-  if (argc > 1 && !strcmp (argv[1], "--help")) return 1;
-  puts ("t: if (argc > 1 && !strcmp (argv[1], \"--help\")\n");
+//void *functions[2];
+int functions[2];
 
-  // FIXME mescc?!
-  if (argc > 1) if (!strcmp (argv[1], "--help")) return 1;
+struct function g_functions[2];
+int g_function = 0;
 
-  return test (p);
-  return 22;
-}
+enum type_t {CHAR, CLOSURE, CONTINUATION, TFUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
 
+typedef int SCM;
+int g_free = 3;
+SCM tmp;
+
+#if 1
 int
 swits (int c)
 {
@@ -141,6 +149,128 @@ swits (int c)
   return x;
 }
 
+int g = 48;
+int
+get ()
+{
+  int i = g;
+  g++;
+  return i;
+}
+
+int
+read_test ()
+{
+  puts ("read test\n");
+  char *p = (char*)g_chars;
+  int i = 0;
+  puts ("t: read 0123456789\n");
+  int c = get ();
+  while (i < 10) {
+    *p++ = c;
+    putchar (c);
+    c = get ();
+    i++;
+  }
+  puts ("\n");
+  if (strcmp (g_chars, "0123456789")) return 1;
+  return 0;
+}
+
+int
+math_test ()
+{
+  int i;
+  puts ("t: 4/2=");
+  i = 4 / 2;
+  if (i!=2) return 1;
+  i += 48;
+  putchar (i);
+  puts ("\n");
+  return read_test ();
+}
+
+SCM
+make_tmps_test (struct scm* cells)
+{
+  puts ("t: tmp = g_free++\n");
+  tmp = g_free++;
+  puts ("t: cells[tmp].type = CHAR\n");
+  cells[tmp].type = CHAR;
+  return math_test();
+}
+
+#define TYPE(x) (g_cells[x].type)
+#define CAR(x) g_cells[x].car
+#define CDR(x) g_cells[x].cdr
+
+struct scm scm_fun = {TFUNCTION,0,0};
+SCM cell_fun;
+
+int
+struct_test ()
+{
+  g_cells[3].type = 0x64;
+  if (g_cells[3].type != 0x64)
+    return g_cells[3].type;
+
+  TYPE (4) = 4;
+  if (TYPE (4) != 4)
+    return 4;
+  
+  CDR (3) = 0x22;
+  CDR (4) = 0x23;
+  if (CDR (3) != 0x22)
+    return CDR (3);
+
+  puts ("t: struct fun = {&exit, 1};\n");
+  struct function fun = {&exit, 1};
+
+  puts ("t: g_fun.arity != 1;\n");
+  if (g_fun.arity != 1) return 1;
+
+  puts ("t: g_fun.function != exit;\n");
+  if (g_fun.function != &exit) return 1;
+
+  puts ("t: fun.arity != 1;\n");
+  if (fun.arity != 1) return 1;
+
+  puts ("t: fun.function != exit;\n");
+  if (fun.function != &exit) return 1;
+
+  puts ("t: g_functions[g_function++] = g_foo;\n");
+  g_functions[g_function++] = g_foo;
+
+  int fn = 0;
+  puts ("t: g_functions[g_cells[fn].cdr].arity\n");
+  if (!g_functions[g_cells[fn].cdr].arity) return 1;
+
+  int (*functionx) (void) = 0;
+  functionx = g_functions[0].function;
+  puts ("t: *functionx == foo\n");
+  if (*functionx != foo) return 11;
+
+  puts ("t: (*functionx) () == foo\n");
+  if ((*functionx) () != 0) return 12;
+
+  fn++;
+  g_functions[0] = g_bar;
+  if (g_cells[fn].cdr != 0) return 13;
+  puts ("t: g_functions[g_cells[fn].cdr].function\n");
+  functionx = g_functions[g_cells[fn].cdr].function;
+  puts ("t: *functionx == bar\n");
+  if (*functionx != bar) return 15;
+  puts ("t: (*functionx) () == bar\n");
+  if ((*functionx) () != 0) return 16;
+
+  scm_fun.cdr = g_function;
+  g_functions[g_function++] = g_fun;
+  cell_fun = g_free++;
+  g_cells[cell_fun] = scm_fun;
+
+  return make_tmps_test  (g_cells);
+}
+
 int
 test (char *p)
 {
@@ -148,6 +278,10 @@ test (char *p)
   int t = 1;
   int one = 1;
   char c = 'C';
+  int i=0;
+
+  char *x = arena;
+  char *y = g_chars;
 
   puts ("t: if (0)\n");
   if (0) return 1;
@@ -194,12 +328,22 @@ test (char *p)
   puts ("t: if (t && !one)\n");
   if (t && !one) return 1;
 
-  int i=0;
+  puts ("t: if (f || !t)\n");
+  if (f || !t) return 1;
+
   puts ("t: if (i++)\n");
   if (i++) return 1;
 
   puts ("t: if (--i)\n");
   if (--i) return 1;
+
+  puts ("t: i += 2\n");
+  i += 2;
+  if (i != 2) return 1;
+
+  puts ("t: i -= 2\n");
+  i -= 2;
+  if (i != 0) return 1;
 
   puts ("t: (one == 1) ?\n");
   (one == 1) ? 1 : exit (1);
@@ -207,21 +351,23 @@ test (char *p)
   puts ("t: (f) ?\n");
   (f) ? exit (1) : 1;
 
-  puts ("t: *g_cells != 'A'\n");
+  puts ("t: *g_chars != 'A'\n");
   arena[0] = 'A';
-  if (*g_cells != 'A') return 1;
+  if (*g_chars != 'A') return 1;
 
   puts ("t: *x != 'A'\n");
-  char *x = g_cells;
   if (*x != 'A') return 1;
 
+  puts ("t: *y != 'A'\n");
+  if (*y != 'A') return 1;
+
   puts ("t: *x != 'Q'\n");
-  g_cells[0] = 'Q';
+  g_chars[0] = 'Q';
   if (*x != 'Q') return 1;
 
   puts ("t: *x++ != 'C'\n");
   *x++ = c;
-  if (*g_cells != 'C') return 1;
+  if (*g_chars != 'C') return 1;
 
   puts ("t: switch 0\n");
   if (swits (0) != 0) return swits (0);
@@ -237,6 +383,10 @@ test (char *p)
   return 1;
  ok0:
   
+  puts ("t: if (0); return 1; else;\n");
+  if (0) return 1; else goto ok01;
+ ok01:
+
   puts ("t: if (t)\n");
   if (t) goto ok1;
   return 1;
@@ -291,6 +441,11 @@ test (char *p)
   return 1;
  ok8:
 
+  puts ("t: if (f || t)\n");
+  if (f || t) goto ok80;
+  return 1;
+ ok80:
+
   puts ("t: if (++i)\n");
   if (++i) goto ok9;
   return 1;
@@ -301,36 +456,59 @@ test (char *p)
   return 1;
  ok10:
 
-  puts ("t: *g_cells == 'B'\n");
+  puts ("t: *g_chars == 'B'\n");
   arena[0] = 'B';
-  if (*g_cells == 'B') goto ok11;
+  if (*g_chars == 'B') goto ok11;
   return 1;
- ok11:
+  ok11:
 
   puts ("t: *x == 'B'\n");
-  x = g_cells;
+  x = arena;
   if (*x == 'B') goto ok12;
   return 1;
  ok12:
 
-  puts ("t: *x == 'R'\n");
-  g_cells[0] = 'R';
-  x = g_cells;
-  if (*x == 'R') goto ok13;
+  puts ("t: *y == 'B'\n");
+  y = g_chars;
+  if (*y == 'B') goto ok13;
   return 1;
  ok13:
 
-  puts ("t: *x++ == 'C'\n");
-  *x++ = c;
-  if (*g_cells == 'C') goto ok14;
+  puts ("t: *x == 'R'\n");
+  g_chars[0] = 'R';
+  if (*x == 'R') goto ok14;
   return 1;
  ok14:
 
-  puts ("t: for (i=0; i<4; ++i)\n");
-  for (i=0; i<4; ++i);
-  if (i != 4) return i;
+  puts ("t: *x++ == 'C'\n");
+  *x++ = c;
+  if (*g_chars == 'C') goto ok15;
+  return 1;
+ ok15:
 
-  return 0;
+  puts ("t: for (i=1; i<5; ++i)\n");
+  for (i=1; i<5; ++i);
+  if (i != 5) return i;
+
+  return struct_test ();
+}
+#endif
+
+int
+main (int argc, char *argv[])
+{
+  char *p = "t.c\n";
+  puts ("t.c\n");
+
+  if (argc > 1 && !strcmp (argv[1], "--help")) return 1;
+  puts ("t: if (argc > 1 && !strcmp (argv[1], \"--help\")\n");
+
+  // FIXME mescc?!
+  if (argc > 1) if (!strcmp (argv[1], "--help")) return 1;
+
+  return test (p);
+
+  return 22;
 }
 
 #if __GNUC__

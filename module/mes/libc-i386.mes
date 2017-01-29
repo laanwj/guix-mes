@@ -31,8 +31,8 @@
 (define (i386:function-locals)
   '(#x83 #xec #x20))               ; sub    $0x10,%esp -- 8 local vars
 
-(define (i386:push-global-ref o)
-  (or o push-global-ref)
+(define (i386:push-global-address o)
+  (or o push-global-address)
   `(#x68 ,@(int->bv32 o)))              ; push  $0x<o>
 
 (define (i386:push-global o)
@@ -44,8 +44,8 @@
   (or n push-local)
   `(#xff #x75 ,(- 0 (* 4 n))))          ; pushl  0x<n>(%ebp)
 
-(define (i386:push-local-ref n)
-  (or n push-local-ref)
+(define (i386:push-local-address n)
+  (or n push-local-address)
   `(#x8d #x45 ,(- 0 (* 4 n))            ; lea 0x<n>(%ebp),%eax
          #x50))                         ; push %eax
 
@@ -56,30 +56,39 @@
          ;;#x0f #xbe #xc0                 ; movsbl %al,%eax ***FIXME BYTE****
          #x50))                         ; push   %eax
 
-(define (i386:push-accu)
-  `(#x50))                              ; push %eax
+(define (i386:pop-accu)
+  '(#x58))                              ; pop %eax
 
-(define (i386:push-arg f g t d)
+(define (i386:push-accu)
+  '(#x50))                              ; push %eax
+
+(define (i386:pop-base)
+  '(#x5a))                              ; pop %eax
+
+(define (i386:push-base)
+  '(#x52))                              ; push %eax
+
+(define (i386:push-arg f g ta t d)
   (lambda (o)
     (or o push-arg)
     (cond ((number? o)
            `(#x68 ,@(int->bv32 o)))     ; push $<o>
           ((and (pair? o) (procedure? (car o)))
-           (append-map (lambda (p) (p f g t d)) o))
+           (append-map (lambda (p) (p f g ta t d)) o))
           ((pair? o) o)
-          ((procedure? o) (o f g t d))
+          ((procedure? o) (o f g ta t d))
           (_ barf))))
 
 (define (i386:ret . rest)
-  (lambda (f g t d)
+  (lambda (f g ta t d)
     `(
       ,@(cond ((null? rest) '())
               ((number? (car rest))
-               `(#xb8                     ; mov    $<>,%eax
+               `(#xb8                     ; mov    $<>,%eaxx
                  ,@(int->bv32 (car rest))))
               ((pair? (car rest)) (car rest))
               ((procedure? (car rest))
-               ((car rest) f g t d)))
+               ((car rest) f g ta t d)))
     #xc9                                ; leave
     #xc3                                ; ret
     )))
@@ -87,13 +96,36 @@
 (define (i386:accu->base)
   '(#x89 #xc2))                         ; mov    %eax,%edx
 
+(define (i386:accu->base-address)
+  '(#x89 #x02))                         ; mov    %eax,%(edx)
+
+(define (i386:byte-accu->base-address)
+  '(#x88 #x02))                         ; mov    %al,%(edx)
+
+(define (i386:accu->base-address+n n)
+  (or n accu->base-address+n)
+  `(#x89 #x42 ,n))                      ; mov    %eax,$0x<n>%(edx)
+
 (define (i386:accu->local n)
   (or n accu->local)
   `(#x89 #x45 ,(- 0 (* 4 n))))          ; mov    %eax,-<0xn>(%ebp)
 
+(define (i386:base->local n)
+  (or n base->local)
+  `(#x89 #x55 ,(- 0 (* 4 n))))          ; mov    %edx,-<0xn>(%ebp)
+
+(define (i386:base->global n)
+  (or n base->global)
+  `(#x89 #x15 ,@(int->bv32 n)))         ; mov    %edx,0x0
+
 (define (i386:accu->global n)
   (or n accu->global)
   `(#xa3 ,@(int->bv32 n)))              ; mov    %eax,0x0
+
+(define (i386:accu->global-address n)
+  (or n accu->global-address)
+  `(#x8b #x15 ,@(int->bv32 n)           ; mov    0x<n>,%edx
+         #x89 #x02 ))                   ; mov    %eax,(%edx)
 
 (define (i386:accu-zero?)
   '(#x85 #xc0))                         ; cmpl   %eax,%eax
@@ -103,6 +135,7 @@
           (i386:xor-zf)))
 
 (define (i386:accu-shl n)
+  (or n accu:shl n)
   `(#xc1 #xe0 ,n))                      ; shl    $0x8,%eax
 
 (define (i386:accu+accu)
@@ -111,12 +144,36 @@
 (define (i386:accu+base)
   `(#x01 #xd0))                         ; add    %edx,%eax
 
+(define (i386:accu+value v)
+  (or v accu+value)
+  `(#x05 ,@(int->bv32 v)))              ; add    %eax,%eax
+
+(define (i386:accu-base)
+  `(#x29 #xd0))                         ; sub    %edx,%eax
+
+;; (define (i386:accu/base)
+;;   '(#xf7 #xf2))                         ; div    %edx,%eax
+
+(define (i386:accu/base)
+  '(#x86 #xd3                           ; mov    %edx,%ebx
+    #x31 #xd2                           ; xor    %edx,%edx
+    #xf7 #xf3))                         ; div    %ebx
+
 (define (i386:base->accu)
   '(#x89 #xd0))                         ; mov    %edx,%eax
 
 (define (i386:local->accu n)
   (or n local->accu)
   `(#x8b #x45 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%eax
+
+(define (i386:local-address->accu n)
+  (or n ladd)
+  `(#x8d #x45 ,(- 0 (* 4 n))))          ; lea 0x<n>(%ebp),%eax
+
+(define (i386:local-ptr->accu n)
+  (or n local-ptr->accu)
+  `(#x89 #xe8                           ; mov    %ebp,%eax
+         #x83 #xc0 ,(- 0 (* 4 n))))     ; add    $0x<n>,%eax
 
 (define (i386:byte-local->accu n)
   (or n byte-local->accu)
@@ -126,21 +183,26 @@
   (or n local->base)
   `(#x8b #x55 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%edx
 
-;; (define (i386:local-ref->base n)
-;;   (or n local-ref->base)
-;;   `(#x8b #x15 ,@(int->bv32 (- 0 (* 4 n))))) ; mov    0x<n>,%edx
-
-(define (i386:local-ref->base n)
-  (or n local-ref->base)
+(define (i386:local-address->base n) ;; DE-REF
+  (or n local-address->base)
   `(#x8d #x55 ,(- 0 (* 4 n))))          ; lea    0x<n>(%ebp),%edx
 
-(define (i386:global-ref->base n)
-  (or n global->base)
-  `(#x8b #x15 ,@(int->bv32 n)))         ; mov    0x<n>,%edx
+(define (i386:local-ptr->base n)
+  (or n local-ptr->base)
+  `(#x89 #xea                           ; mov    %ebp,%edx
+         #x83 #xc2 ,(- 0 (* 4 n))))     ; add    $0x<n>,%edx
 
 (define (i386:global->base n)
   (or n global->base)
-  `(#xba ,@(int->bv32 n)))              ; mov    $<n>,%edx
+  `(#xba ,@(int->bv32 n)))              ; mov   $<n>,%edx
+
+(define (i386:global-address->accu n)
+  (or n global-address->accu)
+  `(#xa1 ,@(int->bv32 n)))              ; mov    0x<n>,%eax
+
+(define (i386:global-address->base n)
+  (or n global-address->base)
+  `(#x8b #x15 ,@(int->bv32 n)))         ; mov    0x<n>,%edx
 
 (define (i386:byte-base-mem->accu)
   '(#x01 #xd0                           ; add    %edx,%eax
@@ -163,44 +225,46 @@
   `(#x8b #x40 ,n))                      ; mov    0x<n>(%eax),%eax
 
 (define (i386:base-mem+n->accu n)
+  (or n base-mem+n->accu)
   `(#x01 #xd0                           ; add    %edx,%eax
          #x8b #x40 ,n))                 ; mov    <n>(%eax),%eax
 
-(define (i386:global->accu o)
-  (or o global->accu)
-  `(#xb8 ,@(int->bv32 o)))              ; mov    $<>,%eax
-
 (define (i386:value->accu v)
-  (or v value->accu)
+  (or v urg:value->accu)
   `(#xb8 ,@(int->bv32 v)))              ; mov    $<v>,%eax
 
-(define (i386:value->accu-ref v)
-  (or v value->accu-ref)
+(define (i386:value->accu-address v)
   `(#xc7 #x00 ,@(int->bv32 v)))         ; movl   $0x<v>,(%eax)
 
-(define (i386:value->accu-ref+n n v)
+(define (i386:value->accu-address+n n v)
+  (or v urg:value->accu-address+n)
   `(#xc7 #x40 ,n ,@(int->bv32 v)))      ; movl   $<v>,0x<n>(%eax)
 
-(define (i386:base->accu-ref)
+(define (i386:base->accu-address)
   '(#x89 #x10))                         ; mov    %edx,(%eax)
 
-(define (i386:byte-base->accu-ref)
+(define (i386:byte-base->accu-address)
   '(#x88 #x10))                         ; mov    %dl,(%eax)
 
+(define (i386:byte-base->accu-address+n n)
+  (or n byte-base->accu-address+n)
+  `(#x88 #x50 ,n))                      ; mov    %dl,0x<n>(%eax)
+
 (define (i386:value->base v)
+  (or v urg:value->base)
   `(#xba ,@(int->bv32 v)))              ; mov    $<v>,%edx
 
 (define (i386:local-add n v)
-  (or n ladd)
+  (or n urg:local-add)
   `(#x83 #x45 ,(- 0 (* 4 n)) ,v))       ; addl   $<v>,0x<n>(%ebp)
 
-(define (i386:local-address->accu n)
-  (or n ladd)
-  `(#x8d #x45 ,(- 0 (* 4 n))))          ; lea 0x<n>(%ebp),%eax
+(define (i386:global-add n v)
+  (or n urg:global-add)
+  `(#x83 #x05 ,@(int->bv32 n) ,v))      ; addl   $<v>,0x<n>
 
-(define (i386:local-address->accu n)
-  (or n ladd)
-  `(#x8d #x45 ,(- 0 (* 4 n))))          ; lea 0x<n>(%ebp),%eax
+(define (i386:global->accu o)
+  (or o urg:global->accu)
+  `(#xb8 ,@(int->bv32 o)))              ; mov    $<>,%eax
 
 (define (i386:value->global n v)
   (or n value->global)
@@ -213,11 +277,12 @@
          ,@(int->bv32 v)))
 
 (define (i386:local-test n v)
-  (or n lt)
+  (or n local-test)
   `(#x83 #x7d ,(- 0 (* 4 n)) ,v))       ; cmpl   $<v>,0x<n>(%ebp)
 
-(define (i386:call f g t d address . arguments)
-  (let* ((pushes (append-map (i386:push-arg f g t d) (reverse arguments)))
+(define (i386:call f g ta t d address . arguments)
+  (or address urg:call)
+  (let* ((pushes (append-map (i386:push-arg f g ta t d) (reverse arguments)))
          (s (length pushes))
          (n (length arguments)))
    `(
@@ -225,12 +290,32 @@
      #xe8 ,@(int->bv32 (- address 5 s)) ; call relative
      #x83 #xc4 ,(* n 4)                 ; add    $00,%esp
      )))
+
+(define (i386:call-accu f g ta t d . arguments)
+  ;;(or address urg:call)
+  (let* ((pushes (append-map (i386:push-arg f g ta t d) (reverse arguments)))
+         (s (length pushes))
+         (n (length arguments)))
+    `(
+      ,@(i386:push-accu)
+      ,@pushes    ; push args
+      ;;#xe8 ,@(int->bv32 (- address 5 s)) ; call relative
+      ;; FIXME: add t?/address
+      ;; #x50                               ; push %eax
+      ;; #xc3                               ; ret
+      ,@(i386:pop-accu)
+      ;; #x05 ,@(int->bv32 t)              ; add    <t>,%eax
+      ;; #x05 ,@(int->bv32 ta)             ; add    <ta>,%eax
+      #xff #xd0                         ; call   *%eax
+      #x83 #xc4 ,(* n 4)                ; add    $00,%esp
+      )))
  
 (define (i386:accu-not)
   `(#x0f #x94 #xc0                      ; sete %al
          #x0f #xb6 #xc0))               ; movzbl %al,%eax
 
 (define (i386:xor-accu v)
+  (or n urg:xor-accu)
   `(#x35 ,@(int->bv32 v)))       	;xor    $0xff,%eax
 
 (define (i386:xor-zf)
@@ -245,44 +330,55 @@
   '(#x85 #xc0))                         ; test   %eax,%eax
 
 (define (i386:Xjump n)
-  `(#xe9 ,@(int->bv32 n)))              ; jmp . + <n>
+  (or n urg:Xjump)
+  `(#xe9 ,@(int->bv32 (if (>= n 0) n (- n 5))))) ; jmp . + <n>
 
 (define (i386:Xjump-nz n)
+  (or n urg:Xjump-nz)
   `(#x0f #x85 ,@(int->bv32 n)))         ; jnz . + <n>
 
-(define (i386:jump n)  ;;FIXME: NEED THIS WEIRDNESS for t.c
-  `(#xeb ,(if (>= n 0) (- n 2) (- n 2))))   ; jmp <n>
-
-;; (define (i386:jump n)
-;;   `(#xeb ,(if (>= n 0) n (- n 2))))     ; jmp <n>
+(define (i386:jump n) ;;FIXME: NEED THIS WEIRDNESS for t.c
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP n=~a\n" n)
+    barf)
+  `(#xeb ,(if (>= n 0) (- n 2) (- n 2)))) ; jmp <n>
 
 (define (i386:jump-c n)
+  (or n jump-c)
   `(#x72 ,(if (>= n 0) n (- n 2))))     ; jc <n>
 
 (define (i386:jump-cz n)
+  (or n jump-cz)
   `(#x76 ,(if (>= n 0) n (- n 2))))     ; jna <n>
 
 (define (i386:jump-ncz n)
+  (or n jump-ncz)
   `(#x77 ,(if (>= n 0) n (- n 2))))     ; ja <n>
 
 (define (i386:jump-nc n)
+  (or n jump-nc)
   `(#x73 ,(if (>= n 0) n (- n 2))))     ; jnc <n>
 
 (define (i386:jump-z n)
+  (or n jump-z)
   `(#x74 ,(if (>= n 0) n (- n 2)))) ; jz <n>
 
 (define (i386:jump-nz n)
+  (or n jump-nz)
   `(#x75 ,(if (>= n 0) n (- n 2)))) ; jnz <n>
 
 (define (i386:test-jump-z n)
+  (or n jump-z)
   `(#x85 #xc0                           ; test   %eax,%eax
     #x74 ,(if (>= n 0) n (- n 4))))     ; jz <n>
 
 (define (i386:jump-byte-nz n)
+  (or n jump-byte-nz)
   `(#x84 #xc0                           ; test   %al,%al
     #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 
 (define (i386:jump-byte-z n)
+  (or n jump-byte-z)
   `(#x84 #xc0                           ; test   %al,%al
     #x74 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 
@@ -305,7 +401,7 @@
   `(#x29 #xc2))                         ; sub    %eax,%edx
 
 ;;; libc bits
-(define (i386:exit f g t d)
+(define (i386:exit f g ta t d)
   `(
     #x5b                                ; pop    %ebx
     #x5b                                ; pop    %ebx
@@ -313,7 +409,7 @@
     #xcd #x80                           ; int    $0x80
     ))
 
-(define (i386:open f g t d)
+(define (i386:open f g ta t d)
   `(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp
@@ -328,7 +424,7 @@
     #xc3                                ; ret
     ))
 
-(define (i386:read f g t d)
+(define (i386:read f g ta t d)
   `(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp
@@ -344,7 +440,7 @@
     #xc3                                ; ret
     ))
 
-(define (i386:write f g t d)
+(define (i386:write f g ta t d)
   `(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp

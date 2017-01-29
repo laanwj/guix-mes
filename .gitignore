@@ -15,6 +15,9 @@
 /mes
 /micro-mes
 /mini-mes
+/tiny-mes
+/module/mes/hack-32.mo
+/module/mes/read-0-32.mo
 /module/mes/read-0.mo
 /out
 ?

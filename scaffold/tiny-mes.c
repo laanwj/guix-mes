@@ -31,6 +31,8 @@
 #define NYACC_CDR nyacc_cdr
 #endif
 
+char arena[200];
+
 int g_stdin = 0;
 
 #if __GNUC__
@@ -262,12 +264,10 @@ struct scm {
   SCM cdr;
 };
 
-#if 0
-char arena[200];
-struct scm *g_cells = (struct scm*)arena;
-#else
-struct scm g_cells[200];
-#endif
+//char arena[200];
+//struct scm *g_cells = arena;
+//struct scm *g_cells = (struct scm*)arena;
+struct scm *g_cells = arena;
 
 #define cell_nil 1
 #define cell_f 2
@@ -348,7 +348,7 @@ fill ()
   TYPE (9) = 0x2d2d2d2d;
   CAR (9) = 0x2d2d2d2d;
   CDR (9) = 0x3e3e3e3e;
-#if 0
+
   // (A(B))
   TYPE (10) = PAIR;
   CAR (10) = 11;
@@ -373,35 +373,7 @@ fill ()
   TYPE (14) = 0x58585858;
   CAR (14) = 0x58585858;
   CDR (14) = 0x58585858;
-#else
-  // (cons 0 1)
-  TYPE (10) = PAIR;
-  CAR (10) = 11;
-  CDR (10) = 12;
 
-  TYPE (11) = FUNCTION;
-  CAR (11) = 0x58585858;
-  // 0 = make_cell
-  // 1 = cons
-  CDR (11) = 1;
-
-  TYPE (12) = PAIR;
-  CAR (12) = 13;
-  CDR (12) = 14;
-
-  TYPE (13) = NUMBER;
-  CAR (13) =0x58585858;
-  CDR (13) = 0;
-
-  TYPE (14) = PAIR;
-  CAR (14) = 15;
-  CDR (14) = 1;
-
-  TYPE (15) = NUMBER;
-  CAR (15) = 0x58585858;
-  CDR (15) = 1;
-
-#endif
   TYPE (16) = 0x3c3c3c3c;
   CAR (16) = 0x2d2d2d2d;
   CDR (16) = 0x2d2d2d2d;
@@ -484,35 +456,18 @@ display_ (SCM x)
 SCM
 bload_env (SCM a) ///((internal))
 {
-  //g_stdin = open ("module/mes/read-0-32.mo", 0);
-  g_stdin = open ("module/mes/hack-32.mo", 0);
+  puts ("reading: ");
+  char *mo = "module/mes/hack-32.mo";
+  puts (mo);
+  puts ("\n");
+  g_stdin = open (mo, 0);
   if (g_stdin < 0) {eputs ("no such file: module/mes/read-0-32.mo\n");return 1;} 
 
-  int c;
+  // BOOM
+  //char *p = arena;
   char *p = (char*)g_cells;
-  char *q = (char*)g_cells;
+  int c;
 
-  puts ("q: ");
-  puts (q);
-  puts ("\n");
-
-#if __GNUC__
-  puts ("fd: ");
-  puts (itoa (g_stdin));
-  puts ("\n");
-#endif
-
-#if __GNUC__
-  assert (getchar () == 'M');
-  assert (getchar () == 'E');
-  assert (getchar () == 'S');
-  puts ("GOT MES!\n");
-  g_stack = getchar () << 8;
-  g_stack += getchar ();
-  puts ("stack: ");
-  puts (itoa (g_stack));
-  puts ("\n");
-#else
   c = getchar ();
   putchar (c);
   if (c != 'M') exit (10);
@@ -522,54 +477,30 @@ bload_env (SCM a) ///((internal))
   c = getchar ();
   putchar (c);
   if (c != 'S') exit (12);
-  puts ("\n");
-  puts ("GOT MES!\n");
+  puts (" *GOT MES*\n");
+
+  // skip stack
   getchar ();
   getchar ();
-#endif
 
   c = getchar ();
+  // int i = 0;
   while (c != -1)
     {
       *p++ = c;
+      //g_cells[i] = c;
+      // i++;
       c = getchar ();
+      //puts ("\nc:");
+      //putchar (c);
     }
 
-  puts ("q: ");
-  puts (q);
-  puts ("\n");
-#if 0
-  //__GNUC__
-  g_free = (p-(char*)g_cells) / sizeof (struct scm);
-  gc_peek_frame ();
-  g_symbols = r1;
-  g_stdin = STDIN;
-  r0 = mes_builtins (r0);
-
-  puts ("cells read: ");
-  puts (itoa (g_free));
-  puts ("\n");
-
-  puts ("symbols: ");
-  puts (itoa (g_symbols));
-  puts ("\n");
-  display_ (g_symbols);
-  puts ("\n");
-
-  r2 = 10;
-  puts ("\n");
-  puts ("program: ");
-  puts (itoa (r2));
-  puts ("\n");
-  display_ (r2);
-  puts ("\n");
-#else
+  puts ("read done\n");
   display_ (10);
-  puts ("\n");
-  puts ("\n");
-  fill ();
-  display_ (10);
-#endif
+  // puts ("\n");
+  // fill ();
+  // display_ (10);
+
   puts ("\n");
   return r2;
 }
@@ -577,52 +508,20 @@ bload_env (SCM a) ///((internal))
 int
 main (int argc, char *argv[])
 {
-  puts ("filled sexp:\n");
+  // if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
+  // if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
+
+  // if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
+
+  // puts ("Hello tiny-mes!\n");
   fill ();
+  puts (g_cells);
+  puts ("\n");
+  // return 22;
   display_ (10);
   puts ("\n");
-
-#if __GNUC__
-  g_debug = (int)getenv ("MES_DEBUG");
-#endif
-  //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
-
-  if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
-  if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
-
-  if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
-
-
-#if __GNUC__
-  g_stdin = STDIN;
-  r0 = mes_environment ();
-#endif
-
-#if MES_MINI
-  puts ("Hello tiny-mes!\n");
   SCM program = bload_env (r0);
 
-#else
-  SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
-    ? bload_env (r0) : load_env (r0);
-  if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
-
-  push_cc (r2, cell_unspecified, r0, cell_unspecified);
-  r3 = cell_vm_begin;
-  r1 = eval_apply ();
-  stderr_ (r1);
-
-  eputs ("\n");
-  gc (g_stack);
-#endif
-#if __GNUC__
-  if (g_debug)
-    {
-      eputs ("\nstats: [");
-      eputs (itoa (g_free));
-      eputs ("]\n");
-    }
-#endif
   return 0;
 }
 

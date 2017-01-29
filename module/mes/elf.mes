@@ -46,7 +46,7 @@
 (define elf32-off int->bv32)
 (define elf32-word int->bv32)
 
-(define (make-elf functions globals)
+(define (make-elf functions globals init)
   (define vaddress #x08048000)
 
   (define ei-magic `(#x7f ,@(string->list "ELF")))
@@ -181,7 +181,7 @@
       (map car functions))))
 
   (define text-length
-    (length (functions->text functions globals 0 0)))
+    (length (functions->text functions globals 0 0 0)))
 
   (define data-offset
     (+ text-offset text-length))
@@ -240,8 +240,11 @@
   (define SHF-EXEC 4)
   (define SHF-STRINGS #x20)
 
-  (let* ((text (functions->text functions globals 0 data-address))
-         (data (globals->data globals))
+  (let* ((text (functions->text functions globals text-address 0 data-address))
+         (raw-data (globals->data globals))
+         (data (let loop ((data raw-data) (init init))
+                 (if (null? init) data
+                     (loop ((car init) functions globals text-address 0 data-address data) (cdr init)))))
          (entry (+ text-offset (function-offset "_start" functions)))
          (sym (sym functions globals))
          (str (str functions)))
@@ -269,8 +272,9 @@
     (define section-headers-offset
       (+ str-offset str-length))
 
-    (format (current-error-port) "ELF text=~a\n" text)
-    ;;(format (current-error-port) "ELF data=~a\n" data)
+    (format (current-error-port) "ELF text=~a\n" (map dec->hex text))
+    (format (current-error-port) "ELF raw-data=~a\n" (map dec->hex raw-data))
+    (format (current-error-port) "ELF data=~a\n" (map dec->hex data))
     (format (current-error-port) "text-offset=~a\n" text-offset)
     (format (current-error-port) "data-offset=~a\n" data-offset)
     (format (current-error-port) "_start=~a\n" (number->string entry 16))

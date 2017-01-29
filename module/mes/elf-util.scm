@@ -25,13 +25,18 @@
 (define-module (mes elf-util)
   #:use-module (srfi srfi-1)
   #:export (data-offset
+            dec->hex
             function-offset
             label-offset
             functions->lambdas
             functions->text
             lambda/label->list
             text->list
-            globals->data))
+            globals->data
+            make-global
+            global:type
+            global:pointer
+            global:value))
 
 (cond-expand
  (guile-2)

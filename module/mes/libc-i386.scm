@@ -31,21 +31,32 @@
             i386:accu-not
             i386:accu-cmp-value
             i386:accu->base
+            i386:accu->base-address
+            i386:accu->base-address+n
             i386:accu->global
+            i386:accu->global-address
             i386:accu->local
             i386:accu-non-zero?
             i386:accu-test
             i386:accu-zero?
             i386:accu+accu
             i386:accu+base
+            i386:accu+value
+            i386:accu/base
+            i386:accu-base
             i386:accu-shl
             i386:base-sub
             i386:base->accu
-            i386:base->accu-ref
+            i386:base->accu-address
+            i386:byte-accu->base-address
+            i386:base->global
+            i386:base->local
             i386:base-mem->accu
             i386:byte-base-sub
-            i386:byte-base->accu-ref
+            i386:byte-base->accu-address
+            i386:byte-base->accu-address+n
             i386:byte-base-mem->accu
+            i386:local-address->accu
             i386:byte-local->accu
             i386:byte-mem->accu
             i386:base-mem+n->accu
@@ -53,11 +64,15 @@
             i386:byte-test-base
             i386:byte-sub-base
             i386:call
+            i386:call-accu
             i386:formal
             i386:function-locals
             i386:function-preamble
+            i386:global-add
             i386:global->accu
             i386:global->base
+            i386:global-address->accu
+            i386:global-address->base
             i386:jump
             i386:jump
             i386:jump-byte-nz
@@ -73,24 +88,29 @@
             i386:local->base
             i386:local-add
             i386:local-address->accu
-            i386:local-ref->base
+            i386:local-ptr->accu
+            i386:local-ptr->base
+            i386:local-address->base
             i386:local-test
             i386:mem->accu
             i386:mem+n->accu
+            i386:pop-accu
             i386:push-accu
+            i386:pop-base
+            i386:push-base
             i386:push-global
-            i386:push-global-ref
+            i386:push-global-address
             i386:push-local
             i386:push-local-de-ref
-            i386:push-local-ref
+            i386:push-local-address
             i386:ret
             i386:ret-local
             i386:sub-base
             i386:test-base
             i386:test-jump-z
             i386:value->accu
-            i386:value->accu-ref
-            i386:value->accu-ref+n
+            i386:value->accu-address
+            i386:value->accu-address+n
             i386:value->global
             i386:value->local
             i386:value->base

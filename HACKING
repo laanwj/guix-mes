@@ -107,3 +107,12 @@ sc: http://sph.mn/content/3d3
 *** [[http://www.scheme-reports.org/][Scheme Reports]] 
 *** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-349.pdf][Scheme - Report on Scheme]]
 *** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-452.pdf][RRS - Revised Report on Scheme]]
+
+** tiny schemes
+http://forum.osdev.org/viewtopic.php?f=15&t=19937
+
+http://www.stripedgazelle.org/joey/dreamos.html
+http://armpit.sourceforge.net/
+http://common-lisp.net/project/movitz/movitz.html
+
+<civodul> janneke: https://github.com/namin/inc looks interesting  [15:18]

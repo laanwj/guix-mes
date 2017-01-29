@@ -31,21 +31,47 @@
  (mes
   (mes-use-module (srfi srfi-1))))
 
+(define (make-global name type pointer value)
+  (cons name (list type pointer value)))
+
+(define global:type car)
+(define global:pointer cadr)
+(define global:value caddr)
+
+(define (dec->hex o)
+  (cond ((number? o) (number->string o 16))
+        ((char? o) (number->string (char->integer o) 16))))
+
 (define (functions->lambdas functions)
   (append-map cdr functions))
 
-(define (lambda/label->list f g t d)
+(define (lambda/label->list f g ta t d)
   (lambda (l/l)
-    (if (not (procedure? l/l)) '() (l/l f g t d))))
+    (if (not (procedure? l/l)) '() (l/l f g ta t d))))
 
 (define (text->list o)
-  (append-map (lambda/label->list '() '() 0 0) o))
+  (append-map (lambda/label->list '() '() 0 0 0) o))
 
-(define (functions->text functions globals t d)
+(define (functions->text functions globals ta t d)
   (let loop ((lambdas/labels (functions->lambdas functions)) (text '()))
     (if (null? lambdas/labels) text
         (loop (cdr lambdas/labels)
-              (append text ((lambda/label->list functions globals (- (length text)) d) (car lambdas/labels)))))))
+              (append text ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels)))))))
+
+;; (define (functions->text functions globals ta t d)
+;;   (let loop ((functions functions) (text '()))
+;;     (if (null? functions) text
+;;         (loop (cdr functions)
+;;               (append '() ;;text
+;;                       (function->text functions globals ta t d text (car functions)))))))
+
+;; (define (function->text functions globals ta t d text function)
+;;   (format (current-error-port) "elf func=~a\n" (car function))
+;;   (let loop ((lambdas/labels (cdr function)) (text text))
+;;     (if (null? lambdas/labels) text
+;;         (loop (cdr lambdas/labels)
+;;               (append '() ;;text
+;;                       ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels)))))))
 
 (define (function-prefix name functions)
   (member name (reverse functions) (lambda (a b) (equal? (car b) name))))
@@ -55,7 +81,7 @@
     (lambda (name functions)
       (or (assoc-ref cache name)
           (let* ((prefix (function-prefix name functions))
-                 (offset (if prefix (length (functions->text (cdr prefix) '() 0 0))
+                 (offset (if prefix (length (functions->text (cdr prefix) '() 0 0 0))
                              0)))
             (if (or (equal? name "exit") (> offset 0)) (set! cache (assoc-set! cache name offset)))
             offset)))))
@@ -67,12 +93,12 @@
           (let loop ((text (cdr function-entry)))
             (if (or (equal? (car text) label) (null? text)) 0
                 (let* ((l/l (car text))
-                       (t ((lambda/label->list '() '() 0 0) l/l))
+                       (t ((lambda/label->list '() '() 0 0 0) l/l))
                        (n (length t)))
                   (+ (loop (cdr text)) n))))))))
 
 (define (globals->data globals)
-  (append-map cdr globals))
+  (append-map (compose global:value cdr) globals))
 
 (define (data-offset name globals)
   (let* ((prefix (member name (reverse globals)
