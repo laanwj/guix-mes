@@ -53,10 +53,10 @@
   (parse-c99
    #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
    #:cpp-defs '(
-                ("__GNUC__" . "0")
-                ("__NYACC__" . "1")
-                ("VERSION" . "0.4")
-                ("PREFIX" . "\"\"")
+                "__GNUC__=0"
+                "__NYACC__=1"
+                "VERSION=\"0.4\""
+                "PREFIX=\"\""
                 )
    #:xdef? gnuc-xdef?
    #:mode 'code
