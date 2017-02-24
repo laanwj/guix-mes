@@ -118,7 +118,10 @@
             i386:xor-zf
 
             i386:Xjump
+            i386:Xjump-c
+            i386:Xjump-nc
             i386:Xjump-nz
+            i386:Xjump-z
 
             ;; libc
             i386:exit

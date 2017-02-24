@@ -337,6 +337,10 @@
   (or n urg:Xjump-nz)
   `(#x0f #x85 ,@(int->bv32 n)))         ; jnz . + <n>
 
+(define (i386:Xjump-z n)
+  (or n urg:Xjump-z)
+  `(#x0f #x84 ,@(int->bv32 n)))         ; jz . + <n>
+
 (define (i386:jump n) ;;FIXME: NEED THIS WEIRDNESS for t.c
   (when (or (> n #x80) (< n #x-80))
     (format (current-error-port) "JUMP n=~a\n" n)
@@ -344,41 +348,67 @@
   `(#xeb ,(if (>= n 0) (- n 2) (- n 2)))) ; jmp <n>
 
 (define (i386:jump-c n)
-  (or n jump-c)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP n=~a\n" n)
+    barf)
   `(#x72 ,(if (>= n 0) n (- n 2))))     ; jc <n>
 
+(define (i386:Xjump-c n)
+  (or n urg:Xjump-c)
+  `(#x0f #x82 ,@(int->bv32 n)))     ; jc <n>
+
 (define (i386:jump-cz n)
-  (or n jump-cz)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP n=~a\n" n)
+    barf)
   `(#x76 ,(if (>= n 0) n (- n 2))))     ; jna <n>
 
 (define (i386:jump-ncz n)
-  (or n jump-ncz)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP-ncz n=~a\n" n)
+    barf)
   `(#x77 ,(if (>= n 0) n (- n 2))))     ; ja <n>
 
 (define (i386:jump-nc n)
-  (or n jump-nc)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP-nc n=~a\n" n)
+    barf)
   `(#x73 ,(if (>= n 0) n (- n 2))))     ; jnc <n>
 
+(define (i386:Xjump-nc n)
+  (or n urg:Xjump-nc)
+  `(#x0f #x83 ,@(int->bv32 n)))         ; jnc <n>
+
 (define (i386:jump-z n)
-  (or n jump-z)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP-z n=~a\n" n)
+    barf)
   `(#x74 ,(if (>= n 0) n (- n 2)))) ; jz <n>
 
 (define (i386:jump-nz n)
-  (or n jump-nz)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP-nz n=~a\n" n)
+    barf)
   `(#x75 ,(if (>= n 0) n (- n 2)))) ; jnz <n>
 
 (define (i386:test-jump-z n)
-  (or n jump-z)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP-z n=~a\n" n)
+    barf)
   `(#x85 #xc0                           ; test   %eax,%eax
     #x74 ,(if (>= n 0) n (- n 4))))     ; jz <n>
 
 (define (i386:jump-byte-nz n)
-  (or n jump-byte-nz)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP-byte-nz n=~a\n" n)
+    barf)
   `(#x84 #xc0                           ; test   %al,%al
     #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 
 (define (i386:jump-byte-z n)
-  (or n jump-byte-z)
+  (when (or (> n #x80) (< n #x-80))
+    (format (current-error-port) "JUMP-byte-z n=~a\n" n)
+    barf)
   `(#x84 #xc0                           ; test   %al,%al
     #x74 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 

@@ -813,17 +813,27 @@
 
       ((case (p-expr (fixed ,value)) (compd-stmt (block-item-list . ,elements)))
        (lambda (body-length)
+
+         (define (test->text value clause-length)
+           (append (list (lambda (f g ta t d) (i386:accu-cmp-value value)))
+                   (jump-nz clause-length)))
          (let* ((value (cstring->number value))
-                (text-length (length (.text info)))
-                (clause-info (let loop ((elements elements) (info info))
+                (test-info
+                 (clone info #:text (append (.text info) (test->text value 0))))
+                ;;(foo (stderr "000\n"))
+                (text-length (length (.text test-info)))
+                (clause-info (let loop ((elements elements) (info test-info))
+                               ;;(stderr "info text=~s\n" (map dec->hex (text->list (.text info))))
+                               ;;(stderr "case: ~s\n" (and (pair? elements) (car elements)))
                                (if (null? elements) info
                                    (loop (cdr elements) ((statement->info info body-length) (car elements))))))
+                ;;(foo (stderr "001\n"))
                 (clause-text (list-tail (.text clause-info) text-length))
                 (clause-length (length (text->list clause-text))))
+           ;;(stderr "text info:~s\n" (.text info))
            (clone info #:text (append
                                (.text info)
-                               (list (lambda (f g ta t d) (i386:accu-cmp-value value)))
-                               (jump-nz clause-length)
+                               (test->text value clause-length)
                                clause-text)
                   #:globals (.globals clause-info)))))
 
@@ -851,11 +861,11 @@
                         (jump-text body-length)))))))
   (lambda (o)
     (pmatch o
-      ((lt ,a ,b) ((jump i386:jump-nc) o))
-      ((gt ,a ,b) ((jump i386:jump-nc) o))
-      ((ne ,a ,b) ((jump i386:jump-nz) o))
-      ((eq ,a ,b) ((jump i386:jump-nz) o))
-      ((not _) ((jump i386:jump-z) o))
+      ((lt ,a ,b) ((jump i386:Xjump-nc) o))
+      ((gt ,a ,b) ((jump i386:Xjump-nc) o))
+      ((ne ,a ,b) ((jump i386:Xjump-nz) o))
+      ((eq ,a ,b) ((jump i386:Xjump-nz) o))
+      ((not _) ((jump i386:Xjump-z) o))
       ((and ,a ,b)
        (let* ((text (.text info))
               (info (clone info #:text '()))
@@ -898,7 +908,7 @@
                           (.text (b-jump body-length)))))))
       ((array-ref . _) ((jump i386:jump-byte-z) o))
       ((de-ref _) ((jump i386:jump-byte-z) o))
-      (_ ((jump i386:jump-z) o)))))
+      (_ ((jump i386:Xjump-z) o)))))
 
 (define (cstring->number s)
   (cond ((string-prefix? "0x" s) (string->number (string-drop s 2) 16))
@@ -1087,12 +1097,13 @@
                 (then-jump-length (length (text->list then-jump-text)))
                 (then-length (+ (length (text->list then-text)) then-jump-length))
 
-                (else-info ((ast->info test+jump-info) else))
+                (then+jump-info (clone then-info #:text (append text-then-info then-jump-text)))
+                (else-info ((ast->info then+jump-info) else))
                 (text-else-info (.text else-info))
-                (else-text (list-tail text-else-info test-length))
+                (else-text (list-tail text-else-info (length (.text then+jump-info))))
                 (else-length (length (text->list else-text)))
 
-                (text+test-text (.text (test-jump->info (+ then-length then-jump-length))))
+                (text+test-text (.text (test-jump->info then-length)))
                 (test-text (list-tail text+test-text text-length))
                 (then-jump-text (list (lambda (f g ta t d) (i386:Xjump else-length)))))
 
@@ -1102,7 +1113,8 @@
                           then-text
                           then-jump-text
                           else-text)
-                  #:globals (.globals then-info)))) ;; FIXME: else-globals
+                  #:globals (append (.globals then-info)
+                                    (list-tail (.globals else-info) (length globals))))))
 
         ((expr-stmt (cond-expr ,test ,then ,else))
          (let* ((text-length (length text))
@@ -1223,6 +1235,7 @@
            ((ast->info info) statement)))
 
         ((goto (ident ,label))
+         
          (let ((offset (length (text->list text)))
                (jump (lambda (n) (i386:Xjump n))))
            (clone info #:text

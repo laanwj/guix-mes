@@ -340,25 +340,37 @@ struct function functions[2];
 int g_function = 0;
 
 
+#if __GNUC__
+//FIXME
 SCM make_cell (SCM type, SCM car, SCM cdr);
+#endif
 struct function fun_make_cell = {&make_cell, 3};
 struct scm scm_make_cell = {TFUNCTION,0,0};
    //, "make-cell", 0};
 SCM cell_make_cell;
 
+#if __GNUC__
+//FIXME
 SCM cons (SCM x, SCM y);
+#endif
 struct function fun_cons = {&cons, 2};
 struct scm scm_cons = {TFUNCTION,0,0};
   // "cons", 0};
 SCM cell_cons;
 
+#if __GNUC__
+//FIXME
 SCM car (SCM x);
+#endif
 struct function fun_car = {&car, 1};
 struct scm scm_car = {TFUNCTION,0,0};
   // "car", 0};
 SCM cell_car;
 
+#if __GNUC__
+//FIXME
 SCM cdr (SCM x);
+#endif
 struct function fun_cdr = {&cdr, 1};
 struct scm scm_cdr = {TFUNCTION,0,0};
 // "cdr", 0};
@@ -412,7 +424,10 @@ SCM cell_cdr;
 SCM
 alloc (int n)
 {
+#if __GNUC__
+  //FIXME GNUC
   assert (g_free + n < ARENA_SIZE);
+#endif
   SCM x = g_free;
   g_free += n;
   return x;
@@ -422,15 +437,20 @@ SCM
 make_cell (SCM type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
+#if __GNUC__
+  //FIXME GNUC
   assert (TYPE (type) == NUMBER);
+#endif
   TYPE (x) = VALUE (type);
   if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
     if (car) CAR (x) = CAR (car);
     if (cdr) CDR(x) = CDR(cdr);
-  } else if (VALUE (type) == TFUNCTION) {
+  }
+  else if (VALUE (type) == TFUNCTION) {
     if (car) CAR (x) = car;
     if (cdr) CDR(x) = CDR(cdr);
-  } else {
+  }
+  else {
     CAR (x) = car;
     CDR(x) = cdr;
   }
@@ -454,18 +474,23 @@ tmp_num2_ (int x)
 SCM
 cons (SCM x, SCM y)
 {
-#if  __GNUC__
+  puts ("cons x=");
+#if __GNUC__
+  puts (itoa (x));
+#endif
+  puts ("\n");
   VALUE (tmp_num) = PAIR;
   return make_cell (tmp_num, x, y);
-#else
-  //FIXME GNUC
-  return 0;
-#endif
 }
 
 SCM
 car (SCM x)
 {
+  puts ("car x=");
+#if __GNUC__
+  puts (itoa (x));
+#endif
+  puts ("\n");
 #if MES_MINI
   //Nyacc
   //assert ("!car");
@@ -478,6 +503,11 @@ car (SCM x)
 SCM
 cdr (SCM x)
 {
+  puts ("cdr x=");
+#if __GNUC__
+  puts (itoa (x));
+#endif
+  puts ("\n");
 #if MES_MINI
   //Nyacc
   //assert ("!cdr");
@@ -509,18 +539,13 @@ gc_push_frame ()
 }
 
 SCM
-xgc_push_frame ()
-{
-  // SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
-  // g_stack = cons (frame, g_stack);
-  return g_stack;
-}
-
-SCM
 append2 (SCM x, SCM y)
 {
   if (x == cell_nil) return y;
+#if __GNUC__
+  //FIXME GNUC
   assert (TYPE (x) == PAIR);
+#endif
   return cons (car (x), append2 (cdr (x), y));
 }
 
@@ -543,6 +568,8 @@ assq (SCM x, SCM a)
   return a != cell_nil ? car (a) : cell_f;
 }
 
+#if __GNUC__
+  //FIXME GNUC
 SCM
 assq_ref_env (SCM x, SCM a)
 {
@@ -550,7 +577,10 @@ assq_ref_env (SCM x, SCM a)
   if (x == cell_f) return cell_undefined;
   return cdr (x);
 }
+#endif
 
+#if __GNUC__
+  //FIXME GNUC
 SCM
 assert_defined (SCM x, SCM e)
 {
@@ -560,11 +590,14 @@ assert_defined (SCM x, SCM e)
   exit (33);
   return e;
 }
+#endif
 
+#if 1
+  //FIXME GNUC
 SCM
 push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
 {
-  puts ("push_cc\n");
+  puts ("push cc\n");
   SCM x = r3;
   r3 = c;
   r2 = p2;
@@ -574,33 +607,24 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   r3 = x;
   return cell_unspecified;
 }
-
-SCM
-xpush_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
-{
-  puts ("push_cc\n");
-  SCM x = r3;
-  r3 = c;
-  r2 = p2;
-  xgc_push_frame ();
-  r1 = p1;
-  r0 = a;
-  r3 = x;
-  return cell_unspecified;
-}
+#endif
 
 SCM caar (SCM x) {return car (car (x));}
 SCM cadr (SCM x) {return car (cdr (x));}
 SCM cdar (SCM x) {return cdr (car (x));}
 SCM cddr (SCM x) {return cdr (cdr (x));}
 
+#if __GNUC__
+//FIXME
 SCM call (SCM,SCM);
 SCM gc_pop_frame ();
+#endif
 
 SCM
 eval_apply ()
 {
  eval_apply:
+  puts ("eval_apply\n");
   // if (g_free + GC_SAFETY > ARENA_SIZE)
   //   gc_pop_frame (gc (gc_push_frame ()));
 
@@ -637,7 +661,10 @@ eval_apply ()
     case cell_vm_return: goto vm_return;
 #endif
     case cell_unspecified: {return r1;}
+#if __GNUC__
+      //FIXME GNUC
     default: {assert (0);}
+#endif
     }
 
   SCM x = cell_nil;
@@ -657,11 +684,22 @@ eval_apply ()
 // #endif
 
  apply:
+  puts ("apply\n");
   switch (TYPE (car (r1)))
     {
     case TFUNCTION: {
+      puts ("apply.function\n");
+      y = 0x22;
       //check_formals (car (r1), MAKE_NUMBER (FUNCTION (car (r1)).arity), cdr (r1));
+#if __GNUC__
       r1 = call (car (r1), cdr (r1)); /// FIXME: move into eval_apply
+#else
+      //FIXME
+      x = car (r1);
+      y = cdr (r1);
+      r1 = call (x, y);
+#endif
+      puts ("after call\n");
       goto vm_return;
     }
 //     case CLOSURE:
@@ -738,7 +776,10 @@ eval_apply ()
 //           }
 //       }
     }
+#if __GNUC__
+  //FIXME
   push_cc (car (r1), r1, r0, cell_vm_apply2);
+#endif
   goto eval;
  apply2:
   //check_apply (r1, car (r2));
@@ -885,7 +926,10 @@ eval_apply ()
         r1 = car (r1);
         goto eval;
       }
+#if __GNUC__
+    //FIXME
     push_cc (CAR (r1), r1, r0, cell_vm_begin2);
+#endif
     goto eval;
   begin2:
     x = r1;
@@ -934,34 +978,93 @@ eval_apply ()
 //   goto apply;
 // #endif
 
+  asm(".byte 0x90");
+  asm(".byte 0x90");
  vm_return:
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  asm(".byte 0x90");
+  // FIXME
+  puts ("vm-return00\n");
   x = r1;
   gc_pop_frame ();
+  puts ("vm-return01\n");
   r1 = x;
+
+  //FIXME:
+  r3 = cell_unspecified;
+  /// fIXME: must via eval-apply
+  return r1;
   goto eval_apply;
 }
 
 SCM
 call (SCM fn, SCM x)
 {
+  puts ("call\n");
+#if __GNUC__
+  //fn=11
+  //function1
+  puts ("fn=");
+  puts (itoa(fn)); 
+  puts ("\n");
+  puts ("function");
+  puts (itoa(g_cells[fn].cdr));
+  puts ("\n");
+#endif
+  if (fn != 11) {
+    puts("FN != 11\n");
+    return 11;
+  }
+  if (g_cells[11].cdr != 1) {
+    puts("fn.cdr != 11\n");
+    return 11;
+  }
+  
   if ((FUNCTION (fn).arity > 0 || FUNCTION (fn).arity == -1)
       && x != cell_nil && TYPE (CAR (x)) == VALUES)
     x = cons (CADAR (x), CDR (x));
+  puts ("00\n");
   if ((FUNCTION (fn).arity > 1 || FUNCTION (fn).arity == -1)
       && x != cell_nil && TYPE (CDR (x)) == PAIR && TYPE (CADR (x)) == VALUES)
     x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
-  struct function* f = &FUNCTION (fn);
-  switch (FUNCTION (fn).arity)
+  //struct function* f = &FUNCTION (fn);
+  puts ("01\n");
+  switch (2)///FIXME FUNCTION (fn).arity)
     {
     // case 0: return FUNCTION (fn).function0 ();
     // case 1: return FUNCTION (fn).function1 (car (x));
     // case 2: return FUNCTION (fn).function2 (car (x), cadr (x));
     // case 3: return FUNCTION (fn).function3 (car (x), cadr (x), car (cddr (x)));
     // case -1: return FUNCTION (fn).functionn (x);
-    case 0: {return (FUNCTION (fn).function) ();}
-    case 1: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (car (x));}
+    case 0: {puts("02.0\n");return (FUNCTION (fn).function) ();}
+    case 1: {puts("03.1\n");return ((SCM(*)(SCM))(FUNCTION (fn).function)) (car (x));}
+#if 0
+      //__GNUC__
     case 2: {return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x));}
-    case 3: {return ((SCM(*)(SCM,SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x), car (cddr (x)));}
+#else
+    case 2: {
+      puts ("04.2\n");
+      SCM p1 = car (x);
+      SCM p2 = cdr (x);
+      p2 = car (p2);
+      int (*functionx) (int,int) = (SCM(*)(SCM,SCM))FUNCTION (fn).function;
+      //return ((SCM(*)(SCM,SCM))(*FUNCTION (fn).function)) (p1, p2);
+      //return ((SCM(*)(SCM,SCM))(*functionx)) (p1, p2);
+      SCM p3;
+      p3 = 0x44;
+      puts ("05\n");
+      return cons (p1, p2);
+      return (*functionx) (p1, p2);
+    }
+#endif
+    case 3: {puts("05.3\n");return ((SCM(*)(SCM,SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x), car (cddr (x)));}
       //case -1: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);}
     default: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);}
     }
@@ -1142,7 +1245,6 @@ g_free++;
   g_symbol_max = g_free;
   make_tmps (g_cells);
 
-  // FIXME GNUC
   g_symbols = 0;
   for (int i=1; i<g_symbol_max; i++)
     g_symbols = cons (i, g_symbols);
@@ -1167,8 +1269,7 @@ g_free++;
   // a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
   // a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
 
-  //FIXME GNUC
-  a = acons (cell_symbol_dot, cell_dot, a); //
+  a = acons (cell_symbol_dot, cell_dot, a);
   a = acons (cell_symbol_begin, cell_begin, a);
   a = acons (cell_closure, a, a);
 
@@ -1218,7 +1319,9 @@ cell_make_cell = g_free++;
 #if __GNUC__
  puts ("WOOOT=");
  puts (itoa (g_free));
+ puts ("\n");
   //FIXME GNUC
+ g_cells[cell_make_cell] = scm_make_cell;
 #else
 g_cells[16] = scm_make_cell;
 #endif
@@ -1276,9 +1379,16 @@ bload_env (SCM a) ///((internal))
   //g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
 #endif
   char *p = (char*)g_cells;
+#if __GNUC__
+  //FIXME GNUC
   assert (getchar () == 'M');
   assert (getchar () == 'E');
   assert (getchar () == 'S');
+#else
+  getchar ();
+  getchar ();
+  getchar ();
+#endif
   g_stack = getchar () << 8;
   g_stack += getchar ();
   int c = getchar ();
@@ -1363,6 +1473,27 @@ fill ()
   TYPE (15) = NUMBER;
   CAR (15) = 0x58585858;
   CDR (15) = 1;
+
+  //g_stack@23
+  TYPE (19) = PAIR;
+  CAR (19) = 1;
+  CDR (19) = 1;
+
+  TYPE (20) = PAIR;
+  CAR (20) = 7;
+  CDR (20) = 19;
+
+  TYPE (21) = PAIR;
+  CAR (21) = 7;
+  CDR (21) = 20;
+
+  TYPE (22) = PAIR;
+  CAR (22) = 134;
+  CDR (22) = 21;
+
+  TYPE (23) = PAIR;
+  CAR (23) = 22;
+  CDR (23) = 137;
 
 #endif
 
@@ -1599,11 +1730,7 @@ main (int argc, char *argv[])
 #endif
   g_stdin = STDIN;
 
-#if 1
   r0 = mes_environment ();
-#else
-  puts ("FIXME: mes_environment ()\n");
-#endif
   
 #if MES_MINI
   SCM program = simple_bload_env (r0);
@@ -1613,7 +1740,57 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
 #endif
 
+#if 0
+  //__GNUC__
+  //FIXME
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
+  for (int x=19; x<26 ;x++)
+    {
+      puts(itoa(x));
+      puts(": type=");
+      puts(itoa(g_cells[x].type));
+      puts(" car=");
+      puts(itoa(g_cells[x].car));
+      puts(" cdr=");
+      puts(itoa(g_cells[x].cdr));
+      puts("\n");
+    }
+#else
+
+  g_stack = 23;
+  g_free = 24;
+  r1 = r2; //10: the-program
+  r2 = cell_unspecified;
+#endif
+
+#if __GNUC__
+  display_ (g_stack);
+
+  puts ("g_free=");
+  puts (itoa(g_free));
+  puts ("\n");
+
+  puts ("g_stack=");
+  puts (itoa(g_stack));
+  puts ("\n");
+
+  puts ("r0=");
+  puts (itoa(r0));
+  puts ("\n");
+
+  puts ("r1=");
+  puts (itoa(r1));
+  puts ("\n");
+
+  puts ("r2=");
+  puts (itoa(r2));
+  puts ("\n");
+
+  puts ("r3=");
+  puts (itoa(r3));
+  puts ("\n");
+#endif
+
   //r3 = cell_vm_begin;
   r3 = cell_vm_apply;
   r1 = eval_apply ();

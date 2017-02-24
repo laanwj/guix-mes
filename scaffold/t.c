@@ -121,12 +121,24 @@ enum type_t {CHAR, CLOSURE, CONTINUATION, TFUNCTION, KEYWORD, MACRO, NUMBER, PAI
 typedef int SCM;
 int g_free = 3;
 SCM tmp;
+SCM tmp_num;
 
 #if 1
 int
 swits (int c)
 {
   int x = -1;
+
+  switch (c)
+    {
+    case 0: {goto next;}
+    case 1: {goto next;}
+    case 2: {goto next;}
+    default: {goto next;}
+    }
+
+  return 1;
+ next:
   switch (c)
     {
       case 0:
@@ -190,6 +202,51 @@ math_test ()
   return read_test ();
 }
 
+int ARENA_SIZE = 200;
+#define TYPE(x) (g_cells[x].type)
+#define CAR(x) g_cells[x].car
+#define CDR(x) g_cells[x].cdr
+#define VALUE(x) g_cells[x].cdr
+
+struct scm scm_fun = {TFUNCTION,0,0};
+SCM cell_fun;
+
+SCM
+alloc (int n)
+{
+  SCM x = g_free;
+  g_free += n;
+  return x;
+}
+
+SCM
+make_cell (SCM type, SCM car, SCM cdr)
+{
+  SCM x = alloc (1);
+  TYPE (x) = VALUE (type);
+  if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
+    if (car) CAR (x) = CAR (car);
+    if (cdr) CDR(x) = CDR(cdr);
+  }
+  else if (VALUE (type) == TFUNCTION) {
+    if (car) CAR (x) = car;
+    if (cdr) CDR(x) = CDR(cdr);
+  }
+  else {
+    CAR (x) = car;
+    CDR(x) = cdr;
+  }
+  return x;
+}
+
+SCM
+make_cell_test ()
+{
+  VALUE (tmp_num) = PAIR;
+  make_cell (tmp_num, 0, 1);
+  return math_test ();
+}
+
 SCM
 make_tmps_test (struct scm* cells)
 {
@@ -197,15 +254,11 @@ make_tmps_test (struct scm* cells)
   tmp = g_free++;
   puts ("t: cells[tmp].type = CHAR\n");
   cells[tmp].type = CHAR;
-  return math_test();
+  tmp_num = g_free++;
+  cells[tmp_num].type = NUMBER;
+
+  return make_cell_test();
 }
-
-#define TYPE(x) (g_cells[x].type)
-#define CAR(x) g_cells[x].car
-#define CDR(x) g_cells[x].cdr
-
-struct scm scm_fun = {TFUNCTION,0,0};
-SCM cell_fun;
 
 int
 struct_test ()
@@ -285,6 +338,18 @@ test (char *p)
 
   puts ("t: if (0)\n");
   if (0) return 1;
+
+  if (i)
+    return 1;
+  else
+    puts ("t: else 1\n");
+
+  if (i)
+    puts ("0");
+  else if (i == 1)
+    puts ("1");
+  else
+    puts ("t: else if 2\n");
 
   puts ("t: if (f)\n");
   if (f) return 1;
@@ -398,7 +463,8 @@ test (char *p)
  ok2:
 
   puts ("t: if (one < 2)\n");
-  if (one < 2) goto ok3;
+  //if (one < 2) goto ok3;
+  if (one < 0x44) goto ok3;
   return 1;
  ok3:
 
