@@ -117,12 +117,15 @@
             i386:xor-accu
             i386:xor-zf
 
+            ;; long jump
             i386:Xjump
-            i386:XXjump
+            i386:Xjump
             i386:Xjump-c
             i386:Xjump-nc
             i386:Xjump-nz
             i386:Xjump-z
+
+            i386:XXjump
 
             ;; libc
             i386:exit

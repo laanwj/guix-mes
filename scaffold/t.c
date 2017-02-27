@@ -124,6 +124,19 @@ SCM tmp;
 SCM tmp_num;
 
 #if 1
+
+int
+add (int a, int b)
+{
+  return a + b;
+}
+
+int
+inc (int i)
+{
+  return i + 1;
+}
+
 int
 label (int c)
 {
@@ -444,6 +457,24 @@ test (char *p)
   *x++ = c;
   if (*g_chars != 'C') return 1;
 
+  puts ("t: inc (0)\n");
+  if (inc (0) != 1) return 1;
+
+  puts ("t: inc (inc (0))\n");
+  if (inc (inc (0)) != 2) return 1;
+
+  puts ("t: inc (inc (inc (0)))\n");
+  if (inc (inc (inc (0))) != 3) return 1;
+
+  puts ("t: add (1, 2)\n");
+  if (add (1, 2) != 3) return 1;
+
+  puts ("t: add (inc (0), inc (1))\n");
+  if (add (inc (0), inc (1)) != 3) return 1;
+
+  puts ("t: add (inc (inc (0)), inc (inc (1)))\n");
+  if (add (inc (inc (0)), inc (inc (1))) != 5) return 1;
+
   puts ("t: goto label\n");
   if (label (1) != 0) return 1;
 
@@ -576,21 +607,6 @@ test (char *p)
 int
 main (int argc, char *argv[])
 {
- //  main:
- //  puts ("t.c\n");
- //  if (argc == 0x22) return 11;
- //  argc = 0x22;
- //  goto main;
- //  switch (0)
- //    {
- //    case 0: {goto next;}
- //    // case 1: {goto next;}
- //    // case 2: {goto next;}
- //    // default: {goto next;}
- //    }
-
- //  return 1;
- // next:
   char *p = "t.c\n";
   puts ("t.c\n");
 

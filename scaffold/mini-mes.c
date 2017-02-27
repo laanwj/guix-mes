@@ -609,10 +609,21 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
 }
 #endif
 
+#if __GNUC__
 SCM caar (SCM x) {return car (car (x));}
 SCM cadr (SCM x) {return car (cdr (x));}
 SCM cdar (SCM x) {return cdr (car (x));}
 SCM cddr (SCM x) {return cdr (cdr (x));}
+#else
+SCM cadr (SCM x) {
+  x = cdr (x);
+  return car (x);
+}
+SCM cddr (SCM x) {
+  x = cdr (x);
+  return cdr (x);
+}
+#endif
 
 #if __GNUC__
 //FIXME
@@ -625,6 +636,10 @@ eval_apply ()
 {
   puts ("e/a: fixme\n");
  eval_apply:
+  asm (".byte 0x90");
+  asm (".byte 0x90");
+  asm (".byte 0x90");
+  asm (".byte 0x90");
   puts ("eval_apply\n");
   // if (g_free + GC_SAFETY > ARENA_SIZE)
   //   gc_pop_frame (gc (gc_push_frame ()));
@@ -987,11 +1002,6 @@ eval_apply ()
   gc_pop_frame ();
   puts ("vm-return01\n");
   r1 = x;
-
-  //FIXME:
-  r3 = cell_unspecified;
-  /// fIXME: must via eval-apply
-  return r1;
   goto eval_apply;
 }
 
@@ -1069,9 +1079,24 @@ gc_peek_frame ()
 {
   SCM frame = car (g_stack);
   r1 = car (frame);
+#if __GNUC__
   r2 = cadr (frame);
   r3 = car (cddr (frame));
   r0 = cadr (cddr (frame));
+#else
+  r2 = cdr (frame);
+  r2 = car (r2);
+
+  r3 = cdr (frame);
+  r3 = cdr (r3);
+  r3 = car (r3);
+
+  r0 = cdr (frame);
+  r0 = cdr (r0);
+  r0 = cdr (r0);
+  r0 = cdr (r0);
+  r0 = car (r0);
+#endif
   return frame;
 }
 

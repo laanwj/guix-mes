@@ -176,17 +176,32 @@
                           (text text))
                          (make <info> #:types types #:constants constants #:functions functions #:globals globals #:init init #:locals locals #:function function #:text text))))))
 
-(define (push-global-address globals)
-  (lambda (o)
-     (lambda (f g ta t d)
-      (i386:push-global-address (+ (data-offset o g) d)))))
-
 (define (push-global globals)
   (lambda (o)
     (lambda (f g ta t d)
       (i386:push-global (+ (data-offset o g) d)))))
 
+(define (push-local locals)
+  (lambda (o)
+    (lambda (f g ta t d)
+      (i386:push-local (local:id o)))))
+
+(define (push-global-address globals)
+  (lambda (o)
+     (lambda (f g ta t d)
+       (i386:push-global-address (+ (data-offset o g) d)))))
+
+(define (push-local-address locals)
+  (lambda (o)
+    (lambda (f g ta t d)
+      (i386:push-local-address (local:id o)))))
+
 (define push-global-de-ref push-global)
+
+(define (push-local-de-ref locals)
+  (lambda (o)
+    (lambda (f g ta t d)
+      (i386:push-local-de-ref (local:id o)))))
 
 (define (string->global string)
   (make-global string "string" 0 (append (string->list string) (list #\nul))))
@@ -203,97 +218,118 @@
 (define (push-ident info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local (i386:push-local (local:id local))
+      (if local ((push-local (.locals info)) local)
           ((push-global (.globals info)) o))))) ;; FIXME: char*/int
 
 (define (push-ident-address info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local (i386:push-local-address (local:id local))
+      (if local ((push-local-address (.locals info)) local)
           ((push-global-address (.globals info)) o)))))
 
 (define (push-ident-de-ref info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local (i386:push-local-de-ref (local:id local))
+      (if local ((push-local-de-ref (.locals info)) local)
           ((push-global-de-ref (.globals info)) o)))))
 
 (define (expr->arg info) ;; FIXME: get Mes curried-definitions
   (lambda (o)
-    (pmatch o
-      ((p-expr (fixed ,value)) (cstring->number value))
-      ((neg (p-expr (fixed ,value))) (- (cstring->number value)))
-      ((p-expr (string ,string)) ((push-global-address info) string))
-      ((p-expr (ident ,name))
-       ((push-ident info) name))
+    (let ((text (.text info)))
+      (pmatch o
+        ((p-expr (fixed ,value))
+         (let ((value (cstring->number value)))
+           (clone info #:text (append text
+                                      (list
+                                       (lambda (f g ta t d)
+                                         (append
+                                          (i386:value->accu value)
+                                          (i386:push-accu))))))))
 
-      ;; g_cells[0]
-      ((array-ref (p-expr (fixed ,index)) (p-expr (ident ,array)))
-       (let ((index (cstring->number index))
-             (size 4)) ;; FIXME: type: int
-         (append
-          ((ident->base info) array)
-          (list
-           (lambda (f g ta t d)
-             (append
-              (i386:value->accu (* size index)) ;; FIXME: type: int
-              (i386:base-mem->accu)             ;; FIXME: type: int
-              (i386:push-accu)                  ;; hmm
-              ))))))
+        ((neg (p-expr (fixed ,value)))
+         (let ((value (- (cstring->number value))))
+           (clone info #:text (append text
+                                      (list
+                                       (lambda (f g ta t d)
+                                         (append
+                                          (i386:value->accu value)
+                                          (i386:push-accu))))))))
 
-      ;; g_cells[i]
-      ((array-ref (p-expr (ident ,index)) (p-expr (ident ,array)))
-       (let ((index (cstring->number index))
-             (size 4)) ;; FIXME: type: int
-         (append
-          ((ident->base info) array)
-          ((ident->accu info) array)
-          (list (lambda (f g ta t d)
-                  ;;(i386:byte-base-mem->accu)
-                  (i386:base-mem->accu)
-                  ))
-          (list
-           (lambda (f g ta t d)
-             (append
-              (i386:push-accu)))))))
+        ((p-expr (string ,string))
+         (clone info #:text (append text (list ((push-global-address info) string)))))
 
-      ((de-ref (p-expr (ident ,name)))
-       (lambda (f g ta t d)
-         ((push-ident-de-ref info) name)))
+        ((p-expr (ident ,name))
+         (clone info #:text (append text (list ((push-ident info) name)))))
 
-      ((ref-to (p-expr (ident ,name)))
-       (lambda (f g ta t d)
-         ((push-ident-address info) name)))
+        ;; g_cells[0]
+        ((array-ref (p-expr (fixed ,index)) (p-expr (ident ,array)))
+         (let ((index (cstring->number index))
+               (size 4)) ;; FIXME: type: int
+           (clone info
+                  #:text (append text
+                                 ((ident->base info) array)
+                                 (list
+                                  (lambda (f g ta t d)
+                                    (append
+                                     (i386:value->accu (* size index)) ;; FIXME: type: int
+                                     (i386:base-mem->accu) ;; FIXME: type: int
+                                     (i386:push-accu))))))))
 
-      ;; f (car (x))
-      ((fctn-call . ,call)
-       (let* ((empty (clone info #:text '()))
-              (info ((ast->info empty) o)))
-         (append (.text info)
-                 (list
-                  (lambda (f g ta t d)
-                    (i386:push-accu))))))
+        ;; g_cells[i]
+        ((array-ref (p-expr (ident ,index)) (p-expr (ident ,array)))
+         (let ((index (cstring->number index))
+               (size 4)) ;; FIXME: type: int
+           (clone info #:text (append text
+                                      ((ident->base info) array)
+                                      ((ident->accu info) array)
+                                      (list
+                                       (lambda (f g ta t d)
+                                         (i386:base-mem->accu)))
+                                      (list
+                                       (lambda (f g ta t d)
+                                         (i386:push-accu)))))))
 
-      ;; f (CAR (x))
-      ((d-sel . ,d-sel)
-       (let* ((empty (clone info #:text '()))
-              (expr ((expr->accu empty) `(d-sel ,@d-sel))))
-         (append (.text expr)
-                 (list (lambda (f g ta t d)
-                         (i386:push-accu))))))
+        ((de-ref (p-expr (ident ,name)))
+         (clone info #:text (append text (list ((push-ident-de-ref info) name)))))
 
-      ;; f (0 + x)
-      ;;; aargh
-      ;;;((add (p-expr (fixed ,value)) (d-sel (ident cdr) (array-ref (p-expr (ident x)) (p-expr (ident g_cells))))))
+        ((ref-to (p-expr (ident ,name)))
+         (clone info #:text (append text (list ((push-ident-address info) name)))))
 
-      ((cast (type-name (decl-spec-list (type-spec (fixed-type _)))
-                        (abs-declr (pointer)))
-             ,cast)
-       ((expr->arg info) cast))
-      (_
-       (format (current-error-port) "SKIP: expr->arg=~s\n" o)
-       barf
-       0))))
+        ;; f (car (x))
+        ((fctn-call . ,call)
+         (let* (;;(empty (clone info #:text '()))
+                ;;(info ((ast->info empty) o))
+                (info ((ast->info info) o))
+                (text (.text info)))
+           (clone info
+                  #:text (append text
+                                 (list
+                                  (lambda (f g ta t d)
+                                    (i386:push-accu)))))))
+
+        ;; f (CAR (x))
+        ((d-sel . ,d-sel)
+         (let* (;;(empty (clone info #:text '()))
+                ;;(expr ((expr->accu empty) `(d-sel ,@d-sel)))
+                (expr ((expr->accu info) `(d-sel ,@d-sel)))
+                (text (.text expr)))
+           (clone info
+                  #:text (append text
+                                 (list (lambda (f g ta t d)
+                                         (i386:push-accu)))))))
+
+        ;; f (0 + x)
+;;; aargh
+;;;((add (p-expr (fixed ,value)) (d-sel (ident cdr) (array-ref (p-expr (ident x)) (p-expr (ident g_cells))))))
+
+        ((cast (type-name (decl-spec-list (type-spec (fixed-type _)))
+                          (abs-declr (pointer)))
+               ,cast)
+         ((expr->arg info) cast))
+        (_
+         (format (current-error-port) "SKIP: expr->arg=~s\n" o)
+         barf
+         0)))))
 
 ;; FIXME: see ident->base
 (define (ident->accu info)
@@ -1019,47 +1055,46 @@
                                    (clone info #:text (append text (list (lambda (f g ta t d) (asm->hex arg0))))))
              (let* ((globals (append globals (filter-map expr->global expr-list)))
                     (info (clone info #:globals globals))
-                    (args (map (expr->arg info) expr-list)))
+                    (text-length (length text))
+                    (args-info (let loop ((expressions (reverse expr-list)) (info info))
+                                 (if (null? expressions) info
+                                     (loop (cdr expressions) ((expr->arg info) (car expressions))))))
+                    (text (.text args-info))
+                    (n (length expr-list)))
                (if ;;#t ;;(assoc-ref globals name)
                 (not (equal? name "functionx"))
-                (clone info #:text
+                (clone args-info #:text
                        (append text
                                (list (lambda (f g ta t d)
-                                       (apply i386:call (cons* f g ta t d
-                                                               (+ t (function-offset name f)) args)))))
+                                       (i386:call f g ta t d (+ t (function-offset name f)) n))))
                        #:globals globals)
                 (let* ((empty (clone info #:text '()))
-                       ;;(accu ((ident->accu info) name))
                        (accu ((expr->accu empty) `(p-expr (ident ,name)))))
                   (stderr "DINGES: ~a\n" o)
-                  (clone info #:text
+                  (clone args-info #:text
                          (append text
-                                 (list (lambda (f g ta t d)
-                                         '(#x90)))
-                                 ;;accu
                                  (.text accu)
                                  (list (lambda (f g ta t d)
-                                         '(#x90)))
-                                 (list (lambda (f g ta t d)
-                                         (apply i386:call-accu (cons* f g ta t d args)))))
+                                         (i386:call-accu f g ta t d n))))
                          #:globals globals))))))
 
         ;;((expr-stmt (fctn-call (d-sel (ident "function") (array-ref (d-sel (ident "cdr") (array-ref (p-expr (ident "fn")) (p-expr (ident "g_cells")))) (p-expr (ident "g_functions")))) (expr-list))))
         ((expr-stmt (fctn-call ,function (expr-list . ,expr-list)))
          (let* ((globals (append globals (filter-map expr->global expr-list)))
-                    (info (clone info #:globals globals))
-                    (args (map (expr->arg info) expr-list))
-                    (empty (clone info #:text '()))
-                    (accu ((expr->accu empty) function)))
+                (info (clone info #:globals globals))
+                (text-length (length text))
+                (args-info (let loop ((expressions (reverse expr-list)) (info info))
+                             (if (null? expressions) info
+                                 (loop (cdr expressions) ((expr->arg info) (car expressions))))))
+                (text (.text args-info))
+                (n (length expr-list))
+                (empty (clone info #:text '()))
+                (accu ((expr->accu empty) function)))
            (clone info #:text
                   (append text
-                          (list (lambda (f g ta t d)
-                                  '(#x90)))
                           (.text accu)
                           (list (lambda (f g ta t d)
-                                  '(#x90)))
-                          (list (lambda (f g ta t d)
-                                  (apply i386:call-accu (cons* f g ta t d args)))))
+                                  (i386:call-accu f g ta t d n))))
                   #:globals globals)))
 
         ((if ,test ,body)
@@ -1716,11 +1751,7 @@
                 (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))                )
            (clone info #:text (append text
                                       (.text expr)
-                                      (list (lambda (f g ta t d)
-                                              '(#x90)))
                                       (.text base)
-                                      (list (lambda (f g ta t d)
-                                              '(#x90)))
                                       (list (lambda (f g ta t d)
                                               ;;(i386:byte-base->accu-ref) ;; FIXME: size
                                               (i386:base->accu-address)

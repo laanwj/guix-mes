@@ -68,17 +68,6 @@
 (define (i386:push-base)
   '(#x52))                              ; push %eax
 
-(define (i386:push-arg f g ta t d)
-  (lambda (o)
-    (or o push-arg)
-    (cond ((number? o)
-           `(#x68 ,@(int->bv32 o)))     ; push $<o>
-          ((and (pair? o) (procedure? (car o)))
-           (append-map (lambda (p) (p f g ta t d)) o))
-          ((pair? o) o)
-          ((procedure? o) (o f g ta t d))
-          (_ barf))))
-
 (define (i386:ret . rest)
   (lambda (f g ta t d)
     `(
@@ -280,36 +269,17 @@
   (or n local-test)
   `(#x83 #x7d ,(- 0 (* 4 n)) ,v))       ; cmpl   $<v>,0x<n>(%ebp)
 
-(define (i386:call f g ta t d address . arguments)
+(define (i386:call f g ta t d address n)
   (or address urg:call)
-  (let* ((pushes (append-map (i386:push-arg f g ta t d) (reverse arguments)))
-         (s (length pushes))
-         (n (length arguments)))
-   `(
-     ,@pushes                           ; push args
-     #xe8 ,@(int->bv32 (- address 5 s)) ; call relative
-     #x83 #xc4 ,(* n 4)                 ; add    $00,%esp
-     )))
+  `(#xe8 ,@(int->bv32 (- address 5))    ; call   relative $00
+         #x83 #xc4 ,(* n 4)))           ; add    $00,%esp
 
-(define (i386:call-accu f g ta t d . arguments)
-  ;;(or address urg:call)
-  (let* ((pushes (append-map (i386:push-arg f g ta t d) (reverse arguments)))
-         (s (length pushes))
-         (n (length arguments)))
-    `(
-      ,@(i386:push-accu)
-      ,@pushes    ; push args
-      ;;#xe8 ,@(int->bv32 (- address 5 s)) ; call relative
-      ;; FIXME: add t?/address
-      ;; #x50                               ; push %eax
-      ;; #xc3                               ; ret
-      ,@(i386:pop-accu)
-      ;; #x05 ,@(int->bv32 t)              ; add    <t>,%eax
-      ;; #x05 ,@(int->bv32 ta)             ; add    <ta>,%eax
-      #xff #xd0                         ; call   *%eax
-      #x83 #xc4 ,(* n 4)                ; add    $00,%esp
-      )))
- 
+(define (i386:call-accu f g ta t d n)
+  `(,@(i386:push-accu)
+    ,@(i386:pop-accu)
+    #xff #xd0                           ; call   *%eax
+    #x83 #xc4 ,(* n 4)))                ; add    $00,%esp
+
 (define (i386:accu-not)
   `(#x0f #x94 #xc0                      ; sete %al
          #x0f #xb6 #xc0))               ; movzbl %al,%eax
