@@ -232,6 +232,16 @@
 (define (i386:base->accu-address)
   '(#x89 #x10))                         ; mov    %edx,(%eax)
 
+(define (i386:base-address->accu-address)
+  '(#x8b #x0a                           ; mov    (%edx),%ecx
+    #x89 #x08))                         ; mov    %ecx,(%eax)
+
+(define (i386:accu+n n)
+  `(#x83 #xc0 ,n))                      ; add    $0x00,%eax
+
+(define (i386:base+n n)
+  `(#x83 #xc2 ,n))                      ; add    $0x00,%edx
+
 (define (i386:byte-base->accu-address)
   '(#x88 #x10))                         ; mov    %dl,(%eax)
 

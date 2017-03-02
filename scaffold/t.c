@@ -101,13 +101,13 @@ char *g_chars = arena;
 char buf[200];
 
 int foo () {puts ("t: foo\n"); return 0;};
-int bar () {puts ("t: bar\n"); return 0;};
+int bar (int i) {puts ("t: bar\n"); return 0;};
 struct function {
   int (*function) (void);
   int arity;
 };
 struct function g_fun = {&exit, 1};
-struct function g_foo = {&foo, 1};
+struct function g_foo = {&foo, 0};
 struct function g_bar = {&bar, 1};
 
 //void *functions[2];
@@ -122,6 +122,15 @@ typedef int SCM;
 int g_free = 3;
 SCM tmp;
 SCM tmp_num;
+
+int ARENA_SIZE = 200;
+#define TYPE(x) (g_cells[x].type)
+#define CAR(x) g_cells[x].car
+#define CDR(x) g_cells[x].cdr
+#define VALUE(x) g_cells[x].cdr
+
+struct scm scm_fun = {TFUNCTION,0,0};
+SCM cell_fun;
 
 #if 1
 
@@ -225,15 +234,6 @@ math_test ()
   return read_test ();
 }
 
-int ARENA_SIZE = 200;
-#define TYPE(x) (g_cells[x].type)
-#define CAR(x) g_cells[x].car
-#define CDR(x) g_cells[x].cdr
-#define VALUE(x) g_cells[x].cdr
-
-struct scm scm_fun = {TFUNCTION,0,0};
-SCM cell_fun;
-
 SCM
 alloc (int n)
 {
@@ -319,25 +319,48 @@ struct_test ()
 
   int fn = 0;
   puts ("t: g_functions[g_cells[fn].cdr].arity\n");
-  if (!g_functions[g_cells[fn].cdr].arity) return 1;
+#if __GNUC__
+  //FIXME
+  if (g_functions[g_cells[fn].cdr].arity) return 1;
+#endif
+  if (g_functions[g_cells[fn].cdr].arity != 0) return 1;
 
   int (*functionx) (void) = 0;
   functionx = g_functions[0].function;
   puts ("t: *functionx == foo\n");
-  if (*functionx != foo) return 11;
+  if (functionx != foo) return 11;
 
   puts ("t: (*functionx) () == foo\n");
-  if ((*functionx) () != 0) return 12;
+  if ((functionx) () != 0) return 12;
+
+  puts ("t: g_functions[<foo>].arity\n");
+  if (g_functions[0].arity != 0) return 17;
 
   fn++;
-  g_functions[0] = g_bar;
-  if (g_cells[fn].cdr != 0) return 13;
+  g_functions[fn] = g_bar;
+  g_cells[fn].cdr = fn;
+  if (g_cells[fn].cdr != fn) return 13;
+
   puts ("t: g_functions[g_cells[fn].cdr].function\n");
   functionx = g_functions[g_cells[fn].cdr].function;
-  puts ("t: *functionx == bar\n");
-  if (*functionx != bar) return 15;
-  puts ("t: (*functionx) () == bar\n");
-  if ((*functionx) () != 0) return 16;
+
+  puts ("t: functionx == bar\n");
+  if (functionx != bar) return 15;
+
+  puts ("t: (*functiony) (1) == bar\n");
+#if __GNUC__
+  //FIXME
+  int (*functiony) (int) = 0;
+  functiony = g_functions[g_cells[fn].cdr].function;
+  if ((functiony) (1) != 0) return 16;
+#endif
+#if !__GNUC__
+  functionx = g_functions[g_cells[fn].cdr].function;
+  if ((functionx) (1) != 0) return 16;
+#endif
+
+  puts ("t: g_functions[<bar>].arity;");
+  if (g_functions[fn].arity != 1) return 18;
 
   scm_fun.cdr = g_function;
   g_functions[g_function++] = g_fun;
@@ -619,6 +642,9 @@ test (char *p)
 int
 main (int argc, char *argv[])
 {
+  // int fn = 0;
+  // g_functions[fn] = g_bar;
+  // if (g_functions[fn].arity != 1) return 1;
   char *p = "t.c\n";
   puts ("t.c\n");
 

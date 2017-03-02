@@ -104,7 +104,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 (define (function->source f i)
   (string-append
    (format #f "~a.function = g_function;\n" (function-builtin-name f))
-   (format #f "functions[g_function++] = fun_~a;\n" (.name f))
+   (format #f "g_functions[g_function++] = fun_~a;\n" (.name f))
    (format #f "cell_~a = g_free++;\n" (.name f))
    (format #f "g_cells[cell_~a] = ~a;\n\n" (.name f) (function-builtin-name f))))
 

@@ -997,7 +997,9 @@
   (and=> (ident->decl info o) car))
 
 (define (ident->pointer info o)
-  (or (and=> (ident->decl info o) global:pointer) 0))
+  (let ((local (assoc-ref (.locals info) o)))
+    (if local (local:pointer local)
+        (or (and=> (ident->decl info o) global:pointer) 0))))
 
 (define (type->description info o)
   ;; (stderr  "type->description =~s\n" o)  
@@ -1625,7 +1627,7 @@
                     #:locals locals))))
         
         ;; int (*function) (void) = g_functions[g_cells[fn].cdr].function;
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list ,param-list)) (initzer ,initzer))))
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)) (initzer ,initzer))))
          (let* ((locals (add-local locals name type 1))
                 (info (clone info #:locals locals))
                 (empty (clone info #:text '()))
@@ -1784,7 +1786,7 @@
                                       ((base->ident info) name)))))
         
         ;; *p = 0;
-        ((expr-stmt (assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))
+        ((expr-stmt (assn-expr (de-ref (p-expr (ident ,array))) (op ,op) ,b))
          (when (not (equal? op "="))
            (stderr "OOOPS2: op=~s\n" op)
            barf)
@@ -1793,84 +1795,142 @@
            (clone info #:text (append text
                                       (.text base)
                                       ;;assign:
-                                      ((base->ident-address info) name)))))
+                                      ((base->ident-address info) array)))))
 
         ;; g_cells[0] = 65;
-        ((expr-stmt (assn-expr (array-ref (p-expr (fixed ,index)) (p-expr (ident ,name))) (op ,op) ,b))
+        ((expr-stmt (assn-expr (array-ref (p-expr (fixed ,index)) (p-expr (ident ,array))) (op ,op) ,b))
          (when (not (equal? op "="))
            (stderr "OOOPS3: op=~s\n" op)
            barf)
          (let* ((index (cstring->number index))
                 (empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
+                (base ((expr->base empty) b))
+                (type (ident->type info array))
+                (fields (or (type->description info type) '()))  ;; FIXME: struct!
+                (size (type->size info type))
+                (count (length fields))
+                (field-size 4) ;; FIXME:4, not fixed
+                (ptr (ident->pointer info array)))
           (clone info #:text
                  (append text
                          (.text base)
-
                          (list (lambda (f g ta t d)
                                  (i386:push-base)))
-                         ((ident->base info) name)
                          (list (lambda (f g ta t d)
                                  (append
-                                  (i386:value->accu index)
-                                  (i386:accu+base))))
+                                  (i386:value->base index)
+                                  (i386:base->accu)
+                                  (if (> count 1) (i386:accu+accu) '())
+                                  (if (= count 3) (i386:accu+base) '())
+                                  (i386:accu-shl 2))))
+                         ((ident->base info) array)
+                          (list (lambda (f g tav t d)
+                                  (i386:accu+base)))
                          (list (lambda (f g ta t d)
                                  (i386:pop-base)))
-
-                         (list (lambda (f g ta t d)
-                                 (i386:base->accu-address)))))))
+                         (cond ((equal? array "g_functions") ;; FIXME
+                                (list (lambda (f g ta t d)
+                                        (append
+                                         (i386:base-address->accu-address)
+                                         (i386:accu+n 4)
+                                         (i386:base+n 4)
+                                         (i386:base-address->accu-address)))))
+                               (else (list (lambda (f g ta t d)
+                                             (i386:base->accu-address)))))))))
 
         ;; g_cells[i] = c;
-        ((expr-stmt (assn-expr (array-ref (p-expr (ident ,index)) (p-expr (ident ,name))) (op ,op) ,b))
+        ((expr-stmt (assn-expr (array-ref (p-expr (ident ,index)) (p-expr (ident ,array))) (op ,op) ,b))
+         (stderr "g_cells4[]: ~s\n" array)
+         ;;(stderr "pointer_cells4[]: ~s\n" array)
          (when (not (equal? op "="))
            (stderr "OOOPS4: op=~s\n" op)
            barf)
          (let* ((empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
+                (base ((expr->base empty) b))
+                (type (ident->type info array))
+                (fields (or (type->description info type) '()))  ;; FIXME: struct!
+                (size (type->size info type))
+                (count (length fields))
+                (field-size 4) ;; FIXME:4, not fixed
+                (ptr (ident->pointer info array)))
+           (stderr "g_cells4[~a]: type=~a\n" array type)
+           (stderr "g_cells4[~a]: pointer=~a\n" array ptr)
+           (stderr "g_cells4[~a]: fields=~a\n" array fields)
+           (stderr "g_cells4[~a]: size=~a\n" array size)
+           (stderr "g_cells4[~a]: count=~a\n" array count)
            (clone info #:text
                   (append text
                           (.text base)
-
-                         (list (lambda (f g ta t d)
-                                 (i386:push-base)))
-                          ((ident->base info) name)
-                          ((ident->accu info) index)  ;; FIXME: chars! index*size
                           (list (lambda (f g ta t d)
-                                  (i386:accu+base))) ; FIXME: type: char
+                                  (i386:push-base)))
+                          ((ident->base info) index)
+                          (list (lambda (f g ta t d)
+                                  (append
+                                   (i386:base->accu)
+                                   (if (> count 1) (i386:accu+accu) '())
+                                   (if (= count 3) (i386:accu+base) '())
+                                   (i386:accu-shl 2))))
+                          ((ident->base info) array)
+                          (list (lambda (f g ta t d)
+                                  (i386:accu+base)))
                          (list (lambda (f g ta t d)
                                  (i386:pop-base)))
-
-                          (list (lambda (f g ta t d)
-                                  ;;(i386:byte-base->accu-address)
-                                  (i386:base->accu-address)
-                                  ))))))
+                         (cond ((equal? array "g_functions") ;; FIXME
+                                (list (lambda (f g ta t d)
+                                        (append
+                                         (i386:base-address->accu-address)
+                                         (i386:accu+n 4)
+                                         (i386:base+n 4)
+                                         (i386:base-address->accu-address)))))
+                               (else (list (lambda (f g ta t d)
+                                             (i386:base->accu-address)))))))))
 
         ;; g_functions[g_function++] = g_foo;
-        ((expr-stmt (assn-expr (array-ref (post-inc (p-expr (ident ,index))) (p-expr (ident ,name))) (op ,op) ,b))
+        ((expr-stmt (assn-expr (array-ref (post-inc (p-expr (ident ,index))) (p-expr (ident ,array))) (op ,op) ,b))
          (when (not (equal? op "="))
            (stderr "OOOPS5: op=~s\n" op)
            barf)
          (let* ((empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
+                (base ((expr->base empty) b))
+                (type (ident->type info array))
+                (fields (or (type->description info type) '()))  ;; FIXME: struct!
+                (size (type->size info type))
+                (count (length fields))
+                (field-size 4) ;; FIXME:4, not fixed
+                (ptr (ident->pointer info array)))
+           (stderr "g_cells5[~a]: type=~a\n" array type)
+           (stderr "g_cells5[~a]: pointer=~a\n" array ptr)
+           (stderr "g_cells5[~a]: fields=~a\n" array fields)
+           (stderr "g_cells5[~a]: size=~a\n" array size)
+           (stderr "g_cells5[~a]: count=~a\n" array count)
            (clone info #:text
                   (append text
                           (.text base)
-
                           (list (lambda (f g ta t d)
-                                 (i386:push-base)))
-                          ((ident->base info) name)
-                          ((ident->accu info) index)  ;; FIXME: chars! index*size
-                          (list (lambda (f g ta t d)
-                                  (i386:accu+base))) ; FIXME: type: char
-                          (list (lambda (f g ta t d)
-                                  (i386:pop-base)))
-
+                                  (i386:push-base)))
+                          ((ident->base info) index)
                           (list (lambda (f g ta t d)
                                   (append
-                                   (i386:base->accu-address))))
-
-                          ((ident-add info) index 1)
-                          ))))
+                                   (i386:base->accu)
+                                   (if (> count 1) (i386:accu+accu) '())
+                                   (if (= count 3) (i386:accu+base) '())
+                                   (i386:accu-shl 2))))
+                          ((ident->base info) array)
+                          (list (lambda (f g ta t d)
+                                  (i386:accu+base)))
+                         (list (lambda (f g ta t d)
+                                 (i386:pop-base)))
+                         ;; FIXME
+                         (cond ((equal? array "g_functions") ;; FIXME
+                                (list (lambda (f g ta t d)
+                                        (append
+                                         (i386:base-address->accu-address)
+                                         (i386:accu+n 4)
+                                         (i386:base+n 4)
+                                         (i386:base-address->accu-address)))))
+                               (else (list (lambda (f g ta t d)
+                                             (i386:base->accu-address)))))
+                         ((ident-add info) index 1)))))
 
         ;; DECL
         ;;

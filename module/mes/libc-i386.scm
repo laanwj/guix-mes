@@ -127,6 +127,10 @@
 
             i386:XXjump
 
+            i386:accu+n
+            i386:base+n
+            i386:base-address->accu-address
+
             ;; libc
             i386:exit
             i386:open

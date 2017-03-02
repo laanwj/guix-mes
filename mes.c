@@ -171,7 +171,7 @@ SCM tmp;
 SCM tmp_num;
 SCM tmp_num2;
 
-function_t functions[200];
+function_t g_functions[200];
 int g_function = 0;
 
 SCM g_continuations = 0;
@@ -201,7 +201,7 @@ SCM r3 = 0; // continuation
 #define REF(x) g_cells[x].ref
 #define VALUE(x) g_cells[x].value
 #define VECTOR(x) g_cells[x].vector
-#define FUNCTION(x) functions[g_cells[x].function]
+#define FUNCTION(x) g_functions[g_cells[x].function]
 #define NCAR(x) g_news[x].car
 #define NTYPE(x) g_news[x].type
 
