@@ -592,8 +592,6 @@ assert_defined (SCM x, SCM e)
 }
 #endif
 
-#if 1
-  //FIXME GNUC
 SCM
 push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
 {
@@ -607,7 +605,6 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   r3 = x;
   return cell_unspecified;
 }
-#endif
 
 #if __GNUC__
 SCM caar (SCM x) {return car (car (x));}
@@ -635,9 +632,7 @@ SCM gc_pop_frame ();
 SCM
 eval_apply ()
 {
-  puts ("e/a: fixme\n");
  eval_apply:
-  puts ("eval_apply\n");
   // if (g_free + GC_SAFETY > ARENA_SIZE)
   //   gc_pop_frame (gc (gc_push_frame ()));
 
@@ -651,45 +646,18 @@ eval_apply ()
   SCM y = cell_nil;
 
  apply:
-  puts ("apply\n");
   switch (TYPE (car (r1)))
     {
     case TFUNCTION: {
       puts ("apply.function\n");
-      y = 0x22;
       //check_formals (car (r1), MAKE_NUMBER (FUNCTION (car (r1)).arity), cdr (r1));
-#if __GNUC__
-      r1 = call (car (r1), cdr (r1)); /// FIXME: move into eval_apply
-#else
-      //FIXME
-      x = car (r1);
-      y = cdr (r1);
-      r1 = call (x, y);
-#endif
-      puts ("after call\n");
-      y = 0x44;
+      r1 = call (car (r1), cdr (r1));
       goto vm_return;
     }
     }
-// #if __GNUC__
-//   //FIXME
-//   push_cc (car (r1), r1, r0, cell_vm_apply2);
-// #endif
-//   goto eval;
-//  apply2:
-//   //check_apply (r1, car (r2));
-//   r1 = cons (r1, cdr (r2));
-//   goto apply;
-
- eval:
- begin:
- begin2:
  vm_return:
-  // FIXME
-  puts ("vm-return00\n");
   x = r1;
   gc_pop_frame ();
-  puts ("vm-return01\n");
   r1 = x;
   goto eval_apply;
 }
@@ -1337,7 +1305,22 @@ simple_bload_env (SCM a) ///((internal))
 
   puts ("read done\n");
 
-  g_free = (p-(char*)g_cells) / sizeof (struct scm);
+  // g_free = (p-(char*)g_cells) / sizeof (struct scm);
+  c = p-(char*)g_cells;
+  exit (c);
+  
+  
+  
+  
+ if (g_free != 15) exit (33);
+  
+  // puts ("Xg_free: ");
+  // puts (itoa (g_free));
+  // puts ("\n");
+
+
+  ///if (g_free != 19) return 33;
+  
   // gc_peek_frame ();
   // g_symbols = r1;
   g_symbols = 1;
@@ -1446,10 +1429,22 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
 #endif
 
-#if 0
-  //__GNUC__
+#if 1
+
+#if __GNUC__
+  puts ("g_free=");
+  puts (itoa(g_free));
+  puts ("\n");
+#else
+  g_free = 19;
+
+#endif
+
+  //return cons (r0, cell_nil);
+
   //FIXME
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
+#if __GNUC__
   for (int x=19; x<26 ;x++)
     {
       puts(itoa(x));
@@ -1461,16 +1456,19 @@ main (int argc, char *argv[])
       puts(itoa(g_cells[x].cdr));
       puts("\n");
     }
+#endif
 #else
-
   g_stack = 23;
   g_free = 24;
   r1 = r2; //10: the-program
   r2 = cell_unspecified;
 #endif
 
-#if __GNUC__
+  puts ("g_stack: ");
   display_ (g_stack);
+  puts ("\n");
+
+#if __GNUC__
 
   puts ("g_free=");
   puts (itoa(g_free));

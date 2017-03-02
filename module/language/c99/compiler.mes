@@ -643,7 +643,7 @@
 
         ((add ,a ,b)
          (let* ((empty (clone info #:text '()))
-                (accu ((expr->base empty) a))
+                (accu ((expr->accu empty) a))
                 (base ((expr->base empty) b)))
            (clone info #:text
                   (append text
@@ -654,7 +654,7 @@
 
         ((sub ,a ,b)
          (let* ((empty (clone info #:text '()))
-                (accu ((expr->base empty) a))
+                (accu ((expr->accu empty) a))
                 (base ((expr->base empty) b)))
            (clone info #:text
                   (append text
@@ -665,7 +665,7 @@
 
         ((lshift ,a (p-expr (fixed ,value)))
          (let* ((empty (clone info #:text '()))
-                (accu ((expr->base empty) a))
+                (accu ((expr->accu empty) a))
                 (value (cstring->number value)))
            (clone info #:text
                   (append text

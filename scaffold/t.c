@@ -457,6 +457,18 @@ test (char *p)
   *x++ = c;
   if (*g_chars != 'C') return 1;
 
+  puts ("t: 1 + 2\n");
+  if (1 + 2 != 3) return 1;
+
+  puts ("t: 2 - 1\n");
+  if (2 - 1 != 1) return 1;
+
+  puts ("t: 1 << 3\n");
+  if (1 << 3 != 8) return 1;
+
+  puts ("t: 8 / 4\n");
+  if (8 / 4 != 2) return 1;
+
   puts ("t: inc (0)\n");
   if (inc (0) != 1) return 1;
 

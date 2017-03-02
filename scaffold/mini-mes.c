@@ -592,8 +592,6 @@ assert_defined (SCM x, SCM e)
 }
 #endif
 
-#if 1
-  //FIXME GNUC
 SCM
 push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
 {
@@ -607,7 +605,6 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   r3 = x;
   return cell_unspecified;
 }
-#endif
 
 #if __GNUC__
 SCM caar (SCM x) {return car (car (x));}
