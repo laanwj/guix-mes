@@ -670,7 +670,7 @@
                               (i386:accu->base)
                               (i386:pop-accu)))))))))
 
-(define (expr->Xaccu info)
+(define (expr->accu* info)
   (lambda (o)
     (pmatch o
       ;; g_cells[10].type
@@ -740,7 +740,7 @@
                                 (i386:accu+value offset)))))))
 
       (_
-       (format (current-error-port) "SKIP: expr->Xaccu=~s\n" o)
+       (format (current-error-port) "SKIP: expr->accu*=~s\n" o)
        barf
        info)
       )))
@@ -1707,7 +1707,7 @@
            (stderr "OOOPS0: op=~s\n" op)
            barf)
          (let* ((empty (clone info #:text '()))
-                (expr ((expr->Xaccu empty) `(d-sel (ident ,field) ,@d-sel))) ;; <-OFFSET
+                (expr ((expr->accu* empty) `(d-sel (ident ,field) ,@d-sel))) ;; <-OFFSET
                 (base ((expr->base empty) b))
                 (type (list "struct" "scm")) ;; FIXME
                 (fields (type->description info type))
