@@ -74,7 +74,11 @@
 ;;                       ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels)))))))
 
 (define (function-prefix name functions)
-  (member name (reverse functions) (lambda (a b) (equal? (car b) name))))
+  ;; FIXME
+  ;;(member name (reverse functions) (lambda (a b) (equal? (car b) name)))
+  (let* ((x functions)
+         (x (if (and (pair? x) (equal? (caar x) "exit")) (reverse x) x)))
+    (member name x (lambda (a b) (equal? (car b) name)))))
 
 (define function-offset
   (let ((cache '()))
@@ -83,7 +87,7 @@
           (let* ((prefix (function-prefix name functions))
                  (offset (if prefix (length (functions->text (cdr prefix) '() 0 0 0))
                              0)))
-            (if (or (equal? name "exit") (> offset 0)) (set! cache (assoc-set! cache name offset)))
+            (if (and prefix (or (equal? name "exit") (> offset 0))) (set! cache (assoc-set! cache name offset)))
             offset)))))
 
 (define (label-offset function label functions)

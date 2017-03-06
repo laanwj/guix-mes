@@ -879,6 +879,16 @@
           (let loop ((elements elements) (info info))
             (if (null? elements) info
                 (loop (cdr elements) ((statement->info info body-length) (car elements))))))))
+
+      ((case (p-expr (ident ,constant)) ,statement)
+       ((case->jump-info info) `(case (p-expr (ident ,constant)) (compd-stmt (block-item-list ,statement)))))
+
+      ((case (p-expr (fixed ,value)) ,statement)
+       ((case->jump-info info) `(case (p-expr (fixed ,value)) (compd-stmt (block-item-list ,statement)))))
+
+      ((default ,statement)
+       ((case->jump-info info) `(default (compd-stmt (block-item-list ,statement)))))
+
       (_ (stderr "no case match: ~a\n" o) barf)
       )))
 

@@ -127,12 +127,37 @@ check_apply (SCM f, SCM e)
   return cell_unspecified;
 }
 
+char const*
+itoa (int x)
+{
+  static char buf[10];
+  char *p = buf+9;
+  *p-- = 0;
+
+  int sign = x < 0;
+  if (sign)
+    x = -x;
+  
+  do
+    {
+      *p-- = '0' + (x % 10);
+      x = x / 10;
+    } while (x);
+
+  if (sign)
+    *p-- = '-';
+
+  return p+1;
+}
+
 FILE *g_stdin;
 int
 dump ()
 {
   r1 = g_symbols;
-  gc (gc_push_frame ());
+  gc_push_frame ();
+  gc ();
+  gc_peek_frame ();
   char *p = (char*)g_cells;
   fputc ('M', stdout);
   fputc ('E', stdout);

@@ -118,6 +118,11 @@ mini-mes: scaffold/mini-mes.c GNUmakefile
 	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
+# mini-mes: doc/examples/mini-mes.c GNUmakefile
+# 	rm -f $@
+# 	gcc -nostdlib --std=gnu99 -g -o $@ '-DVERSION="0.4"' $<
+# 	chmod +x $@
+
 cons-mes: scaffold/cons-mes.c GNUmakefile
 	rm -f $@
 	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<

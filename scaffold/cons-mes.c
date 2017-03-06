@@ -424,10 +424,7 @@ SCM cell_cdr;
 SCM
 alloc (int n)
 {
-#if __GNUC__
-  //FIXME GNUC
   assert (g_free + n < ARENA_SIZE);
-#endif
   SCM x = g_free;
   g_free += n;
   return x;
@@ -437,10 +434,7 @@ SCM
 make_cell (SCM type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
-#if __GNUC__
-  //FIXME GNUC
   assert (TYPE (type) == NUMBER);
-#endif
   TYPE (x) = VALUE (type);
   if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
     if (car) CAR (x) = CAR (car);
@@ -517,19 +511,6 @@ cdr (SCM x)
   return CDR(x);
 }
 
-// SCM
-// eq_p (SCM x, SCM y)
-// {
-//   return (x == y
-//           || ((TYPE (x) == KEYWORD && TYPE (y) == KEYWORD
-//                && STRING (x) == STRING (y)))
-//           || (TYPE (x) == CHAR && TYPE (y) == CHAR
-//               && VALUE (x) == VALUE (y))
-//           || (TYPE (x) == NUMBER && TYPE (y) == NUMBER
-//               && VALUE (x) == VALUE (y)))
-//     ? cell_t : cell_f;
-// }
-
 SCM
 gc_push_frame ()
 {
@@ -568,30 +549,6 @@ assq (SCM x, SCM a)
   return a != cell_nil ? car (a) : cell_f;
 }
 
-#if __GNUC__
-  //FIXME GNUC
-SCM
-assq_ref_env (SCM x, SCM a)
-{
-  x = assq (x, a);
-  if (x == cell_f) return cell_undefined;
-  return cdr (x);
-}
-#endif
-
-#if __GNUC__
-  //FIXME GNUC
-SCM
-assert_defined (SCM x, SCM e)
-{
-  if (e != cell_undefined) return e;
-  // error (cell_symbol_unbound_variable, x);
-  puts ("unbound variable");
-  exit (33);
-  return e;
-}
-#endif
-
 SCM
 push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
 {
@@ -606,22 +563,10 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   return cell_unspecified;
 }
 
-#if __GNUC__
 SCM caar (SCM x) {return car (car (x));}
 SCM cadr (SCM x) {return car (cdr (x));}
 SCM cdar (SCM x) {return cdr (car (x));}
 SCM cddr (SCM x) {return cdr (cdr (x));}
-#else
-// Weirdness: wrong function labeling
-// SCM cadr (SCM x) {
-//   x = cdr (x);
-//   return car (x);
-// }
-// SCM cddr (SCM x) {
-//   x = cdr (x);
-//   return cdr (x);
-// }
-#endif
 
 #if __GNUC__
 //FIXME
@@ -681,8 +626,7 @@ call (SCM fn, SCM x)
     // case -1: return FUNCTION (fn).functionn (x);
     case 0: {return (FUNCTION (fn).function) ();}
     case 1: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (car (x));}
-      //case 2: {return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x));}
-    case 2: {return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (car (x), car (cdr (x)));}
+    case 2: {return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x));}
     case 3: {return ((SCM(*)(SCM,SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x), car (cddr (x)));}
 #if __GNUC__
       // FIXME GNUC
@@ -690,7 +634,6 @@ call (SCM fn, SCM x)
 #endif
     default: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);}
     }
-
   return cell_unspecified;
 }
 
@@ -1274,11 +1217,7 @@ stderr_ (SCM x)
 int
 main (int argc, char *argv[])
 {
-  puts ("Hello mini-mes!\n");
-#if __GNUC__
-  //g_debug = getenv ("MES_DEBUG");
-#endif
-  //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
+  puts ("Hello cons-mes!\n");
   if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE");
 #if __GNUC__
   if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");return eputs (VERSION);};
@@ -1304,10 +1243,6 @@ main (int argc, char *argv[])
 #endif
 
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
-
-  // puts ("g_stack: ");
-  // display_ (g_stack);
-  // puts ("\n");
 
 #if __GNUC__
 
@@ -1336,10 +1271,8 @@ main (int argc, char *argv[])
   puts ("\n");
 #endif
 
-  //r3 = cell_vm_begin;
   r3 = cell_vm_apply;
   r1 = eval_apply ();
-  //stderr_ (r1);
   display_ (r1);
 
   eputs ("\n");

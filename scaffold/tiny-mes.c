@@ -484,22 +484,14 @@ bload_env (SCM a) ///((internal))
   getchar ();
 
   c = getchar ();
-  // int i = 0;
   while (c != -1)
     {
       *p++ = c;
-      //g_cells[i] = c;
-      // i++;
       c = getchar ();
-      //puts ("\nc:");
-      //putchar (c);
     }
 
   puts ("read done\n");
   display_ (10);
-  // puts ("\n");
-  // fill ();
-  // display_ (10);
 
   puts ("\n");
   return r2;
@@ -508,16 +500,9 @@ bload_env (SCM a) ///((internal))
 int
 main (int argc, char *argv[])
 {
-  // if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
-  // if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
-
-  // if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
-
-  // puts ("Hello tiny-mes!\n");
   fill ();
   puts (g_cells);
   puts ("\n");
-  // return 22;
   display_ (10);
   puts ("\n");
   SCM program = bload_env (r0);
