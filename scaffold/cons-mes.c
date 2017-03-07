@@ -1037,7 +1037,7 @@ display_ (SCM x)
       {
         //puts ("<number>\n");
 #if __GNUC__
-        putchar (48 + VALUE (x));
+        puts (itoa (VALUE (x)));
 #else
         int i;
         i = VALUE (x);
@@ -1070,10 +1070,65 @@ display_ (SCM x)
         puts (")");
         break;
       }
+    case SPECIAL:
+      {
+        switch (x)
+          {
+          case 1: {puts ("()"); break;}
+          case 2: {puts ("#f"); break;}
+          case 3: {puts ("#t"); break;}
+          default:
+            {
+#if __GNUC__
+        puts ("<x:");
+        puts (itoa (x));
+        puts (">");
+#else
+        puts ("<x>");
+#endif
+            }
+          }
+        break;
+      }
+    case SYMBOL:
+      {
+        switch (x)
+          {
+          case 11: {puts (" . "); break;}
+          case 12: {puts ("lambda"); break;}
+          case 13: {puts ("begin"); break;}
+          case 14: {puts ("if"); break;}
+          case 15: {puts ("quote"); break;}
+          case 37: {puts ("car"); break;}
+          case 38: {puts ("cdr"); break;}
+          case 39: {puts ("null?"); break;}
+          case 40: {puts ("eq?"); break;}
+          case 41: {puts ("cons"); break;}
+          default:
+            {
+#if __GNUC__
+        puts ("<s:");
+        puts (itoa (x));
+        puts (">");
+#else
+        puts ("<s>");
+#endif
+            }
+          }
+        break;
+      }
     default:
       {
         //puts ("<default>\n");
+#if __GNUC__
+        puts ("<");
+        puts (itoa (TYPE (x)));
+        puts (":");
+        puts (itoa (x));
+        puts (">");
+#else
         puts ("_");
+#endif
         break;
       }
     }

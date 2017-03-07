@@ -139,7 +139,7 @@ scm scm_vm_apply = {SPECIAL, "core:apply"};
 scm scm_vm_apply2 = {SPECIAL, "*vm-apply2*"};
 scm scm_vm_eval = {SPECIAL, "core:eval"};
 
-#if FIXED_PRIMITIVES
+#if 1 //FIXED_PRIMITIVES
 scm scm_vm_eval_car = {SPECIAL, "*vm-eval-car*"};
 scm scm_vm_eval_cdr = {SPECIAL, "*vm-eval-cdr*"};
 scm scm_vm_eval_cons = {SPECIAL, "*vm-eval-cons*"};

@@ -154,6 +154,10 @@ FILE *g_stdin;
 int
 dump ()
 {
+  fputs ("program r2=", stderr);
+  stderr_ (r2);
+  fputs ("\n", stderr);
+
   r1 = g_symbols;
   gc_push_frame ();
   gc ();
@@ -201,8 +205,13 @@ SCM
 load_env (SCM a) ///((internal))
 {
   r0 = a;
-  g_stdin = fopen ("module/mes/read-0.mes", "r");
-  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
+  if (getenv ("MES_MINI"))
+    g_stdin = fopen ("mini-0.mes", "r");
+  else
+    {
+      g_stdin = fopen ("module/mes/read-0.mes", "r");
+      g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
+    }
   if (!g_function) r0 = mes_builtins (r0);
   r2 = read_input_file_env (r0);
   g_stdin = stdin;
@@ -212,8 +221,13 @@ load_env (SCM a) ///((internal))
 SCM
 bload_env (SCM a) ///((internal))
 {
+#if MES_MINI
+  g_stdin = fopen ("mini-0.mo", "r");
+#else
   g_stdin = fopen ("module/mes/read-0.mo", "r");
   g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
+#endif
+
   char *p = (char*)g_cells;
   assert (getchar () == 'M');
   assert (getchar () == 'E');

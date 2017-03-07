@@ -273,8 +273,10 @@
       (+ str-offset str-length))
 
     (format (current-error-port) "ELF text=~a\n" (map dec->hex text))
-    (format (current-error-port) "ELF raw-data=~a\n" (map dec->hex raw-data))
-    (format (current-error-port) "ELF data=~a\n" (map dec->hex data))
+    (if (< (length raw-data) 200)
+        (format (current-error-port) "ELF raw-data=~a\n" (map dec->hex raw-data)))
+    (if (< (length data) 200)
+        (format (current-error-port) "ELF data=~a\n" (map dec->hex data)))
     (format (current-error-port) "text-offset=~a\n" text-offset)
     (format (current-error-port) "data-offset=~a\n" data-offset)
     (format (current-error-port) "_start=~a\n" (number->string entry 16))

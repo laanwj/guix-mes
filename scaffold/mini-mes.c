@@ -19,7 +19,7 @@
  */
 
 #define MES_MINI 1
-#define FIXED_PRIMITIVES 0
+#define FIXED_PRIMITIVES 1
 
 #if __GNUC__
 #define FIXME_NYACC 1
@@ -340,6 +340,12 @@ struct scm *g_cells = arena;
 #define cell_symbol_primitive_load 24
 #define cell_symbol_read_input_file 25
 
+#define cell_symbol_car 37
+#define cell_symbol_cdr 38
+#define cell_symbol_null_p 39
+#define cell_symbol_eq_p 40
+#define cell_symbol_cons 41
+
 #define cell_vm_evlis 42
 #define cell_vm_evlis2 43
 #define cell_vm_evlis3 44
@@ -379,8 +385,12 @@ int g_function = 0;
 SCM make_cell (SCM type, SCM car, SCM cdr);
 #endif
 struct function fun_make_cell = {&make_cell, 3};
+
+#if __GNUC__
+struct scm scm_make_cell = {TFUNCTION, "make-cell", 0};
+#else
 struct scm scm_make_cell = {TFUNCTION,0,0};
-   //, "make-cell", 0};
+#endif
 SCM cell_make_cell;
 
 #if __GNUC__
@@ -388,8 +398,11 @@ SCM cell_make_cell;
 SCM cons (SCM x, SCM y);
 #endif
 struct function fun_cons = {&cons, 2};
-struct scm scm_cons = {TFUNCTION,0,0};
-  // "cons", 0};
+#if __GNUC__
+struct scm scm_cons = {TFUNCTION,"cons", 0};
+#else
+struct scm scm_make_cell = {TFUNCTION,0,0};
+#endif
 SCM cell_cons;
 
 #if __GNUC__
@@ -397,8 +410,11 @@ SCM cell_cons;
 SCM car (SCM x);
 #endif
 struct function fun_car = {&car, 1};
-struct scm scm_car = {TFUNCTION,0,0};
-  // "car", 0};
+#if __GNUC__
+struct scm scm_car = {TFUNCTION,"car", 0};
+#else
+struct scm scm_make_cell = {TFUNCTION,0,0};
+#endif
 SCM cell_car;
 
 #if __GNUC__
@@ -406,8 +422,11 @@ SCM cell_car;
 SCM cdr (SCM x);
 #endif
 struct function fun_cdr = {&cdr, 1};
-struct scm scm_cdr = {TFUNCTION,0,0};
-// "cdr", 0};
+#if __GNUC__
+struct scm scm_cdr = {TFUNCTION,"cdr", 0};
+#else
+struct scm scm_make_cell = {TFUNCTION,0,0};
+#endif
 SCM cell_cdr;
 
 // SCM eq_p (SCM x, SCM y);
@@ -462,11 +481,13 @@ alloc (int n)
   return x;
 }
 
+#define DEBUG 0
+
 SCM
 make_cell (SCM type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
-#if __GNUC__
+#if DEBUG
   puts ("make_cell type=");
   puts (itoa (type));
   puts ("\n");
@@ -474,7 +495,17 @@ make_cell (SCM type, SCM car, SCM cdr)
   puts (itoa (TYPE (type)));
   puts ("\n");
 #endif
-  assert (TYPE (type) == NUMBER);
+  if  (TYPE (type) != NUMBER)
+    {
+      puts ("type != NUMBER\n");
+      if (TYPE (type) < 10) puts ("type < 10\n");
+      if (TYPE (type) < 20) puts ("type < 20\n");
+      if (TYPE (type) < 30) puts ("type < 30\n");
+      if (TYPE (type) < 40) puts ("type < 40\n");
+      if (TYPE (type) < 50) puts ("type < 50\n");
+      if (TYPE (type) < 60) puts ("type < 60\n");
+    }
+  //assert (TYPE (type) == NUMBER);
   TYPE (x) = VALUE (type);
   if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
     if (car) CAR (x) = CAR (car);
@@ -508,11 +539,11 @@ tmp_num2_ (int x)
 SCM
 cons (SCM x, SCM y)
 {
+#if DEBUG
   puts ("cons x=");
-#if __GNUC__
   puts (itoa (x));
-#endif
   puts ("\n");
+#endif
   VALUE (tmp_num) = PAIR;
   return make_cell (tmp_num, x, y);
 }
@@ -520,11 +551,11 @@ cons (SCM x, SCM y)
 SCM
 car (SCM x)
 {
+#if DEBUG
   puts ("car x=");
-#if __GNUC__
   puts (itoa (x));
-#endif
   puts ("\n");
+#endif
 #if MES_MINI
   //Nyacc
   //assert ("!car");
@@ -537,11 +568,11 @@ car (SCM x)
 SCM
 cdr (SCM x)
 {
+#if DEBUG
   puts ("cdr x=");
-#if __GNUC__
   puts (itoa (x));
-#endif
   puts ("\n");
+#endif
 #if MES_MINI
   //Nyacc
   //assert ("!cdr");
@@ -549,6 +580,12 @@ cdr (SCM x)
   if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_cdr));
 #endif
   return CDR(x);
+}
+
+SCM
+null_p (SCM x)
+{
+  return x == cell_nil ? cell_t : cell_f;
 }
 
 // SCM
@@ -680,15 +717,46 @@ SCM gc_pop_frame ();
 #endif
 
 SCM
+cons_eval_apply ()
+{
+  puts ("e/a: enter\n");
+ eval_apply:
+  // if (g_free + GC_SAFETY > ARENA_SIZE)
+  //   gc_pop_frame (gc (gc_push_frame ()));
+
+  switch (r3)
+    {
+    case cell_vm_apply: {goto apply;}
+    case cell_unspecified: {return r1;}
+    }
+
+  SCM x = cell_nil;
+  SCM y = cell_nil;
+
+ apply:
+  puts ("e/a: apply\n");
+  switch (TYPE (car (r1)))
+    {
+    case TFUNCTION: {
+      puts ("apply.function\n");
+      //check_formals (car (r1), MAKE_NUMBER (FUNCTION (car (r1)).arity), cdr (r1));
+      r1 = call (car (r1), cdr (r1));
+      goto vm_return;
+    }
+    }
+ vm_return:
+  x = r1;
+  gc_pop_frame ();
+  r1 = x;
+  goto eval_apply;
+}
+
+SCM
 eval_apply ()
 {
-  puts ("e/a: fixme\n");
+  puts ("e/a: enter\n");
  eval_apply:
-  asm (".byte 0x90");
-  asm (".byte 0x90");
-  asm (".byte 0x90");
-  asm (".byte 0x90");
-  puts ("eval_apply\n");
+  puts ("e/a: eval_apply\n");
   // if (g_free + GC_SAFETY > ARENA_SIZE)
   //   gc_pop_frame (gc (gc_push_frame ()));
 
@@ -725,6 +793,7 @@ eval_apply ()
   SCM x = cell_nil;
   SCM y = cell_nil;
  evlis:
+  puts ("e/a: evlis\n");
   if (r1 == cell_nil) goto vm_return;
   if (TYPE (r1) != PAIR) goto eval;
   push_cc (car (r1), r1, r0, cell_vm_evlis2);
@@ -737,7 +806,7 @@ eval_apply ()
   goto vm_return;
 
  apply:
-  puts ("apply\n");
+  puts ("e/a: apply\n");
   switch (TYPE (car (r1)))
     {
     case TFUNCTION: {
@@ -825,6 +894,7 @@ eval_apply ()
   goto apply;
 
  eval:
+  puts ("e/a: eval\n");
   switch (TYPE (r1))
     {
     case PAIR:
@@ -939,12 +1009,16 @@ eval_apply ()
   goto vm_return;
 #endif
  begin:
+  puts ("e/a: begin\n");
   x = cell_unspecified;
   while (r1 != cell_nil) {
     if (TYPE (r1) == PAIR && TYPE (CAR (r1)) == PAIR)
       {
         if (caar (r1) == cell_symbol_begin)
-          r1 = append2 (cdar (r1), cdr (r1));
+          {
+            puts ("begin00\n");
+            r1 = append2 (cdar (r1), cdr (r1));
+          }
         else if (caar (r1) == cell_symbol_primitive_load)
           {
             push_cc (cons (cell_symbol_read_input_file, cell_nil), r1, r0, cell_vm_begin_read_input_file);
@@ -953,11 +1027,13 @@ eval_apply ()
             r1 = append2 (r1, cdr (r2));
           }
       }
+    puts ("begin01\n");
     if (CDR (r1) == cell_nil)
       {
         r1 = car (r1);
         goto eval;
       }
+    puts ("begin02\n");
     push_cc (CAR (r1), r1, r0, cell_vm_begin2);
     goto eval;
   begin2:
@@ -1012,11 +1088,16 @@ eval_apply ()
   goto apply;
 
  vm_return:
+  puts ("e/a: vm-return\n");
   x = r1;
   gc_pop_frame ();
   r1 = x;
   goto eval_apply;
 }
+
+#if __GNUC__
+SCM display_ (SCM);
+#endif
 
 SCM
 call (SCM fn, SCM x)
@@ -1028,6 +1109,23 @@ call (SCM fn, SCM x)
   if ((FUNCTION (fn).arity > 1 || FUNCTION (fn).arity == -1)
       && x != cell_nil && TYPE (CDR (x)) == PAIR && TYPE (CADR (x)) == VALUES)
     x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
+
+  puts ("fn=");
+  display_ (fn);
+#if __GNUC__
+  puts (itoa (fn));
+  puts (" .type=");
+  puts (itoa (TYPE (fn)));
+  puts (" .cdr=");
+  puts (itoa (CDR (fn)));
+#endif
+  puts ("\n");
+
+  puts ("arity=");
+#if __GNUC__
+  puts (itoa (FUNCTION (fn).arity));
+#endif
+  puts ("\n");
   switch (FUNCTION (fn).arity)
     {
     // case 0: return FUNCTION (fn).function0 ();
@@ -1054,7 +1152,8 @@ gc_peek_frame ()
 {
   SCM frame = car (g_stack);
   r1 = car (frame);
-#if __GNUC__
+#if 1
+  //GNUC
   r2 = cadr (frame);
   r3 = car (cddr (frame));
   r0 = cadr (cddr (frame));
@@ -1316,6 +1415,11 @@ cell_make_cell = g_free++;
  
 scm_cons.cdr = g_function;
 g_functions[g_function++] = fun_cons;
+#if __GNUC__
+ puts ("BUILTIN cons=");
+ puts (itoa (g_free));
+ puts ("\n");
+#endif
 cell_cons = g_free++;
 g_cells[cell_cons] = scm_cons;
  
@@ -1329,21 +1433,38 @@ g_functions[g_function++] = fun_cdr;
 cell_cdr = g_free++;
 g_cells[cell_cdr] = scm_cdr;
 
-// scm_make_cell.string = cstring_to_list (scm_make_cell.name);
-// g_cells[cell_make_cell].string = MAKE_STRING (scm_make_cell.string);
-// a = acons (make_symbol (scm_make_cell.string), cell_make_cell, a);
+//scm_make_cell.string = cstring_to_list (scm_make_cell.name);
+//g_cells[cell_make_cell].string = MAKE_STRING (scm_make_cell.string);
+//a = acons (make_symbol (scm_make_cell.string), cell_make_cell, a);
+ puts ("00\n");
+scm_make_cell.car = cstring_to_list (scm_make_cell.car);
+ puts ("01\n");
+g_cells[cell_make_cell].car = MAKE_STRING (scm_make_cell.car);
+ puts ("02\n");
+ a = acons (make_symbol (scm_make_cell.car), cell_make_cell, a);
+ puts ("03\n");
 
-// scm_cons.string = cstring_to_list (scm_cons.name);
-// g_cells[cell_cons].string = MAKE_STRING (scm_cons.string);
-// a = acons (make_symbol (scm_cons.string), cell_cons, a);
+ //scm_cons.string = cstring_to_list (scm_cons.name);
+//g_cells[cell_cons].string = MAKE_STRING (scm_cons.string);
+//a = acons (make_symbol (scm_cons.string), cell_cons, a);
+scm_cons.car = cstring_to_list (scm_cons.car);
+g_cells[cell_cons].car = MAKE_STRING (scm_cons.car);
+a = acons (make_symbol (scm_cons.car), cell_cons, a);
 
-// scm_car.string = cstring_to_list (scm_car.name);
-// g_cells[cell_car].string = MAKE_STRING (scm_car.string);
-// a = acons (make_symbol (scm_car.string), cell_car, a);
+//scm_car.string = cstring_to_list (scm_car.name);
+//g_cells[cell_car].string = MAKE_STRING (scm_car.string);
+//a = acons (make_symbol (scm_cons.string), cell_cons, a);
+scm_car.car = cstring_to_list (scm_car.car);
+g_cells[cell_car].car = MAKE_STRING (scm_car.car);
+a = acons (make_symbol (scm_cons.car), cell_cons, a);
 
-// scm_cdr.string = cstring_to_list (scm_cdr.name);
-// g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
-// a = acons (make_symbol (scm_cdr.string), cell_cdr, a);
+//scm_cdr.string = cstring_to_list (scm_cdr.name);
+//g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
+//a = acons (make_symbol (scm_cdr.string), cell_cdr, a);
+scm_cdr.car = cstring_to_list (scm_cdr.car);
+g_cells[cell_cdr].car = MAKE_STRING (scm_cdr.car);
+a = acons (make_symbol (scm_cdr.car), cell_cdr, a);
+
 #endif
   return a;
 }
@@ -1501,7 +1622,7 @@ display_ (SCM x)
       {
         //puts ("<number>\n");
 #if __GNUC__
-        putchar (48 + VALUE (x));
+        puts (itoa (VALUE (x)));
 #else
         int i;
         i = VALUE (x);
@@ -1534,10 +1655,65 @@ display_ (SCM x)
         puts (")");
         break;
       }
+    case SPECIAL:
+      {
+        switch (x)
+          {
+          case 1: {puts ("()"); break;}
+          case 2: {puts ("#f"); break;}
+          case 3: {puts ("#t"); break;}
+          default:
+            {
+#if __GNUC__
+        puts ("<x:");
+        puts (itoa (x));
+        puts (">");
+#else
+        puts ("<x>");
+#endif
+            }
+          }
+        break;
+      }
+    case SYMBOL:
+      {
+        switch (x)
+          {
+          case 11: {puts (" . "); break;}
+          case 12: {puts ("lambda"); break;}
+          case 13: {puts ("begin"); break;}
+          case 14: {puts ("if"); break;}
+          case 15: {puts ("quote"); break;}
+          case 37: {puts ("car"); break;}
+          case 38: {puts ("cdr"); break;}
+          case 39: {puts ("null?"); break;}
+          case 40: {puts ("eq?"); break;}
+          case 41: {puts ("cons"); break;}
+          default:
+            {
+#if __GNUC__
+        puts ("<s:");
+        puts (itoa (x));
+        puts (">");
+#else
+        puts ("<s>");
+#endif
+            }
+          }
+        break;
+      }
     default:
       {
         //puts ("<default>\n");
+#if __GNUC__
+        puts ("<");
+        puts (itoa (TYPE (x)));
+        puts (":");
+        puts (itoa (x));
+        puts (">");
+#else
         puts ("_");
+#endif
         break;
       }
     }
@@ -1553,7 +1729,7 @@ simple_bload_env (SCM a) ///((internal))
 #if CONS
   char *mo = "module/mes/hack-32.mo";
 #else
-  char *mo = "cons-32.mo";
+  char *mo = "mini-0-32.mo";
 #endif
 
   puts (mo);
@@ -1583,25 +1759,10 @@ simple_bload_env (SCM a) ///((internal))
   puts ("\n");
 #endif
 
-// #if !CONS
-//   //FIXME: skip one cell
-//   for  (int q=0; q < 12; q++)
-//     getchar ();
-// #endif
-
-  int i = 0;
   c = getchar ();
   while (c != -1)
     {
-#if __GNUC__
-      puts ("\ni=");
-      puts (itoa (i));
-      puts (" ");
-      puts (itoa (c));
-      puts (" ");
-#endif
       putchar (c);
-      i++;
       *p++ = c;
       c = getchar ();
     }
@@ -1609,22 +1770,13 @@ simple_bload_env (SCM a) ///((internal))
   puts ("read done\n");
 
   g_free = (p-(char*)g_cells) / sizeof (struct scm);
-
-#if !CONS
   gc_peek_frame ();
-#endif
-
-  // URG
-  // r0 = 628;
-  // r1 = 67;
-  // r2 = 389;
+  g_symbols = r1;
 
 #if __GNUC__
   puts ("XXcells read: ");
   puts (itoa (g_free));
   puts ("\n");
-
-  g_symbols = r1;
 
   eputs ("r0=");
   eputs (itoa (r0));
@@ -1687,8 +1839,9 @@ simple_bload_env (SCM a) ///((internal))
 #endif
   puts ("]: ");
 
-  // display_ (r2);
-  // puts ("\n");
+  display_ (r2);
+  //stderr_ (r2);
+  puts ("\n");
 
   return r2;
 }
@@ -1759,12 +1912,13 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
 #endif
 
+  //if  (r2 != 10) r2 = CAR (r2);
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
 
 #if __GNUC__
-  puts ("stack: ");
-  display_ (g_stack);
-  puts ("\n");
+  // puts ("stack: ");
+  // display_ (g_stack);
+  // puts ("\n");
 
   puts ("g_free=");
   puts (itoa(g_free));
@@ -1791,11 +1945,32 @@ main (int argc, char *argv[])
   puts ("\n");
 #endif
 
-  r3 = cell_vm_begin;
-  //r3 = cell_vm_apply;
+#if 0
+  // SKIP DINGES!
+  if  (r1 != 10) r1 = CAR (r1);
+  puts ("r1=");
+  display_ (r1);
+  puts ("\n");
+  r3 = cell_vm_apply;
+  //r1 = cons_eval_apply ();
   r1 = eval_apply ();
-  stderr_ (r1);
-  //display_ (r1);
+#else
+  r3 = cell_vm_begin;
+  r1 = eval_apply ();
+#endif
+
+#if __GNUC__
+  puts ("result r1=");
+  puts (itoa (r1));
+  puts ("\n");
+
+  puts ("result r1.type=");
+  puts (itoa (TYPE (r1)));
+  puts ("\n");
+#endif
+
+  //stderr_ (r1);
+  display_ (r1);
 
   eputs ("\n");
 #if !MES_MINI
