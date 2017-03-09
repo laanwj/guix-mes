@@ -318,6 +318,16 @@
                                  (list (lambda (f g ta t d)
                                          (i386:push-accu)))))))
 
+
+        ((p-expr (char ,char))
+         (let ((char (char->integer (car (string->list char)))))
+           (clone info
+                  #:text (append text
+                                 (list (lambda (f g ta t d)
+                                         (append
+                                          (i386:value->accu char)
+                                          (i386:push-accu)))))))
+         )
         ;; f (0 + x)
 ;;; aargh
 ;;;((add (p-expr (fixed ,value)) (d-sel (ident cdr) (array-ref (p-expr (ident x)) (p-expr (ident g_cells))))))
@@ -593,12 +603,12 @@
                          (list (lambda (f g ta t d)
                                  (i386:value->accu value)))))))
 
-        ((p-expr (char ,value))
-         (let ((value (char->integer (car (string->list value)))))
+        ((p-expr (char ,char))
+         (let ((char (char->integer (car (string->list char)))))
           (clone info #:text
                  (append text
                          (list (lambda (f g ta t d)
-                                 (i386:value->accu value)))))))
+                                 (i386:value->accu char)))))))
 
         ((p-expr (ident ,name))
          (clone info #:text

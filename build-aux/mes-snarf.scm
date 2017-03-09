@@ -94,11 +94,11 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
     (string-append
      (format #f "SCM ~a (~a);\n" (.name f) (.formals f))
      (if GCC?
-         (format #f "function_t fun_~a = {.function~a=&~a, .arity=~a};\n" (.name f) arity (.name f) n)
-         (format #f "function_t fun_~a = {&~a, ~a};\n" (.name f) (.name f) n))
+         (format #f "function_t fun_~a = {.function~a=&~a, .arity=~a, .name=~s};\n" (.name f) arity (.name f) n (function-scm-name f))
+         (format #f "function_t fun_~a = {&~a, ~a, ~s};\n" (.name f) (.name f) n (function-scm-name f)))
      (if GCC?
-         (format #f "scm ~a = {FUNCTION, .name=~S, .function=0};\n" (function-builtin-name f) (function-scm-name f))
-         (format #f "scm ~a = {FUNCTION, ~S, 0};\n" (function-builtin-name f) (function-scm-name f)))
+         (format #f "scm ~a = {FUNCTION, .name=0, .function=0};\n" (function-builtin-name f))
+         (format #f "scm ~a = {FUNCTION, 0, 0};\n" (function-builtin-name f)))
      (format #f "SCM cell_~a;\n\n" (.name f)))))
 
 (define (function->source f i)
@@ -110,7 +110,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define (function->environment f i)
   (string-append
-   (format #f "scm_~a.string = cstring_to_list (scm_~a.name);\n" (.name f) (.name f))
+   (format #f "scm_~a.string = cstring_to_list (fun_~a.name);\n" (.name f) (.name f))
    (format #f "g_cells[cell_~a].string = MAKE_STRING (scm_~a.string);\n" (.name f) (.name f))
    (format #f "a = acons (make_symbol (scm_~a.string), ~a, a);\n\n" (.name f) (function-cell-name f))))
 

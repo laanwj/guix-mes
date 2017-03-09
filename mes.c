@@ -61,12 +61,13 @@ typedef struct function_struct {
     functionn_t functionn;
   } NYACC;
   int arity;
+  char const *name;
 } function_t;
 struct scm;
 typedef struct scm_struct {
   enum type_t type;
   union {
-    char const *name;
+    char const* name;
     SCM string;
     SCM car;
     SCM ref;

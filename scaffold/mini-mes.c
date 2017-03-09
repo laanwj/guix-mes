@@ -284,6 +284,7 @@ typedef int (*f_t) (void);
 struct function {
   int (*function) (void);
   int arity;
+  char *name;
 };
 
 struct scm *g_cells = arena;
@@ -384,49 +385,32 @@ int g_function = 0;
 //FIXME
 SCM make_cell (SCM type, SCM car, SCM cdr);
 #endif
-struct function fun_make_cell = {&make_cell, 3};
-
-#if 1
-struct scm scm_make_cell = {TFUNCTION,"make-cell",0};
-#else
+struct function fun_make_cell = {&make_cell,3,"make-cell"};
 struct scm scm_make_cell = {TFUNCTION,0,0};
-#endif
 SCM cell_make_cell;
 
 #if __GNUC__
 //FIXME
 SCM cons (SCM x, SCM y);
 #endif
-struct function fun_cons = {&cons, 2};
-#if __GNUC__
-struct scm scm_cons = {TFUNCTION,"cons",0};
-#else
+struct function fun_cons = {&cons,2,"cons"};
 struct scm scm_cons = {TFUNCTION,0,0};
-#endif
 SCM cell_cons;
 
 #if __GNUC__
 //FIXME
 SCM car (SCM x);
 #endif
-struct function fun_car = {&car, 1};
-#if __GNUC__
-struct scm scm_car = {TFUNCTION,"car",0};
-#else
+struct function fun_car = {&car,1,"car"};
 struct scm scm_car = {TFUNCTION,0,0};
-#endif
 SCM cell_car;
 
 #if __GNUC__
 //FIXME
 SCM cdr (SCM x);
 #endif
-struct function fun_cdr = {&cdr, 1};
-#if __GNUC__
-struct scm scm_cdr = {TFUNCTION,"cdr",0};
-#else
+struct function fun_cdr = {&cdr,1,"cdr"};
 struct scm scm_cdr = {TFUNCTION,0,0};
-#endif
 SCM cell_cdr;
 
 // SCM eq_p (SCM x, SCM y);
@@ -1229,10 +1213,19 @@ make_symbol (SCM s)
 SCM
 cstring_to_list (char const* s)
 {
+  char *x = s;
   SCM p = cell_nil;
   int i = strlen (s);
   while (i--)
-    p = cons (MAKE_CHAR (s[i]), p);
+    {
+#if 0
+      //FIXME
+      p = cons (MAKE_CHAR (s[i]), p);
+#else
+      p = cons (MAKE_CHAR (*x), p);
+      x++;
+#endif
+    }
   return p;
 }
 
@@ -1438,7 +1431,7 @@ g_cells[cell_cdr] = scm_cdr;
 //g_cells[cell_make_cell].string = MAKE_STRING (scm_make_cell.string);
 //a = acons (make_symbol (scm_make_cell.string), cell_make_cell, a);
  puts ("00\n");
-scm_make_cell.car = cstring_to_list (scm_make_cell.car);
+scm_make_cell.car = cstring_to_list (fun_make_cell.name);
  puts ("01\n");
 g_cells[cell_make_cell].car = MAKE_STRING (scm_make_cell.car);
  puts ("02\n");
@@ -1448,21 +1441,21 @@ g_cells[cell_make_cell].car = MAKE_STRING (scm_make_cell.car);
  //scm_cons.string = cstring_to_list (scm_cons.name);
 //g_cells[cell_cons].string = MAKE_STRING (scm_cons.string);
 //a = acons (make_symbol (scm_cons.string), cell_cons, a);
-scm_cons.car = cstring_to_list (scm_cons.car);
+scm_cons.car = cstring_to_list (fun_cons.name);
 g_cells[cell_cons].car = MAKE_STRING (scm_cons.car);
 a = acons (make_symbol (scm_cons.car), cell_cons, a);
 
 //scm_car.string = cstring_to_list (scm_car.name);
 //g_cells[cell_car].string = MAKE_STRING (scm_car.string);
 //a = acons (make_symbol (scm_cons.string), cell_cons, a);
-scm_car.car = cstring_to_list (scm_car.car);
+scm_car.car = cstring_to_list (fun_car.name);
 g_cells[cell_car].car = MAKE_STRING (scm_car.car);
 a = acons (make_symbol (scm_cons.car), cell_cons, a);
 
 //scm_cdr.string = cstring_to_list (scm_cdr.name);
 //g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
 //a = acons (make_symbol (scm_cdr.string), cell_cdr, a);
-scm_cdr.car = cstring_to_list (scm_cdr.car);
+scm_cdr.car = cstring_to_list (fun_cdr.name);
 g_cells[cell_cdr].car = MAKE_STRING (scm_cdr.car);
 a = acons (make_symbol (scm_cdr.car), cell_cdr, a);
 
