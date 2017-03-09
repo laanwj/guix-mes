@@ -105,10 +105,11 @@ int bar (int i) {puts ("t: bar\n"); return 0;};
 struct function {
   int (*function) (void);
   int arity;
+  char *name;
 };
-struct function g_fun = {&exit, 1};
-struct function g_foo = {&foo, 0};
-struct function g_bar = {&bar, 1};
+struct function g_fun = {&exit,1,"fun"};
+struct function g_foo = {&foo,0,"foo"};
+struct function g_bar = {&bar,1,"bar"};
 
 //void *functions[2];
 int functions[2];
@@ -299,20 +300,26 @@ struct_test ()
   if (CDR (3) != 0x22)
     return CDR (3);
 
-  puts ("t: struct fun = {&exit, 1};\n");
-  struct function fun = {&exit, 1};
-
   puts ("t: g_fun.arity != 1;\n");
   if (g_fun.arity != 1) return 1;
 
   puts ("t: g_fun.function != exit;\n");
   if (g_fun.function != &exit) return 1;
 
+  puts ("t: struct fun = {&exit,1,\"exit\"};\n");
+  struct function fun = {&exit,1,"exit"};
+
   puts ("t: fun.arity != 1;\n");
   if (fun.arity != 1) return 1;
 
   puts ("t: fun.function != exit;\n");
   if (fun.function != &exit) return 1;
+
+  puts ("t: puts (fun.name)\n");
+  if (strcmp (fun.name, "exit")) return 1;
+
+  puts ("t: puts (g_fun.name)\n");
+  if (strcmp (g_fun.name, "fun")) return 1;
 
   puts ("t: g_functions[g_function++] = g_foo;\n");
   g_functions[g_function++] = g_foo;
@@ -327,10 +334,13 @@ struct_test ()
 
   int (*functionx) (void) = 0;
   functionx = g_functions[0].function;
-  puts ("t: *functionx == foo\n");
+  puts ("t: functionx == foo\n");
   if (functionx != foo) return 11;
 
-  puts ("t: (*functionx) () == foo\n");
+  puts ("t: g_functions[0].name\n");
+  if (strcmp (g_functions[0].name, "foo")) return 1;
+
+  puts ("t: (functionx) () == foo\n");
   if ((functionx) () != 0) return 12;
 
   puts ("t: g_functions[<foo>].arity\n");
@@ -344,10 +354,13 @@ struct_test ()
   puts ("t: g_functions[g_cells[fn].cdr].function\n");
   functionx = g_functions[g_cells[fn].cdr].function;
 
+  puts ("t: g_functions[1].name\n");
+  if (strcmp (g_functions[1].name, "bar")) return 1;
+
   puts ("t: functionx == bar\n");
   if (functionx != bar) return 15;
 
-  puts ("t: (*functiony) (1) == bar\n");
+  puts ("t: (functiony) (1) == bar\n");
 #if __GNUC__
   //FIXME
   int (*functiony) (int) = 0;
@@ -642,9 +655,6 @@ test (char *p)
 int
 main (int argc, char *argv[])
 {
-  // int fn = 0;
-  // g_functions[fn] = g_bar;
-  // if (g_functions[fn].arity != 1) return 1;
   char *p = "t.c\n";
   puts ("t.c\n");
 

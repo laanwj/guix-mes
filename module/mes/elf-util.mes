@@ -38,6 +38,9 @@
 (define global:pointer cadr)
 (define global:value caddr)
 
+(define (drop-s:-prefix o) (substring o 2))
+(define (add-s:-prefix o) (string-append "s:" o))
+
 (define (dec->hex o)
   (cond ((number? o) (number->string o 16))
         ((char? o) (number->string (char->integer o) 16))))

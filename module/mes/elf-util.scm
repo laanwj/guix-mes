@@ -26,6 +26,8 @@
   #:use-module (srfi srfi-1)
   #:export (data-offset
             dec->hex
+            add-s:-prefix
+            drop-s:-prefix
             function-offset
             label-offset
             functions->lambdas

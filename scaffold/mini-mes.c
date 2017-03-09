@@ -386,8 +386,8 @@ SCM make_cell (SCM type, SCM car, SCM cdr);
 #endif
 struct function fun_make_cell = {&make_cell, 3};
 
-#if __GNUC__
-struct scm scm_make_cell = {TFUNCTION, "make-cell", 0};
+#if 1
+struct scm scm_make_cell = {TFUNCTION,"make-cell",0};
 #else
 struct scm scm_make_cell = {TFUNCTION,0,0};
 #endif
@@ -399,9 +399,9 @@ SCM cons (SCM x, SCM y);
 #endif
 struct function fun_cons = {&cons, 2};
 #if __GNUC__
-struct scm scm_cons = {TFUNCTION,"cons", 0};
+struct scm scm_cons = {TFUNCTION,"cons",0};
 #else
-struct scm scm_make_cell = {TFUNCTION,0,0};
+struct scm scm_cons = {TFUNCTION,0,0};
 #endif
 SCM cell_cons;
 
@@ -411,9 +411,9 @@ SCM car (SCM x);
 #endif
 struct function fun_car = {&car, 1};
 #if __GNUC__
-struct scm scm_car = {TFUNCTION,"car", 0};
+struct scm scm_car = {TFUNCTION,"car",0};
 #else
-struct scm scm_make_cell = {TFUNCTION,0,0};
+struct scm scm_car = {TFUNCTION,0,0};
 #endif
 SCM cell_car;
 
@@ -423,9 +423,9 @@ SCM cdr (SCM x);
 #endif
 struct function fun_cdr = {&cdr, 1};
 #if __GNUC__
-struct scm scm_cdr = {TFUNCTION,"cdr", 0};
+struct scm scm_cdr = {TFUNCTION,"cdr",0};
 #else
-struct scm scm_make_cell = {TFUNCTION,0,0};
+struct scm scm_cdr = {TFUNCTION,0,0};
 #endif
 SCM cell_cdr;
 
@@ -1433,6 +1433,7 @@ g_functions[g_function++] = fun_cdr;
 cell_cdr = g_free++;
 g_cells[cell_cdr] = scm_cdr;
 
+ #if 1
 //scm_make_cell.string = cstring_to_list (scm_make_cell.name);
 //g_cells[cell_make_cell].string = MAKE_STRING (scm_make_cell.string);
 //a = acons (make_symbol (scm_make_cell.string), cell_make_cell, a);
@@ -1465,6 +1466,8 @@ scm_cdr.car = cstring_to_list (scm_cdr.car);
 g_cells[cell_cdr].car = MAKE_STRING (scm_cdr.car);
 a = acons (make_symbol (scm_cdr.car), cell_cdr, a);
 
+ #endif
+ 
 #endif
   return a;
 }
