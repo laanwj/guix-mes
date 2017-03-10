@@ -18,11 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SCM caar (SCM x) {return car (car (x));}
-SCM cadr (SCM x) {return car (cdr (x));}
-SCM cdar (SCM x) {return cdr (car (x));}
-SCM cddr (SCM x) {return cdr (cdr (x));}
-
 SCM
 xassq (SCM x, SCM a) ///for speed in core only
 {
@@ -37,7 +32,7 @@ length (SCM x)
   while (x != cell_nil)
     {
       n++;
-      if (TYPE (x) != PAIR) return MAKE_NUMBER (-1);
+      if (TYPE (x) != TPAIR) return MAKE_NUMBER (-1);
       x = cdr (x);
     }
   return MAKE_NUMBER (n);
@@ -52,30 +47,39 @@ list (SCM x) ///((arity . n))
 SCM
 exit_ (SCM x) ///((name . "exit"))
 {
-  assert (TYPE (x) == NUMBER);
+  assert (TYPE (x) == TNUMBER);
   exit (VALUE (x));
 }
 
-char const*
-string_to_cstring (SCM s)
+SCM
+append (SCM x) ///((arity . n))
 {
-  static char buf[1024];
-  char *p = buf;
-  s = STRING (s);
-  while (s != cell_nil)
-    {
-      *p++ = VALUE (car (s));
-      s = cdr (s);
-    }
-  *p = 0;
-  return buf;
+  if (x == cell_nil) return cell_nil;
+  if (cdr (x) == cell_nil) return car (x);
+  return append2 (car (x), append (cdr (x)));
 }
+
+//MINI_MES
+// char const*
+// string_to_cstring (SCM s)
+// {
+//   static char buf[1024];
+//   char *p = buf;
+//   s = STRING (s);
+//   while (s != cell_nil)
+//     {
+//       *p++ = VALUE (car (s));
+//       s = cdr (s);
+//     }
+//   *p = 0;
+//   return buf;
+// }
 
 SCM
 error (SCM key, SCM x)
 {
   SCM throw;
-  if ((throw = assq_ref_cache (cell_symbol_throw, r0)) != cell_undefined)
+  if ((throw = assq_ref_env (cell_symbol_throw, r0)) != cell_undefined)
     return apply (throw, cons (key, cons (x, cell_nil)), r0);
   assert (!"error");
 }
@@ -90,7 +94,7 @@ assert_defined (SCM x, SCM e)
 SCM
 check_formals (SCM f, SCM formals, SCM args)
 {
-  int flen = (TYPE (formals) == NUMBER) ? VALUE (formals) : VALUE (length (formals));
+  int flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : VALUE (length (formals));
   int alen = VALUE (length (args));
   if (alen != flen && alen != -1 && flen != -1)
     {
@@ -110,9 +114,9 @@ check_apply (SCM f, SCM e)
   if (f == cell_nil) type = "nil";
   if (f == cell_unspecified) type = "*unspecified*";
   if (f == cell_undefined) type = "*undefined*";
-  if (TYPE (f) == CHAR) type = "char";
-  if (TYPE (f) == NUMBER) type = "number";
-  if (TYPE (f) == STRING) type = "string";
+  if (TYPE (f) == TCHAR) type = "char";
+  if (TYPE (f) == TNUMBER) type = "number";
+  if (TYPE (f) == TSTRING) type = "string";
 
   if (type)
     {
@@ -174,19 +178,19 @@ dump ()
       CAR (9) = 0x2d2d2d2d;
       CDR (9) = 0x3e3e3e3e;
 
-      TYPE (10) = PAIR;
+      TYPE (10) = TPAIR;
       CAR (10) = 11;
       CDR (10) = 12;
 
-      TYPE (11) = CHAR;
+      TYPE (11) = TCHAR;
       CAR (11) = 0x58585858;
       CDR (11) = 65;
 
-      TYPE (12) = PAIR;
+      TYPE (12) = TPAIR;
       CAR (12) = 13;
       CDR (12) = 1;
 
-      TYPE (13) = CHAR;
+      TYPE (13) = TCHAR;
       CAR (11) = 0x58585858;
       CDR (13) = 66;
 
@@ -196,7 +200,7 @@ dump ()
 
       g_free = 15;
     }
-  for (int i=0; i<g_free * sizeof(scm); i++)
+  for (int i=0; i<g_free * sizeof(struct scm); i++)
     fputc (*p++, stdout);
   return 0;
 }
@@ -240,7 +244,7 @@ bload_env (SCM a) ///((internal))
       *p++ = c;
       c = getchar ();
     }
-  g_free = (p-(char*)g_cells) / sizeof (scm);
+  g_free = (p-(char*)g_cells) / sizeof (struct scm);
   gc_peek_frame ();
   g_symbols = r1;
   g_stdin = stdin;

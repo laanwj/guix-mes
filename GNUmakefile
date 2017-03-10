@@ -36,7 +36,7 @@ mes.o: posix.c posix.h posix.i posix.environment.i
 mes.o: reader.c reader.h reader.i reader.environment.i
 
 clean:
-	rm -f mes mes.o *.environment.i *.symbols.i *.environment.h *.cat a.out
+	rm -f mes *.o *.environment.i *.symbols.i *.environment.h *.cat a.out
 
 distclean: clean
 	rm -f .config.make
@@ -113,15 +113,15 @@ mescc-check: t-check
 	chmod +x a.out
 	./a.out
 
-mini-mes: scaffold/mini-mes.c GNUmakefile
-	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
-	chmod +x $@
+%.h %.i %.environment.i %.symbols.i: scaffold/%.c build-aux/mes-snarf.scm
+	build-aux/mes-snarf.scm $<
 
-# mini-mes: doc/examples/mini-mes.c GNUmakefile
-# 	rm -f $@
-# 	gcc -nostdlib --std=gnu99 -g -o $@ '-DVERSION="0.4"' $<
-# 	chmod +x $@
+mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
+mini-mes: GNUmakefile
+mini-mes: doc/examples/mini-mes.c
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -g -I. -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
 
 cons-mes: scaffold/cons-mes.c GNUmakefile
 	rm -f $@

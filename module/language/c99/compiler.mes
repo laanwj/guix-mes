@@ -2041,6 +2041,7 @@
 (define (initzer->data info functions globals ta t d o)
   (pmatch o
     ((initzer (p-expr (fixed ,value))) (int->bv32 (cstring->number value)))
+    ((initzer (neg (p-expr (fixed ,value)))) (int->bv32 (- (cstring->number value))))
     ((initzer (ref-to (p-expr (ident ,name))))
      ;;(stderr "INITZER[~a] => 0x~a\n" o (dec->hex (+ ta (function-offset name functions))))
      (int->bv32 (+ ta (function-offset name functions))))

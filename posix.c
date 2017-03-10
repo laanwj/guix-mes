@@ -20,6 +20,39 @@
 
 #include <fcntl.h>
 
+//MINI_MES
+// SCM
+// write_byte (SCM x) ///((arity . n))
+// {
+//   SCM c = car (x);
+//   SCM p = cdr (x);
+//   int fd = 1;
+//   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
+//   FILE *f = fd == 1 ? stdout : stderr;
+//   assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
+//   fputc (VALUE (c), f);
+//   return c;
+// }
+
+char const* string_to_cstring (SCM);
+
+// SCM
+// stderr_ (SCM x)
+// {
+//   SCM write;
+//   if (TYPE (x) == TSTRING)
+//     fprintf (stderr, string_to_cstring (x));
+//   else if ((write = assq_ref_env (cell_symbol_write, r0)) != cell_undefined)
+//     apply (assq_ref_env (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
+//   else if (TYPE (x) == TSPECIAL || TYPE (x) == TSTRING || TYPE (x) == TSYMBOL)
+//     fprintf (stderr, string_to_cstring (x));
+//   else if (TYPE (x) == TNUMBER)
+//     fprintf (stderr, "%d", VALUE (x));
+//   else
+//     fprintf (stderr, "display: undefined\n");
+//   return cell_unspecified;
+// }
+
 int
 getchar ()
 {
@@ -67,40 +100,10 @@ unread_byte (SCM i)
 }
 
 SCM
-write_byte (SCM x) ///((arity . n))
-{
-  SCM c = car (x);
-  SCM p = cdr (x);
-  int fd = 1;
-  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
-  FILE *f = fd == 1 ? stdout : stderr;
-  assert (TYPE (c) == NUMBER || TYPE (c) == CHAR);
-  fputc (VALUE (c), f);
-  return c;
-}
-
-SCM
-stderr_ (SCM x)
-{
-  SCM write;
-  if (TYPE (x) == STRING)
-    fprintf (stderr, string_to_cstring (x));
-  else if ((write = assq_ref_cache (cell_symbol_write, r0)) != cell_undefined)
-    apply (assq_ref_cache (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
-  else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
-    fprintf (stderr, string_to_cstring (x));
-  else if (TYPE (x) == NUMBER)
-    fprintf (stderr, "%d", VALUE (x));
-  else
-    fprintf (stderr, "display: undefined\n");
-  return cell_unspecified;
-}
-
-SCM
 force_output (SCM p) ///((arity . n))
 {
   int fd = 1;
-  if (TYPE (p) == PAIR && TYPE (car (p)) == NUMBER) fd = VALUE (car (p));
+  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
   FILE *f = fd == 1 ? stdout : stderr;
   fflush (f);
   return cell_unspecified;

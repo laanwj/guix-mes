@@ -104,7 +104,7 @@
 
 (define (eval-expand e a)
   (cond
-   ((symbol? e) (assq-ref-cache e a))
+   ((symbol? e) (assq-ref-env e a))
    ((atom? e) e)
    ((atom? (car e))
     (cond

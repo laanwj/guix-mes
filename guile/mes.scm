@@ -179,7 +179,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
     (evcon . evcon)
     (pairlis . pairlis)
     (assq . assq)
-    (assq-ref-cache . assq-ref-cache)
+    (assq-ref-env . assq-ref-env)
 
     (eval-env . eval-env)
     (apply-env . apply-env)

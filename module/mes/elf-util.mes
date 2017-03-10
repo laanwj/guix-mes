@@ -93,16 +93,22 @@
             (if (and prefix (or (equal? name "exit") (> offset 0))) (set! cache (assoc-set! cache name offset)))
             offset)))))
 
-(define (label-offset function label functions)
-  (let ((prefix (function-prefix function functions)))
-    (if (not prefix) 0
-        (let ((function-entry (car prefix)))
-          (let loop ((text (cdr function-entry)))
-            (if (or (equal? (car text) label) (null? text)) 0
-                (let* ((l/l (car text))
-                       (t ((lambda/label->list '() '() 0 0 0) l/l))
-                       (n (length t)))
-                  (+ (loop (cdr text)) n))))))))
+(define label-offset
+  (let ((cache '()))
+    (lambda (function label functions)
+      (or (assoc-ref cache (cons function label))
+          (let ((prefix (function-prefix function functions)))
+            (if (not prefix) 0
+                (let* ((function-entry (car prefix))
+                       (offset (let loop ((text (cdr function-entry)))
+                                 (if (or (equal? (car text) label) (null? text)) 0
+                                     (let* ((l/l (car text))
+                                            (t ((lambda/label->list '() '() 0 0 0) l/l))
+                                            (n (length t)))
+                                       (+ (loop (cdr text)) n))))))
+                  (when (> offset 0)
+                      (set! cache (assoc-set! cache (cons function label) offset)))
+                  offset)))))))
 
 (define (globals->data globals)
   (append-map (compose global:value cdr) globals))

@@ -30,7 +30,7 @@ SCM
 read_input_file_env (SCM a)
 {
   r0 = a;
-  if (assq_ref_cache (cell_symbol_read_input_file, r0) != cell_undefined)
+  if (assq_ref_env (cell_symbol_read_input_file, r0) != cell_undefined)
     return apply (cell_symbol_read_input_file, cell_nil, r0);
   return read_input_file_env_ (read_env (r0), r0);
 }
@@ -107,28 +107,4 @@ lookup_ (SCM s, SCM a)
 
   SCM x = lookup_symbol_ (s);
   return x ? x : make_symbol_ (s);
-}
-
-SCM
-list_of_char_equal_p (SCM a, SCM b)
-{
-  while (a != cell_nil && b != cell_nil && VALUE (car (a)) == VALUE (car (b))) {
-    assert (TYPE (car (a)) == CHAR);
-    assert (TYPE (car (b)) == CHAR);
-    a = cdr (a);
-    b = cdr (b);
-  }
-  return (a == cell_nil && b == cell_nil) ? cell_t : cell_f;
-}
-
-SCM
-lookup_symbol_ (SCM s)
-{
-  SCM x = g_symbols;
-  while (x) {
-    if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
-    x = cdr (x);
-  }
-  if (x) x = car (x);
-  return x;
 }

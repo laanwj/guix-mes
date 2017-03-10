@@ -24,7 +24,7 @@ greater_p (SCM x) ///((name . ">") (arity . n))
   int n = INT_MAX;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == NUMBER);
+      assert (TYPE (car (x)) == TNUMBER);
       if (VALUE (car (x)) >= n) return cell_f;
       n = VALUE (car (x));
       x = cdr (x);
@@ -38,7 +38,7 @@ less_p (SCM x) ///((name . "<") (arity . n))
   int n = INT_MIN;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == NUMBER);
+      assert (TYPE (car (x)) == TNUMBER);
       if (VALUE (car (x)) <= n) return cell_f;
       n = VALUE (car (x));
       x = cdr (x);
@@ -50,7 +50,7 @@ SCM
 is_p (SCM x) ///((name . "=") (arity . n))
 {
   if (x == cell_nil) return cell_t;
-  assert (TYPE (car (x)) == NUMBER);
+  assert (TYPE (car (x)) == TNUMBER);
   int n = VALUE (car (x));
   x = cdr (x);
   while (x != cell_nil)
@@ -65,14 +65,14 @@ SCM
 minus (SCM x) ///((name . "-") (arity . n))
 {
   SCM a = car (x);
-  assert (TYPE (a) == NUMBER);
+  assert (TYPE (a) == TNUMBER);
   int n = VALUE (a);
   x = cdr (x);
   if (x == cell_nil)
     n = -n;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == NUMBER);
+      assert (TYPE (car (x)) == TNUMBER);
       n -= VALUE (car (x));
       x = cdr (x);
     }
@@ -85,7 +85,7 @@ plus (SCM x) ///((name . "+") (arity . n))
   int n = 0;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == NUMBER);
+      assert (TYPE (car (x)) == TNUMBER);
       n += VALUE (car (x));
       x = cdr (x);
     }
@@ -97,13 +97,13 @@ divide (SCM x) ///((name . "/") (arity . n))
 {
   int n = 1;
   if (x != cell_nil) {
-    assert (TYPE (car (x)) == NUMBER);
+    assert (TYPE (car (x)) == TNUMBER);
     n = VALUE (car (x));
     x = cdr (x);
   }
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == NUMBER);
+      assert (TYPE (car (x)) == TNUMBER);
       n /= VALUE (car (x));
       x = cdr (x);
     }
@@ -113,8 +113,8 @@ divide (SCM x) ///((name . "/") (arity . n))
 SCM
 modulo (SCM a, SCM b)
 {
-  assert (TYPE (a) == NUMBER);
-  assert (TYPE (b) == NUMBER);
+  assert (TYPE (a) == TNUMBER);
+  assert (TYPE (b) == TNUMBER);
   int x = VALUE (a);
   while (x < 0) x += VALUE (b);
   return MAKE_NUMBER (x % VALUE (b));
@@ -126,7 +126,7 @@ multiply (SCM x) ///((name . "*") (arity . n))
   int n = 1;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == NUMBER);
+      assert (TYPE (car (x)) == TNUMBER);
       n *= VALUE (car (x));
       x = cdr (x);
     }
@@ -139,7 +139,7 @@ logior (SCM x) ///((arity . n))
   int n = 0;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == NUMBER);
+      assert (TYPE (car (x)) == TNUMBER);
       n |= VALUE (car (x));
       x = cdr (x);
     }
@@ -149,8 +149,8 @@ logior (SCM x) ///((arity . n))
 SCM
 ash (SCM n, SCM count)
 {
-  assert (TYPE (n) == NUMBER);
-  assert (TYPE (count) == NUMBER);
+  assert (TYPE (n) == TNUMBER);
+  assert (TYPE (count) == TNUMBER);
   int cn = VALUE (n);
   int ccount = VALUE (count);
   return MAKE_NUMBER ((ccount < 0) ? cn >> -ccount : cn << ccount);

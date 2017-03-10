@@ -46,7 +46,7 @@
    ((eq? (caar a) x) (car a))
    (#t (assq x (cdr a)))))
 
-(define (assq-ref-cache x a)
+(define (assq-ref-env x a)
   (let ((e (assq x a)))
     (if (eq? e #f) '*undefined* (cdr e))))
 
@@ -92,7 +92,7 @@
 (define (eval-expand e a)
   (cond
    ((eq? e '*undefined*) e)
-   ((symbol? e) (assq-ref-cache e a))
+   ((symbol? e) (assq-ref-env e a))
    ((atom? e) e)
    ((atom? (car e))
     (cond
