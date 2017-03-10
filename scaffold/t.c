@@ -540,6 +540,12 @@ test (char *p)
   return 1;
  ok0:
   
+  puts ("t: while (1) { goto label; };\n");
+  while (1) {
+    goto ok00;
+  }
+ ok00:
+
   puts ("t: if (0); return 1; else;\n");
   if (0) return 1; else goto ok01;
  ok01:

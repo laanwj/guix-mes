@@ -1232,7 +1232,7 @@
            cases-info))
 
         ((for ,init ,test ,step ,body)
-         (let* ((info (clone info #:text '()))
+         (let* ((info (clone info #:text '())) ;; FIXME: goto in body...
 
                 (info ((ast->info info) init))
 
@@ -1273,29 +1273,34 @@
                   #:locals locals)))
 
         ((while ,test ,body)
-         (let* ((info (clone info #:text '()))
-                (body-info ((ast->info info) body))
-                (body-text (.text body-info))
+         (let* ((skip-info (lambda (body-length)
+                             (clone info #:text (append text
+                                                        (list (lambda (f g ta t d) (i386:Xjump body-length)))))))
+                (text (.text (skip-info 0)))
+                (text-length (length text))
+
+                (body-info (lambda (body-length)
+                             ((ast->info (skip-info body-length)) body)))
+                (body-text (list-tail (.text (body-info 0)) text-length))
                 (body-length (length (text->list body-text)))
 
-                (test-jump->info ((test->jump->info info) test))
+                (body-info (body-info body-length))
+
+                (empty (clone info #:text '()))
+                (test-jump->info ((test->jump->info empty) test))
                 (test+jump-info (test-jump->info 0))
                 (test-length (length (text->list (.text test+jump-info))))
 
-                (skip-body-text (list (lambda (f g ta t d)
-                                        (i386:Xjump body-length))))
                 (jump-text (list (lambda (f g ta t d)
                                    (i386:Xjump (- (+ body-length test-length))))))
                 (jump-length (length (text->list jump-text)))
 
                 (test-text (.text (test-jump->info jump-length))))
-
            (clone info #:text
-                  (append text
-                          skip-body-text
-                          body-text
-                          test-text
-                          jump-text)
+                  (append
+                   (.text body-info)
+                   test-text
+                   jump-text)
                   #:globals (.globals body-info))))
 
         ((labeled-stmt (ident ,label) ,statement)
@@ -1303,7 +1308,6 @@
            ((ast->info info) statement)))
 
         ((goto (ident ,label))
-         
          (let* ((jump (lambda (n) (i386:XXjump n)))
                 (offset (+ (length (jump 0)) (length (text->list text)))))
            (clone info #:text
