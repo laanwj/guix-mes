@@ -286,7 +286,8 @@ struct function {
 
 struct scm *g_cells = arena;
 
-struct scm *g_news = 0;
+//FIXME
+//struct scm *g_news = 0;
 
 struct scm scm_nil = {TSPECIAL, "()",0};
 struct scm scm_f = {TSPECIAL, "#f",0};
@@ -591,11 +592,6 @@ call (SCM fn, SCM x)
   if ((FUNCTION (fn).arity > 1 || FUNCTION (fn).arity == -1)
       && x != cell_nil && TYPE (CDR (x)) == TPAIR && TYPE (CADR (x)) == TVALUES)
     x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
-
-  eputs ("call: ");
-  if (FUNCTION (fn).name) eputs (FUNCTION (fn).name);
-  else eputs (itoa (CDR (fn)));
-  eputs ("\n");
   switch (FUNCTION (fn).arity)
     {
     // case 0: return FUNCTION (fn).function0 ();
@@ -621,12 +617,46 @@ SCM
 assq (SCM x, SCM a)
 {
   //while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
-  while (a != cell_nil && x != CAAR (a)) a = CDR (a);
-#if __GNUC__
+  //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
+
+#if BDEBUG
   puts  ("assq: ");
   display_ (x);
+  puts  (" [");
+  puts (itoa (x));
+  puts  ("]\n");
+#endif
+  int i;
+  while (a != cell_nil) // && x != CAR (CAR (a)))
+    {
+      a = CDR (a);
+      // FIXME
+      i = CAR (CAR (a));
+#if  1
+      //!__GNUC__
+      // puts ("  ");
+      // puts (itoa (i));
+      // if (x == i) puts ("***FOUND*** ");
+      if (x == i) goto found;
+      // puts ("  ");
+      // display_ (CAAR (a));
+      // puts  ("[");
+      // puts (itoa (CAAR (a)));
+      // puts  ("]\n");
+#endif
+    }
+ found:
+#if BDEBUG
+  //!__GNUC__
+  //puts  ("assq: ");
+  puts  ("  ");
+  puts  (" [");
+  puts (itoa (x));
+  puts  ("]");
+  display_ (x);
   puts  (" => ");
-  display_ (a != cell_nil ? car (a) : cell_f);
+  if (a == cell_nil) display_ (cell_f);
+  else display_ (CAR (a));
   puts  ("[");
   puts (itoa (CDR (CDR (CAR (a)))));
   puts  ("]\n");
@@ -669,7 +699,10 @@ set_env_x (SCM x, SCM e, SCM a)
 SCM
 call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 {
-  SCM cl = cons (cons (cell_closure, x), x);
+  //FIXME
+  //SCM cl = cons (cons (cell_closure, x), x);
+  SCM cl;
+  cl = cons (cons (cell_closure, x), x);
   r1 = e;
   r0 = cl;
   return cell_unspecified;
@@ -774,7 +807,10 @@ eval_apply ()
     }
     case TCLOSURE:
       {
-        SCM cl = CLOSURE (car (r1));
+        //FIXME
+        //SCM cl = CLOSURE (car (r1));
+        SCM cl;
+        cl = CLOSURE (car (r1));
         SCM formals = cadr (cl);
         SCM body = cddr (cl);
         SCM aa = cdar (cl);
@@ -964,8 +1000,8 @@ eval_apply ()
           goto apply;
         }
     }
-  goto vm_return;
 #endif
+  goto vm_return;
  begin:
   x = cell_unspecified;
   while (r1 != cell_nil) {
@@ -1093,8 +1129,25 @@ SCM
 make_symbol_ (SCM s)
 {
   VALUE (tmp_num) = TSYMBOL;
-  SCM x = make_cell (tmp_num, s, 0);
+  ///FIXMESCM x = make_cell (tmp_num, s, 0);
+  SCM x;
+  x = make_cell (tmp_num, s, 0);
   puts ("MAKE SYMBOL: ");
+  // puts ("[s=");
+  // puts (itoa (s));
+  // puts (",s.car=");
+  // puts (itoa (CAR (s)));
+  // puts (",s.car.cdr=");
+  // //  puts (itoa (CDR (CAR (s))));
+  // putchar (CDR (CAR (s)));
+  // puts (",x=");
+  // puts (itoa (x));
+  // puts (",x.car=");
+  // puts (itoa (CAR (x)));
+  // puts ("]");
+
+
+  ////TYPE (x) = TSYMBOL;
   display_ (x);
   puts ("\n");
   g_symbols = cons (x, g_symbols);
@@ -1117,24 +1170,36 @@ SCM
 lookup_symbol_ (SCM s)
 {
   SCM x = g_symbols;
+#if !MES_MINI
   while (x) {
     if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
     x = cdr (x);
   }
   if (x) x = car (x);
+#endif;
   return x;
 }
 
 SCM
 make_symbol (SCM s)
 {
-#if 0
-  // MINI_MES
-  SCM x = 0;
+#if MES_MINI
+  return make_symbol_ (s);
 #else
   SCM x = lookup_symbol_ (s);
-#endif
+  // FIXME: does not work with mescc?!
+  // return x != 0 ? x : make_symbol_ (s);
   return x ? x : make_symbol_ (s);
+#endif
+// FIXME
+// #if MES_MINI
+//   SCM x = 0;
+// #else
+//   SCM x = lookup_symbol_ (s);
+// #endif
+//   //FIXME
+//   //return x ? x : make_symbol_ (s);
+//   return x != 0 ? x : make_symbol_ (s);
 }
 
 SCM
@@ -1143,16 +1208,38 @@ cstring_to_list (char const* s)
   char *x = s;
   SCM p = cell_nil;
   int i = strlen (s);
+  puts ("cstring_to_list[");
+  puts (s);
+  puts ("]: ");
   while (i--)
     {
 #if 0
       //FIXME
       p = cons (MAKE_CHAR (s[i]), p);
 #else
-      p = cons (MAKE_CHAR (*x), p);
+      char c;
+      c = *x;
+      puts ("[c:");
+      putchar (c);
+#if __GNUC__
+      p = cons (MAKE_CHAR (c), p);
+#else
+      SCM xx;
+      xx = MAKE_CHAR (c);
+      //FIXME
+      TYPE (xx) = 0;
+      VALUE (xx) = c;
+      puts (",t=");
+      puts (itoa (TYPE (xx)));
+      puts (",v=");
+      putchar (VALUE (xx));
+      puts ("]");
+      p = cons (xx, p);
+#endif
       x++;
 #endif
     }
+  puts ("\n");
   return p;
 }
 
@@ -1168,7 +1255,6 @@ acons (SCM key, SCM value, SCM alist)
 SCM
 write_byte (SCM x) ///((arity . n))
 {
-  puts ("write-byte 00\n");
   SCM c = car (x);
   SCM p = cdr (x);
   int fd = 1;
@@ -1176,7 +1262,10 @@ write_byte (SCM x) ///((arity . n))
   //FILE *f = fd == 1 ? stdout : stderr;
   assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
   //  fputc (VALUE (c), f);
-  char cc = VALUE (c);
+  // FIXME
+  //char cc = VALUE (c);
+  char cc;
+  cc = VALUE (c);
   write (1, (char*)&cc, fd);
   return c;
 }
@@ -1196,24 +1285,28 @@ display_ (SCM x)
       }
     case TFUNCTION:
       {
-#if __GNUC__
+#if 1
         puts ("#<procedure ");
-        puts (FUNCTION (x).name ? FUNCTION (x).name : "?");
+        ///puts (FUNCTION (x).name ? FUNCTION (x).name : "?");
+        char *p = "?";
+        if (FUNCTION (x).name != 0)
+          p = FUNCTION (x).name;
+        puts (p);
         puts ("[");
         puts (itoa (CDR (x)));
         puts ("]>");
         break;
 #endif
-        //puts ("<function>\n");
-        if (VALUE (x) == 0)
-          puts ("make-cell");
-        if (VALUE (x) == 1)
-          puts ("cons");
-        if (VALUE (x) == 2)
-          puts ("car");
-        if (VALUE (x) == 3)
-          puts ("cdr");
-        break;
+        // //puts ("<function>\n");
+        // if (VALUE (x) == 0)
+        //   puts ("make-cell");
+        // if (VALUE (x) == 1)
+        //   puts ("cons");
+        // if (VALUE (x) == 2)
+        //   puts ("car");
+        // if (VALUE (x) == 3)
+        //   puts ("cdr");
+        // break;
       }
     case TNUMBER:
       {
@@ -1275,43 +1368,35 @@ display_ (SCM x)
     case TSYMBOL:
       {
 #if 0
-        switch (x)
-          {
-          case 11: {puts (" . "); break;}
-          case 12: {puts ("lambda"); break;}
-          case 13: {puts ("begin"); break;}
-          case 14: {puts ("if"); break;}
-          case 15: {puts ("quote"); break;}
-          case 37: {puts ("car"); break;}
-          case 38: {puts ("cdr"); break;}
-          case 39: {puts ("null?"); break;}
-          case 40: {puts ("eq?"); break;}
-          case 41: {puts ("cons"); break;}
-          default:
-            {
-#if __GNUC__
         puts ("<s:");
         puts (itoa (x));
         puts (">");
-#else
-        puts ("<s>");
 #endif
-            }
-          }
-        break;
-#else
-        SCM t = CAR (x);
+        // FIXME
+        ///SCM t = CAR (x);
+        SCM t;
+        t = CAR (x);
         while (t != cell_nil)
           {
+            //FIXME
+            //SCM xx = CAR (t);
+            // SCM xx;
+            // xx = CAR (t);
+            // puts ("[c:");
+            // puts (itoa (xx));
+            // puts (",");
+            // puts (itoa (VALUE (xx)));
+            // puts ("]");
+            // putchar (VALUE (xx));
             putchar (VALUE (CAR (t)));
             t = CDR (t);
           }
-#endif
+        break;
       }
     default:
       {
         //puts ("<default>\n");
-#if __GNUC__
+#if 1
         puts ("<");
         puts (itoa (TYPE (x)));
         puts (":");
@@ -1407,9 +1492,6 @@ mes_builtins (SCM a) ///((internal))
 // #include "posix.environment.i"
 // #include "reader.environment.i"
 
-  puts ("cell_write_byte: ");
-  puts (itoa (CDR (cell_write_byte)));
-  puts ("\n");
   return a;
 }
 
@@ -1439,7 +1521,8 @@ bload_env (SCM a) ///((internal))
   g_symbols = r1;
   g_stdin = STDIN;
   r0 = mes_builtins (r0);
-#if __GNUC__
+#if 1
+  //__GNUC__
   puts ("symbols: ");
   SCM s = g_symbols;
   while (s && s != cell_nil) {
@@ -1465,11 +1548,13 @@ bload_env (SCM a) ///((internal))
   return r2;
 }
 
+char string_to_cstring_buf[1024];
 char const*
 string_to_cstring (SCM s)
 {
-  static char buf[1024];
-  char *p = buf;
+  //static char buf[1024];
+  //char *p = buf;
+  char *p = string_to_cstring_buf;
   s = STRING(s);
   while (s != cell_nil)
     {
@@ -1477,7 +1562,8 @@ string_to_cstring (SCM s)
       s = cdr (s);
     }
   *p = 0;
-  return buf;
+  //return buf;
+  return string_to_cstring_buf;
 }
 
 SCM
@@ -1509,6 +1595,16 @@ int
 main (int argc, char *argv[])
 {
   eputs ("Hello mini-mes!\n");
+
+  // make_tmps (g_cells);
+  // SCM x = cstring_to_list ("bla");
+  // while (x != 1)
+  //   {
+  //     putchar (CDR (CAR (x)));
+  //     x = CDR (x);
+  //   }
+  // return 0;
+
 #if __GNUC__
   //g_debug = getenv ("MES_DEBUG");
 #endif

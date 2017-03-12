@@ -272,7 +272,8 @@
     (define section-headers-offset
       (+ str-offset str-length))
 
-    (format (current-error-port) "ELF text=~a\n" (map dec->hex text))
+    (if (< (length text) 2000)
+        (format (current-error-port) "ELF text=~a\n" (map dec->hex text)))
     (if (< (length raw-data) 200)
         (format (current-error-port) "ELF raw-data=~a\n" (map dec->hex raw-data)))
     (if (< (length data) 200)

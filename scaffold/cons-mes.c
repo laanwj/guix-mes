@@ -1170,11 +1170,13 @@ simple_bload_env (SCM a) ///((internal))
   return r2;
 }
 
+char string_to_cstring_buf[1024];
 char const*
 string_to_cstring (SCM s)
 {
-  static char buf[1024];
-  char *p = buf;
+  //static char buf[1024];
+  //char *p = buf;
+  char *p = string_to_cstring_buf;
   s = STRING(s);
   while (s != cell_nil)
     {
@@ -1182,7 +1184,8 @@ string_to_cstring (SCM s)
       s = cdr (s);
     }
   *p = 0;
-  return buf;
+  //return buf;
+  return string_to_cstring_buf;
 }
 
 SCM

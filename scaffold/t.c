@@ -117,7 +117,7 @@ int functions[2];
 struct function g_functions[2];
 int g_function = 0;
 
-enum type_t {CHAR, CLOSURE, CONTINUATION, TFUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
+enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART};
 
 typedef int SCM;
 int g_free = 3;
@@ -193,7 +193,7 @@ swits (int c)
 
   switch (c)
     {
-    case CHAR: {goto next;}
+    case TCHAR: {goto next;}
     case 1: {goto next;}
     case 2: {goto next;}
     default: {goto next;}
@@ -277,7 +277,7 @@ make_cell (SCM type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
   TYPE (x) = VALUE (type);
-  if (VALUE (type) == CHAR || VALUE (type) == NUMBER) {
+  if (VALUE (type) == TCHAR || VALUE (type) == TNUMBER) {
     if (car) CAR (x) = CAR (car);
     if (cdr) CDR(x) = CDR(cdr);
   }
@@ -295,7 +295,7 @@ make_cell (SCM type, SCM car, SCM cdr)
 SCM
 make_cell_test ()
 {
-  VALUE (tmp_num) = PAIR;
+  VALUE (tmp_num) = TPAIR;
   make_cell (tmp_num, 0, 1);
   return math_test ();
 }
@@ -306,9 +306,9 @@ make_tmps_test (struct scm* cells)
   puts ("t: tmp = g_free++\n");
   tmp = g_free++;
   puts ("t: cells[tmp].type = CHAR\n");
-  cells[tmp].type = CHAR;
+  cells[tmp].type = TCHAR;
   tmp_num = g_free++;
-  cells[tmp_num].type = NUMBER;
+  cells[tmp_num].type = TNUMBER;
 
   return make_cell_test();
 }

@@ -151,7 +151,7 @@ main: doc/examples/main.c GNUmakefile
 
 t: scaffold/t.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 MAIN_C:=doc/examples/main.c

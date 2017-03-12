@@ -80,7 +80,13 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 (define (symbol->source s i)
   (string-append
    (format #f "g_free++;\n")
-   (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)))
+   ;; FIXME: g_functions
+   (if GCC?
+       (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)
+       (string-append
+         (format #f "g_cells[cell_~a].type = scm_~a.type;\n" s s)
+         (format #f "g_cells[cell_~a].car = scm_~a.car;\n" s s)
+         (format #f "g_cells[cell_~a].cdr = scm_~a.cdr;\n\n" s s)))))
 
 (define (symbol->names s i)
   (string-append
@@ -110,7 +116,14 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
        (format #f "~a.cdr = g_function;\n" (function-builtin-name f)))
    (format #f "g_functions[g_function++] = fun_~a;\n" (.name f))
    (format #f "cell_~a = g_free++;\n" (.name f))
-   (format #f "g_cells[cell_~a] = ~a;\n\n" (.name f) (function-builtin-name f))))
+   ;; FIXME: g_functions
+   (if GCC?
+       (format #f "g_cells[cell_~a] = ~a;\n\n" (.name f) (function-builtin-name f))
+       (string-append
+         (format #f "g_cells[cell_~a].type = ~a.type;\n" (.name f) (function-builtin-name f))
+         (format #f "g_cells[cell_~a].car = ~a.car;\n" (.name f) (function-builtin-name f))
+         ;;(format #f "g_cells[cell_~a].car = MAKE_STRING (~a.car);\n" (.name f) (function-builtin-name f))
+         (format #f "g_cells[cell_~a].cdr = ~a.cdr;\n\n" (.name f) (function-builtin-name f))))))
 
 (define (function->environment f i)
   (string-append
