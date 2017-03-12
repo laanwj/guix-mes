@@ -140,13 +140,16 @@
 (define (i386:accu-base)
   `(#x29 #xd0))                         ; sub    %edx,%eax
 
-;; (define (i386:accu/base)
-;;   '(#xf7 #xf2))                         ; div    %edx,%eax
-
 (define (i386:accu/base)
   '(#x86 #xd3                           ; mov    %edx,%ebx
     #x31 #xd2                           ; xor    %edx,%edx
     #xf7 #xf3))                         ; div    %ebx
+
+(define (i386:accu%base)
+  '(#x86 #xd3                           ; mov    %edx,%ebx
+    #x31 #xd2                           ; xor    %edx,%edx
+    #xf7 #xf3                           ; div    %ebx
+    #x89 #xd0))                         ; mov    %edx,%eax
 
 (define (i386:base->accu)
   '(#x89 #xd0))                         ; mov    %edx,%eax

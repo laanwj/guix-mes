@@ -135,6 +135,35 @@ SCM cell_fun;
 
 #if 1
 
+char itoa_buf[10];
+
+char const*
+itoa (int x)
+{
+  //static char itoa_buf[10];
+  //char *p = buf+9;
+  char *p = itoa_buf;
+  p += 9;
+  *p-- = 0;
+
+  //int sign = x < 0;
+  int sign;
+  sign = x < 0;
+  if (sign)
+    x = -x;
+  
+  do
+    {
+      *p-- = '0' + (x % 10);
+      x = x / 10;
+    } while (x);
+
+  if (sign)
+    *p-- = '-';
+
+  return p+1;
+}
+
 int
 add (int a, int b)
 {
@@ -663,9 +692,8 @@ test (char *p)
   return 1;
  ok15:
 
-  puts ("t: for (i=1; i<5; ++i)\n");
-  for (i=1; i<5; ++i);
-  if (i != 5) return i;
+  puts ("t: itoa (33) == \"33\"\n");
+  if (strcmp (itoa (33), "33")) return 1;
 
   return struct_test ();
 }

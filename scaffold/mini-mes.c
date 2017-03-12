@@ -198,15 +198,22 @@ eputs (char const* s)
   write (2, s, i);
   return 0;
 }
+#endif
+
+char itoa_buf[10];
 
 char const*
 itoa (int x)
 {
-  static char buf[10];
-  char *p = buf+9;
+  //static char itoa_buf[10];
+  //char *p = buf+9;
+  char *p = itoa_buf;
+  p += 9;
   *p-- = 0;
 
-  int sign = x < 0;
+  //int sign = x < 0;
+  int sign;
+  sign = x < 0;
   if (sign)
     x = -x;
   
@@ -221,7 +228,6 @@ itoa (int x)
 
   return p+1;
 }
-#endif
 
 void
 assert_fail (char* s)

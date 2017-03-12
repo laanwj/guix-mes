@@ -698,6 +698,38 @@
                           (list (lambda (f g ta t d)
                                   (i386:accu/base)))))))
 
+        ((mod ,a ,b)
+         (let* ((empty (clone info #:text '()))
+                (accu ((expr->accu empty) a))
+                (base ((expr->base empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text accu)
+                          (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:accu%base)))))))
+
+        ;; FIXME: c/p ast->info
+        ((lt ,a ,b)
+         (let* ((base ((expr->base info) a))
+                (empty (clone base #:text '()))
+                (accu ((expr->accu empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text base)
+                          (.text accu)
+                          (list (lambda (f g ta t d)
+                                  (i386:base-sub)))))))
+
+        ;; FIXME: ...c/p ast->info
+        ((neg (p-expr (ident ,name)))
+         (clone info #:text (append text
+                                    ((ident->base info) name)
+                                    (list (lambda (f g ta t d)
+                                            (i386:value->accu 0)))
+                                    (list (lambda (f g ta t d)
+                                            (i386:base-sub))))))
+
         ;;((cast (type-name (decl-spec-list (type-spec (typename "SCM"))) (abs-declr (declr-fctn (declr-scope (abs-declr (pointer))) (param-list (param-decl (decl-spec-list (type-spec (typename "SCM")))))))) (d-sel (ident "function") (array-ref (d-sel (ident "cdr") (array-ref (p-expr (ident "fn")) (p-expr (ident "g_cells")))) (p-expr (ident "functions"))))))
         ((cast ,cast ,o)
          ((expr->accu info) o))
@@ -1272,6 +1304,7 @@
                   #:globals (append globals (list-tail (.globals body-info) (length globals)))
                   #:locals locals)))
 
+        ;; FIXME: support break statement (see switch/case)
         ((while ,test ,body)
          (let* ((skip-info (lambda (body-length)
                              (clone info #:text (append text
@@ -1795,6 +1828,19 @@
                           (.text base)
                           ((base->ident-address info) name)
                           ((ident-add info) name 1)))))
+
+        ;; *p-- = b;
+        ((expr-stmt (assn-expr (de-ref (post-dec (p-expr (ident ,name)))) (op ,op) ,b))
+         (when (not (equal? op "="))
+           (stderr "OOOPS0.0: op=~s\n" op)
+           barf)
+         (let* ((empty (clone info #:text '()))
+                (base ((expr->base empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text base)
+                          ((base->ident-address info) name)
+                          ((ident-add info) name -1)))))
 
         ;; CAR (x) = 0
         ;; TYPE (x) = PAIR;

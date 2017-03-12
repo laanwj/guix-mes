@@ -43,6 +43,7 @@
             i386:accu+base
             i386:accu+value
             i386:accu/base
+            i386:accu%base
             i386:accu-base
             i386:accu-shl
             i386:base-sub
