@@ -395,6 +395,19 @@ test (char *p)
   char *x = arena;
   char *y = g_chars;
 
+  puts ("t: for (i=1; i<5; ++i)\n");
+  for (i=1; i<5; ++i);
+  if (i != 5) return i;
+
+  puts ("t: while (i<3) i++\n");
+  i = 1;
+  while (i<3) i++;
+  if (i != 3) return i;
+
+  puts ("t: do i-- while (i>0)\n");
+  do i--; while (i>0);
+  if (i != 0) return 1;
+
   puts ("t: if (0)\n");
   if (0) return 1;
 

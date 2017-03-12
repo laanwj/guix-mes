@@ -1303,6 +1303,30 @@
                    jump-text)
                   #:globals (.globals body-info))))
 
+        ((do-while ,body ,test)
+         (let* ((text-length (length text))
+
+                (body-info ((ast->info info) body))
+                (body-text (list-tail (.text body-info) text-length))
+                (body-length (length (text->list body-text)))
+
+                (empty (clone info #:text '()))
+                (test-jump->info ((test->jump->info empty) test))
+                (test+jump-info (test-jump->info 0))
+                (test-length (length (text->list (.text test+jump-info))))
+
+                (jump-text (list (lambda (f g ta t d)
+                                   (i386:Xjump (- (+ body-length test-length))))))
+                (jump-length (length (text->list jump-text)))
+
+                (test-text (.text (test-jump->info jump-length))))
+           (clone info #:text
+                  (append
+                   (.text body-info)
+                   test-text
+                   jump-text)
+                  #:globals (.globals body-info))))
+
         ((labeled-stmt (ident ,label) ,statement)
          (let ((info (clone info #:text (append text (list label)))))
            ((ast->info info) statement)))
