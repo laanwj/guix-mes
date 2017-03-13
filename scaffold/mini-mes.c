@@ -1208,38 +1208,11 @@ cstring_to_list (char const* s)
   char *x = s;
   SCM p = cell_nil;
   int i = strlen (s);
-  puts ("cstring_to_list[");
-  puts (s);
-  puts ("]: ");
   while (i--)
     {
-#if 0
-      //FIXME
       p = cons (MAKE_CHAR (s[i]), p);
-#else
-      char c;
-      c = *x;
-      puts ("[c:");
-      putchar (c);
-#if __GNUC__
-      p = cons (MAKE_CHAR (c), p);
-#else
-      SCM xx;
-      xx = MAKE_CHAR (c);
-      //FIXME
-      TYPE (xx) = 0;
-      VALUE (xx) = c;
-      puts (",t=");
-      puts (itoa (TYPE (xx)));
-      puts (",v=");
-      putchar (VALUE (xx));
-      puts ("]");
-      p = cons (xx, p);
-#endif
       x++;
-#endif
     }
-  puts ("\n");
   return p;
 }
 

@@ -95,10 +95,9 @@ struct scm {
   int cdr;
 };
 
-char arena[200];
+char arena[84];
 struct scm *g_cells = arena;
 char *g_chars = arena;
-char buf[200];
 
 int foo () {puts ("t: foo\n"); return 0;};
 int bar (int i) {puts ("t: bar\n"); return 0;};
@@ -174,6 +173,12 @@ int
 inc (int i)
 {
   return i + 1;
+}
+
+int
+identity (int i)
+{
+  return i;
 }
 
 int
@@ -516,6 +521,15 @@ test (char *p)
 
   puts ("t: (f) ?\n");
   (f) ? exit (1) : 1;
+
+  puts ("t: p[0] != 't'\n");
+  if (p[0] != 't') return p[0];
+
+  puts ("t: p[i] != 't'\n");
+  if (p[i] != 't') return p[i];
+
+  puts ("t: identity (p[i]) != 't'\n");
+  if (identity (p[i]) != 't') return identity (p[i]);
 
   puts ("t: *g_chars != 'A'\n");
   arena[0] = 'A';
