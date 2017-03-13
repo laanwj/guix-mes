@@ -616,51 +616,9 @@ call (SCM fn, SCM x)
 SCM
 assq (SCM x, SCM a)
 {
+  //FIXME: todo eq_p
   //while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
-  //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
-
-#if BDEBUG
-  puts  ("assq: ");
-  display_ (x);
-  puts  (" [");
-  puts (itoa (x));
-  puts  ("]\n");
-#endif
-  int i;
-  while (a != cell_nil) // && x != CAR (CAR (a)))
-    {
-      a = CDR (a);
-      // FIXME
-      i = CAR (CAR (a));
-#if  1
-      //!__GNUC__
-      // puts ("  ");
-      // puts (itoa (i));
-      // if (x == i) puts ("***FOUND*** ");
-      if (x == i) goto found;
-      // puts ("  ");
-      // display_ (CAAR (a));
-      // puts  ("[");
-      // puts (itoa (CAAR (a)));
-      // puts  ("]\n");
-#endif
-    }
- found:
-#if BDEBUG
-  //!__GNUC__
-  //puts  ("assq: ");
-  puts  ("  ");
-  puts  (" [");
-  puts (itoa (x));
-  puts  ("]");
-  display_ (x);
-  puts  (" => ");
-  if (a == cell_nil) display_ (cell_f);
-  else display_ (CAR (a));
-  puts  ("[");
-  puts (itoa (CDR (CDR (CAR (a)))));
-  puts  ("]\n");
-#endif
+  while (a != cell_nil && x != CAAR (a)) a = CDR (a);
   return a != cell_nil ? car (a) : cell_f;
 }
 

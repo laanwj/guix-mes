@@ -1522,7 +1522,10 @@ _)))))
            (clone info #:text
                   (append text
                           (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:push-base)))
                           (.text accu)
+                          (i386:pop-accu)
                           (list (lambda (f g ta t d)
                                   (i386:sub-base)))))))
 
@@ -1533,7 +1536,11 @@ _)))))
            (clone info #:text
                   (append text
                           (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:push-base)))
                           (.text accu)
+                          (list (lambda (f g ta t d)
+                                  (i386:pop-base)))
                           (list (lambda (f g ta t d)
                                   (i386:sub-base)))))))
 
@@ -1544,7 +1551,11 @@ _)))))
            (clone info #:text
                   (append text
                           (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:push-base)))
                           (.text accu)
+                          (list (lambda (f g ta t d)
+                                  (i386:pop-base)))
                           (list (lambda (f g ta t d)
                                   (append 
                                    (i386:sub-base)
@@ -1557,6 +1568,8 @@ _)))))
            (clone info #:text
                   (append text
                           (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:push-base)))
                           (.text accu)
                           (list (lambda (f g ta t d)
                                   (i386:base-sub)))))))
@@ -1569,7 +1582,11 @@ _)))))
            (clone info #:text
                   (append text
                           (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:push-base)))
                           (.text accu)
+                          (list (lambda (f g ta t d)
+                                  (i386:pop-base)))
                           (list (lambda (f g ta t d)
                                   (i386:base-sub)))))))
 

@@ -129,6 +129,8 @@ int ARENA_SIZE = 200;
 #define CDR(x) g_cells[x].cdr
 #define VALUE(x) g_cells[x].cdr
 
+#define CAAR(x) CAR (CAR (x))
+
 struct scm scm_fun = {TFUNCTION,0,0};
 SCM cell_fun;
 
@@ -321,6 +323,15 @@ make_tmps_test (struct scm* cells)
 int
 struct_test ()
 {
+  g_cells[0].car = 1;
+  g_cells[1].car = 2;
+
+  puts ("t: CAAR (0) != 2\n");
+  if (CAAR (0) != 2) return 1;
+
+  puts ("t: 2 != CAAR (0)\n");
+  if (2 != CAAR (0)) return 1;
+
   g_cells[3].type = 0x64;
   if (g_cells[3].type != 0x64)
     return g_cells[3].type;
@@ -459,6 +470,12 @@ test (char *p)
 
   puts ("t: if (f)\n");
   if (f) return 1;
+
+  puts ("t: if (one != 1)\n");
+  if (one != 1) return 1;
+
+  puts ("t: if (1 != one)\n");
+  if (1 != one) return 1;
 
   puts ("t: if (one > 1)\n");
   if (one > 1) return 1;
