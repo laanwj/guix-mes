@@ -376,10 +376,7 @@ struct_test ()
 
   int fn = 0;
   puts ("t: g_functions[g_cells[fn].cdr].arity\n");
-#if __GNUC__
-  //FIXME
   if (g_functions[g_cells[fn].cdr].arity) return 1;
-#endif
   if (g_functions[g_cells[fn].cdr].arity != 0) return 1;
 
   int (*functionx) (void) = 0;
@@ -731,6 +728,17 @@ test (char *p)
 }
 #endif
 
+int
+init ()
+{
+  // g_cells[0].cdr = 0;
+  // g_cells[1].cdr = 1;
+  g_functions[0] = g_foo;
+  g_functions[1] = g_bar;
+    
+  return 0;
+}
+    
 int
 main (int argc, char *argv[])
 {

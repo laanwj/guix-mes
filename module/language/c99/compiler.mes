@@ -1073,9 +1073,19 @@ _)))))
                           (.text (a-jump jump-length))
                           jump-text
                           (.text (b-jump body-length)))))))
-      ((array-ref . _) ((jump i386:jump-byte-z) o))
-      ((de-ref _) ((jump i386:jump-byte-z) o))
-      (_ ((jump i386:Xjump-z) o)))))
+
+      ((array-ref . _) ((jump (lambda (n)
+                                (append
+                                 (i386:accu-zero?)
+                                 (i386:jump-byte-z n)))) o))
+      ((de-ref _) ((jump (lambda (n)
+                           (append
+                            (i386:accu-zero?)
+                            (i386:jump-byte-z n)))) o))
+      (_ ((jump (lambda (n)
+                  (append
+                   (i386:accu-zero?)
+                   (i386:Xjump-z n)))) o)))))
 
 (define (cstring->number s)
   (cond ((string-prefix? "0x" s) (string->number (string-drop s 2) 16))

@@ -1100,19 +1100,8 @@ make_symbol (SCM s)
   return make_symbol_ (s);
 #else
   SCM x = lookup_symbol_ (s);
-  // FIXME: does not work with mescc?!
-  // return x != 0 ? x : make_symbol_ (s);
   return x ? x : make_symbol_ (s);
 #endif
-// FIXME
-// #if MES_MINI
-//   SCM x = 0;
-// #else
-//   SCM x = lookup_symbol_ (s);
-// #endif
-//   //FIXME
-//   //return x ? x : make_symbol_ (s);
-//   return x != 0 ? x : make_symbol_ (s);
 }
 
 SCM
