@@ -2031,7 +2031,6 @@ _)))))
 
         ;; g_cells[i] = c;
         ((expr-stmt (assn-expr (array-ref (p-expr (ident ,index)) (p-expr (ident ,array))) (op ,op) ,b))
-         (stderr "g_cells4[]: ~s\n" array)
          ;;(stderr "pointer_cells4[]: ~s\n" array)
          (when (not (equal? op "="))
            (stderr "OOOPS4: op=~s\n" op)
@@ -2044,11 +2043,6 @@ _)))))
                 (count (length fields))
                 (field-size 4) ;; FIXME:4, not fixed
                 (ptr (ident->pointer info array)))
-           (stderr "g_cells4[~a]: type=~a\n" array type)
-           (stderr "g_cells4[~a]: pointer=~a\n" array ptr)
-           (stderr "g_cells4[~a]: fields=~a\n" array fields)
-           (stderr "g_cells4[~a]: size=~a\n" array size)
-           (stderr "g_cells4[~a]: count=~a\n" array count)
            (clone info #:text
                   (append text
                           (.text base)
@@ -2092,11 +2086,6 @@ _)))))
                 (count (length fields))
                 (field-size 4) ;; FIXME:4, not fixed
                 (ptr (ident->pointer info array)))
-           (stderr "g_cells5[~a]: type=~a\n" array type)
-           (stderr "g_cells5[~a]: pointer=~a\n" array ptr)
-           (stderr "g_cells5[~a]: fields=~a\n" array fields)
-           (stderr "g_cells5[~a]: size=~a\n" array size)
-           (stderr "g_cells5[~a]: count=~a\n" array count)
            (clone info #:text
                   (append text
                           (.text base)
