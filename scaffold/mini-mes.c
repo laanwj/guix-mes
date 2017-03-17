@@ -616,7 +616,7 @@ call (SCM fn, SCM x)
 SCM
 assq (SCM x, SCM a)
 {
-  //FIXME: todo eq_p
+  //FIXME: eq_p
   //while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
   while (a != cell_nil && x != CAAR (a)) a = CDR (a);
   return a != cell_nil ? car (a) : cell_f;
@@ -1087,25 +1087,10 @@ SCM
 make_symbol_ (SCM s)
 {
   VALUE (tmp_num) = TSYMBOL;
-  ///FIXMESCM x = make_cell (tmp_num, s, 0);
+  ///FIXME SCM x = make_cell (tmp_num, s, 0);
   SCM x;
   x = make_cell (tmp_num, s, 0);
   puts ("MAKE SYMBOL: ");
-  // puts ("[s=");
-  // puts (itoa (s));
-  // puts (",s.car=");
-  // puts (itoa (CAR (s)));
-  // puts (",s.car.cdr=");
-  // //  puts (itoa (CDR (CAR (s))));
-  // putchar (CDR (CAR (s)));
-  // puts (",x=");
-  // puts (itoa (x));
-  // puts (",x.car=");
-  // puts (itoa (CAR (x)));
-  // puts ("]");
-
-
-  ////TYPE (x) = TSYMBOL;
   display_ (x);
   puts ("\n");
   g_symbols = cons (x, g_symbols);
@@ -1216,7 +1201,6 @@ display_ (SCM x)
       }
     case TFUNCTION:
       {
-#if 1
         puts ("#<procedure ");
         ///puts (FUNCTION (x).name ? FUNCTION (x).name : "?");
         char *p = "?";
@@ -1227,29 +1211,11 @@ display_ (SCM x)
         puts (itoa (CDR (x)));
         puts ("]>");
         break;
-#endif
-        // //puts ("<function>\n");
-        // if (VALUE (x) == 0)
-        //   puts ("make-cell");
-        // if (VALUE (x) == 1)
-        //   puts ("cons");
-        // if (VALUE (x) == 2)
-        //   puts ("car");
-        // if (VALUE (x) == 3)
-        //   puts ("cdr");
-        // break;
       }
     case TNUMBER:
       {
         //puts ("<number>\n");
-#if __GNUC__
         puts (itoa (VALUE (x)));
-#else
-        int i;
-        i = VALUE (x);
-        i = i + 48;
-        putchar (i);
-#endif
         break;
       }
     case TPAIR:
@@ -1260,16 +1226,8 @@ display_ (SCM x)
         if (x && x != cell_nil) display_ (CAR (x));
         if (CDR (x) && CDR (x) != cell_nil)
           {
-#if __GNUC__
             if (TYPE (CDR (x)) != TPAIR)
               puts (" . ");
-#else
-            int c;
-            c = CDR (x);
-            c = TYPE (c);
-            if (c != TPAIR)
-              puts (" . ");
-#endif
             display_ (CDR (x));
           }
         //if (cont != cell_f) puts (")");
@@ -1285,40 +1243,21 @@ display_ (SCM x)
           case 3: {puts ("#t"); break;}
           default:
             {
-#if __GNUC__
         puts ("<x:");
         puts (itoa (x));
         puts (">");
-#else
-        puts ("<x>");
-#endif
             }
           }
         break;
       }
     case TSYMBOL:
       {
-#if 0
-        puts ("<s:");
-        puts (itoa (x));
-        puts (">");
-#endif
         // FIXME
         ///SCM t = CAR (x);
         SCM t;
         t = CAR (x);
         while (t != cell_nil)
           {
-            //FIXME
-            //SCM xx = CAR (t);
-            // SCM xx;
-            // xx = CAR (t);
-            // puts ("[c:");
-            // puts (itoa (xx));
-            // puts (",");
-            // puts (itoa (VALUE (xx)));
-            // puts ("]");
-            // putchar (VALUE (xx));
             putchar (VALUE (CAR (t)));
             t = CDR (t);
           }
@@ -1327,15 +1266,11 @@ display_ (SCM x)
     default:
       {
         //puts ("<default>\n");
-#if 1
         puts ("<");
         puts (itoa (TYPE (x)));
         puts (":");
         puts (itoa (x));
         puts (">");
-#else
-        puts ("_");
-#endif
         break;
       }
     }

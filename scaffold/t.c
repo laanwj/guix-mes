@@ -95,6 +95,7 @@ struct scm {
   int cdr;
 };
 
+int bla = 1234;
 char arena[84];
 struct scm *g_cells = arena;
 char *g_chars = arena;
@@ -592,6 +593,9 @@ test (char *p)
 
   puts ("t: add (inc (0), inc (1))\n");
   if (add (inc (0), inc (1)) != 3) return 1;
+
+  puts ("t: add (TSTRING, 3)\n");
+  if (add (TSTRING, 3) != 13) return 1;
 
   puts ("t: add (inc (inc (0)), inc (inc (1)))\n");
   if (add (inc (inc (0)), inc (inc (1))) != 5) return 1;
