@@ -407,16 +407,9 @@ struct_test ()
   if (functionx != bar) return 15;
 
   puts ("t: (functiony) (1) == bar\n");
-#if __GNUC__
-  //FIXME
   int (*functiony) (int) = 0;
   functiony = g_functions[g_cells[fn].cdr].function;
   if ((functiony) (1) != 0) return 16;
-#endif
-#if !__GNUC__
-  functionx = g_functions[g_cells[fn].cdr].function;
-  if ((functionx) (1) != 0) return 16;
-#endif
 
   puts ("t: g_functions[<bar>].arity;");
   if (g_functions[fn].arity != 1) return 18;
