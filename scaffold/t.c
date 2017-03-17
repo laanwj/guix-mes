@@ -327,6 +327,10 @@ struct_test ()
   g_cells[0].car = 1;
   g_cells[1].car = 2;
 
+  puts ("t: int c = VALUE (0)\n");
+  int c = CAR (0);
+  if (c != 1) return 1;
+
   puts ("t: CAAR (0) != 2\n");
   if (CAAR (0) != 2) return 1;
 

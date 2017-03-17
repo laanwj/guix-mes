@@ -991,6 +991,9 @@ _)))))
                                clause-text)
                   #:globals (.globals clause-info)))))
 
+      ((case (neg (p-expr (fixed ,value))) ,statement)
+       ((case->jump-info info) `(case (p-expr (fixed ,(string-append "-" value))) ,statement)))
+
       ((default (compd-stmt (block-item-list . ,elements)))
        (lambda (body-length)
          (let ((text-length (length (.text info))))
@@ -1812,18 +1815,6 @@ _)))))
                               ((ident->accu info) local)
                               ((accu->ident info) name))))))
 
-        ;; int i = f ();
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (fctn-call . ,call)))))
-         ;;(stderr  "4TYPE: ~s\n" type)
-         (let* ((locals (add-local locals name type 0))
-                (info (clone info #:locals locals)))
-           (let ((info ((ast->info info) `(expr-stmt (fctn-call ,@call)))))
-             (clone info
-                    #:text
-                    (append (.text info)
-                            ((accu->ident info) name))
-                    #:locals locals))))
-        
         ;; int (*function) (void) = g_functions[g_cells[fn].cdr].function;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)) (initzer ,initzer))))
          (let* ((locals (add-local locals name type 1))
@@ -1842,17 +1833,6 @@ _)))))
                                    (i386:value->base ta)
                                    (i386:accu+base)))))
                   #:locals locals)))
-
-        ;; SCM x = car (e);
-        ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name) (initzer (fctn-call . ,call)))))
-         ;;(stderr  "5TYPE: ~s\n" type)
-         (let* ((locals (add-local locals name type 0))
-                (info (clone info #:locals locals)))
-           (let ((info ((ast->info info) `(expr-stmt (fctn-call ,@call)))))
-             (clone info
-                    #:text
-                    (append (.text info)
-                            ((accu->ident info) name))))))
 
         ;; char *p = (char*)g_cells;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (cast (type-name (decl-spec-list (type-spec (fixed-type ,=type))) (abs-declr (pointer))) (p-expr (ident ,value)))))))
@@ -1893,8 +1873,7 @@ _)))))
                                 ((ident->accu info) value)
                                 ((accu->ident info) name))))
                (let* ((globals (append globals (list (ident->global name type 1 0))))
-                      (here (data-offset name globals))
-                      (there (data-offset value globals)))
+                      (here (data-offset name globals)))
                  (clone info
                         #:globals globals
                         #:init (append (.init info)
@@ -1904,8 +1883,6 @@ _)))))
                                               ;;; FIXME: type
                                               ;;; char *x = arena;p
                                                 (int->bv32 (+ d (data-offset value globals)))
-                                              ;;; char *y = x;
-                                              ;;;(list-head (list-tail data there) 4)
                                                 (list-tail data (+ here 4)))))))))))
 
         ;; enum 
@@ -2205,7 +2182,32 @@ _)))))
                                                 (initzer->data info functions globals ta t d (car initzers))
                                                 (list-tail data (+ here offset field-size)))))))))))))))
 
+
+        ;;char cc = g_cells[c].cdr;  ==> generic?
+        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ident ,name) (initzer ,initzer))))
+         (let ((type (decl->type type)))
+           (if (.function info)
+               (let* ((locals (add-local locals name type 0))
+                      (info (clone info #:locals locals)))
+                 (clone info #:text
+                        (append (.text ((expr->accu info) initzer))
+                                ((accu->ident info) name))))
+               (let* ((globals (append globals (list (ident->global name type 1 0))))
+                      (here (data-offset name globals)))
+                 (clone info
+                        #:globals globals
+                        #:init (append (.init info)
+                                       (list (lambda (functions globals ta t d data)
+                                               (append
+                                                (list-head data here)
+                                                (initzer->data info functions globals ta t d initzer)
+                                                (list-tail data (+ here 4)))))))))))
+
+
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
+         info)
+
+        ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))) (comment ,comment))
          info)
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))

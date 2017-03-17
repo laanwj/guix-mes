@@ -251,10 +251,7 @@ assert_fail (char* s)
 
 typedef int SCM;
 
-#if __GNUC__
 int g_debug = 0;
-#endif
-
 int g_free = 0;
 
 SCM g_continuations = 0;
@@ -560,10 +557,7 @@ SCM
 append2 (SCM x, SCM y)
 {
   if (x == cell_nil) return y;
-#if __GNUC__
-  //FIXME GNUC
   assert (TYPE (x) == TPAIR);
-#endif
   return cons (car (x), append2 (cdr (x), y));
 }
 
@@ -578,10 +572,7 @@ pairlis (SCM x, SCM y, SCM a)
                pairlis (cdr (x), cdr (y), a));
 }
 
-
-#if __GNUC__
 SCM display_ (SCM);
-#endif
 
 SCM
 call (SCM fn, SCM x)
@@ -594,19 +585,11 @@ call (SCM fn, SCM x)
     x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
   switch (FUNCTION (fn).arity)
     {
-    // case 0: return FUNCTION (fn).function0 ();
-    // case 1: return FUNCTION (fn).function1 (car (x));
-    // case 2: return FUNCTION (fn).function2 (car (x), cadr (x));
-    // case 3: return FUNCTION (fn).function3 (car (x), cadr (x), car (cddr (x)));
-    // case -1: return FUNCTION (fn).functionn (x);
     case 0: {return (FUNCTION (fn).function) ();}
     case 1: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (car (x));}
     case 2: {return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x));}
     case 3: {return ((SCM(*)(SCM,SCM,SCM))(FUNCTION (fn).function)) (car (x), cadr (x), car (cddr (x)));}
-#if __GNUC__
-      // FIXME GNUC
     case -1: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);}
-#endif
     default: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);}
     }
 
@@ -657,9 +640,7 @@ set_env_x (SCM x, SCM e, SCM a)
 SCM
 call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 {
-  //FIXME
-  //SCM cl = cons (cons (cell_closure, x), x);
-  SCM cl;
+  SCM cl = cons (cons (cell_closure, x), x);
   cl = cons (cons (cell_closure, x), x);
   r1 = e;
   r0 = cl;
@@ -699,10 +680,7 @@ SCM cadr (SCM x) {return car (cdr (x));}
 SCM cdar (SCM x) {return cdr (car (x));}
 SCM cddr (SCM x) {return cdr (cdr (x));}
 
-#if __GNUC__
-//FIXME
 SCM gc_pop_frame (); //((internal))
-#endif
 
 SCM
 eval_apply ()
@@ -765,10 +743,7 @@ eval_apply ()
     }
     case TCLOSURE:
       {
-        //FIXME
-        //SCM cl = CLOSURE (car (r1));
-        SCM cl;
-        cl = CLOSURE (car (r1));
+        SCM cl = CLOSURE (car (r1));
         SCM formals = cadr (cl);
         SCM body = cddr (cl);
         SCM aa = cdar (cl);
@@ -1087,12 +1062,7 @@ SCM
 make_symbol_ (SCM s)
 {
   VALUE (tmp_num) = TSYMBOL;
-  ///FIXME SCM x = make_cell (tmp_num, s, 0);
-  SCM x;
-  x = make_cell (tmp_num, s, 0);
-  puts ("MAKE SYMBOL: ");
-  display_ (x);
-  puts ("\n");
+  SCM x = make_cell (tmp_num, s, 0);
   g_symbols = cons (x, g_symbols);
   return x;
 }
@@ -1178,10 +1148,7 @@ write_byte (SCM x) ///((arity . n))
   //FILE *f = fd == 1 ? stdout : stderr;
   assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
   //  fputc (VALUE (c), f);
-  // FIXME
-  //char cc = VALUE (c);
-  char cc;
-  cc = VALUE (c);
+  char cc = VALUE (c);
   write (1, (char*)&cc, fd);
   return c;
 }
@@ -1252,10 +1219,7 @@ display_ (SCM x)
       }
     case TSYMBOL:
       {
-        // FIXME
-        ///SCM t = CAR (x);
-        SCM t;
-        t = CAR (x);
+        SCM t = CAR (x);
         while (t != cell_nil)
           {
             putchar (VALUE (CAR (t)));
@@ -1461,16 +1425,6 @@ int
 main (int argc, char *argv[])
 {
   eputs ("Hello mini-mes!\n");
-
-  // make_tmps (g_cells);
-  // SCM x = cstring_to_list ("bla");
-  // while (x != 1)
-  //   {
-  //     putchar (CDR (CAR (x)));
-  //     x = CDR (x);
-  //   }
-  // return 0;
-
 #if __GNUC__
   //g_debug = getenv ("MES_DEBUG");
 #endif
@@ -1505,14 +1459,12 @@ main (int argc, char *argv[])
 #if !MES_MINI
   gc (g_stack);
 #endif
-#if __GNUC__
   if (g_debug)
     {
       eputs ("\nstats: [");
       eputs (itoa (g_free));
       eputs ("]\n");
     }
-#endif
   return 0;
 }
 
