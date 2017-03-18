@@ -798,6 +798,11 @@ _)))))
         ((cast ,cast ,o)
          ((expr->accu info) o))
 
+        ((assn-expr (p-expr (ident ,name)) ,op ,expr)
+         (let ((info ((ast->info info) o)))
+           (clone info #:text (append (.text info)
+                                      ((ident->accu info) name)))))
+
         (_
          (format (current-error-port) "SKIP: expr->accu=~s\n" o)
          barf

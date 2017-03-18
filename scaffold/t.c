@@ -534,6 +534,12 @@ test (char *p)
   puts ("t: if (!(t = 1)) ?\n");
   if (!(t = 1)) return 1;
 
+  puts ("t: if ((f = 0) != 0) ?\n");
+  if ((f = 0) != 0) return 1;
+
+  puts ("t: if ((t = 1) != 1) ?\n");
+  if ((t = 1) != 1) return 1;
+
   puts ("t: (one == 1) ?\n");
   (one == 1) ? 1 : exit (1);
 

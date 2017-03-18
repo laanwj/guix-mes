@@ -913,10 +913,8 @@ eval_apply ()
   SCM macro;
   SCM expanders;
  macro_expand:
-#if __GNUC__
-  //FIXME
   if (TYPE (r1) == TPAIR
-      && (macro = lookup_macro (car (r1), r0)) != cell_f) // FIXME GNUC
+      && (macro = lookup_macro (car (r1), r0)) != cell_f)
     {
       r1 = cons (macro, CDR (r1));
       goto apply;
@@ -933,7 +931,6 @@ eval_apply ()
           goto apply;
         }
     }
-#endif
   goto vm_return;
  begin:
   x = cell_unspecified;
@@ -1341,7 +1338,6 @@ bload_env (SCM a) ///((internal))
   g_stdin = STDIN;
   r0 = mes_builtins (r0);
 #if 1
-  //__GNUC__
   puts ("symbols: ");
   SCM s = g_symbols;
   while (s && s != cell_nil) {
