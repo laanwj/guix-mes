@@ -528,6 +528,12 @@ test (char *p)
   i -= 2;
   if (i != 0) return 1;
 
+  puts ("t: if (f = 0) ?\n");
+  if (f = 0) return 1;
+
+  puts ("t: if (!(t = 1)) ?\n");
+  if (!(t = 1)) return 1;
+
   puts ("t: (one == 1) ?\n");
   (one == 1) ? 1 : exit (1);
 
@@ -728,17 +734,6 @@ test (char *p)
 }
 #endif
 
-int
-init ()
-{
-  // g_cells[0].cdr = 0;
-  // g_cells[1].cdr = 1;
-  g_functions[0] = g_foo;
-  g_functions[1] = g_bar;
-    
-  return 0;
-}
-    
 int
 main (int argc, char *argv[])
 {
