@@ -61,21 +61,6 @@
         (loop (cdr lambdas/labels)
               (append text ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels)))))))
 
-;; (define (functions->text functions globals ta t d)
-;;   (let loop ((functions functions) (text '()))
-;;     (if (null? functions) text
-;;         (loop (cdr functions)
-;;               (append '() ;;text
-;;                       (function->text functions globals ta t d text (car functions)))))))
-
-;; (define (function->text functions globals ta t d text function)
-;;   (format (current-error-port) "elf func=~a\n" (car function))
-;;   (let loop ((lambdas/labels (cdr function)) (text text))
-;;     (if (null? lambdas/labels) text
-;;         (loop (cdr lambdas/labels)
-;;               (append '() ;;text
-;;                       ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels)))))))
-
 (define (function-prefix name functions)
   ;; FIXME
   ;;(member name (reverse functions) (lambda (a b) (equal? (car b) name)))
@@ -107,15 +92,20 @@
                                             (n (length t)))
                                        (+ (loop (cdr text)) n))))))
                   (when (> offset 0)
-                      (set! cache (assoc-set! cache (cons function label) offset)))
+                    (set! cache (assoc-set! cache (cons function label) offset)))
                   offset)))))))
 
 (define (globals->data globals)
   (append-map (compose global:value cdr) globals))
 
-(define (data-offset name globals)
-  (let* ((prefix (member name (reverse globals)
-                         (lambda (a b)
-                           (equal? (car b) name)))))
-    (if prefix (length (globals->data (cdr prefix)))
-        0)))
+(define data-offset
+  (let ((cache '()))
+    (lambda (name globals)
+      (or (assoc-ref cache name)
+          (let* ((prefix (member name (reverse globals)
+                                 (lambda (a b)
+                                   (equal? (car b) name)))))
+            (if (not prefix) 0
+                (let ((offset (length (globals->data (cdr prefix)))))
+                 (set! cache (assoc-set! cache name offset))
+                 offset)))))))
