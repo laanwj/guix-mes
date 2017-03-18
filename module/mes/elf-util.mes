@@ -72,11 +72,15 @@
   (let ((cache '()))
     (lambda (name functions)
       (or (assoc-ref cache name)
-          (let* ((prefix (function-prefix name functions))
-                 (offset (if prefix (length (functions->text (cdr prefix) '() 0 0 0))
-                             0)))
-            (if (and prefix (or (equal? name "exit") (> offset 0))) (set! cache (assoc-set! cache name offset)))
-            offset)))))
+          (let* ((functions (if (and (pair? functions) (equal? (caar functions) "exit")) functions (reverse functions)))
+                 (prefix (and=> (function-prefix name functions) cdr))
+                 (offset (and prefix
+                              (if (null? prefix) 0
+                                  (+ (length (functions->text (list (car prefix)) '() 0 0 0))
+                                     (if (null? (cdr prefix)) 0
+                                         (function-offset (caar prefix) functions)))))))
+            (if (and offset (or (equal? name "exit") (> offset 0))) (set! cache (assoc-set! cache name offset)))
+            (or offset 0))))))
 
 (define label-offset
   (let ((cache '()))
