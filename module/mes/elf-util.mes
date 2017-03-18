@@ -55,11 +55,16 @@
 (define (text->list o)
   (append-map (lambda/label->list '() '() 0 0 0) o))
 
-(define (functions->text functions globals ta t d)
-  (let loop ((lambdas/labels (functions->lambdas functions)) (text '()))
-    (if (null? lambdas/labels) text
-        (loop (cdr lambdas/labels)
-              (append text ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels)))))))
+(define functions->text
+  (let ((cache '()))
+    (lambda (functions globals ta t d)
+      (or (assoc-ref cache (cons ta (map car functions)))
+          (let ((text (let loop ((lambdas/labels (functions->lambdas functions)) (text '()))
+                        (if (null? lambdas/labels) text
+                            (loop (cdr lambdas/labels)
+                                  (append text ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels))))))))
+            (set! cache (assoc-set! cache (cons ta (map car functions)) text))
+            text)))))
 
 (define (function-prefix name functions)
   ;; FIXME
