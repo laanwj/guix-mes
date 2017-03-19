@@ -172,7 +172,8 @@ dump ()
   fputc ('S', stdout);
   fputc (g_stack >> 8, stdout);
   fputc (g_stack % 256, stdout);
-  if (getenv ("MES_HACK"))
+  // See HACKING, simple crafted dump for tiny-mes.c
+  if (getenv ("MES_TINY"))
     {
       TYPE (9) = 0x2d2d2d2d;
       CAR (9) = 0x2d2d2d2d;
@@ -210,7 +211,7 @@ load_env (SCM a) ///((internal))
 {
   r0 = a;
   if (getenv ("MES_MINI"))
-    g_stdin = fopen ("mini-0.mes", "r");
+    g_stdin = fopen ("module/mes/mini-0.mes", "r");
   else
     {
       g_stdin = fopen ("module/mes/read-0.mes", "r");
@@ -226,7 +227,7 @@ SCM
 bload_env (SCM a) ///((internal))
 {
 #if MES_MINI
-  g_stdin = fopen ("mini-0.mo", "r");
+  g_stdin = fopen ("module/mes/read-0-32.mo", "r");
 #else
   g_stdin = fopen ("module/mes/read-0.mo", "r");
   g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");

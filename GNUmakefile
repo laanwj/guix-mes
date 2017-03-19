@@ -15,6 +15,7 @@ CFLAGS:=-std=c99 -O3 -finline-functions
 include .config.make
 include make/install.make
 
+CPPFLAGS+=-I.
 CPPFLAGS+=-DPREFIX='"$(PREFIX)"'
 CPPFLAGS+=-DVERSION='"$(VERSION)"'
 
@@ -37,6 +38,10 @@ mes.o: reader.c reader.h reader.i reader.environment.i
 
 clean:
 	rm -f mes *.o *.environment.i *.symbols.i *.environment.h *.cat a.out
+	rm -f mes-32
+	rm -f cons-mes m main micro-mes mini-mes t tiny-mes
+	rm -f guile-cons-mes guile-m guile-main guile-micro-mes guile-mini-mes guile-t guile-tiny-mes
+	rm -f module/mes/*.mo
 
 distclean: clean
 	rm -f .config.make
@@ -90,13 +95,16 @@ module/mes/read-0.mo: module/mes/read-0.mes mes
 
 dump: module/mes/read-0.mo
 
-mes-32:
+mes-32: mes.c lib.c
 	rm -f mes mes.o
 	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
 	mv mes mes-32
 
-module/mes/hack-32.mo: mes-32
-	MES_HACK=1 ./mes-32 --dump < module/mes/read-0.mes > module/mes/hack-32.mo
+module/mes/read-0-32.mo: module/mes/mini-0.mes mes-32
+	MES_MINI=1 ./mes-32 --dump < $< > $@
+
+module/mes/tiny-0-32.mo: module/mes/tiny-0.mes mes-32
+	MES_TINY=1 ./mes-32 --dump < $< > $@
 
 guile-check:
 	set -e; for i in $(TESTS); do\
@@ -117,20 +125,41 @@ mescc-check: t-check
 	build-aux/mes-snarf.scm $<
 
 mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
+mini-mes: mlibc.c mstart.c
 mini-mes: GNUmakefile
-mini-mes: doc/examples/mini-mes.c
+mini-mes: module/mes/read-0-32.mo
+mini-mes: scaffold/mini-mes.c
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -g -I. -o $@ '-DVERSION="0.4"' $<
+	#	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DPREFIX=' '-DVERSION='"$(VERSION)"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -g -I. -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
+guile-mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
+guile-mini-mes: module/mes/read-0-32.mo
+guile-mini-mes: scaffold/mini-mes.c
+	guile/mescc.scm $< > $@ || rm -f $@
+	chmod +x $@
+
+cons-mes: module/mes/tiny-0-32.mo
 cons-mes: scaffold/cons-mes.c GNUmakefile
 	rm -f $@
 	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
+guile-cons-mes: module/mes/tiny-0-32.mo
+guile-cons-mes: scaffold/cons-mes.c
+	guile/mescc.scm $< > $@ || rm -f $@
+	chmod +x $@
+
+tiny-mes: module/mes/tiny-0-32.mo
 tiny-mes: scaffold/tiny-mes.c GNUmakefile
 	rm -f $@
 	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
+
+guile-tiny-mes: module/mes/tiny-0-32.mo
+guile-tiny-mes: scaffold/tiny-mes.c
+	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
 m: scaffold/m.c GNUmakefile
@@ -139,9 +168,17 @@ m: scaffold/m.c GNUmakefile
 #	gcc --std=gnu99 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
+guile-m: scaffold/m.c
+	guile/mescc.scm $< > $@ || rm -f $@
+	chmod +x $@
+
 micro-mes: scaffold/micro-mes.c GNUmakefile
 	rm -f $@
 	gcc -nostdlib -I. --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
+
+guile-micro-mes: scaffold/micro-mes.c
+	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
 main: doc/examples/main.c GNUmakefile
@@ -149,9 +186,18 @@ main: doc/examples/main.c GNUmakefile
 	gcc -nostdlib -I. --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
+guile-main: doc/examples/main.c
+	guile/mescc.scm $< > $@ || rm -f $@
+	chmod +x $@
+
+t: mlibc.c
 t: scaffold/t.c GNUmakefile
 	rm -f $@
 	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
+
+guile-t: scaffold/t.c
+	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
 MAIN_C:=doc/examples/main.c

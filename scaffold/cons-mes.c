@@ -844,11 +844,11 @@ SCM
 simple_bload_env (SCM a) ///((internal))
 {
   puts ("reading: ");
-  char *mo = "module/mes/hack-32.mo";
+  char *mo = "module/mes/tiny-0-32.mo";
   puts (mo);
   puts ("\n");
   g_stdin = open (mo, 0);
-  if (g_stdin < 0) {eputs ("no such file: module/mes/read-0-32.mo\n");return 1;} 
+  if (g_stdin < 0) {eputs ("no such file: module/mes/tiny-0-32.mo\n");return 1;}
 
   char *p = (char*)g_cells;
   int c;

@@ -1117,8 +1117,7 @@ mes_builtins (SCM a) ///((internal))
 SCM
 bload_env (SCM a) ///((internal))
 {
-  char *mo = "mini-0-32.mo";
-  //char *mo = "module/mes/read-0-32.mo";
+  char *mo = "module/mes/read-0-32.mo";
   g_stdin = open (mo, 0);
   if (g_stdin < 0) {eputs ("no such file: ");eputs (mo);eputs ("\n");return 1;} 
   assert (getchar () == 'M');
