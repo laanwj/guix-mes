@@ -71,19 +71,9 @@
 (define (i386:push-base)
   '(#x52))                              ; push %eax
 
-(define (i386:ret . rest)
-  (lambda (f g ta t d)
-    `(
-      ,@(cond ((null? rest) '())
-              ((number? (car rest))
-               `(#xb8                     ; mov    $<>,%eaxx
-                 ,@(int->bv32 (car rest))))
-              ((pair? (car rest)) (car rest))
-              ((procedure? (car rest))
-               ((car rest) f g ta t d)))
-    #xc9                                ; leave
-    #xc3                                ; ret
-    )))
+(define (i386:ret)
+  '(#xc9                                ; leave
+    #xc3))                              ; ret
 
 (define (i386:accu->base)
   '(#x89 #xc2))                         ; mov    %eax,%edx

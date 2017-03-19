@@ -1697,7 +1697,7 @@ _)))))
         ((return ,expr)
          (let ((accu ((expr->accu info) expr)))
            (clone accu #:text
-                  (append (.text accu) (list (i386:ret (lambda _ '())))))))
+                  (append (.text accu) (list (lambda (f g ta t d) (i386:ret)))))))
 
         ;; int i;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
