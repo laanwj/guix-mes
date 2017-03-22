@@ -1422,9 +1422,6 @@ stderr_ (SCM x)
 }
 
 //math.c
-#define INT_MIN -2147483648
-#define INT_MAX 2147483647
-
 SCM
 greater_p (SCM x) ///((name . ">") (arity . n))
 {

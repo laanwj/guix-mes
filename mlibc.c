@@ -26,6 +26,9 @@ int open (char const *s, int mode);
 int read (int fd, void* buf, size_t n);
 void write (int fd, char const* s, int n);
 
+#define INT_MIN -2147483648
+#define INT_MAX 2147483647
+
 void
 exit (int code)
 {
@@ -39,17 +42,6 @@ exit (int code)
   // not reached
   exit (0);
 }
-
-void
-assert_fail (char* s)
-{
-  eputs ("assert fail: ");
-  eputs (s);
-  eputs ("\n");
-  *((int*)0) = 0;
-}
-
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
 char const*
 getenv (char const* p)
@@ -66,8 +58,10 @@ read (int fd, void* buf, size_t n)
        "movl %1,%%ebx\n\t"
        "movl %2,%%ecx\n\t"
        "movl %3,%%edx\n\t"
+
        "movl $0x3,%%eax\n\t"
        "int  $0x80\n\t"
+
        "mov %%eax,%0\n\t"
        : "=r" (r)
        : "" (fd), "" (buf), "" (n)
@@ -97,36 +91,6 @@ open (char const *s, int mode)
 int puts (char const*);
 char const* itoa (int);
 
-int ungetc_char = -1;
-
-int
-getchar ()
-{
-  char c;
-  int i;
-  if (ungetc_char == -1)
-    {
-      int r = read (g_stdin, &c, 1);
-      if (r < 1) return -1;
-      i = c;
-    }
-  else
-    {
-      i = ungetc_char;
-      ungetc_char = -1;
-    }
-  if (i < 0) i += 256;
-  return i;
-}
-
-int
-ungetc (int c, int fd)
-{
-  assert (ungetc_char == -1);
-  ungetc_char = c;
-  return c;
-}
-
 void
 write (int fd, char const* s, int n)
 {
@@ -145,6 +109,24 @@ write (int fd, char const* s, int n)
        );
 }
 
+void *
+brk (void *p)
+{
+  void *r;
+  asm (
+       "mov %1,%%ebx\n\t"
+
+       "mov $0x2d,%%eax\n\t"
+       "int $0x80\n\t"
+
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (p)
+       : "eax", "ebx"
+       );
+  return r;
+}
+
 int
 putchar (int c)
 {
@@ -154,14 +136,23 @@ putchar (int c)
   return 0;
 }
 
+void *g_malloc_base = 0;
+
 void *
 malloc (size_t size)
 {
-  int *n;
-  int len = size + sizeof (size);
-  //n = mmap (0, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
-  *n = len;
-  return (void*)(n+1);
+  void *p = brk (0);
+  if (!g_malloc_base) g_malloc_base = p;
+  brk (p+size);
+  return p;
+}
+
+void *
+realloc (void *p, size_t size)
+{
+  (void)p;
+  brk (g_malloc_base + size);
+  return g_malloc_base;
 }
 
 void
@@ -218,6 +209,48 @@ puts (char const* s)
   return 0;
 }
 
+void
+assert_fail (char* s)
+{
+  eputs ("assert fail: ");
+  eputs (s);
+  eputs ("\n");
+  *((int*)0) = 0;
+}
+
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
+
+
+int ungetc_char = -1;
+
+int
+getchar ()
+{
+  char c;
+  int i;
+  if (ungetc_char == -1)
+    {
+      int r = read (g_stdin, &c, 1);
+      if (r < 1) return -1;
+      i = c;
+    }
+  else
+    {
+      i = ungetc_char;
+      ungetc_char = -1;
+    }
+  if (i < 0) i += 256;
+  return i;
+}
+
+int
+ungetc (int c, int fd)
+{
+  assert (ungetc_char == -1);
+  ungetc_char = c;
+  return c;
+}
+
 char itoa_buf[10];
 
 char const*
@@ -248,7 +281,7 @@ itoa (int x)
 }
 
 int
-isdigit (char c)
+isdigit (int c)
 {
   return (c>='0') && (c<='9');
 }

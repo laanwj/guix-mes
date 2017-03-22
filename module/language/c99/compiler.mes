@@ -53,7 +53,15 @@
    #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
    #:cpp-defs '(
                 "__GNUC__=0"
+                "__MESCC__=1"
                 "__NYACC__=1"
+                "STDIN=0"
+                "STDOUT=1"
+                "STDERR=2"
+
+                "INT_MIN=-2147483648"
+                "INT_MAX=2147483647"
+
                 "VERSION=\"0.4\""
                 "PREFIX=\"\""
                 )
