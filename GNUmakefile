@@ -100,7 +100,7 @@ mes-32: mes.c lib.c
 	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
 	mv mes mes-32
 
-module/mes/read-0-32.mo: module/mes/mini-0.mes mes-32
+module/mes/read-0-32.mo: module/mes/read-0.mes mes-32
 	MES_MINI=1 ./mes-32 --dump < $< > $@
 
 module/mes/tiny-0-32.mo: module/mes/tiny-0.mes mes-32

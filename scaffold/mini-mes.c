@@ -37,10 +37,9 @@
 #define NYACC_CDR nyacc_cdr
 #endif
 
-// int ARENA_SIZE = 1200000;
-// char arena[1200000];
-int ARENA_SIZE = 2000000;
-char arena[2000000];
+
+int ARENA_SIZE = 4000000;
+char arena[4000000];
 
 typedef int SCM;
 

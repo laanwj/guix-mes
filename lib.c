@@ -205,13 +205,8 @@ SCM
 load_env (SCM a) ///((internal))
 {
   r0 = a;
-  if (getenv ("MES_MINI"))
-    g_stdin = fopen ("module/mes/mini-0.mes", "r");
-  else
-    {
-      g_stdin = fopen ("module/mes/read-0.mes", "r");
-      g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
-    }
+  g_stdin = fopen ("module/mes/read-0.mes", "r");
+  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
   if (!g_function) r0 = mes_builtins (r0);
   r2 = read_input_file_env (r0);
   g_stdin = stdin;
