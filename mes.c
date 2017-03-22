@@ -1024,63 +1024,91 @@ string_to_cstring (SCM s)
   return buf;
 }
 
+int g_depth;
+
+#define gputs(x) fputs(x, stdout)
+
 SCM
-display_ (SCM x)
+display_helper (SCM x, int cont, char* sep)
 {
+  gputs (sep);
+  if (g_depth == 0) return cell_unspecified;
+  //FIXME:
+  //g_depth--;
+  g_depth = g_depth - 1;
+  
   // eputs ("<display>\n");
   switch (TYPE (x))
     {
     case TCHAR:
       {
-        //fputs ("<char>\n", stdout);
-        fputs ("#\\", stdout);
+        //puts ("<char>\n");
+        gputs ("#\\");
         putchar (VALUE (x));
         break;
       }
     case TFUNCTION:
       {
-        fputs ("#<procedure ", stdout);
-        ///fputs (FUNCTION (x).name ? FUNCTION (x).name : "?", stdout);
+        gputs ("#<procedure ");
+        ///gputs (FUNCTION (x).name ? FUNCTION (x).name : "?");
         char *p = "?";
         if (FUNCTION (x).name != 0)
           p = FUNCTION (x).name;
-        fputs (p, stdout);
-        fputs ("[", stdout);
-        fputs (itoa (CDR (x)), stdout);
-        fputs ("]>", stdout);
+        gputs (p);
+        gputs ("[");
+        gputs (itoa (CDR (x)));
+        gputs (",");
+        gputs (itoa (x));
+        gputs ("]>");
         break;
       }
     case TMACRO:
       {
-        fputs ("#<macro ", 1);
-        display_ (cdr (x));
-        fputs (">", 1);
+        gputs ("#<macro ");
+        display_helper (cdr (x), cont, "");
+        gputs (">");
         break;
       }
     case TNUMBER:
       {
-        //fputs ("<number>\n", stdout);
-        fputs (itoa (VALUE (x)), stdout);
+        //gputs ("<number>\n");
+        gputs (itoa (VALUE (x)));
         break;
       }
     case TPAIR:
       {
-        //fputs ("<pair>\n", stdout);
-        //if (cont != cell_f) fputs ("(", stdout);
-        fputs ("(", stdout);
+        if (!cont) gputs ("(");
         if (x && x != cell_nil) display_ (CAR (x));
-        if (CDR (x) && CDR (x) != cell_nil)
+        if (CDR (x) && TYPE (CDR (x)) == TPAIR)
+          display_helper (CDR (x), 1, " ");
+        else if (CDR (x) && CDR (x) != cell_nil)
           {
             if (TYPE (CDR (x)) != TPAIR)
-              fputs (" . ", stdout);
+              gputs (" . ");
             display_ (CDR (x));
           }
-        //if (cont != cell_f) fputs (")", stdout);
-        fputs (")", stdout);
+        if (!cont) gputs (")");
         break;
       }
     case TSPECIAL:
+#if __NYACC__
+      // FIXME
+      //{}
+      {
+        SCM t = CAR (x);
+        while (t && t != cell_nil)
+          {
+            putchar (VALUE (CAR (t)));
+            t = CDR (t);
+          }
+        break;
+      }
+#endif
     case TSTRING:
+#if __NYACC__
+      // FIXME
+      {}
+#endif
     case TSYMBOL:
       {
         SCM t = CAR (x);
@@ -1093,16 +1121,23 @@ display_ (SCM x)
       }
     default:
       {
-        //fputs ("<default>\n", stdout);
-        fputs ("<", stdout);
-        fputs (itoa (TYPE (x)), stdout);
-        fputs (":", stdout);
-        fputs (itoa (x), stdout);
-        fputs (">", stdout);
+        //gputs ("<default>\n");
+        gputs ("<");
+        gputs (itoa (TYPE (x)));
+        gputs (":");
+        gputs (itoa (x));
+        gputs (">");
         break;
       }
     }
   return 0;
+}
+
+SCM
+display_ (SCM x)
+{
+  g_depth = 5;
+  return display_helper (x, 0, "");
 }
 
 SCM

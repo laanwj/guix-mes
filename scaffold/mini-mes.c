@@ -66,7 +66,6 @@ struct scm {
   SCM cdr;
 };
 
-typedef int (*f_t) (void);
 struct function {
   int (*function) (void);
   int arity;
@@ -1131,9 +1130,17 @@ write_byte (SCM x) ///((arity . n))
   return c;
 }
 
+int g_depth;
+
 SCM
-display_ (SCM x)
+display_helper (SCM x, int cont, char* sep)
 {
+  puts (sep);
+  if (g_depth == 0) return cell_unspecified;
+  //FIXME:
+  //g_depth--;
+  g_depth = g_depth - 1;
+  
   // eputs ("<display>\n");
   switch (TYPE (x))
     {
@@ -1154,13 +1161,15 @@ display_ (SCM x)
         puts (p);
         puts ("[");
         puts (itoa (CDR (x)));
+        puts (",");
+        puts (itoa (x));
         puts ("]>");
         break;
       }
     case TMACRO:
       {
         puts ("#<macro ");
-        display_ (cdr (x));
+        display_helper (cdr (x), cont, "");
         puts (">");
         break;
       }
@@ -1172,24 +1181,32 @@ display_ (SCM x)
       }
     case TPAIR:
       {
-        //puts ("<pair>\n");
-        //if (cont != cell_f) puts "(");
-        puts ("(");
+        if (!cont) puts ("(");
         if (x && x != cell_nil) display_ (CAR (x));
-        if (CDR (x) && CDR (x) != cell_nil)
+        if (CDR (x) && TYPE (CDR (x)) == TPAIR)
+          display_helper (CDR (x), 1, " ");
+        else if (CDR (x) && CDR (x) != cell_nil)
           {
             if (TYPE (CDR (x)) != TPAIR)
               puts (" . ");
             display_ (CDR (x));
           }
-        //if (cont != cell_f) puts (")");
-        puts (")");
+        if (!cont) puts (")");
         break;
       }
     case TSPECIAL:
 #if __NYACC__
       // FIXME
-      {}
+      //{}
+      {
+        SCM t = CAR (x);
+        while (t && t != cell_nil)
+          {
+            putchar (VALUE (CAR (t)));
+            t = CDR (t);
+          }
+        break;
+      }
 #endif
     case TSTRING:
 #if __NYACC__
@@ -1218,6 +1235,13 @@ display_ (SCM x)
       }
     }
   return 0;
+}
+
+SCM
+display_ (SCM x)
+{
+  g_depth = 5;
+  return display_helper (x, 0, "");
 }
 
 
