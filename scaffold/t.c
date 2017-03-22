@@ -228,6 +228,13 @@ make_tmps_test (struct scm* cells)
 int
 struct_test ()
 {
+  g_cells[0].type = TNUMBER;
+  g_cells[1].type = TNUMBER;
+  puts ("t: TYPE (0) != TYPE (1)\n");
+  if (TYPE (0) == TYPE (1)) goto ok;
+  return 1;
+ ok:
+
   g_cells[0].car = 1;
   g_cells[1].car = 2;
 
