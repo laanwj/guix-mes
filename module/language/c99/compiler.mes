@@ -784,6 +784,17 @@ _)))))
                           (list (lambda (f g ta t d)
                                   (i386:accu%base)))))))
 
+        ((mul ,a ,b)
+         (let* ((empty (clone info #:text '()))
+                (accu ((expr->accu empty) a))
+                (base ((expr->base empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text accu)
+                          (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:accu*base)))))))
+
         ;; FIXME: c/p ast->info
         ((eq ,a ,b)
          (let* ((base ((expr->base info) a))
@@ -1058,7 +1069,9 @@ _)))))
                         (jump-text body-length)))))))
   (lambda (o)
     (pmatch o
+      ((le ,a ,b) ((jump i386:Xjump-ncz) o))
       ((lt ,a ,b) ((jump i386:Xjump-nc) o))
+      ((ge ,a ,b) ((jump i386:Xjump-ncz) o))
       ((gt ,a ,b) ((jump i386:Xjump-nc) o))
       ((ne ,a ,b) ((jump i386:Xjump-nz) o))
       ((eq ,a ,b) ((jump i386:Xjump-nz) o))
@@ -1610,6 +1623,21 @@ _)))))
                           (list (lambda (f g ta t d)
                                   (i386:sub-base)))))))
 
+        ((ge ,a ,b)
+         (let* ((base ((expr->base info) a))
+                (empty (clone base #:text '()))
+                (accu ((expr->accu empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:push-base)))
+                          (.text accu)
+                          (list (lambda (f g ta t d)
+                                  (i386:pop-base)))
+                          (list (lambda (f g ta t d)
+                                  (i386:sub-base)))))))
+
         ((gt ,a ,b)
          (let* ((base ((expr->base info) a))
                 (empty (clone base #:text '()))
@@ -1641,6 +1669,19 @@ _)))))
                                   (append 
                                    (i386:sub-base)
                                    (i386:xor-zf))))))))
+
+        ((le ,a ,b)
+         (let* ((base ((expr->base info) a))
+                (empty (clone base #:text '()))
+                (accu ((expr->accu empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:push-base)))
+                          (.text accu)
+                          (list (lambda (f g ta t d)
+                                  (i386:base-sub)))))))
 
         ((lt ,a ,b)
          (let* ((base ((expr->base info) a))
@@ -1752,13 +1793,14 @@ _)))))
 
         ;; int i = -1;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (neg (p-expr (fixed ,value)))))))
-         (if (not (.function info)) decl-barf1)
-         (let* ((locals (add-local locals name type 0))
-                (info (clone info #:locals locals))
-                (value (- (cstring->number value))))
-           (clone info #:text
-                  (append text
-                          ((value->ident info) name value)))))
+         (let ((value (- (cstring->number value))))
+           (if (.function info)
+               (let* ((locals (add-local locals name type 0))
+                      (info (clone info #:locals locals)))
+                 (clone info #:text
+                        (append text
+                                ((value->ident info) name value))))
+               (clone info #:globals (append globals (list (ident->global name type 0 value)))))))
 
         ;; int i = argc;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
@@ -1784,6 +1826,18 @@ _)))))
                                    (i386:global->accu (+ (data-offset (add-s:-prefix string) g) d)))))
                           ((accu->ident info) name)))))
         
+        ;; char *p = 0;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (fixed ,value))))))
+         (if (not (.function info)) decl-barf3)
+         (let* ((value (cstring->number value))
+                (locals (add-local locals name type 1))
+                (info (clone info #:locals locals)))
+           (clone info #:text
+                  (append text
+                          (list (lambda (f g ta t d)
+                                  (i386:value->accu value)))
+                          ((accu->ident info) name)))))
+
         ;; char arena[20000];
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
          (let ((type (ast->type type)))

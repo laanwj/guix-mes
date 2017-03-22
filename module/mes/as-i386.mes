@@ -139,6 +139,9 @@
 (define (i386:accu-base)
   `(#x29 #xd0))                         ; sub    %edx,%eax
 
+(define (i386:accu*base)
+  `(#xf7 #xe2))                         ; mul    %edx
+
 (define (i386:accu/base)
   '(#x86 #xd3                           ; mov    %edx,%ebx
     #x31 #xd2                           ; xor    %edx,%edx
@@ -347,7 +350,7 @@
   (when (or (> n #x80) (< n #x-80))
     (format (current-error-port) "JUMP n=~a\n" n)
     barf)
-  `(#x76 ,(if (>= n 0) n (- n 2))))     ; jna <n>
+  `(#x76 ,(if (>= n 0) n (- n 2))))     ; jbe <n>
 
 (define (i386:jump-ncz n)
   (when (or (> n #x80) (< n #x-80))
@@ -365,17 +368,25 @@
   (or n urg:Xjump-nc)
   `(#x0f #x83 ,@(int->bv32 n)))         ; jnc <n>
 
+(define (i386:Xjump-cz n)
+  (or n urg:Xjump-cz)
+  `(#x0f #x86 ,@(int->bv32 n)))         ; jbe <n>
+
+(define (i386:Xjump-ncz n)
+  (or n urg:Xjump-ncz)
+  `(#x0f #x87 ,@(int->bv32 n)))         ; ja <n>
+
 (define (i386:jump-z n)
   (when (or (> n #x80) (< n #x-80))
     (format (current-error-port) "JUMP-z n=~a\n" n)
     barf)
-  `(#x74 ,(if (>= n 0) n (- n 2)))) ; jz <n>
+  `(#x74 ,(if (>= n 0) n (- n 2))))     ; jz <n>
 
 (define (i386:jump-nz n)
   (when (or (> n #x80) (< n #x-80))
     (format (current-error-port) "JUMP-nz n=~a\n" n)
     barf)
-  `(#x75 ,(if (>= n 0) n (- n 2)))) ; jnz <n>
+  `(#x75 ,(if (>= n 0) n (- n 2))))     ; jnz <n>
 
 (define (i386:test-jump-z n)
   (when (or (> n #x80) (< n #x-80))

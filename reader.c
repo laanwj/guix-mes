@@ -86,25 +86,26 @@ read_env (SCM a)
   return read_word (getchar (), cell_nil, a);
 }
 
-SCM
-lookup_ (SCM s, SCM a)
-{
-  if (isdigit (VALUE (car (s))) || (VALUE (car (s)) == '-' && cdr (s) != cell_nil)) {
-    SCM p = s;
-    int sign = 1;
-    if (VALUE (car (s)) == '-') {
-      sign = -1;
-      p = cdr (s);
-    }
-    int n = 0;
-    while (p != cell_nil && isdigit (VALUE (car (p)))) {
-      n *= 10;
-      n += VALUE (car (p)) - '0';
-      p = cdr (p);
-    }
-    if (p == cell_nil) return MAKE_NUMBER (n * sign);
-  }
+//MINI_MES
+// SCM
+// lookup_ (SCM s, SCM a)
+// {
+//   if (isdigit (VALUE (car (s))) || (VALUE (car (s)) == '-' && cdr (s) != cell_nil)) {
+//     SCM p = s;
+//     int sign = 1;
+//     if (VALUE (car (s)) == '-') {
+//       sign = -1;
+//       p = cdr (s);
+//     }
+//     int n = 0;
+//     while (p != cell_nil && isdigit (VALUE (car (p)))) {
+//       n *= 10;
+//       n += VALUE (car (p)) - '0';
+//       p = cdr (p);
+//     }
+//     if (p == cell_nil) return MAKE_NUMBER (n * sign);
+//   }
 
-  SCM x = lookup_symbol_ (s);
-  return x ? x : make_symbol_ (s);
-}
+//   SCM x = lookup_symbol_ (s);
+//   return x ? x : make_symbol_ (s);
+// }

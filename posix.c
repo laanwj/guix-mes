@@ -53,26 +53,6 @@ char const* string_to_cstring (SCM);
 //   return cell_unspecified;
 // }
 
-int
-getchar ()
-{
-  return getc (g_stdin);
-}
-
-int
-ungetchar (int c)
-{
-  return ungetc (c, g_stdin);
-}
-
-int
-peekchar ()
-{
-  int c = getchar ();
-  ungetchar (c);
-  return c;
-}
-
 SCM
 getenv_ (SCM s) ///((name . "getenv"))
 {
@@ -80,24 +60,45 @@ getenv_ (SCM s) ///((name . "getenv"))
   return p ? MAKE_STRING (cstring_to_list (p)) : cell_f;
 }
 
-SCM
-peek_byte ()
-{
-  return MAKE_NUMBER (peekchar ());
-}
+// MINI_MES
+// int
+// getchar ()
+// {
+//   return getc (g_stdin);
+// }
 
-SCM
-read_byte ()
-{
-  return MAKE_NUMBER (getchar ());
-}
+// int
+// ungetchar (int c)
+// {
+//   return ungetc (c, g_stdin);
+// }
 
-SCM
-unread_byte (SCM i)
-{
-  ungetchar (VALUE (i));
-  return i;
-}
+// int
+// peekchar ()
+// {
+//   int c = getchar ();
+//   ungetchar (c);
+//   return c;
+// }
+
+// SCM
+// peek_byte ()
+// {
+//   return MAKE_NUMBER (peekchar ());
+// }
+
+// SCM
+// read_byte ()
+// {
+//   return MAKE_NUMBER (getchar ());
+// }
+
+// SCM
+// unread_byte (SCM i)
+// {
+//   ungetchar (VALUE (i));
+//   return i;
+// }
 
 SCM
 force_output (SCM p) ///((arity . n))

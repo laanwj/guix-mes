@@ -18,33 +18,34 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SCM
-greater_p (SCM x) ///((name . ">") (arity . n))
-{
-  int n = INT_MAX;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      if (VALUE (car (x)) >= n) return cell_f;
-      n = VALUE (car (x));
-      x = cdr (x);
-    }
-  return cell_t;
-}
+//MINI_MES
+// SCM
+// greater_p (SCM x) ///((name . ">") (arity . n))
+// {
+//   int n = INT_MAX;
+//   while (x != cell_nil)
+//     {
+//       assert (TYPE (car (x)) == TNUMBER);
+//       if (VALUE (car (x)) >= n) return cell_f;
+//       n = VALUE (car (x));
+//       x = cdr (x);
+//     }
+//   return cell_t;
+// }
 
-SCM
-less_p (SCM x) ///((name . "<") (arity . n))
-{
-  int n = INT_MIN;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      if (VALUE (car (x)) <= n) return cell_f;
-      n = VALUE (car (x));
-      x = cdr (x);
-    }
-  return cell_t;
-}
+// SCM
+// less_p (SCM x) ///((name . "<") (arity . n))
+// {
+//   int n = INT_MIN;
+//   while (x != cell_nil)
+//     {
+//       assert (TYPE (car (x)) == TNUMBER);
+//       if (VALUE (car (x)) <= n) return cell_f;
+//       n = VALUE (car (x));
+//       x = cdr (x);
+//     }
+//   return cell_t;
+// }
 
 SCM
 is_p (SCM x) ///((name . "=") (arity . n))

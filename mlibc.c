@@ -40,6 +40,17 @@ exit (int code)
   exit (0);
 }
 
+void
+assert_fail (char* s)
+{
+  eputs ("assert fail: ");
+  eputs (s);
+  eputs ("\n");
+  *((int*)0) = 0;
+}
+
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
+
 char const*
 getenv (char const* p)
 {
@@ -86,15 +97,34 @@ open (char const *s, int mode)
 int puts (char const*);
 char const* itoa (int);
 
+int ungetc_char = -1;
+
 int
 getchar ()
 {
   char c;
-  int r = read (g_stdin, &c, 1);
-  if (r < 1) return -1;
-  int i = c;
+  int i;
+  if (ungetc_char == -1)
+    {
+      int r = read (g_stdin, &c, 1);
+      if (r < 1) return -1;
+      i = c;
+    }
+  else
+    {
+      i = ungetc_char;
+      ungetc_char = -1;
+    }
   if (i < 0) i += 256;
   return i;
+}
+
+int
+ungetc (int c, int fd)
+{
+  assert (ungetc_char == -1);
+  ungetc_char = c;
+  return c;
 }
 
 void
@@ -217,14 +247,9 @@ itoa (int x)
   return p+1;
 }
 
-void
-assert_fail (char* s)
+int
+isdigit (char c)
 {
-  eputs ("assert fail: ");
-  eputs (s);
-  eputs ("\n");
-  *((int*)0) = 0;
+  return (c>='0') && (c<='9');
 }
-
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 #endif

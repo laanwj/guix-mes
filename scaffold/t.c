@@ -382,6 +382,12 @@ test (char *p)
   puts ("t: if (one < 0)\n");
   if (one < 0) return 1;
 
+  puts ("t: if (one <= 0)\n");
+  if (one <= 0) return 1;
+
+  puts ("t: if (one >= 2)\n");
+  if (one >= 2) return 1;
+
   puts ("t: if (strlen (\"\"))\n");
   if (strlen ("")) return 1;
 
@@ -554,10 +560,29 @@ test (char *p)
  ok2:
 
   puts ("t: if (one < 2)\n");
-  //if (one < 2) goto ok3;
-  if (one < 0x44) goto ok3;
+  if (one < 2) goto ok3;
   return 1;
  ok3:
+
+  puts ("t: if (one >= 0)\n");
+  if (one >= 0) goto ok30;
+  return 1;
+ ok30:
+
+  puts ("t: if (one >= 1)\n");
+  if (one >= 0) goto ok31;
+  return 1;
+ ok31:
+
+  puts ("t: if (one <= 2)\n");
+  if (one <= 2) goto ok32;
+  return 1;
+ ok32:
+
+  puts ("t: if (one <= 1)\n");
+  if (one <= 1) goto ok33;
+  return 1;
+ ok33:
 
   puts ("t: if (strlen (\".\"))\n");
   if (strlen (".")) goto ok4;

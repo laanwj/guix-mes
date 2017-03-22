@@ -25,24 +25,19 @@ xassq (SCM x, SCM a) ///for speed in core only
   return a != cell_nil ? CAR (a) : cell_f;
 }
 
-SCM
-length (SCM x)
-{
-  int n = 0;
-  while (x != cell_nil)
-    {
-      n++;
-      if (TYPE (x) != TPAIR) return MAKE_NUMBER (-1);
-      x = cdr (x);
-    }
-  return MAKE_NUMBER (n);
-}
-
-SCM
-list (SCM x) ///((arity . n))
-{
-  return x;
-}
+//MINI_MES
+// SCM
+// length (SCM x)
+// {
+//   int n = 0;
+//   while (x != cell_nil)
+//     {
+//       n++;
+//       if (TYPE (x) != TPAIR) return MAKE_NUMBER (-1);
+//       x = cdr (x);
+//     }
+//   return MAKE_NUMBER (n);
+// }
 
 SCM
 exit_ (SCM x) ///((name . "exit"))
@@ -75,24 +70,24 @@ append (SCM x) ///((arity . n))
 //   return buf;
 // }
 
-SCM
-error (SCM key, SCM x)
-{
-  SCM throw;
-  if ((throw = assq_ref_env (cell_symbol_throw, r0)) != cell_undefined)
-    return apply (throw, cons (key, cons (x, cell_nil)), r0);
-  assert (!"error");
-}
+// SCM
+// error (SCM key, SCM x)
+// {
+//   SCM throw;
+//   if ((throw = assq_ref_env (cell_symbol_throw, r0)) != cell_undefined)
+//     return apply (throw, cons (key, cons (x, cell_nil)), r0);
+//   assert (!"error");
+// }
 
 SCM
-assert_defined (SCM x, SCM e)
+assert_defined (SCM x, SCM e) ///(internal)
 {
   if (e == cell_undefined) return error (cell_symbol_unbound_variable, x);
   return e;
 }
 
 SCM
-check_formals (SCM f, SCM formals, SCM args)
+check_formals (SCM f, SCM formals, SCM args) ///((internal))
 {
   int flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : VALUE (length (formals));
   int alen = VALUE (length (args));
@@ -154,7 +149,7 @@ itoa (int x)
   return p+1;
 }
 
-FILE *g_stdin;
+//FILE *g_stdin;
 int
 dump ()
 {

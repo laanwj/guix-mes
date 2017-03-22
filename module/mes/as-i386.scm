@@ -43,6 +43,7 @@
             i386:accu+value
             i386:accu/base
             i386:accu%base
+            i386:accu*base
             i386:accu-base
             i386:accu-shl
             i386:base-sub
@@ -121,7 +122,9 @@
             i386:Xjump
             i386:Xjump
             i386:Xjump-c
+            i386:Xjump-cz
             i386:Xjump-nc
+            i386:Xjump-ncz
             i386:Xjump-nz
             i386:Xjump-z
 
