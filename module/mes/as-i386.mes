@@ -72,10 +72,10 @@
   '(#x50))                              ; push %eax
 
 (define (i386:pop-base)
-  '(#x5a))                              ; pop %eax
+  '(#x5a))                              ; pop %edx
 
 (define (i386:push-base)
-  '(#x52))                              ; push %eax
+  '(#x52))                              ; push %edx
 
 (define (i386:ret)
   '(#xc9                                ; leave

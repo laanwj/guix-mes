@@ -323,13 +323,25 @@ struct_test ()
   functiony = g_functions[g_cells[fn].cdr].function;
   if ((functiony) (1) != 0) return 16;
 
-  puts ("t: g_functions[<bar>].arity;");
+  puts ("t: g_functions[<bar>].arity\n");
   if (g_functions[fn].arity != 1) return 18;
 
+  // fake name
+  scm_fun.car = 33;
   scm_fun.cdr = g_function;
-  g_functions[g_function++] = g_fun;
+  //g_functions[g_function++] = g_fun;
+  g_functions[g_function] = g_fun;
   cell_fun = g_free++;
   g_cells[cell_fun] = scm_fun;
+
+  puts ("t: TYPE (cell_fun)\n");
+  if (TYPE (cell_fun) != TFUNCTION) return 1;
+
+  puts ("t: CAR (cell_fun)\n");
+  if (CAR (cell_fun) != 33) return 1;
+
+  puts ("t: CDR (cell_fun)\n");
+  if (CDR (cell_fun) != g_function) return 1;
 
   return make_tmps_test  (g_cells);
 }
