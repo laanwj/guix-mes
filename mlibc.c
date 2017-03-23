@@ -222,6 +222,7 @@ assert_fail (char* s)
 
 
 int ungetc_char = -1;
+char ungetc_buf[2];
 
 int
 getchar ()
@@ -235,10 +236,8 @@ getchar ()
       i = c;
     }
   else
-    {
-      i = ungetc_char;
-      ungetc_char = -1;
-    }
+    i = ungetc_buf[ungetc_char--];
+
   if (i < 0) i += 256;
   return i;
 }
@@ -246,8 +245,8 @@ getchar ()
 int
 ungetc (int c, int fd)
 {
-  assert (ungetc_char == -1);
-  ungetc_char = c;
+  assert (ungetc_char < 2);
+  ungetc_buf[++ungetc_char] = c;
   return c;
 }
 

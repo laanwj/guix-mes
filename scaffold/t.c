@@ -147,10 +147,9 @@ get ()
 int
 read_test ()
 {
-  puts ("read test\n");
   char *p = (char*)g_chars;
   int i = 0;
-  puts ("t: read 0123456789\n");
+  puts ("t: read 0123456789\nt: ");
   int c = get ();
   while (i < 10) {
     *p++ = c;
@@ -160,6 +159,18 @@ read_test ()
   }
   puts ("\n");
   if (strcmp (g_chars, "0123456789")) return 1;
+
+  puts ("t: ungetc ('A') == getchar ()\n");
+  ungetc ('A', STDIN);
+  if (getchar () != 'A') return 1;
+  ungetc (0, STDIN);
+  //ungetc ('\1', STDIN);
+  ungetc (1, STDIN);
+  puts ("t: ungetc ();ungetc ();getchar ();getchar ()\n");
+  if (getchar () != 1) return 1;
+  //if (getchar () != '\0') return 1;
+  if (getchar () != 0) return 1;
+
   return 0;
 }
 

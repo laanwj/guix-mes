@@ -56,9 +56,6 @@ strlen (char const* s)
 (define getchar
   (let* ((ast (with-input-from-string
                   "
-int g_stdin;
-int ungetc_char = -1;
-
 #if 0
 int
 getchar ()
@@ -71,6 +68,9 @@ getchar ()
 }
 #endif
 
+int g_stdin = 0;
+int ungetc_char = -1;
+char ungetc_buf[2];
 int
 getchar ()
 {
@@ -84,8 +84,11 @@ getchar ()
     }
   else
     {
-      i = ungetc_char;
-      ungetc_char = -1;
+     //FIXME
+     //i = ungetc_buf[ungetc_char--];
+     i = ungetc_buf[ungetc_char];
+     //ungetc_char--;
+     ungetc_char = ungetc_char - 1;
     }
   if (i < 0) i += 256;
   return i;
@@ -121,8 +124,13 @@ assert_fail (char* s)
 int
 ungetc (int c, int fd)
 {
-  assert (ungetc_char == -1);
-  ungetc_char = c;
+  //FIXME
+  //assert (ungetc_char < 2);
+  assert (ungetc_char == -1 || ungetc_char < 2);
+  //FIXME
+  //ungetc_buf[++ungetc_char] = c;
+  ungetc_char++;
+  ungetc_buf[ungetc_char] = c;
   return c;
 }
 "

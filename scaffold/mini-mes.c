@@ -26,6 +26,8 @@
 #if __MESCC__
 //void *g_malloc_base = 0;
 char *g_malloc_base = 0;
+// int ungetc_char = -1;
+// char ungetc_buf[2];
 #endif
 
 #define MES_MINI 1
