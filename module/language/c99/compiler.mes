@@ -310,10 +310,10 @@
                                               (append
                                                (i386:base->accu)
                                                (if (< size 4) '()
-                                                   (begin
+                                                   (append  ;; FIXME
                                                      (i386:accu+accu)
-                                                     (if (= size 12) (i386:accu+base) '())
-_)))))
+                                                     (if (= size 12) (i386:accu+base)
+                                                         '()))))))
                                       ((ident->base info) array)
                                       (list (lambda (f g ta t d)
                                               (if (eq? size 1)
@@ -577,10 +577,10 @@ _)))))
                                               (append
                                                (i386:base->accu)
                                                (if (< size 4) '()
-                                                   (begin
+                                                   (append  ;; FIXME
                                                      (i386:accu+accu)
-                                                     (if (= size 12) (i386:accu+base) '())
-_)))))
+                                                     (if (= size 12) (i386:accu+base)
+                                                         '()))))))
                                       ((ident->base info) array)
                                       (list (lambda (f g ta t d)
                                               (if (eq? size 1)
@@ -1763,7 +1763,7 @@ _)))))
                                   (append
                                    (i386:base->accu)
                                    (if (< size 4) '()
-                                       (begin
+                                       (append
                                          (i386:accu+accu)
                                          (if (= size 12) (i386:accu+base) '())
                                          (i386:accu-shl 2))))))
@@ -1829,7 +1829,9 @@ _)))))
         ;; char *p = "t.c";
         ;;(decl (decl-spec-list (type-spec (fixed-type "char"))) (init-declr-list (init-declr (ptr-declr (pointer) (ident "p")) (initzer (p-expr (string "t.c\n"))))))
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (string ,string))))))
-         (if (not (.function info)) decl-barf3)
+         (when (not (.function info))
+             (stderr "o=~s\n" o)
+             decl-barf3)
          (let* ((locals (add-local locals name type 1))
                 (globals (append globals (list (string->global string))))
                 (info (clone info #:locals locals #:globals globals)))
@@ -1842,15 +1844,16 @@ _)))))
         
         ;; char *p = 0;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (fixed ,value))))))
-         (if (not (.function info)) decl-barf3)
-         (let* ((value (cstring->number value))
-                (locals (add-local locals name type 1))
-                (info (clone info #:locals locals)))
-           (clone info #:text
-                  (append text
-                          (list (lambda (f g ta t d)
-                                  (i386:value->accu value)))
-                          ((accu->ident info) name)))))
+         (let ((value (cstring->number value)))
+           (if (.function info)
+               (let* ((locals (add-local locals name type 1))
+                      (info (clone info #:locals locals)))
+                 (clone info #:text
+                        (append text
+                                (list (lambda (f g ta t d)
+                                        (i386:value->accu value)))
+                                ((accu->ident info) name))))
+               (clone info #:globals (append globals (list (ident->global name type 0 value)))))))
 
         ;; char arena[20000];
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
@@ -2103,10 +2106,7 @@ _)))))
                 (empty (clone info #:text '()))
                 (base ((expr->base empty) b))
                 (type (ident->type info array))
-                (fields (or (type->description info type) '()))  ;; FIXME: struct!
                 (size (type->size info type))
-                (count (length fields))
-                (field-size 4) ;; FIXME:4, not fixed
                 (ptr (ident->pointer info array)))
            (clone info #:text
                   (append text
@@ -2117,12 +2117,14 @@ _)))))
                                  (append
                                   (i386:value->base index)
                                   (i386:base->accu)
-                                  (if (> count 1) (i386:accu+accu) '())
-                                  (if (= count 3) (i386:accu+base) '())
-                                  (i386:accu-shl 2))))
+                                  (if (eq? size 1) '()
+                                      (append
+                                        (if (> size 4) (i386:accu+accu) '())
+                                        (if (> size 8) (i386:accu+base) '())
+                                        (i386:accu-shl 2))))))
                          ((ident->base info) array)
-                          (list (lambda (f g tav t d)
-                                  (i386:accu+base)))
+                         (list (lambda (f g ta t d)
+                                 (i386:accu+base)))
                          (list (lambda (f g ta t d)
                                  (i386:pop-base)))
                          (if (eq? size 1) (list (lambda (f g ta t d)
@@ -2154,10 +2156,7 @@ _)))))
          (let* ((empty (clone info #:text '()))
                 (base ((expr->base empty) b))
                 (type (ident->type info array))
-                (fields (or (type->description info type) '()))  ;; FIXME: struct!
                 (size (type->size info type))
-                (count (length fields))
-                (field-size 4) ;; FIXME:4, not fixed
                 (ptr (ident->pointer info array)))
            (clone info #:text
                   (append text
@@ -2168,9 +2167,11 @@ _)))))
                           (list (lambda (f g ta t d)
                                   (append
                                    (i386:base->accu)
-                                   (if (> count 1) (i386:accu+accu) '())
-                                   (if (= count 3) (i386:accu+base) '())
-                                   (i386:accu-shl 2))))
+                                   (if (eq? size 1) '()
+                                       (append
+                                         (if (> size 4) (i386:accu+accu) '())
+                                         (if (> size 8) (i386:accu+base) '())
+                                         (i386:accu-shl 2))))))
                           ((ident->base info) array)
                           (list (lambda (f g ta t d)
                                   (i386:accu+base)))
@@ -2204,10 +2205,7 @@ _)))))
          (let* ((empty (clone info #:text '()))
                 (base ((expr->base empty) b))
                 (type (ident->type info array))
-                (fields (or (type->description info type) '()))  ;; FIXME: struct!
                 (size (type->size info type))
-                (count (length fields))
-                (field-size 4) ;; FIXME:4, not fixed
                 (ptr (ident->pointer info array)))
            (clone info #:text
                   (append text
@@ -2218,9 +2216,11 @@ _)))))
                           (list (lambda (f g ta t d)
                                   (append
                                    (i386:base->accu)
-                                   (if (> count 1) (i386:accu+accu) '())
-                                   (if (= count 3) (i386:accu+base) '())
-                                   (i386:accu-shl 2))))
+                                   (if (eq? size 1) '()
+                                       (append
+                                         (if (> size 4) (i386:accu+accu) '())
+                                         (if (> size 8) (i386:accu+base) '())
+                                         (i386:accu-shl 2))))))
                           ((ident->base info) array)
                           (list (lambda (f g ta t d)
                                   (i386:accu+base)))
