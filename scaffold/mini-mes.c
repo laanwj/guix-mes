@@ -1488,9 +1488,7 @@ logior (SCM x) ///((arity . n))
 #if __GNUC__
       n |= VALUE (car (x));
 #else
-      puts ("FIXME: logior\n");
-      //FIXME
-      //n = n | VALUE (car (x));
+      n = n | VALUE (car (x));
 #endif
       x = cdr (x);
     }

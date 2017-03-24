@@ -131,6 +131,9 @@
     #x89 #xd1                           ; mov    %edx,%ecx
     #xd3 #xe0))                         ; shl    %cl,%eax
 
+(define (i386:accu-or-base)
+  '(#x09 #xd0))                         ; or    %edx,%eax
+
 (define (i386:accu+accu)
   '(#x01 #xc0))                         ; add    %eax,%eax
 

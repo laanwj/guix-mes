@@ -219,6 +219,9 @@ math_test ()
   puts ("t: 3 << 4\n");
   if (3 << 4 != 48) return 3 << 4;
 
+  puts ("t: 1 | 4\n");
+  if ((1 | 4) != 5) return 1 | 4;
+
   return read_test ();
 }
 
