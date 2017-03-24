@@ -212,6 +212,13 @@ math_test ()
   puts ("t: 3*4=");
   i = 3 * 4;
   if (i!=12) return 1;
+
+  puts ("t: 1 << 3\n");
+  if (1 << 3 != 8) return 1 << 3;
+
+  puts ("t: 3 << 4\n");
+  if (3 << 4 != 48) return 3 << 4;
+
   return read_test ();
 }
 

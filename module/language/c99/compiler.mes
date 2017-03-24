@@ -761,15 +761,27 @@
                           (list (lambda (f g ta t d)
                                   (i386:accu-base)))))))        
 
-        ((lshift ,a (p-expr (fixed ,value)))
+        ((bitwise-or ,a ,b)
          (let* ((empty (clone info #:text '()))
                 (accu ((expr->accu empty) a))
-                (value (cstring->number value)))
+                (base ((expr->base empty) b)))
            (clone info #:text
                   (append text
                           (.text accu)
+                          (.text base)
                           (list (lambda (f g ta t d)
-                                  (i386:accu-shl value)))))))
+                                  (i386:accu-or-base)))))))
+
+        ((lshift ,a ,b)
+         (let* ((empty (clone info #:text '()))
+                (accu ((expr->accu empty) a))
+                (base ((expr->base empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text accu)
+                          (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:accu<<base)))))))
 
         ((div ,a ,b)
          (let* ((empty (clone info #:text '()))

@@ -46,6 +46,7 @@
             i386:accu*base
             i386:accu-base
             i386:accu-shl
+            i386:accu<<base
             i386:base-sub
             i386:base->accu
             i386:base->accu-address

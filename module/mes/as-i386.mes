@@ -126,6 +126,11 @@
   (or n accu:shl n)
   `(#xc1 #xe0 ,n))                      ; shl    $0x8,%eax
 
+(define (i386:accu<<base)
+  '(#x31 #xc9                           ; xor    %ecx,%ecx
+    #x89 #xd1                           ; mov    %edx,%ecx
+    #xd3 #xe0))                         ; shl    %cl,%eax
+
 (define (i386:accu+accu)
   '(#x01 #xc0))                         ; add    %eax,%eax
 
