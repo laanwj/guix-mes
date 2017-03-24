@@ -120,13 +120,19 @@
 
             ;; long jump
             i386:Xjump
-            i386:Xjump
-            i386:Xjump-c
-            i386:Xjump-cz
+            ;;i386:Xjump-c
+            ;;i386:Xjump-cz
             i386:Xjump-nc
             i386:Xjump-ncz
+
             i386:Xjump-nz
             i386:Xjump-z
+
+            i386:Xjump-g
+            i386:Xjump-ge
+
+            ;; i386:Xjump-l
+            ;; i386:Xjump-le
 
             i386:XXjump
 

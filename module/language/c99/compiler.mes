@@ -1079,10 +1079,17 @@
                         (jump-text body-length)))))))
   (lambda (o)
     (pmatch o
-      ((le ,a ,b) ((jump i386:Xjump-ncz) o))
-      ((lt ,a ,b) ((jump i386:Xjump-nc) o))
-      ((ge ,a ,b) ((jump i386:Xjump-ncz) o))
-      ((gt ,a ,b) ((jump i386:Xjump-nc) o))
+      ;; unsigned
+      ;; ((le ,a ,b) ((jump i386:Xjump-ncz) o)) ; ja
+      ;; ((lt ,a ,b) ((jump i386:Xjump-nc) o))  ; jae
+      ;; ((ge ,a ,b) ((jump i386:Xjump-ncz) o))
+      ;; ((gt ,a ,b) ((jump i386:Xjump-nc) o))
+
+      ((le ,a ,b) ((jump i386:Xjump-g) o))
+      ((lt ,a ,b) ((jump i386:Xjump-ge) o))
+      ((ge ,a ,b) ((jump i386:Xjump-g) o))
+      ((gt ,a ,b) ((jump i386:Xjump-ge) o))
+
       ((ne ,a ,b) ((jump i386:Xjump-nz) o))
       ((eq ,a ,b) ((jump i386:Xjump-nz) o))
       ((not _) ((jump i386:Xjump-z) o))

@@ -122,9 +122,8 @@ exit $?
 (pass-if-equal "iota 0"
     '() (iota 0))
 
-(if %mesc (display "***FIXME: MESCC skip iota -1")
-    (pass-if-equal "iota -1"
-                   '() (iota -1)))
+(pass-if-equal "iota -1"
+               '() (iota -1))
 
 (pass-if "reverse" (sequal? (reverse '(1 2 3)) '(3 2 1)))
 

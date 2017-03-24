@@ -342,10 +342,6 @@
     barf)
   `(#x72 ,(if (>= n 0) n (- n 2))))     ; jc <n>
 
-(define (i386:Xjump-c n)
-  (or n urg:Xjump-c)
-  `(#x0f #x82 ,@(int->bv32 n)))     ; jc <n>
-
 (define (i386:jump-cz n)
   (when (or (> n #x80) (< n #x-80))
     (format (current-error-port) "JUMP n=~a\n" n)
@@ -364,17 +360,45 @@
     barf)
   `(#x73 ,(if (>= n 0) n (- n 2))))     ; jnc <n>
 
+;; unsigned
 (define (i386:Xjump-nc n)
   (or n urg:Xjump-nc)
   `(#x0f #x83 ,@(int->bv32 n)))         ; jnc <n>
 
-(define (i386:Xjump-cz n)
-  (or n urg:Xjump-cz)
-  `(#x0f #x86 ,@(int->bv32 n)))         ; jbe <n>
-
+;; unsigned
 (define (i386:Xjump-ncz n)
   (or n urg:Xjump-ncz)
   `(#x0f #x87 ,@(int->bv32 n)))         ; ja <n>
+
+;; unsigned
+;; (define (i386:Xjump-c n)
+;;   (or n urg:Xjump-c)
+;;   `(#x0f #x82 ,@(int->bv32 n)))     ; jc <n>
+
+;; unsigned
+;; (define (i386:Xjump-cz n)
+;;   (or n urg:Xjump-cz)
+;;   `(#x0f #x86 ,@(int->bv32 n)))         ; jbe <n>
+
+;; signed
+(define (i386:Xjump-g n)
+  (or n urg:Xjump-g)
+  `(#x0f #x8f ,@(int->bv32 n)))         ; jg/jnle <n>
+
+;; signed
+(define (i386:Xjump-ge n)
+  (or n urg:Xjump-ge)
+  `(#x0f #x8d ,@(int->bv32 n)))         ; jge/jnl <n>
+
+;; ;; signed
+;; (define (i386:Xjump-l n)
+;;   (or n urg:Xjump-l)
+;;   `(#x0f #x8c ,@(int->bv32 n)))         ; jl/jnge <n>
+
+;; ;; signed
+;; (define (i386:Xjump-le n)
+;;   (or n urg:Xjump-le)
+;;   `(#x0f #x8e ,@(int->bv32 n)))         ; jle/jgn <n>
 
 (define (i386:jump-z n)
   (when (or (> n #x80) (< n #x-80))

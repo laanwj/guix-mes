@@ -1368,11 +1368,6 @@ less_p (SCM x) ///((name . "<") (arity . n))
   while (x != cell_nil)
     {
       assert (TYPE (car (x)) == TNUMBER);
-#if __MESC__
-      //FIXME __GNUC__
-      if (n == INT_MIN);
-      else
-#endif
       if (VALUE (car (x)) <= n) return cell_f;
       n = VALUE (car (x));
       x = cdr (x);

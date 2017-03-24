@@ -177,6 +177,30 @@ read_test ()
 int
 math_test ()
 {
+  puts ("t: 0 < 0\n");
+  if (0 < 0) return 1;
+
+  puts ("t: 2 < 1\n");
+  if (2 < 1) return 1;
+
+  puts ("t: -1 < -2\n");
+  if (-1 < -2) return 1;
+
+  puts ("t: 0 < -1\n");
+  if (0 < -1) return 1;
+
+  puts ("t: 0 > 0\n");
+  if (0 > 0) return 1;
+
+  puts ("t: 1 > 2\n");
+  if (1 > 2) return 1;
+
+  puts ("t: -2 > -1\n");
+  if (-2 > -1) return 1;
+
+  puts ("t: -1 > 0\n");
+  if (-1 > 0) return 1;
+
   int i;
   puts ("t: 4/2=");
   i = 4 / 2;
