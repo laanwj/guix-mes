@@ -163,12 +163,14 @@ int g_function = 0;
 #include "mini-mes.h"
 // #include "posix.h"
 // #include "reader.h"
+#include "vector.h"
 
 
 #define TYPE(x) (g_cells[x].type)
 
 #define CAR(x) g_cells[x].car
 #define LENGTH(x) g_cells[x].car
+#define REF(x) g_cells[x].car
 #define STRING(x) g_cells[x].car
 
 #define CDR(x) g_cells[x].cdr
@@ -183,6 +185,7 @@ int g_function = 0;
 #define MAKE_CHAR(n) make_cell_ (tmp_num_ (TCHAR), 0, tmp_num2_ (n))
 #define MAKE_CONTINUATION(n) make_cell_ (tmp_num_ (TCONTINUATION), n, g_stack)
 #define MAKE_NUMBER(n) make_cell_ (tmp_num_ (TNUMBER), 0, tmp_num2_ (n))
+#define MAKE_REF(n) make_cell_ (tmp_num_ (TREF), n, 0)
 
 #define CAAR(x) CAR (CAR (x))
 #define CADR(x) CAR (CDR (x))
@@ -1525,12 +1528,14 @@ mes_builtins (SCM a) ///((internal))
 // #include "math.i"
 // #include "posix.i"
 // #include "reader.i"
+#include "vector.i"
 
 // #include "lib.environment.i"
 // #include "math.environment.i"
   #include "mini-mes.environment.i"
 // #include "posix.environment.i"
 // #include "reader.environment.i"
+#include "vector.environment.i"
 
   return a;
 }
@@ -1595,6 +1600,13 @@ bload_env (SCM a) ///((internal))
     }
   return r2;
 }
+
+// #include "math.c"
+// #include "posix.c"
+// #include "lib.c"
+// #include "reader.c"
+#include "vector.c"
+// #include "gc.c"
 
 int
 main (int argc, char *argv[])
