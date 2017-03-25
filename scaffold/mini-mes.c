@@ -223,9 +223,7 @@ SCM
 make_cell_ (SCM type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
-#if __GNUC__
   assert (TYPE (type) == TNUMBER);
-#endif
   TYPE (x) = VALUE (type);
   if (VALUE (type) == TCHAR || VALUE (type) == TNUMBER) {
     if (car) CAR (x) = CAR (car);
@@ -271,10 +269,8 @@ SCM
 list_of_char_equal_p (SCM a, SCM b) ///((internal))
 {
   while (a != cell_nil && b != cell_nil && VALUE (car (a)) == VALUE (car (b))) {
-#if __GNUC__
     assert (TYPE (car (a)) == TCHAR);
     assert (TYPE (car (b)) == TCHAR);
-#endif
     a = cdr (a);
     b = cdr (b);
   }
@@ -512,9 +508,7 @@ SCM
 append2 (SCM x, SCM y)
 {
   if (x == cell_nil) return y;
-#if __GNUC__
   assert (TYPE (x) == TPAIR);
-#endif
   return cons (car (x), append2 (cdr (x), y));
 }
 
@@ -573,9 +567,7 @@ assq_ref_env (SCM x, SCM a)
 SCM
 set_car_x (SCM x, SCM e)
 {
-#if __GNUC__
   assert (TYPE (x) == TPAIR);
-#endif
   CAR (x) = e;
   return cell_unspecified;
 }

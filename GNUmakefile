@@ -129,6 +129,7 @@ mescc-check: t-check
 	build-aux/mes-snarf.scm $<
 
 mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
+mini-mes: vector.c
 mini-mes: mlibc.c mstart.c
 mini-mes: GNUmakefile
 mini-mes: module/mes/read-0-32.mo
@@ -140,6 +141,7 @@ mini-mes: scaffold/mini-mes.c
 	chmod +x $@
 
 guile-mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
+guile-mini-mes: vector.c
 guile-mini-mes: module/mes/read-0-32.mo
 guile-mini-mes: scaffold/mini-mes.c
 	guile/mescc.scm $< > $@ || rm -f $@
