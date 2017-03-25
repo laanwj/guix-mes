@@ -860,7 +860,7 @@
                                     (list (lambda (f g ta t d)
                                             (i386:value->accu 0)))
                                     (list (lambda (f g ta t d)
-                                            (i386:base-sub))))))
+                                            (i386:sub-base))))))
 
         ;;((cast (type-name (decl-spec-list (type-spec (typename "SCM"))) (abs-declr (declr-fctn (declr-scope (abs-declr (pointer))) (param-list (param-decl (decl-spec-list (type-spec (typename "SCM")))))))) (d-sel (ident "function") (array-ref (d-sel (ident "cdr") (array-ref (p-expr (ident "fn")) (p-expr (ident "g_cells")))) (p-expr (ident "functions"))))))
         ((cast ,cast ,o)

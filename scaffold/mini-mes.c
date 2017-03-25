@@ -1275,14 +1275,7 @@ ash (SCM n, SCM count)
   assert (TYPE (count) == TNUMBER);
   int cn = VALUE (n);
   int ccount = VALUE (count);
-#if __GNUC__
   return MAKE_NUMBER ((ccount < 0) ? cn >> -ccount : cn << ccount);
-#else
-  int x;
-  if (ccount < 0) x = cn >> INT_MIN - ccount;
-  else x = cn << ccount;
-  return MAKE_NUMBER (x);
-#endif
 }
 
 // Lib [rest of]

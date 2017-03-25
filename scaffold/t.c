@@ -230,10 +230,10 @@ math_test ()
 
   i = -3;
   puts ("t: -i\n");
-  if (-i != 3) return -i;
+  if (-i != 3) return 1;
 
   puts ("t: -1 + 2\n");
-  if (-1 + 2 != 1) return -1 + 2;
+  if (-1 + 2 != 1) return 1;
 
   return read_test ();
 }
