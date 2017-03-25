@@ -219,8 +219,21 @@ math_test ()
   puts ("t: 3 << 4\n");
   if (3 << 4 != 48) return 3 << 4;
 
+  puts ("t: 48 >> 3\n");
+  if (48 >> 4 != 3) return 48 >> 4;
+
+  puts ("t: 10 >> 1\n");
+  if (10 >> 1 != 5) return 10 >> 1;
+
   puts ("t: 1 | 4\n");
   if ((1 | 4) != 5) return 1 | 4;
+
+  i = -3;
+  puts ("t: -i\n");
+  if (-i != 3) return -i;
+
+  puts ("t: -1 + 2\n");
+  if (-1 + 2 != 1) return -1 + 2;
 
   return read_test ();
 }
@@ -565,6 +578,9 @@ test (char *p)
 
   puts ("t: 1 << 3\n");
   if (1 << 3 != 8) return 1;
+
+  puts ("t: 8 >> 3\n");
+  if (8 >> 3 != 1) return 1;
 
   puts ("t: 8 / 4\n");
   if (8 / 4 != 2) return 1;

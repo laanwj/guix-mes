@@ -783,6 +783,17 @@
                           (list (lambda (f g ta t d)
                                   (i386:accu<<base)))))))
 
+        ((rshift ,a ,b)
+         (let* ((empty (clone info #:text '()))
+                (accu ((expr->accu empty) a))
+                (base ((expr->base empty) b)))
+           (clone info #:text
+                  (append text
+                          (.text accu)
+                          (.text base)
+                          (list (lambda (f g ta t d)
+                                  (i386:accu>>base)))))))
+
         ((div ,a ,b)
          (let* ((empty (clone info #:text '()))
                 (accu ((expr->accu empty) a))
@@ -1729,6 +1740,10 @@
                                   (i386:pop-base)))
                           (list (lambda (f g ta t d)
                                   (i386:base-sub)))))))
+
+        ;; HMM
+        ((lshift . _) ((expr->accu info) o))
+        ((rshift . _) ((expr->accu info) o))
 
         ;; TODO: byte dinges
         ((Xsub ,a ,b)
