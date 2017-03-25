@@ -60,14 +60,14 @@
 
   (set! sexp:define
         (lambda (e a)
-          (if (atom? (cadr e)) (cons (cadr e) (core:eval (car (cddr e)) a))
-              (cons (car (cadr e)) (core:eval (cons (quote lambda) (cons (cdr (cadr e)) (cddr e))) a)))))
+          (if (atom? (car (cdr e))) (cons (car (cdr e)) (core:eval (car (cdr (cdr e))) a))
+              (cons (car (car (cdr e))) (core:eval (cons (quote lambda) (cons (cdr (car (cdr e))) (cdr (cdr e)))) a)))))
 
   (set! env:macro
         (lambda (name+entry)
           (cons
            (cons (car name+entry)
-                 (make-cell <cell:macro> (core:car (car name+entry)) (cdr name+entry)))
+                 (core:make-cell <cell:macro> (core:car (car name+entry)) (cdr name+entry)))
            (list))))
 
   (set! cons*
@@ -108,22 +108,22 @@
   (define <cell:keyword> 4)
   (define <cell:string> 10)
 
-  (define (newline . rest) (core:stderr (list->string (list (integer->char 10)))))
-  (define (display x . rest) (core:stderr x))
+  (define (newline . rest) (core:display (list->string (list (integer->char 10)))))
+  (define (display x . rest) core:display)
   
-  (define (list->symbol lst) (make-symbol lst))
+  (define (list->symbol lst) (core:lookup-symbol lst))
 
   (define (symbol->list s)
     (core:car s))
 
   (define (list->string lst)
-    (make-cell <cell:string> lst 0))
+    (core:make-cell <cell:string> lst 0))
 
   (define (integer->char x)
-    (make-cell <cell:character> 0 x))
+    (core:make-cell <cell:character> 0 x))
 
   (define (symbol->keyword s)
-    (make-cell <cell:keyword> (symbol->list s) 0))
+    (core:make-cell <cell:keyword> (symbol->list s) 0))
 
   (define (read)
     (read-word (read-byte) (list) (current-module)))
@@ -140,9 +140,9 @@
   (define-macro (cond . clauses)
     (list (quote if) (pair? clauses)
           (list (quote if) (car (car clauses))
-                (if (pair? (cdar clauses))
-                    (if (eq? (car (cdar clauses)) (quote =>))
-                        (append2 (cdr (cdar clauses)) (list (caar clauses)))
+                (if (pair? (cdr (car clauses)))
+                    (if (eq? (car (cdr (car clauses))) (quote =>))
+                        (append2 (cdr (cdr (car clauses))) (list (car (car clauses))))
                         (list (cons (quote lambda) (cons (list) (car clauses)))))
                     (list (cons (quote lambda) (cons (list) (car clauses)))))
                 (if (pair? (cdr clauses))
@@ -269,7 +269,16 @@
         (cons (f (car lst)) (map1 f (cdr lst)))))
 
   (define (lookup w a)
-    (core:lookup (map1 integer->char w) a))
+    (define (lookup-number c p s n)
+      (and (> c 47) (< c 58)
+           (if (null? p) (* s (+ (* n 10) (- c 48)))
+               (lookup-number (car p) (cdr p) s (+ (* n 10) (- c 48))))))
+    ((lambda (c p)
+       (or (cond ((and (> c 47) (< c 58)) (lookup-number c p 1 0))
+                 ((and (eq? c 45) (pair? p)) (lookup-number (car p) (cdr p) -1 0))
+                 (#t #f))
+           (core:lookup-symbol (map1 integer->char w))))
+     (car w) (cdr w)))
 
   (define (read-hash c w a)
     (cond

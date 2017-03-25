@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -31,6 +31,137 @@
 //     }
 //   return MAKE_NUMBER (n);
 // }
+
+SCM fdisplay_ (SCM,FILE*);
+
+int g_depth;
+
+SCM
+display_helper (SCM x, int cont, char* sep, FILE *fd)
+{
+  fputs (sep, fd);
+  if (g_depth == 0) return cell_unspecified;
+  g_depth = g_depth - 1;
+
+  switch (TYPE (x))
+    {
+    case TCHAR:
+      {
+        fputs ("#\\", fd);
+        putc (VALUE (x), fd);
+        break;
+      }
+    case TFUNCTION:
+      {
+        fputs ("#<procedure ", fd);
+        char *p = "?";
+        if (FUNCTION (x).name != 0)
+          p = FUNCTION (x).name;
+        fputs (p, fd);
+        fputs ("[", fd);
+        fputs (itoa (CDR (x)), fd);
+        fputs (",", fd);
+        fputs (itoa (x), fd);
+        fputs ("]>", fd);
+        break;
+      }
+    case TMACRO:
+      {
+        fputs ("#<macro ", fd);
+        display_helper (cdr (x), cont, "", fd);
+        fputs (">", fd);
+        break;
+      }
+    case TNUMBER:
+      {
+        fputs (itoa (VALUE (x)), fd);
+        break;
+      }
+    case TPAIR:
+      {
+        if (!cont) fputs ("(", fd);
+        if (x && x != cell_nil) fdisplay_ (CAR (x), fd);
+        if (CDR (x) && TYPE (CDR (x)) == TPAIR)
+          display_helper (CDR (x), 1, " ", fd);
+        else if (CDR (x) && CDR (x) != cell_nil)
+          {
+            if (TYPE (CDR (x)) != TPAIR)
+              fputs (" . ", fd);
+            fdisplay_ (CDR (x), fd);
+          }
+        if (!cont) fputs (")", fd);
+        break;
+      }
+    case TSPECIAL:
+#if __NYACC__
+      // FIXME
+      //{}
+      {
+        SCM t = CAR (x);
+        while (t && t != cell_nil)
+          {
+            putc (VALUE (CAR (t)), fd);
+            t = CDR (t);
+          }
+        break;
+      }
+#endif
+    case TSTRING:
+#if __NYACC__
+      // FIXME
+      {
+        SCM t = CAR (x);
+        while (t && t != cell_nil)
+          {
+            putc (VALUE (CAR (t)), fd);
+            t = CDR (t);
+          }
+        break;
+      }
+#endif
+    case TSYMBOL:
+      {
+        SCM t = CAR (x);
+        while (t && t != cell_nil)
+          {
+            putc (VALUE (CAR (t)), fd);
+            t = CDR (t);
+          }
+        break;
+      }
+    default:
+      {
+        fputs ("<", fd);
+        fputs (itoa (TYPE (x)), fd);
+        fputs (":", fd);
+        fputs (itoa (x), fd);
+        fputs (">", fd);
+        break;
+      }
+    }
+  return 0;
+}
+
+SCM
+display_ (SCM x)
+{
+  g_depth = 5;
+  return display_helper (x, 0, "", stdout);
+}
+
+SCM
+display_error_ (SCM x)
+{
+  g_depth = 5;
+  return display_helper (x, 0, "", stderr);
+}
+
+SCM
+fdisplay_ (SCM x, FILE *fd) ///((internal))
+{
+  g_depth = 5;
+  return display_helper (x, 0, "", fd);
+}
 
 SCM
 exit_ (SCM x) ///((name . "exit"))
@@ -111,7 +242,7 @@ check_apply (SCM f, SCM e) ///((internal))
       char buf[1024];
       sprintf (buf, "cannot apply: %s:", type);
       fprintf (stderr, " [");
-      stderr_ (e);
+      display_error_ (e);
       fprintf (stderr, "]\n");
       SCM e = MAKE_STRING (cstring_to_list (buf));
       return error (cell_symbol_wrong_type_arg, cons (e, f));
@@ -147,7 +278,7 @@ int
 dump ()
 {
   fputs ("program r2=", stderr);
-  stderr_ (r2);
+  display_error_ (r2);
   fputs ("\n", stderr);
 
   r1 = g_symbols;
@@ -234,21 +365,6 @@ bload_env (SCM a) ///((internal))
   g_stdin = stdin;
   r0 = mes_builtins (r0);
   return r2;
-}
-
-SCM
-values (SCM x) ///((arity . n))
-{
-  SCM v = cons (0, x);
-  TYPE (v) = TVALUES;
-  return v;
-}
-
-SCM
-arity_ (SCM x)
-{
-  assert (TYPE (x) == TFUNCTION);
-  return MAKE_NUMBER (FUNCTION (x).arity);
 }
 
 SCM

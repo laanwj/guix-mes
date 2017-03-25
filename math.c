@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *

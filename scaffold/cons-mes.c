@@ -26,17 +26,6 @@
 #define MES_MINI 1
 #define FIXED_PRIMITIVES 0
 
-#if __GNUC__
-#define FIXME_NYACC 1
-#define  __NYACC__ 0
-#define NYACC_CAR
-#define NYACC_CDR
-#else
-#define  __NYACC__ 1
-#define NYACC_CAR nyacc_car
-#define NYACC_CDR nyacc_cdr
-#endif
-
 char arena[2000];
 //char buf0[400];
 
@@ -59,11 +48,7 @@ SCM r2 = 0;
 // continuation
 SCM r3 = 0;
 
-#if __NYACC__ || FIXME_NYACC
-enum type_t {CHAR, CLOSURE, CONTINUATION, TFUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
-#else
-enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
-#endif
+enum type_t {CHAR, CLOSURE, CONTINUATION, TFUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
 
 struct scm {
   enum type_t type;
@@ -117,11 +102,11 @@ struct function g_functions[5];
 int g_function = 0;
 
 
-SCM make_cell (SCM type, SCM car, SCM cdr);
-struct function fun_make_cell = {&make_cell,3,"make-cell"};
-struct scm scm_make_cell = {TFUNCTION,0,0};
-   //, "make-cell", 0};
-SCM cell_make_cell;
+SCM make_cell_ (SCM type, SCM car, SCM cdr);
+struct function fun_make_cell_ = {&make_cell_,3,"core:make-cell"};
+struct scm scm_make_cell_ = {TFUNCTION,0,0};
+   //, "core:make-cell", 0};
+SCM cell_make_cell_;
 
 SCM cons (SCM x, SCM y);
 struct function fun_cons = {&cons,2,"cons"};
@@ -153,38 +138,21 @@ SCM cell_cdr;
 #define STRING(x) g_cells[x].car
 
 #define CDR(x) g_cells[x].cdr
-#if __GNUC__
-//#define CLOSURE(x) g_cells[x].closure
-#endif
 #define CONTINUATION(x) g_cells[x].cdr
-#if __GNUC__
-//#define FUNCTION(x) g_functions[g_cells[x].function]
-#endif
 
 #define FUNCTION(x) g_functions[g_cells[x].cdr]
 #define VALUE(x) g_cells[x].cdr
 #define VECTOR(x) g_cells[x].cdr
 
-#define MAKE_CHAR(n) make_cell (tmp_num_ (CHAR), 0, tmp_num2_ (n))
-//#define MAKE_CONTINUATION(n) make_cell (tmp_num_ (CONTINUATION), n, g_stack)
-#define MAKE_NUMBER(n) make_cell (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
-//#define MAKE_REF(n) make_cell (tmp_num_ (REF), n, 0)
-
+#define MAKE_CHAR(n) make_cell_ (tmp_num_ (CHAR), 0, tmp_num2_ (n))
+#define MAKE_NUMBER(n) make_cell_ (tmp_num_ (NUMBER), 0, tmp_num2_ (n))
 
 #define CAAR(x) CAR (CAR (x))
-// #define CDAR(x) CDR (CAR (x))
 #define CADAR(x) CAR (CDR (CAR (x)))
-// #define CADDR(x) CAR (CDR (CDR (x)))
-// #define CDDDR(x) CDR (CDR (CDR (x)))
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 #define CADR(x) CAR (CDR (x))
 
-
-#if __NYACC__ || FIXME_NYACC
-#define MAKE_STRING(x) make_cell (tmp_num_ (TSTRING), x, 0)
-// #else
-// #define MAKE_STRING(x) make_cell (tmp_num_ (STRING), x, 0)
-#endif
+#define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
 
 SCM
 alloc (int n)
@@ -196,7 +164,7 @@ alloc (int n)
 }
 
 SCM
-make_cell (SCM type, SCM car, SCM cdr)
+make_cell_ (SCM type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
   assert (TYPE (type) == NUMBER);
@@ -239,7 +207,7 @@ cons (SCM x, SCM y)
   puts ("\n");
 #endif
   VALUE (tmp_num) = PAIR;
-  return make_cell (tmp_num, x, y);
+  return make_cell_ (tmp_num, x, y);
 }
 
 SCM
@@ -464,7 +432,7 @@ SCM
 make_symbol_ (SCM s)
 {
   VALUE (tmp_num) = SYMBOL;
-  SCM x = make_cell (tmp_num, s, 0);
+  SCM x = make_cell_ (tmp_num, s, 0);
   g_symbols = cons (x, g_symbols);
   return x;
 }
@@ -584,7 +552,7 @@ g_free++;
 SCM
 make_closure (SCM args, SCM body, SCM a)
 {
-  return make_cell (tmp_num_ (CLOSURE), cell_f, cons (cons (cell_circular, a), cons (args, body)));
+  return make_cell_ (tmp_num_ (CLOSURE), cell_f, cons (cons (cell_circular, a), cons (args, body)));
 }
 
 SCM
@@ -614,10 +582,10 @@ mes_builtins (SCM a)
 // #include "posix.environment.i"
 // #include "reader.environment.i"
 #else
-scm_make_cell.cdr = g_function;
-g_functions[g_function++] = fun_make_cell;
-cell_make_cell = g_free++;
- g_cells[cell_make_cell] = scm_make_cell;
+scm_make_cell_.cdr = g_function;
+g_functions[g_function++] = fun_make_cell_;
+cell_make_cell_ = g_free++;
+ g_cells[cell_make_cell_] = scm_make_cell_;
  
 scm_cons.cdr = g_function;
 g_functions[g_function++] = fun_cons;
@@ -687,7 +655,7 @@ fill ()
 
   TYPE (11) = TFUNCTION;
   CAR (11) = 0x58585858;
-  // 0 = make_cell
+  // 0 = make_cell_
   // 1 = cons
   // 2 = car
   CDR (11) = 1;
@@ -729,7 +697,7 @@ display_ (SCM x)
       {
         //puts ("<function>\n");
         if (VALUE (x) == 0)
-          puts ("make-cell");
+          puts ("core:make-cell");
         if (VALUE (x) == 1)
           puts ("cons");
         if (VALUE (x) == 2)
@@ -932,49 +900,6 @@ simple_bload_env (SCM a) ///((internal))
   r0 = 1;
   //r2 = 10;
   return r2;
-}
-
-char string_to_cstring_buf[1024];
-char const*
-string_to_cstring (SCM s)
-{
-  //static char buf[1024];
-  //char *p = buf;
-  char *p = string_to_cstring_buf;
-  s = STRING(s);
-  while (s != cell_nil)
-    {
-      *p++ = VALUE (car (s));
-      s = cdr (s);
-    }
-  *p = 0;
-  //return buf;
-  return string_to_cstring_buf;
-}
-
-SCM
-stderr_ (SCM x)
-{
-  //SCM write;
-#if __NYACC__ || FIXME_NYACC
-  if (TYPE (x) == TSTRING)
-// #else
-//   if (TYPE (x) == STRING)
-#endif
-    eputs (string_to_cstring (x));
-  // else if ((write = assq_ref_env (cell_symbol_write, r0)) != cell_undefined)
-  //   apply (assq_ref_env (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
-#if __NYACC__ || FIXME_NYACC
-  else if (TYPE (x) == SPECIAL || TYPE (x) == TSTRING || TYPE (x) == SYMBOL)
-// #else
-//   else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
-#endif
-    eputs (string_to_cstring (x));
-  else if (TYPE (x) == NUMBER)
-    eputs (itoa (VALUE (x)));
-  else
-    eputs ("display: undefined\n");
-  return cell_unspecified;
 }
 
 int

@@ -101,6 +101,7 @@ dump: module/mes/read-0.mo
 mes-32: mes.c lib.c
 	rm -f mes mes.o
 	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
+	rm -f mes.o
 	mv mes mes-32
 
 module/mes/read-0-32.mo: module/mes/read-0.mes mes-32
@@ -135,6 +136,7 @@ mini-mes: scaffold/mini-mes.c
 	rm -f $@
 	#	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DPREFIX=' '-DVERSION='"$(VERSION)"' $<
 	gcc -nostdlib -I. --std=gnu99 -m32 -g -I. -o $@ $(CPPFLAGS) $<
+	rm -f mes.o
 	chmod +x $@
 
 guile-mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i

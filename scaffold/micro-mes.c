@@ -26,16 +26,6 @@
 
 #define MES_MINI 1
 
-#if __GNUC__
-#define  __NYACC__ 0
-#define NYACC
-#define NYACC2
-#else
-#define  __NYACC__ 1
-#define NYACC nyacc
-#define NYACC2 nyacc2
-#endif
-
 typedef int SCM;
 
 #if __GNUC__
@@ -91,7 +81,6 @@ main (int argc, char *argv[])
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
   r3 = cell_vm_begin;
   r1 = eval_apply ();
-  stderr_ (r1);
 
   eputs ("\n");
   gc (g_stack);

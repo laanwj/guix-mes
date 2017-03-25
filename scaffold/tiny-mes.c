@@ -198,7 +198,7 @@ display_ (SCM x)
       {
         //puts ("<function>\n");
         if (VALUE (x) == 0)
-          puts ("make-cell");
+          puts ("core:make-cell");
         if (VALUE (x) == 1)
           puts ("cons");
         if (VALUE (x) == 2)

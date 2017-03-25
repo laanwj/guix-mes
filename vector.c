@@ -24,7 +24,7 @@ make_vector (SCM n)
   int k = VALUE (n);
   g_cells[tmp_num].value = TVECTOR;
   SCM v = alloc (k);
-  SCM x = make_cell (tmp_num, k, v);
+  SCM x = make_cell_ (tmp_num, k, v);
   for (int i=0; i<k; i++) g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
   return x;
 }

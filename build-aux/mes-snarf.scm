@@ -57,10 +57,11 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
                     (regexp-replace "_" "-")
                     (regexp-replace "_" "-")
                     (regexp-replace "_" "-")
-                    (regexp-replace "^builtin_" "")
                     (regexp-replace "_to_" "->")
                     (regexp-replace "_x$" "!")
-                    (regexp-replace "_p$" "?"))
+                    (regexp-replace "_p$" "?")
+                    (regexp-replace "___" "***")
+                    (regexp-replace "___" "***"))
                    (.name f))))
         (if (not (string-suffix? "-" name)) name
             (string-append "core:" (string-drop-right name 1))))))
@@ -120,8 +121,8 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
        (format #f "g_cells[cell_~a].string = MAKE_STRING (scm_~a.string);\n" (.name f) (.name f))
        (format #f "g_cells[cell_~a].car = MAKE_STRING (scm_~a.car);\n" (.name f) (.name f)))
    (if GCC?
-       (format #f "a = acons (make_symbol (scm_~a.string), ~a, a);\n\n" (.name f) (function-cell-name f))
-       (format #f "a = acons (make_symbol (scm_~a.car), ~a, a);\n\n" (.name f) (function-cell-name f)))))
+       (format #f "a = acons (lookup_symbol_ (scm_~a.string), ~a, a);\n\n" (.name f) (function-cell-name f))
+       (format #f "a = acons (lookup_symbol_ (scm_~a.car), ~a, a);\n\n" (.name f) (function-cell-name f)))))
 
 (define (snarf-symbols string)
   (let* ((matches (list-matches "\nstruct scm scm_([a-z_0-9]+) = [{](TSPECIAL|TSYMBOL)," string)))

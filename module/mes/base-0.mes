@@ -35,6 +35,11 @@
 (define (primitive-eval e) (core:eval e (current-module)))
 (define eval core:eval)
 
+(define (caar x) (car (car x)))
+(define (cadr x) (car (cdr x)))
+(define (cdar x) (cdr (car x)))
+(define (cddr x) (cdr (cdr x)))
+
 (define-macro (defined? x)
   (list 'assq x '(cddr (current-module))))
 
@@ -107,9 +112,9 @@
   (list 'begin
         (list 'if (list getenv "MES_DEBUG")
               (list 'begin
-                    (list core:stderr "read ")
-                    (list core:stderr file)
-                    (list core:stderr "\n")))
+                    (list core:display-error "read ")
+                    (list core:display-error file)
+                    (list core:display-error "\n")))
      (list 'push! '*input-ports* (list current-input-port))
      (list 'set-current-input-port (list open-input-file file))
      (list 'primitive-load)

@@ -72,10 +72,10 @@ exit $?
   (if (= gc-free gc-size) (gc))
   ((lambda (index)
      (set! gc-free (+ gc-free 1))
-     (make-cell 'p index))
+     (core:make-cell 'p index))
    gc-free))
 
-(define (make-cell type . x)
+(define (core:make-cell type . x)
   (cons type (if (pair? x) (car x) '*)))
 
 (define (cell-index c)

@@ -29,6 +29,10 @@ void write (int fd, char const* s, int n);
 #define O_RDONLY 0
 #define INT_MIN -2147483648
 #define INT_MAX 2147483647
+#define EOF -1
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
 
 void
 exit (int code)
@@ -129,11 +133,16 @@ brk (void *p)
 }
 
 int
+putc (int c, int fd)
+{
+  write (fd, (char*)&c, 1);
+  return 0;
+}
+
+int
 putchar (int c)
 {
-  //write (STDOUT, s, strlen (s));
-  //int i = write (STDOUT, s, strlen (s));
-  write (1, (char*)&c, 1);
+  write (STDOUT, (char*)&c, 1);
   return 0;
 }
 
@@ -163,11 +172,6 @@ free (void *p)
   //munmap ((void*)p, *n);
 }
 
-#define EOF -1
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
-
 size_t
 strlen (char const* s)
 {
@@ -186,16 +190,14 @@ strcmp (char const* a, char const* b)
 int
 eputs (char const* s)
 {
-  //int i = write (STDERR, s, strlen (s));
   int i = strlen (s);
-  write (2, s, i);
+  write (STDERR, s, i);
   return 0;
 }
 
 int
 fputs (char const* s, int fd)
 {
-  //int i = write (fd, s, strlen (s));
   int i = strlen (s);
   write (fd, s, i);
   return 0;
@@ -204,9 +206,8 @@ fputs (char const* s, int fd)
 int
 puts (char const* s)
 {
-  //int i = write (STDOUT, s, strlen (s));
   int i = strlen (s);
-  write (1, s, i);
+  write (STDOUT, s, i);
   return 0;
 }
 
