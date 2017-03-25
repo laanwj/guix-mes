@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -22,7 +22,7 @@ SCM
 make_vector (SCM n)
 {
   int k = VALUE (n);
-  g_cells[tmp_num].value = TVECTOR;
+  VALUE (tmp_num) = TVECTOR;
   SCM v = alloc (k);
   SCM x = make_cell_ (tmp_num, k, v);
   for (int i=0; i<k; i++) g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
@@ -42,7 +42,7 @@ vector_ref (SCM x, SCM i)
   assert (TYPE (x) == TVECTOR);
   assert (VALUE (i) < LENGTH (x));
   SCM e = VECTOR (x) + VALUE (i);
-  if (TYPE (e) == TREF) e = g_cells[e].ref;
+  if (TYPE (e) == TREF) e = REF (e);
   if (TYPE (e) == TCHAR) e = MAKE_CHAR (VALUE (e));
   if (TYPE (e) == TNUMBER) e = MAKE_NUMBER (VALUE (e));
   return e;
@@ -59,7 +59,7 @@ vector_set_x (SCM x, SCM i, SCM e)
 {
   assert (TYPE (x) == TVECTOR);
   assert (VALUE (i) < LENGTH (x));
-  g_cells[VECTOR (x)+g_cells[i].value] = g_cells[vector_entry (e)];
+  g_cells[VECTOR (x)+VALUE (i)] = g_cells[vector_entry (e)];
   return cell_unspecified;
 }
 
@@ -83,7 +83,7 @@ vector_to_list (SCM v)
   SCM x = cell_nil;
   for (int i = 0; i < LENGTH (v); i++) {
     SCM e = VECTOR (v)+i;
-    if (TYPE (e) == TREF) e = g_cells[e].ref;
+    if (TYPE (e) == TREF) e = REF (e);
     x = append2 (x, cons (e, cell_nil));
   }
   return x;
