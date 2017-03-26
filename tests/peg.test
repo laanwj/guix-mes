@@ -2,7 +2,8 @@
 # -*-scheme-*-
 MES_ARENA=${MES_ARENA-10000000}
 export MES_ARENA
-echo ' ()' | cat $(dirname $0)/../module/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/../scripts/mes $MES_FLAGS $MES_FLAGS"$@"
+MES=${MES-$(dirname $0)/../scripts/mes}
+echo ' ()' | cat $(dirname $0)/../module/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS $MES_FLAGS"$@"
 #paredit:||
 exit $?
 !#

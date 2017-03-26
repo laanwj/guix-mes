@@ -1,7 +1,8 @@
 #! /bin/sh
 # -*-scheme-*-
 # ***REMOVE THIS BLOCK COMMENT INITIALLY***
-echo ' ()' | cat $(dirname $0)/../module/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/../scripts/mes $MES_FLAGS "$@"
+MES=${MES-$(dirname $0)/../scripts/mes}
+echo ' ()' | cat $(dirname $0)/../module/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
 #paredit:||
 exit $?
 !#
@@ -47,7 +48,8 @@ burp
   (lambda (x)
    #;()#t)
   )
-(display #(0 1 2)) (newline)
+(display "\n***FIXME: vector test disabled\n")
+;;;(display #(0 1 2)) (newline)
 (display (list '(foo
             #! boo !#
             ;;(bb 4)
