@@ -79,4 +79,6 @@ exit $?
 (pass-if "min 1" (seq? (min 0 1) 0))
 (pass-if "min 2" (seq? (min 1 0 2) 0))
 
+(pass-if-equal "#x-10" -16 #x-10)
+
 (result 'report)

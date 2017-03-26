@@ -18,6 +18,7 @@ cons
 'foo
 (display 'foo) (newline)
 (display #x16) (newline)
+(display #x-16) (newline)
 (display #\A) (newline)
 (display #\newline) (newline)
 #\alarm
