@@ -98,6 +98,7 @@ module/mes/read-0.mo: module/mes/read-0.mes mes
 
 dump: module/mes/read-0.mo
 
+mes-32: gc.c lib.c math.c posix.c vector.c
 mes-32: mes.c lib.c
 	rm -f mes mes.o
 	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
@@ -130,6 +131,7 @@ mescc-check: t-check
 
 mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
 mini-mes: vector.c
+mini-mes: gc.c
 mini-mes: mlibc.c mstart.c
 mini-mes: GNUmakefile
 mini-mes: module/mes/read-0-32.mo

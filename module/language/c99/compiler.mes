@@ -52,6 +52,7 @@
   (parse-c99
    #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
    #:cpp-defs '(
+                "_POSIX_SOURCE=0"
                 "__GNUC__=0"
                 "__MESC__=1"
                 "__NYACC__=1" ;; REMOVEME

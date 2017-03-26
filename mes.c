@@ -209,8 +209,16 @@ SCM r3 = 0; // continuation
 #define VALUE(x) g_cells[x].value
 #define VECTOR(x) g_cells[x].vector
 #define FUNCTION(x) g_functions[g_cells[x].function]
-#define NCAR(x) g_news[x].car
+
 #define NTYPE(x) g_news[x].type
+
+#define NCAR(x) g_news[x].car
+#define NLENGTH(x) g_news[x].length
+
+#define NCDR(x) g_news[x].cdr
+#define NVALUE(x) g_news[x].value
+#define NVECTOR(x) g_news[x].vector
+
 
 #define CAAR(x) CAR (CAR (x))
 #define CADR(x) CAR (CDR (x))
@@ -998,6 +1006,7 @@ mes_builtins (SCM a) ///((internal))
 {
 #include "mes.i"
 
+// Do not sort: Order of these includes define builtins
 #include "posix.i"
 #include "math.i"
 #include "lib.i"
