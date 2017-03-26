@@ -26,8 +26,15 @@
 #define MES_MINI 1
 #define FIXED_PRIMITIVES 1
 
-//int ARENA_SIZE = 4000000;
+#define MES_GC 1
+#if MES_GC
+int ARENA_SIZE = 100000;
+#else
 int ARENA_SIZE = 1000000000;
+#endif
+int MAX_ARENA_SIZE = 20000000;
+int GC_SAFETY = 5000;
+
 char *arena = 0;
 
 typedef int SCM;
@@ -61,13 +68,15 @@ struct function {
   char *name;
 };
 
+//FIXME
+char *foobar = 0;
+
 #if __GNUC__
 struct scm *g_cells = 0;
-//struct scm *g_news = 0;
+struct scm *g_news = 0;
 #else
-int *foobar = 0;
 struct scm *g_cells = foobar;
-//struct scm *g_news = foobar;
+struct scm *g_news = foobar;
 #endif
 
 struct scm scm_nil = {TSPECIAL, "()",0};
@@ -158,6 +167,7 @@ SCM tmp_num2;
 struct function g_functions[200];
 int g_function = 0;
 
+#include "gc.h"
 // #include "lib.h"
 // #include "math.h"
 #include "mini-mes.h"
@@ -181,6 +191,15 @@ int g_function = 0;
 #define MACRO(x) g_cells[x].cdr
 #define VALUE(x) g_cells[x].cdr
 #define VECTOR(x) g_cells[x].cdr
+
+#define NTYPE(x) g_news[x].type
+
+#define NCAR(x) g_news[x].car
+#define NLENGTH(x) g_news[x].car
+
+#define NCDR(x) g_news[x].cdr
+#define NVALUE(x) g_news[x].cdr
+#define NVECTOR(x) g_news[x].cdr
 
 #define MAKE_CHAR(n) make_cell_ (tmp_num_ (TCHAR), 0, tmp_num2_ (n))
 #define MAKE_CONTINUATION(n) make_cell_ (tmp_num_ (TCONTINUATION), n, g_stack)
@@ -635,9 +654,10 @@ SCM
 eval_apply ()
 {
  eval_apply:
-  // if (g_free + GC_SAFETY > ARENA_SIZE)
-  //   gc_pop_frame (gc (gc_push_frame ()));
-
+#if MES_GC
+  if (g_free + GC_SAFETY > ARENA_SIZE)
+    gc_pop_frame (gc (gc_push_frame ()));
+#endif
   switch (r3)
     {
     case cell_vm_evlis: goto evlis;
@@ -1506,7 +1526,9 @@ SCM
 mes_symbols () ///((internal))
 {
   gc_init_cells ();
-  //  gc_init_news ();
+#if MES_GC
+  gc_init_news ();
+#endif
 
   #include "mini-mes.symbols.i"
 
@@ -1556,12 +1578,15 @@ mes_builtins (SCM a) ///((internal))
 {
   #include "mini-mes.i"
 
+// Do not sort: Order of these includes define builtins
 // #include "lib.i"
 // #include "math.i"
 // #include "posix.i"
-// #include "reader.i"
 #include "vector.i"
+#include "gc.i"
+// #include "reader.i"
 
+#include "gc.environment.i"
 // #include "lib.environment.i"
 // #include "math.environment.i"
   #include "mini-mes.environment.i"
@@ -1638,16 +1663,20 @@ bload_env (SCM a) ///((internal))
 // #include "lib.c"
 // #include "reader.c"
 #include "vector.c"
-// #include "gc.c"
+#include "gc.c"
 
 int
 main (int argc, char *argv[])
 {
   eputs ("Hello mini-mes!\n");
-#if __GNUC__
-  //g_debug = getenv ("MES_DEBUG");
+#if _POSIX_SOURCE
+  g_debug = getenv ("MES_DEBUG");
+  eputs ("g_debug=");
+  eputs (itoa (g_debug));
+  eputs ("\n");
+  if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
 #endif
-  //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
+  g_debug = 1;
   if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE");
 #if __GNUC__
   if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");return eputs (VERSION);};
