@@ -23,7 +23,7 @@
 #endif
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
-#if __MESCC__
+#if __MESC__
 //void *g_malloc_base = 0;
 char *g_malloc_base = 0;
 // int ungetc_char = -1;
@@ -46,7 +46,7 @@ char *g_malloc_base = 0;
 
 
 //int ARENA_SIZE = 4000000;
-int ARENA_SIZE = 100000000;
+int ARENA_SIZE = 1000000000;
 char *arena = 0;
 
 typedef int SCM;
@@ -164,6 +164,9 @@ struct scm scm_vm_if_expr = {TSPECIAL, "*vm-if-expr*",0};
 struct scm scm_vm_call_with_values2 = {TSPECIAL, "*vm-call-with-values2*",0};
 struct scm scm_vm_call_with_current_continuation2 = {TSPECIAL, "*vm-call-with-current-continuation2*",0};
 struct scm scm_vm_return = {TSPECIAL, "*vm-return*",0};
+
+struct scm scm_symbol_gnuc = {TSYMBOL, "%gnuc",0};
+struct scm scm_symbol_mesc = {TSYMBOL, "%mesc",0};
 
 struct scm scm_test = {TSYMBOL, "test",0};
 
@@ -381,6 +384,20 @@ assert_defined (SCM x, SCM e) ///((internal))
   eputs ("\n");
   exit (33);
   return e;
+}
+
+SCM
+cstring_to_list (char const* s)
+{
+  char *x = s;
+  SCM p = cell_nil;
+  int i = strlen (s);
+  while (i--)
+    {
+      p = cons (MAKE_CHAR (s[i]), p);
+      x++;
+    }
+  return p;
 }
 
 SCM
@@ -632,7 +649,7 @@ eval_apply ()
     case cell_vm_eval2: goto eval2;
     case cell_vm_macro_expand: goto macro_expand;
     case cell_vm_begin: goto begin;
-      ///case cell_vm_begin_read_input_file: goto begin_read_input_file;
+    case cell_vm_begin_read_input_file: goto begin_read_input_file;
     case cell_vm_begin2: goto begin2;
     case cell_vm_if: goto vm_if;
     case cell_vm_if_expr: goto if_expr;
@@ -1067,34 +1084,12 @@ lookup_ (SCM s, SCM a)
 }
 
 SCM
-cstring_to_list (char const* s)
-{
-  char *x = s;
-  SCM p = cell_nil;
-  int i = strlen (s);
-  while (i--)
-    {
-      p = cons (MAKE_CHAR (s[i]), p);
-      x++;
-    }
-  return p;
-}
-
-SCM
 acons (SCM key, SCM value, SCM alist)
 {
   return cons (cons (key, value), alist);
 }
 
-
-// MINI_MES: temp-lib
-
-// int
-// getchar ()
-// {
-//   return getc (g_stdin);
-// }
-
+// Posix
 int
 ungetchar (int c)
 {
@@ -1143,6 +1138,24 @@ write_byte (SCM x) ///((arity . n))
   char cc = VALUE (c);
   write (1, (char*)&cc, fd);
   return c;
+}
+
+char string_to_cstring_buf[1024];
+char const*
+string_to_cstring (SCM s)
+{
+  //static char buf[1024];
+  //char *p = buf;
+  char *p = string_to_cstring_buf;
+  s = STRING(s);
+  while (s != cell_nil)
+    {
+      *p++ = VALUE (car (s));
+      s = cdr (s);
+    }
+  *p = 0;
+  //return buf;
+  return string_to_cstring_buf;
 }
 
 int g_depth;
@@ -1226,7 +1239,16 @@ display_helper (SCM x, int cont, char* sep)
     case TSTRING:
 #if __NYACC__
       // FIXME
-      {}
+      //{}
+      {
+        SCM t = CAR (x);
+        while (t && t != cell_nil)
+          {
+            putchar (VALUE (CAR (t)));
+            t = CDR (t);
+          }
+        break;
+      }
 #endif
     case TSYMBOL:
       {
@@ -1259,6 +1281,281 @@ display_ (SCM x)
   return display_helper (x, 0, "");
 }
 
+SCM
+stderr_ (SCM x)
+{
+  SCM write;
+  if (TYPE (x) == TSTRING)
+    eputs (string_to_cstring (x));
+#if __GNUC__
+  else if ((write = assq_ref_env (cell_symbol_write, r0)) != cell_undefined)
+    apply (assq_ref_env (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
+#endif
+  else if (TYPE (x) == TSPECIAL || TYPE (x) == TSTRING || TYPE (x) == TSYMBOL)
+    eputs (string_to_cstring (x));
+  else if (TYPE (x) == TNUMBER)
+    eputs (itoa (VALUE (x)));
+  else
+    eputs ("core:stderr: display undefined\n");
+  return cell_unspecified;
+}
+
+SCM
+getenv_ (SCM s) ///((name . "getenv"))
+{
+#if 0
+  char *p = getenv (string_to_cstring (s));
+  return p ? MAKE_STRING (cstring_to_list (p)) : cell_f;
+#else
+  return cell_t;
+#endif
+}
+
+SCM
+open_input_file (SCM file_name)
+{
+  return MAKE_NUMBER (open (string_to_cstring (file_name), O_RDONLY));
+  // char *s = string_to_cstring (file_name);
+  // int x = open (s, 0);
+  // return MAKE_NUMBER (x);
+}
+
+SCM
+current_input_port ()
+{
+  return MAKE_NUMBER (g_stdin);
+}
+
+SCM
+set_current_input_port (SCM port)
+{
+  g_stdin = VALUE (port) ? VALUE (port) : STDIN;
+  return current_input_port ();
+}
+
+SCM
+force_output (SCM p) ///((arity . n))
+{
+#if 0
+  //FIXME
+  int fd = 1;
+  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
+  FILE *f = fd == 1 ? stdout : stderr;
+  fflush (f);
+#endif
+  return cell_unspecified;
+}
+
+// Math
+SCM
+greater_p (SCM x) ///((name . ">") (arity . n))
+{
+  int n = INT_MAX;
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+      if (VALUE (car (x)) >= n) return cell_f;
+      n = VALUE (car (x));
+      x = cdr (x);
+    }
+  return cell_t;
+}
+
+SCM
+less_p (SCM x) ///((name . "<") (arity . n))
+{
+  int n = INT_MIN;
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+#if __MESC__
+      //FIXME __GNUC__
+      if (n == INT_MIN);
+      else
+#endif
+      if (VALUE (car (x)) <= n) return cell_f;
+      n = VALUE (car (x));
+      x = cdr (x);
+    }
+  return cell_t;
+}
+
+SCM
+is_p (SCM x) ///((name . "=") (arity . n))
+{
+  if (x == cell_nil) return cell_t;
+  assert (TYPE (car (x)) == TNUMBER);
+  int n = VALUE (car (x));
+  x = cdr (x);
+  while (x != cell_nil)
+    {
+      if (VALUE (car (x)) != n) return cell_f;
+      x = cdr (x);
+    }
+  return cell_t;
+}
+
+SCM
+minus (SCM x) ///((name . "-") (arity . n))
+{
+  SCM a = car (x);
+  assert (TYPE (a) == TNUMBER);
+  int n = VALUE (a);
+  x = cdr (x);
+  if (x == cell_nil)
+    n = -n;
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+#if __GNUC__
+      n -= VALUE (car (x));
+#else
+      n = n - VALUE (car (x));
+#endif
+      x = cdr (x);
+    }
+  return MAKE_NUMBER (n);
+}
+
+SCM
+plus (SCM x) ///((name . "+") (arity . n))
+{
+  int n = 0;
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+#if __GNUC__
+      n += VALUE (car (x));
+#else
+      n = n + VALUE (car (x));
+#endif
+      x = cdr (x);
+    }
+  return MAKE_NUMBER (n);
+}
+
+SCM
+divide (SCM x) ///((name . "/") (arity . n))
+{
+  int n = 1;
+  if (x != cell_nil) {
+    assert (TYPE (car (x)) == TNUMBER);
+    n = VALUE (car (x));
+    x = cdr (x);
+  }
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+#if __GNUC__
+      n /= VALUE (car (x));
+#else
+      n = n / VALUE (car (x));
+#endif
+      x = cdr (x);
+    }
+  return MAKE_NUMBER (n);
+}
+
+SCM
+modulo (SCM a, SCM b)
+{
+  assert (TYPE (a) == TNUMBER);
+  assert (TYPE (b) == TNUMBER);
+  int x = VALUE (a);
+  while (x < 0) x += VALUE (b);
+  return MAKE_NUMBER (x % VALUE (b));
+}
+
+SCM
+multiply (SCM x) ///((name . "*") (arity . n))
+{
+  int n = 1;
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+#if __GNUC__
+      n *= VALUE (car (x));
+#else
+      n = n * VALUE (car (x));
+#endif
+      x = cdr (x);
+    }
+  return MAKE_NUMBER (n);
+}
+
+SCM
+logior (SCM x) ///((arity . n))
+{
+  int n = 0;
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+#if __GNUC__
+      n |= VALUE (car (x));
+#else
+      puts ("FIXME: logior\n");
+      //FIXME
+      //n = n | VALUE (car (x));
+#endif
+      x = cdr (x);
+    }
+  return MAKE_NUMBER (n);
+}
+
+SCM
+ash (SCM n, SCM count)
+{
+  assert (TYPE (n) == TNUMBER);
+  assert (TYPE (count) == TNUMBER);
+  int cn = VALUE (n);
+  int ccount = VALUE (count);
+#if __GNUC__
+  return MAKE_NUMBER ((ccount < 0) ? cn >> -ccount : cn << ccount);
+#else
+  //FIXME
+  assert (ccount >= 0);
+  return MAKE_NUMBER (cn << ccount);
+#endif
+}
+
+// Lib [rest of]
+
+SCM
+exit_ (SCM x) ///((name . "exit"))
+{
+  assert (TYPE (x) == TNUMBER);
+  exit (VALUE (x));
+}
+
+SCM
+append (SCM x) ///((arity . n))
+{
+  if (x == cell_nil) return cell_nil;
+  if (cdr (x) == cell_nil) return car (x);
+  return append2 (car (x), append (cdr (x)));
+}
+
+SCM
+values (SCM x) ///((arity . n))
+{
+  SCM v = cons (0, x);
+  TYPE (v) = TVALUES;
+  return v;
+}
+
+SCM
+arity_ (SCM x)
+{
+  assert (TYPE (x) == TFUNCTION);
+  return MAKE_NUMBER (FUNCTION (x).arity);
+}
+
+SCM
+xassq (SCM x, SCM a) ///for speed in core only
+{
+  while (a != cell_nil && x != CDAR (a)) a = CDR (a);
+  return a != cell_nil ? CAR (a) : cell_f;
+}
 
 // Jam Collector
 SCM g_symbol_max;
@@ -1319,6 +1616,15 @@ mes_symbols () ///((internal))
   a = acons (cell_symbol_begin, cell_begin, a);
   a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
   a = acons (cell_symbol_sc_expand, cell_f, a);
+
+#if __GNUC__
+  a = acons (cell_symbol_gnuc, cell_t, a);
+  a = acons (cell_symbol_mesc, cell_f, a);
+#else
+  a = acons (cell_symbol_gnuc, cell_f, a);
+  a = acons (cell_symbol_mesc, cell_t, a);
+#endif
+
   a = acons (cell_closure, a, a);
 
   return a;
@@ -1377,102 +1683,40 @@ bload_env (SCM a) ///((internal))
   g_symbols = r1;
   g_stdin = STDIN;
   r0 = mes_builtins (r0);
-#if 1
-  puts ("symbols: ");
-  SCM s = g_symbols;
-  while (s && s != cell_nil) {
-    display_ (CAR (s));
-    puts (" ");
-    s = CDR (s);
-  }
-  puts ("\n");
-  puts ("functions: ");
-  puts (itoa (g_function));
-  puts ("\n");
-  for (int i = 0; i < g_function; i++)
+
+#if __GNUC__
+  set_env_x (cell_symbol_gnuc, cell_t, r0);
+  set_env_x (cell_symbol_mesc, cell_f, r0);
+#else
+  set_env_x (cell_symbol_gnuc, cell_f, r0);
+  set_env_x (cell_symbol_mesc, cell_t, r0);
+#endif
+
+  if (g_debug)
     {
-      puts ("[");
-      puts (itoa (i));
-      puts ("]: ");
-      puts (g_functions[i].name);
+      puts ("symbols: ");
+      SCM s = g_symbols;
+      while (s && s != cell_nil) {
+        display_ (CAR (s));
+        puts (" ");
+        s = CDR (s);
+      }
+      puts ("\n");
+      puts ("functions: ");
+      puts (itoa (g_function));
+      puts ("\n");
+      for (int i = 0; i < g_function; i++)
+        {
+          puts ("[");
+          puts (itoa (i));
+          puts ("]: ");
+          puts (g_functions[i].name);
+          puts ("\n");
+        }
+      display_ (r0);
       puts ("\n");
     }
-  display_ (r0);
-  puts ("\n");
-#endif
   return r2;
-}
-
-char string_to_cstring_buf[1024];
-char const*
-string_to_cstring (SCM s)
-{
-  //static char buf[1024];
-  //char *p = buf;
-  char *p = string_to_cstring_buf;
-  s = STRING(s);
-  while (s != cell_nil)
-    {
-      *p++ = VALUE (car (s));
-      s = cdr (s);
-    }
-  *p = 0;
-  //return buf;
-  return string_to_cstring_buf;
-}
-
-SCM
-stderr_ (SCM x)
-{
-  //SCM write;
-#if __NYACC__ || FIXME_NYACC
-  if (TYPE (x) == TSTRING)
-// #else
-//   if (TYPE (x) == STRING)
-#endif
-    eputs (string_to_cstring (x));
-  // else if ((write = assq_ref_env (cell_symbol_write, r0)) != cell_undefined)
-  //   apply (assq_ref_env (cell_symbol_display, r0), cons (x, cons (MAKE_NUMBER (2), cell_nil)), r0);
-#if __NYACC__ || FIXME_NYACC
-  else if (TYPE (x) == TSPECIAL || TYPE (x) == TSTRING || TYPE (x) == TSYMBOL)
-// #else
-//   else if (TYPE (x) == SPECIAL || TYPE (x) == STRING || TYPE (x) == SYMBOL)
-#endif
-    eputs (string_to_cstring (x));
-  else if (TYPE (x) == TNUMBER)
-    eputs (itoa (VALUE (x)));
-  else
-    eputs ("core:stderr: display undefined\n");
-  return cell_unspecified;
-}
-
-//math.c
-SCM
-greater_p (SCM x) ///((name . ">") (arity . n))
-{
-  int n = INT_MAX;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      if (VALUE (car (x)) >= n) return cell_f;
-      n = VALUE (car (x));
-      x = cdr (x);
-    }
-  return cell_t;
-}
-
-SCM
-less_p (SCM x) ///((name . "<") (arity . n))
-{
-  int n = INT_MIN;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      if (VALUE (car (x)) <= n) return cell_f;
-      n = VALUE (car (x));
-      x = cdr (x);
-    }
-  return cell_t;
 }
 
 int
@@ -1502,9 +1746,12 @@ main (int argc, char *argv[])
 #endif
 
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
-  eputs ("program: ");
-  display_ (r1);
-  eputs ("\n");
+  if (g_debug)
+    {
+      eputs ("program: ");
+      display_ (r1);
+      eputs ("\n");
+    }
   r3 = cell_vm_begin;
   r1 = eval_apply ();
   display_ (r1);

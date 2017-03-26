@@ -53,11 +53,12 @@
    #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
    #:cpp-defs '(
                 "__GNUC__=0"
-                "__MESCC__=1"
-                "__NYACC__=1"
+                "__MESC__=1"
+                "__NYACC__=1" ;; REMOVEME
                 "STDIN=0"
                 "STDOUT=1"
                 "STDERR=2"
+                "O_RDONLY=0"
 
                 "INT_MIN=-2147483648"
                 "INT_MAX=2147483647"

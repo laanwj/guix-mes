@@ -184,6 +184,10 @@ math_test ()
   i += 48;
   putchar (i);
   puts ("\n");
+
+  puts ("t: 3*4=");
+  i = 3 * 4;
+  if (i!=12) return 1;
   return read_test ();
 }
 

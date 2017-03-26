@@ -26,6 +26,7 @@ int open (char const *s, int mode);
 int read (int fd, void* buf, size_t n);
 void write (int fd, char const* s, int n);
 
+#define O_RDONLY 0
 #define INT_MIN -2147483648
 #define INT_MAX 2147483647
 
@@ -239,6 +240,7 @@ getchar ()
     i = ungetc_buf[ungetc_char--];
 
   if (i < 0) i += 256;
+
   return i;
 }
 

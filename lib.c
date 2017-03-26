@@ -18,13 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SCM
-xassq (SCM x, SCM a) ///for speed in core only
-{
-  while (a != cell_nil && x != CDAR (a)) a = CDR (a);
-  return a != cell_nil ? CAR (a) : cell_f;
-}
-
 //MINI_MES
 // SCM
 // length (SCM x)
@@ -80,7 +73,7 @@ append (SCM x) ///((arity . n))
 // }
 
 SCM
-assert_defined (SCM x, SCM e) ///(internal)
+assert_defined (SCM x, SCM e) ///((internal))
 {
   if (e == cell_undefined) return error (cell_symbol_unbound_variable, x);
   return e;
@@ -102,7 +95,7 @@ check_formals (SCM f, SCM formals, SCM args) ///((internal))
 }
 
 SCM
-check_apply (SCM f, SCM e)
+check_apply (SCM f, SCM e) ///((internal))
 {
   char const* type = 0;
   if (f == cell_f || f == cell_t) type = "bool";
@@ -241,4 +234,26 @@ bload_env (SCM a) ///((internal))
   g_stdin = stdin;
   r0 = mes_builtins (r0);
   return r2;
+}
+
+SCM
+values (SCM x) ///((arity . n))
+{
+  SCM v = cons (0, x);
+  TYPE (v) = TVALUES;
+  return v;
+}
+
+SCM
+arity_ (SCM x)
+{
+  assert (TYPE (x) == TFUNCTION);
+  return MAKE_NUMBER (FUNCTION (x).arity);
+}
+
+SCM
+xassq (SCM x, SCM a) ///for speed in core only
+{
+  while (a != cell_nil && x != CDAR (a)) a = CDR (a);
+  return a != cell_nil ? CAR (a) : cell_f;
 }

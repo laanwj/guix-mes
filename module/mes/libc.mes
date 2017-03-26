@@ -91,6 +91,13 @@ getchar ()
      ungetc_char = ungetc_char - 1;
     }
   if (i < 0) i += 256;
+
+#if 0
+  puts (\"get: \");
+  putchar (i);
+  puts (\"\n\");
+#endif
+
   return i;
 }
 "
