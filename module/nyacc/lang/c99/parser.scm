@@ -19,8 +19,6 @@
 
 (define-module (nyacc lang c99 parser)
   #:export (parse-c parse-c99 def-xdef? std-dict)
-  #:use-module (ice-9 optargs)
-  #:use-module (ice-9 syncase)
   #:use-module (nyacc lex)
   #:use-module (nyacc parse)
   #:use-module (nyacc lang util)
@@ -28,6 +26,13 @@
   #:use-module ((srfi srfi-9) #:select (define-record-type))
   #:use-module ((sxml xpath) #:select (sxpath))
   )
+
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase))
+  (use-modules (ice-9 optargs)))
+ (mes))
 
 (include-from-path "nyacc/lang/c99/mach.d/c99tab.scm")
 (include-from-path "nyacc/lang/c99/body.scm")

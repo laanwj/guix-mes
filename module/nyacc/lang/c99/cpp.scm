@@ -25,12 +25,17 @@
 	    cpp-expand-text
 	    expand-cpp-mref
 	    )
-  #:use-module (ice-9 syncase)
   #:use-module (nyacc parse)
   #:use-module (nyacc lex)
   #:use-module (nyacc lang util)
   #:use-module (rnrs arithmetic bitwise)
   )
+
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase)))
+ (mes))
 
 #|
   #define  #undef  #include  #if  #ifdef  #ifndef  #else  #endif  #elif

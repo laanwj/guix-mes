@@ -21,9 +21,15 @@
 	    ;; for ???
 	    move-if-changed
             fmterr)
-  #:use-module (ice-9 optargs)
   #:use-module ((srfi srfi-1) #:select(find))
   )
+
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 optargs))
+  (use-modules (ice-9 syncase)))
+ (mes))
 
 ;; This is a generic copyright/licence that will be printed in the output
 ;; of the examples/nyacc/lang/*/ actions.scm and tables.scm files.

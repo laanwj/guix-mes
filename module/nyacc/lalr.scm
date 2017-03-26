@@ -16,6 +16,13 @@
 ;;; License along with this library; if not, write to the Free Software
 ;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase))
+  (use-modules (ice-9 optargs)))
+ (mes))
+
 ;; I need to find way to preserve srconf, rrconf after hashify.
 ;; compact needs to deal with it ...
 
@@ -38,8 +45,6 @@
             process-spec
             reserved?
 	    )
-  #:use-module (ice-9 optargs)
-  #:use-module (ice-9 syncase)
   #:use-module ((srfi srfi-1) #:select (fold fold-right remove lset-union
 					     lset-intersection lset-difference))
   #:use-module ((srfi srfi-9) #:select (define-record-type))

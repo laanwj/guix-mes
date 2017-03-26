@@ -49,11 +49,16 @@
 	    like-c-ident?
 	    filter-mt remove-mt map-mt make-ident-like-p 
 	    c:ws c:if c:ir)
-  #:use-module (ice-9 optargs)
-  #:use-module (ice-9 syncase)
   #:use-module ((srfi srfi-1) #:select (remove append-reverse))
   #:use-module (ice-9 pretty-print)
   )
+
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase))
+  (use-modules (ice-9 optargs)))
+ (mes))
 
 ;; @section Constructing Lexical Analyzers
 ;; The @code{lex} module provides a set of procedures to build lexical
