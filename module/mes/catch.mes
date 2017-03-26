@@ -45,3 +45,5 @@
 (define (throw key . args)
   (let ((handler (fluid-ref %eh)))
     (apply handler (cons key args))))
+
+(define with-throw-handler catch) ; FIXME: hack for Nyacc 0.75
