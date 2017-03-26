@@ -298,8 +298,8 @@ malloc (int size)
 {
   //void *p = brk (0);
   char *p = 0;
-  if (!g_malloc_base) g_malloc_base = p;
   p = brk (0);
+  if (!g_malloc_base) g_malloc_base = p;
   brk (p+size);
   return p;
 }
