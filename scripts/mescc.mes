@@ -1,7 +1,8 @@
 #! /bin/sh
 # -*-scheme-*-
+MES=${MES-$(dirname $0)/mes}
 prefix=module/
-echo '()' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $(dirname $0)/mes $MES_FLAGS "$@"
+echo '()' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
 #paredit:||
 chmod +x a.out
 exit $?
