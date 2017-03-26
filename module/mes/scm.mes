@@ -183,6 +183,11 @@
 (define (delq x lst)
   (filter (lambda (e) (not (eq? e x))) lst))
 
+(define (compose proc . rest)
+  (if (null? rest) proc
+      (lambda args
+        (proc (apply (apply compose rest) args)))))
+
 
 ;; Vector
 (define (vector . rest) (list->vector rest))
