@@ -48,8 +48,7 @@ burp
   (lambda (x)
    #;()#t)
   )
-(display "\n***FIXME: vector test disabled\n")
-;;;(display #(0 1 2)) (newline)
+(display #(0 1 2)) (newline)
 (display (list '(foo
             #! boo !#
             ;;(bb 4)
