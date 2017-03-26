@@ -422,9 +422,10 @@ error (SCM key, SCM x)
   SCM throw;
   if ((throw = assq_ref_env (cell_symbol_throw, r0)) != cell_undefined)
     return apply (throw, cons (key, cons (x, cell_nil)), r0);
-  display_ (key);
-  puts (": ");
+  display_error_ (key);
+  eputs (": ");
   display_ (x);
+  eputs ("\n");
   assert (0);
 }
 
@@ -1633,27 +1634,27 @@ bload_env (SCM a) ///((internal))
 
   if (g_debug)
     {
-      puts ("symbols: ");
+      eputs ("symbols: ");
       SCM s = g_symbols;
       while (s && s != cell_nil) {
-        display_ (CAR (s));
-        puts (" ");
+        display_error_ (CAR (s));
+        eputs (" ");
         s = CDR (s);
       }
-      puts ("\n");
-      puts ("functions: ");
-      puts (itoa (g_function));
-      puts ("\n");
+      eputs ("\n");
+      eputs ("functions: ");
+      eputs (itoa (g_function));
+      eputs ("\n");
       for (int i = 0; i < g_function; i++)
         {
-          puts ("[");
-          puts (itoa (i));
-          puts ("]: ");
-          puts (g_functions[i].name);
-          puts ("\n");
+          eputs ("[");
+          eputs (itoa (i));
+          eputs ("]: ");
+          eputs (g_functions[i].name);
+          eputs ("\n");
         }
-      display_ (r0);
-      puts ("\n");
+      //display_error_ (r0);
+      //puts ("\n");
     }
   return r2;
 }
@@ -1699,12 +1700,12 @@ main (int argc, char *argv[])
   if (g_debug)
     {
       eputs ("program: ");
-      display_ (r1);
+      display_error_ (r1);
       eputs ("\n");
     }
   r3 = cell_vm_begin;
   r1 = eval_apply ();
-  display_ (r1);
+  display_error_ (r1);
   eputs ("\n");
 
 #if !MES_MINI

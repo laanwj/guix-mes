@@ -431,8 +431,9 @@ error (SCM key, SCM x)
   if ((throw = assq_ref_env (cell_symbol_throw, r0)) != cell_undefined)
     return apply (throw, cons (key, cons (x, cell_nil)), r0);
   display_error_ (key);
-  fputs (": ", stderr);
+  eputs (": ");
   display_error_ (x);
+  eputs ("\n");
   assert (!"error");
 }
 
@@ -521,7 +522,7 @@ SCM
 set_env_x (SCM x, SCM e, SCM a)
 {
   SCM p = assert_defined (x, assq (x, a));
-  if (TYPE (p) != TPAIR)  error (cell_symbol_not_a_pair, cons (p, x));
+  if (TYPE (p) != TPAIR) error (cell_symbol_not_a_pair, cons (p, x));
   return set_cdr_x (p, e);
 }
 
