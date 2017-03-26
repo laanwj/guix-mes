@@ -51,25 +51,30 @@
 ;; "MAX(X,Y)=((X)>(Y)?(X):(Y))" => ("MAX" ("X" "Y") . "((X)>(Y)?(X):(Y))")
 ;; @end example
 ;; @end deffn
-(define split-cppdef
-  (let ((rx1 (make-regexp "^([A-Za-z0-9_]+)\\([^)]*\\)=(.*)$"))
-	(rx2 (make-regexp "^([A-Za-z0-9_]+)=(.*)$")))
-    (lambda (defstr)
-      (let* ((m1 (regexp-exec rx1 defstr))
-	     (m2 (or m1 (regexp-exec rx2 defstr))))
-	(cond
-	 ((regexp-exec rx1 defstr) =>
-	  (lambda (m)
-	    (let* ((s1 (match:substring m1 1))
-		   (s2 (match:substring m1 2))
-		   (s3 (match:substring m1 3)))
-	      (cons s1 (cons s2 s3)))))
-	 ((regexp-exec rx2 defstr) =>
-	  (lambda (m)
-	    (let* ((s1 (match:substring m2 1))
-		   (s2 (match:substring m2 2)))
-	      (cons s1 s2))))
-	 (else #f))))))
+(cond-expand
+ (guile
+  (define split-cppdef
+    (let ((rx1 (make-regexp "^([A-Za-z0-9_]+)\\([^)]*\\)=(.*)$"))
+          (rx2 (make-regexp "^([A-Za-z0-9_]+)=(.*)$")))
+      (lambda (defstr)
+        (let* ((m1 (regexp-exec rx1 defstr))
+               (m2 (or m1 (regexp-exec rx2 defstr))))
+          (cond
+           ((regexp-exec rx1 defstr) =>
+            (lambda (m)
+              (let* ((s1 (match:substring m1 1))
+                     (s2 (match:substring m1 2))
+                     (s3 (match:substring m1 3)))
+                (cons s1 (cons s2 s3)))))
+           ((regexp-exec rx2 defstr) =>
+            (lambda (m)
+              (let* ((s1 (match:substring m2 1))
+                     (s2 (match:substring m2 2)))
+                (cons s1 s2))))
+           (else #f)))))))
+ (mes
+  (define (split-cppdef s)
+    (apply cons (string-split s #\=)))))
 
 ;; @deffn Procedure make-cpi debug defines incdirs inchelp
 ;; @end deffn
