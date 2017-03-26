@@ -42,6 +42,9 @@ exit $?
 (pass-if "char-set-contains?"
     (char-set-contains? char-set:whitespace #\space))
 
+(pass-if "list->char-set!"
+  (char-set= (char-set #\a #\b #\c) (list->char-set '(#\a #\b #\c))))
+
 (pass-if "string->char-set!"
   (char-set= (char-set #\a #\b #\c #\d) (string->char-set! "d" (string->char-set "abc"))))
 

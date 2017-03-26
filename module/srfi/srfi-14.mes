@@ -37,6 +37,9 @@
 
 (define char-set:whitespace (char-set #\tab #\return #\vtab #\newline #\space))
 
+(define (list->char-set lst)
+  (apply char-set lst))
+
 (define (string->char-set x . base)
   (apply char-set (append (string->list x) (if (null? base) '() (cdar base)))))
 
