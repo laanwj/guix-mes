@@ -81,18 +81,9 @@
 
 (define else #t)
 
-(define (map f l . r)
-  (if (null? l) '()
-      (if (null? r) (cons (f (car l)) (map f (cdr l)))
-          (if (null? (cdr r))
-              (cons (f (car l) (caar r)) (map f (cdr l) (cdar r)))
-              (if (null? (cddr r))
-                  (cons (f (car l) (caar r) (caadr r)) (map f (cdr l) (cdar r) (cdadr r)))
-                  '*MAP-4-NOT-SUPPORTED)))))
-
 (define-macro (simple-let bindings . rest)
-  (cons (cons 'lambda (cons (map car bindings) rest))
-        (map cadr bindings)))
+  (cons (cons 'lambda (cons (map1 car bindings) rest))
+        (map1 cadr bindings)))
 
 (define-macro (let bindings . rest)
   (cons 'simple-let (cons bindings rest)))
@@ -137,7 +128,7 @@
 
 (define *mes-prefix* "module/")
 (define (module->file o)
-  (string-append (string-join (map symbol->string o) "/") ".mes"))
+  (string-append (string-join (map1 symbol->string o) "/") ".mes"))
 
 (define *modules* '(mes/base-0.mes))
 (define (mes-load-module-env module a)
