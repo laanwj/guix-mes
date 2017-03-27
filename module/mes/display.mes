@@ -77,7 +77,7 @@
                                cdr)))
               (write-char #\# port)
               (write-char #\\ port)
-              (if name (display name)
+              (if name (display name port)
                   (write-char x port)))))
        ((closure? x)
         (display "#<procedure " port)
