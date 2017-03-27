@@ -26,9 +26,10 @@
 (define-macro (use-modules . rest) #t)
 
 (define (drain-input port)
-  (let loop ((c (read-char)))
-    (if (eq? c #\*eof*) '()
-        (cons c (loop (read-char))))))
+  (list->string
+   (let loop ((c (read-char)))
+     (if (eq? c #\*eof*) '()
+         (cons c (loop (read-char)))))))
 
 (define (make-string n . fill)
   (list->string (apply make-list n fill)))
