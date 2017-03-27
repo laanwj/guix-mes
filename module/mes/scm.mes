@@ -120,6 +120,12 @@
     (if entry (cdr entry)
         #f)))
 
+(define (assoc-set! alist key value)
+  (let ((entry (assoc key alist)))
+    (if (not entry) (acons key value alist)
+        (let ((entry (set-cdr! entry value)))
+          alist))))
+
 (define (memq x lst)
   (if (null? lst) #f ;; IF
       (if (eq? x (car lst)) lst

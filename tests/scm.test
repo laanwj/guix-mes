@@ -90,6 +90,8 @@ exit $?
 (pass-if "assq-set!" (sequal? (assq-set! '((b . 1)) 'a 0) '((a . 0) (b . 1))))
 (pass-if "assq-set! 2" (sequal? (assq-set! '((a . 0)) 'a 1) '((a . 1))))
 (pass-if "assoc" (sequal? (assoc '(a . 0) '((a . 0) (b . 1) ((a . 0) aa))) '((a . 0) aa)))
+(pass-if-equal "assoc-set!" '((a . 0) (b . 2)) (assoc-set! '((a . 0) (b . 1)) 'b 2))
+(pass-if-equal "assoc-set! new" '((b . 2) (a . 0)) (assoc-set! '((a . 0)) 'b 2))
 
 (pass-if "builtin? car" (builtin? car))
 (pass-if "builtin? cdr" (builtin? cdr))
