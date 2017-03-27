@@ -23,6 +23,7 @@
 ;;; Code:
 
 (mes-use-module (mes guile))
+(mes-use-module (mes pmatch))
 (mes-use-module (rnrs arithmetic bitwise))
 
 (mes-use-module (nyacc parse))
