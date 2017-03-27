@@ -142,6 +142,7 @@ struct scm scm_vm_eval_null_p = {TSPECIAL, "*vm-eval-null-p*",0};
 
 struct scm scm_vm_eval_set_x = {TSPECIAL, "*vm-eval-set!*",0};
 struct scm scm_vm_eval_macro = {TSPECIAL, "*vm-eval-macro*",0};
+struct scm scm_vm_eval_check_func = {TSPECIAL, "*vm-eval-check-func*",0};
 struct scm scm_vm_eval2 = {TSPECIAL, "*vm-eval2*",0};
 struct scm scm_vm_macro_expand = {TSPECIAL, "core:macro-expand",0};
 struct scm scm_vm_begin = {TSPECIAL, "*vm-begin*",0};
@@ -675,6 +676,7 @@ eval_apply ()
 #endif
     case cell_vm_eval_set_x: goto eval_set_x;
     case cell_vm_eval_macro: goto eval_macro;
+    case cell_vm_eval_check_func: goto eval_check_func;
     case cell_vm_eval2: goto eval2;
     case cell_vm_macro_expand: goto macro_expand;
     case cell_vm_begin: goto begin;
@@ -865,7 +867,9 @@ eval_apply ()
                   }
                 goto eval;
               }
-            push_cc (CDR (r1), r1, r0, cell_vm_eval2); goto evlis;
+            push_cc (car (r1), r1, r0, cell_vm_eval_check_func); goto eval;
+            eval_check_func:
+            push_cc (CDR (r2), r2, r0, cell_vm_eval2); goto evlis;
             eval2:
             r1 = cons (car (r2), r1);
             goto apply;
@@ -1549,6 +1553,8 @@ mes_symbols () ///((internal))
 
   a = acons (cell_symbol_dot, cell_dot, a);
   a = acons (cell_symbol_begin, cell_begin, a);
+  a = acons (cell_symbol_call_with_values, cell_symbol_call_with_values, a);
+  a = acons (cell_symbol_current_module, cell_symbol_current_module, a);
   a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
   a = acons (cell_symbol_sc_expand, cell_f, a);
 
