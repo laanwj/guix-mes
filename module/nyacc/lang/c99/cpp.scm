@@ -140,10 +140,10 @@
 (include-from-path "nyacc/lang/c99/mach.d/cpptab.scm")
 (include-from-path "nyacc/lang/c99/mach.d/cppact.scm")
 
-(define raw-parser
+(define cpp-raw-parser
   (make-lalr-parser
-   (list (cons 'len-v len-v) (cons 'pat-v pat-v) (cons 'rto-v rto-v)
-	 (cons 'mtab mtab) (cons 'act-v act-v))))
+   (list (cons 'len-v cpp-len-v) (cons 'pat-v cpp-pat-v) (cons 'rto-v cpp-rto-v)
+	 (cons 'mtab cpp-mtab) (cons 'act-v cpp-act-v))))
 
 (define (cpp-err fmt . args)
   (apply throw 'cpp-error fmt args))
@@ -169,7 +169,7 @@
 
 ;; generate a lexical analyzer per string
 (define gen-cpp-lexer
-  (make-lexer-generator mtab #:comm-skipper cpp-comm-skipper))
+  (make-lexer-generator cpp-mtab #:comm-skipper cpp-comm-skipper))
 
 ;; @deffn parse-cpp-expr text => tree
 ;; Given a string returns a cpp parse tree.  This is called by
@@ -181,7 +181,7 @@
    'nyacc-error
    (lambda ()
      (with-input-from-string text
-       (lambda () (raw-parser (gen-cpp-lexer)))))
+       (lambda () (cpp-raw-parser (gen-cpp-lexer)))))
    (lambda (key fmt . args)
      (apply throw 'cpp-error fmt args))))
 

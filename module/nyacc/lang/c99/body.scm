@@ -251,7 +251,7 @@
   ;; will end up in same mode...  so after
   ;; int x; // comment
   ;; the lexer will think we are not at BOL.
-  (let* ((match-table mtab)
+  (let* ((match-table c99-mtab)
 	 (read-ident read-c-ident)
 	 (read-comm read-c-comm)
 	 ;;
@@ -394,7 +394,7 @@
 		 (cond
 		  ((apply-helper file)) ; use helper
 		  ((not path) (p-err "not found: ~S" file)) ; file not found
-		  ((with-input-from-file path run-parse) => ; include tree
+		  ((with-input-from-file path c99-parser-run-parse) => ; include tree
 		   (lambda (tree) (for-each add-define (xp1 tree))))
 		  (else (p-err "included from ~S" path)))))
 	      ((define) (add-define stmt))

@@ -672,22 +672,22 @@
 ;;; =====================================
 
 ;; The following are needed by the code in pbody.scm.
-(define len-v (assq-ref c99-mach 'len-v))
-(define pat-v (assq-ref c99-mach 'pat-v))
-(define rto-v (assq-ref c99-mach 'rto-v))
-(define mtab (assq-ref c99-mach 'mtab))
-(define act-v (vector-map
-	       (lambda (ix f) (eval f (current-module)))
-	       (vector-map (lambda (ix actn) (wrap-action actn))
-			   (assq-ref c99-mach 'act-v))))
+(define c99-mach-len-v (assq-ref c99-mach 'len-v))
+(define c99-mach-pat-v (assq-ref c99-mach 'pat-v))
+(define c99-mach-rto-v (assq-ref c99-mach 'rto-v))
+(define c99-mach-mtab (assq-ref c99-mach 'mtab))
+(define c99-mach-act-v (vector-map
+                        (lambda (ix f) (eval f (current-module)))
+                        (vector-map (lambda (ix actn) (wrap-action actn))
+                                    (assq-ref c99-mach 'act-v))))
 
 (include-from-path "nyacc/lang/c99/body.scm")
 
-(define raw-parser (make-lalr-parser c99-mach))
+(define c99-mach-raw-parser (make-lalr-parser c99-mach))
 
-(define (run-parse)
+(define (c99-mach-run-parse)
   (let ((info (fluid-ref *info*)))
-    (raw-parser (gen-c-lexer) #:debug (cpi-debug info))))
+    (c99-mach-raw-parser (gen-c-lexer) #:debug (cpi-debug info))))
 
 (define* (dev-parse-c99 #:key
 			(cpp-defs '())	; CPP defines
@@ -703,8 +703,8 @@
        (with-fluid*
 	   *info* info
 	   (lambda ()
-	     (raw-parser (gen-c-lexer #:mode mode #:xdef? xdef?)
-			 #:debug debug)))))
+	     (c99-mach-raw-parser (gen-c-lexer #:mode mode #:xdef? xdef?)
+                                  #:debug debug)))))
    (lambda (key fmt . rest)
      (report-error fmt rest)
      #f)))
