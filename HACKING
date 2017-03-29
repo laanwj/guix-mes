@@ -1,11 +1,61 @@
 -*-mode:org-*-
 
-* Fully source-based bootstrapping
+* ROADMAP
+** TODO release 0.5
+  1. mes.c: prototype Scheme interpreter in C, mature enough to run
+  2. guile/mescc.scm: C compiler on [Guile] Scheme, that can compile
+     2a. scaffold/hello.c: Simplest C program, compiled with 2.
+     2b. scaffold/micro-mes.c: main of 3. (2nd Scheme interpreter) + mlib.c
+     2c. scaffold/cons-mes.c: run simple hardcoded sexp
+     2d. scaffold/tiny-mes.c: load memory dump, run simple sexp
+     2e. scaffold/t.c: c compiler tests, enough to support compiling
+  3. scaffold/mini-mes.c: 2nd Scheme intepreter in C, without [g]libc, using
+  4. mlib.c: Minimal Mescc C library
+     4a. scaffold/hello.c: Simplest C program, compiled with 5.
+     4b. scaffold/micro-mes.c: main of 3. (2nd Scheme interpreter) + mlib.c
+     4x. *we are here, any more steps to reach 5*
+     rm -f a.out; MES_DEBUG=1 scripts/mescc.mes scaffold/micro-mes.c > a.out
+     4c. scaffold/cons-mes.c: run simple hardcoded sexp
+     4d. scaffold/tiny-mes.c: load memory dump, run simple sexp
+     4e. scaffold/t.c: run c test suite with scripts/mescc.mes
+  5. scripts/mescc.mes: C compiler on mes, that can build mini-mes
+     5a. remove __MESC__/__NYAC__ C workarounds in gc.c
+     5b. module/language/c99/compiler.mes: refactor expr->arg, expr->accu, ast->info
+     5c. merge *.c into scaffold/mini-mes.c
+     5d. merge scaffold/mini-mes.c into mes.c
+  6. scripts/mescc.mes: C compiler on mes, that can build mes
+  7. release self-hosting Mes 0.5
+     7a. discuss full source bootstrap strategy on guile-user with
+     Orians Jeremiah (stage0+) Luca Saiu's (GNU Epsilon).
+** release 0.x, unsorted
+  - produce intermediate annotated assembly-like mes.S
+  - AND/OR: connect to GNU Epsilon's VM
+  - AND/OR: connect to OriansJ's stage0...LISP bootstrapping tools
+  - real module support, bonus for supporting Guile's define-module/define-public syntax
+  - get full source syntax-case up (Andre van Tonder?) OR drop
+    psyntax/syntax-case and rewrite Nyacc without syntax-case+R7RS Ellipsis
+  - support regexp OR rewrite Nyacc without regexps
+  - split-off Guile C compiler as standalone Guile project, still
+    respecting no-syntax-case bootstrap requirement
+*** Compile the [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
+  - build tcc (tinycc)
+** release 1.0
+  - work to replace GuixSD's bootstrap binaries for x86
+  - more architectures?
+
+** DONE
+** Support call-with-current-continuation, refactor catch/throw
+** 0.4: Support Nyacc, Gcc-compiled Mes compiles minimal main.c using nyacc
+** 0.3: Garbage collector
+** 0.2: Support psyntax
+** 0.1: Mes eval/apply feature complete; support syntax-rules, compile main.c using LALR, dump ELF
+
+* Full source bootstrapping
 
 ** R6RS-like scheme interpreter
 This first part is prototyped in C by the mes.c core and Scheme
 bootstrap code in module/.  Of course, while mes.c is pretty small it
-cannot serve as a fully source-based solution.
+cannot serve as a full source solution.
 
 The initial idea was to have the minimal core support LISP-1.5 (or
 something very close to that as a tribute to John McCarthy) and extend
@@ -24,7 +74,6 @@ time to start doing something useful.
 
 * Bugs
 ** The Scheme reader is very slow.
-** Catch/throw are a syntax only hack for Nyacc.
 ** Fluids are a hack for Nyacc.
 ** Prototype mes.c depends on a C compiler.
 *** Translate C-prototype mes.c into annotated hex?
@@ -37,15 +86,6 @@ Another idea (thanks Rutger!) is to rewrite the mes.c core in a s-exp
 C/Assembly variant and thave mescc produce the simple, annotated
 bootstrap binary.
 
-** Actually do something useful
-*** Rewrite the mescc compiler to work on the Nyacc AST.
-The proof-of-concept mescc compiler uses a simple, whoefully
-incomplete AST produced by a simplistic LALR-based C-parser.
-*** Implement more bits of the compiler.
-As Mes now runs Nyacc, and Guile runs the mescc compiler, this
-compiler can be developed using Guile.
-*** Compile mes.c using mescc.
-A first milestone, next up is...
 *** Compile the [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
 
 * OLD: Booting from LISP-1.5 into Mes
@@ -94,15 +134,10 @@ MES_TINY=1 ./mes-32 --dump < module/mes/tiny-0.mes > module/mes/tiny-0-32.mo
 
 ** C assembler/linker
 *** [[http://www.tldp.org/HOWTO/Assembly-HOWTO/linux.html][Assembly HOWTO]]
-*** System call clue bat
-Basically, you issue an int 0x80, with the __NR_syscallname number
-(from asm/unistd.h) in eax, and parameters (up to six) in ebx, ecx,
-edx, esi, edi, ebp respectively.
 *** ELF
 7f 45 4c 46
 *** [[http://www.muppetlabs.com/~breadbox/software/tiny/][Small ELF programs]]
 *** [[http://www.cirosantilli.com/elf-hello-world/][Elf hello world]]
-
 ** SC - c as s-expressions
 sc: http://sph.mn/content/3d3
 ** RNRS
@@ -118,3 +153,22 @@ http://armpit.sourceforge.net/
 http://common-lisp.net/project/movitz/movitz.html
 
 <civodul> janneke: https://github.com/namin/inc looks interesting  [15:18]
+** Orians Jeremiah
+<OriansJ> janneke: also, if you look at
+          https://github.com/oriansj/stage0/tree/master/stage2/High_level_prototypes
+          [the garbage collected lisp I implemented], if there are any pieces
+          I could add to finish off your mes lisp bootstrap just let me know
+          because I would be more than happy to do that :D
+<janneke> OriansJ: that's what I'm hoping for, that our efforts can be
+          complementary and we can work together
+*** lfam (~lfam@2601:47:4180:2ffb:7c05:17de:cf5f:23ef) has quit: Ping timeout:
+    246 seconds  [00:22]
+<janneke> exciting times!  [00:23]
+<janneke> OriansJ: i looked a few times and saw 'LISP empty', so thanks for
+          the pointer!  [00:24]
+<civodul> OriansJ, janneke: from that page, there's also:
+          https://web.archive.org/web/20160604035203fw_/http://homepage.ntlworld.com/edmund.grimley-evans/bcompiler.html
+
+** C4/C500
+https://web.archive.org/web/20160604041431/http://homepage.ntlworld.com/edmund.grimley-evans/cc500/cc500.c
+https://github.com/rswier/c4/blob/master/c4.c

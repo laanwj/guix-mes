@@ -63,7 +63,8 @@ main (int argc, char *argv[])
   //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
 
   if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
-  if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
+  //FIXME: Nyacc on mes barfs: unhandled exception: not-a-pair (("0.4" . car))
+  //if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
 
 #if __GNUC__
   g_stdin = STDIN;
