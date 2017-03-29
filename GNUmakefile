@@ -71,6 +71,7 @@ TESTS:=\
  tests/fluids.test\
  tests/catch.test\
  tests/psyntax.test\
+ tests/pmatch.test\
  tests/let-syntax.test\
  tests/record.test\
  tests/match.test\
