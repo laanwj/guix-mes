@@ -124,3 +124,6 @@
      ((eq? c #\*eof*) s)
      (#t (read-string (read-char) (peek-char) (append-char s c)))))
   (list->string (read-string (read-char) (peek-char) (list))))
+
+(define (access? file-name how) #t)
+(define R_OK 0)
