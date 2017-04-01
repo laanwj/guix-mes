@@ -25,21 +25,15 @@ make_vector (SCM n)
   VALUE (tmp_num) = TVECTOR;
   SCM v = alloc (k);
   SCM x = make_cell_ (tmp_num, k, v);
-#if 0
-  //__GNUC__
+#if __GNUC__
   for (int i=0; i<k; i++) g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
 #else
-  for (int i=0; i<k; i++)
+  for (int i=v; i<k+v; i++)
     {
-      SCM y = v+i;
-      SCM z = vector_entry (cell_unspecified);
-      //g_cells[y] = g_cells[z];
-      SCM zz = TYPE (z);
-      TYPE (y) = zz;
-      zz = CAR (z);
-      CAR (y) = zz;
-      zz = CDR (z);
-      CDR (y) = zz;
+      SCM t = vector_entry (cell_unspecified);
+      struct scm s = g_cells[t];
+      s = g_cells[t];
+      g_cells[i] = s;
     }
 #endif
   return x;
@@ -75,19 +69,12 @@ vector_set_x (SCM x, SCM i, SCM e)
 {
   assert (TYPE (x) == TVECTOR);
   assert (VALUE (i) < LENGTH (x));
-#if 0
-  //__GNUC__
+#if __GNUC__
   g_cells[VECTOR (x)+VALUE (i)] = g_cells[vector_entry (e)];
 #else
-  SCM y = VECTOR (x)+VALUE (i);
-  SCM z = vector_entry (e);
-  //g_cells[y] = g_cells[z];
-  SCM zz = TYPE (z);
-  TYPE (y) = zz;
-  zz = CAR (z);
-  CAR (y) = zz;
-  zz = CDR (z);
-  CDR (y) = zz;
+  SCM a = VECTOR (x)+VALUE (i);
+  SCM b = vector_entry (e);
+  g_cells[a] = g_cells[b];
 #endif
   return cell_unspecified;
 }
@@ -100,20 +87,11 @@ list_to_vector (SCM x)
   SCM p = VECTOR (v);
   while (x != cell_nil)
     {
-#if 0
-      //__GNUC__
+#if __GNUC__
       g_cells[p++] = g_cells[vector_entry (car (x))];
 #else
-      SCM y = p;
-      SCM z = vector_entry (car (x));
-      //g_cells[p++] = g_cells[y];
-      SCM zz = TYPE (z);
-      TYPE (y) = zz;
-      zz = CAR (z);
-      CAR (y) = zz;
-      zz = CDR (z);
-      CDR (y) = zz;
-      p++;
+      SCM b = vector_entry (car (x));
+      g_cells[p++] = g_cells[b];
 #endif
       x = cdr (x);
     }
