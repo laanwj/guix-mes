@@ -42,8 +42,8 @@ typedef int bool;
 #define FIXED_PRIMITIVES 1
 
 int ARENA_SIZE = 100000;
-int MAX_ARENA_SIZE = 40000000;
-int GC_SAFETY = 10000;
+int MAX_ARENA_SIZE = 20000000;
+int GC_SAFETY = 20000;
 
 typedef int SCM;
 enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART};
@@ -565,9 +565,7 @@ SCM
 eval_apply ()
 {
  eval_apply:
-  if (g_free + GC_SAFETY > ARENA_SIZE)
-    gc_pop_frame (gc (gc_push_frame ()));
-
+  gc_check ();
   switch (r3)
     {
     case cell_vm_evlis: goto evlis;
@@ -603,6 +601,7 @@ eval_apply ()
   SCM x = cell_nil;
   SCM y = cell_nil;
  evlis:
+  gc_check ();
   if (r1 == cell_nil) goto vm_return;
   if (TYPE (r1) != TPAIR) goto eval;
   push_cc (car (r1), r1, r0, cell_vm_evlis2);
@@ -615,6 +614,7 @@ eval_apply ()
   goto vm_return;
 
  apply:
+  gc_check ();
   switch (TYPE (car (r1)))
     {
     case TFUNCTION: {
@@ -702,6 +702,7 @@ eval_apply ()
   goto apply;
 
  eval:
+  gc_check ();
   switch (TYPE (r1))
     {
     case TPAIR:
@@ -819,6 +820,7 @@ eval_apply ()
  begin:
   x = cell_unspecified;
   while (r1 != cell_nil) {
+    gc_check ();
     if (TYPE (r1) == TPAIR && TYPE (CAR (r1)) == TPAIR)
       {
         if (CAAR (r1) == cell_symbol_begin)

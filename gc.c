@@ -139,6 +139,14 @@ gc_loop (SCM scan) ///((internal))
 }
 
 SCM
+gc_check ()
+{
+  if (g_free + GC_SAFETY > ARENA_SIZE)
+    gc_pop_frame (gc (gc_push_frame ()));
+  return cell_unspecified;
+}
+
+SCM
 gc ()
 {
 #if _POSIX_SOURCE
