@@ -53,11 +53,11 @@ gc_flip () ///((internal))
   g_cells = g_news;
   g_news = cells;
 #if _POSIX_SOURCE
-  if (g_debug) fprintf (stderr, " => jam[%d]\n", g_free);
+  if (g_debug) fprintf (stderr, ";;;   => jam[%d]\n", g_free);
 #else
   if (g_debug)
     {
-      eputs (" => jam[");
+      eputs (";;;   => jam[");
       eputs (itoa (g_free));
       eputs ("]\n");
     }
@@ -164,12 +164,14 @@ SCM
 gc ()
 {
 #if _POSIX_SOURCE
-  if (g_debug) fprintf (stderr, "***gc[%d]...", g_free);
+  if (g_debug) fprintf (stderr, ";;; gc[%d:%d]...", g_free, ARENA_SIZE - g_free);
 #else
   if (g_debug)
     {
-      eputs ("***gc[");
+      eputs (";;; gc[");
       eputs (itoa (g_free));
+      eputs (":");
+      eputs (itoa (ARENA_SIZE - g_free));
       eputs ("]...");
     }
 #endif

@@ -32,8 +32,8 @@ int ARENA_SIZE = 100000;
 #else
 int ARENA_SIZE = 1000000000;
 #endif
-int MAX_ARENA_SIZE = 20000000;
-int GC_SAFETY = 1000;
+int MAX_ARENA_SIZE = 40000000;
+int GC_SAFETY = 10000;
 
 char *arena = 0;
 
