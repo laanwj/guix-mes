@@ -98,9 +98,9 @@
 
 (define (assq-set! alist key val)
   (let ((entry (assq key alist)))
-    (cond (entry (set-cdr! entry val)
-                 alist)
-          (#t (cons (cons key val) alist)))))
+    (if (not entry) (acons key val alist)
+        (let ((entry (set-cdr! entry val)))
+          alist))))
 
 (define (assq-ref alist key)
   (let ((entry (assq key alist)))
