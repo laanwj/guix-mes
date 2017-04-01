@@ -74,6 +74,7 @@ TESTS:=\
  tests/psyntax.test\
  tests/pmatch.test\
  tests/let-syntax.test\
+ tests/guile.test\
  tests/record.test\
  tests/match.test\
  tests/peg.test\

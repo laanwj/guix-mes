@@ -319,7 +319,7 @@ realloc (int *p, int size)
    puts
    strcmp
    itoa
-   ;; isdigit
-   ;; malloc
-   ;; realloc
+   isdigit
+   malloc
+   realloc
    ))

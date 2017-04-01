@@ -73,3 +73,54 @@
                (r (thunk)))
           (set-current-input-port save)
           r))))
+
+(define open-input-string
+  (let ((save-set-current-input-port #f)
+        (string-port #f))
+    (lambda (string)
+      (set! save-set-current-input-port set-current-input-port)
+      (set! string-port (cons '*string-port* (gensym)))
+      (set! set-current-input-port
+            (let ((save-peek-char peek-char)
+                  (save-read-char read-char)
+                  (save-unread-char unread-char)
+                  (tell 0)
+                  (end (string-length string)))
+              (lambda (port)
+                (if (not (equal? port string-port)) (save-set-current-input-port port)
+                    (begin
+                      (set! peek-char
+                            (lambda () (if (= tell end) (integer->char -1)
+                                           (string-ref string (- tell 1)))))
+                      (set! read-char
+                            (lambda () (if (= tell end) (integer->char -1)
+                                           (begin
+                                             (set! tell (1+ tell))
+                                             (string-ref string (- tell 1))))))
+                      (set! unread-char
+                            (lambda (c) (set! tell (1- tell)) c))
+                      (set! set-current-input-port
+                            (lambda (port)
+                              (save-set-current-input-port port)
+                              (set! peek-char save-peek-char)
+                              (set! read-char save-read-char)
+                              (set! unread-char save-unread-char)
+                              (set! set-current-input-port save-set-current-input-port)
+                              string-port)))))))
+      string-port)))
+
+(define (read-string)
+  (define (append-char s c)
+    (append2 s (cons c (list))))
+  (define (read-string c p s)
+    (cond
+     ((and (eq? c #\\) (or (eq? p #\\) (eq? p #\")))
+      ((lambda (c)
+         (read-string (read-char) (peek-char) (append-char s c)))
+       (read-char)))
+     ((and (eq? c #\\) (eq? p #\n))
+      (read-char)
+      (read-string (read-char) (peek-char) (append-char s 10)))
+     ((eq? c #\*eof*) s)
+     (#t (read-string (read-char) (peek-char) (append-char s c)))))
+  (list->string (read-string (read-char) (peek-char) (list))))
