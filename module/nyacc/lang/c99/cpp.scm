@@ -29,7 +29,7 @@
   #:use-module (nyacc lex)
   #:use-module (nyacc lang util)
   #:use-module (rnrs arithmetic bitwise)
-  #:use-module (ice-9 match)
+  #:use-module (system base pmatch)
   )
 
 (cond-expand
@@ -259,40 +259,40 @@
      ((null? tkl) (apply string-append (add-chl chl stl)))
      ((char? (car tkl)) (iter stl (cons (car tkl) chl) nxt (cdr tkl)))
      (else
-      (match tkl
-	((('arg . arg) 'dhash (key . val) . rest)
+      (pmatch tkl
+	(((arg . ,arg) dhash (,key . ,val) . ,rest)
 	 (iter stl chl nxt
 	       (acons key (string-append val arg) (list-tail tkl 3))))
 
-	(((key . val) 'dhash ('arg . arg) . rest)
+	(((,key . ,val) dhash (arg . ,arg) . ,rest)
 	 (iter stl chl nxt
 	       (acons 'arg (string-append arg val) (list-tail tkl 3))))
 
-	((('arg . arg) 'hash . rest)
+	(((arg . ,arg) hash . ,rest)
 	 (iter stl chl (string-append "\"" arg "\"") (list-tail tkl 2)))
 
-	((('comm . val) . rest)
+	(((comm . ,val) . ,rest)
 	 (iter stl chl (string-append "/*" val " */") (cdr tkl)))
 
-	((('ident . rval) ('ident . lval) . rest)
+	(((ident . ,rval) (ident . ,lval) . ,rest)
 	 (iter stl chl (string-append " " rval) (cdr tkl)))
 
-	((('string . val) . rest)
+	(((string . ,val) . ,rest)
 	 (iter stl (cons #\" chl) val (cons #\" rest)))
 
-	((('ident . val) . rest)
+	(((ident . ,val) . ,rest)
 	 (iter stl chl val rest))
 
-	((('arg . val) . rest)
+	(((arg . ,val) . ,rest)
 	 (iter stl chl val rest))
 
-	((('defined . val) . rest)
+	(((defined . ,val) . ,rest)
 	 (iter stl chl val rest))
 
-	(('space . rest)
+	((space . ,rest)
 	 (iter stl (cons #\space chl) nxt rest))
 
-	((asis . rest)
+	((,asis . ,rest)
 	 (iter stl chl asis rest))
 
 	(otherwise
