@@ -1439,27 +1439,65 @@ gc_init_cells () ///((internal))
 {
   //return 0;
   //g_cells = (scm *)malloc (ARENA_SIZE);
+  //int size = ARENA_SIZE * sizeof (struct scm);
+  int size = ARENA_SIZE * 12;
+#if MES_GC
+  size = size * 2;
+#endif
 #if __GNUC__
-  arena = (char*)malloc (ARENA_SIZE);
+  arena = (char*)malloc (size);
 #else
   char *p = 0;
-  p = malloc (ARENA_SIZE);
+  p = malloc (size);
   arena = p;
 #endif
   g_cells = arena;
   return 0;
   //g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
 
-// #if __NYACC__ || FIXME_NYACC
-//   TYPE (0) = TVECTOR;
-// // #else
-// //   TYPE (0) = VECTOR;
-// #endif
-//   LENGTH (0) = 1000;
-//   VECTOR (0) = 0;
-//   g_cells++;
-//   TYPE (0) = CHAR;
-//   VALUE (0) = 'c';
+  TYPE (0) = TVECTOR;
+  LENGTH (0) = 1000;
+  VECTOR (0) = 0;
+  g_cells++;
+  TYPE (0) = TCHAR;
+  VALUE (0) = 'c';
+  return 0;
+}
+
+SCM
+gc_init_news () ///((internal))
+{
+  eputs ("gc_init_news\n");
+  ///g_news = g_cells-1 + ARENA_SIZE;
+  //g_news = g_cells + ARENA_SIZE * 12 + GC_SAFETY * 6;
+  char *p = g_cells;
+  // g_news = g_cells;
+  int halfway = ARENA_SIZE * 12;
+  int safety = GC_SAFETY * 12;
+  safety = safety / 2;
+  halfway = halfway + safety;
+  // g_news = g_news + halfway;
+  p = p + halfway;
+  g_news = p;
+  eputs ("g_cells=");
+  eputs (itoa (g_cells));
+  eputs (" size=");
+  eputs (itoa (halfway));
+  eputs (" news=");
+  eputs (itoa (g_news));
+  eputs (" news - cells=");
+  char * c = g_cells;
+  eputs (itoa (p - c));
+  eputs ("\n");
+
+
+  NTYPE (0) = TVECTOR;
+  NLENGTH (0) = 1000;
+  NVECTOR (0) = 0;
+  g_news++;
+  NTYPE (0) = TCHAR;
+  NVALUE (0) = 'n';
+  return 0;
 }
 
 // INIT NEWS

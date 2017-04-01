@@ -70,12 +70,41 @@ gc_copy (SCM old) ///((internal))
 {
   if (TYPE (old) == TBROKEN_HEART) return g_cells[old].car;
   SCM new = g_free++;
+#if 0
   g_news[new] = g_cells[old];
+#else
+  SCM y = new;
+  SCM z = old;
+  SCM zz = TYPE (z);
+  NTYPE (y) = zz;
+  zz = CAR (z);
+  NCAR (y) = zz;
+  zz = CDR (z);
+  NCDR (y) = zz;
+#endif
   if (NTYPE (new) == TVECTOR)
     {
       NVECTOR (new) = g_free;
       for (int i=0; i<LENGTH (old); i++)
+#if 0
+        //__GNUC__
         g_news[g_free++] = g_cells[VECTOR (old)+i];
+#else
+      {
+        //eputs ("gc_copy\n");
+        y = g_free;
+        g_free++;
+        z = VECTOR (old);
+        z = z + i;
+        //z = g_cells[z];
+        zz = TYPE (z);
+        NTYPE (y) = zz;
+        zz = CAR (z);
+        NCAR (y) = zz;
+        zz = CDR (z);
+        NCDR (y) = zz;
+      }
+#endif
     }
   TYPE (old) = TBROKEN_HEART;
   CAR (old) = new;
