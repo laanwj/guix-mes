@@ -88,5 +88,30 @@ exit $?
      (_ "no match: (1 2)"))
    '(1 2)))
 
-(result 'report)
+(pass-if-equal "match nyacc 0"
+               '(rest)
+               (match '(first rest)
+                 ((first . rest)
+                  rest)))
 
+(pass-if-equal "match nyacc 1"
+               '(#\. rest)
+               (match '(first #\. rest)
+                 (('first . rest)
+                  rest)))
+
+(let ((tkl0-simple '((ident . type) rest)))
+  (pass-if-equal "match nyacc simple"
+                 (cons (cdar tkl0-simple) (cdr tkl0-simple))
+                 (match tkl0-simple
+                   ((('ident . val) . rest)
+                    (cons val rest)))))
+
+(let ((tkl0 '((ident . "type") #\. #\] (arg . "0") #\[ (ident . "g_cells"))))
+  (pass-if-equal "match nyacc tkl0"
+                 (cdr tkl0)
+                 (match tkl0
+                   ((('ident . val) . rest)
+                    rest))))
+
+(result 'report (if mes? 2 0))

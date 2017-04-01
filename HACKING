@@ -73,6 +73,7 @@ syntax-case]] with R7RS ellipsis, [[http://www.nongnu.org/nyacc/][Nyacc]] and [[
 time to start doing something useful.
 
 * Bugs
+** test/match.test ("nyacc-simple"): hygiene problem in match
 ** The Scheme reader is very slow.
 ** Fluids are a hack for Nyacc.
 ** Prototype mes.c depends on a C compiler.
