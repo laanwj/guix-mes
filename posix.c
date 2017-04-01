@@ -114,7 +114,7 @@ write_byte (SCM x) ///((arity . n))
   SCM p = cdr (x);
   int fd = 1;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-#if !MES_MINI
+#if _POSIX_SOURCE
   FILE *f = fd == 1 ? stdout : stderr;
   fputc (VALUE (c), f);
 #else
@@ -173,7 +173,9 @@ force_output (SCM p) ///((arity . n))
 {
   int fd = 1;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-  // FILE *f = fd == 1 ? stdout : stderr;
-  // fflush (f);
+#if _POSIX_SOURCE
+  FILE *f = fd == 1 ? stdout : stderr;
+  fflush (f);
+#endif
   return cell_unspecified;
 }
