@@ -15,9 +15,9 @@
      4b. scaffold/micro-mes.c: main of 3. (2nd Scheme interpreter) + mlib.c
      4c. scaffold/cons-mes.c: run simple hardcoded sexp
      4d. scaffold/tiny-mes.c: load memory dump, run simple sexp
-     4x. *we are here, any more steps to reach 5*
-     rm -f a.out; MES_DEBUG=1 scripts/mescc.mes scaffold/tiny-mes.c > a.out
      4e. scaffold/t.c: run c test suite with scripts/mescc.mes
+     4x. *we are here, any more steps to reach 5*
+     rm -f a.out; MES_DEBUG=1 scripts/mescc.mes scaffold/t.c > a.out
   5. scripts/mescc.mes: C compiler on mes, that can build mini-mes
      5a. remove __MESC__/__NYAC__ C workarounds in gc.c
      5b. module/language/c99/compiler.mes: refactor expr->arg, expr->accu, ast->info
