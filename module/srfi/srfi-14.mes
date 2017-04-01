@@ -48,4 +48,4 @@
   base)
 
 (define (char-set-contains? cs x)
-  (memq x cs))
+  (and (memq x cs) #t))
