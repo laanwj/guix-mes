@@ -35,6 +35,16 @@ mes.o: math.c math.h math.i math.environment.i
 mes.o: posix.c posix.h posix.i posix.environment.i
 mes.o: reader.c reader.h reader.i reader.environment.i
 
+mini-mes: doc/examples/mini-mes.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -g -o mini-mes '-DVERSION="0.4"' $<
+	chmod +x $@
+
+micro-mes: doc/examples/micro-mes.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -o micro-mes '-DVERSION="0.4"' $<
+	chmod +x $@
+
 clean:
 	rm -f mes mes.o *.environment.i *.symbols.i *.environment.h *.cat a.out
 
