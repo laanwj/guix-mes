@@ -56,4 +56,8 @@ exit $?
 (pass-if-not "member ="
              (member 2 '(1 4) =))
 
+(pass-if-equal "append-map"
+               '(0 0 1)
+               (append-map iota '(1 2)))
+
 (result 'report)
