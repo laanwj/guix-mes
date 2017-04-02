@@ -35,13 +35,8 @@
 (define (primitive-eval e) (core:eval e (current-module)))
 (define eval core:eval)
 
-(define (caar x) (car (car x)))
-(define (cadr x) (car (cdr x)))
-(define (cdar x) (cdr (car x)))
-(define (cddr x) (cdr (cdr x)))
-
 (define-macro (defined? x)
-  (list 'assq x '(cddr (current-module))))
+  (list 'assq x '(cdr (cdr (current-module)))))
 
 (if (defined? 'current-input-port) #t
     (define (current-input-port) 0))
@@ -58,7 +53,6 @@
   (if (null? (cdr rest)) (car rest)
       (cons (car rest) (core:apply cons* (cdr rest) (current-module)))))
 
-(define (apply f h . t) (apply-env f (cons h t) (current-module)))
 (define (apply f h . t)
   (if (null? t) (core:apply f h (current-module))
       (apply f (apply cons* (cons h t)))))
@@ -70,9 +64,9 @@
                (cons
                 '(test)
                 (list (list 'if 'test
-                            (if (pair? (cdar clauses))
-                                (if (eq? (cadar clauses) '=>)
-                                    (append2 (cddar clauses) '(test))
+                            (if (pair? (cdr (car clauses)))
+                                (if (eq? (car (cdr (car clauses))) '=>)
+                                    (append2 (cdr (cdr (car clauses))) '(test))
                                     (list (cons 'lambda (cons '() (car clauses)))))
                                 (list (cons 'lambda (cons '() (car clauses)))))
                             (if (pair? (cdr clauses))
@@ -81,6 +75,7 @@
 
 (define else #t)
 
+(define (cadr x) (car (cdr x)))
 (define-macro (simple-let bindings . rest)
   (cons (cons 'lambda (cons (map1 car bindings) rest))
         (map1 cadr bindings)))
@@ -150,8 +145,8 @@
           (list 'set! '*modules* (list cons (list string->symbol (module->file module)) '*modules*))
           (list 'load (list string-append '*mes-prefix* (module->file module)))))))
 
-(mes-use-module (srfi srfi-0))
 (mes-use-module (mes base))
+(mes-use-module (srfi srfi-0))
 (mes-use-module (mes quasiquote))
 (mes-use-module (mes let))
 (mes-use-module (mes scm))
