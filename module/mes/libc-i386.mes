@@ -333,6 +333,10 @@
   (or n urg:Xjump)
   `(#xe9 ,@(int->bv32 (if (>= n 0) n (- n 5))))) ; jmp . + <n>
 
+(define (i386:XXjump n)
+  (or n urg:XXjump)
+  `(#xe9 ,@(int->bv32 n)))              ; jmp . + <n>
+
 (define (i386:Xjump-nz n)
   (or n urg:Xjump-nz)
   `(#x0f #x85 ,@(int->bv32 n)))         ; jnz . + <n>

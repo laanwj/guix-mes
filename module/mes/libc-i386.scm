@@ -118,6 +118,7 @@
             i386:xor-zf
 
             i386:Xjump
+            i386:XXjump
             i386:Xjump-c
             i386:Xjump-nc
             i386:Xjump-nz

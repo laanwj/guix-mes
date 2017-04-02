@@ -797,17 +797,22 @@
     (pmatch o
       ((case (p-expr (ident ,constant)) (compd-stmt (block-item-list . ,elements)))
        (lambda (body-length)
+
+         (define (test->text value clause-length)
+           (append (list (lambda (f g ta t d) (i386:accu-cmp-value value)))
+                   (jump-nz clause-length)))
          (let* ((value (assoc-ref (.constants info) constant))
-                (text-length (length (.text info)))
-                (clause-info (let loop ((elements elements) (info info))
+                (test-info
+                 (clone info #:text (append (.text info) (test->text value 0))))
+                (text-length (length (.text test-info)))
+                (clause-info (let loop ((elements elements) (info test-info))
                                (if (null? elements) info
                                    (loop (cdr elements) ((statement->info info body-length) (car elements))))))
                 (clause-text (list-tail (.text clause-info) text-length))
                 (clause-length (length (text->list clause-text))))
            (clone info #:text (append
                                (.text info)
-                               (list (lambda (f g ta t d) (i386:accu-cmp-value value)))
-                               (jump-nz clause-length)
+                               (test->text value clause-length)
                                clause-text)
                   #:globals (.globals clause-info)))))
 
@@ -820,17 +825,12 @@
          (let* ((value (cstring->number value))
                 (test-info
                  (clone info #:text (append (.text info) (test->text value 0))))
-                ;;(foo (stderr "000\n"))
                 (text-length (length (.text test-info)))
                 (clause-info (let loop ((elements elements) (info test-info))
-                               ;;(stderr "info text=~s\n" (map dec->hex (text->list (.text info))))
-                               ;;(stderr "case: ~s\n" (and (pair? elements) (car elements)))
                                (if (null? elements) info
                                    (loop (cdr elements) ((statement->info info body-length) (car elements))))))
-                ;;(foo (stderr "001\n"))
                 (clause-text (list-tail (.text clause-info) text-length))
                 (clause-length (length (text->list clause-text))))
-           ;;(stderr "text info:~s\n" (.text info))
            (clone info #:text (append
                                (.text info)
                                (test->text value clause-length)
@@ -1236,12 +1236,12 @@
 
         ((goto (ident ,label))
          
-         (let ((offset (length (text->list text)))
-               (jump (lambda (n) (i386:Xjump n))))
+         (let* ((jump (lambda (n) (i386:XXjump n)))
+                (offset (+ (length (jump 0)) (length (text->list text)))))
            (clone info #:text
                   (append text
                           (list (lambda (f g ta t d)
-                                  (jump (- (label-offset (.function info) label f) offset (length (jump 0))))))))))
+                                  (jump (- (label-offset (.function info) label f) offset))))))))
 
         ;;; FIXME: only zero?!
         ((p-expr (ident ,name))

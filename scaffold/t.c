@@ -125,13 +125,23 @@ SCM tmp_num;
 
 #if 1
 int
+label (int c)
+{
+ label:
+  if (c == 0) return c;
+  c--;
+  goto label;
+  return 1;
+}
+
+int
 swits (int c)
 {
   int x = -1;
 
   switch (c)
     {
-    case 0: {goto next;}
+    case CHAR: {goto next;}
     case 1: {goto next;}
     case 2: {goto next;}
     default: {goto next;}
@@ -434,6 +444,9 @@ test (char *p)
   *x++ = c;
   if (*g_chars != 'C') return 1;
 
+  puts ("t: goto label\n");
+  if (label (1) != 0) return 1;
+
   puts ("t: switch 0\n");
   if (swits (0) != 0) return swits (0);
 
@@ -563,6 +576,21 @@ test (char *p)
 int
 main (int argc, char *argv[])
 {
+ //  main:
+ //  puts ("t.c\n");
+ //  if (argc == 0x22) return 11;
+ //  argc = 0x22;
+ //  goto main;
+ //  switch (0)
+ //    {
+ //    case 0: {goto next;}
+ //    // case 1: {goto next;}
+ //    // case 2: {goto next;}
+ //    // default: {goto next;}
+ //    }
+
+ //  return 1;
+ // next:
   char *p = "t.c\n";
   puts ("t.c\n");
 
