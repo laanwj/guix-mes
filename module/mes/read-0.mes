@@ -198,8 +198,11 @@
   (define-macro (or . x)
     (if (null? x) #f
         (if (null? (cdr x)) (car x)
-            (list (quote if) (car x) (car x)
-                  (cons (quote or) (cdr x))))))
+            (list (list (quote lambda) (list (quote r))
+                        (list (quote if) (quote r) (quote r)
+                              (cons (quote or) (cdr x))))
+                  (car x)))))
+
   (define (not x)
     (if x #f #t))
   

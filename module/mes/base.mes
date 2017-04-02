@@ -73,17 +73,19 @@
 
 (define (command-line) %argv)
 
-(define-macro (or . x)
-  (if (null? x) #f
-      (if (null? (cdr x)) (car x)
-          (list 'if (car x) (car x)
-                (cons 'or (cdr x))))))
-
 (define-macro (and . x)
   (if (null? x) #t
       (if (null? (cdr x)) (car x)
           (list 'if (car x) (cons 'and (cdr x))
                 #f))))
+
+(define-macro (or . x)
+  (if (null? x) #f
+      (if (null? (cdr x)) (car x)
+          (list (list 'lambda (list 'r)
+                      (list 'if 'r 'r
+                            (cons 'or (cdr x))))
+                (car x)))))
 
 (define (and=> value procedure) (and value (procedure value)))
 (define eqv? eq?)
