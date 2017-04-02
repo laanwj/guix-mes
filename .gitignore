@@ -34,7 +34,8 @@
 /guile-t
 /guile-tiny-mes
 
-/mes-mini-mes
+#keep this: bootstrap
+#/mes-mini-mes
 
 /module/mes/tiny-0-32.mo
 #keep this: bootstrap
