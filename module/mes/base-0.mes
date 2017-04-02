@@ -110,6 +110,11 @@
 (define-macro (include-from-path file)
   (list 'load (list string-append "module/" file)))
 
+(define (append . rest)
+  (if (null? rest) '()
+      (if (null? (cdr rest)) (car rest)
+          (append2 (car rest) (apply append (cdr rest))))))
+
 (include "module/mes/type-0.mes")
 
 (define (memq x lst)
@@ -129,8 +134,8 @@
 (define (mes-load-module-env module a)
   (push! *input-ports* (current-input-port))
   (set-current-input-port (open-input-file (string-append *mes-prefix* (module->file module))))
-  (let ((x (core:eval (append (cons 'begin (read-input-file-env a))
-                              '((current-module)))
+  (let ((x (core:eval (append2 (cons 'begin (read-input-file-env a))
+                               '((current-module)))
                       a)))
     (set-current-input-port (pop! *input-ports*))
     x))

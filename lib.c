@@ -170,14 +170,6 @@ exit_ (SCM x) ///((name . "exit"))
   exit (VALUE (x));
 }
 
-SCM
-append (SCM x) ///((arity . n))
-{
-  if (x == cell_nil) return cell_nil;
-  if (cdr (x) == cell_nil) return car (x);
-  return append2 (car (x), append (cdr (x)));
-}
-
 //MINI_MES
 // char const*
 // string_to_cstring (SCM s)

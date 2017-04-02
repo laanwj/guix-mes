@@ -1442,14 +1442,6 @@ exit_ (SCM x) ///((name . "exit"))
 }
 
 SCM
-append (SCM x) ///((arity . n))
-{
-  if (x == cell_nil) return cell_nil;
-  if (cdr (x) == cell_nil) return car (x);
-  return append2 (car (x), append (cdr (x)));
-}
-
-SCM
 xassq (SCM x, SCM a) ///for speed in core only
 {
   while (a != cell_nil && x != CDAR (a)) a = CDR (a);
