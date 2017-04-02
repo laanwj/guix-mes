@@ -21,20 +21,23 @@
 #define MES_MINI 1
 
 #if __GNUC__
+#define FIXME_NYACC 1
 #define  __NYACC__ 0
-#define NYACC
-#define NYACC2
+#define NYACC_CAR
+#define NYACC_CDR
 #else
 #define  __NYACC__ 1
-#define NYACC nyacc
-#define NYACC2 nyacc2
+#define NYACC_CAR nyacc_car
+#define NYACC_CDR nyacc_cdr
 #endif
+
+int g_stdin = 0;
 
 #if __GNUC__
 typedef long size_t;
 void *malloc (size_t i);
 int open (char const *s, int mode);
-int read (int fd, int n);
+int read (int fd, void* buf, size_t n);
 void write (int fd, char const* s, int n);
 
 void
@@ -58,17 +61,49 @@ getenv (char const* p)
 }
 
 int
-open (char const *s, int mode)
+read (int fd, void* buf, size_t n)
 {
-  //return syscall (SYS_open, s, mode);
-  return 0;
+  int r;
+  //syscall (SYS_write, fd, s, n));
+  asm (
+       "movl %1,%%ebx\n\t"
+       "movl %2,%%ecx\n\t"
+       "movl %3,%%edx\n\t"
+       "movl $0x3,%%eax\n\t"
+       "int  $0x80\n\t"
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (fd), "" (buf), "" (n)
+       : "eax", "ebx", "ecx", "edx"
+       );
+  return r;
 }
 
 int
-read (int fd, int n)
+open (char const *s, int mode)
 {
-  //syscall (SYS_read, 1, 1);
-  return 0;
+  int r;
+  //syscall (SYS_open, mode));
+  asm (
+       "mov %1,%%ebx\n\t"
+       "mov %2,%%ecx\n\t"
+       "mov $0x5,%%eax\n\t"
+       "int $0x80\n\t"
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (s), "" (mode)
+       : "eax", "ebx", "ecx"
+       );
+  return r;
+}
+
+int
+getchar ()
+{
+  char c;
+  int r = read (g_stdin, &c, 1);
+  if (r < 1) return -1;
+  return c;
 }
 
 void
@@ -87,6 +122,15 @@ write (int fd, char const* s, int n)
        : "" (fd), "" (s), "" (n)
        : "eax", "ebx", "ecx", "edx"
        );
+}
+
+int
+putchar (int c)
+{
+  //write (STDOUT, s, strlen (s));
+  //int i = write (STDOUT, s, strlen (s));
+  write (1, (char*)&c, 1);
+  return 0;
 }
 
 void *
@@ -111,12 +155,6 @@ free (void *p)
 #define STDOUT 1
 #define STDERR 2
 
-//#include <stdio.h>
-//#include <string.h>
-//#include <stdlib.h>
-
-int g_stdin;
-
 size_t
 strlen (char const* s)
 {
@@ -130,12 +168,6 @@ strcmp (char const* a, char const* b)
 {
   while (*a && *b && *a == *b) {a++;b++;}
   return *a - *b;
-}
-
-int
-getchar ()
-{
-  return read (g_stdin, 1);
 }
 
 int
@@ -181,6 +213,8 @@ itoa (int x)
   return p+1;
 }
 
+#endif
+
 void
 assert_fail (char* s)
 {
@@ -189,9 +223,14 @@ assert_fail (char* s)
   eputs ("\n");
   *((int*)0) = 0;
 }
+
+#if __GNUC__
+#define assert(x) ((x) ? (void)0 : assert_fail ("boo:" #x))
+#else
+//#define assert(x) ((x) ? (void)0 : assert_fail ("boo:" #x))
+#define assert(x) ((x) ? (void)0 : assert_fail (0))
 #endif
 
-#define assert(x) ((x) ? (void)0 : assert_fail(#x))
 typedef int SCM;
 
 #if __GNUC__
@@ -207,6 +246,98 @@ SCM r1 = 0; // param 1
 SCM r2 = 0; // save 2+load/dump
 SCM r3 = 0; // continuation
 
+typedef int SCM;
+#if __NYACC__ || FIXME_NYACC
+enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
+#else
+enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
+#endif
+typedef SCM (*function0_t) (void);
+typedef SCM (*function1_t) (SCM);
+typedef SCM (*function2_t) (SCM, SCM);
+typedef SCM (*function3_t) (SCM, SCM, SCM);
+typedef SCM (*functionn_t) (SCM);
+typedef struct function_struct {
+  union {
+    function0_t function0;
+    function1_t function1;
+    function2_t function2;
+    function3_t function3;
+    functionn_t functionn;
+  } data;
+  int arity;
+} function_t;
+struct scm;
+
+typedef struct scm_struct {
+  enum type_t type;
+  union {
+    char const *name;
+    SCM string;
+    SCM car;
+    SCM ref;
+    int length;
+  } NYACC_CAR;
+  union {
+    int value;
+    int function;
+    SCM cdr;
+    SCM closure;
+    SCM continuation;
+    SCM macro;
+    SCM vector;
+    int hits;
+  } NYACC_CDR;
+} scm;
+
+char arena[200000];
+scm *g_cells = (scm*)arena;
+
+#define CAR(x) g_cells[x].car
+
+#define CDR(x) g_cells[x].cdr
+
+SCM
+car (SCM x)
+{
+#if MES_MINI
+  //Nyacc
+  //assert ("!car");
+#else
+  if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_car));
+#endif
+  return CAR (x);
+}
+
+SCM
+cdr (SCM x)
+{
+#if MES_MINI
+  //Nyacc
+  //assert ("!cdr");
+#else
+  if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_cdr));
+#endif
+  return CDR(x);
+}
+SCM caar (SCM x) {return car (car (x));}
+SCM cadr (SCM x) {return car (cdr (x));}
+SCM cdar (SCM x) {return cdr (car (x));}
+SCM cddr (SCM x) {return cdr (cdr (x));}
+
+SCM
+gc_peek_frame ()
+{
+  SCM frame = car (g_stack);
+  r1 = car (frame);
+  r2 = cadr (frame);
+  r3 = car (cddr (frame));
+  r0 = cadr (cddr (frame));
+  return frame;
+}
+
+// Environment setup
+
 SCM
 mes_environment ()
 {
@@ -214,10 +345,57 @@ mes_environment ()
 }
 
 SCM
+mes_builtins (SCM a)
+{
+  return a;
+}
+
+SCM
 bload_env (SCM a) ///((internal))
 {
-  eputs ("bload_env\n");
-  return 0;
+  puts ("bload_env\n");
+  g_stdin = open ("module/mes/read-0.mo", 0);
+  if (g_stdin < 0) {eputs ("no such file: module/mes/read-0.mo\n");return 1;} 
+#if __GNUC__
+  puts ("fd: ");
+  puts (itoa (g_stdin));
+  puts ("\n");
+  //g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
+#endif
+  char *p = (char*)g_cells;
+
+  // int x;
+  // x = getchar ();
+  // if (x == 'M') puts ("M");
+  // x = getchar ();
+  // if (x == 'E') puts ("E");
+  // x = getchar ();
+  // if (x == 'S') puts ("S");
+  
+  assert (getchar () == 'M');
+  assert (getchar () == 'E');
+  assert (getchar () == 'S');
+  puts ("GOT MES\n");
+  g_stack = getchar () << 8;
+  g_stack += getchar ();
+  int c = getchar ();
+  while (c != -1)
+    {
+      *p++ = c;
+      c = getchar ();
+    }
+  g_free = (p-(char*)g_cells) / sizeof (scm);
+  gc_peek_frame ();
+  g_symbols = r1;
+  g_stdin = STDIN;
+  r0 = mes_builtins (r0);
+
+#if __GNUC__
+  puts ("cells read: ");
+  puts (itoa (g_free));
+  puts ("\n");
+#endif
+  return r2;
 }
 
 int
@@ -231,13 +409,16 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
 
+  if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
+
+
 #if __GNUC__
   g_stdin = STDIN;
   r0 = mes_environment ();
 #endif
 
 #if MES_MINI
-  puts ("Hello micro-mes!\n");
+  puts ("Hello tiny-mes!\n");
   SCM program = bload_env (r0);
 #else
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
@@ -252,9 +433,6 @@ main (int argc, char *argv[])
   eputs ("\n");
   gc (g_stack);
 #endif
-  int i = argc;
-  //int i = strcmp (argv[1], "1");
-  return i;
 #if __GNUC__
   if (g_debug)
     {

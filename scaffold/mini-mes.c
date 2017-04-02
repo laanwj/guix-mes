@@ -37,6 +37,33 @@ void *malloc (size_t i);
 
 #if __GNUC__
 
+// #define __NR_restart_syscall 0
+// #define __NR_exit 1
+// #define __NR_fork 2
+// #define __NR_read 3
+// #define __NR_write 4
+// #define __NR_open 5
+
+void
+exit (int code)
+{
+  asm (
+       "movl %0,%%ebx\n\t"
+       "movl $1,%%eax\n\t"
+       "int  $0x80"
+       : // no outputs "=" (r)
+       : "" (code)
+       );
+  // not reached
+  exit (0);
+}
+
+char const*
+getenv (char const* p)
+{
+  return 0;
+}
+
 int
 open (char const *s, int mode)
 {
@@ -57,9 +84,9 @@ write (int fd, char const* s, int n)
   int r;
   //syscall (SYS_write, fd, s, n));
   asm (
-       "mov %0, %%ebx\n\t"
-       "mov %1, %%ecx\n\t"
-       "mov %2, %%edx\n\t"
+       "mov %0,%%ebx\n\t"
+       "mov %1,%%ecx\n\t"
+       "mov %2,%%edx\n\t"
 
        "mov $0x4, %%eax\n\t"
        "int $0x80\n\t"
@@ -67,7 +94,6 @@ write (int fd, char const* s, int n)
        : "" (fd), "" (s), "" (n)
        : "eax", "ebx", "ecx", "edx"
        );
-  
 }
 
 void *
@@ -115,7 +141,7 @@ strcmp (char const* a, char const* b)
 }
 
 int
-getc ()
+getchar ()
 {
   return read (g_stdin, 1);
 }
@@ -123,14 +149,20 @@ getc ()
 int
 puts (char const* s)
 {
-  write (STDOUT, s, strlen (s));
+  //write (STDOUT, s, strlen (s));
+  //int i = write (STDOUT, s, strlen (s));
+  int i = strlen (s);
+  write (1, s, i);
   return 0;
 }
 
 int
 eputs (char const* s)
 {
-  write (STDERR, s, strlen (s));
+  //write (STDERR, s, strlen (s));
+  //int i = write (STDERR, s, strlen (s));
+  int i = strlen (s);
+  write (2, s, i);
   return 0;
 }
 
@@ -647,12 +679,6 @@ g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
 a = acons (make_symbol (scm_cdr.string), cell_cdr, a);
 #endif
   return a;
-}
-
-int
-getchar ()
-{
-  return getc (g_stdin);
 }
 
 SCM
