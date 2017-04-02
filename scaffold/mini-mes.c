@@ -574,9 +574,9 @@ call (SCM fn, SCM x)
 SCM
 assq (SCM x, SCM a)
 {
-  //FIXME: eq_p
-  //while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
-  while (a != cell_nil && x != CAAR (a)) a = CDR (a);
+  //FIXME: move into fast-non eq_p-ing assq core:assq?
+  //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
+  while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
   return a != cell_nil ? car (a) : cell_f;
 }
 
