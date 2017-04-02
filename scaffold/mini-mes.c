@@ -23,6 +23,11 @@
 #endif
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
+#if __MESCC__
+//void *g_malloc_base = 0;
+char *g_malloc_base = 0;
+#endif
+
 #define MES_MINI 1
 #define FIXED_PRIMITIVES 1
 
@@ -38,8 +43,9 @@
 #endif
 
 
-int ARENA_SIZE = 4000000;
-char arena[4000000];
+//int ARENA_SIZE = 4000000;
+int ARENA_SIZE = 100000000;
+char *arena = 0;
 
 typedef int SCM;
 
@@ -72,7 +78,13 @@ struct function {
   char *name;
 };
 
-struct scm *g_cells = arena;
+//struct scm *g_cells = arena;
+int *foobar = 0;
+#if __GNUC__
+struct scm *g_cells;
+#else
+struct scm *g_cells = foobar;
+#endif
 
 //FIXME
 //struct scm *g_news = 0;
@@ -203,7 +215,8 @@ int g_function = 0;
 SCM
 alloc (int n)
 {
-#if __GNUC__
+#if 1
+  //__GNUC__
   assert (g_free + n < ARENA_SIZE);
 #endif
   SCM x = g_free;
@@ -1251,8 +1264,18 @@ SCM g_symbol_max;
 SCM
 gc_init_cells () ///((internal))
 {
+  //return 0;
+  //g_cells = (scm *)malloc (ARENA_SIZE);
+#if __GNUC__
+  arena = (char*)malloc (ARENA_SIZE);
+#else
+  char *p = 0;
+  p = malloc (ARENA_SIZE);
+  arena = p;
+#endif
+  g_cells = arena;
   return 0;
-//   g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
+  //g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
 
 // #if __NYACC__ || FIXME_NYACC
 //   TYPE (0) = TVECTOR;

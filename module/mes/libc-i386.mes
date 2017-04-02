@@ -25,7 +25,7 @@
 ;;; Code:
 
 (define (i386:exit f g ta t d)
-  `(
+  '(
     #x5b                                ; pop    %ebx
     #x5b                                ; pop    %ebx
     #xb8 #x01 #x00 #x00 #x00            ; mov    $0x1,%eax
@@ -33,7 +33,7 @@
     ))
 
 (define (i386:open f g ta t d)
-  `(
+  '(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp
 
@@ -48,7 +48,7 @@
     ))
 
 (define (i386:read f g ta t d)
-  `(
+  '(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp
 
@@ -64,7 +64,7 @@
     ))
 
 (define (i386:write f g ta t d)
-  `(
+  '(
     #x55                                ; push   %ebp
     #x89 #xe5                           ; mov    %esp,%ebp
 
@@ -78,6 +78,20 @@
     #xc9                                ; leave
     #xc3                                ; ret
     ))
+
+(define (i386:brk f g ta t d)
+  '(
+    #x55                                ; push   %ebp
+    #x89 #xe5                           ; mov    %esp,%ebp
+
+    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+    #xb8 #x2d #x00 #x00 #x00            ; mov    $0x2d,%eax
+    #xcd #x80                           ; int    $0x80
+
+    #xc9                                ; leave
+    #xc3                                ; ret
+    ))
+
 
 (define (i386:_start)
  (string-append ".byte"
@@ -95,4 +109,5 @@
    (cons "exit" (list i386:exit))
    (cons "open" (list i386:open))
    (cons "read" (list i386:read))
-   (cons "write" (list i386:write))))
+   (cons "write" (list i386:write))
+   (cons "brk" (list i386:brk))))

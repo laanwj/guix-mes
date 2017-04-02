@@ -17,6 +17,7 @@
 
 /cons-mes
 /m
+/malloc
 /main
 /micro-mes
 /mini-mes
@@ -25,6 +26,7 @@
 
 /guile-cons-mes
 /guile-m
+/guile-malloc
 /guile-main
 /guile-micro-mes
 /guile-mini-mes

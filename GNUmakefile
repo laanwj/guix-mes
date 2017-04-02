@@ -172,6 +172,15 @@ guile-m: scaffold/m.c
 	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
+malloc: scaffold/malloc.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
+
+guile-malloc: scaffold/malloc.c
+	guile/mescc.scm $< > $@ || rm -f $@
+	chmod +x $@
+
 micro-mes: scaffold/micro-mes.c GNUmakefile
 	rm -f $@
 	gcc -nostdlib -I. --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<

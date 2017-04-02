@@ -263,6 +263,44 @@ isdigit (char c)
                 parse-c99)))
     ast))
 
+(define malloc
+  (let* ((ast (with-input-from-string
+                  "
+//void *g_malloc_base = 0;
+char *g_malloc_base = 0;
+
+//void *
+int *
+malloc (int size)
+{
+  //void *p = brk (0);
+  char *p = 0;
+  if (!g_malloc_base) g_malloc_base = p;
+  p = brk (0);
+  brk (p+size);
+  return p;
+}
+"
+;;paredit:"
+                parse-c99)))
+    ast))
+
+(define realloc
+  (let* ((ast (with-input-from-string
+                  "
+//void *
+int *
+//realloc (void *p, int size)
+realloc (int *p, int size)
+{
+  brk (g_malloc_base + size);
+  return g_malloc_base;
+}
+"
+;;paredit:"
+                parse-c99)))
+    ast))
+
 (define libc
   (list
    strlen
@@ -275,4 +313,6 @@ isdigit (char c)
    puts
    strcmp
    itoa
-   isdigit))
+   isdigit
+   malloc
+   realloc))
