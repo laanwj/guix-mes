@@ -24,52 +24,48 @@
 
 ;;; Code:
 
-(define (i386:puts data length)
+(define (push-arg o)
+  `(#x68 ,@(int->bv32 o)))              ; push o
+
+(define (i386:ret)
+  '(
+    #xc3                                ; ret
+    ))
+
+(define (i386:call address . arguments)
+  (let ((pushes (append-map push-arg arguments)))
+   `(
+     ,@pushes                                         ; push args
+     #xe8 ,@(int->bv32 (- address 5 (length pushes))) ; call relative
+     )))
+  
+(define (i386:eputs s t d)
   `(
-     #xba ,@(int->bv32 length)      ;; mov    $0xe,%edx
-          #xb9 ,@(int->bv32 data)        ;; mov    $data,%ecx
-          #xbb #x01 #x00 #x00 #x00       ;; mov    $0x1,%ebx
-          #xb8 #x04 #x00 #x00 #x00       ;; mov    $0x4,%eax
-          #xcd #x80                      ;; int    $0x80
-          ))
+    #x5f                                ; pop    %edi
+    #xba #x01 #x00 #x00 #x00    	; mov    0xa,%edx
+    #x59                                ; pop    %ecx
+    #x57                                ; push   %edi
+    #xbb #x02 #x00 #x00 #x00            ; mov    $0x1,%ebx
+    #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
+    #xcd #x80                           ; int    $0x80
+    #xc3                                ; ret
+    ))
 
-(define (i386:exit code)
+(define (i386:exit s t d)
   `(
-    #xbb ,@(int->bv32 code)        ;; mov    $code,%ebx
-         #xb8 #x01 #x00 #x00 #x00       ;; mov    $0x1,%eax
-         #xcd #x80                      ;; int    $0x80
-         ))
+    #x5f                                ; pop    %edi
+    #xb8 #x01 #x00 #x00 #x00            ; mov    $0x1,%eax
+    #xcd #x80                           ; int    $0x80
+    ))
 
-(define (i386:for start test step statement)
-`(
-
-  ;;   b:
-  #x89 #xe5                	;; mov    %esp,%ebp
-       ;;21:
-       #xc7 #x45 #xf4 ,@(int->bv32 start) ;;	movl   $start,-0xc(%ebp)
-       ;;28:
-       #xeb ,(+ (length statement) 9) ;;x14	jmp    3e <main+0x3e>
-       ;;2a:
-       ;;#x83 #xec #x0c             ;;	sub    $0xc,%esp
-       
-       ;;   9:
-       #x55   ;;                	push   %ebp
-       
-       ,@statement
-       #x5d   ;;                	pop   %ebp
-       ;;2d:
- ;;;;;;#x68 #x09 #x00 #x00 #x00       ;;	push   $0x9
-       ;;32:
- ;;;;;;#xe8 #xfc #xff #xff #xff       ;;	call   33 <main+0x33>
-       ;;37:
- ;;;;;;#x83 #xc4 #x10             ;;	add    $0x10,%esp
-       ;;3a:
-       ;;;;#x83 #x45 #xf4 ,step          ;;	addl   $step,-0xc(%ebp)
-       ;;3e:
-       ;;;;#x83 #x7d #xf4 ,test          ;;	cmpl   $test,-0xc(%ebp)
-       #x81 #x45 #xf4 ,@(int->bv32 step) 	;;addl   $step,-0xc(%ebp)
-       #x81 #x7d #xf4 ,@(int->bv32 test) ;;cmpl   $0x7cff,-0xc(%ebp)
-       ;;42:
-       ;;;#x7e ,(- 0 (length statement) 18) ;;#xe6 ;;	jle    2a <main+0x2a>
-       #x75 ,(- 0 (length statement) 18) ;;#xe6 ;;	jne    2a <main+0x2a>
-))
+(define (i386:puts s t d)
+  `(
+    #x5f                                ; pop    %edi
+    #xba #x0a #x00 #x00 #x00    	; mov    0xa,%edx
+    #x59                                ; pop    %ecx
+    #x57                                ; push   %edi
+    #xbb #x01 #x00 #x00 #x00            ; mov    $0x1,%ebx
+    #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
+    #xcd #x80                           ; int    $0x80
+    #xc3                                ; ret
+    ))

@@ -25,10 +25,15 @@
 ;;; Code:
 
 (define-module (mes libc-i386)
+  #:use-module (srfi srfi-1)
   #:use-module (mes elf)
-  #:export (i386:exit
+  #:export (i386:call
+            i386:exit
             i386:for
-            i386:puts))
+            i386:eputs
+            i386:puts
+            i386:ret
+            ))
 
 (cond-expand
  (guile-2)

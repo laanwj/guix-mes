@@ -26,16 +26,26 @@
 ;;; Code:
 
 (cond-expand
-  (guile
-   (set-port-encoding! (current-output-port) "ISO-8859-1"))
-  (mes
-   (mes-use-module (nyacc lang c99 parser))
-   (mes-use-module (mes pmatch))
-   (mes-use-module (mes elf))
-   (mes-use-module (mes libc-i386))))
+ (guile-2
+  (set-port-encoding! (current-output-port) "ISO-8859-1"))
+ (guile)
+ (mes
+  (mes-use-module (nyacc lang c99 parser))
+  (mes-use-module (mes elf-util))
+  (mes-use-module (mes pmatch))
+  (mes-use-module (mes elf))
+  (mes-use-module (mes libc-i386))))
+
+;;(define (gnuc-xdef? name mode) (if (equal? name "__GNUC__") #f (env? mode 'code)))
+;;(define (gnuc-xdef? name mode) (equal? name "__GNUC__"))
+(define (gnuc-xdef? name mode)
+  (cond ((equal? name "__GNUC__") #t)
+        ((equal? name "asm") #f)))
 
 (define (mescc)
-  (parse-c99 #:inc-dirs '()))
+  (parse-c99 #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
+             #:cpp-defs '(("__GNUC__" . "0"))
+             #:xdef? gnuc-xdef?))
 
 (define (write-any x)
   (write-char (if (char? x) x (integer->char (if (>= x 0) x (+ x 256))))))
@@ -51,95 +61,118 @@
   (pmatch o
     ((fctn-defn _ (ftn-declr (ident ,name) _) (compd-stmt (block-item-list . ,statements))) statements)))
 
-(define (statement->data o)
-  (pmatch o
-    ((expr-stmt (fctn-call (p-expr (ident ,name))
-                           (expr-list (p-expr (string ,string)))))
-     (string->list string))
-    ((for (decl (decl-spec-list (type-spec (fixed-type ,type)))
-                  (init-declr-list (init-declr (ident ,identifier)
-                                               (initzer (p-expr (fixed ,start))))))
-            (lt (p-expr (ident _)) (p-expr (fixed ,test)))
-            ,step ;;(pre-inc (p-expr (ident i)))
-            ,statement)
-     (statement->data statement))
-    (_ '())))
-
-(define (statement->text data o)
-  (let ((offset (length data)))
+(define (expr->arg symbols) ;; FIXME: get Mes curried-definitions
+  (lambda (o)
     (pmatch o
-      ((expr-stmt (fctn-call (p-expr (ident ,name))
-                             (expr-list (p-expr (string ,string)))))
-       (list (lambda (data) (i386:puts (+ data offset) (string-length string)))))
-      ((for (decl (decl-spec-list (type-spec (fixed-type ,type)))
-                  (init-declr-list (init-declr (ident ,identifier)
-                                               (initzer (p-expr (fixed ,start))))))
-            (lt (p-expr (ident _)) (p-expr (fixed ,test)))
-            ,step ;;(pre-inc (p-expr (ident i)))
-            ,statement)
-       (display "start:" (current-error-port))
-       (display start (current-error-port))
-       (newline (current-error-port))
+      ((p-expr (fixed ,value)) (string->number value))
+      ((p-expr (string ,string)) (data-offset symbols string))
+      (_
+       (format (current-error-port) "SKIPPING expr=~a\n" o)     
+       0))))
 
-       (display "test:" (current-error-port))
-       (display test (current-error-port))
-       (newline (current-error-port))
+(define (expr->symbols o)
+  (pmatch o
+    ((p-expr (string ,string)) (string->symbols string))
+    (_ #f)))
 
-       ;; (display "step:" (current-error-port))
-       ;; (display step (current-error-port))
-       ;; (newline (current-error-port))
-       ;; 
-       (display "for-statement:" (current-error-port))
-       (display statement (current-error-port))
-       (newline (current-error-port))
+(define make-text+symbols cons)
+(define .text car)
+(define .symbols cdr)
 
-       (let ((start (string->number start))
-             (test (string->number test))
-             (step 1)
-             (statement (car (statement->text data statement))))
-         
-         (display "2start:" (current-error-port))
-         (display start (current-error-port))
-         (newline (current-error-port))
+(define (dec->hex o)
+  (number->string o 16))
 
-         (display "2for-statement:" (current-error-port))
-         (display statement (current-error-port))
-         (newline (current-error-port))
+(define (statement->text+symbols text+symbols)
+  (lambda (o)
+    (let* ((text (.text text+symbols))
+           (symbols (.symbols text+symbols))
+           (text-list (append-map (lambda (f) (f '() 0 0)) text))
+           (prefix-list (symbols->text symbols 0 0))
+           (statement-offset (- (+ (length prefix-list) (length text-list)))))
+      (pmatch o
+        ((expr-stmt (fctn-call (p-expr (ident ,name))
+                               (expr-list (p-expr (string ,string)))))
+         (make-text+symbols
+          (append text
+                  (list (lambda (s t d)
+                          (i386:call (+ t
+                                                      (function-offset name s)
+                                                      statement-offset)
+                                                   (+ d (data-offset string s))))))
+          (append symbols (list (string->symbols string)))));; FIXME: ->symbolSXX
+        
+        ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
+         (let ((args (map (expr->arg symbols) expr-list)))
+           (make-text+symbols
+            (append text
+                    (list (lambda (s t d) (apply i386:call (cons (+ t (function-offset name s) statement-offset) args)))))
+            (append symbols (filter-map expr->symbols expr-list)))))
+        
+        ((return (p-expr (fixed ,value)))
+         (let ((value (string->number value)))
+           (make-text+symbols (append text (list (lambda _ (i386:ret)))) symbols)))
 
-         (list (lambda (d) (i386:for start test step (statement d))))))
+       (_
+        (format (current-error-port) "SKIPPING S=~a\n" o)
+        text+symbols)))))
 
-      ((return (p-expr (fixed ,value)))
-       (let ((value (string->number value)))
-        (list (lambda (data) (i386:exit value)))))
-      (_ '()))))
+(define (symbols->exe symbols)
+  (display "dumping elf\n" (current-error-port))
+  (map write-any (make-elf symbols)))
 
-(define (function->text+data o)
-  (let loop ((statements (.statements o)) (text '()) (data '()))
-    (display "text:" (current-error-port))
-    (display text (current-error-port))
-    (newline (current-error-port))
-    (if (null? statements) (values text data)
-        (let* ((statement (car statements)))
-          (display "statement:" (current-error-port))
-          (display statement (current-error-port))
-          (newline (current-error-port))
-          (loop (cdr statements)
-                (append text (statement->text data statement))
-                (append data (statement->data statement)))))))
+(define (.formals o)
+  (pmatch o
+    ((fctn-defn _ (ftn-declr _ ,formals) _) formals)
+    (_ (format (current-error-port) ".formals: no match: ~a\n" o)
+       barf)))
 
-(define (text+data->exe text data)
-  (display "dumping to a.out:\n" (current-error-port))
-  (map write-any (make-elf (lambda (data)
-                             (append-map (lambda (f) (f data)) text)) data)))
+(define (formal->text o)
+  '(#x58))  ;; pop %eax
+
+(define (formals->text o)
+  (pmatch o
+    ((param-list . ,formals)
+     (list (lambda (s t d)
+             (append
+              '(#x5f) ;; pop %edi
+              (append-map formal->text formals)
+              '(#x57) ;; push %edi
+              ))))
+    (_ (format (current-error-port) "formals->text+data: no match: ~a\n" o)
+       barf)))
+
+(define (string->symbols string)
+  (make-data string (string->list string)))
+
+(define (function->symbols symbols)
+  (lambda (o)
+    (format (current-error-port) "compiling ~a\n" (.name o))
+    (let* ((text (formals->text (.formals o)))
+           (text-offset (length (symbols->text symbols 0 0))))
+      (let loop ((statements (.statements o))
+                 (text+symbols (make-text+symbols text symbols)))
+        (if (null? statements) (append (.symbols text+symbols) (list (make-function (.name o) (.text text+symbols))))
+            (let* ((statement (car statements)))
+              (loop (cdr statements)
+                    ((statement->text+symbols text+symbols) (car statements)))))))))
+
+(define _start
+  (let* ((ast (with-input-from-string
+                  "int _start () {main(0,0);exit (0);}"
+                parse-c99))
+         (functions (filter ast:function? (cdr ast))))
+    (list (find (lambda (x) (equal? (.name x) "_start")) functions))))
+
+(define libc
+  (list
+   (make-function "eputs" (list i386:eputs))
+   (make-function "exit" (list i386:exit))
+   (make-function "puts" (list i386:puts))))
 
 (define (compile)
   (let* ((ast (mescc))
          (functions (filter ast:function? (cdr ast)))
-         (main (find (lambda (x) (equal? (.name x) "main")) functions)))
-    (display "AST" (current-error-port))
-    (pretty-print ast (current-error-port))
-    (format (current-error-port) "functions~a\n" functions)
-    (format (current-error-port) "main~a\n" main)
-    (call-with-values
-        (lambda () (function->text+data main))
-      text+data->exe)))
+         (functions (append functions _start)))
+    (let loop ((functions functions) (symbols libc))
+      (if (null? functions) (symbols->exe symbols)
+          (loop (cdr functions) ((function->symbols symbols) (car functions)))))))

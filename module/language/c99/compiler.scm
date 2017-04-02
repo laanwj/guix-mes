@@ -27,6 +27,7 @@
   #:use-module (system base pmatch)
   #:use-module (ice-9 pretty-print)
   #:use-module (mes elf)
+  #:use-module (mes elf-util)
   #:use-module (mes libc-i386)
   #:use-module (nyacc lang c99 parser)
   #:export (compile))

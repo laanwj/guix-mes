@@ -27,7 +27,9 @@
 (cond-expand
  (guile)
  (mes
-  (mes-use-module (mes bytevectors))))
+  (mes-use-module (srfi srfi-1))
+  (mes-use-module (mes bytevectors))
+  (mes-use-module (mes elf-util))))
 
 (define (int->bv32 value)
   (let ((bv (make-bytevector 4)))
@@ -44,177 +46,240 @@
 (define elf32-off int->bv32)
 (define elf32-word int->bv32)
 
-(define (make-elf text data)
- (define vaddress #x08048000)
+(define (make-elf symbols)
+  (define vaddress #x08048000)
 
- (define ei-magic `(#x7f ,@(string->list "ELF")))
- (define ei-class '(#x01)) ;; 32 bit
- (define ei-data '(#x01)) ;; little endian
- (define ei-version '(#x01))
- (define ei-osabi '(#x00))
- (define ei-pad '(#x0 #x0 #x0 #x0 #x0 #x0 #x0 #x0))
- (define e-ident
-   (append
-    ei-magic
-    ei-class
-    ei-data
-    ei-version
-    ei-osabi
-    ei-pad))
+  (define ei-magic `(#x7f ,@(string->list "ELF")))
+  (define ei-class '(#x01)) ;; 32 bit
+  (define ei-data '(#x01))  ;; little endian
+  (define ei-version '(#x01))
+  (define ei-osabi '(#x00))
+  (define ei-pad '(#x0 #x0 #x0 #x0 #x0 #x0 #x0 #x0))
+  (define e-ident
+    (append
+     ei-magic
+     ei-class
+     ei-data
+     ei-version
+     ei-osabi
+     ei-pad))
 
- (define ET-EXEC 2)
- (define EM-386 3)
- (define EV-CURRENT 1)
+  (define ET-EXEC 2)
+  (define EM-386 3)
+  (define EV-CURRENT 1)
 
- (define p-filesz (elf32-word 0))
- (define p-memsz (elf32-word 0))
- (define PF-X 1)
- (define PF-W 2)
- (define PF-R 4)
- (define p-flags (elf32-word (logior PF-X PF-W PF-R)))
- (define p-align (elf32-word 1))
+  (define p-filesz (elf32-word 0))
+  (define p-memsz (elf32-word 0))
+  (define PF-X 1)
+  (define PF-W 2)
+  (define PF-R 4)
+  (define p-flags (elf32-word (logior PF-X PF-W PF-R)))
+  (define p-align (elf32-word 1))
 
- (define (program-header type offset text)
-   (append
-    (elf32-word type)
-    (elf32-off offset)
-    (elf32-addr (+ vaddress offset))
-    (elf32-addr (+ vaddress offset))
-    (elf32-word (length text))
-    (elf32-word (length text))
-    p-flags
-    p-align
-    ))
+  (define (program-header type offset text)
+    (append
+     (elf32-word type)
+     (elf32-off offset)
+     (elf32-addr (+ vaddress offset))
+     (elf32-addr (+ vaddress offset))
+     (elf32-word (length text))
+     (elf32-word (length text))
+     p-flags
+     p-align
+     ))
 
- (define (section-header name type offset text)
-   (append
-    (elf32-word name)
-    (elf32-word type)
-    (elf32-word 3) ;; write/alloc must for data hmm
-    (elf32-addr (+ vaddress offset))
-    (elf32-off offset) 
-    (elf32-word (length text))
-    (elf32-word 0)
-    (elf32-word 0)
-    (elf32-word 1)
-    (elf32-word 0)))
-
-
- (define e-type (elf32-half ET-EXEC))
- (define e-machine (elf32-half EM-386))
- (define e-version (elf32-word EV-CURRENT))
- (define e-entry (elf32-addr 0))
- ;;(define e-entry (elf32-addr (+ vaddress text-offset)))
- ;;(define e-phoff (elf32-off 0))
- (define e-shoff (elf32-off 0))
- (define e-flags (elf32-word 0))
- ;;(define e-ehsize (elf32-half 0))
- (define e-phentsize (elf32-half (length (program-header 0 0 '()))))
- (define e-phnum (elf32-half 1))
- (define e-shentsize (elf32-half (length (section-header 0 0 0 '()))))
- (define e-shnum (elf32-half 5))
- (define e-shstrndx (elf32-half 4))
-
- (define (elf-header size entry sections)
-   (append
-    e-ident
-    e-type
-    e-machine
-    e-version
-    (elf32-addr (+ vaddress entry)) ;; e-entry
-    (elf32-off size) ;; e-phoff
-    (elf32-off sections) ;; e-shoff
-    e-flags
-    (elf32-half size) ;; e-ehsize
-    e-phentsize
-    e-phnum
-    e-shentsize
-    e-shnum
-    e-shstrndx
-    ))
-
- (define elf-header-size
-   (length (elf-header 0 0 0)))
-
- (define program-header-size
-   (length (program-header 0 0 '())))
-
- (define text-offset
-   (+ elf-header-size program-header-size))
-
- (define (program-headers)
-   (append
-    (program-header 1 text-offset (text 0))
-    ))
+  (define (section-header name type flags offset text sh-link sh-info sh-entsize)
+    (append
+     (elf32-word name)
+     (elf32-word type)
+     ;;;;(elf32-word 3) ;; write/alloc must for data hmm
+     (elf32-word flags)
+     (elf32-addr (+ vaddress offset))
+     (elf32-off offset) 
+     (elf32-word (length text))
+     (elf32-word sh-link)
+     (elf32-word sh-info)
+     (elf32-word 1)
+     (elf32-word sh-entsize)))
 
 
- (define note
-   (string->list
-    (string-append
-     "MES"
-     ;;"Mes -- Maxwell Equations of Software\n"
-     ;;"https://gitlab.com/janneke/mes"
-     )
-    ;; #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
-    ;; #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
-    ))
+  (define e-type (elf32-half ET-EXEC))
+  (define e-machine (elf32-half EM-386))
+  (define e-version (elf32-word EV-CURRENT))
+  (define e-entry (elf32-addr 0))
+  ;;(define e-entry (elf32-addr (+ vaddress text-offset)))
+  ;;(define e-phoff (elf32-off 0))
+  (define e-shoff (elf32-off 0))
+  (define e-flags (elf32-word 0))
+  ;;(define e-ehsize (elf32-half 0))
+  (define e-phentsize (elf32-half (length (program-header 0 0 '()))))
+  (define e-phnum (elf32-half 1))
+  (define e-shentsize (elf32-half (length (section-header 0 0 0 0 '() 0 0 0))))
+  (define e-shnum (elf32-half 7))       ; sections: 7
+  (define e-shstrndx (elf32-half 4))
 
- (define tab
-   `(
-     #x00 ,@(string->list ".shstrtab")
-          #x00 ,@(string->list ".text")
-          #x00 ,@(string->list ".data")
-          #x00 ,@(string->list ".note")
-          #x00 #x00 #x00 #x00
-          ))
+  (define (elf-header size entry sections)
+    (append
+     e-ident
+     e-type
+     e-machine
+     e-version
+     (elf32-addr (+ vaddress entry)) ;; e-entry
+     (elf32-off size)                ;; e-phoff
+     (elf32-off sections)            ;; e-shoff
+     e-flags
+     (elf32-half size) ;; e-ehsize
+     e-phentsize
+     e-phnum
+     e-shentsize
+     e-shnum
+     e-shstrndx
+     ))
 
- (define text-length
-   (length (text 0)))
+  (define elf-header-size
+    (length (elf-header 0 0 0)))
 
- (define data-offset
-   (+ text-offset text-length))
+  (define program-header-size
+    (length (program-header 0 0 '())))
 
- (define data-address (+ data-offset vaddress))
+  (define text-offset
+    (+ elf-header-size program-header-size))
 
- (define data-length
-   (length data))
+  (define (program-headers text)
+    (append
+     (program-header 1 text-offset text)))
 
- (define note-length
-   (length note))
+  (define note
+    (string->list
+     (string-append
+      "MES"
+      ;;"Mes -- Maxwell Equations of Software\n"
+      ;;"https://gitlab.com/janneke/mes"
+      )
+     ;; #x05 #x00 #x00 #x00 #x00 #x00 #x00 #x00 #x02 #x00 #x00 #x00
+     ;; #\i #\3 #\8 #\6 #x00 #x00 #x00 #x00
+     ))
 
- (define note-offset
-   (+ data-offset data-length))
+  (define shstr
+    `(
+      #x00                              ; 0
+      ,@(string->list ".text") #x00     ; 1
+      ,@(string->list ".data") #x00     ; 7
+      ,@(string->list ".note") #x00     ; 13
+      ,@(string->list ".shstrtab") #x00 ; 19
+      ,@(string->list ".symtab") #x00  ; 29
+      ,@(string->list ".strtab") #x00   ; 37
+      ))
 
- (define tab-offset
-   (+ note-offset note-length))
+  (define (str symbols)
+    (cons
+     0
+     (append-map
+      (lambda (s) (append (string->list s) (list 0)))
+      (map car symbols))))
 
- (define tab-length
-   (length tab))
+  (define text-length
+    (length (symbols->text symbols 0 0)))
 
- (define section-headers-offset
-   (+ tab-offset tab-length))
+  (define data-offset
+    (+ text-offset text-length))
+
+  (define stt-func 2)
+  (define stt-global-func 18)
+  (define (symbol-table-entry st-name st-offset st-length st-info st-other st-shndx)
+    (append
+     (elf32-word st-name)
+     (elf32-addr st-offset)
+     (elf32-word st-length)
+     (list st-info)
+     (list st-other)
+     (elf32-half st-shndx)))
+
+  (define (sym symbols)
+    (define (symbol->table-entry o)
+      (let* ((name (car o))
+             (offset (function-offset name symbols))
+            (len (length (append-map (lambda (f) (f symbols 0 0)) (cddr o))))
+            (str (append-map (lambda (x) (cons 0 (string->list x))) (cdr (member name (reverse (map car symbols))))))
+            (i (1+ (length str))))
+        (symbol-table-entry i (+ vaddress text-offset offset) len stt-func 0 1)))
+    (append
+     (symbol-table-entry 0 0 0 0 0 0)
+     (append-map symbol->table-entry symbols)))
+
+  (define data-address (+ data-offset vaddress))
+  (define text-address (+ text-offset vaddress))
+
+  (define data-length
+    (length (symbols->data symbols)))
+
+  (define note-length
+    (length note))
+
+  (define note-offset
+    (+ data-offset data-length))
+
+  (define shstr-offset
+    (+ note-offset note-length))
+
+  (define shstr-length
+    (length shstr))
+
+  (define sym-offset
+    (+ shstr-offset shstr-length))
+
+  (define SHT-PROGBITS 1)
+  (define SHT-SYMTAB 2)
+  (define SHT-STRTAB 3)
+  (define SHT-NOTE 7)
+
+  (define SHF-WRITE 1)
+  (define SHF-ALLOC 4)
+  (define SHF-EXEC 4)
+  (define SHF-STRINGS #x20)
+
+  (let* ((text (symbols->text symbols 0 data-address))
+         (data (symbols->data symbols))
+         (entry (+ text-offset (function-offset "_start" symbols)))
+         (functions (filter function-entry? symbols))
+         (sym (sym functions))
+         (str (str functions)))
+
+    (define (section-headers)
+    (append
+     (section-header 0 0 0 0 '() 0 0 0)
+     (section-header 1 SHT-PROGBITS (logior SHF-WRITE SHF-ALLOC) text-offset text 0 0 0)
+     (section-header 7 SHT-PROGBITS (logior SHF-WRITE SHF-ALLOC) data-offset data 0 0 0)
+     (section-header 13 SHT-NOTE 0 note-offset note 0 0 0)
+     (section-header 19 SHT-STRTAB SHF-STRINGS shstr-offset shstr 0 0 0)
+     (section-header 29 SHT-SYMTAB SHF-ALLOC sym-offset sym 6 0 (length (symbol-table-entry 0 0 0 0 0 0)))
+     (section-header 37 SHT-STRTAB SHF-STRINGS str-offset str 0 0 0)))
 
 
- (define SHT-PROGBITS 1)
- (define SHT-STRTAB 3)
- (define SHT-NOTE 7)
- (define (section-headers)
-   (append
-    (section-header 0 0 0 '())
-    (section-header 11 SHT-PROGBITS text-offset (text 0))
-    (section-header 17 SHT-PROGBITS data-offset data)
-    (section-header 23 SHT-NOTE note-offset note)
-    (section-header 1 SHT-STRTAB tab-offset tab)
-    ))
+    (define sym-length
+      (length sym))
+    
+    (define str-offset
+      (+ sym-offset sym-length))
+    
+    (define str-length
+      (length str))
 
- (define exe
-   (append
-    (elf-header elf-header-size text-offset section-headers-offset)
-    (program-headers)
-    (text data-address)
-    data
-    note
-    tab
-    (section-headers)
-    ))
- exe)
+    (define section-headers-offset
+      (+ str-offset str-length))
+
+    (format (current-error-port) "ELF text=~a\n" text)
+    ;;(format (current-error-port) "ELF data=~a\n" data)
+    (format (current-error-port) "text-offset=~a\n" text-offset)
+    (format (current-error-port) "data-offset=~a\n" data-offset)
+    (format (current-error-port) "_start=~a\n" (number->string entry 16))
+    (append
+     (elf-header elf-header-size entry section-headers-offset)
+     (program-headers text)
+     text
+     data
+     note
+     shstr
+     sym
+     str
+     (section-headers))))
