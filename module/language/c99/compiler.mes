@@ -30,9 +30,9 @@
   (set-port-encoding! (current-output-port) "ISO-8859-1"))
  (guile)
  (mes
+  (mes-use-module (mes pmatch))
   (mes-use-module (nyacc lang c99 parser))
   (mes-use-module (mes elf-util))
-  (mes-use-module (mes pmatch))
   (mes-use-module (mes elf))
   (mes-use-module (mes as-i386))
   (mes-use-module (mes libc))
@@ -45,8 +45,6 @@
 
 (define (stderr string . rest)
   (apply logf (cons* (current-error-port) string rest)))
-
-(define (gnuc-xdef? name mode) (if (equal? name "__GNUC__") #f (eq? mode 'code)))
 
 (define (mescc)
   (parse-c99
@@ -67,9 +65,7 @@
                 "VERSION=\"0.4\""
                 "PREFIX=\"\""
                 )
-   #:xdef? gnuc-xdef?
-   #:mode 'code
-   ))
+   #:mode 'code))
 
 (define (write-any x)
   (write-char (cond ((char? x) x)
@@ -661,8 +657,9 @@
                 (count (length fields))
                 (field-size 4) ;; FIXME:4, not fixed
                 (rest (or (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))
-                          barf
-                          '()))
+                          (begin
+                            (stderr "no field:~a\n" field)
+                           '())))
                 (offset (* field-size (1- (length rest))))
                 (text (.text info)))
            (clone info #:text
@@ -1605,7 +1602,7 @@
 
         ;; ++i
         ((expr-stmt (pre-inc (p-expr (ident ,name))))
-         (or (assoc-ref locals name) barf)
+         (or (assoc-ref locals name) (begin (stderr "++i ~a\n" name) barf))
          (clone info #:text
                 (append text
                         ((ident-add info) name 1)
@@ -1617,7 +1614,7 @@
 
         ;; i--
         ((expr-stmt (post-dec (p-expr (ident ,name))))
-         (or (assoc-ref locals name) barf)
+         (or (assoc-ref locals name) (begin (stderr "i-- ~a\n" name) barf))
          (clone info #:text
                 (append text
                         ((ident->accu info) name)
@@ -1629,7 +1626,7 @@
 
         ;; --i
         ((expr-stmt (pre-dec (p-expr (ident ,name))))
-         (or (assoc-ref locals name) barf)
+         (or (assoc-ref locals name) (begin (stderr "--i ~a\n" name) barf))
          (clone info #:text
                 (append text
                         ((ident-add info) name -1)
@@ -2451,13 +2448,14 @@
 
 (define (function->info info)
   (lambda (o)
-    ;;(stderr "\n")
-    ;;(stderr "formals=~a\n" (.formals o))
+    ;;(stderr "function->info o=~s\n" o)
+    ;;(stderr "formals=~s\n" (.formals o))
     (let* ((name (.name o))
-           (text (formals->text (.formals o)))
-           (locals (formals->locals (.formals o))))
-      (format (current-error-port) "compiling ~a\n" name)
-      ;;(stderr "locals=~a\n" locals)
+           (formals (.formals o))
+           (text (formals->text formals))
+           (locals (formals->locals formals)))
+      (format (current-error-port) "compiling ~s\n" name)
+      ;;(stderr "locals=~s\n" locals)
       (let loop ((statements (.statements o))
                  (info (clone info #:locals locals #:function (.name o) #:text text)))
         (if (null? statements) (clone info
@@ -2474,6 +2472,7 @@
           (loop (cdr elements) ((ast->info info) (car elements)))))))
 
 (define (compile)
+  (stderr "COMPILE\n")
   (let* ((ast (mescc))
          (info (make <info>
                  #:functions i386:libc

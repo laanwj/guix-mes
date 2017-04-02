@@ -67,7 +67,7 @@
 (define (with-input-from-file file thunk)
   (let ((port (open-input-file file)))
     (if (= port -1)
-        (begin (display "no such file:") (display file) (newline))
+        (error 'no-such-file file)
         (let* ((save (current-input-port))
                (foo (set-current-input-port port))
                (r (thunk)))

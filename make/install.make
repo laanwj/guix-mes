@@ -45,25 +45,16 @@ ChangeLog:
 install: all ChangeLog
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	install mes $(DESTDIR)$(PREFIX)/bin/mes
-	install scripts/elf.mes $(DESTDIR)$(PREFIX)/bin/elf.mes
-	install scripts/include.mes $(DESTDIR)$(PREFIX)/bin/include.mes
 	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/mescc.mes
-	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/nyacc.mes
-	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/nyacc-calc.mes
 	install scripts/repl.mes $(DESTDIR)$(PREFIX)/bin/repl.mes
-	install scripts/paren.mes $(DESTDIR)$(PREFIX)/bin/paren.mes
 	mkdir -p $(DESTDIR)$(PREFIX)/share/mes
 	$(GIT_ARCHIVE_HEAD) module\
 		| tar -C $(DESTDIR)$(PREFIX)/share/mes -xf-
 	cp module/mes/read-0.mo $(DESTDIR)$(PREFIX)/share/mes/module/mes
 	sed -i -e 's@module/@$(PREFIX)/share/mes/module/@' \
 		$(DESTDIR)$(PREFIX)/share/mes/module/mes/base-0.mes \
-		$(DESTDIR)$(PREFIX)/bin/elf.mes \
 		$(DESTDIR)$(PREFIX)/bin/mescc.mes \
-		$(DESTDIR)$(PREFIX)/bin/nyacc.mes \
-		$(DESTDIR)$(PREFIX)/bin/nyacc-calc.mes \
 		$(DESTDIR)$(PREFIX)/bin/repl.mes \
-		$(DESTDIR)$(PREFIX)/bin/paren.mes
 	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/mes
 	$(GIT_ARCHIVE_HEAD) $(READMES) \
 		| tar -C $(DESTDIR)$(PREFIX)/share/doc/mes -xf-

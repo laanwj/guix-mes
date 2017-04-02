@@ -168,13 +168,13 @@ SCM tmp_num2;
 struct function g_functions[200];
 int g_function = 0;
 
-#include "gc.h"
+#include "mini-gc.h"
 // #include "lib.h"
 // #include "math.h"
 #include "mini-mes.h"
 // #include "posix.h"
 // #include "reader.h"
-#include "vector.h"
+#include "mini-vector.h"
 
 
 #define TYPE(x) (g_cells[x].type)
@@ -1589,17 +1589,17 @@ mes_builtins (SCM a) ///((internal))
 // #include "lib.i"
 // #include "math.i"
 // #include "posix.i"
-#include "vector.i"
-#include "gc.i"
+#include "mini-vector.i"
+#include "mini-gc.i"
 // #include "reader.i"
 
-#include "gc.environment.i"
+#include "mini-gc.environment.i"
 // #include "lib.environment.i"
 // #include "math.environment.i"
-  #include "mini-mes.environment.i"
+#include "mini-mes.environment.i"
 // #include "posix.environment.i"
 // #include "reader.environment.i"
-#include "vector.environment.i"
+#include "mini-vector.environment.i"
 
   return a;
 }
@@ -1702,6 +1702,9 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
 #endif
 
+  SCM lst = cell_nil;
+  for (int i=argc-1; i>=0; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
+  r0 = acons (cell_symbol_argv, lst, r0);
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
   if (g_debug)
     {

@@ -18,21 +18,66 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !MINI_MES
+#if 0
 #include <fcntl.h>
-
 FILE *g_stdin;
+#else
+
+#if _POSIX_SOURCE
+int open (char const *s, int mode);
+int read (int fd, void* buf, size_t n);
+void write (int fd, char const* s, int n);
+#endif
+
+int g_stdin;
+
+#define O_RDONLY 0
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
+int
+putchar (int c)
+{
+  write (STDOUT, (char*)&c, 1);
+  return 0;
+}
+
+int ungetc_char = -1;
+char ungetc_buf[2];
+
 int
 getchar ()
 {
-  return getc (g_stdin);
+  char c;
+  int i;
+  if (ungetc_char == -1)
+    {
+      int r = read (g_stdin, &c, 1);
+      if (r < 1) return -1;
+      i = c;
+    }
+  else
+    i = ungetc_buf[ungetc_char--];
+
+  if (i < 0) i += 256;
+
+  return i;
+}
+
+int
+fd_ungetc (int c, int fd)
+{
+  assert (ungetc_char < 2);
+  ungetc_buf[++ungetc_char] = c;
+  return c;
 }
 #endif
 
 int
 ungetchar (int c)
 {
-  return ungetc (c, g_stdin);
+  return fd_ungetc (c, g_stdin);
 }
 
 int
@@ -113,13 +158,13 @@ open_input_file (SCM file_name)
 SCM
 current_input_port ()
 {
-  return MAKE_NUMBER (fileno (g_stdin));
+  return MAKE_NUMBER (g_stdin);
 }
 
 SCM
 set_current_input_port (SCM port)
 {
-  g_stdin = VALUE (port) ? fdopen (VALUE (port), "r") : stdin;
+  g_stdin = VALUE (port);
   return current_input_port ();
 }
 
@@ -128,7 +173,7 @@ force_output (SCM p) ///((arity . n))
 {
   int fd = 1;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-  FILE *f = fd == 1 ? stdout : stderr;
-  fflush (f);
+  // FILE *f = fd == 1 ? stdout : stderr;
+  // fflush (f);
   return cell_unspecified;
 }

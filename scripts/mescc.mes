@@ -4,8 +4,9 @@ MES=${MES-$(dirname $0)/mes}
 prefix=module/
 echo '()' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
 #paredit:||
-chmod +x a.out
-exit $?
+r=$?
+([ -f a.out ] && chmod +x a.out)
+exit $r
 !#
 
 ;;; Mes --- Maxwell Equations of Software

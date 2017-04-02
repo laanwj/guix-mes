@@ -4,7 +4,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 !#
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; mes-snarf.scm: This file is part of Mes.
 ;;;
@@ -34,7 +34,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
              (cut regexp-substitute #f <> 'pre replace 'post))
       string))
 
-(define GCC? #f)
+(define %gcc? #t)
 ;; (define-record-type function (make-function name formals annotation)
 ;;   function?
 ;;   (name .name)
@@ -84,7 +84,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
    (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)))
 
 (define (symbol->names s i)
-  (if GCC?
+  (if %gcc?
       (format #f "g_cells[cell_~a].car = cstring_to_list (scm_~a.name);\n" s s)
       (format #f "g_cells[cell_~a].car = cstring_to_list (scm_~a.car);\n" s s)))
 
@@ -95,17 +95,17 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
          (n (if (eq? arity 'n) -1 arity)))
     (string-append
      (format #f "SCM ~a (~a);\n" (.name f) (.formals f))
-     (if GCC?
+     (if %gcc?
          (format #f "struct function fun_~a = {.function~a=&~a, .arity=~a, .name=~s};\n" (.name f) arity (.name f) n (function-scm-name f))
          (format #f "struct function fun_~a = {&~a, ~a, ~s};\n" (.name f) (.name f) n (function-scm-name f)))
-     (if GCC?
+     (if %gcc?
          (format #f "struct scm ~a = {TFUNCTION, .name=0, .function=0};\n" (function-builtin-name f))
          (format #f "struct scm ~a = {TFUNCTION, 0, 0};\n" (function-builtin-name f)))
      (format #f "SCM cell_~a;\n\n" (.name f)))))
 
 (define (function->source f i)
   (string-append
-   (if GCC?
+   (if %gcc?
        (format #f "~a.function = g_function;\n" (function-builtin-name f))
        (format #f "~a.cdr = g_function;\n" (function-builtin-name f)))
    (format #f "g_functions[g_function++] = fun_~a;\n" (.name f))
@@ -114,13 +114,13 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
 
 (define (function->environment f i)
   (string-append
-   (if GCC?
+   (if %gcc?
        (format #f "scm_~a.string = cstring_to_list (fun_~a.name);\n" (.name f) (.name f))
        (format #f "scm_~a.car = cstring_to_list (fun_~a.name);\n" (.name f) (.name f)))
-   (if GCC?
+   (if %gcc?
        (format #f "g_cells[cell_~a].string = MAKE_STRING (scm_~a.string);\n" (.name f) (.name f))
        (format #f "g_cells[cell_~a].car = MAKE_STRING (scm_~a.car);\n" (.name f) (.name f)))
-   (if GCC?
+   (if %gcc?
        (format #f "a = acons (lookup_symbol_ (scm_~a.string), ~a, a);\n\n" (.name f) (function-cell-name f))
        (format #f "a = acons (lookup_symbol_ (scm_~a.car), ~a, a);\n\n" (.name f) (function-cell-name f)))))
 
@@ -155,6 +155,8 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
          (functions (filter (negate internal?) functions))
          (symbols (snarf-symbols string))
          (base-name (basename file-name ".c"))
+         (base-name (if (or %gcc? (string-prefix? "mini-" base-name)) base-name
+                        (string-append "mini-" base-name)))
          (header (make <file>
                    #:name (string-append base-name ".h")
                    #:content (string-join (map function->header functions (iota (length functions) (+ %start (length symbols)))) "")))
@@ -179,7 +181,9 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
   (with-output-to-file (.name file) (lambda () (display (.content file)))))
 
 (define (main args)
-  (let* ((files (cdr args)))
+  (let* ((files (if (not (and (pair? (cdr args)) (equal? (cadr args) "--mini"))) (cdr args)
+                    (begin (set! %gcc? #f)
+                           (cddr args)))))
     (map file-write (filter content? (append-map generate-includes files)))))
 
 ;;(define string (with-input-from-file "../mes.c" read-string))

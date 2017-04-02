@@ -26,20 +26,21 @@ endif
 
 -include .local.make
 
-all: mes module/mes/read-0.mo
+all: mes module/mes/read-0.mo module/mes/read-0-32.mo
 
-mes.o: GNUmakefile
-mes.o: mes.c
-mes.o: mes.c mes.h mes.i mes.environment.i mes.symbols.i
-mes.o: lib.c lib.h lib.i lib.environment.i
-mes.o: math.c math.h math.i math.environment.i
-mes.o: posix.c posix.h posix.i posix.environment.i
-mes.o: reader.c reader.h reader.i reader.environment.i
-mes.o: gc.c gc.h gc.i gc.environment.i
-mes.o: vector.c vector.h vector.i vector.environment.i
+S:=
+mes.o$(S): GNUmakefile
+mes.o$(S): mes.c
+mes.o$(S): mes.c mes.h mes.i mes.environment.i mes.symbols.i
+mes.o$(S): lib.c lib.h lib.i lib.environment.i
+mes.o$(S): math.c math.h math.i math.environment.i
+mes.o$(S): posix.c posix.h posix.i posix.environment.i
+mes.o$(S): reader.c reader.h reader.i reader.environment.i
+mes.o$(S): gc.c gc.h gc.i gc.environment.i
+mes.o$(S): vector.c vector.h vector.i vector.environment.i
 
 clean:
-	rm -f mes *.o *.environment.i *.symbols.i *.environment.h *.cat a.out
+	rm -f mes *.o *.o-32 *.environment.i *.symbols.i *.environment.h *.cat a.out
 	rm -f mes-32
 	rm -f cons-mes m main micro-mes mini-mes t tiny-mes
 	rm -f guile-cons-mes guile-m guile-main guile-micro-mes guile-mini-mes guile-t guile-tiny-mes
@@ -90,23 +91,27 @@ MES_DEBUG:=1
 mes-check: all
 	set -e; for i in $(TESTS); do ./$$i; done
 
-mes-check-nyacc: all
-	scripts/nyacc.mes
-	scripts/nyacc-calc.mes
+mini-mes-check: all mini-mes
+	$(MAKE) mes-check MES=./mini-mes
 
 module/mes/read-0.mo: module/mes/read-0.mes mes 
 	./mes --dump < $< > $@
 
 dump: module/mes/read-0.mo
 
-mes-32: gc.c lib.c math.c posix.c vector.c
-mes-32: mes.c lib.c
-	rm -f mes mes.o
-	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
-	rm -f mes.o
-	mv mes mes-32
+mes.o$(S): mes.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-module/mes/read-0-32.mo: module/mes/read-0.mes mes-32
+mes$(S): mes.o$(S)
+	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+
+mes$(S)-32: GNUmakefile
+mes$(S)-32: mes.c gc.c lib.c math.c posix.c vector.c
+	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes-32 S=-32 CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
+
+module/mes/read-0-32.mo: module/mes/read-0.mes
+module/mes/read-0-32.mo: module/mes/read-0.mo
+module/mes/read-0-32.mo: mes-32
 	MES_MINI=1 ./mes-32 --dump < $< > $@
 
 module/mes/tiny-0-32.mo: module/mes/tiny-0.mes mes-32
@@ -116,7 +121,6 @@ guile-check:
 	set -e; for i in $(TESTS); do\
 		$(GUILE) -s <(cat $(MES-0) module/mes/test.mes $$i);\
 	done
-	guile/nyacc-calc.scm
 
 t-check: t
 	./t
@@ -127,33 +131,51 @@ mescc-check: t-check
 	chmod +x a.out
 	./a.out
 
-%.h %.i %.environment.i %.symbols.i: scaffold/%.c build-aux/mes-snarf.scm
-	build-aux/mes-snarf.scm $<
+%.h %.i %.environment.i %.symbols.i: scaffold/%.c build-aux/mes-snarf.scm GNUmakefile
+	build-aux/mes-snarf.scm --mini $<
+
+mini-%.h mini-%.i mini-%.environment.i mini-%.symbols.i: %.c build-aux/mes-snarf.scm GNUmakefile
+	build-aux/mes-snarf.scm --mini $<
+
+mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i: scaffold/mini-mes.c build-aux/mes-snarf.scm GNUmakefile
+	build-aux/mes-snarf.scm --mini $<
 
 mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
-mini-mes: vector.c
-mini-mes: gc.c
+mini-mes: gc.c mini-gc.h mini-gc.i mini-gc.environment.i
+mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
 mini-mes: mlibc.c mstart.c
 mini-mes: GNUmakefile
 mini-mes: module/mes/read-0-32.mo
 mini-mes: scaffold/mini-mes.c
 	rm -f $@
-	#	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DPREFIX=' '-DVERSION='"$(VERSION)"' $<
-	gcc -nostdlib -I. --std=gnu99 -m32 -g -I. -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	rm -f mes.o
 	chmod +x $@
 
 guile-mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
-guile-mini-mes: vector.c
+guile-mini-mes: gc.c mini-gc.h mini-gc.i mini-gc.environment.i
+guile-mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
+guile-mini-mes: mlibc.c mstart.c
+guile-mini-mes: GNUmakefile
 guile-mini-mes: module/mes/read-0-32.mo
 guile-mini-mes: scaffold/mini-mes.c
 	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
+mes-mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
+mes-mini-mes: gc.c mini-gc.h mini-gc.i mini-gc.environment.i
+mes-mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
+mes-mini-mes: mlibc.c mstart.c
+mes-mini-mes: GNUmakefile
+mes-mini-mes: module/mes/read-0-32.mo
+mes-mini-mes: scaffold/mini-mes.c
+	MES_FLAGS= MES_DEBUG=1 scripts/mescc.mes $< > $@ || rm -f $@
+	chmod +x $@
+
 cons-mes: module/mes/tiny-0-32.mo
 cons-mes: scaffold/cons-mes.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-cons-mes: module/mes/tiny-0-32.mo
@@ -164,7 +186,7 @@ guile-cons-mes: scaffold/cons-mes.c
 tiny-mes: module/mes/tiny-0-32.mo
 tiny-mes: scaffold/tiny-mes.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-tiny-mes: module/mes/tiny-0-32.mo
@@ -174,8 +196,8 @@ guile-tiny-mes: scaffold/tiny-mes.c
 
 m: scaffold/m.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
-#	gcc --std=gnu99 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
+#	gcc --std=gnu99 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-m: scaffold/m.c
@@ -184,7 +206,7 @@ guile-m: scaffold/m.c
 
 malloc: scaffold/malloc.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-malloc: scaffold/malloc.c
@@ -193,7 +215,7 @@ guile-malloc: scaffold/malloc.c
 
 micro-mes: scaffold/micro-mes.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-micro-mes: scaffold/micro-mes.c
@@ -202,7 +224,7 @@ guile-micro-mes: scaffold/micro-mes.c
 
 main: doc/examples/main.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-main: doc/examples/main.c
@@ -212,7 +234,7 @@ guile-main: doc/examples/main.c
 t: mlibc.c
 t: scaffold/t.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-t: scaffold/t.c
@@ -230,9 +252,6 @@ guile-mescc: $(MAIN_C)
 	guile/mescc.scm $(MAIN_C) > a.out
 	chmod +x a.out
 	./a.out; r=$$?; [ $$r = 42 ]
-
-paren: all
-	scripts/paren.mes
 
 GUILE_GIT:=$(HOME)/src/guile-1.8
 GUILE_COMMIT:=ba8a709

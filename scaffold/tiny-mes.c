@@ -25,17 +25,6 @@
 
 #define MES_MINI 1
 
-#if __GNUC__
-#define FIXME_NYACC 1
-#define  __NYACC__ 0
-#define NYACC_CAR
-#define NYACC_CDR
-#else
-#define  __NYACC__ 1
-#define NYACC_CAR nyacc_car
-#define NYACC_CDR nyacc_cdr
-#endif
-
 char arena[200];
 
 typedef int SCM;
@@ -53,11 +42,7 @@ SCM r1 = 0; // param 1
 SCM r2 = 0; // save 2+load/dump
 SCM r3 = 0; // continuation
 
-#if __NYACC__ || FIXME_NYACC
-enum type_t {CHAR, CLOSURE, CONTINUATION, TFUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, TSTRING, SYMBOL, VALUES, TVECTOR, BROKEN_HEART};
-#else
-enum type_t {CHAR, CLOSURE, CONTINUATION, FUNCTION, KEYWORD, MACRO, NUMBER, PAIR, REF, SPECIAL, STRING, SYMBOL, VALUES, VECTOR, BROKEN_HEART};
-#endif
+enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART};
 
 struct scm {
   enum type_t type;
@@ -142,7 +127,7 @@ fill ()
   CAR (0) = 0x6a746f6f;
   CDR (0) = 0x00002165;
 
-  TYPE (1) = SYMBOL;
+  TYPE (1) = TSYMBOL;
   CAR (1) = 0x2d2d2d2d;
   CDR (1) = 0x3e3e3e3e;
 
@@ -151,19 +136,19 @@ fill ()
   CDR (9) = 0x3e3e3e3e;
 
   // (A(B))
-  TYPE (10) = PAIR;
+  TYPE (10) = TPAIR;
   CAR (10) = 11;
   CDR (10) = 12;
 
-  TYPE (11) = CHAR;
+  TYPE (11) = TCHAR;
   CAR (11) = 0x58585858;
   CDR (11) = 89;
 
-  TYPE (12) = PAIR;
+  TYPE (12) = TPAIR;
   CAR (12) = 13;
   CDR (12) = 1;
 
-  TYPE (13) = CHAR;
+  TYPE (13) = TCHAR;
   CAR (11) = 0x58585858;
   CDR (13) = 90;
 
@@ -187,7 +172,7 @@ display_ (SCM x)
   //puts ("<display>\n");
   switch (TYPE (x))
     {
-    case CHAR:
+    case TCHAR:
       {
         //puts ("<char>\n");
         puts ("#\\");
@@ -207,7 +192,7 @@ display_ (SCM x)
           puts ("cdr");
         break;
       }
-    case NUMBER:
+    case TNUMBER:
       {
         //puts ("<number>\n");
 #if __GNUC__
@@ -220,7 +205,7 @@ display_ (SCM x)
 #endif
         break;
       }
-    case PAIR:
+    case TPAIR:
       {
         //puts ("<pair>\n");
         //if (cont != cell_f) puts "(");
@@ -229,13 +214,13 @@ display_ (SCM x)
         if (CDR (x) && CDR (x) != cell_nil)
           {
 #if __GNUC__
-            if (TYPE (CDR (x)) != PAIR)
+            if (TYPE (CDR (x)) != TPAIR)
               puts (" . ");
 #else
             int c;
             c = CDR (x);
             c = TYPE (c);
-            if (c != PAIR)
+            if (c != TPAIR)
               puts (" . ");
 #endif
             display_ (CDR (x));
@@ -244,7 +229,7 @@ display_ (SCM x)
         puts (")");
         break;
       }
-    case SPECIAL:
+    case TSPECIAL:
       {
         switch (x)
           {
@@ -264,7 +249,7 @@ display_ (SCM x)
           }
         break;
       }
-    case SYMBOL:
+    case TSYMBOL:
       {
         switch (x)
           {

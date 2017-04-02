@@ -425,6 +425,8 @@ length (SCM x)
   return MAKE_NUMBER (n);
 }
 
+SCM apply (SCM, SCM, SCM);
+
 SCM
 error (SCM key, SCM x)
 {
@@ -519,6 +521,8 @@ set_cdr_x (SCM x, SCM e)
   return cell_unspecified;
 }
 
+SCM assert_defined (SCM, SCM);
+
 SCM
 set_env_x (SCM x, SCM e, SCM a)
 {
@@ -551,18 +555,11 @@ lookup_macro_ (SCM x, SCM a) ///((internal))
   return cell_f;
 }
 
-SCM
-push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
-{
-  SCM x = r3;
-  r3 = c;
-  r2 = p2;
-  gc_push_frame ();
-  r1 = p1;
-  r0 = a;
-  r3 = x;
-  return cell_unspecified;
-}
+SCM check_apply (SCM, SCM);
+SCM check_formals (SCM, SCM, SCM);
+SCM push_cc (SCM, SCM, SCM, SCM);
+SCM gc_pop_frame ();
+SCM gc_push_frame ();
 
 SCM
 eval_apply ()
@@ -920,6 +917,19 @@ gc_push_frame () ///((internal))
 }
 
 SCM
+push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
+{
+  SCM x = r3;
+  r3 = c;
+  r2 = p2;
+  gc_push_frame ();
+  r1 = p1;
+  r0 = a;
+  r3 = x;
+  return cell_unspecified;
+}
+
+SCM
 apply (SCM f, SCM x, SCM a) ///((internal))
 {
   push_cc (cons (f, x), cell_unspecified, r0, cell_unspecified);
@@ -1066,7 +1076,7 @@ mes_environment () ///((internal))
   return mes_g_stack (a);
 }
 
-FILE *g_stdin;
+int g_stdin;
 #include "math.c"
 #include "posix.c"
 #include "lib.c"
@@ -1083,7 +1093,7 @@ main (int argc, char *argv[])
   if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
   if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);return 0;};
-  g_stdin = stdin;
+  g_stdin = STDIN;
   r0 = mes_environment ();
 
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))

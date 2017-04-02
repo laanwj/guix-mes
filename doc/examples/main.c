@@ -18,19 +18,21 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
-#include "mlibc.c"
-#endif
+#define GNU 0
+// #if __GNUC__
+// #include "mlibc.c"
+// #endif
 
 int
 //main ()
 main (int argc, char *argv[])
 {
-  puts ("Hi Mes!\n");
-  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("argc > 1 && --help\n");
+  //puts ("Hi Mes!\n");
+  //if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("argc > 1 && --help\n");
+  if (argc > 1) return argc;
   return 42;
 }
 
-#if __GNUC__
-#include "mstart.c"
-#endif
+// #if __GNUC__
+// #include "mstart.c"
+// #endif

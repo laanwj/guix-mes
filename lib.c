@@ -54,7 +54,7 @@ display_helper (SCM x, int cont, char* sep, FILE *fd)
     case TFUNCTION:
       {
         fputs ("#<procedure ", fd);
-        char *p = "?";
+        char const *p = "?";
         if (FUNCTION (x).name != 0)
           p = FUNCTION (x).name;
         fputs (p, fd);
@@ -329,11 +329,11 @@ SCM
 load_env (SCM a) ///((internal))
 {
   r0 = a;
-  g_stdin = fopen ("module/mes/read-0.mes", "r");
-  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mes", "r");
+  g_stdin = open ("module/mes/read-0.mes", O_RDONLY);
+  g_stdin = g_stdin ? g_stdin : open (PREFIX "module/mes/read-0.mes", O_RDONLY);
   if (!g_function) r0 = mes_builtins (r0);
   r2 = read_input_file_env (r0);
-  g_stdin = stdin;
+  g_stdin = STDIN;
   return r2;
 }
 
@@ -341,10 +341,10 @@ SCM
 bload_env (SCM a) ///((internal))
 {
 #if MES_MINI
-  g_stdin = fopen ("module/mes/read-0-32.mo", "r");
+  g_stdin = fopen ("module/mes/read-0-32.mo", O_RDONLY);
 #else
-  g_stdin = fopen ("module/mes/read-0.mo", "r");
-  g_stdin = g_stdin ? g_stdin : fopen (PREFIX "module/mes/read-0.mo", "r");
+  g_stdin = open ("module/mes/read-0.mo", O_RDONLY);
+  g_stdin = g_stdin ? g_stdin : open (PREFIX "module/mes/read-0.mo", O_RDONLY);
 #endif
 
   char *p = (char*)g_cells;
@@ -362,7 +362,7 @@ bload_env (SCM a) ///((internal))
   g_free = (p-(char*)g_cells) / sizeof (struct scm);
   gc_peek_frame ();
   g_symbols = r1;
-  g_stdin = stdin;
+  g_stdin = STDIN;
   r0 = mes_builtins (r0);
   return r2;
 }
