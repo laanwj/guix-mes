@@ -35,21 +35,6 @@ mes.o: math.c math.h math.i math.environment.i
 mes.o: posix.c posix.h posix.i posix.environment.i
 mes.o: reader.c reader.h reader.i reader.environment.i
 
-mini-mes: doc/examples/mini-mes.c GNUmakefile
-	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o mini-mes '-DVERSION="0.4"' $<
-	chmod +x $@
-
-micro-mes: doc/examples/micro-mes.c GNUmakefile
-	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -o micro-mes '-DVERSION="0.4"' $<
-	chmod +x $@
-
-main: doc/examples/main.c GNUmakefile
-	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -o main '-DVERSION="0.4"' $<
-	chmod +x $@
-
 clean:
 	rm -f mes mes.o *.environment.i *.symbols.i *.environment.h *.cat a.out
 
@@ -59,7 +44,7 @@ distclean: clean
 %.h %.i %.environment.i %.symbols.i: %.c build-aux/mes-snarf.scm
 	build-aux/mes-snarf.scm $<
 
-check: all guile-check mes-check
+check: all guile-check mes-check mescc-check
 
 TESTS:=\
  tests/read.test\
@@ -95,6 +80,8 @@ MES_DEBUG:=1
 
 mes-check: all
 	set -e; for i in $(TESTS); do ./$$i; done
+
+mes-check-nyacc: all
 	scripts/nyacc.mes
 	scripts/nyacc-calc.mes
 
@@ -107,8 +94,36 @@ guile-check:
 	set -e; for i in $(TESTS); do\
 		$(GUILE) -s <(cat $(MES-0) module/mes/test.mes $$i);\
 	done
-	guile/nyacc.scm
 	guile/nyacc-calc.scm
+
+t-check: t
+	./t
+
+mescc-check: t-check
+	rm -f a.out
+	guile/mescc.scm scaffold/t.c > a.out
+	chmod +x a.out
+	./a.out
+
+mini-mes: scaffold/mini-mes.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
+
+micro-mes: scaffold/micro-mes.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
+
+main: doc/examples/main.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
+
+t: scaffold/t.c GNUmakefile
+	rm -f $@
+	gcc -nostdlib --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	chmod +x $@
 
 MAIN_C:=doc/examples/main.c
 mescc: all $(MAIN_C)

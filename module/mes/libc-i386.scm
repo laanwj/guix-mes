@@ -27,39 +27,53 @@
 (define-module (mes libc-i386)
   #:use-module (srfi srfi-1)
   #:use-module (mes elf)
-  #:export (i386:accu->local
+  #:export (
+            i386:accu->local
+            i386:accu-non-zero?
+            i386:accu-zero?
+            i386:base-sub
+            i386:byte-base-sub
+            i386:byte-mem->accu
+            i386:byte-mem->base
+            i386:byte-test-base
+            i386:byte-sub-base
             i386:call
-            i386:exit
             i386:formal
-            i386:function-preamble
             i386:function-locals
-            i386:eputs
+            i386:function-preamble
+            i386:jump
             i386:jump
             i386:jump-byte-nz
             i386:jump-byte-z
-            i386:jump-nz
+            i386:jump-c
+            i386:jump-cz
             i386:jump-le
-            i386:local-add
-            i386:local-assign
+            i386:jump-nc
+            i386:jump-ncz
+            i386:jump-nz
+            i386:jump-z
             i386:local->accu
             i386:local->base
+            i386:local-add
+            i386:local-assign
             i386:local-test
             i386:mem->accu
-            i386:mem-byte->accu
-            i386:Xmem-byte->accu
             i386:push-accu
-            i386:puts
             i386:ref-global
             i386:ref-local
             i386:ret
             i386:ret-local
+            i386:sub-base
+            i386:test-accu
+            i386:test-base
+            i386:test-jump-z
             i386:value->accu
-            i386:write
+            i386:value->base
+            i386:xor-zf
 
-            i386:test-byte-base
-            i386:Xmem-byte->base
-            i386:Xjump-byte-z
-            i386:sub-byte-base
+            ;; libc
+            i386:exit
+            i386:write
             ))
 
 (cond-expand

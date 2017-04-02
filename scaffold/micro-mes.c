@@ -41,8 +41,8 @@ void
 exit (int code)
 {
   asm (
-       "movl %0, %%ebx\n\t"
-       "movl $1,  %%eax\n\t"
+       "movl $0,%%ebx\n\t"
+       "movl $1,%%eax\n\t"
        "int  $0x80"
        : // no outputs "=" (r)
        : "" (code)
@@ -71,11 +71,10 @@ write (int fd, char const* s, int n)
   int r;
   //syscall (SYS_write, fd, s, n));
   asm (
-       "mov %0, %%ebx\n\t"
-       "mov %1, %%ecx\n\t"
-       "mov %2, %%edx\n\t"
-
-       "mov $0x4, %%eax\n\t"
+       "mov %0,%%ebx\n\t"
+       "mov %1,%%ecx\n\t"
+       "mov %2,%%edx\n\t"
+       "mov $0x4,%%eax\n\t"
        "int $0x80\n\t"
        : // no outputs "=" (r)
        : "" (fd), "" (s), "" (n)
@@ -152,27 +151,7 @@ eputs (char const* s)
   return 0;
 }
 
-int g_a;
-int g_b;
-
-#if 0
-void
-eputs2 (char const* s, int a)
-{
-  g_a = a;
-  write (STDERR, s, strlen (s));
-  //return 0;
-}
-
-void
-eputs3 (char const* s, int a, int b)
-{
-  g_a = a;
-  g_b = b;
-  write (STDERR, s, strlen (s));
-  //return 0;
-}
-
+#if __GNUC__
 char const*
 itoa (int x)
 {
@@ -205,13 +184,40 @@ assert_fail (char* s)
   eputs ("\n");
   *((int*)0) = 0;
 }
-
 #endif
 
 #define assert(x) ((x) ? (void)0 : assert_fail(#x))
 #define false 0
 #define true 1
 typedef int bool;
+
+typedef int SCM;
+
+#if __GNUC__
+bool g_debug = false;
+#endif
+
+int g_free = 0;
+
+SCM g_symbols = 0;
+SCM g_stack = 0;
+SCM r0 = 0; // a/env
+SCM r1 = 0; // param 1
+SCM r2 = 0; // save 2+load/dump
+SCM r3 = 0; // continuation
+
+SCM
+mes_environment ()
+{
+  return 0;
+}
+
+SCM
+bload_env (SCM a) ///((internal))
+{
+  eputs ("bload_env\n");
+  return 0;
+}
 
 int
 main (int argc, char *argv[])
@@ -222,14 +228,51 @@ main (int argc, char *argv[])
     {
       puts ("\narg1=");
       puts (argv[1]);
-      if (!strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
+      if (!strcmp (argv[1], "--help")) /*return*/ puts ("XXUsage: mes [--dump|--load] < FILE");
     }
   puts ("\n");
-  eputs ("Strlen...\n");
-  puts ("Bye micro\n");
+
+#if __GNUC__
+  //g_debug = getenv ("MES_DEBUG");
+#endif
+  //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
+
+  if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
+  if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
+
+#if __GNUC__
+  g_stdin = STDIN;
+  r0 = mes_environment ();
+#endif
+
+#if MES_MINI
+  SCM program = bload_env (r0);
+  puts ("Hello micro-mes!\n");
+#else
+  SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
+    ? bload_env (r0) : load_env (r0);
+  if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
+
+  push_cc (r2, cell_unspecified, r0, cell_unspecified);
+  r3 = cell_vm_begin;
+  r1 = eval_apply ();
+  stderr_ (r1);
+
+  eputs ("\n");
+  gc (g_stack);
+#endif
   int i = argc;
   //int i = strcmp (argv[1], "1");
   return i;
+#if __GNUC__
+  if (g_debug)
+    {
+      eputs ("\nstats: [");
+      eputs (itoa (g_free));
+      eputs ("]\n");
+    }
+#endif
+  return 0;
 }
 
 #if __GNUC__

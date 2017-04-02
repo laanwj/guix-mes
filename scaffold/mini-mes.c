@@ -763,15 +763,26 @@ main (int argc, char *argv[])
   return 0;
 }
 
+#if __GNUC__
 void
 _start ()
 {
-  /* main body of program: call main(), etc */
-  
-  /* exit system call */
+  int r;
   asm (
-       "movl $1,%eax;"
-       "xorl %ebx,%ebx;"
-       "int  $0x80"
+       "mov %%ebp,%%eax\n\t"
+       "addl $8,%%eax\n\t"
+       "push %%eax\n\t"
+
+       "mov %%ebp,%%eax\n\t"
+       "addl $4,%%eax\n\t"
+       "movzbl (%%eax),%%eax\n\t"
+       "push %%eax\n\t"
+
+       "call main\n\t"
+       "movl %%eax,%0\n\t"
+       : "=r" (r)
+       : //no inputs "" (&main)
        );
+  exit (r);
 }
+#endif

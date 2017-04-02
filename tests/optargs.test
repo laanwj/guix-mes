@@ -56,7 +56,10 @@ exit $?
 (pass-if "optargs key" ((lambda* (#:key (foo #f)) foo) #:foo #t))
 (pass-if-equal "optargs key default" #f ((lambda* (#:key (foo #f)) foo)))
 
-(mes-use-module (mes pmatch))
+(cond-expand
+ (guile (use-modules (system base pmatch)
+                     (ice-9 optargs)))
+ (mes (mes-use-module (mes pmatch))))
 
 (define <info> '<info>)
 (define <functions> '<functions>)

@@ -26,8 +26,10 @@
   #:use-module (srfi srfi-1)
   #:export (data-offset
             function-offset
+            label-offset
             functions->lambdas
             functions->text
+            lambda/label->list
             text->list
             globals->data))
 

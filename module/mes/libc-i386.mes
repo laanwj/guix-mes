@@ -31,13 +31,6 @@
 (define (i386:function-locals)
   '(#x83 #xec #x10))               ; sub    $0x10,%esp -- 4 local vars
 
-;; (define (i386:formal i n)
-;;   (case i
-;;     ((0) (list #x8b #x5d (* (- n 2) 4)))       ; mov    $00(%ebp),%ebx
-;;     ((1) (list #x8b #x4d (* (- n 3) 4)))    ; mov    $00(%ebp),%ecx
-;;     ((2) (list #x8b #x55 (* (- n 4) 4)))    ; mov    $00(%ebp),%edx
-;;     ((3) (list #x8b #x45 (* (- n 5) 4)))))  ; mov    $00(%ebp),%eax FIXME
-
 (define (i386:ref-global o)
   `(#x68 ,@(int->bv32 o)))               ; push  $0x<o>
 
@@ -51,9 +44,10 @@
 (define (i386:push-arg f g t d)
   (lambda (o)
     (cond ((number? o)
-           `(#x68 ,@(int->bv32 o)))       ; push $<o>
+           `(#x68 ,@(int->bv32 o)))     ; push $<o>
           ((pair? o) o)
-          ((procedure? o) (o f g t d)))))
+          ((procedure? o) (o f g t d))
+          (_ barf))))
 
 (define (i386:ret . rest)
   (lambda (f g t d)
@@ -76,6 +70,10 @@
 (define (i386:accu-zero?)
   `(#x85 #xc0))                         ; cmpl   %eax,%eax
 
+(define (i386:accu-non-zero?)
+  (append '(#x85 #xc0)                  ; cmpl   %eax,%eax
+          (i386:xor-zf)))
+
 (define (i386:local->accu n)
   (or n la)
   `(#x8b #x45 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%eax
@@ -84,14 +82,11 @@
   (or n lb)
   `(#x8b #x55 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%edx
 
-(define (i386:mem-byte->accu)
+(define (i386:byte-mem->accu)
   '(#x01 #xd0                           ; add    %edx,%eax
          #x0f #xb6 #x00))               ; movzbl (%eax),%eax
 
-(define (i386:Xmem-byte->accu)
-  '(#x0f #xb6 #x00))                    ; movzbl (%eax),%eax
-
-(define (i386:Xmem-byte->base)
+(define (i386:byte-mem->base)
   '(#x0f #xb6 #x10))                    ; movzbl (%eax),%edx
 
 (define (i386:mem->accu)
@@ -100,6 +95,9 @@
 
 (define (i386:value->accu v)
   `(#xb8 ,@(int->bv32 v)))              ; mov    $<v>,%eax
+
+(define (i386:value->base v)
+  `(#xba ,@(int->bv32 v)))              ; mov    $<v>,%edx
 
 (define (i386:local-add n v)
   (or n ladd)
@@ -130,6 +128,66 @@
      #x83 #xc4 ,(* n 4)                 ; add    $00,%esp
      )))
   
+(define (i386:xor-zf)
+  '(#x9f                                ; lahf   
+    #x80 #xf4 #x40                      ; xor    $0x40,%ah
+    #x9e))                              ; sahf   
+
+(define (i386:test-accu)
+  '(#x85 #xc0))                         ; test   %eax,%eax
+
+(define (i386:jump n)
+  `(#xeb ,(if (>= n 0) (- n 2) (- n 2))))   ; jmp <n>
+
+(define (i386:jump-c n)
+  `(#x72 ,(if (>= n 0) n (- n 2))))     ; jc <n>
+
+(define (i386:jump-cz n)
+  `(#x76 ,(if (>= n 0) n (- n 2))))     ; jna <n>
+
+(define (i386:jump-ncz n)
+  `(#x77 ,(if (>= n 0) n (- n 2))))     ; ja <n>
+
+(define (i386:jump-nc n)
+  `(#x73 ,(if (>= n 0) n (- n 2))))     ; jnc <n>
+
+(define (i386:jump-z n)
+  `(#x74 ,(if (>= n 0) n (- n 2)))) ; jz <n>
+
+(define (i386:jump-nz n)
+  `(#x75 ,(if (>= n 0) n (- n 2)))) ; jnz <n>
+
+(define (i386:test-jump-z n)
+  `(#x85 #xc0                           ; test   %eax,%eax
+    #x74 ,(if (>= n 0) n (- n 4))))     ; jz <n>
+
+(define (i386:jump-byte-nz n)
+  `(#x84 #xc0                           ; test   %al,%al
+    #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
+
+(define (i386:jump-byte-z n)
+  `(#x84 #xc0                           ; test   %al,%al
+    #x74 ,(if (>= n 0) n (- n 4))))     ; jne <n>
+
+(define (i386:byte-test-base)
+  `(#x38 #xc2))                         ; cmp    %al,%dl
+
+(define (i386:test-base)
+  `(#x39 #xd0))                         ; cmp    %edx,%eax
+
+(define (i386:byte-sub-base)
+  `(#x28 #xd0))                         ; sub    %dl,%al
+
+(define (i386:byte-base-sub)
+  `(#x28 #xd0))                         ; sub    %al,%dl
+
+(define (i386:sub-base)
+  `(#x29 #xd0))                         ; sub    %edx,%eax
+
+(define (i386:base-sub)
+  `(#x29 #xc2))                         ; sub    %eax,%edx
+
+;;; libc bits
 (define (i386:exit f g t d)
   `(
     #x5b                                ; pop    %ebx
@@ -137,26 +195,6 @@
     #xb8 #x01 #x00 #x00 #x00            ; mov    $0x1,%eax
     #xcd #x80                           ; int    $0x80
     ))
-
-;; (define (i386:_start f g t d)
-;;   (let* ((prefix
-;;           `(
-;;             #x55                         ; push   %ebp
-;;             #x89 #xe5                    ; mov    %esp,%ebp
-      
-;;             ;;#x83 #xec #x10                 ; sub    $0x10,%esp -- 4 local vars
-            
-;;             #xe8 ,@(int->bv32 (- address 5 s)) ; call relative
-
-;;             #xb8 #x04 #x00 #x00 #x00     ; mov    $0x4,%eax
-;;             #xcd #x80                    ; int    $0x80
-      
-;;             #xc9                         ; leave
-;;             #xc3                         ; ret
-;;             ))
-;;          (text-list (text->list t))
-;;          (statement-offset (- (+ (length prefix) (length text-list))))
-;;          (address (+ t (function-offset "main" s))))))
 
 (define (i386:write f g t d)
   `(
@@ -173,89 +211,3 @@
     #xc9                                ; leave
     #xc3                                ; ret
     ))
-
-(define (i386:jump n)
-  `(#xeb ,(if (>= n 0) n (- n 2))))     ; jmp <n>
-
-(define (i386:jump-le n)
-  `(#x7e ,(if (>= n 0) n (- n 4))))     ; jle <n>
-
-(define (i386:jump-byte-nz n)
-  `(#x84 #xc0                           ; test   %al,%al
-    #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
-
-(define (i386:jump-nz n)
-  `(#x85 #xc0                           ; test   %eax,%eax
-    #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
-
-(define (i386:jump-byte-z n)
-  `(#x84 #xc0                           ; test   %al,%al
-    #x74 ,(if (>= n 0) n (- n 4))))     ; jne <n>
-
-(define (i386:test-byte-base)
-  `(#x38 #xc2))                         ; cmp    %al,%dl
-
-(define (i386:Xjump-byte-z n)
-  `(#x74 ,(if (>= n 0) n (- n 2))))     ; je <n>
-
-(define (i386:sub-byte-base)
-  `(#x28 #xd0))                         ; sub    %dl,%al
-
-;;28 d0                	sub    %dl,%al
-;;28 c2                	sub    %al,%dl
-;;29 d0                	sub    %edx,%eax
-;;29 c2                	sub    %eax,%edx
-
-#!
-int
-strcmp (char const* a, char const* b)
-{
- while (*a && *b && *a == *b)
-   {
-     a++;b++;
-   }
-  return *a == *b;
-}
-08048150 <strcmp>:
- 8048150:	55                   	push   %ebp
- 8048151:	89 e5                	mov    %esp,%ebp
-
- 8048153:	eb 08                	jmp    804815d <strcmp+0xd>
-
-<body>
- 8048155:	83 45 08 01          	addl   $0x1,0x8(%ebp)
- 8048159:	83 45 0c 01          	addl   $0x1,0xc(%ebp)
-
-<test>
- 804815d:	8b 45 08             	mov    0x8(%ebp),%eax
- 8048160:	0f b6 00             	movzbl (%eax),%eax
- 8048163:	84 c0                	test   %al,%al
- 8048165:	74 1a                	je     8048181 <strcmp+0x31>
-
- 8048167:	8b 45 0c             	mov    0xc(%ebp),%eax
- 804816a:	0f b6 00             	movzbl (%eax),%eax
- 804816d:	84 c0                	test   %al,%al
- 804816f:	74 10                	je     8048181 <strcmp+0x31>
-
- 8048171:	8b 45 08             	mov    0x8(%ebp),%eax
- 8048174:	0f b6 10             	movzbl (%eax),%edx
- 8048177:	8b 45 0c             	mov    0xc(%ebp),%eax
- 804817a:	0f b6 00             	movzbl (%eax),%eax
- 804817d:	38 c2                	cmp    %al,%dl
- 804817f:	74 d4                	je     8048155 <strcmp+0x5>
-
-<exit>
- 8048181:	8b 45 08             	mov    0x8(%ebp),%eax
- 8048184:	0f b6 00             	movzbl (%eax),%eax
- 8048187:	0f be d0             	movsbl %al,%edx
-
- 804818a:	8b 45 0c             	mov    0xc(%ebp),%eax
- 804818d:	0f b6 00             	movzbl (%eax),%eax
- 8048190:	0f be c0             	movsbl %al,%eax
-
- 8048193:	29 c2                	sub    %eax,%edx
- 8048195:	89 d0                	mov    %edx,%eax
-
- 8048197:	5d                   	pop    %ebp
- 8048198:	c3                   	ret    
-!#
