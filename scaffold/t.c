@@ -19,75 +19,9 @@
  */
 
 #if __GNUC__
-void
-exit (int code)
-{
-  asm (
-       "movl %0,%%ebx\n\t"
-       "movl $1,%%eax\n\t"
-       "int  $0x80"
-       : // no outputs "=" (r)
-       : "" (code)
-       );
-  // not reached
-  exit (0);
-}
-
-void
-write (int fd, char const* s, int n)
-{
-  int r;
-  //syscall (SYS_write, fd, s, n));
-  asm (
-       "mov %0,%%ebx\n\t"
-       "mov %1,%%ecx\n\t"
-       "mov %2,%%edx\n\t"
-
-       "mov $0x4,%%eax\n\t"
-       "int $0x80\n\t"
-       : // no outputs "=" (r)
-       : "" (fd), "" (s), "" (n)
-       : "eax", "ebx", "ecx", "edx"
-       );
-}
-
-#define STDOUT 1
-
-typedef long size_t;
-size_t
-strlen (char const* s)
-{
-  int i = 0;
-  while (s[i]) i++;
-  return i;
-}
-
-int
-puts (char const* s)
-{
-  //write (STDOUT, s, strlen (s));
-  //int i = write (STDOUT, s, strlen (s));
-  int i = strlen (s);
-  write (1, s, i);
-  return 0;
-}
-
-int
-putchar (int c)
-{
-  //write (STDOUT, s, strlen (s));
-  //int i = write (STDOUT, s, strlen (s));
-  write (1, (char*)&c, 1);
-  return 0;
-}
-
-int
-strcmp (char const* a, char const* b)
-{
-  while (*a && *b && *a == *b) {a++;b++;}
-  return *a - *b;
-}
+#include "mlibc.c"
 #endif
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
 struct scm {
   int type;
@@ -136,36 +70,6 @@ struct scm scm_fun = {TFUNCTION,0,0};
 SCM cell_fun;
 
 #if 1
-
-char itoa_buf[10];
-
-char const*
-itoa (int x)
-{
-  //static char itoa_buf[10];
-  //char *p = buf+9;
-  char *p = itoa_buf;
-  p += 9;
-  *p-- = 0;
-
-  //int sign = x < 0;
-  int sign;
-  sign = x < 0;
-  if (sign)
-    x = -x;
-  
-  do
-    {
-      *p-- = '0' + (x % 10);
-      x = x / 10;
-    } while (x);
-
-  if (sign)
-    *p-- = '-';
-
-  return p+1;
-}
-
 int
 add (int a, int b)
 {
@@ -546,6 +450,12 @@ test (char *p)
   puts ("t: (f) ?\n");
   (f) ? exit (1) : 1;
 
+  puts ("t: assert (1) ?\n");
+  assert (1);
+
+  puts ("t: assert (f==0) ?\n");
+  assert (f==0);
+
   puts ("t: p[0] != 't'\n");
   if (p[0] != 't') return p[0];
 
@@ -758,28 +668,5 @@ main (int argc, char *argv[])
 }
 
 #if __GNUC__
-void
-_start ()
-{
-  // int r=main ();
-  // exit (r);
-  int r;
-  asm (
-       "mov %%ebp,%%eax\n\t"
-       "addl $8,%%eax\n\t"
-       "push %%eax\n\t"
-
-       "mov %%ebp,%%eax\n\t"
-       "addl $4,%%eax\n\t"
-       "movzbl (%%eax),%%eax\n\t"
-       "push %%eax\n\t"
-
-       "call main\n\t"
-       
-       "movl %%eax,%0\n\t"
-       : "=r" (r)
-       : //no inputs "" (&main)
-       );
-  exit (r);
-}
+#include "mstart.c"
 #endif

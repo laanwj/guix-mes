@@ -57,22 +57,6 @@
 (define (.name o)
   (cadr o))
 
-;; (define (.statement o)
-;;   (match o
-;;     (('function name signature statement) statement)
-;;     (_ #f)))
-
-;; (define (statement->data o)
-;;   (match o
-;;     (('call 'puts ('arguments string)) (string->list string))
-;;     (_ '())))
-
-;; (define (statement->text o)
-;;   (match o
-;;     (('call 'puts ('arguments string)) (list (lambda (data) (i386:puts data (string-length string)))))
-;;     (('return code) (list (lambda (data) (i386:exit code))))
-;;     (_ '())))
-
 (define (.statement o)
   (and (pair? o)
        (eq? (car o) 'function)

@@ -19,18 +19,25 @@
  */
 
 #if __GNUC__
-#include "mlibc.c"
-#endif
-
-int
-//main ()
-main (int argc, char *argv[])
+void
+_start ()
 {
-  puts ("Hi Mes!\n");
-  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("argc > 1 && --help\n");
-  return 42;
-}
+  int r;
+  asm (
+       "mov %%ebp,%%eax\n\t"
+       "addl $8,%%eax\n\t"
+       "push %%eax\n\t"
 
-#if __GNUC__
-#include "mstart.c"
+       "mov %%ebp,%%eax\n\t"
+       "addl $4,%%eax\n\t"
+       "movzbl (%%eax),%%eax\n\t"
+       "push %%eax\n\t"
+
+       "call main\n\t"
+       "movl %%eax,%0\n\t"
+       : "=r" (r)
+       : //no inputs "" (&main)
+       );
+  exit (r);
+}
 #endif

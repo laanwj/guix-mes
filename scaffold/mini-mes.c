@@ -18,6 +18,11 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if __GNUC__
+#include "mlibc.c"
+#endif
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
+
 #define MES_MINI 1
 #define FIXED_PRIMITIVES 0
 
@@ -34,220 +39,6 @@
 
 int ARENA_SIZE = 1200000;
 char arena[1200000];
-
-int g_stdin = 0;
-
-#if __GNUC__
-typedef long size_t;
-void *malloc (size_t i);
-int open (char const *s, int mode);
-int read (int fd, void* buf, size_t n);
-void write (int fd, char const* s, int n);
-
-void
-exit (int code)
-{
-  asm (
-       "movl %0,%%ebx\n\t"
-       "movl $1,%%eax\n\t"
-       "int  $0x80"
-       : // no outputs "=" (r)
-       : "" (code)
-       );
-  // not reached
-  exit (0);
-}
-
-char const*
-getenv (char const* p)
-{
-  return 0;
-}
-
-int
-read (int fd, void* buf, size_t n)
-{
-  int r;
-  //syscall (SYS_write, fd, s, n));
-  asm (
-       "movl %1,%%ebx\n\t"
-       "movl %2,%%ecx\n\t"
-       "movl %3,%%edx\n\t"
-       "movl $0x3,%%eax\n\t"
-       "int  $0x80\n\t"
-       "mov %%eax,%0\n\t"
-       : "=r" (r)
-       : "" (fd), "" (buf), "" (n)
-       : "eax", "ebx", "ecx", "edx"
-       );
-  return r;
-}
-
-int
-open (char const *s, int mode)
-{
-  int r;
-  //syscall (SYS_open, mode));
-  asm (
-       "mov %1,%%ebx\n\t"
-       "mov %2,%%ecx\n\t"
-       "mov $0x5,%%eax\n\t"
-       "int $0x80\n\t"
-       "mov %%eax,%0\n\t"
-       : "=r" (r)
-       : "" (s), "" (mode)
-       : "eax", "ebx", "ecx"
-       );
-  return r;
-}
-
-int puts (char const*);
-char const* itoa (int);
-
-int
-getchar ()
-{
-  char c;
-  int r = read (g_stdin, &c, 1);
-  if (r < 1) return -1;
-  int i = c;
-  if (i < 0) i += 256;
-  return i;
-}
-
-void
-write (int fd, char const* s, int n)
-{
-  int r;
-  //syscall (SYS_write, fd, s, n));
-  asm (
-       "mov %0,%%ebx\n\t"
-       "mov %1,%%ecx\n\t"
-       "mov %2,%%edx\n\t"
-
-       "mov $0x4, %%eax\n\t"
-       "int $0x80\n\t"
-       : // no outputs "=" (r)
-       : "" (fd), "" (s), "" (n)
-       : "eax", "ebx", "ecx", "edx"
-       );
-}
-
-int
-putchar (int c)
-{
-  //write (STDOUT, s, strlen (s));
-  //int i = write (STDOUT, s, strlen (s));
-  write (1, (char*)&c, 1);
-  return 0;
-}
-
-void *
-malloc (size_t size)
-{
-  int *n;
-  int len = size + sizeof (size);
-  //n = mmap (0, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
-  *n = len;
-  return (void*)(n+1);
-}
-
-void
-free (void *p)
-{
-  int *n = (int*)p-1;
-  //munmap ((void*)p, *n);
-}
-
-#define EOF -1
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
-
-size_t
-strlen (char const* s)
-{
-  int i = 0;
-  while (s[i]) i++;
-  return i;
-}
-
-int
-strcmp (char const* a, char const* b)
-{
-  while (*a && *b && *a == *b) {a++;b++;}
-  return *a - *b;
-}
-
-int
-puts (char const* s)
-{
-  //write (STDOUT, s, strlen (s));
-  //int i = write (STDOUT, s, strlen (s));
-  int i = strlen (s);
-  write (1, s, i);
-  return 0;
-}
-
-int
-eputs (char const* s)
-{
-  //write (STDERR, s, strlen (s));
-  //int i = write (STDERR, s, strlen (s));
-  int i = strlen (s);
-  write (2, s, i);
-  return 0;
-}
-#endif
-
-char itoa_buf[10];
-
-char const*
-itoa (int x)
-{
-  //static char itoa_buf[10];
-  //char *p = buf+9;
-  char *p = itoa_buf;
-  p += 9;
-  *p-- = 0;
-
-  //int sign = x < 0;
-  int sign;
-  sign = x < 0;
-  if (sign)
-    x = -x;
-  
-  do
-    {
-      *p-- = '0' + (x % 10);
-      x = x / 10;
-    } while (x);
-
-  if (sign)
-    *p-- = '-';
-
-  return p+1;
-}
-
-void
-assert_fail (char* s)
-{
-  eputs ("assert fail:");
-#if __GNUC__
-  eputs (s);
-#endif
-  eputs ("\n");
-#if __GNUC__
-  *((int*)0) = 0;
-#endif
-}
-
-#if __GNUC__
-#define assert(x) ((x) ? (void)0 : assert_fail ("boo:" #x))
-#else
-//#define assert(x) ((x) ? (void)0 : assert_fail ("boo:" #x))
-#define assert(x) ((x) ? (void)0 : assert_fail (0))
-#endif
 
 typedef int SCM;
 
@@ -415,7 +206,9 @@ int g_function = 0;
 SCM
 alloc (int n)
 {
+#if __GNUC__
   assert (g_free + n < ARENA_SIZE);
+#endif
   SCM x = g_free;
   g_free += n;
   return x;
@@ -427,7 +220,9 @@ SCM
 make_cell (SCM type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
+#if __GNUC__
   assert (TYPE (type) == TNUMBER);
+#endif
   TYPE (x) = VALUE (type);
   if (VALUE (type) == TCHAR || VALUE (type) == TNUMBER) {
     if (car) CAR (x) = CAR (car);
@@ -557,7 +352,9 @@ SCM
 append2 (SCM x, SCM y)
 {
   if (x == cell_nil) return y;
+#if __GNUC__
   assert (TYPE (x) == TPAIR);
+#endif
   return cons (car (x), append2 (cdr (x), y));
 }
 
@@ -616,7 +413,9 @@ assq_ref_env (SCM x, SCM a)
 SCM
 set_car_x (SCM x, SCM e)
 {
+#if __GNUC__
   assert (TYPE (x) == TPAIR);
+#endif
   CAR (x) = e;
   return cell_unspecified;
 }
@@ -1068,8 +867,10 @@ SCM
 list_of_char_equal_p (SCM a, SCM b)
 {
   while (a != cell_nil && b != cell_nil && VALUE (car (a)) == VALUE (car (b))) {
+#if __GNUC__
     assert (TYPE (car (a)) == TCHAR);
     assert (TYPE (car (b)) == TCHAR);
+#endif
     a = cdr (a);
     b = cdr (b);
   }
@@ -1132,7 +933,9 @@ write_byte (SCM x) ///((arity . n))
   int fd = 1;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
   //FILE *f = fd == 1 ? stdout : stderr;
+#if __GNUC__
   assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
+#endif
   //  fputc (VALUE (c), f);
   char cc = VALUE (c);
   write (1, (char*)&cc, fd);
@@ -1454,25 +1257,5 @@ main (int argc, char *argv[])
 }
 
 #if __GNUC__
-void
-_start ()
-{
-  int r;
-  asm (
-       "mov %%ebp,%%eax\n\t"
-       "addl $8,%%eax\n\t"
-       "push %%eax\n\t"
-
-       "mov %%ebp,%%eax\n\t"
-       "addl $4,%%eax\n\t"
-       "movzbl (%%eax),%%eax\n\t"
-       "push %%eax\n\t"
-
-       "call main\n\t"
-       "movl %%eax,%0\n\t"
-       : "=r" (r)
-       : //no inputs "" (&main)
-       );
-  exit (r);
-}
+#include "mstart.c"
 #endif

@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -22,18 +22,10 @@
 
 ;;; Code:
 
-(define-module (language c99 compiler)
-  #:use-module (srfi srfi-1)
-  #:use-module (system base pmatch)
-  #:use-module (ice-9 optargs)
-  #:use-module (ice-9 pretty-print)
-  #:use-module (mes elf)
-  #:use-module (mes elf-util)
-  #:use-module (mes as-i386)
-  #:use-module (mes libc-i386)
-  #:use-module (mes libc)
+(define-module (mes libc)
   #:use-module (nyacc lang c99 parser)
-  #:export (compile))
+  #:use-module (mes libc-i386)
+  #:export (libc _start))
 
 (cond-expand
  (guile-2)
@@ -41,4 +33,4 @@
   (use-modules (ice-9 syncase)))
  (mes))
 
-(include-from-path "language/c99/compiler.mes")
+(include-from-path "mes/libc.mes")

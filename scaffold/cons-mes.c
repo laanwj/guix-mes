@@ -18,6 +18,11 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if __GNUC__
+#include "mlibc.c"
+#endif
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
+
 #define MES_MINI 1
 #define FIXED_PRIMITIVES 0
 
@@ -34,209 +39,6 @@
 
 char arena[2000];
 //char buf0[400];
-
-int g_stdin = 0;
-
-#if __GNUC__
-typedef long size_t;
-void *malloc (size_t i);
-int open (char const *s, int mode);
-int read (int fd, void* buf, size_t n);
-void write (int fd, char const* s, int n);
-
-void
-exit (int code)
-{
-  asm (
-       "movl %0,%%ebx\n\t"
-       "movl $1,%%eax\n\t"
-       "int  $0x80"
-       : // no outputs "=" (r)
-       : "" (code)
-       );
-  // not reached
-  exit (0);
-}
-
-char const*
-getenv (char const* p)
-{
-  return 0;
-}
-
-int
-read (int fd, void* buf, size_t n)
-{
-  int r;
-  //syscall (SYS_write, fd, s, n));
-  asm (
-       "movl %1,%%ebx\n\t"
-       "movl %2,%%ecx\n\t"
-       "movl %3,%%edx\n\t"
-       "movl $0x3,%%eax\n\t"
-       "int  $0x80\n\t"
-       "mov %%eax,%0\n\t"
-       : "=r" (r)
-       : "" (fd), "" (buf), "" (n)
-       : "eax", "ebx", "ecx", "edx"
-       );
-  return r;
-}
-
-int
-open (char const *s, int mode)
-{
-  int r;
-  //syscall (SYS_open, mode));
-  asm (
-       "mov %1,%%ebx\n\t"
-       "mov %2,%%ecx\n\t"
-       "mov $0x5,%%eax\n\t"
-       "int $0x80\n\t"
-       "mov %%eax,%0\n\t"
-       : "=r" (r)
-       : "" (s), "" (mode)
-       : "eax", "ebx", "ecx"
-       );
-  return r;
-}
-
-int
-getchar ()
-{
-  char c;
-  int r = read (g_stdin, &c, 1);
-  if (r < 1) return -1;
-  return c;
-}
-
-void
-write (int fd, char const* s, int n)
-{
-  int r;
-  //syscall (SYS_write, fd, s, n));
-  asm (
-       "mov %0,%%ebx\n\t"
-       "mov %1,%%ecx\n\t"
-       "mov %2,%%edx\n\t"
-
-       "mov $0x4, %%eax\n\t"
-       "int $0x80\n\t"
-       : // no outputs "=" (r)
-       : "" (fd), "" (s), "" (n)
-       : "eax", "ebx", "ecx", "edx"
-       );
-}
-
-int
-putchar (int c)
-{
-  //write (STDOUT, s, strlen (s));
-  //int i = write (STDOUT, s, strlen (s));
-  write (1, (char*)&c, 1);
-  return 0;
-}
-
-void *
-malloc (size_t size)
-{
-  int *n;
-  int len = size + sizeof (size);
-  //n = mmap (0, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0, 0 );
-  *n = len;
-  return (void*)(n+1);
-}
-
-void
-free (void *p)
-{
-  int *n = (int*)p-1;
-  //munmap ((void*)p, *n);
-}
-
-#define EOF -1
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
-
-size_t
-strlen (char const* s)
-{
-  int i = 0;
-  while (s[i]) i++;
-  return i;
-}
-
-int
-strcmp (char const* a, char const* b)
-{
-  while (*a && *b && *a == *b) {a++;b++;}
-  return *a - *b;
-}
-
-int
-puts (char const* s)
-{
-  //write (STDOUT, s, strlen (s));
-  //int i = write (STDOUT, s, strlen (s));
-  int i = strlen (s);
-  write (1, s, i);
-  return 0;
-}
-
-int
-eputs (char const* s)
-{
-  //write (STDERR, s, strlen (s));
-  //int i = write (STDERR, s, strlen (s));
-  int i = strlen (s);
-  write (2, s, i);
-  return 0;
-}
-
-char const*
-itoa (int x)
-{
-  static char buf[10];
-  char *p = buf+9;
-  *p-- = 0;
-
-  int sign = x < 0;
-  if (sign)
-    x = -x;
-  
-  do
-    {
-      *p-- = '0' + (x % 10);
-      x = x / 10;
-    } while (x);
-
-  if (sign)
-    *p-- = '-';
-
-  return p+1;
-}
-#endif
-
-void
-assert_fail (char* s)
-{
-  eputs ("assert fail:");
-#if __GNUC__
-  eputs (s);
-#endif
-  eputs ("\n");
-#if __GNUC__
-  *((int*)0) = 0;
-#endif
-}
-
-#if __GNUC__
-#define assert(x) ((x) ? (void)0 : assert_fail ("boo:" #x))
-#else
-//#define assert(x) ((x) ? (void)0 : assert_fail ("boo:" #x))
-#define assert(x) ((x) ? (void)0 : assert_fail (0))
-#endif
 
 typedef int SCM;
 
@@ -278,32 +80,6 @@ struct function {
 
 struct scm *g_cells = arena;
 
-//scm *g_news = 0;
-
-// struct scm scm_nil = {SPECIAL, "()"};
-// struct scm scm_f = {SPECIAL, "#f"};
-// struct scm scm_t = {SPECIAL, "#t"};
-// struct scm_dot = {SPECIAL, "."};
-// struct scm_arrow = {SPECIAL, "=>"};
-// struct scm_undefined = {SPECIAL, "*undefined*"};
-// struct scm_unspecified = {SPECIAL, "*unspecified*"};
-// struct scm_closure = {SPECIAL, "*closure*"};
-// struct scm_circular = {SPECIAL, "*circular*"};
-// struct scm_begin = {SPECIAL, "*begin*"};
-
-// struct scm_vm_apply = {SPECIAL, "core:apply"};
-// struct scm_vm_apply2 = {SPECIAL, "*vm-apply2*"};
-
-// struct scm_vm_eval = {SPECIAL, "core:eval"};
-
-// struct scm_vm_begin = {SPECIAL, "*vm-begin*"};
-// //scm scm_vm_begin_read_input_file = {SPECIAL, "*vm-begin-read-input-file*"};
-// struct scm_vm_begin2 = {SPECIAL, "*vm-begin2*"};
-
-// struct scm_vm_return = {SPECIAL, "*vm-return*"};
-
-// //#include "mes.symbols.h"
-
 #define cell_nil 1
 #define cell_f 2
 #define cell_t 3
@@ -341,37 +117,25 @@ struct function g_functions[5];
 int g_function = 0;
 
 
-#if __GNUC__
-//FIXME
 SCM make_cell (SCM type, SCM car, SCM cdr);
-#endif
 struct function fun_make_cell = {&make_cell,3,"make-cell"};
 struct scm scm_make_cell = {TFUNCTION,0,0};
    //, "make-cell", 0};
 SCM cell_make_cell;
 
-#if __GNUC__
-//FIXME
 SCM cons (SCM x, SCM y);
-#endif
 struct function fun_cons = {&cons,2,"cons"};
 struct scm scm_cons = {TFUNCTION,0,0};
   // "cons", 0};
 SCM cell_cons;
 
-#if __GNUC__
-//FIXME
 SCM car (SCM x);
-#endif
 struct function fun_car = {&car,1,"car"};
 struct scm scm_car = {TFUNCTION,0,0};
   // "car", 0};
 SCM cell_car;
 
-#if __GNUC__
-//FIXME
 SCM cdr (SCM x);
-#endif
 struct function fun_cdr = {&cdr,1,"cdr"};
 struct scm scm_cdr = {TFUNCTION,0,0};
 // "cdr", 0};
@@ -469,11 +233,11 @@ tmp_num2_ (int x)
 SCM
 cons (SCM x, SCM y)
 {
+#if 0
   puts ("cons x=");
-#if __GNUC__
   puts (itoa (x));
-#endif
   puts ("\n");
+#endif
   VALUE (tmp_num) = PAIR;
   return make_cell (tmp_num, x, y);
 }
@@ -481,11 +245,11 @@ cons (SCM x, SCM y)
 SCM
 car (SCM x)
 {
+#if 0
   puts ("car x=");
-#if __GNUC__
   puts (itoa (x));
-#endif
   puts ("\n");
+#endif
 #if MES_MINI
   //Nyacc
   //assert ("!car");
@@ -498,11 +262,11 @@ car (SCM x)
 SCM
 cdr (SCM x)
 {
+#if 0
   puts ("cdr x=");
-#if __GNUC__
   puts (itoa (x));
-#endif
   puts ("\n");
+#endif
 #if MES_MINI
   //Nyacc
   //assert ("!cdr");
@@ -1290,25 +1054,5 @@ main (int argc, char *argv[])
 }
 
 #if __GNUC__
-void
-_start ()
-{
-  int r;
-  asm (
-       "mov %%ebp,%%eax\n\t"
-       "addl $8,%%eax\n\t"
-       "push %%eax\n\t"
-
-       "mov %%ebp,%%eax\n\t"
-       "addl $4,%%eax\n\t"
-       "movzbl (%%eax),%%eax\n\t"
-       "push %%eax\n\t"
-
-       "call main\n\t"
-       "movl %%eax,%0\n\t"
-       : "=r" (r)
-       : //no inputs "" (&main)
-       );
-  exit (r);
-}
+#include "mstart.c"
 #endif

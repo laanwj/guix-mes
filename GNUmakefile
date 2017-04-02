@@ -120,38 +120,38 @@ mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
 mini-mes: GNUmakefile
 mini-mes: doc/examples/mini-mes.c
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -I. -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -g -I. -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 cons-mes: scaffold/cons-mes.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 tiny-mes: scaffold/tiny-mes.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 m: scaffold/m.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
 #	gcc --std=gnu99 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 micro-mes: scaffold/micro-mes.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 main: doc/examples/main.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 t: scaffold/t.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
+	gcc -nostdlib -I. --std=gnu99 -m32 -g -o $@ '-DVERSION="0.4"' $<
 	chmod +x $@
 
 MAIN_C:=doc/examples/main.c
