@@ -26,7 +26,6 @@
 
 ;;; Code:
 
-(define (effective-version) %version)
 (define mes? #t)
 (define guile? #f)
 (define guile-1.8? #f)
@@ -107,8 +106,6 @@
      (list 'set-current-input-port (list 'pop! '*input-ports*))))
 
 (define include load)
-(define-macro (include-from-path file)
-  (list 'load (list string-append "module/" file)))
 
 (define (append . rest)
   (if (null? rest) '()
@@ -116,6 +113,25 @@
           (append2 (car rest) (apply append (cdr rest))))))
 
 (include "module/mes/type-0.mes")
+
+(define (symbol->string s)
+  (apply string (symbol->list s)))
+
+(define (string-append . rest)
+  (apply string (apply append (map1 string->list rest))))
+
+(define %moduledir "module/")
+(define %version (if (eq? (car (string->list "@VERSION@")) #\@) "git" "@VERSION@"))
+(define (effective-version) %version)
+
+(if (getenv "MES_DEBUG")
+    (begin
+      (core:display-error "%moduledir=")
+      (core:display-error %moduledir)
+      (core:display-error "\n")))
+
+(define-macro (include-from-path file)
+  (list 'load (list string-append %moduledir file)))
 
 (define (memq x lst)
   (if (null? lst) #f
@@ -126,14 +142,13 @@
   (if (null? (cdr lst)) (car lst)
       (string-append (car lst) infix (string-join (cdr lst) infix))))
 
-(define *mes-prefix* "module/")
 (define (module->file o)
   (string-append (string-join (map1 symbol->string o) "/") ".mes"))
 
 (define *modules* '(mes/base-0.mes))
 (define (mes-load-module-env module a)
   (push! *input-ports* (current-input-port))
-  (set-current-input-port (open-input-file (string-append *mes-prefix* (module->file module))))
+  (set-current-input-port (open-input-file (string-append %moduledir (module->file module))))
   (let ((x (core:eval (append2 (cons 'begin (read-input-file-env a))
                                '((current-module)))
                       a)))
@@ -148,7 +163,7 @@
          (list
           'begin
           (list 'set! '*modules* (list cons (list string->symbol (module->file module)) '*modules*))
-          (list 'load (list string-append '*mes-prefix* (module->file module)))))))
+          (list 'load (list string-append '%moduledir (module->file module)))))))
 
 (mes-use-module (mes base))
 (mes-use-module (srfi srfi-0))

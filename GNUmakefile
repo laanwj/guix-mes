@@ -1,3 +1,5 @@
+SHELL:=bash
+
 .PHONY: all check clean default distclean help install release
 default: all
 
@@ -15,8 +17,16 @@ CFLAGS:=-std=c99 -O3 -finline-functions
 include .config.make
 include make/install.make
 
+MACHINE:=$(shell $(CC) -dumpmachine)
+##CC:=gcc
+LIBRARY_PATH=:$(dir $(shell type -p ldd))../lib
+CC:=LIBRARY_PATH=$(LIBRARY_PATH) gcc
+
 CPPFLAGS+=-I.
-CPPFLAGS+=-DPREFIX='"$(PREFIX)"'
+CPPFLAGS+=-DDATADIR='"$(DATADIR)/"'
+CPPFLAGS+=-DDOCDIR='"$(DOCDIR)/"'
+CPPFLAGS+=-DMODULEDIR='"$(MODULEDIR)/"'
+CPPFLAGS+=-DPREFIX='"$(PREFIX)/"'
 CPPFLAGS+=-DVERSION='"$(VERSION)"'
 
 export BOOT
@@ -27,6 +37,10 @@ endif
 -include .local.make
 
 all: mes module/mes/read-0.mo module/mes/read-0-32.mo
+
+ifeq ($(MES_BOOTSTRAP),mes-mini-mes)
+all: mes-mini-mes
+endif
 
 S:=
 mes.o$(S): GNUmakefile
@@ -89,13 +103,16 @@ export MES_FLAGS
 MES_DEBUG:=1
 #export MES_DEBUG
 
+export C_INCLUDE_PATH
+
 mes-check: all
-	set -e; for i in $(TESTS); do ./$$i; done
+	set -e; for i in $(TESTS); do MES_MAX_ARENA=20000000 ./$$i; done
 
 mini-mes-check: all mini-mes
 	$(MAKE) mes-check MES=./mini-mes
 
-module/mes/read-0.mo: module/mes/read-0.mes mes 
+module/mes/read-0.mo: module/mes/read-0.mes mes
+	rm -f $@
 	./mes --dump < $< > $@
 
 dump: module/mes/read-0.mo
@@ -106,16 +123,23 @@ mes.o$(S): mes.c
 mes$(S): mes.o$(S)
 	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
 
+ifeq ($(MACHINE),i686-unknown-linux-gnu)
+mes-32: mes
+	ln -f $< $@
+else
 mes$(S)-32: GNUmakefile
 mes$(S)-32: mes.c gc.c lib.c math.c posix.c vector.c
 	guix environment --system=i686-linux --ad-hoc gcc-toolchain -- bash -c 'make mes-32 S=-32 CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=$${PATH%%/bin:*}/lib'
+endif
 
 module/mes/read-0-32.mo: module/mes/read-0.mes
 module/mes/read-0-32.mo: module/mes/read-0.mo
 module/mes/read-0-32.mo: mes-32
+	rm -f $@
 	MES_MINI=1 ./mes-32 --dump < $< > $@
 
 module/mes/tiny-0-32.mo: module/mes/tiny-0.mes mes-32
+	rm -f $@
 	MES_TINY=1 ./mes-32 --dump < $< > $@
 
 guile-check:
@@ -160,6 +184,7 @@ guile-mini-mes: mlibc.c mstart.c
 guile-mini-mes: GNUmakefile
 guile-mini-mes: module/mes/read-0-32.mo
 guile-mini-mes: scaffold/mini-mes.c
+	rm -f $@
 	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
@@ -170,43 +195,52 @@ mes-mini-mes: mlibc.c mstart.c
 mes-mini-mes: GNUmakefile
 mes-mini-mes: module/mes/read-0-32.mo
 mes-mini-mes: scaffold/mini-mes.c
+	rm -f $@
+#	MES_FLAGS= MES_DEBUG=1 scripts/mescc.mes $< > $@ || rm -f $@
+	MES_FLAGS= MES_DEBUG=1 scripts/mescc.mes $< > $@
+	chmod +x $@
+
+mes-hello: GNUmakefile
+mes-hello: mlibc.c mstart.c
+mes-hello: module/mes/read-0-32.mo
+mes-hello: scaffold/hello.c
+	rm -f $@
 	MES_FLAGS= MES_DEBUG=1 scripts/mescc.mes $< > $@ || rm -f $@
 	chmod +x $@
 
 cons-mes: module/mes/tiny-0-32.mo
 cons-mes: scaffold/cons-mes.c GNUmakefile
-	rm -f $@
 	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-cons-mes: module/mes/tiny-0-32.mo
 guile-cons-mes: scaffold/cons-mes.c
+	rm -f $@
 	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
 tiny-mes: module/mes/tiny-0-32.mo
 tiny-mes: scaffold/tiny-mes.c GNUmakefile
-	rm -f $@
 	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-tiny-mes: module/mes/tiny-0-32.mo
 guile-tiny-mes: scaffold/tiny-mes.c
+	rm -f $@
 	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
 m: scaffold/m.c GNUmakefile
-	rm -f $@
 	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 #	gcc --std=gnu99 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
 guile-m: scaffold/m.c
+	rm -f $@
 	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
 
 malloc: scaffold/malloc.c GNUmakefile
-	rm -f $@
 	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
@@ -244,13 +278,14 @@ guile-t: scaffold/t.c
 
 MAIN_C:=doc/examples/main.c
 mescc: all $(MAIN_C)
+mescc: doc/examples/main.c all
 	rm -f a.out
-	scripts/mescc.mes $(MAIN_C) > a.out
+	MES_DEBUG=1 scripts/mescc.mes $< > a.out
 	./a.out; r=$$?; [ $$r = 42 ]
 
-guile-mescc: $(MAIN_C)
+guile-mescc: doc/examples/main.c
 	rm -f a.out
-	guile/mescc.scm $(MAIN_C) > a.out
+	guile/mescc.scm $< > a.out
 	chmod +x a.out
 	./a.out; r=$$?; [ $$r = 42 ]
 

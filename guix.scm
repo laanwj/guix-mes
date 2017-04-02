@@ -2,6 +2,11 @@
 
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+
+;;; Also borrowing code from:
+;;; guile-sdl2 --- FFI bindings for SDL2
+;;; Copyright © 2015 David Thompson <davet@gnu.org>
+
 ;;;
 ;;; guix.scm: This file is part of Mes.
 ;;;
@@ -34,36 +39,62 @@
 ;;
 ;;; Code:
 
-(use-modules (gnu packages)
+(use-modules (srfi srfi-1)
+             (srfi srfi-26)
+             (ice-9 match)
+             (ice-9 popen)
+             (ice-9 rdelim)
+             (gnu packages)
              (gnu packages base)
+             (gnu packages commencement)
+             (gnu packages gcc)
              (gnu packages guile)
              (gnu packages package-management)
              (gnu packages perl)
              (gnu packages version-control)
+             ((guix build utils) #:select (with-directory-excursion))
+             (guix build-system gnu)
+             (guix build-system trivial)
+             (guix gexp)
              (guix git-download)
              (guix licenses)
-             (guix packages)
-             (guix build-system gnu))
+             (guix packages))
+
+(define %source-dir (dirname (current-filename)))
+
+(define git-file?
+  (let* ((pipe (with-directory-excursion %source-dir
+                 (open-pipe* OPEN_READ "git" "ls-files")))
+         (files (let loop ((lines '()))
+                  (match (read-line pipe)
+                    ((? eof-object?)
+                     (reverse lines))
+                    (line
+                     (loop (cons line lines))))))
+         (status (close-pipe pipe)))
+    (lambda (file stat)
+      (match (stat:type stat)
+        ('directory #t)
+        ((or 'regular 'symlink)
+         (any (cut string-suffix? <> file) files))
+        (_ #f)))))
 
 (define-public mes
   (package
     (name "mes")
-    (version "0.4.f84e97fc")
-    (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "https://gitlab.com/janneke/mes")
-                    (commit "f84e97fc33f5e2a2ad7033795967d44c95d34b8f")))
-              (file-name (string-append name "-" version))
-              (sha256
-               (base32 "1jpm8m8y2dqsl3sc6flf8da4rpdrqh6zgr2mghzjw0lg34v1r21j"))))
+    (version "git")
+    (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system gnu-build-system)
     (native-inputs
      `(("git" ,git)
-       ("guile" ,guile-2.0)
+       ("guile" ,guile-2.2)
+       ("gcc" ,gcc-toolchain-4.9)
        ("perl" ,perl)))                ; build-aux/gitlog-to-changelog
+    (supported-systems '("i686-linux"))
     (arguments
-     `(#:phases
+     `(#:system "i686-linux"
+       ;;#:make-flags '("MES_BOOTSTRAP=mes-mes")
+       #:phases
        (modify-phases %standard-phases
          (add-before 'install 'generate-changelog
            (lambda _
@@ -73,10 +104,10 @@
              #t)))))
     (synopsis "Maxwell Equations of Software")
     (description
-     "Mes aims to create an entirely source-based bootstrapping path.
-The target is to [have GuixSD] boostrap from a minimal, easily
-inspectable binary --that should be readable as source-- into
-something close to R6RS Scheme.")
+     "Mes aims to create full source bootstrapping for GuixSD: an
+entirely source-based bootstrap path.  The target is to [have GuixSD]
+boostrap from a minimal, easily inspectable binary --that should be
+readable as source-- into something close to R6RS Scheme.")
     (home-page "https://gitlab.com/janneke/mes")
     (license gpl3+)))
 

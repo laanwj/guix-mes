@@ -55,6 +55,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 (define PREFIX "/usr/local")
 (define GUILE_EV (effective-version))
 (define CC (or (getenv "CC") "gcc"))
+(define CC32 (or (getenv "CC32") "i686-unknown-linux-gnu-gcc"))
 (define GUILE (or (getenv "guile") "guile"))
 (define SYSCONFDIR "$(PREFIX)/etc")
 
@@ -107,6 +108,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
   (and-let* ((version (string-tokenize string
                                        (char-set-adjoin char-set:digit #\.)))
              ((pair? version))
+             (version (sort version (lambda (a b) (> (string-length a) (string-length b)))))
              (version (car version))
              (version (string-tokenize version
                                        (char-set-complement (char-set #\.)))))
@@ -182,6 +184,7 @@ Usage: ./configure [OPTION]...
          (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR)))
     (check-version 'bash '(4 0))
     (check-version 'gcc '(4 8))
+    (check-version 'i686-unknown-linux-gnu-gcc '(4 8))
     (check-version 'guile '(2 0))
     (check-version 'make '(4 0))
     (check-version 'perl '(5))
@@ -195,8 +198,10 @@ Usage: ./configure [OPTION]...
     (with-output-to-file ".config.make"
       (lambda ()
         (stdout "CC:=~a\n" CC)
+        (stdout "CC32:=~a\n" CC32)
         (stdout "GUILE:=~a\n" GUILE)
         (stdout "GUILE_EV:=~a\n" GUILE_EV)
+        (stdout "GUIX_P:=~a\n" (if guix? guix? ""))
         (stdout "PACKAGE:=~a\n" PACKAGE)
         (stdout "VERSION:=~a\n" VERSION)
         (stdout "PREFIX:=~a\n" (gulp-pipe (string-append "echo " prefix)))

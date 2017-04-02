@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -134,12 +134,6 @@
 
 (define (keyword->list s)
   (core:car s))
-
-(define (symbol->string s)
-  (apply string (symbol->list s)))
-
-(define (string-append . rest)
-  (apply string (apply append (map1 string->list rest))))
 
 (define (integer->char x)
   (core:make-cell <cell:character> 0 x))

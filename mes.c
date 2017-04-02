@@ -1093,8 +1093,10 @@ main (int argc, char *argv[])
 {
 #if __GNUC__
   g_debug = getenv ("MES_DEBUG");
+  if (g_debug) {eputs ("MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
 #endif
   if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
+  if (getenv ("MES_MAX_ARENA")) MAX_ARENA_SIZE = atoi (getenv ("MES_MAX_ARENA"));
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
   if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);return 0;};
   g_stdin = STDIN;

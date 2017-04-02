@@ -1,8 +1,8 @@
 #! /bin/sh
 # -*-scheme-*-
 MES=${MES-$(dirname $0)/mes}
-prefix=module/
-echo '()' | cat $prefix/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
+moduledir=module/
+echo '()' | cat $moduledir/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
 #paredit:||
 r=$?
 ([ -f a.out ] && chmod +x a.out)
@@ -39,9 +39,15 @@ exit $r
 (mes-use-module (mes guile))
 (mes-use-module (language c99 compiler))
 
+(define %datadir (if (string-prefix? "@DATADIR" "@DATADIR@") "" "@DATADIR@"))
+(define %docdir (if (string-prefix? "@DOCDIR" "@DOCDIR@") "doc/" "@DOCDIR@"))
+(define %moduledir "module/")
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") "" "@PREFIX@"))
+(define %version (if (string-prefix? "@VERSION" "@VERSION@") "git" "@VERSION@"))
+
 (define (main arguments)
   (let* ((files (cdr arguments))
-         (file (if (null? files) "doc/examples/main.c"
+         (file (if (null? files) (string-append %docdir "examples/main.c")
                    (car files))))
     (with-input-from-file file
       compile)))

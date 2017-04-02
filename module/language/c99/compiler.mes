@@ -49,7 +49,7 @@
 (define (mescc)
   (parse-c99
    #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
-   #:cpp-defs '(
+   #:cpp-defs `(
                 "_POSIX_SOURCE=0"
                 "__GNUC__=0"
                 "__MESC__=1"
@@ -62,8 +62,11 @@
                 "INT_MIN=-2147483648"
                 "INT_MAX=2147483647"
 
-                "VERSION=\"0.4\""
-                "PREFIX=\"\""
+                ,(string-append "DATADIR=\"" %datadir "\"")
+                ,(string-append "DOCDIR=\"" %docdir "\"")
+                ,(string-append "PREFIX=\"" %prefix "\"")
+                ,(string-append "MODULEDIR=\"" %moduledir "\"")
+                ,(string-append "VERSION=\"" %version "\"")
                 )
    #:mode 'code))
 

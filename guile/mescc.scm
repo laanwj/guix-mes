@@ -1,7 +1,9 @@
 #! /bin/sh
 # -*-scheme-*-
+DATADIR=${DATADIR-@DATADIR@}
+[ "$DATADIR" = @"DATADIR"@ ] && DATADIR=.
 export GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
-exec ${GUILE-guile} -L $(pwd)/guile -e '(mescc)' -s "$0" "$@"
+exec ${GUILE-guile} -L $DATADIR/guile -e '(mescc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
@@ -36,9 +38,20 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
   #:use-module (ice-9 pretty-print)
   #:export (main))
 
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") "" "@PREFIX@"))
+(define %datadir (if (string-prefix? "@DATADIR" "@DATADIR@") "" "@DATADIR@"))
+(define %docdir (if (string-prefix? "@DOCDIR" "@DOCDIR@") "doc/" "@DOCDIR@"))
+(define %moduledir "module/")
+(define %version (if (string-prefix? "@VERSION" "@VERSION@") "git" "@VERSION@"))
+(module-define! (resolve-module '(language c99 compiler)) '%datadir %datadir)
+(module-define! (resolve-module '(language c99 compiler)) '%docdir %docdir)
+(module-define! (resolve-module '(language c99 compiler)) '%moduledir %moduledir)
+(module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix)
+(module-define! (resolve-module '(language c99 compiler)) '%version %version)
+
 (define (main arguments)
   (let* ((files (cdr arguments))
-         (file (if (null? files) "doc/examples/main.c"
+         (file (if (null? files) (string-append %docdir "examples/main.c")
                    (car files))))
     (with-input-from-file file
       compile)))

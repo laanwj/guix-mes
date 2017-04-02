@@ -1,12 +1,12 @@
 .PHONY: tree-clean-p
 
 READMES:=\
- ANNOUNCE\
- ANNOUNCE-2\
  AUTHORS\
  COPYING\
  HACKING\
+ INSTALL\
  NEWS\
+ README\
 #
 
 COMMIT:=$(shell test -d .git && (git show 2>/dev/null | head -1 | cut -d' ' -f 2) || cat .tarball-version)
@@ -18,10 +18,19 @@ OPT_CLEAN:=$(OPT_CLEAN) $(TARBALL) .tarball-version
 
 GIT_ARCHIVE_HEAD:=git archive HEAD --
 GIT_LS_FILES:=git ls-files
-ifeq ($(wildcard .git),)
+ifeq ($(wildcard .git/HEAD),)
 GIT_ARCHIVE_HEAD:=tar -cf-
 GIT_LS_FILES:=find
 endif
+
+ifeq ($(GUIX),)
+DATADIR:=$(PREFIX)/share/mes
+DOCDIR:=$(DATADIR)/doc/mes
+else
+DATADIR:=$(PREFIX)/share
+DOCDIR:=$(DATADIR)/doc
+endif
+MODULEDIR:=$(DATADIR)/module
 
 .tarball-version: tree-clean-p
 	echo $(COMMIT) > $@
@@ -45,22 +54,33 @@ ChangeLog:
 install: all ChangeLog
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	install mes $(DESTDIR)$(PREFIX)/bin/mes
+	install mes-mini-mes $(DESTDIR)$(PREFIX)/bin/mes-mini-mes
 	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/mescc.mes
 	install scripts/repl.mes $(DESTDIR)$(PREFIX)/bin/repl.mes
-	mkdir -p $(DESTDIR)$(PREFIX)/share/mes
+	install guile/mescc.scm $(DESTDIR)$(PREFIX)/bin/mescc.scm
+	mkdir -p $(DESTDIR)$(DATADIR)
 	$(GIT_ARCHIVE_HEAD) module\
-		| tar -C $(DESTDIR)$(PREFIX)/share/mes -xf-
-	cp module/mes/read-0.mo $(DESTDIR)$(PREFIX)/share/mes/module/mes
-	sed -i -e 's@module/@$(PREFIX)/share/mes/module/@' \
-		$(DESTDIR)$(PREFIX)/share/mes/module/mes/base-0.mes \
+		| tar -C $(DESTDIR)$(DATADIR) -xf-
+	$(GIT_ARCHIVE_HEAD) guile\
+		| tar -C $(DESTDIR)$(DATADIR) -xf-
+	sed -i \
+	    -e 's,module/,$(DATADIR)/module/,' \
+	    -e 's,@DATADIR@,$(DATADIR)/,g' \
+	    -e 's,@DOCDIR@,$(DOCDIR)/,g' \
+	    -e 's,@PREFIX@,$(PREFIX)/,g' \
+	    -e 's,@VERSION@,$(VERSION),g' \
+		$(DESTDIR)$(DATADIR)/module/mes/base-0.mes \
 		$(DESTDIR)$(PREFIX)/bin/mescc.mes \
-		$(DESTDIR)$(PREFIX)/bin/repl.mes \
-	mkdir -p $(DESTDIR)$(PREFIX)/share/doc/mes
+		$(DESTDIR)$(PREFIX)/bin/mescc.scm \
+		$(DESTDIR)$(PREFIX)/bin/repl.mes
+	cp module/mes/read-0.mo $(DESTDIR)$(DATADIR)/module/mes
+	cp module/mes/read-0-32.mo $(DESTDIR)$(DATADIR)/module/mes
+	mkdir -p $(DESTDIR)$(DOCDIR)
 	$(GIT_ARCHIVE_HEAD) $(READMES) \
-		| tar -C $(DESTDIR)$(PREFIX)/share/doc/mes -xf-
+		| tar -C $(DESTDIR)$(DOCDIR) -xf-
 	$(GIT_ARCHIVE_HEAD) doc \
-		| tar -C $(DESTDIR)$(PREFIX)/share/doc/mes --strip=1 -xf-
-	cp ChangeLog $(DESTDIR)$(PREFIX)/share/doc/mes
+		| tar -C $(DESTDIR)$(DOCDIR) --strip=1 -xf-
+	cp ChangeLog $(DESTDIR)$(DOCDIR)
 
 release: tree-clean-p check dist
 	git tag v$(VERSION)
