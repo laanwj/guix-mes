@@ -53,21 +53,6 @@ exit $?
 
 
 
-(pass-if "+" (seq? (+ 1 2 3) 6))
-(pass-if "*" (seq? (* 3 3 3) 27))
-(pass-if "/" (seq? (/ 9 3) 3))
-(pass-if "remainder" (seq? (remainder 11 3) 2))
-(pass-if "modulo" (seq? (modulo 11 3) 2))
-(pass-if "expt" (seq? (expt 2 3) 8))
-(pass-if "logior" (seq? (logior 0 1 2 4) 7))
-(pass-if-equal "ash"
-    8 (ash 1 3))
-(pass-if-equal "ash -1"
-    5 (ash 10 -1))
-
-(pass-if "=" (seq? 3 '3))
-(pass-if "= 2" (not (= 3 '4)))
-
 (pass-if-equal "string-length"
     0
     (string-length ""))
@@ -148,40 +133,6 @@ exit $?
 (pass-if "apply identity" (seq? (apply identity '(0)) 0))
 (pass-if "apply identity 2" (sequal? (apply identity '((0 1))) '(0 1)))
 (pass-if "apply append" (sequal? (apply append '((1 2) (3 4))) '(1 2 3 4)))
-
-(pass-if "=" (seq? (=) #t))
-(pass-if "= 1" (seq? (= 0) #t))
-(pass-if "= 2" (seq? (= 0 0) #t))
-(pass-if "= 3" (seq? (= 0 0) #t))
-(pass-if "= 4" (seq? (= 0 1 0) #f))
-
-(pass-if "<" (seq? (<) #t))
-(pass-if "< 1" (seq? (< 0) #t))
-(pass-if "< 2" (seq? (< 0 1) #t))
-(pass-if "< 3" (seq? (< 1 0) #f))
-(pass-if "< 4" (seq? (< 0 1 2) #t))
-(pass-if "< 5" (seq? (< 0 2 1) #f))
-
-(pass-if ">" (seq? (>) #t))
-(pass-if "> 1" (seq? (> 0) #t))
-(pass-if "> 2" (seq? (> 1 0) #t))
-(pass-if "> 3" (seq? (> 0 1) #f))
-(pass-if "> 4" (seq? (> 2 1 0) #t))
-(pass-if "> 5" (seq? (> 1 2 0) #f))
-
-(pass-if ">=" (seq? (>= 3 2 1) #t))
-(pass-if ">= 2" (seq? (>= 1 2 3) #f))
-
-(pass-if "<=" (seq? (<= 3 2 1) #f))
-(pass-if "<= 2" (seq? (<= 1 2 3) #t))
-
-(pass-if "max" (seq? (max 0) 0))
-(pass-if "max 1" (seq? (max 0 1) 1))
-(pass-if "max 2" (seq? (max 1 0 2) 2))
-
-(pass-if "min" (seq? (min 0) 0))
-(pass-if "min 1" (seq? (min 0 1) 0))
-(pass-if "min 2" (seq? (min 1 0 2) 0))
 
 (pass-if "char-alphabetic?" (seq? (char-alphabetic? #\a) #t))
 (pass-if "char-alphabetic? 2" (seq? (char-alphabetic? #\[) #f))

@@ -282,6 +282,8 @@
 
 
 ;;; Math
+(define quotient /)
+
 (define (<= . rest)
   (or (apply < rest)
       (apply = rest)))

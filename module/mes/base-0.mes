@@ -35,8 +35,6 @@
 (define (primitive-eval e) (core:eval e (current-module)))
 (define eval core:eval)
 
-(define quotient /)
-
 (define-macro (defined? x)
   (list 'assq x '(cddr (current-module))))
 

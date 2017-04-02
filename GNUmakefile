@@ -57,10 +57,11 @@ TESTS:=\
  tests/closure.test\
  tests/quasiquote.test\
  tests/let.test\
- tests/vector.test\
  tests/scm.test\
  tests/display.test\
  tests/cwv.test\
+ tests/math.test\
+ tests/vector.test\
  tests/srfi-1.test\
  tests/srfi-13.test\
  tests/srfi-14.test\
