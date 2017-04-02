@@ -23,9 +23,11 @@ gc_up_arena () ///((internal))
 {
 #if _POSIX_SOURCE
   ARENA_SIZE *= 2;
+  GC_SAFETY *= 2;
   void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(struct scm));
 #else
   ARENA_SIZE = ARENA_SIZE * 2;
+  GC_SAFETY = GC_SAFETY * 2;
   //p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(struct scm));
   int size = ARENA_SIZE * 2;
   size = size * 12;
