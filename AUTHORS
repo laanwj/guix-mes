@@ -10,8 +10,14 @@ module/srfi/srfi-9.scm
 Based on Guile ECMAScript
 module/language/c/lexer.mes
 
+Included verbatim from GNU Guix
+build-aux/compile-all.scm
+
 Included verbatim from gnulib
 build-aux/gitlog-to-changelog
+
+Nyacc C99 parser
+module/nyacc
 
 Portable hygienic pattern matcher
 module/mes/match.scm

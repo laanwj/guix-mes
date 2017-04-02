@@ -1,36 +1,19 @@
 -*-mode:org-*-
 
+* SETUP
+    guix environment -l guix.scm     #64 bit + 32bit
+    guix environment --system=i686-linux -l guix.scm #32 bit only
 * ROADMAP
-** TODO release 0.5
-  1. mes.c: prototype Scheme interpreter in C, mature enough to run
-  2. guile/mescc.scm: C compiler on [Guile] Scheme, that can compile
-     2a. scaffold/hello.c: Simplest C program, compiled with 2.
-     2b. scaffold/micro-mes.c: main of 3. (2nd Scheme interpreter) + mlib.c
-     2c. scaffold/cons-mes.c: run simple hardcoded sexp
-     2d. scaffold/tiny-mes.c: load memory dump, run simple sexp
-     2e. scaffold/t.c: c compiler tests, enough to support compiling
-  3. scaffold/mini-mes.c: 2nd Scheme intepreter in C, without [g]libc, using
-  4. mlib.c: Minimal Mescc C library
-     4a. scaffold/hello.c: Simplest C program, compiled with 5.
-     4b. scaffold/micro-mes.c: main of 3. (2nd Scheme interpreter) + mlib.c
-     4c. scaffold/cons-mes.c: run simple hardcoded sexp
-     4d. scaffold/tiny-mes.c: load memory dump, run simple sexp
-     4e. scaffold/t.c: run c test suite with scripts/mescc.mes
-  5. scripts/mescc.mes: C compiler on mes, that can build scaffold/mini-mes.c
-     5a. remove __MESC__/__NYACC__ C workarounds in gc.c and vector.c
-     5b. module/language/c99/compiler.mes: refactor expr->arg, expr->accu, ast->info
-     5c. merge *.c into scaffold/mini-mes.c
-     5d. merge scaffold/mini-mes.c into mes.c
-     5x. *we are here*
-     make guile-t, make guile-mini-mes, make mes-mini-mes
-  6. scripts/mescc.mes: C compiler on mes, that can build mes
-  7. release self-hosting Mes 0.5
-     7a. discuss full source bootstrap strategy on guile-user with
-     Orians Jeremiah (stage0+) Luca Saiu's (GNU Epsilon).
-** release 0.x, unsorted
+** TODO 
+*** release 0.x, unsorted
+  - discuss full source bootstrap strategy on guile-user with Jeremiah
+    Orians (stage0+) Luca Saiu (GNU Epsilon).
+  - fix bugs
   - produce intermediate annotated assembly-like mes.S
-  - AND/OR: connect to GNU Epsilon's VM
-  - AND/OR: connect to OriansJ's stage0...LISP bootstrapping tools
+  - and/or: connect to OriansJ's stage0...LISP bootstrapping tools
+  - and/or: connect to GNU Epsilon's VM
+  - and/or: translate Mes.c interpreter into VM
+  - and/or: compile Scheme to C, rewrite Mes.c into Mes.scm.
   - real module support, bonus for supporting Guile's define-module/define-public syntax
   - get full source syntax-case up (Andre van Tonder?) OR drop
     psyntax/syntax-case and rewrite Nyacc without syntax-case+R7RS Ellipsis
@@ -39,44 +22,42 @@
     respecting no-syntax-case bootstrap requirement
 *** Compile the [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
   - build tcc (tinycc)
-** release 1.0
+*** release 1.0
   - work to replace GuixSD's bootstrap binaries for x86
   - more architectures?
-
 ** DONE
-** Support call-with-current-continuation, refactor catch/throw
+** 0.5: Mutual self-hosting Scheme interpreter and C compiler: mes.c and mescc,
+        Support call-with-current-continuation, refactor catch/throw
 ** 0.4: Support Nyacc, Gcc-compiled Mes compiles minimal main.c using nyacc
 ** 0.3: Garbage collector
 ** 0.2: Support psyntax
 ** 0.1: Mes eval/apply feature complete; support syntax-rules, compile main.c using LALR, dump ELF
 
-* Full source bootstrapping
-
-** R6RS-like scheme interpreter
-This first part is prototyped in C by the mes.c core and Scheme
-bootstrap code in module/.  Of course, while mes.c is pretty small it
-cannot serve as a full source solution.
-
-The initial idea was to have the minimal core support LISP-1.5 (or
-something very close to that as a tribute to John McCarthy) and extend
-eval/apply from LISP-1.5 source with define, define-macro etc. and
-metamorphose into R6RS.  It seemed to work but performance of the
-LISP-intepreted RRS was so bad (~1000x slower than initial LISP-1.5)
-that this track was abandoned after the initial ANNOUNCE.
-
-The route changed, trying to strike a balance between core size and
-performance: still writing as much as possible in Scheme but having a
-mescc compiler that takes not more than some seconds to run.
-
-Now that we have [[https://github.com/schemeway/lalr-scm][Dominique Boucher's LALR]], a [[https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html][Pre-R6RS portable
-syntax-case]] with R7RS ellipsis, [[http://www.nongnu.org/nyacc/][Nyacc]] and [[https://www.gnu.org/software/guile/docs/master/guile.html/PEG-Parsing.html][Guile's PEG]] parsers, it's
-time to start doing something useful.
-
 * Bugs
+** eval_apply/gc + Nyacc bug
+scripts/messc.mes intermittently exposes a bug in eval_apply/gc when
+Nyacc parses mes.c-sized source.  Running 
+
+    MES_MAX_ARENA=<another-size> scripts/mescc.mes
+
+may [un]cover the bug.  So there is probably some eval_apply-construct
+that Nyacc uses, possiblby indirectly via with-fluid, like (call/cc,
+call-with-current-continuation), that breaks when GC triggers at the
+wrong time.
+** mescc can only compile itself, it cannot compile tcc, gcc or guile
+** mes.mes cannot read sexps, only --dump's, mes.mes cannot --dump
+** Bootstrap binary mes is too big and opaque to be considered source
+68kB ELF binary which can be disassembled (objdump -d mes.mes).
+** Psyntax is too big and opaque to be considered source
+And needs a patched Guile-1.8 to [re]generate.
 ** test/match.test ("nyacc-simple"): hygiene problem in match
-** The Scheme reader is very slow.
+** Performance
+*** mes is slow
+*** The Scheme reader is very slow.
+*** mescc is slow
+**** compiling mes.c takes mescc.mes 2h30'
+mescc.scm which runs on Guile takes 30"
 ** Fluids are a hack for Nyacc.
-** Prototype mes.c depends on a C compiler.
 *** Translate C-prototype mes.c into annotated hex?
 One idea is to use OriansJ's amazing self-hosting [[https://github.com/oriansj/stage0][stage0]] hex assembler
 and minimal bootstrap binaries and rewrite the mes.c core to directly
@@ -89,6 +70,11 @@ bootstrap binary.
 
 *** Compile the [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
 
+** Build tools do not run on mes
+*** configure needs Bash, Guile
+*** GNUmakefile needs Bash, Guile
+*** build-aux/mes-snarf.scm needs Guile
+*** build-aux/git-changelog needs Perl
 * OLD: Booting from LISP-1.5 into Mes
 
 Mes started out experimenting with booting from a hex-coded minimal
@@ -173,3 +159,5 @@ http://common-lisp.net/project/movitz/movitz.html
 ** C4/C500
 https://web.archive.org/web/20160604041431/http://homepage.ntlworld.com/edmund.grimley-evans/cc500/cc500.c
 https://github.com/rswier/c4/blob/master/c4.c
+** Compilers for free
+http://codon.com/compilers-for-free

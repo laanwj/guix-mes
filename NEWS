@@ -2,7 +2,7 @@
 #+TITLE: Mes NEWS – history of user-visible changes
 #+STARTUP: content hidestars
 
-Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -10,6 +10,32 @@ Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.5 since 0.4
+** Core
+*** Support compilation with Mescc.
+*** Support compilation with -nostdinc, -nostdlib using mlibc.
+*** Support call-with-current-continuation.
+*** Support exception handling, catch/throw.
+*** Give sensible error message when a macro is missing.
+** Language
+*** Map now supports 4 lists.
+*** The reader supports negative hex numbers.
+*** 24 new functions
+access?, assoc-set! c????r, compose, list->char-set,
+open-input-string, read-string, string-delete, with-throw-handler.
+** Mescc
+*** Mescc can be used separately as a Nyacc-based C compiler backend for Guile.
+*** Switch to Nyacc frontend, update Nyacc to 0.76.5.
+*** Mescc now has a test suite, scaffold/t.c.
+*** Mescc now includes a minimal C library libc/mlib.c libc/mstart.c.
+*** Mescc can now compile mes.c.
+** Noteworthy bug fixes
+*** The build system (configure, make) has been refactored.
+*** Support map-4.
+*** Evaluate arguments of OR only once.
+*** Fix assq-set!
+*** Fix ,expand in the REPL.
+    
 * Changes in 0.4 since 0.3
 ** Core
 *** Improved performance.

@@ -6,27 +6,32 @@ Building and Installing Mes
    git clone https://gitlab.com/janneke/mes
 
 * Prerequisites
+** Guix
 
-** A C compiler, GNU Gcc 4.9.3 is known to work.
+    guix environment -l guix.scm     #64 bit + 32bit
+    guix environment --system=i686-linux -l guix.scm #32 bit only
+
+** Other GNU/Linux
+*** A C compiler, GNU Gcc 4.9.3 is known to work.
 The idea is to drop this requirement, of course.
 
-** Guile, version 2.0.12 or is know to work.
+*** Guile, version 2.0.12 or is know to work.
 Guile is not strictly necessary but it is used by the configure script
 and in development.
 
-** GNU Make, version 4.0 is know to work.
+*** GNU Make, version 4.0 is know to work.
 Not strictly necessary.
 
-** /bin/sh, GNU Bash 4.3 is known to work.
+*** /bin/sh, GNU Bash 4.3 is known to work.
 Let's just say for now that it gets awkward without a shell.
 
 
 *** Development (but see [[./guix.scm]])
 
-** GNU coreutils
-** sed, GNU sed 4.2 is known to work.
-** git, 2.10 is known to work.
-** Perl, 5.22 is known to work.
+*** GNU coreutils
+*** sed, GNU sed 4.2 is known to work.
+*** git, 2.10 is known to work.
+*** Perl, 5.22 is known to work.
 
 * Build it
 
