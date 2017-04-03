@@ -42,7 +42,7 @@
 
 (define (display x . rest)
   (let* ((port (if (null? rest) (current-output-port) (car rest)))
-         (write? (and (pair? rest) (pair? (cdr rest)))))
+         (write? (and (pair? rest) (pair? (cdr rest)) (cadr rest))))
 
     (define-macro (cut f slot n1)
       `(lambda (slot) (,f slot ,n1)))
@@ -50,7 +50,7 @@
     (define-macro (cut2 f slot n1 n2)
       `(lambda (slot) (,f slot ,n1 ,n2)))
 
-    (define (display-char x write? port)
+    (define (display-char x port write?)
       (cond ((and write? (or (eq? x #\") (eq? x #\\)))
              (write-char #\\ port)
              (write-char x port))
@@ -113,7 +113,7 @@
        ((or (keyword? x) (special? x) (string? x) (symbol? x))
         (if (and (string? x) write?) (write-char #\" port))
         (if (keyword? x) (display "#:" port))
-        (for-each (cut2 display-char <> write? port) (string->list x))
+        (for-each (cut2 display-char <> port write?) (string->list x))
         (if (and (string? x) write?) (write-char #\" port)))
        ((vector? x)
         (display "#(" port)
