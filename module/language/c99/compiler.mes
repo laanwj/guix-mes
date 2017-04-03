@@ -2408,7 +2408,7 @@
 
 (define (info->exe info)
   (display "dumping elf\n" (current-error-port))
-  (map write-any (make-elf (.functions info) (.globals info) (.init info))))
+  (for-each write-any (make-elf (.functions info) (.globals info) (.init info))))
 
 (define (.formals o)
   (pmatch o
