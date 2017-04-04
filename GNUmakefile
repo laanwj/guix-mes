@@ -177,6 +177,7 @@ mini-mes: scaffold/mini-mes.c
 	rm -f mes.o
 	chmod +x $@
 
+guile-mini-mes: module/language/c99/compiler.mes # and others...
 guile-mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
 guile-mini-mes: gc.c mini-gc.h mini-gc.i mini-gc.environment.i
 guile-mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
