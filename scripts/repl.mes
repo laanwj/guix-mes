@@ -4,7 +4,7 @@ MES=${MES-$(dirname $0)/mes}
 #MES_ARENA=${MES_ARENA-30000000}
 #export MES_ARENA
 prefix=module/
-cat $prefix/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
+cat $prefix/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS -- "$@"
 #paredit:|
 exit $?
 !#
@@ -27,7 +27,17 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(mes-use-module (mes scm))
+(let* ((files (cdr (command-line)))
+       (file (if (pair? files) (car files)))
+       (file (if (and (equal? file "--") (pair? files) (pair? (cdr files))) (cadr files) file)))
+    (cond ((equal? file "--help")
+           (format (current-error-port) "Usage: repl.mes [--help|--version]\n")
+           (exit 0))
+          ((equal? file "--version")
+           (format (current-error-port) "mescc.mes (mes) ~a\n" %version)
+           (exit 0))))
+
+;;(mes-use-module (mes scm))
 (mes-use-module (mes syntax))
 (mes-use-module (mes repl))
 

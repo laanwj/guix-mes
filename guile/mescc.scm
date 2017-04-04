@@ -53,5 +53,12 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
   (let* ((files (cdr arguments))
          (file (if (null? files) (string-append %docdir "examples/main.c")
                    (car files))))
+    (cond ((equal? file "--help")
+           (format (current-error-port) "Usage: mescc.scm [--help|--version|FILE] > a.out\n")
+           (exit 0))
+          ((equal? file "--version")
+           (format (current-error-port) "mescc.scm (mes) ~a\n" %version)
+           (exit 0)))
+    (format (current-error-port) "compiling: ~a\n" file)
     (with-input-from-file file
       compile)))

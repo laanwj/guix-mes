@@ -2,7 +2,7 @@
 # -*-scheme-*-
 MES=${MES-$(dirname $0)/mes}
 moduledir=module/
-echo '()' | cat $moduledir/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
+echo '()' | cat $moduledir/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS -- "$@"
 #paredit:||
 r=$?
 ([ -f a.out ] && chmod +x a.out)
@@ -36,6 +36,16 @@ exit $r
 ;;LALR
 ;;(mes-use-module (language c compiler))
 ;;Nyacc
+
+(let* ((files (cddr (command-line)))
+       (file (if (pair? files) (car files))))
+    (cond ((equal? file "--help")
+           (format (current-error-port) "Usage: mescc.mes [--help|--version|FILE] > a.out\n")
+           (exit 0))
+          ((equal? file "--version")
+           (format (current-error-port) "mescc.mes (mes) ~a\n" %version)
+           (exit 0))))
+
 (mes-use-module (mes guile))
 (mes-use-module (language c99 compiler))
 
@@ -46,10 +56,13 @@ exit $r
 (define %version (if (string-prefix? "@VERSION" "@VERSION@") "git" "@VERSION@"))
 
 (define (main arguments)
-  (let* ((files (cdr arguments))
-         (file (if (null? files) (string-append %docdir "examples/main.c")
-                   (car files))))
-    (with-input-from-file file
+  (let* ((mfiles (cddr arguments))
+         (mfiles (if (or (null? mfiles) (not (equal? (car mfiles) "--"))) mfiles
+                     (cdr mfiles)))
+         (mfile (if (null? mfiles) (string-append %docdir "examples/main.c")
+                    (car mfiles))))
+    (format (current-error-port) "compiling: ~a\n" mfile)
+    (with-input-from-file mfile
       compile)))
 
 (main (command-line))
