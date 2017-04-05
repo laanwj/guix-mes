@@ -421,10 +421,15 @@
 
 (define (expr->accu info)
   (lambda (o)
-    (let ((text (.text info))
-          (locals (.locals info))
+    (let ((locals (.locals info))
+          (constants (.constants info))
+          (text (.text info))
           (globals (.globals info)))
-      ;;(stderr "expr->accu o=~a\n" o)
+      (define (add-local locals name type pointer)
+        (let* ((id (1+ (length (filter local? (map cdr locals)))))
+               (locals (cons (make-local name type pointer id) locals)))
+          locals))
+      ;; (stderr "expr->accu o=~a\n" o)
       (pmatch o
         ((p-expr (string ,string))
          (clone info #:text (append text (list (lambda (f g ta t d)
@@ -435,7 +440,6 @@
          (clone info #:text (append text (value->accu (cstring->number value)))))
         ((p-expr (ident ,name))
          (clone info #:text (append text ((ident->accu info) name))))
-        ((fctn-call . _) ((ast->info info) `(expr-stmt ,o)))
         ((not (fctn-call . _)) ((ast->info info) o))
         ((neg (p-expr (fixed ,value)))
          (clone info #:text (append text (value->accu (- (cstring->number value))))))
@@ -603,9 +607,50 @@
                                      (i386:byte-mem->accu)
                                      (i386:mem->accu))))))))
 
-        ;; GRR --> info again??!?
-        ((fctn-call . ,call)
-         ((ast->info info) `(expr-stmt ,o)))
+        ((fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list))
+         (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
+                                   (clone info #:text (append text (list (lambda (f g ta t d) (asm->hex arg0))))))
+             (let* ((globals (append globals (filter-map expr->global expr-list)))
+                    (info (clone info #:globals globals))
+                    (text-length (length text))
+                    (args-info (let loop ((expressions (reverse expr-list)) (info info))
+                                 (if (null? expressions) info
+                                     (loop (cdr expressions) ((expr->arg info) (car expressions))))))
+                    (text (.text args-info))
+                    (n (length expr-list)))
+               (if (and (not (assoc-ref locals name))
+                        (assoc-ref (.functions info) name))
+                   (clone args-info #:text
+                          (append text
+                                  (list (lambda (f g ta t d)
+                                          (i386:call f g ta t d (+ t (function-offset name f)) n))))
+                          #:globals globals)
+                   (let* ((empty (clone info #:text '()))
+                          (accu ((expr->accu empty) `(p-expr (ident ,name)))))
+                     (clone args-info #:text
+                            (append text
+                                    (.text accu)
+                                    (list (lambda (f g ta t d)
+                                            (i386:call-accu f g ta t d n))))
+                            #:globals globals))))))
+
+        ((fctn-call ,function (expr-list . ,expr-list))
+         (let* ((globals (append globals (filter-map expr->global expr-list)))
+                (info (clone info #:globals globals))
+                (text-length (length text))
+                (args-info (let loop ((expressions (reverse expr-list)) (info info))
+                             (if (null? expressions) info
+                                 (loop (cdr expressions) ((expr->arg info) (car expressions))))))
+                (text (.text args-info))
+                (n (length expr-list))
+                (empty (clone info #:text '()))
+                (accu ((expr->accu empty) function)))
+           (clone info #:text
+                  (append text
+                          (.text accu)
+                          (list (lambda (f g ta t d)
+                                  (i386:call-accu f g ta t d n))))
+                  #:globals globals)))
 
         ((cond-expr . ,cond-expr)
          ((ast->info info) `(expr-stmt ,o)))
@@ -1189,52 +1234,6 @@
 
         ((compd-stmt (block-item-list . ,statements)) ((ast-list->info info) statements))
         
-        ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
-         (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
-                                   (clone info #:text (append text (list (lambda (f g ta t d) (asm->hex arg0))))))
-             (let* ((globals (append globals (filter-map expr->global expr-list)))
-                    (info (clone info #:globals globals))
-                    (text-length (length text))
-                    (args-info (let loop ((expressions (reverse expr-list)) (info info))
-                                 (if (null? expressions) info
-                                     (loop (cdr expressions) ((expr->arg info) (car expressions))))))
-                    (text (.text args-info))
-                    (n (length expr-list)))
-               (if (and (not (assoc-ref locals name))
-                        (assoc-ref (.functions info) name))
-                (clone args-info #:text
-                       (append text
-                               (list (lambda (f g ta t d)
-                                       (i386:call f g ta t d (+ t (function-offset name f)) n))))
-                       #:globals globals)
-                (let* ((empty (clone info #:text '()))
-                       (accu ((expr->accu empty) `(p-expr (ident ,name)))))
-                  (clone args-info #:text
-                         (append text
-                                 (.text accu)
-                                 (list (lambda (f g ta t d)
-                                         (i386:call-accu f g ta t d n))))
-                         #:globals globals))))))
-
-        ;;((expr-stmt (fctn-call (d-sel (ident "function") (array-ref (d-sel (ident "cdr") (array-ref (p-expr (ident "fn")) (p-expr (ident "g_cells")))) (p-expr (ident "g_functions")))) (expr-list))))
-        ((expr-stmt (fctn-call ,function (expr-list . ,expr-list)))
-         (let* ((globals (append globals (filter-map expr->global expr-list)))
-                (info (clone info #:globals globals))
-                (text-length (length text))
-                (args-info (let loop ((expressions (reverse expr-list)) (info info))
-                             (if (null? expressions) info
-                                 (loop (cdr expressions) ((expr->arg info) (car expressions))))))
-                (text (.text args-info))
-                (n (length expr-list))
-                (empty (clone info #:text '()))
-                (accu ((expr->accu empty) function)))
-           (clone info #:text
-                  (append text
-                          (.text accu)
-                          (list (lambda (f g ta t d)
-                                  (i386:call-accu f g ta t d n))))
-                  #:globals globals)))
-
         ((if ,test ,body)
          (let* ((text-length (length text))
 
@@ -1472,7 +1471,7 @@
                                  (i386:byte-mem->accu)))))))
 
         ((fctn-call . ,call)
-         (let ((info ((ast->info info) `(expr-stmt ,o))))
+         (let ((info ((expr->accu info) o)))
            (clone info #:text
                   (append (.text info)
                           (list (lambda (f g ta t d)
@@ -2176,6 +2175,9 @@
                                            (i386:base-address->accu-address))))
                                   '())))
                          ((ident-add info) index 1)))))
+
+        ((expr-stmt ,expression)
+         ((expr->accu info) expression))
 
         ;; DECL
         ;;
