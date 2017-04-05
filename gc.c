@@ -77,14 +77,7 @@ gc_copy (SCM old) ///((internal))
     {
       NVECTOR (new) = g_free;
       for (int i=0; i<LENGTH (old); i++)
-#if __GNUC__
         g_news[g_free++] = g_cells[VECTOR (old)+i];
-#else
-      {
-        SCM b = VECTOR (old)+i;
-        g_news[g_free++] = g_cells[b];
-      }
-#endif
     }
   TYPE (old) = TBROKEN_HEART;
   CAR (old) = new;

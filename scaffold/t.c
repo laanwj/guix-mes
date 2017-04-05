@@ -294,7 +294,7 @@ struct_test ()
   TYPE (1) = 1;
   CAR (1) = 2;
   CDR (1) = 3;
-  g_cells[0] = g_cells[1];
+  g_cells[0] = g_cells[0+1];
   if (TYPE (0) != 1) return 1;
   if (CAR (0) != 2) return 2;
   if (CDR (0) != 3) return 3;

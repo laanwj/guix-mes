@@ -457,43 +457,30 @@
                                  (i386:value->accu size))))))))
         
         ;; c+p expr->arg
-        ;; g_cells[0]
-        ((array-ref (p-expr (fixed ,index)) (p-expr (ident ,array)))
-         (let* ((index (cstring->number index))
+        ;; g_cells[<expr>]
+        ((array-ref ,index (p-expr (ident ,array)))
+         (let* ((info ((expr->accu info) index))
                 (type (ident->type info array))
                 (size (type->size info type)))
            (clone info #:text
-                  (append text
-                        ((ident->base info) array)
-                        (list (lambda (f g ta t d)
-                                (append
-                                 (i386:value->accu (* size index))
-                                 (case size
-                                   ((1) (i386:byte-base-mem->accu))
-                                   ((4) (i386:base-mem->accu))
-                                   (else (i386:accu+base))))))))))
-
-        ;; c+p expr->arg
-        ;; g_cells[i]
-        ((array-ref (p-expr (ident ,index)) (p-expr (ident ,array)))
-         (let* ((type (ident->type info array))
-                (size (type->size info type)))
-           (clone info #:text (append text
-                                      ((ident->base info) index)
-                                      (list (lambda (f g ta t d)
-                                              (append
-                                               (i386:base->accu)
-                                               (if (< size 4) '()
-                                                   (append
-                                                    (i386:accu+accu)
-                                                    (if (= size 12) (i386:accu+base) '())
-                                                    (i386:accu-shl 2))))))
-                                      ((ident->base info) array)
-                                      (list (lambda (f g ta t d)
-                                              (case size
-                                                ((1) (i386:byte-base-mem->accu))
-                                                ((4) (i386:base-mem->accu))
-                                                (else (i386:accu+base)))))))))
+                  (append (.text info)
+                          ;; immediate: (i386:value->accu (* size index))
+                          ;; * size cells: * length * 4 = * 12
+                          (list (lambda (f g ta t d)
+                                  (append
+                                   (i386:accu->base)
+                                   (if (eq? size 1) '()
+                                       (append
+                                        (if (> size 4) (i386:accu+accu) '())
+                                        (if (> size 8) (i386:accu+base) '())
+                                        (i386:accu-shl 2))))))
+                          ((ident->base info) array)
+                          (list (lambda (f g ta t d)
+                                  (append
+                                   (case size
+                                     ((1) (i386:byte-base-mem->accu))
+                                     ((4) (i386:base-mem->accu))
+                                     (else (i386:accu+base))))))))))
 
         ;; f.field
         ((d-sel (ident ,field) (p-expr (ident ,array)))

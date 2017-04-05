@@ -87,12 +87,7 @@ list_to_vector (SCM x)
   SCM p = VECTOR (v);
   while (x != cell_nil)
     {
-#if __GNUC__
       g_cells[p++] = g_cells[vector_entry (car (x))];
-#else
-      SCM b = vector_entry (car (x));
-      g_cells[p++] = g_cells[b];
-#endif
       x = cdr (x);
     }
   return v;
