@@ -655,19 +655,32 @@
         ((cond-expr . ,cond-expr)
          ((ast->info info) `(expr-stmt ,o)))
 
-        ;; FIXME
-        ;;((post-inc ,expr) ((ast->info info) `(expr-stmt ,o)))
         ((post-inc (p-expr (ident ,name)))
          (clone info #:text
                 (append text
                         ((ident->accu info) name)
                         ((ident-add info) name 1))))
 
-        ;; GRR --> info again??!?
-        ((post-inc ,expr) ((ast->info info) `(expr-stmt ,o)))
-        ((post-dec ,expr) ((ast->info info) `(expr-stmt ,o)))
-        ((pre-inc ,expr) ((ast->info info) `(expr-stmt ,o)))
-        ((pre-dec ,expr) ((ast->info info) `(expr-stmt ,o)))
+        ((post-dec (p-expr (ident ,name)))
+         (or (assoc-ref locals name) (begin (stderr "i-- ~a\n" name) barf))
+         (clone info #:text
+                (append text
+                        ((ident->accu info) name)
+                        ((ident-add info) name -1))))
+
+        ((pre-inc (p-expr (ident ,name)))
+         (or (assoc-ref locals name) (begin (stderr "++i ~a\n" name) barf))
+         (clone info #:text
+                (append text
+                        ((ident-add info) name 1)
+                        ((ident->accu info) name))))
+
+        ((pre-dec (p-expr (ident ,name)))
+         (or (assoc-ref locals name) (begin (stderr "--i ~a\n" name) barf))
+         (clone info #:text
+                (append text
+                        ((ident-add info) name -1)
+                        ((ident->accu info) name))))
 
         ((add (p-expr (ident ,name)) ,b)
          (let* ((empty (clone info #:text '()))
@@ -1470,69 +1483,6 @@
                                 (append
                                  (i386:byte-mem->accu)))))))
 
-        ((fctn-call . ,call)
-         (let ((info ((expr->accu info) o)))
-           (clone info #:text
-                  (append (.text info)
-                          (list (lambda (f g ta t d)
-                                  (i386:accu-zero?)))))))
-
-        ;; FIXME
-        ;;((post-inc ,expr) ((ast->info info) `(expr-stmt ,o)))
-        ((post-inc (p-expr (ident ,name)))
-         (clone info #:text
-                (append text
-                        ((ident->accu info) name)
-                        ((ident-add info) name 1)
-                        (list (lambda (f g ta t d)
-                                (append
-                                 (i386:accu-zero?)))))))
-        ((post-inc ,expr) ((ast->info info) `(expr-stmt ,o)))
-        ((post-dec ,expr) ((ast->info info) `(expr-stmt ,o)))
-        ((pre-inc ,expr) ((ast->info info) `(expr-stmt ,o)))
-        ((pre-dec ,expr) ((ast->info info) `(expr-stmt ,o)))
-
-        ;; i++
-        ((expr-stmt (post-inc (p-expr (ident ,name))))
-         (clone info #:text (append text ((ident-add info) name 1))))
-
-        ;; ++i
-        ((expr-stmt (pre-inc (p-expr (ident ,name))))
-         (or (assoc-ref locals name) (begin (stderr "++i ~a\n" name) barf))
-         (clone info #:text
-                (append text
-                        ((ident-add info) name 1)
-                        ((ident->accu info) name)
-                        (list (lambda (f g ta t d)
-                                (append
-                                 ;;(i386:local->accu (local:id (assoc-ref locals name)))
-                                 (i386:accu-zero?)))))))
-
-        ;; i--
-        ((expr-stmt (post-dec (p-expr (ident ,name))))
-         (or (assoc-ref locals name) (begin (stderr "i-- ~a\n" name) barf))
-         (clone info #:text
-                (append text
-                        ((ident->accu info) name)
-                        ((ident-add info) name -1)
-                        (list (lambda (f g ta t d)
-                                (append
-                                 ;;(i386:local-add (local:id (assoc-ref locals name)) -1)
-                                 (i386:accu-zero?)))))))
-
-        ;; --i
-        ((expr-stmt (pre-dec (p-expr (ident ,name))))
-         (or (assoc-ref locals name) (begin (stderr "--i ~a\n" name) barf))
-         (clone info #:text
-                (append text
-                        ((ident-add info) name -1)
-                        ((ident->accu info) name)
-                        (list (lambda (f g ta t d)
-                                (append
-                                 ;;(i386:local-add (local:id (assoc-ref locals name)) -1)
-                                 ;;(i386:local->accu (local:id (assoc-ref locals name)))
-                                 (i386:accu-zero?)))))))
-
         ((not ,expr)
          (let* ((test-info ((ast->info info) expr)))
            (clone info #:text
@@ -2277,10 +2227,17 @@
          barf
          info)
 
-        (_
-         (format (current-error-port) "SKIP: statement=~s\n" o)
-         barf
-         info)))))
+        ((expr-stmt ,expression)
+         (let ((info ((expr->accu info) expression)))
+           (clone info #:text
+                  (append (.text info)
+                          (list (lambda (f g ta t d) (i386:accu-zero?)))))))
+
+        ;; FIXME: why do we get (post-inc ...) here
+        (_ (let ((info ((expr->accu info) o)))
+             (clone info #:text
+                    (append (.text info)
+                            (list (lambda (f g ta t d) (i386:accu-zero?)))))))))))
 
 (define (initzer->data info functions globals ta t d o)
   (pmatch o
