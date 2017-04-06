@@ -294,7 +294,7 @@ struct_test ()
   TYPE (1) = 1;
   CAR (1) = 2;
   CDR (1) = 3;
-  g_cells[0] = g_cells[0+1];
+  g_cells[0] = g_cells[1];
   if (TYPE (0) != 1) return 1;
   if (CAR (0) != 2) return 2;
   if (CDR (0) != 3) return 3;
@@ -309,6 +309,15 @@ struct_test ()
   if (TYPE (0) != 4) return 1;
   if (CAR (0) != 5) return 2;
   if (CDR (0) != 6) return 3;
+
+  puts ("t: g_cells[0+add(0,0] = g_cells[0+inc(0)]\n");
+  TYPE (1) = 1;
+  CAR (1) = 2;
+  CDR (1) = 3;
+  g_cells[0+add(0, 0)] = g_cells[0+inc(0)];
+  if (TYPE (0) != 1) return 1;
+  if (CAR (0) != 2) return 2;
+  if (CDR (0) != 3) return 3;
 
   g_cells[0].type = TNUMBER;
   g_cells[0].car = 0;

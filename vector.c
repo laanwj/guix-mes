@@ -25,17 +25,7 @@ make_vector (SCM n)
   VALUE (tmp_num) = TVECTOR;
   SCM v = alloc (k);
   SCM x = make_cell_ (tmp_num, k, v);
-#if __GNUC__
   for (int i=0; i<k; i++) g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
-#else
-  for (int i=v; i<k+v; i++)
-    {
-      SCM t = vector_entry (cell_unspecified);
-      struct scm s = g_cells[t];
-      s = g_cells[t];
-      g_cells[i] = s;
-    }
-#endif
   return x;
 }
 
@@ -69,13 +59,7 @@ vector_set_x (SCM x, SCM i, SCM e)
 {
   assert (TYPE (x) == TVECTOR);
   assert (VALUE (i) < LENGTH (x));
-#if __GNUC__
   g_cells[VECTOR (x)+VALUE (i)] = g_cells[vector_entry (e)];
-#else
-  SCM a = VECTOR (x)+VALUE (i);
-  SCM b = vector_entry (e);
-  g_cells[a] = g_cells[b];
-#endif
   return cell_unspecified;
 }
 

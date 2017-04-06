@@ -956,13 +956,7 @@ eval_apply ()
 
  call_with_current_continuation:
   gc_push_frame ();
-#if __GNUC__
-  // FIXME GCC
   x = MAKE_CONTINUATION (g_continuations++);
-#else
-  x = MAKE_CONTINUATION (g_continuations);
-  g_continuations++;
-#endif
   gc_pop_frame ();
   push_cc (cons (car (r1), cons (x, cell_nil)), x, r0, cell_vm_call_with_current_continuation2);
   goto apply;
