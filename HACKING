@@ -17,10 +17,10 @@
      4d. scaffold/tiny-mes.c: load memory dump, run simple sexp
      4e. scaffold/t.c: run c test suite with scripts/mescc.mes
   5. scripts/mescc.mes: C compiler on mes, that can build scaffold/mini-mes.c
-     5a. remove __MESC__/__NYACC__ C workarounds in gc.c
-     5x. *we are here*
-     scripts/mescc.mes scaffold/mini-mes OR make mes-mini-mes
+     5a. remove __MESC__/__NYACC__ C workarounds in gc.c and vector.c
      5b. module/language/c99/compiler.mes: refactor expr->arg, expr->accu, ast->info
+     5x. *we are here*
+     make guile-t, make guile-mini-mes, make mes-mini-mes
      5c. merge *.c into scaffold/mini-mes.c
      5d. merge scaffold/mini-mes.c into mes.c
   6. scripts/mescc.mes: C compiler on mes, that can build mes
