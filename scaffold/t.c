@@ -213,6 +213,9 @@ math_test ()
   return 1;
  ok1:
 
+  puts ("t: inc (0) + 2 != 3\n");
+  if (inc (0) + inc (1) != 3) return 1;
+
   puts ("t: 4/2=");
   i = 4 / 2;
   if (i!=2) return 1;

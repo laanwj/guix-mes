@@ -232,7 +232,7 @@
                 (let ((constant (assoc-ref (.constants info) o)))
                   (if constant
                       (wrap-as (append (i386:value->accu constant)
-                                    (i386:push-accu)))
+                                       (i386:push-accu)))
                       TODO:push-function))))))))
 
 (define (push-ident-address info)
@@ -302,7 +302,7 @@
               ((1) (wrap-as (i386:local->accu (local:id local))))
               (else
                (wrap-as (if (= size 1) (i386:byte-local->accu (local:id local))
-                         (i386:local->accu (local:id local)))))))
+                            (i386:local->accu (local:id local)))))))
           (if global
               (let ((ptr (ident->pointer info o)))
                 ;;(stderr "ident->accu PTR[~a]: ~a\n" o ptr)
@@ -419,19 +419,19 @@
                 (type (ident->type info array))
                 (size (type->size info type)))
            (append-text info (append
-                          ;; immediate: (i386:value->accu (* size index))
-                          ;; * size cells: * length * 4 = * 12
-                          (wrap-as (append (i386:accu->base)
-                                           (if (eq? size 1) '()
-                                               (append
-                                                (if (> size 4) (i386:accu+accu) '())
-                                                (if (> size 8) (i386:accu+base) '())
-                                                (i386:accu-shl 2)))))
-                          ((ident->base info) array)
-                          (wrap-as (append (case size
-                                             ((1) (i386:byte-base-mem->accu))
-                                             ((4) (i386:base-mem->accu))
-                                             (else (i386:accu+base)))))))))
+                              ;; immediate: (i386:value->accu (* size index))
+                              ;; * size cells: * length * 4 = * 12
+                              (wrap-as (append (i386:accu->base)
+                                               (if (eq? size 1) '()
+                                                   (append
+                                                    (if (> size 4) (i386:accu+accu) '())
+                                                    (if (> size 8) (i386:accu+base) '())
+                                                    (i386:accu-shl 2)))))
+                              ((ident->base info) array)
+                              (wrap-as (append (case size
+                                                 ((1) (i386:byte-base-mem->accu))
+                                                 ((4) (i386:base-mem->accu))
+                                                 (else (i386:accu+base)))))))))
 
         ;; f.field
         ((d-sel (ident ,field) (p-expr (ident ,array)))
@@ -592,76 +592,14 @@
          (append-text info (append ((ident-add info) name -1)
                                    ((ident->accu info) name))))
 
-        ((add (p-expr (ident ,name)) ,b)
-         (let* ((empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text base)
-                                     ((ident->accu info) name)
-                                     (wrap-as (i386:accu+base))))))
-
-        ((add ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu+base))))))        
-
-        ((sub ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu-base))))))        
-
-        ((bitwise-or ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu-or-base))))))
-
-        ((lshift ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu<<base))))))
-
-        ((rshift ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu>>base))))))
-
-        ((div ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu/base))))))
-
-        ((mod ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu%base))))))
-
-        ((mul ,a ,b)
-         (let* ((empty (clone info #:text '()))
-                (accu ((expr->accu empty) a))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text accu)
-                                     (.text base)
-                                     (wrap-as (i386:accu*base))))))
+        ((add ,a ,b) ((binop->accu info) a b (i386:accu+base)))
+        ((sub ,a ,b) ((binop->accu info) a b (i386:accu-base)))
+        ((bitwise-or ,a ,b) ((binop->accu info) a b (i386:accu-or-base)))
+        ((lshift ,a ,b) ((binop->accu info) a b (i386:accu<<base)))
+        ((rshift ,a ,b) ((binop->accu info) a b (i386:accu>>base)))
+        ((div ,a ,b) ((binop->accu info) a b (i386:accu/base)))
+        ((mod ,a ,b) ((binop->accu info) a b (i386:accu%base)))
+        ((mul ,a ,b) ((binop->accu info) a b (i386:accu*base)))
 
         ((not ,expr)
          (let* ((test-info ((ast->info info) expr)))
@@ -678,13 +616,13 @@
                                    (wrap-as (i386:value->accu 0))
                                    (wrap-as (i386:sub-base)))))
 
-        ((eq ,a ,b) ((compare->accu info) a b (i386:sub-base)))
-        ((ge ,a ,b) ((compare->accu info) b a (i386:sub-base)))
-        ((gt ,a ,b) ((compare->accu info) b a (i386:sub-base)))
-        ((ne ,a ,b) ((compare->accu info) a b (append (i386:sub-base)
-                                                      (i386:xor-zf))))
-        ((le ,a ,b) ((compare->accu info) b a (i386:base-sub)))
-        ((lt ,a ,b) ((compare->accu info) b a (i386:base-sub)))
+        ((eq ,a ,b) ((binop->accu info) a b (i386:sub-base)))
+        ((ge ,a ,b) ((binop->accu info) b a (i386:sub-base)))
+        ((gt ,a ,b) ((binop->accu info) b a (i386:sub-base)))
+        ((ne ,a ,b) ((binop->accu info) a b (append (i386:sub-base)
+                                                    (i386:xor-zf))))
+        ((le ,a ,b) ((binop->accu info) b a (i386:base-sub)))
+        ((lt ,a ,b) ((binop->accu info) b a (i386:base-sub)))
 
         ;;((cast (type-name (decl-spec-list (type-spec (typename "SCM"))) (abs-declr (declr-fctn (declr-scope (abs-declr (pointer))) (param-list (param-decl (decl-spec-list (type-spec (typename "SCM")))))))) (d-sel (ident "function") (array-ref (d-sel (ident "cdr") (array-ref (p-expr (ident "fn")) (p-expr (ident "g_cells")))) (p-expr (ident "functions"))))))
         ((cast ,cast ,o)
@@ -802,7 +740,7 @@
            (info (append-text info (wrap-as (append (i386:accu->base) (i386:pop-accu))))))
       info)))
 
-(define (compare->accu info)
+(define (binop->accu info)
   (lambda (a b c)
     (let* ((info ((expr->accu info) a))
            (info ((expr->+base info) b)))
@@ -819,9 +757,9 @@
     (let ((info ((expr->accu info) o)))
       (clone info
              #:text (append (wrap-as (i386:push-accu))
-                     (.text info)
-                     (wrap-as (append (i386:accu->base)
-                                      (i386:pop-accu))))))))
+                            (.text info)
+                            (wrap-as (append (i386:accu->base)
+                                             (i386:pop-accu))))))))
 
 (define (expr->accu* info)
   (lambda (o)
