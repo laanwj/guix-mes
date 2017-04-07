@@ -633,10 +633,8 @@
          (when (not (equal? op "="))
            (stderr "OOOPS0.0: op=~s\n" op)
            barf)
-         (let* ((empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text base)
-                                     ((base->ident-address info) name)
+         (let ((info ((expr->base info) b)))
+           (append-text info (append ((base->ident-address info) name)
                                      ((ident->accu info) name)
                                      ((ident-add info) name 1)))))
 
@@ -645,10 +643,8 @@
          (when (not (equal? op "="))
            (stderr "OOOPS0.0: op=~s\n" op)
            barf)
-         (let* ((empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text base)
-                                     ((base->ident-address info) name)
+         (let ((info ((expr->base info) b)))
+           (append-text info (append ((base->ident-address info) name)
                                      ((ident->accu info) name)
                                      ((ident-add info) name -1)))))
 
@@ -658,17 +654,18 @@
          (when (not (equal? op "="))
            (stderr "OOOPS0: op=~s\n" op)
            barf)
-         (let* ((empty (clone info #:text '()))
-                (expr ((expr->accu* empty) `(d-sel (ident ,field) ,@d-sel))) ;; <-OFFSET
-                (base ((expr->base empty) b))
+         (let* (;;(empty (clone info #:text '()))
+                ;;(expr ((expr->accu* empty) `(d-sel (ident ,field) ,@d-sel))) ;; <-OFFSET
+                (info ((expr->accu info) b))
+                (info (append-text info (wrap-as (i386:push-accu))))
+                (info ((expr->accu* info) `(d-sel (ident ,field) ,@d-sel))) ;; <-OFFSET
+                (info (append-text info (wrap-as (i386:pop-base))))
                 (type (list "struct" "scm")) ;; FIXME
                 (fields (type->description info type))
                 (size (type->size info type))
                 (field-size 4) ;; FIXME:4, not fixed
                 (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))                )
-           (append-text info (append (.text expr)
-                                     (.text base)
-                                     (wrap-as (i386:base->accu-address)))))) ; FIXME: size
+           (append-text info (wrap-as (i386:base->accu-address))))) ; FIXME: size
 
 
         ;; i = 0;
@@ -681,10 +678,8 @@
                     (not (equal? op "-=")))
            (stderr "OOOPS1: op=~s\n" op)
            barf)
-         (let* ((empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text base)
-                                     (if (equal? op "=") '()
+         (let ((info ((expr->base info) b)))
+           (append-text info (append (if (equal? op "=") '()
                                          (append ((ident->accu info) name)
                                                  (wrap-as (append (if (equal? op "+=") (i386:accu+base)
                                                                       (i386:accu-base))
@@ -692,16 +687,14 @@
                                      ;;assign:
                                      ((base->ident info) name)
                                      (wrap-as (i386:base->accu))))))
-        
+
         ;; *p = 0;
         ((assn-expr (de-ref (p-expr (ident ,array))) (op ,op) ,b)
          (when (not (equal? op "="))
            (stderr "OOOPS2: op=~s\n" op)
            barf)
-         (let* ((empty (clone info #:text '()))
-                (base ((expr->base empty) b)))
-           (append-text info (append (.text base)
-                                     ;;assign:
+         (let ((info ((expr->base info) b)))
+           (append-text info (append ;;assign:
                                      ((base->ident-address info) array)
                                      (wrap-as (i386:base->accu))))))
 
@@ -711,7 +704,7 @@
            (stderr "OOOPS3: op=~s\n" op)
            barf)
          (let* ((info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array)))))
-                (info ((expr->+base info) b))
+                (info ((expr->base info) b))
                 (type (ident->type info array))
                 (size (type->size info type))
                 (ptr (ident->pointer info array)))
@@ -733,7 +726,7 @@
          barf
          info)))))
 
-(define (expr->+base info)
+(define (expr->base info)
   (lambda (o)
     (let* ((info (append-text info (wrap-as (i386:push-accu))))
            (info ((expr->accu info) o))
@@ -743,7 +736,7 @@
 (define (binop->accu info)
   (lambda (a b c)
     (let* ((info ((expr->accu info) a))
-           (info ((expr->+base info) b)))
+           (info ((expr->base info) b)))
       (append-text info (wrap-as c)))))
 
 (define (append-text info text)
@@ -751,15 +744,6 @@
 
 (define (wrap-as o)
   (list (lambda (f g ta t d) o)))
-
-(define (expr->base info) ;; JUNKME
-  (lambda (o)
-    (let ((info ((expr->accu info) o)))
-      (clone info
-             #:text (append (wrap-as (i386:push-accu))
-                            (.text info)
-                            (wrap-as (append (i386:accu->base)
-                                             (i386:pop-accu))))))))
 
 (define (expr->accu* info)
   (lambda (o)
