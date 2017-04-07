@@ -785,21 +785,6 @@
                                   (i386:accu-not))))
                   #:globals (.globals test-info))))
 
-        ((eq ,a ,b)
-         (let* ((base ((expr->base info) a))
-                (empty (clone base #:text '()))
-                (accu ((expr->accu empty) b)))
-           (clone info #:text
-                  (append text ;; FIXME
-                   (.text base)
-                   (list (lambda (f g ta t d)
-                           (i386:push-base)))
-                   (.text accu)
-                   (list (lambda (f g ta t d)
-                           (i386:pop-base)))
-                   (list (lambda (f g ta t d)
-                           (i386:sub-base)))))))
-
         ((neg (p-expr (fixed ,value)))
          (clone info #:text (append text (value->accu (- (cstring->number value))))))
 
@@ -811,82 +796,13 @@
                                     (list (lambda (f g ta t d)
                                             (i386:sub-base))))))
 
-        ((ge ,a ,b)
-         (let* ((base ((expr->base info) a))
-                (empty (clone base #:text '()))
-                (accu ((expr->accu empty) b)))
-           (clone info #:text
-                  (append text ;; FIXME
-                          (.text base)
-                          (list (lambda (f g ta t d)
-                                  (i386:push-base)))
-                          (.text accu)
-                          (list (lambda (f g ta t d)
-                                  (i386:pop-base)))
-                          (list (lambda (f g ta t d)
-                                  (i386:sub-base)))))))
-
-        ((gt ,a ,b)
-         (let* ((base ((expr->base info) a))
-                (empty (clone base #:text '()))
-                (accu ((expr->accu empty) b)))
-           (clone info #:text
-                  (append text
-                          (.text base)
-                          (list (lambda (f g ta t d)
-                                  (i386:push-base)))
-                          (.text accu)
-                          (list (lambda (f g ta t d)
-                                  (i386:pop-base)))
-                          (list (lambda (f g ta t d)
-                                  (i386:sub-base)))))))
-
-        ((ne ,a ,b)
-         (let* ((base ((expr->base info) a))
-                (empty (clone base #:text '()))
-                (accu ((expr->accu empty) b)))
-           (clone info #:text
-                  (append text
-                          (.text base)
-                          (list (lambda (f g ta t d)
-                                  (i386:push-base)))
-                          (.text accu)
-                          (list (lambda (f g ta t d)
-                                  (i386:pop-base)))
-                          (list (lambda (f g ta t d)
-                                  (append 
-                                   (i386:sub-base)
-                                   (i386:xor-zf))))))))
-
-        ((le ,a ,b)
-         (let* ((base ((expr->base info) a))
-                (empty (clone base #:text '()))
-                (accu ((expr->accu empty) b)))
-           (clone info #:text
-                  (append text
-                          (.text base)
-                          (list (lambda (f g ta t d)
-                                  (i386:push-base)))
-                          (.text accu)
-                          (list (lambda (f g ta t d)
-                                  (i386:pop-base)))
-                          (list (lambda (f g ta t d)
-                                  (i386:base-sub)))))))
-
-        ((lt ,a ,b)
-         (let* ((base ((expr->base info) a))
-                (empty (clone base #:text '()))
-                (accu ((expr->accu empty) b)))
-           (clone info #:text
-                  (append text
-                          (.text base)
-                          (list (lambda (f g ta t d)
-                                  (i386:push-base)))
-                          (.text accu)
-                          (list (lambda (f g ta t d)
-                                  (i386:pop-base)))
-                          (list (lambda (f g ta t d)
-                                  (i386:base-sub)))))))
+        ((eq ,a ,b) ((compare->accu info) a b (i386:sub-base)))
+        ((ge ,a ,b) ((compare->accu info) b a (i386:sub-base)))
+        ((gt ,a ,b) ((compare->accu info) b a (i386:sub-base)))
+        ((ne ,a ,b) ((compare->accu info) a b (append (i386:sub-base)
+                                                      (i386:xor-zf))))
+        ((le ,a ,b) ((compare->accu info) b a (i386:base-sub)))
+        ((lt ,a ,b) ((compare->accu info) b a (i386:base-sub)))
 
         ;;((cast (type-name (decl-spec-list (type-spec (typename "SCM"))) (abs-declr (declr-fctn (declr-scope (abs-declr (pointer))) (param-list (param-decl (decl-spec-list (type-spec (typename "SCM")))))))) (d-sel (ident "function") (array-ref (d-sel (ident "cdr") (array-ref (p-expr (ident "fn")) (p-expr (ident "g_cells")))) (p-expr (ident "functions"))))))
         ((cast ,cast ,o)
@@ -1026,10 +942,22 @@
 
 (define (expr->+base info)
   (lambda (o)
-    (let* ((info (clone info #:text (append (.text info) (list (lambda (f g ta t d) (i386:push-accu))))))
+    (let* ((info (append-text info (wrap (i386:push-accu))))
            (info ((expr->accu info) o))
-           (info (clone info #:text (append (.text info) (list (lambda (f g ta t d) (append (i386:accu->base) (i386:pop-accu))))))))
+           (info (append-text info (wrap (append (i386:accu->base) (i386:pop-accu))))))
       info)))
+
+(define (compare->accu info)
+  (lambda (a b c)
+    (let* ((info ((expr->accu info) a))
+           (info ((expr->+base info) b)))
+      (append-text info (wrap c)))))
+
+(define (append-text info text)
+  (clone info #:text (append (.text info) text)))
+
+(define (wrap o)
+  (list (lambda (f g ta t d) o)))
 
 (define (expr->base info) ;; JUNKME
   (lambda (o)
