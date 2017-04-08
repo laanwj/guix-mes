@@ -566,98 +566,60 @@
         ((cast ,cast ,o)
          ((expr->accu info) o))
 
-        ;; *p++ = b;
-        ((assn-expr (de-ref (post-inc (p-expr (ident ,name)))) (op ,op) ,b)
-         (when (not (equal? op "="))
-           (stderr "OOOPS0.0: op=~s\n" op)
-           barf)
-         (let ((info ((expr->base info) b)))
-           (append-text info (append ((base->ident-address info) name)
-                                     ((ident->accu info) name)
-                                     ((ident-add info) name 1)))))
-
-        ;; *p-- = b;
-        ((assn-expr (de-ref (post-dec (p-expr (ident ,name)))) (op ,op) ,b)
-         (when (not (equal? op "="))
-           (stderr "OOOPS0.0: op=~s\n" op)
-           barf)
-         (let ((info ((expr->base info) b)))
-           (append-text info (append ((base->ident-address info) name)
-                                     ((ident->accu info) name)
-                                     ((ident-add info) name -1)))))
-
-        ;; CAR (x) = 0
-        ;; TYPE (x) = PAIR;
-        ((assn-expr (d-sel (ident ,field) . ,d-sel) (op ,op) ,b)
-         (when (not (equal? op "="))
-           (stderr "OOOPS0: op=~s\n" op)
-           barf)
-         (let* (;;(empty (clone info #:text '()))
-                ;;(expr ((expr->accu* empty) `(d-sel (ident ,field) ,@d-sel))) ;; <-OFFSET
-                (info ((expr->accu info) b))
-                (info (append-text info (wrap-as (i386:push-accu))))
-                (info ((expr->accu* info) `(d-sel (ident ,field) ,@d-sel))) ;; <-OFFSET
-                (info (append-text info (wrap-as (i386:pop-base))))
-                (type (list "struct" "scm")) ;; FIXME
-                (fields (type->description info type))
-                (size (type->size info type))
-                (field-size 4) ;; FIXME:4, not fixed
-                (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))                )
-           (append-text info (wrap-as (i386:base->accu-address))))) ; FIXME: size
-
-
-        ;; i = 0;
-        ;; c = f ();
-        ;; i = i + 48;
-        ;; p = g_cell;
-        ((assn-expr (p-expr (ident ,name)) (op ,op) ,b)
-         (when (and (not (equal? op "="))
-                    (not (equal? op "+="))
-                    (not (equal? op "-=")))
-           (stderr "OOOPS1: op=~s\n" op)
-           barf)
-         (let ((info ((expr->base info) b)))
-           (append-text info (append (if (equal? op "=") '()
-                                         (append ((ident->accu info) name)
-                                                 (wrap-as (append (if (equal? op "+=") (i386:accu+base)
-                                                                      (i386:accu-base))
-                                                                  (i386:accu->base)))))
-                                     ;;assign:
-                                     ((base->ident info) name)
-                                     (wrap-as (i386:base->accu))))))
-
-        ;; *p = 0;
-        ((assn-expr (de-ref (p-expr (ident ,array))) (op ,op) ,b)
-         (when (not (equal? op "="))
-           (stderr "OOOPS2: op=~s\n" op)
-           barf)
-         (let ((info ((expr->base info) b)))
-           (append-text info (append ;;assign:
-                                     ((base->ident-address info) array)
-                                     (wrap-as (i386:base->accu))))))
-
-        ;; g_cells[<expr>] = <expr>;
-        ((assn-expr (array-ref ,index (p-expr (ident ,array))) (op ,op) ,b)
-         (when (not (equal? op "="))
-           (stderr "OOOPS3: op=~s\n" op)
-           barf)
-         (let* ((info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array)))))
-                (info ((expr->base info) b))
-                (type (ident->type info array))
-                (size (type->size info type))
-                (ptr (ident->pointer info array)))
-           (append-text info (append
-                              (if (eq? size 1) (wrap-as (i386:byte-base->accu-address))
-                                  (append
-                                   (wrap-as (i386:base-address->accu-address))
-                                   (if (<= size 4) '()
-                                       (wrap-as (append (i386:accu+n 4)
-                                                        (i386:base+n 4)
-                                                        (i386:base-address->accu-address))))
-                                   (if (<= size 8) '()
-                                       (wrap-as (append (i386:accu+n 4)
-                                                        (i386:base+n 4)
-                                                        (i386:base-address->accu-address))))))))))
+        ((assn-expr ,a (op ,op) ,b)
+         (let* ((info ((expr->accu info) b))
+                (info (if (equal? op "=") info
+                          (let* ((info (append-text info (wrap-as (i386:push-accu))))
+                                 (info ((expr->accu info) a))
+                                 (info (append-text info (wrap-as (i386:pop-base)))))
+                            (append-text info (cond ((equal? op "+=") (wrap-as (i386:accu+base)))
+                                                    ((equal? op "-=") (wrap-as (i386:accu-base)))
+                                                    ((equal? op "*=") (wrap-as (i386:accu*base)))
+                                                    ((equal? op "/=") (wrap-as (i386:accu/base)))
+                                                    ((equal? op "%=") (wrap-as (i386:accu%base)))
+                                                    ((equal? op "|=") (wrap-as (i386:accu-or-base)))
+                                                    (else (error "mescc: op ~a not supported: ~a\n" op o))))))))
+           (pmatch a
+             ((p-expr (ident ,name)) (append-text info ((accu->ident info) name)))
+             ((d-sel (ident ,field) . ,d-sel)
+              (let* ((type (list "struct" "scm")) ;; FIXME
+                     (fields (type->description info type))
+                     (size (type->size info type))
+                     (field-size 4) ;; FIXME:4, not fixed
+                     (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))                
+                     (info (append-text info (wrap-as (i386:push-accu))))
+                     (info ((expr->accu* info) a))
+                     (info (append-text info (wrap-as (i386:pop-base)))))
+                (append-text info (wrap-as (i386:base->accu-address))))) ; FIXME: size
+             ((de-ref (p-expr (ident ,array)))
+              (append-text info (append (wrap-as (i386:accu->base))
+                                        ((base->ident-address info) array)
+                                        (wrap-as (i386:base->accu)))))
+             ((de-ref (post-inc (p-expr (ident ,name))))
+              (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
+                (append-text info ((ident-add info) name 1))))
+             ((de-ref (post-dec (p-expr (ident ,name))))
+              (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
+                (append-text info ((ident-add info) name -1))))
+             ((array-ref ,index (p-expr (ident ,array)))
+              (let* ((type (ident->type info array))
+                     (size (type->size info type))
+                     (info (append-text info (wrap-as (append (i386:push-accu)))))
+                     (info ((expr->accu* info) a))
+                     (info (append-text info (wrap-as (append (i386:pop-base))))))
+                (append-text info
+                             (append (if (eq? size 1) (wrap-as (i386:byte-base->accu-address))
+                                         (append
+                                          (wrap-as (i386:base-address->accu-address))
+                                          (if (<= size 4) '()
+                                              (wrap-as (append (i386:accu+n 4)
+                                                               (i386:base+n 4)
+                                                               (i386:base-address->accu-address))))
+                                          (if (<= size 8) '()
+                                              (wrap-as (append (i386:accu+n 4)
+                                                               (i386:base+n 4)
+                                                               (i386:base-address->accu-address))))))))))
+             (_ barf-assign))))
 
         (_
          (format (current-error-port) "SKIP: expr->accu=~s\n" o)

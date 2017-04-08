@@ -1194,11 +1194,7 @@ minus (SCM x) ///((name . "-") (arity . n))
   while (x != cell_nil)
     {
       assert (TYPE (car (x)) == TNUMBER);
-#if __GNUC__
       n -= VALUE (car (x));
-#else
-      n = n - VALUE (car (x));
-#endif
       x = cdr (x);
     }
   return MAKE_NUMBER (n);
@@ -1211,11 +1207,7 @@ plus (SCM x) ///((name . "+") (arity . n))
   while (x != cell_nil)
     {
       assert (TYPE (car (x)) == TNUMBER);
-#if __GNUC__
       n += VALUE (car (x));
-#else
-      n = n + VALUE (car (x));
-#endif
       x = cdr (x);
     }
   return MAKE_NUMBER (n);
@@ -1233,11 +1225,7 @@ divide (SCM x) ///((name . "/") (arity . n))
   while (x != cell_nil)
     {
       assert (TYPE (car (x)) == TNUMBER);
-#if __GNUC__
       n /= VALUE (car (x));
-#else
-      n = n / VALUE (car (x));
-#endif
       x = cdr (x);
     }
   return MAKE_NUMBER (n);
@@ -1260,11 +1248,7 @@ multiply (SCM x) ///((name . "*") (arity . n))
   while (x != cell_nil)
     {
       assert (TYPE (car (x)) == TNUMBER);
-#if __GNUC__
       n *= VALUE (car (x));
-#else
-      n = n * VALUE (car (x));
-#endif
       x = cdr (x);
     }
   return MAKE_NUMBER (n);
@@ -1277,11 +1261,7 @@ logior (SCM x) ///((arity . n))
   while (x != cell_nil)
     {
       assert (TYPE (car (x)) == TNUMBER);
-#if __GNUC__
       n |= VALUE (car (x));
-#else
-      n = n | VALUE (car (x));
-#endif
       x = cdr (x);
     }
   return MAKE_NUMBER (n);

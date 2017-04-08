@@ -223,8 +223,16 @@ math_test ()
   putchar (i);
   puts ("\n");
 
-  puts ("t: 3*4=");
+  puts ("t: 3*4=\n");
   i = 3 * 4;
+  if (i!=12) return 1;
+
+  puts ("t: i /= 4\n");
+  i /= 4;
+  if (i!=3) return 1;
+
+  puts ("t: i *= 4\n");
+  i *= 4;
   if (i!=12) return 1;
 
   puts ("t: 1 << 3\n");
