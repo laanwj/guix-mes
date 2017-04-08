@@ -1081,12 +1081,102 @@ mes_environment () ///((internal))
 }
 
 int g_stdin;
-#include "math.c"
 #include "posix.c"
+#include "math.c"
 #include "lib.c"
 #include "reader.c"
 #include "gc.c"
 #include "vector.c"
+
+//  extra lib
+SCM
+assert_defined (SCM x, SCM e) ///((internal))
+{
+  if (e == cell_undefined) return error (cell_symbol_unbound_variable, x);
+  return e;
+}
+
+SCM
+check_formals (SCM f, SCM formals, SCM args) ///((internal))
+{
+  int flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : VALUE (length (formals));
+  int alen = VALUE (length (args));
+  if (alen != flen && alen != -1 && flen != -1)
+    {
+      char buf[1024];
+      sprintf (buf, "apply: wrong number of arguments; expected: %d, got: %d: ", flen, alen);
+      SCM e = MAKE_STRING (cstring_to_list (buf));
+      return error (cell_symbol_wrong_number_of_args, cons (e, f));
+    }
+  return cell_unspecified;
+}
+
+SCM
+check_apply (SCM f, SCM e) ///((internal))
+{
+  char const* type = 0;
+  if (f == cell_f || f == cell_t) type = "bool";
+  if (f == cell_nil) type = "nil";
+  if (f == cell_unspecified) type = "*unspecified*";
+  if (f == cell_undefined) type = "*undefined*";
+  if (TYPE (f) == TCHAR) type = "char";
+  if (TYPE (f) == TNUMBER) type = "number";
+  if (TYPE (f) == TSTRING) type = "string";
+
+  if (type)
+    {
+      char buf[1024];
+      sprintf (buf, "cannot apply: %s:", type);
+      fprintf (stderr, " [");
+      display_error_ (e);
+      fprintf (stderr, "]\n");
+      SCM e = MAKE_STRING (cstring_to_list (buf));
+      return error (cell_symbol_wrong_type_arg, cons (e, f));
+    }
+  return cell_unspecified;
+}
+
+SCM
+load_env (SCM a) ///((internal))
+{
+  r0 = a;
+  g_stdin = open ("module/mes/read-0.mes", O_RDONLY);
+  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "mes/read-0.mes", O_RDONLY);
+  if (!g_function) r0 = mes_builtins (r0);
+  r2 = read_input_file_env (r0);
+  g_stdin = STDIN;
+  return r2;
+}
+
+SCM
+bload_env (SCM a) ///((internal))
+{
+#if MES_MINI
+  g_stdin = fopen ("module/mes/read-0-32.mo", O_RDONLY);
+#else
+  g_stdin = open ("module/mes/read-0.mo", O_RDONLY);
+  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "mes/read-0.mo", O_RDONLY);
+#endif
+
+  char *p = (char*)g_cells;
+  assert (getchar () == 'M');
+  assert (getchar () == 'E');
+  assert (getchar () == 'S');
+  g_stack = getchar () << 8;
+  g_stack += getchar ();
+  int c = getchar ();
+  while (c != EOF)
+    {
+      *p++ = c;
+      c = getchar ();
+    }
+  g_free = (p-(char*)g_cells) / sizeof (struct scm);
+  gc_peek_frame ();
+  g_symbols = r1;
+  g_stdin = STDIN;
+  r0 = mes_builtins (r0);
+  return r2;
+}
 
 int
 main (int argc, char *argv[])

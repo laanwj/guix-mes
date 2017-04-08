@@ -18,18 +18,13 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if 0
-#include <fcntl.h>
-FILE *g_stdin;
-#else
+int g_stdin;
 
 #if _POSIX_SOURCE
 int open (char const *s, int mode);
 int read (int fd, void* buf, size_t n);
 void write (int fd, char const* s, int n);
-#endif
 
-int g_stdin;
 
 #define O_RDONLY 0
 #define STDIN 0
@@ -65,8 +60,9 @@ getchar ()
   return i;
 }
 
+#define ungetc fdungetc
 int
-fd_ungetc (int c, int fd)
+fdungetc (int c, int fd)
 {
   assert (ungetc_char < 2);
   ungetc_buf[++ungetc_char] = c;
@@ -77,7 +73,7 @@ fd_ungetc (int c, int fd)
 int
 ungetchar (int c)
 {
-  return fd_ungetc (c, g_stdin);
+  return ungetc (c, g_stdin);
 }
 
 int
@@ -114,7 +110,8 @@ write_byte (SCM x) ///((arity . n))
   SCM p = cdr (x);
   int fd = 1;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-#if _POSIX_SOURCE
+#if 0
+  //_POSIX_SOURCE
   FILE *f = fd == 1 ? stdout : stderr;
   fputc (VALUE (c), f);
 #else
@@ -127,11 +124,13 @@ write_byte (SCM x) ///((arity . n))
   return c;
 }
 
+char string_to_cstring_buf[1024];
 char const*
 string_to_cstring (SCM s)
 {
-  static char buf[1024];
-  char *p = buf;
+  //static char buf[1024];
+  //char *p = buf;
+  char *p = string_to_cstring_buf;
   s = STRING(s);
   while (s != cell_nil)
     {
@@ -139,14 +138,19 @@ string_to_cstring (SCM s)
       s = cdr (s);
     }
   *p = 0;
-  return buf;
+  //return buf;
+  return string_to_cstring_buf;
 }
 
 SCM
 getenv_ (SCM s) ///((name . "getenv"))
 {
+#if _POSIX_SOURCE
   char *p = getenv (string_to_cstring (s));
   return p ? MAKE_STRING (cstring_to_list (p)) : cell_f;
+#else
+  return cell_t;
+#endif
 }
 
 SCM
@@ -164,18 +168,20 @@ current_input_port ()
 SCM
 set_current_input_port (SCM port)
 {
-  g_stdin = VALUE (port);
+  g_stdin = VALUE (port) ? VALUE (port) : STDIN;
   return current_input_port ();
 }
 
 SCM
 force_output (SCM p) ///((arity . n))
 {
+#if 0
   int fd = 1;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
 #if _POSIX_SOURCE
   FILE *f = fd == 1 ? stdout : stderr;
   fflush (f);
+#endif
 #endif
   return cell_unspecified;
 }

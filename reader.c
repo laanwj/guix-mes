@@ -18,6 +18,12 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if _POSIX_SOURCE
+#undef fputs
+#undef fdputs
+#undef fdputc
+#endif
+
 SCM
 ___end_of_mes___ ()
 {
@@ -111,4 +117,56 @@ lookup_ (SCM s, SCM a)
   }
 
   return lookup_symbol_ (s);
+}
+
+//FILE *g_stdin;
+int
+dump ()
+{
+  fputs ("program r2=", stderr);
+  display_error_ (r2);
+  fputs ("\n", stderr);
+
+  r1 = g_symbols;
+  gc_push_frame ();
+  gc ();
+  gc_peek_frame ();
+  char *p = (char*)g_cells;
+  fputc ('M', stdout);
+  fputc ('E', stdout);
+  fputc ('S', stdout);
+  fputc (g_stack >> 8, stdout);
+  fputc (g_stack % 256, stdout);
+  // See HACKING, simple crafted dump for tiny-mes.c
+  if (getenv ("MES_TINY"))
+    {
+      TYPE (9) = 0x2d2d2d2d;
+      CAR (9) = 0x2d2d2d2d;
+      CDR (9) = 0x3e3e3e3e;
+
+      TYPE (10) = TPAIR;
+      CAR (10) = 11;
+      CDR (10) = 12;
+
+      TYPE (11) = TCHAR;
+      CAR (11) = 0x58585858;
+      CDR (11) = 65;
+
+      TYPE (12) = TPAIR;
+      CAR (12) = 13;
+      CDR (12) = 1;
+
+      TYPE (13) = TCHAR;
+      CAR (11) = 0x58585858;
+      CDR (13) = 66;
+
+      TYPE (14) = 0x3c3c3c3c;
+      CAR (14) = 0x2d2d2d2d;
+      CDR (14) = 0x2d2d2d2d;
+
+      g_free = 15;
+    }
+  for (int i=0; i<g_free * sizeof(struct scm); i++)
+    fputc (*p++, stdout);
+  return 0;
 }

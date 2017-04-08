@@ -180,6 +180,9 @@ mini-mes: scaffold/mini-mes.c
 guile-mini-mes: module/language/c99/compiler.mes # and others...
 guile-mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
 guile-mini-mes: gc.c mini-gc.h mini-gc.i mini-gc.environment.i
+guile-mini-mes: lib.c mini-lib.h mini-lib.i mini-lib.environment.i
+guile-mini-mes: math.c mini-math.h mini-math.i mini-math.environment.i
+guile-mini-mes: posix.c mini-posix.h mini-posix.i mini-posix.environment.i
 guile-mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
 guile-mini-mes: mlibc.c mstart.c
 guile-mini-mes: GNUmakefile

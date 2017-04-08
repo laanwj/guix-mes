@@ -169,11 +169,11 @@ struct function g_functions[200];
 int g_function = 0;
 
 #include "mini-gc.h"
-// #include "lib.h"
-// #include "math.h"
+#include "mini-lib.h"
+#include "mini-math.h"
 #include "mini-mes.h"
-// #include "posix.h"
-// #include "reader.h"
+#include "mini-posix.h"
+// #include "mini-reader.h"
 #include "mini-vector.h"
 
 
@@ -1023,404 +1023,9 @@ make_tmps (struct scm* cells)
   return 0;
 }
 
-// Posix
-int
-ungetchar (int c)
-{
-  return ungetc (c, g_stdin);
-}
-
-int
-peekchar ()
-{
-  int c = getchar ();
-  ungetchar (c);
-  return c;
-}
-
-SCM
-peek_byte ()
-{
-  return MAKE_NUMBER (peekchar ());
-}
-
-SCM
-read_byte ()
-{
-  return MAKE_NUMBER (getchar ());
-}
-
-SCM
-unread_byte (SCM i)
-{
-  ungetchar (VALUE (i));
-  return i;
-}
-
-SCM
-write_byte (SCM x) ///((arity . n))
-{
-  SCM c = car (x);
-  SCM p = cdr (x);
-  int fd = 1;
-  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-  //FILE *f = fd == 1 ? stdout : stderr;
-#if __GNUC__
-  assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
-#endif
-  //  fputc (VALUE (c), f);
-  char cc = VALUE (c);
-  write (1, (char*)&cc, fd);
-  return c;
-}
-
-char string_to_cstring_buf[1024];
-char const*
-string_to_cstring (SCM s)
-{
-  //static char buf[1024];
-  //char *p = buf;
-  char *p = string_to_cstring_buf;
-  s = STRING(s);
-  while (s != cell_nil)
-    {
-      *p++ = VALUE (car (s));
-      s = cdr (s);
-    }
-  *p = 0;
-  //return buf;
-  return string_to_cstring_buf;
-}
-
-SCM
-getenv_ (SCM s) ///((name . "getenv"))
-{
-#if 0
-  char *p = getenv (string_to_cstring (s));
-  return p ? MAKE_STRING (cstring_to_list (p)) : cell_f;
-#else
-  return cell_t;
-#endif
-}
-
-SCM
-open_input_file (SCM file_name)
-{
-  return MAKE_NUMBER (open (string_to_cstring (file_name), O_RDONLY));
-  // char *s = string_to_cstring (file_name);
-  // int x = open (s, 0);
-  // return MAKE_NUMBER (x);
-}
-
-SCM
-current_input_port ()
-{
-  return MAKE_NUMBER (g_stdin);
-}
-
-SCM
-set_current_input_port (SCM port)
-{
-  g_stdin = VALUE (port) ? VALUE (port) : STDIN;
-  return current_input_port ();
-}
-
-SCM
-force_output (SCM p) ///((arity . n))
-{
-#if 0
-  //FIXME
-  int fd = 1;
-  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-  FILE *f = fd == 1 ? stdout : stderr;
-  fflush (f);
-#endif
-  return cell_unspecified;
-}
-
-// Math
-SCM
-greater_p (SCM x) ///((name . ">") (arity . n))
-{
-  int n = INT_MAX;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      if (VALUE (car (x)) >= n) return cell_f;
-      n = VALUE (car (x));
-      x = cdr (x);
-    }
-  return cell_t;
-}
-
-SCM
-less_p (SCM x) ///((name . "<") (arity . n))
-{
-  int n = INT_MIN;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      if (VALUE (car (x)) <= n) return cell_f;
-      n = VALUE (car (x));
-      x = cdr (x);
-    }
-  return cell_t;
-}
-
-SCM
-is_p (SCM x) ///((name . "=") (arity . n))
-{
-  if (x == cell_nil) return cell_t;
-  assert (TYPE (car (x)) == TNUMBER);
-  int n = VALUE (car (x));
-  x = cdr (x);
-  while (x != cell_nil)
-    {
-      if (VALUE (car (x)) != n) return cell_f;
-      x = cdr (x);
-    }
-  return cell_t;
-}
-
-SCM
-minus (SCM x) ///((name . "-") (arity . n))
-{
-  SCM a = car (x);
-  assert (TYPE (a) == TNUMBER);
-  int n = VALUE (a);
-  x = cdr (x);
-  if (x == cell_nil)
-    n = -n;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      n -= VALUE (car (x));
-      x = cdr (x);
-    }
-  return MAKE_NUMBER (n);
-}
-
-SCM
-plus (SCM x) ///((name . "+") (arity . n))
-{
-  int n = 0;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      n += VALUE (car (x));
-      x = cdr (x);
-    }
-  return MAKE_NUMBER (n);
-}
-
-SCM
-divide (SCM x) ///((name . "/") (arity . n))
-{
-  int n = 1;
-  if (x != cell_nil) {
-    assert (TYPE (car (x)) == TNUMBER);
-    n = VALUE (car (x));
-    x = cdr (x);
-  }
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      n /= VALUE (car (x));
-      x = cdr (x);
-    }
-  return MAKE_NUMBER (n);
-}
-
-SCM
-modulo (SCM a, SCM b)
-{
-  assert (TYPE (a) == TNUMBER);
-  assert (TYPE (b) == TNUMBER);
-  int x = VALUE (a);
-  while (x < 0) x += VALUE (b);
-  return MAKE_NUMBER (x % VALUE (b));
-}
-
-SCM
-multiply (SCM x) ///((name . "*") (arity . n))
-{
-  int n = 1;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      n *= VALUE (car (x));
-      x = cdr (x);
-    }
-  return MAKE_NUMBER (n);
-}
-
-SCM
-logior (SCM x) ///((arity . n))
-{
-  int n = 0;
-  while (x != cell_nil)
-    {
-      assert (TYPE (car (x)) == TNUMBER);
-      n |= VALUE (car (x));
-      x = cdr (x);
-    }
-  return MAKE_NUMBER (n);
-}
-
-SCM
-ash (SCM n, SCM count)
-{
-  assert (TYPE (n) == TNUMBER);
-  assert (TYPE (count) == TNUMBER);
-  int cn = VALUE (n);
-  int ccount = VALUE (count);
-  return MAKE_NUMBER ((ccount < 0) ? cn >> -ccount : cn << ccount);
-}
-
-// Lib [rest of]
-
-int g_depth;
-
-SCM
-display_helper (SCM x, int cont, char* sep, int fd)
-{
-  fputs (sep, fd);
-  if (g_depth == 0) return cell_unspecified;
-  g_depth = g_depth - 1;
-  
-  switch (TYPE (x))
-    {
-    case TCHAR:
-      {
-        fputs ("#\\", fd);
-        putc (VALUE (x), fd);
-        break;
-      }
-    case TFUNCTION:
-      {
-        fputs ("#<procedure ", fd);
-        char *p = "?";
-        if (FUNCTION (x).name != 0)
-          p = FUNCTION (x).name;
-        fputs (p, fd);
-        fputs ("[", fd);
-        fputs (itoa (CDR (x)), fd);
-        fputs (",", fd);
-        fputs (itoa (x), fd);
-        fputs ("]>", fd);
-        break;
-      }
-    case TMACRO:
-      {
-        fputs ("#<macro ", fd);
-        display_helper (cdr (x), cont, "", fd);
-        fputs (">", fd);
-        break;
-      }
-    case TNUMBER:
-      {
-        fputs (itoa (VALUE (x)), fd);
-        break;
-      }
-    case TPAIR:
-      {
-        if (!cont) fputs ("(", fd);
-        if (x && x != cell_nil) fdisplay_ (CAR (x), fd);
-        if (CDR (x) && TYPE (CDR (x)) == TPAIR)
-          display_helper (CDR (x), 1, " ", fd);
-        else if (CDR (x) && CDR (x) != cell_nil)
-          {
-            if (TYPE (CDR (x)) != TPAIR)
-              fputs (" . ", fd);
-            fdisplay_ (CDR (x), fd);
-          }
-        if (!cont) fputs (")", fd);
-        break;
-      }
-    case TSPECIAL:
-#if __NYACC__
-      // FIXME
-      //{}
-      {
-        SCM t = CAR (x);
-        while (t && t != cell_nil)
-          {
-            putc (VALUE (CAR (t)), fd);
-            t = CDR (t);
-          }
-        break;
-      }
-#endif
-    case TSTRING:
-#if __NYACC__
-      // FIXME
-      {
-        SCM t = CAR (x);
-        while (t && t != cell_nil)
-          {
-            putc (VALUE (CAR (t)), fd);
-            t = CDR (t);
-          }
-        break;
-      }
-#endif
-    case TSYMBOL:
-      {
-        SCM t = CAR (x);
-        while (t && t != cell_nil)
-          {
-            putc (VALUE (CAR (t)), fd);
-            t = CDR (t);
-          }
-        break;
-      }
-    default:
-      {
-        fputs ("<", fd);
-        fputs (itoa (TYPE (x)), fd);
-        fputs (":", fd);
-        fputs (itoa (x), fd);
-        fputs (">", fd);
-        break;
-      }
-    }
-  return 0;
-}
-
-SCM
-display_ (SCM x)
-{
-  g_depth = 5;
-  return display_helper (x, 0, "", STDOUT);
-}
-
-SCM
-display_error_ (SCM x)
-{
-  g_depth = 5;
-  return display_helper (x, 0, "", STDERR);
-}
-
-SCM
-fdisplay_ (SCM x, int fd) ///((internal))
-{
-  g_depth = 5;
-  return display_helper (x, 0, "", fd);
-}
-
-SCM
-exit_ (SCM x) ///((name . "exit"))
-{
-  assert (TYPE (x) == TNUMBER);
-  exit (VALUE (x));
-}
-
-SCM
-xassq (SCM x, SCM a) ///for speed in core only
-{
-  while (a != cell_nil && x != CDAR (a)) a = CDR (a);
-  return a != cell_nil ? CAR (a) : cell_f;
-}
+#include "posix.c"
+#include "math.c"
+#include "lib.c"
 
 // Jam Collector
 SCM g_symbol_max;
@@ -1552,19 +1157,19 @@ mes_builtins (SCM a) ///((internal))
   #include "mini-mes.i"
 
 // Do not sort: Order of these includes define builtins
-// #include "lib.i"
-// #include "math.i"
-// #include "posix.i"
+#include "mini-posix.i"
+#include "mini-math.i"
+#include "mini-lib.i"
 #include "mini-vector.i"
 #include "mini-gc.i"
-// #include "reader.i"
+// #include "mini-reader.i"
 
 #include "mini-gc.environment.i"
-// #include "lib.environment.i"
-// #include "math.environment.i"
+#include "mini-lib.environment.i"
+#include "mini-math.environment.i"
 #include "mini-mes.environment.i"
-// #include "posix.environment.i"
-// #include "reader.environment.i"
+#include "mini-posix.environment.i"
+// #include "mini-reader.environment.i"
 #include "mini-vector.environment.i"
 
   return a;
@@ -1631,10 +1236,6 @@ bload_env (SCM a) ///((internal))
   return r2;
 }
 
-// #include "math.c"
-// #include "posix.c"
-// #include "lib.c"
-// #include "reader.c"
 #include "vector.c"
 #include "gc.c"
 
