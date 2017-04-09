@@ -115,22 +115,23 @@ swits (int c)
  next:
   switch (c)
     {
-      case 0:
-        {
-          x = 0;
-          c = 34;
-          break;
-        }
-      case 1:
-        {
-          x = 1;
-          break;
-        }
-      default:
-        {
-          x = 2;
-          break;
-        }
+    case 0:
+      {
+        x = 0;
+        c = 34;
+        break;
+      }
+    case -1:
+    case 1:
+      {
+        x = 1;
+        break;
+      }
+    default:
+      {
+        x = 2;
+        break;
+      }
     }
   return x;
 }
@@ -672,7 +673,10 @@ test (char *p)
   if (swits (1) != 1) return 1;
 
   puts ("t: switch -1\n");
-  if (swits (-1) != 2) return 1;
+  if (swits (-1) != 1) return 1;
+
+  puts ("t: switch -1\n");
+  if (swits (-2) != 2) return 1;
 
   puts ("t: if (1)\n");
   if (1) goto ok0;

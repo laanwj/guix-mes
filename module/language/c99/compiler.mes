@@ -738,75 +738,56 @@
     (wrap-as (i386:Xjump n)))
   (define (jump-nz n)
     (wrap-as (i386:Xjump-nz n)))
+  (define (jump-z n)
+    (wrap-as (i386:Xjump-z n)))
   (define (statement->info info body-length)
     (lambda (o)
       (pmatch o
         ((break) (append-text info (jump body-length)))
         (_
          ((ast->info info) o)))))
+  (define (test->text test)
+    (let ((value (pmatch test
+                   (0 0)
+                   ((p-expr (ident ,constant)) (assoc-ref (.constants info) constant))
+                   ((p-expr (fixed ,value)) (cstring->number value))
+                   ((neg (p-expr (fixed ,value))) (- (cstring->number value))))))
+      (lambda (n)
+        (append (wrap-as (i386:accu-cmp-value value))
+                (jump-z (+ (length (text->list (jump 0)))
+                           (if (= n 0) 0
+                               (* n (length (text->list ((test->text 0) 0)))))))))))
+  (define (cases+jump cases clause-length)
+    (append-text info
+                 (append
+                  (append-map (lambda (t i) (t i)) cases (reverse (iota (length cases))))
+                  (if (null? cases) '()
+                      (jump clause-length)))))
   (lambda (o)
-    (pmatch o
-      ((case (p-expr (ident ,constant)) (compd-stmt (block-item-list . ,elements)))
-       (lambda (body-length)
-
-         (define (test->text value clause-length)
-           (append (wrap-as (i386:accu-cmp-value value))
-                   (jump-nz clause-length)))
-         (let* ((value (assoc-ref (.constants info) constant))
-                (test-info (append-text info (test->text value 0)))
-                (text-length (length (.text test-info)))
-                (clause-info (let loop ((elements elements) (info test-info))
-                               (if (null? elements) info
-                                   (loop (cdr elements) ((statement->info info body-length) (car elements))))))
-                (clause-text (list-tail (.text clause-info) text-length))
-                (clause-length (length (text->list clause-text))))
-           (clone info #:text (append
-                               (.text info)
-                               (test->text value clause-length)
-                               clause-text)
-                  #:globals (.globals clause-info)))))
-
-      ((case (p-expr (fixed ,value)) (compd-stmt (block-item-list . ,elements)))
-       (lambda (body-length)
-
-         (define (test->text value clause-length)
-           (append (wrap-as (i386:accu-cmp-value value))
-                   (jump-nz clause-length)))
-         (let* ((value (cstring->number value))
-                (test-info (append-text info (test->text value 0)))
-                (text-length (length (.text test-info)))
-                (clause-info (let loop ((elements elements) (info test-info))
-                               (if (null? elements) info
-                                   (loop (cdr elements) ((statement->info info body-length) (car elements))))))
-                (clause-text (list-tail (.text clause-info) text-length))
-                (clause-length (length (text->list clause-text))))
-           (clone info #:text (append
-                               (.text info)
-                               (test->text value clause-length)
-                               clause-text)
-                  #:globals (.globals clause-info)))))
-
-      ((case (neg (p-expr (fixed ,value))) ,statement)
-       ((case->jump-info info) `(case (p-expr (fixed ,(string-append "-" value))) ,statement)))
-
-      ((default (compd-stmt (block-item-list . ,elements)))
-       (lambda (body-length)
-         (let ((text-length (length (.text info))))
-           (let loop ((elements elements) (info info))
-             (if (null? elements) info
-                 (loop (cdr elements) ((statement->info info body-length) (car elements))))))))
-
-      ((case (p-expr (ident ,constant)) ,statement)
-       ((case->jump-info info) `(case (p-expr (ident ,constant)) (compd-stmt (block-item-list ,statement)))))
-
-      ((case (p-expr (fixed ,value)) ,statement)
-       ((case->jump-info info) `(case (p-expr (fixed ,value)) (compd-stmt (block-item-list ,statement)))))
-
-      ((default ,statement)
-       ((case->jump-info info) `(default (compd-stmt (block-item-list ,statement)))))
-
-      (_ (stderr "no case match: ~a\n" o) barf)
-      )))
+    (lambda (body-length)
+      (let loop ((o o) (cases '()) (clause #f))
+        (pmatch o
+          ((case ,test ,statement)
+           (loop statement (append cases (list (test->text test))) clause))
+          ((default ,statement)
+           (loop statement cases clause))
+          ((compd-stmt (block-item-list))
+           (loop '() cases clause))
+          ((compd-stmt (block-item-list . ,elements))
+           (let ((clause (or clause (cases+jump cases 0))))
+             (loop `(compd-stmt (block-item-list ,@(cdr elements))) cases
+                   ((statement->info clause body-length) (car elements)))))
+          (()
+           (let* ((cases-length (length (.text (cases+jump cases 0))))
+                  (clause-text (list-tail (.text clause) cases-length))
+                  (clause-length (length (text->list clause-text))))
+             (clone clause #:text
+                    (append (.text (cases+jump cases clause-length))
+                            clause-text))))
+          (_
+           (let ((clause (or clause (cases+jump cases 0))))
+             (loop '() cases
+                   ((statement->info clause body-length) o)))))))))
 
 (define (test->jump->info info)
   (define (jump type . test)

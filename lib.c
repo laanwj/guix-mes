@@ -129,32 +129,7 @@ display_helper (SCM x, int cont, char* sep, int fd)
         break;
       }
     case TSPECIAL:
-#if __MESC__
-      // FIXME
-      //{}
-      {
-        SCM t = CAR (x);
-        while (t && t != cell_nil)
-          {
-            putc (VALUE (CAR (t)), fd);
-            t = CDR (t);
-          }
-        break;
-      }
-#endif
     case TSTRING:
-#if __MESC__
-      // FIXME
-      {
-        SCM t = CAR (x);
-        while (t && t != cell_nil)
-          {
-            putc (VALUE (CAR (t)), fd);
-            t = CDR (t);
-          }
-        break;
-      }
-#endif
     case TSYMBOL:
       {
         SCM t = CAR (x);
