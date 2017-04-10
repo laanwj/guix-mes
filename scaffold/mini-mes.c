@@ -278,11 +278,9 @@ lookup_symbol_ (SCM s)
 {
   SCM x = g_symbols;
   while (x) {
-    //if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
-    if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) goto dun;
+    if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
     x = cdr (x);
   }
- dun:
   if (x) x = car (x);
   if (!x) x = make_symbol_ (s);
   return x;

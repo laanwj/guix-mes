@@ -114,8 +114,9 @@
 (define <locals> '<locals>)
 (define <function> '<function>)
 (define <text> '<text>)
+(define <break> '<break>)
 
-(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (init '()) (locals '()) (function #f) (text '()))
+(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (init '()) (locals '()) (function #f) (text '()) (break '()))
   (pmatch o
     (<info> (list <info>
                   (cons <types> types)
@@ -125,7 +126,8 @@
                   (cons <init> init)
                   (cons <locals> locals)
                   (cons <function> function)
-                  (cons <text> text)))))
+                  (cons <text> text)
+                  (cons <break> break)))))
 
 (define (.types o)
   (pmatch o
@@ -159,6 +161,10 @@
   (pmatch o
     ((<info> . ,alist) (assq-ref alist <text>))))
 
+(define (.break o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <break>))))
+
 (define (info? o)
   (and (pair? o) (eq? (car o) <info>)))
 
@@ -171,7 +177,8 @@
                (init (.init o))
                (locals (.locals o))
                (function (.function o))
-               (text (.text o)))
+               (text (.text o))
+               (break (.break o)))
            (let-keywords rest
                          #f
                          ((types types)
@@ -181,8 +188,9 @@
                           (init init)
                           (locals locals)
                           (function function)
-                          (text text))
-                         (make <info> #:types types #:constants constants #:functions functions #:globals globals #:init init #:locals locals #:function function #:text text))))))
+                          (text text)
+                          (break break))
+                         (make <info> #:types types #:constants constants #:functions functions #:globals globals #:init init #:locals locals #:function function #:text text #:break break))))))
 
 (define (push-global globals)
   (lambda (o)
@@ -744,8 +752,7 @@
     (lambda (o)
       (pmatch o
         ((break) (append-text info (jump body-length)))
-        (_
-         ((ast->info info) o)))))
+        (_ ((ast->info info) o)))))
   (define (test->text test)
     (let ((value (pmatch test
                    (0 0)
@@ -985,6 +992,9 @@
         ((cast (type-name (decl-spec-list (type-spec (void)))) _)
          info)
 
+        ((break)
+         (append-text info (wrap-as (i386:Xjump (- (car (.break info)) (length (text->list text)))))))
+
         ;; FIXME: expr-stmt wrapper?
         (trans-unit info)
         ((expr-stmt) info)
@@ -1132,20 +1142,20 @@
                   #:globals (append globals (list-tail (.globals body-info) (length globals)))
                   #:locals locals)))
 
-        ;; FIXME: support break statement (see switch/case)
         ((while ,test ,body)
-         (let* ((skip-info (lambda (body-length)
-                             (clone info #:text (append text
-                                                        (wrap-as (i386:Xjump body-length))))))
-                (text (.text (skip-info 0)))
+         (let* ((skip-info (lambda (body-length test-length)
+                             (clone info
+                                    #:text (append text (wrap-as (i386:Xjump body-length)))
+                                    #:break (cons (+ (length (text->list text)) body-length test-length
+                                                     (length (i386:Xjump 0)))
+                                                  (.break info)))))
+                (text (.text (skip-info 0 0)))
                 (text-length (length text))
+                (body-info (lambda (body-length test-length)
+                             ((ast->info (skip-info body-length test-length)) body)))
 
-                (body-info (lambda (body-length)
-                             ((ast->info (skip-info body-length)) body)))
-                (body-text (list-tail (.text (body-info 0)) text-length))
+                (body-text (list-tail (.text (body-info 0 0)) text-length))
                 (body-length (length (text->list body-text)))
-
-                (body-info (body-info body-length))
 
                 (empty (clone info #:text '()))
                 (test-jump->info ((test->jump->info empty) test))
@@ -1155,7 +1165,10 @@
                 (jump-text (wrap-as (i386:Xjump (- (+ body-length test-length)))))
                 (jump-length (length (text->list jump-text)))
 
-                (test-text (.text (test-jump->info jump-length))))
+                (test-text (.text (test-jump->info jump-length)))
+
+                (body-info (body-info body-length (length (text->list test-text)))))
+
            (clone info #:text
                   (append
                    (.text body-info)

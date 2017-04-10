@@ -683,6 +683,15 @@ test (char *p)
   return 1;
  ok0:
   
+  puts ("t: while (1) break;\n");
+  while (1) break;
+
+  puts ("t: while (1) ... break;\n");
+  while (1) {f=0;break;}
+
+  puts ("t: while (1) ... break;\n");
+  while (1) {while (1) break;break;}
+
   puts ("t: while (1) { goto label; };\n");
   while (1) {
     goto ok00;
