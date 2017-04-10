@@ -118,9 +118,7 @@ write_byte (SCM x) ///((arity . n))
   char cc = VALUE (c);
   write (1, (char*)&cc, fd);
 #endif
-#if __GNUC__
   assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
-#endif
   return c;
 }
 

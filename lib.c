@@ -86,11 +86,7 @@ display_helper (SCM x, int cont, char* sep, int fd)
     case TFUNCTION:
       {
         fputs ("#<procedure ", fd);
-#if __GNUC__
         char const *p = "?";
-#else
-        char *p = "?";
-#endif
         if (FUNCTION (x).name != 0)
           p = FUNCTION (x).name;
         fputs (p, fd);

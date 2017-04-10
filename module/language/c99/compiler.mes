@@ -1257,7 +1257,7 @@
                                      ((accu->ident info) name)))))
 
         ;; char *p = "t.c";
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (string ,string))))))
+        ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (string ,string))))))
          (when (not (.function info))
            (stderr "o=~s\n" o)
            decl-barf3)
@@ -1271,7 +1271,7 @@
                               ((accu->ident info) name)))))
         
         ;; char *p = 0;
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (fixed ,value))))))
+        ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (fixed ,value))))))
          (let ((value (cstring->number value)))
            (if (.function info)
                (let* ((locals (add-local locals name type 1))
