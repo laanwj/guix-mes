@@ -123,20 +123,20 @@ lookup_ (SCM s, SCM a)
 int
 dump ()
 {
-  fputs ("program r2=", stderr);
+  eputs ("program r2=");
   display_error_ (r2);
-  fputs ("\n", stderr);
+  eputs ("\n");
 
   r1 = g_symbols;
   gc_push_frame ();
   gc ();
   gc_peek_frame ();
   char *p = (char*)g_cells;
-  fputc ('M', stdout);
-  fputc ('E', stdout);
-  fputc ('S', stdout);
-  fputc (g_stack >> 8, stdout);
-  fputc (g_stack % 256, stdout);
+  putc ('M');
+  putc ('E');
+  putc ('S');
+  putc (g_stack >> 8);
+  putc (g_stack % 256);
   // See HACKING, simple crafted dump for tiny-mes.c
   if (getenv ("MES_TINY"))
     {
@@ -167,6 +167,6 @@ dump ()
       g_free = 15;
     }
   for (int i=0; i<g_free * sizeof(struct scm); i++)
-    fputc (*p++, stdout);
+    putc (*p++);
   return 0;
 }

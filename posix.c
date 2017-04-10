@@ -110,14 +110,8 @@ write_byte (SCM x) ///((arity . n))
   SCM p = cdr (x);
   int fd = 1;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-#if 0
-  //_POSIX_SOURCE
-  FILE *f = fd == 1 ? stdout : stderr;
-  fputc (VALUE (c), f);
-#else
   char cc = VALUE (c);
-  write (1, (char*)&cc, fd);
-#endif
+  write (fd, (char*)&cc, 1);
   assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
   return c;
 }
@@ -173,13 +167,5 @@ set_current_input_port (SCM port)
 SCM
 force_output (SCM p) ///((arity . n))
 {
-#if 0
-  int fd = 1;
-  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
-#if _POSIX_SOURCE
-  FILE *f = fd == 1 ? stdout : stderr;
-  fflush (f);
-#endif
-#endif
   return cell_unspecified;
 }

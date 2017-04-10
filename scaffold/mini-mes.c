@@ -18,12 +18,11 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
+#if !__MESC__
 #include "mlibc.c"
 #endif
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
-#define MES_MINI 1
 #define FIXED_PRIMITIVES 1
 
 #define MES_GC 1
@@ -35,7 +34,7 @@ int ARENA_SIZE = 1000000000;
 int MAX_ARENA_SIZE = 40000000;
 int GC_SAFETY = 10000;
 
-char *arena = 0;
+char *g_arena = 0;
 
 typedef int SCM;
 
@@ -61,22 +60,20 @@ struct scm {
   SCM car;
   SCM cdr;
 };
-
 struct function {
   int (*function) (void);
   int arity;
   char *name;
 };
 
+#if __MESC__
 //FIXME
 char *foobar = 0;
-
-#if __GNUC__
-struct scm *g_cells = 0;
-struct scm *g_news = 0;
-#else
 struct scm *g_cells = foobar;
 struct scm *g_news = foobar;
+#else
+struct scm *g_cells = 0;
+struct scm *g_news = 0;
 #endif
 
 struct scm scm_nil = {TSPECIAL, "()",0};
@@ -176,15 +173,18 @@ int g_function = 0;
 // #include "mini-reader.h"
 #include "mini-vector.h"
 
-
-#define TYPE(x) (g_cells[x].type)
-
+#define TYPE(x) g_cells[x].type
 #define CAR(x) g_cells[x].car
+#define CDR(x) g_cells[x].cdr
+
+#define NTYPE(x) g_news[x].type
+#define NCAR(x) g_news[x].car
+#define NCDR(x) g_news[x].cdr
+
 #define LENGTH(x) g_cells[x].car
 #define REF(x) g_cells[x].car
 #define STRING(x) g_cells[x].car
 
-#define CDR(x) g_cells[x].cdr
 #define CLOSURE(x) g_cells[x].cdr
 #define CONTINUATION(x) g_cells[x].cdr
 
@@ -193,12 +193,8 @@ int g_function = 0;
 #define VALUE(x) g_cells[x].cdr
 #define VECTOR(x) g_cells[x].cdr
 
-#define NTYPE(x) g_news[x].type
-
-#define NCAR(x) g_news[x].car
 #define NLENGTH(x) g_news[x].car
 
-#define NCDR(x) g_news[x].cdr
 #define NVALUE(x) g_news[x].cdr
 #define NVECTOR(x) g_news[x].cdr
 
@@ -206,6 +202,7 @@ int g_function = 0;
 #define MAKE_CONTINUATION(n) make_cell_ (tmp_num_ (TCONTINUATION), n, g_stack)
 #define MAKE_NUMBER(n) make_cell_ (tmp_num_ (TNUMBER), 0, tmp_num2_ (n))
 #define MAKE_REF(n) make_cell_ (tmp_num_ (TREF), n, 0)
+#define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
 
 #define CAAR(x) CAR (CAR (x))
 #define CADR(x) CAR (CDR (x))
@@ -215,8 +212,6 @@ int g_function = 0;
 #define CADDR(x) CAR (CDR (CDR (x)))
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 
-#define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
-
 SCM
 alloc (int n)
 {
@@ -225,8 +220,6 @@ alloc (int n)
   g_free += n;
   return x;
 }
-
-#define DEBUG 0
 
 SCM
 tmp_num_ (int x)
@@ -263,26 +256,12 @@ make_cell_ (SCM type, SCM car, SCM cdr)
   return x;
 }
 
-
 SCM
 make_symbol_ (SCM s) ///((internal))
 {
   VALUE (tmp_num) = TSYMBOL;
   SCM x = make_cell_ (tmp_num, s, 0);
   g_symbols = cons (x, g_symbols);
-  return x;
-}
-
-SCM
-lookup_symbol_ (SCM s)
-{
-  SCM x = g_symbols;
-  while (x) {
-    if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
-    x = cdr (x);
-  }
-  if (x) x = car (x);
-  if (!x) x = make_symbol_ (s);
   return x;
 }
 
@@ -296,6 +275,19 @@ list_of_char_equal_p (SCM a, SCM b) ///((internal))
     b = cdr (b);
   }
   return (a == cell_nil && b == cell_nil) ? cell_t : cell_f;
+}
+
+SCM
+lookup_symbol_ (SCM s)
+{
+  SCM x = g_symbols;
+  while (x) {
+    if (list_of_char_equal_p (STRING (car (x)), s) == cell_t) break;
+    x = cdr (x);
+  }
+  if (x) x = car (x);
+  if (!x) x = make_symbol_ (s);
+  return x;
 }
 
 SCM
@@ -342,25 +334,15 @@ cons (SCM x, SCM y)
 SCM
 car (SCM x)
 {
-#if MES_MINI
-  //Nyacc
-  //assert ("!car");
-#else
   if (TYPE (x) != TPAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_car));
-#endif
   return CAR (x);
 }
 
 SCM
 cdr (SCM x)
 {
-#if MES_MINI
-  //Nyacc
-  //assert ("!cdr");
-#else
   if (TYPE (x) != TPAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_cdr));
-#endif
-  return CDR(x);
+  return CDR (x);
 }
 
 SCM
@@ -415,6 +397,8 @@ length (SCM x)
   return MAKE_NUMBER (n);
 }
 
+SCM apply (SCM, SCM, SCM);
+
 SCM
 error (SCM key, SCM x)
 {
@@ -423,35 +407,27 @@ error (SCM key, SCM x)
     return apply (throw, cons (key, cons (x, cell_nil)), r0);
   display_error_ (key);
   eputs (": ");
-  display_ (x);
-  eputs ("\n");
-  assert (0);
-}
-
-SCM
-assert_defined (SCM x, SCM e) ///((internal))
-{
-  if (e != cell_undefined) return e;
-  // error (cell_symbol_unbound_variable, x);
-  eputs ("unbound variable: ");
   display_error_ (x);
   eputs ("\n");
-  exit (33);
-  return e;
+  exit (1);
 }
 
 SCM
 cstring_to_list (char const* s)
 {
-  char *x = s;
   SCM p = cell_nil;
   int i = strlen (s);
   while (i--)
-    {
-      p = cons (MAKE_CHAR (s[i]), p);
-      x++;
-    }
+    p = cons (MAKE_CHAR (s[i]), p);
   return p;
+}
+
+//  extra lib
+SCM
+assert_defined (SCM x, SCM e) ///((internal))
+{
+  if (e == cell_undefined) return error (cell_symbol_unbound_variable, x);
+  return e;
 }
 
 SCM
@@ -461,17 +437,14 @@ check_formals (SCM f, SCM formals, SCM args) ///((internal))
   int alen = VALUE (length (args));
   if (alen != flen && alen != -1 && flen != -1)
     {
-      // FIXME
-      //char buf[1024];
-      char buf = "TODO:check_formals";
-      // sprintf (buf, "apply: wrong number of arguments; expected: %d, got: %d: ", flen, alen);
-      eputs ("apply: wrong number of arguments; expected: ");
+      char *s = "apply: wrong number of arguments; expected: ";
+      eputs (s);
       eputs (itoa (flen));
       eputs (", got: ");
       eputs (itoa (alen));
       eputs ("\n");
       display_error_ (f);
-      SCM e = MAKE_STRING (cstring_to_list (buf));
+      SCM e = MAKE_STRING (cstring_to_list (s));
       return error (cell_symbol_wrong_number_of_args, cons (e, f));
     }
   return cell_unspecified;
@@ -480,7 +453,6 @@ check_formals (SCM f, SCM formals, SCM args) ///((internal))
 SCM
 check_apply (SCM f, SCM e) ///((internal))
 {
-  //char const* type = 0;
   char* type = 0;
   if (f == cell_f || f == cell_t) type = "bool";
   if (f == cell_nil) type = "nil";
@@ -492,19 +464,13 @@ check_apply (SCM f, SCM e) ///((internal))
 
   if (type)
     {
-      //FIXME
-      //char buf[1024];
-      char buf = "TODO:check_apply";
-      // sprintf (buf, "cannot apply: %s:", type);
-      // fprintf (stderr, " [");
-      // display_error_ (e);
-      // fprintf (stderr, "]\n");
-      eputs ("cannot apply: ");
+      char *s = "cannot apply: ";
+      eputs (s);
       eputs (type);
       eputs ("[");
       display_error_ (e);
       eputs ("]\n");
-      SCM e = MAKE_STRING (cstring_to_list (buf));
+      SCM e = MAKE_STRING (cstring_to_list (s));
       return error (cell_symbol_wrong_type_arg, cons (e, f));
     }
   return cell_unspecified;
@@ -516,14 +482,6 @@ gc_push_frame () ///((internal))
   SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
   g_stack = cons (frame, g_stack);
   return g_stack;
-}
-
-SCM
-apply (SCM f, SCM x, SCM a) ///((internal))
-{
-  push_cc (cons (f, x), cell_unspecified, r0, cell_unspecified);
-  r3 = cell_vm_apply;
-  return eval_apply ();
 }
 
 SCM
@@ -545,8 +503,6 @@ pairlis (SCM x, SCM y, SCM a)
                pairlis (cdr (x), cdr (y), a));
 }
 
-SCM display_ (SCM);
-
 SCM
 call (SCM fn, SCM x)
 {
@@ -558,12 +514,20 @@ call (SCM fn, SCM x)
     x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
   switch (FUNCTION (fn).arity)
     {
-    case 0: {return (FUNCTION (fn).function) ();}
-    case 1: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (CAR (x));}
-    case 2: {return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (CAR (x), CADR (x));}
-    case 3: {return ((SCM(*)(SCM,SCM,SCM))(FUNCTION (fn).function)) (CAR (x), CADR (x), car (CDDR (x)));}
-    case -1: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);}
-    default: {return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);}
+#if __MESC__
+    case 0: return (FUNCTION (fn).function) ();
+    case 1: return ((SCM(*)(SCM))(FUNCTION (fn).function)) (CAR (x));
+    case 2: return ((SCM(*)(SCM,SCM))(FUNCTION (fn).function)) (CAR (x), CADR (x));
+    case 3: return ((SCM(*)(SCM,SCM,SCM))(FUNCTION (fn).function)) (CAR (x), CADR (x), car (CDDR (x)));
+    case -1: return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);
+    default: return ((SCM(*)(SCM))(FUNCTION (fn).function)) (x);
+#else
+    case 0: return FUNCTION (fn).function0 ();
+    case 1: return FUNCTION (fn).function1 (car (x));
+    case 2: return FUNCTION (fn).function2 (car (x), CADR (x));
+    case 3: return FUNCTION (fn).function3 (car (x), CADR (x), car (CDDR (x)));
+    case -1: return FUNCTION (fn).functionn (x);
+#endif
     }
 
   return cell_unspecified;
@@ -575,7 +539,7 @@ assq (SCM x, SCM a)
   //FIXME: move into fast-non eq_p-ing assq core:assq?
   //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
   while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
-  return a != cell_nil ? car (a) : cell_f;
+  return a != cell_nil ? CAR (a) : cell_f;
 }
 
 SCM
@@ -583,7 +547,7 @@ assq_ref_env (SCM x, SCM a)
 {
   x = assq (x, a);
   if (x == cell_f) return cell_undefined;
-  return cdr (x);
+  return CDR (x);
 }
 
 SCM
@@ -597,7 +561,7 @@ set_car_x (SCM x, SCM e)
 SCM
 set_cdr_x (SCM x, SCM e)
 {
-  //if (TYPE (x) != TPAIR) error (cell_symbol_not_a_pair, cons (x, cell_set_cdr_x));
+  if (TYPE (x) != TPAIR) error (cell_symbol_not_a_pair, cons (x, cell_set_cdr_x));
   CDR (x) = e;
   return cell_unspecified;
 }
@@ -606,7 +570,7 @@ SCM
 set_env_x (SCM x, SCM e, SCM a)
 {
   SCM p = assert_defined (x, assq (x, a));
-  //if (TYPE (p) != TPAIR)  error (cell_symbol_not_a_pair, cons (p, x));
+  if (TYPE (p) != TPAIR) error (cell_symbol_not_a_pair, cons (p, x));
   return set_cdr_x (p, e);
 }
 
@@ -614,7 +578,6 @@ SCM
 call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 {
   SCM cl = cons (cons (cell_closure, x), x);
-  cl = cons (cons (cell_closure, x), x);
   r1 = e;
   r0 = cl;
   return cell_unspecified;
@@ -631,7 +594,7 @@ lookup_macro_ (SCM x, SCM a) ///((internal))
 {
   if (TYPE (x) != TSYMBOL) return cell_f;
   SCM m = assq_ref_env (x, a);
- if (TYPE (m) == TMACRO) return MACRO (m);
+  if (TYPE (m) == TMACRO) return MACRO (m);
   return cell_f;
 }
 
@@ -648,16 +611,30 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   return cell_unspecified;
 }
 
-SCM gc_pop_frame (); //((internal))
+SCM
+gc_peek_frame () ///((internal))
+{
+  SCM frame = CAR (g_stack);
+  r1 = CAR (frame);
+  r2 = CADR (frame);
+  r3 = CAR (CDDR (frame));
+  r0 = CADR (CDDR (frame));
+  return frame;
+}
+
+SCM
+gc_pop_frame () ///((internal))
+{
+  SCM frame = gc_peek_frame (g_stack);
+  g_stack = cdr (g_stack);
+  return frame;
+}
 
 SCM
 eval_apply ()
 {
  eval_apply:
-#if MES_GC
-  if (g_free + GC_SAFETY > ARENA_SIZE)
-    gc_pop_frame (gc (gc_push_frame ()));
-#endif
+  gc_check ();
   switch (r3)
     {
     case cell_vm_evlis: goto evlis;
@@ -686,12 +663,14 @@ eval_apply ()
     case cell_vm_call_with_values2: goto call_with_values2;
     case cell_vm_return: goto vm_return;
     case cell_unspecified: return r1;
-    default: assert (0);
+    default:
+      assert (0);
     }
 
   SCM x = cell_nil;
   SCM y = cell_nil;
  evlis:
+  gc_check ();
   if (r1 == cell_nil) goto vm_return;
   if (TYPE (r1) != TPAIR) goto eval;
   push_cc (car (r1), r1, r0, cell_vm_evlis2);
@@ -704,6 +683,7 @@ eval_apply ()
   goto vm_return;
 
  apply:
+  gc_check ();
   switch (TYPE (car (r1)))
     {
     case TFUNCTION: {
@@ -713,13 +693,13 @@ eval_apply ()
     }
     case TCLOSURE:
       {
-        SCM cl = CLOSURE (CAR (r1));
+        SCM cl = CLOSURE (car (r1));
         SCM formals = CADR (cl);
         SCM body = CDDR (cl);
         SCM aa = CDAR (cl);
-        aa = CDR (aa);
-        check_formals (CAR (r1), formals, CDR (r1));
-        SCM p = pairlis (formals, CDR (r1), aa);
+        aa = cdr (aa);
+        check_formals (car (r1), formals, cdr (r1));
+        SCM p = pairlis (formals, cdr (r1), aa);
         call_lambda (body, p, aa, r0);
         goto begin;
       }
@@ -791,6 +771,7 @@ eval_apply ()
   goto apply;
 
  eval:
+  gc_check ();
   switch (TYPE (r1))
     {
     case TPAIR:
@@ -879,7 +860,7 @@ eval_apply ()
         r1 = assert_defined (r1, assq_ref_env (r1, r0));
         goto vm_return;
       }
-    default: {goto vm_return;}
+    default: goto vm_return;
     }
 
   SCM macro;
@@ -904,9 +885,11 @@ eval_apply ()
         }
     }
   goto vm_return;
+
  begin:
   x = cell_unspecified;
   while (r1 != cell_nil) {
+    gc_check ();
     if (TYPE (r1) == TPAIR && TYPE (CAR (r1)) == TPAIR)
       {
         if (CAAR (r1) == cell_symbol_begin)
@@ -979,22 +962,11 @@ eval_apply ()
 }
 
 SCM
-gc_peek_frame () ///((internal))
+apply (SCM f, SCM x, SCM a) ///((internal))
 {
-  SCM frame = CAR (g_stack);
-  r1 = CAR (frame);
-  r2 = CADR (frame);
-  r3 = CAR (CDDR (frame));
-  r0 = CADR (CDDR (frame));
-  return frame;
-}
-
-SCM
-gc_pop_frame () ///((internal))
-{
-  SCM frame = gc_peek_frame (g_stack);
-  g_stack = cdr (g_stack);
-  return frame;
+  push_cc (cons (f, x), cell_unspecified, r0, cell_unspecified);
+  r3 = cell_vm_apply;
+  return eval_apply ();
 }
 
 SCM
@@ -1009,6 +981,7 @@ mes_g_stack (SCM a) ///((internal))
 }
 
 // Environment setup
+
 SCM
 make_tmps (struct scm* cells)
 {
@@ -1039,13 +1012,13 @@ gc_init_cells () ///((internal))
   size = size * 2;
 #endif
 #if __GNUC__
-  arena = (char*)malloc (size);
+  g_arena = (char*)malloc (size);
 #else
   char *p = 0;
   p = malloc (size);
-  arena = p;
+  g_arena = p;
 #endif
-  g_cells = arena;
+  g_cells = g_arena;
   return 0;
   //g_cells = (scm *)malloc (2*ARENA_SIZE*sizeof(scm));
 
@@ -1094,8 +1067,6 @@ gc_init_news () ///((internal))
   return 0;
 }
 
-// INIT NEWS
-
 SCM
 mes_symbols () ///((internal))
 {
@@ -1104,7 +1075,7 @@ mes_symbols () ///((internal))
   gc_init_news ();
 #endif
 
-  #include "mini-mes.symbols.i"
+#include "mini-mes.symbols.i"
 
   g_symbol_max = g_free;
   make_tmps (g_cells);
@@ -1115,7 +1086,7 @@ mes_symbols () ///((internal))
 
   SCM a = cell_nil;
 
-  #include "mini-mes.symbol-names.i"
+#include "mini-mes.symbol-names.i"
 
   a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
   a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
@@ -1143,16 +1114,14 @@ mes_symbols () ///((internal))
 SCM
 mes_environment () ///((internal))
 {
-  SCM a = 0;
-  a = mes_symbols ();
-  a = mes_g_stack (a);
-  return a;
+  SCM a = mes_symbols ();
+  return mes_g_stack (a);
 }
 
 SCM
 mes_builtins (SCM a) ///((internal))
 {
-  #include "mini-mes.i"
+#include "mini-mes.i"
 
 // Do not sort: Order of these includes define builtins
 #include "mini-posix.i"
@@ -1188,7 +1157,7 @@ bload_env (SCM a) ///((internal))
 
   char *p = (char*)g_cells;
   int c = getchar ();
-  while (c != -1)
+  while (c != EOF)
     {
       *p++ = c;
       c = getchar ();
@@ -1243,25 +1212,18 @@ main (int argc, char *argv[])
   eputs ("Hello mini-mes!\n");
 #if _POSIX_SOURCE
   g_debug = getenv ("MES_DEBUG");
-  eputs ("g_debug=");
-  eputs (itoa (g_debug));
-  eputs ("\n");
+  if (g_debug) {eputs ("MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
   if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
 #endif
   g_debug = 1;
-  if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE");
-#if __GNUC__
-  if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");return eputs (VERSION);};
-#else
-  if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");return eputs ("0.4");};
-#endif
+  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
+  if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);return 0;};
   g_stdin = STDIN;
-
   r0 = mes_environment ();
-  
-#if MES_MINI
+
+#if __MESC__
   SCM program = bload_env (r0);
-#else  
+#else
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
@@ -1281,10 +1243,7 @@ main (int argc, char *argv[])
   r1 = eval_apply ();
   display_error_ (r1);
   eputs ("\n");
-
-#if !MES_MINI
   gc (g_stack);
-#endif
   if (g_debug)
     {
       eputs ("\nstats: [");

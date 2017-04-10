@@ -21,28 +21,19 @@
 SCM
 gc_up_arena () ///((internal))
 {
-#if _POSIX_SOURCE
   ARENA_SIZE *= 2;
   GC_SAFETY *= 2;
+#if _POSIX_SOURCE
   void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(struct scm));
 #else
-  ARENA_SIZE = ARENA_SIZE * 2;
-  GC_SAFETY = GC_SAFETY * 2;
-  //p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(struct scm));
-  int size = ARENA_SIZE * 2;
-  size = size * 12;
-  char *p = size;
-  p = realloc (g_cells-1, size);
-  g_cells = p;
+  char *p = g_cells;
+  p = realloc (p-sizeof (struct scm), 2*ARENA_SIZE*sizeof(struct scm));
 #endif
 
 #if _POSIX_SOURCE
   if (!p) error (cell_symbol_system_error, cons (MAKE_STRING (cstring_to_list (strerror (errno))), MAKE_NUMBER (g_free)));
   g_cells = (struct scm*)p;
   g_cells++;
-#else
-  //assert (p);
-  //g_cells = (struct scm*)p;
 #endif
   gc_init_news ();
   return 0;
@@ -54,16 +45,12 @@ gc_flip () ///((internal))
   struct scm *cells = g_cells;
   g_cells = g_news;
   g_news = cells;
-#if _POSIX_SOURCE
-  if (g_debug) fprintf (stderr, ";;;   => jam[%d]\n", g_free);
-#else
   if (g_debug)
     {
       eputs (";;;   => jam[");
       eputs (itoa (g_free));
       eputs ("]\n");
     }
-#endif
   return g_stack;
 }
 
@@ -144,9 +131,6 @@ gc_check ()
 SCM
 gc ()
 {
-#if _POSIX_SOURCE
-  if (g_debug) fprintf (stderr, ";;; gc[%d:%d]...", g_free, ARENA_SIZE - g_free);
-#else
   if (g_debug)
     {
       eputs (";;; gc[");
@@ -155,7 +139,6 @@ gc ()
       eputs (itoa (ARENA_SIZE - g_free));
       eputs ("]...");
     }
-#endif
   g_free = 1;
   if (g_cells < g_news && ARENA_SIZE < MAX_ARENA_SIZE) gc_up_arena ();
   for (int i=g_free; i<g_symbol_max; i++)
@@ -163,16 +146,12 @@ gc ()
   make_tmps (g_news);
   g_symbols = gc_copy (g_symbols);
   SCM new = gc_copy (g_stack);
-#if _POSIX_SOURCE
-  if (g_debug) fprintf (stderr, "new=%d\n", new);
-#else
   if (g_debug)
     {
       eputs ("new=");
       eputs (itoa (new));
       eputs ("\n");
     }
-#endif
   g_stack = new;
   return gc_loop (1);
 }

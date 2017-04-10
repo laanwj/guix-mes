@@ -29,6 +29,9 @@ CPPFLAGS+=-DMODULEDIR='"$(MODULEDIR)/"'
 CPPFLAGS+=-DPREFIX='"$(PREFIX)/"'
 CPPFLAGS+=-DVERSION='"$(VERSION)"'
 
+MINI_CPPFLAGS:=$(CPPFLAGS)
+CPPFLAGS+=-D_POSIX_SOURCE
+
 export BOOT
 ifneq ($(BOOT),)
 CPPFLAGS+=-DBOOT=1
@@ -162,7 +165,7 @@ mescc-check: t-check
 mini-%.h mini-%.i mini-%.environment.i mini-%.symbols.i: %.c build-aux/mes-snarf.scm GNUmakefile
 	build-aux/mes-snarf.scm --mini $<
 
-mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i: scaffold/mini-mes.c build-aux/mes-snarf.scm GNUmakefile
+mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i: mes.c build-aux/mes-snarf.scm GNUmakefile
 	build-aux/mes-snarf.scm --mini $<
 
 mini-mes: mini-mes.h mini-mes.i mini-mes.environment.i mini-mes.symbols.i
@@ -171,9 +174,9 @@ mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
 mini-mes: mlibc.c mstart.c
 mini-mes: GNUmakefile
 mini-mes: module/mes/read-0-32.mo
-mini-mes: scaffold/mini-mes.c
+mini-mes: mes.c
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(MINI_CPPFLAGS) $<
 	rm -f mes.o
 	chmod +x $@
 
@@ -187,7 +190,7 @@ guile-mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
 guile-mini-mes: mlibc.c mstart.c
 guile-mini-mes: GNUmakefile
 guile-mini-mes: module/mes/read-0-32.mo
-guile-mini-mes: scaffold/mini-mes.c
+guile-mini-mes: mes.c
 	rm -f $@
 	guile/mescc.scm $< > $@ || rm -f $@
 	chmod +x $@
@@ -198,7 +201,7 @@ mes-mini-mes: vector.c mini-vector.h mini-vector.i mini-vector.environment.i
 mes-mini-mes: mlibc.c mstart.c
 mes-mini-mes: GNUmakefile
 mes-mini-mes: module/mes/read-0-32.mo
-mes-mini-mes: scaffold/mini-mes.c
+mes-mini-mes: mes.c
 	rm -f $@
 #	MES_FLAGS= MES_DEBUG=1 scripts/mescc.mes $< > $@ || rm -f $@
 	MES_FLAGS= MES_DEBUG=1 scripts/mescc.mes $< > $@
@@ -214,7 +217,7 @@ mes-hello: scaffold/hello.c
 
 cons-mes: module/mes/tiny-0-32.mo
 cons-mes: scaffold/cons-mes.c GNUmakefile
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(MINI_CPPFLAGS) $<
 	chmod +x $@
 
 guile-cons-mes: module/mes/tiny-0-32.mo
@@ -225,7 +228,7 @@ guile-cons-mes: scaffold/cons-mes.c
 
 tiny-mes: module/mes/tiny-0-32.mo
 tiny-mes: scaffold/tiny-mes.c GNUmakefile
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(MINI_CPPFLAGS) $<
 	chmod +x $@
 
 guile-tiny-mes: module/mes/tiny-0-32.mo
@@ -235,7 +238,7 @@ guile-tiny-mes: scaffold/tiny-mes.c
 	chmod +x $@
 
 m: scaffold/m.c GNUmakefile
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(MINI_CPPFLAGS) $<
 #	gcc --std=gnu99 -g -o $@ $(CPPFLAGS) $<
 	chmod +x $@
 
@@ -245,7 +248,7 @@ guile-m: scaffold/m.c
 	chmod +x $@
 
 malloc: scaffold/malloc.c GNUmakefile
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(MINI_CPPFLAGS) $<
 	chmod +x $@
 
 guile-malloc: scaffold/malloc.c
@@ -254,7 +257,7 @@ guile-malloc: scaffold/malloc.c
 
 micro-mes: scaffold/micro-mes.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -o $@ $(MINI_CPPFLAGS) $<
 	chmod +x $@
 
 guile-micro-mes: scaffold/micro-mes.c
@@ -263,7 +266,7 @@ guile-micro-mes: scaffold/micro-mes.c
 
 main: doc/examples/main.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -o $@ $(MINI_CPPFLAGS) $<
 	chmod +x $@
 
 guile-main: doc/examples/main.c
@@ -273,7 +276,7 @@ guile-main: doc/examples/main.c
 t: mlibc.c
 t: scaffold/t.c GNUmakefile
 	rm -f $@
-	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(CPPFLAGS) $<
+	gcc -nostdlib --std=gnu99 -m32 -g -o $@ $(MINI_CPPFLAGS) $<
 	chmod +x $@
 
 guile-t: scaffold/t.c

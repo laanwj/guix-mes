@@ -57,7 +57,8 @@ fdputs (char const* s, int fd)
 #ifdef putc
 #undef putc
 #endif
-#define putc fdputc
+#define putc(x) fdputc(x, STDOUT)
+#define fputc fdputc
 int
 fdputc (int c, int fd)
 {
@@ -80,7 +81,7 @@ display_helper (SCM x, int cont, char* sep, int fd)
     case TCHAR:
       {
         fputs ("#\\", fd);
-        putc (VALUE (x), fd);
+        fputc (VALUE (x), fd);
         break;
       }
     case TFUNCTION:
@@ -131,7 +132,7 @@ display_helper (SCM x, int cont, char* sep, int fd)
         SCM t = CAR (x);
         while (t && t != cell_nil)
           {
-            putc (VALUE (CAR (t)), fd);
+            fputc (VALUE (CAR (t)), fd);
             t = CDR (t);
           }
         break;
