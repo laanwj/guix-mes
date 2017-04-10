@@ -19,10 +19,10 @@
   5. scripts/mescc.mes: C compiler on mes, that can build scaffold/mini-mes.c
      5a. remove __MESC__/__NYACC__ C workarounds in gc.c and vector.c
      5b. module/language/c99/compiler.mes: refactor expr->arg, expr->accu, ast->info
-     5x. *we are here*
-     make guile-t, make guile-mini-mes, make mes-mini-mes
      5c. merge *.c into scaffold/mini-mes.c
      5d. merge scaffold/mini-mes.c into mes.c
+     5x. *we are here*
+     make guile-t, make guile-mini-mes, make mes-mini-mes
   6. scripts/mescc.mes: C compiler on mes, that can build mes
   7. release self-hosting Mes 0.5
      7a. discuss full source bootstrap strategy on guile-user with
