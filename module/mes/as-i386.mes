@@ -41,25 +41,25 @@
   '(#x83 #xec #x40))              ; sub    $0x10,%esp -- 16 local vars
 
 (define (i386:push-global-address o)
-  (or o push-global-address)
+  (or o (error "invalid value: push-global-address: " o))
   `(#x68 ,@(int->bv32 o)))              ; push  $0x<o>
 
 (define (i386:push-global o)
-  (or o push-global)
+  (or o (error "invalid value: push-global: " o))
   `(#xa1 ,@(int->bv32 o)                ; mov    0x804a000,%eax
          #x50))                         ; push  %eax
 
 (define (i386:push-local n)
-  (or n push-local)
+  (or n (error "invalid value: push-local: " n))
   `(#xff #x75 ,(- 0 (* 4 n))))          ; pushl  0x<n>(%ebp)
 
 (define (i386:push-local-address n)
-  (or n push-local-address)
+  (or n (error "invalid value: push-local-address: " n))
   `(#x8d #x45 ,(- 0 (* 4 n))            ; lea 0x<n>(%ebp),%eax
          #x50))                         ; push %eax
 
 (define (i386:push-local-de-ref n)
-  (or n push-local-de-ref)
+  (or n (error "invalid value: push-local-de-ref: " n))
   `(#x8b #x45 ,(- 0 (* 4 n))            ; mov    -0x<n>(%ebp),%eax
          #x0f #xb6 #x00             	; movzbl (%eax),%eax
          ;;#x0f #xbe #xc0                 ; movsbl %al,%eax ***FIXME BYTE****
@@ -91,27 +91,27 @@
   '(#x88 #x02))                         ; mov    %al,%(edx)
 
 (define (i386:accu->base-address+n n)
-  (or n accu->base-address+n)
+  (or n (error "invalid value: accu->base-address+n: " n))
   `(#x89 #x42 ,n))                      ; mov    %eax,$0x<n>%(edx)
 
 (define (i386:accu->local n)
-  (or n accu->local)
+  (or n (error "invalid value: accu->local: " n))
   `(#x89 #x45 ,(- 0 (* 4 n))))          ; mov    %eax,-<0xn>(%ebp)
 
 (define (i386:base->local n)
-  (or n base->local)
+  (or n (error "invalid value: base->local: " n))
   `(#x89 #x55 ,(- 0 (* 4 n))))          ; mov    %edx,-<0xn>(%ebp)
 
 (define (i386:base->global n)
-  (or n base->global)
+  (or n (error "invalid value: base->global: " n))
   `(#x89 #x15 ,@(int->bv32 n)))         ; mov    %edx,0x0
 
 (define (i386:accu->global n)
-  (or n accu->global)
+  (or n (error "invalid value: accu->global: " n))
   `(#xa3 ,@(int->bv32 n)))              ; mov    %eax,0x0
 
 (define (i386:accu->global-address n)
-  (or n accu->global-address)
+  (or n (error "invalid value: accu->global-address: " n))
   `(#x8b #x15 ,@(int->bv32 n)           ; mov    0x<n>,%edx
          #x89 #x02 ))                   ; mov    %eax,(%edx)
 
@@ -123,7 +123,7 @@
           (i386:xor-zf)))
 
 (define (i386:accu-shl n)
-  (or n accu:shl n)
+  (or n (error "invalid value: accu:shl n: " n))
   `(#xc1 #xe0 ,n))                      ; shl    $0x8,%eax
 
 (define (i386:accu<<base)
@@ -146,7 +146,7 @@
   `(#x01 #xd0))                         ; add    %edx,%eax
 
 (define (i386:accu+value v)
-  (or v accu+value)
+  (or v (error "invalid value: accu+value: " v))
   `(#x05 ,@(int->bv32 v)))              ; add    %eax,%eax
 
 (define (i386:accu-base)
@@ -170,45 +170,49 @@
   '(#x89 #xd0))                         ; mov    %edx,%eax
 
 (define (i386:local->accu n)
-  (or n local->accu)
+  (or n (error "invalid value: local->accu: " n))
   `(#x8b #x45 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%eax
 
 (define (i386:local-address->accu n)
-  (or n ladd)
+  (or n (error "invalid value: ladd: " n))
   `(#x8d #x45 ,(- 0 (* 4 n))))          ; lea 0x<n>(%ebp),%eax
 
 (define (i386:local-ptr->accu n)
-  (or n local-ptr->accu)
+  (or n (error "invalid value: local-ptr->accu: " n))
   `(#x89 #xe8                           ; mov    %ebp,%eax
          #x83 #xc0 ,(- 0 (* 4 n))))     ; add    $0x<n>,%eax
 
 (define (i386:byte-local->accu n)
-  (or n byte-local->accu)
+  (or n (error "invalid value: byte-local->accu: " n))
   `(#x0f #xb6 #x45 ,(- 0 (* 4 n))))     ; movzbl 0x<n>(%ebp),%eax
 
+(define (i386:byte-local->base n)
+  (or n (error "invalid value: byte-local->base: " n))
+  `(x0f #xb6 #x95 ,(- 0 (* 4 n))))     ; movzbl 0x<n>(%ebp),%edx
+
 (define (i386:local->base n)
-  (or n local->base)
+  (or n (error "invalid value: local->base: " n))
   `(#x8b #x55 ,(- 0 (* 4 n))))          ; mov    -<0xn>(%ebp),%edx
 
 (define (i386:local-address->base n) ;; DE-REF
-  (or n local-address->base)
+  (or n (error "invalid value: local-address->base: " n))
   `(#x8d #x55 ,(- 0 (* 4 n))))          ; lea    0x<n>(%ebp),%edx
 
 (define (i386:local-ptr->base n)
-  (or n local-ptr->base)
+  (or n (error "invalid value: local-ptr->base: " n))
   `(#x89 #xea                           ; mov    %ebp,%edx
          #x83 #xc2 ,(- 0 (* 4 n))))     ; add    $0x<n>,%edx
 
 (define (i386:global->base n)
-  (or n global->base)
+  (or n (error "invalid value: global->base: " n))
   `(#xba ,@(int->bv32 n)))              ; mov   $<n>,%edx
 
 (define (i386:global-address->accu n)
-  (or n global-address->accu)
+  (or n (error "invalid value: global-address->accu: " n))
   `(#xa1 ,@(int->bv32 n)))              ; mov    0x<n>,%eax
 
 (define (i386:global-address->base n)
-  (or n global-address->base)
+  (or n (error "invalid value: global-address->base: " n))
   `(#x8b #x15 ,@(int->bv32 n)))         ; mov    0x<n>,%edx
 
 (define (i386:byte-base-mem->accu)
@@ -232,19 +236,19 @@
   `(#x8b #x40 ,n))                      ; mov    0x<n>(%eax),%eax
 
 (define (i386:base-mem+n->accu n)
-  (or n base-mem+n->accu)
+  (or n (error "invalid value: base-mem+n->accu: " n))
   `(#x01 #xd0                           ; add    %edx,%eax
          #x8b #x40 ,n))                 ; mov    <n>(%eax),%eax
 
 (define (i386:value->accu v)
-  (or v urg:value->accu)
+  (or v (error "invalid value: i386:value->accu: " v))
   `(#xb8 ,@(int->bv32 v)))              ; mov    $<v>,%eax
 
 (define (i386:value->accu-address v)
   `(#xc7 #x00 ,@(int->bv32 v)))         ; movl   $0x<v>,(%eax)
 
 (define (i386:value->accu-address+n n v)
-  (or v urg:value->accu-address+n)
+  (or v (error "invalid value: i386:value->accu-address+n: " v))
   `(#xc7 #x40 ,n ,@(int->bv32 v)))      ; movl   $<v>,0x<n>(%eax)
 
 (define (i386:base->accu-address)
@@ -264,41 +268,41 @@
   '(#x88 #x10))                         ; mov    %dl,(%eax)
 
 (define (i386:byte-base->accu-address+n n)
-  (or n byte-base->accu-address+n)
+  (or n (error "invalid value: byte-base->accu-address+n: " n))
   `(#x88 #x50 ,n))                      ; mov    %dl,0x<n>(%eax)
 
 (define (i386:value->base v)
-  (or v urg:value->base)
+  (or v (error "invalid value: i386:value->base: " v))
   `(#xba ,@(int->bv32 v)))              ; mov    $<v>,%edx
 
 (define (i386:local-add n v)
-  (or n urg:local-add)
+  (or n (error "invalid value: i386:local-add: " n))
   `(#x83 #x45 ,(- 0 (* 4 n)) ,v))       ; addl   $<v>,0x<n>(%ebp)
 
 (define (i386:global-add n v)
-  (or n urg:global-add)
+  (or n (error "invalid value: i386:global-add: " n))
   `(#x83 #x05 ,@(int->bv32 n) ,v))      ; addl   $<v>,0x<n>
 
 (define (i386:global->accu o)
-  (or o urg:global->accu)
+  (or o (error "invalid value: i386:global->accu: " o))
   `(#xb8 ,@(int->bv32 o)))              ; mov    $<>,%eax
 
 (define (i386:value->global n v)
-  (or n value->global)
+  (or n (error "invalid value: value->global: " n))
   `(#xc7 #x05 ,@(int->bv32 n)           ; movl   $<v>,(<n>)
          ,@(int->bv32 v)))
 
 (define (i386:value->local n v)
-  (or n value->local)
+  (or n (error "invalid value: value->local: " n))
   `(#xc7 #x45 ,(- 0 (* 4 n))            ; movl   $<v>,0x<n>(%ebp)
          ,@(int->bv32 v)))
 
 (define (i386:local-test n v)
-  (or n local-test)
+  (or n (error "invalid value: local-test: " n))
   `(#x83 #x7d ,(- 0 (* 4 n)) ,v))       ; cmpl   $<v>,0x<n>(%ebp)
 
 (define (i386:call f g ta t d address n)
-  (or address urg:call)
+  (or address (error "invalid value: i386:call: " address))
   `(#xe8 ,@(int->bv32 (- address 5))    ; call   relative $00
          #x83 #xc4 ,(* n 4)))           ; add    $00,%esp
 
@@ -313,7 +317,7 @@
          #x0f #xb6 #xc0))               ; movzbl %al,%eax
 
 (define (i386:xor-accu v)
-  (or n urg:xor-accu)
+  (or v (error "invalid value: i386:xor-accu: n: " v))
   `(#x35 ,@(int->bv32 v)))       	;xor    $0xff,%eax
 
 (define (i386:xor-zf)
@@ -328,59 +332,54 @@
   '(#x85 #xc0))                         ; test   %eax,%eax
 
 (define (i386:Xjump n)
-  (or n urg:Xjump)
+  (or n (error "invalid value: i386:Xjump: n: " n))
   `(#xe9 ,@(int->bv32 (if (>= n 0) n (- n 5))))) ; jmp . + <n>
 
 (define (i386:XXjump n)
-  (or n urg:XXjump)
+  (or n (error "invalid value: i386:XXjump: n: " n))
   `(#xe9 ,@(int->bv32 n)))              ; jmp . + <n>
 
 (define (i386:Xjump-nz n)
-  (or n urg:Xjump-nz)
+  (or n (error "invalid value: i386:Xjump-nz: n: " n))
   `(#x0f #x85 ,@(int->bv32 n)))         ; jnz . + <n>
 
 (define (i386:Xjump-z n)
-  (or n urg:Xjump-z)
+  (or n (error "invalid value: i386:Xjump-z: n: " n))
   `(#x0f #x84 ,@(int->bv32 n)))         ; jz . + <n>
 
 (define (i386:jump n) ;;FIXME: NEED THIS WEIRDNESS for t.c
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP n=~a\n" n)
-    barf)
+    (error "JUMP n=" n))
   `(#xeb ,(if (>= n 0) (- n 2) (- n 2)))) ; jmp <n>
 
 (define (i386:jump-c n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP n=~a\n" n)
-    barf)
+    (error "JUMP n=" n))
   `(#x72 ,(if (>= n 0) n (- n 2))))     ; jc <n>
 
 (define (i386:jump-cz n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP n=~a\n" n)
-    barf)
+    (error "JUMP n=" n))
   `(#x76 ,(if (>= n 0) n (- n 2))))     ; jbe <n>
 
 (define (i386:jump-ncz n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP-ncz n=~a\n" n)
-    barf)
+    (error "JUMP-ncz n=" n))
   `(#x77 ,(if (>= n 0) n (- n 2))))     ; ja <n>
 
 (define (i386:jump-nc n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP-nc n=~a\n" n)
-    barf)
+    (error "JUMP-nc n=" n))
   `(#x73 ,(if (>= n 0) n (- n 2))))     ; jnc <n>
 
 ;; unsigned
 (define (i386:Xjump-nc n)
-  (or n urg:Xjump-nc)
+  (or n (error "invalid value i386:Xjump-nc: " n))
   `(#x0f #x83 ,@(int->bv32 n)))         ; jnc <n>
 
 ;; unsigned
 (define (i386:Xjump-ncz n)
-  (or n urg:Xjump-ncz)
+  (or n (error "invalid value: i386:Xjump-ncz" n))
   `(#x0f #x87 ,@(int->bv32 n)))         ; ja <n>
 
 ;; unsigned
@@ -395,12 +394,12 @@
 
 ;; signed
 (define (i386:Xjump-g n)
-  (or n urg:Xjump-g)
+  (or n (error "invalid value: i386:Xjump-g: " n))
   `(#x0f #x8f ,@(int->bv32 n)))         ; jg/jnle <n>
 
 ;; signed
 (define (i386:Xjump-ge n)
-  (or n urg:Xjump-ge)
+  (or n (error "invalid value: Xjump-ge: " n))
   `(#x0f #x8d ,@(int->bv32 n)))         ; jge/jnl <n>
 
 ;; ;; signed
@@ -415,34 +414,29 @@
 
 (define (i386:jump-z n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP-z n=~a\n" n)
-    barf)
+    (error "JUMP-z n=" n))
   `(#x74 ,(if (>= n 0) n (- n 2))))     ; jz <n>
 
 (define (i386:jump-nz n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP-nz n=~a\n" n)
-    barf)
+    (error "JUMP-nz n=" n))
   `(#x75 ,(if (>= n 0) n (- n 2))))     ; jnz <n>
 
 (define (i386:test-jump-z n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP-z n=~a\n" n)
-    barf)
+    (error "JUMP-z n=" n))
   `(#x85 #xc0                           ; test   %eax,%eax
     #x74 ,(if (>= n 0) n (- n 4))))     ; jz <n>
 
 (define (i386:jump-byte-nz n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP-byte-nz n=~a\n" n)
-    barf)
+    (error "JUMP-byte-nz n=" n))
   `(#x84 #xc0                           ; test   %al,%al
     #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 
 (define (i386:jump-byte-z n)
   (when (or (> n #x80) (< n #x-80))
-    (format (current-error-port) "JUMP-byte-z n=~a\n" n)
-    barf)
+    (error "JUMP-byte-z n=" n))
   `(#x84 #xc0                           ; test   %al,%al
     #x74 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 

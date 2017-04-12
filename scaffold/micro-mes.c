@@ -18,13 +18,13 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
+#if POSIX
+#error "POSIX not supported"
+#endif
+
+#if !__MESC__
 #include "mlibc.c"
 #endif
-#define assert(x) ((x) ? (void)0 : assert_fail(#x))
-
-
-#define MES_MINI 1
 
 typedef int SCM;
 
@@ -62,44 +62,18 @@ main (int argc, char *argv[])
 #endif
   //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
 
-  if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
-  //FIXME: Nyacc on mes barfs: unhandled exception: not-a-pair (("0.4" . car))
+  // FIXME
+  //if (argc > 1 && !strcmp (argv[1], "--help")) return eputs ("Usage: mes [--dump|--load] < FILE\n");
   //if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");eputs (VERSION);return eputs ("\n");};
 
-#if __GNUC__
-  g_stdin = STDIN;
   r0 = mes_environment ();
-#endif
 
-#if MES_MINI
   puts ("Hello micro-mes!\n");
   SCM program = bload_env (r0);
-#else
-  SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
-    ? bload_env (r0) : load_env (r0);
-  if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
-
-  push_cc (r2, cell_unspecified, r0, cell_unspecified);
-  r3 = cell_vm_begin;
-  r1 = eval_apply ();
-
-  eputs ("\n");
-  gc (g_stack);
-#endif
   int i = argc;
-  //int i = strcmp (argv[1], "1");
   return i;
-#if __GNUC__
-  if (g_debug)
-    {
-      eputs ("\nstats: [");
-      eputs (itoa (g_free));
-      eputs ("]\n");
-    }
-#endif
-  return 0;
 }
 
-#if __GNUC__
+#if !__MESC__
 #include "mstart.c"
 #endif

@@ -33,7 +33,10 @@
   #:use-module (mes libc-i386)
   #:use-module (mes libc)
   #:use-module (nyacc lang c99 parser)
-  #:export (compile))
+  #:export (c99-input->ast
+            c99-input->elf
+            c99-input->info
+            info->elf))
 
 (cond-expand
  (guile-2)

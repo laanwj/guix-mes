@@ -18,24 +18,18 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
+#if POSIX
+#error "POSIX not supported"
+#endif
+
+#if !__MESC__
 #include "mlibc.c"
 #endif
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
-#define MES_MINI 1
-
-char arena[200];
+char arena[300];
 
 typedef int SCM;
 
-#if __GNUC__
-int g_debug = 0;
-#endif
-
-int g_free = 0;
-
-SCM g_symbols = 0;
 SCM g_stack = 0;
 SCM r0 = 0; // a/env
 SCM r1 = 0; // param 1
@@ -50,10 +44,11 @@ struct scm {
   SCM cdr;
 };
 
-//char arena[200];
-//struct scm *g_cells = arena;
-//struct scm *g_cells = (struct scm*)arena;
+#if __MESC__
 struct scm *g_cells = arena;
+#else
+struct scm *g_cells = (struct scm*)arena;
+#endif
 
 #define cell_nil 1
 #define cell_f 2
@@ -64,32 +59,20 @@ struct scm *g_cells = arena;
 #define CAR(x) g_cells[x].car
 
 #define CDR(x) g_cells[x].cdr
-//#define VALUE(x) g_cells[x].value
 #define VALUE(x) g_cells[x].cdr
 
 SCM
 car (SCM x)
 {
-#if MES_MINI
-  //Nyacc
-  //assert ("!car");
-#else
-  if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_car));
-#endif
   return CAR (x);
 }
 
 SCM
 cdr (SCM x)
 {
-#if MES_MINI
-  //Nyacc
-  //assert ("!cdr");
-#else
-  if (TYPE (x) != PAIR) error (cell_symbol_not_a_pair, cons (x, cell_symbol_cdr));
-#endif
-  return CDR(x);
+  return CDR (x);
 }
+
 SCM caar (SCM x) {return car (car (x));}
 SCM cadr (SCM x) {return car (cdr (x));}
 SCM cdar (SCM x) {return cdr (car (x));}
@@ -324,9 +307,15 @@ bload_env (SCM a) ///((internal))
   getchar ();
   getchar ();
 
+  int i = 0;
   c = getchar ();
   while (c != -1)
     {
+      i++;
+      eputs (itoa (i));
+      eputs (": ");
+      eputs (itoa (c));
+      eputs ("\n");
       *p++ = c;
       c = getchar ();
     }
@@ -352,6 +341,6 @@ main (int argc, char *argv[])
   return 0;
 }
 
-#if __GNUC__
+#if !__MESC__
 #include "mstart.c"
 #endif

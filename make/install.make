@@ -30,7 +30,9 @@ else
 DATADIR:=$(PREFIX)/share
 DOCDIR:=$(DATADIR)/doc
 endif
-MODULEDIR:=$(DATADIR)/module
+LIBDIR:=$(PREFIX)/lib
+MODULEDIR:=$(PREFIX)/share/guile/site/$(GUILE_EFFECTIVE_VERSION)
+GODIR:=$(LIBDIR)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
 
 .tarball-version: tree-clean-p
 	echo $(COMMIT) > $@
@@ -51,10 +53,14 @@ $(TARBALL): tree-clean-p .tarball-version ChangeLog
 ChangeLog:
 	build-aux/gitlog-to-changelog > $@
 
-install: all ChangeLog
+
+#FIXME: INSTALL like CLEAN
+INSTALL_SCM_FILES:=
+INSTALL_GO_FILES:=
+install: $(CLEAN) ChangeLog
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	install mes $(DESTDIR)$(PREFIX)/bin/mes
-	install mes-mini-mes $(DESTDIR)$(PREFIX)/bin/mes-mini-mes
+	install $(OUT)/mes $(DESTDIR)$(PREFIX)/bin/mes
+	install mes.mes $(DESTDIR)$(PREFIX)/bin/mes.mes
 	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/mescc.mes
 	install scripts/repl.mes $(DESTDIR)$(PREFIX)/bin/repl.mes
 	install guile/mescc.scm $(DESTDIR)$(PREFIX)/bin/mescc.scm
@@ -67,9 +73,12 @@ install: all ChangeLog
 	    -e 's,module/,$(DATADIR)/module/,' \
 	    -e 's,@DATADIR@,$(DATADIR)/,g' \
 	    -e 's,@DOCDIR@,$(DOCDIR)/,g' \
+	    -e 's,@GODIR@,$(GODIR)/,g' \
+	    -e 's,@MODULEDIR@,$(MODULEDIR)/,g' \
 	    -e 's,@PREFIX@,$(PREFIX)/,g' \
 	    -e 's,@VERSION@,$(VERSION),g' \
 		$(DESTDIR)$(DATADIR)/module/mes/base-0.mes \
+		$(DESTDIR)$(DATADIR)/module/language/c99/compiler.mes \
 		$(DESTDIR)$(PREFIX)/bin/mescc.mes \
 		$(DESTDIR)$(PREFIX)/bin/mescc.scm \
 		$(DESTDIR)$(PREFIX)/bin/repl.mes
@@ -81,6 +90,12 @@ install: all ChangeLog
 	$(GIT_ARCHIVE_HEAD) doc \
 		| tar -C $(DESTDIR)$(DOCDIR) --strip=1 -xf-
 	cp ChangeLog $(DESTDIR)$(DOCDIR)
+	mkdir -p $(DESTDIR)$(MODULEDIR)
+	tar -cf- -C module $(INSTALL_SCM_FILES:module/%=%)\
+		| tar -C $(DESTDIR)$(MODULEDIR) -xf-
+	mkdir -p $(DESTDIR)$(GODIR)
+	tar -cf- -C module $(INSTALL_GO_FILES:module/%=%)\
+		| tar -C $(DESTDIR)$(GODIR) -xf-
 
 release: tree-clean-p check dist
 	git tag v$(VERSION)
@@ -96,7 +111,7 @@ update-hash: $(GUIX-HASH) .tarball-version
 	sed -i \
 		-e 's,(base32 "[^"]*"),(base32 "$(shell cat $<)"),'\
 		-e 's,(commit "[^"]*"),(commit "$(shell cat .tarball-version)"),'\
-		-e 's,(version "[^"]*"),(version "$(VERSION).$(shell cut -b1-8 .tarball-version)"),'\
+		-e 's,(version "[^g][^"]*"),(version "$(VERSION).$(shell cut -b1-8 .tarball-version)"),'\
 		guix.scm
 	! git diff --exit-code
 	git commit -m 'guix hash: $(shell cat $<)' guix.scm

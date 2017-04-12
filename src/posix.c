@@ -18,58 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int g_stdin;
-
-#if _POSIX_SOURCE
-int open (char const *s, int mode);
-int read (int fd, void* buf, size_t n);
-void write (int fd, char const* s, int n);
-
-
-#define O_RDONLY 0
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
-
-int
-putchar (int c)
-{
-  write (STDOUT, (char*)&c, 1);
-  return 0;
-}
-
-int ungetc_char = -1;
-char ungetc_buf[2];
-
-int
-getchar ()
-{
-  char c;
-  int i;
-  if (ungetc_char == -1)
-    {
-      int r = read (g_stdin, &c, 1);
-      if (r < 1) return -1;
-      i = c;
-    }
-  else
-    i = ungetc_buf[ungetc_char--];
-
-  if (i < 0) i += 256;
-
-  return i;
-}
-
-#define ungetc fdungetc
-int
-fdungetc (int c, int fd)
-{
-  assert (ungetc_char < 2);
-  ungetc_buf[++ungetc_char] = c;
-  return c;
-}
-#endif
-
 int
 ungetchar (int c)
 {
@@ -112,7 +60,9 @@ write_byte (SCM x) ///((arity . n))
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
   char cc = VALUE (c);
   write (fd, (char*)&cc, 1);
+#if !__MESC__
   assert (TYPE (c) == TNUMBER || TYPE (c) == TCHAR);
+#endif
   return c;
 }
 

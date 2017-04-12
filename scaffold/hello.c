@@ -18,7 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
+#if !__MESC__
 #include "mlibc.c"
 #endif
 
@@ -26,10 +26,15 @@ int
 main (int argc, char *argv[])
 {
   puts ("Hi Mes!\n");
+#if __MESC_MES__
+  puts ("MESC.MES\n");
+#else
+  puts ("MESC.GUILE\n");
+#endif
   if (argc > 1 && !strcmp (argv[1], "--help")) {puts ("argc > 1 && --help\n"); return argc;}
   return 42;
 }
 
-#if __GNUC__
+#if !__MESC__ && !POSIX
 #include "mstart.c"
 #endif

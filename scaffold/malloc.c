@@ -18,10 +18,18 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
+#if POSIX
+#error "POSIX not supported"
+#endif
+
+#if  __MESC__
+int g_stdin = 0;
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
+#endif
+
+#if !__MESC__
 #include "mlibc.c"
 #endif
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
 int
 main (int argc, char *argv[])

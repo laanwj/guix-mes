@@ -22,7 +22,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 !#
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; configure: This file is part of Mes.
 ;;;
@@ -53,19 +53,11 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 (define PACKAGE "mes")
 (define VERSION "0.4")
 (define PREFIX "/usr/local")
-(define GUILE_EV (effective-version))
-(define CC (or (getenv "CC") "gcc"))
-(define CC32 (or (getenv "CC32") "i686-unknown-linux-gnu-gcc"))
+(define GUILE_EFFECTIVE_VERSION (effective-version))
 (define GUILE (or (getenv "guile") "guile"))
 (define SYSCONFDIR "$(PREFIX)/etc")
 
 ;;; Utility
-(define (gulp-pipe command)
-  (let* ((port (open-pipe* OPEN_READ *shell* "-c" command))
-         (output (read-string port)))
-    (close-port port)
-    (string-trim-right output #\newline)))
-
 (define (logf port string . rest)
   (apply format (cons* port string rest))
   (force-output port)
@@ -76,6 +68,18 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 
 (define (stdout string . rest)
   (apply logf (cons* (current-output-port) string rest)))
+
+(define *verbose?* #f)
+
+(define (verbose string . rest)
+  (if *verbose?* (apply stderr (cons string rest))))
+
+(define (gulp-pipe command)
+  (let* ((port (open-pipe* OPEN_READ *shell* "-c" command))
+         (output (read-string port))
+         (status (close-pipe port)))
+    (verbose "command[~a]: ~s => ~a\n" status command output)
+    (if (not (zero? status)) "" (string-trim-right output #\newline))))
 
 (define* ((->string #:optional (infix "")) h . t)
   (let ((o (if (pair? t) (cons h t) h)))
@@ -123,14 +127,14 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
   (stderr "checking for ~a~a..." command
           (if (null? expected) ""
               (format #f " [~a]" (version->string expected))))
-  (let* ((actual (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
-         (actual (string->version actual))
+  (let* ((output (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
+         (actual (string->version output))
          (pass? (and actual (compare expected actual))))
     (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
                           (if actual " no, found" "")) (version->string actual))
-    (if (not pass?)
-        (set! required (cons (or deb command) required)))
-    pass?))
+    (or pass?
+        (if (not (pair? command)) (begin (set! required (cons (or deb command) required)) pass?)
+            (check-version (cdr command) expected deb version-option compare)))))
 
 (define* (check-pkg-config package expected #:optional (deb #f))
   (check-version (format #f "pkg-config --modversion ~a" package) expected deb))
@@ -147,15 +151,24 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
         (set! required (cons deb required)))))
 
 (define guix?
-  (system "guix --version &>/dev/null"))
+  (and (zero? (system "guix --version &>/dev/null")) 1))
 ;;;
+
+(define CC (or (getenv "CC") "gcc"))
+(define BUILD_TRIPLET (gulp-pipe (string-append CC " -dumpmachine 2>/dev/null")))
+(define ARCH (car (string-split BUILD_TRIPLET #\-)))
+(define CC32 (or (getenv "CC32")
+                 (if (equal? ARCH "i686") CC
+                     "i686-unknown-linux-gnu-gcc")))
 
 (define (parse-opts args)
   (let* ((option-spec
   	  '((build (value #t))
+            (host (value #t))
             (help (single-char #\h))
             (prefix (value #t))
             (sysconfdir (value #t))
+            (verbose (single-char #\v))
             ;;ignore
             (enable-fast-install)))
          (options (getopt-long args option-spec))
@@ -169,38 +182,46 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
              ((or (and usage? stderr) stdout) "\
 Usage: ./configure [OPTION]...
   -h, --help           display this help
+      --build=BUILD    configure for building on BUILD [guessed]
+      --host=HOST      cross-compile to build programs to run on HOST [BUILD]
   --prefix=DIR         install in PREFIX [~a]
   --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
+  -v, --verbose        be verbose
 " PREFIX)
              (exit (or (and usage? 2) 0)))
         options)))
 
-(define BUILD_TRIPLET (gulp-pipe "gcc -dumpmachine 2>/dev/null"))
-
 (define (main args)
   (let* ((options (parse-opts args))
          (build-triplet (option-ref options 'build BUILD_TRIPLET))
+         (host-triplet (option-ref options 'host BUILD_TRIPLET))
          (prefix (option-ref options 'prefix PREFIX))
-         (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR)))
+         (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
+         (verbose? (option-ref options 'verbose #f)))
+    (set! *verbose?* verbose?)
     (check-version 'bash '(4 0))
-    (check-version 'gcc '(4 8))
-    (check-version 'i686-unknown-linux-gnu-gcc '(4 8))
+    (check-version CC '(4 8))
+    (check-version CC32 '(4 8))
     (check-version 'guile '(2 0))
     (check-version 'make '(4 0))
     (check-version 'perl '(5))
 
     (when (pair? required)
-          (stderr "\nMissing dependencies, run\n\n")
-          (if guix?
-              (stderr "    guix environment -l guix.scm\n")
-              (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
-          (exit 1))
+      (stderr "\nMissing dependencies [~a], run\n\n" ((->string ", ") required))
+      (if guix?
+          (stderr "    guix environment -l guix.scm\n")
+          (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
+      (exit 1))
     (with-output-to-file ".config.make"
       (lambda ()
+        (stdout "build:=~a\n" build-triplet)
+        (stdout "host:=~a\n" host-triplet)
+        (stdout "srcdir:=.\n")
+        (stdout "ARCH:=~a\n" ARCH)
         (stdout "CC:=~a\n" CC)
         (stdout "CC32:=~a\n" CC32)
         (stdout "GUILE:=~a\n" GUILE)
-        (stdout "GUILE_EV:=~a\n" GUILE_EV)
+        (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
         (stdout "GUIX_P:=~a\n" (if guix? guix? ""))
         (stdout "PACKAGE:=~a\n" PACKAGE)
         (stdout "VERSION:=~a\n" VERSION)

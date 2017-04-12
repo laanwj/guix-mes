@@ -49,6 +49,8 @@ exit $r
 (mes-use-module (mes guile))
 (mes-use-module (language c99 compiler))
 
+(format (current-error-port) "mescc.mes...\n")
+
 (define %datadir (if (string-prefix? "@DATADIR" "@DATADIR@") "" "@DATADIR@"))
 (define %docdir (if (string-prefix? "@DOCDIR" "@DOCDIR@") "doc/" "@DOCDIR@"))
 (define %moduledir "module/")
@@ -63,7 +65,8 @@ exit $r
                     (car mfiles))))
     (format (current-error-port) "compiling: ~a\n" mfile)
     (with-input-from-file mfile
-      compile)))
+      c99-input->elf)))
 
+(format (current-error-port) "calling main, command-line=~s\n" (command-line))
 (main (command-line))
 ()

@@ -18,10 +18,14 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
+#if  __MESC__
+int g_stdin = 0;
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
+#endif
+
+#if !__MESC__
 #include "mlibc.c"
 #endif
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
 struct scm {
   int type;
@@ -31,7 +35,11 @@ struct scm {
 
 int bla = 1234;
 char arena[84];
+#if __MESC__
 struct scm *g_cells = arena;
+#else
+struct scm *g_cells = (struct scm*)arena;
+#endif
 char *g_chars = arena;
 
 int foo () {puts ("t: foo\n"); return 0;};
@@ -845,6 +853,6 @@ main (int argc, char *argv[])
   return 22;
 }
 
-#if __GNUC__
+#if !POSIX && !__MESC__
 #include "mstart.c"
 #endif

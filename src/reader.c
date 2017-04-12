@@ -18,11 +18,11 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if _POSIX_SOURCE
-#undef fputs
-#undef fdputs
-#undef fdputc
-#endif
+// #if _POSIX_SOURCE
+// #undef fputs
+// #undef fdputs
+// #undef fdputc
+// #endif
 
 SCM
 ___end_of_mes___ ()
@@ -119,7 +119,8 @@ lookup_ (SCM s, SCM a)
   return lookup_symbol_ (s);
 }
 
-//FILE *g_stdin;
+int g_tiny = 0;
+
 int
 dump ()
 {
@@ -132,14 +133,17 @@ dump ()
   gc ();
   gc_peek_frame ();
   char *p = (char*)g_cells;
-  putc ('M');
-  putc ('E');
-  putc ('S');
-  putc (g_stack >> 8);
-  putc (g_stack % 256);
+  putchar ('M');
+  putchar ('E');
+  putchar ('S');
+  putchar (g_stack >> 8);
+  putchar (g_stack % 256);
   // See HACKING, simple crafted dump for tiny-mes.c
-  if (getenv ("MES_TINY"))
+  //  if (getenv ("MES_TINY"))
+  if (g_tiny)
     {
+      eputs ("dumping TINY\n");
+
       TYPE (9) = 0x2d2d2d2d;
       CAR (9) = 0x2d2d2d2d;
       CDR (9) = 0x3e3e3e3e;
@@ -166,7 +170,9 @@ dump ()
 
       g_free = 15;
     }
+  else
+    eputs ("dumping FULL\n");
   for (int i=0; i<g_free * sizeof(struct scm); i++)
-    putc (*p++);
+    putchar (*p++);
   return 0;
 }

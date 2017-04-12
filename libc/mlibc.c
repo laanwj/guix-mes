@@ -18,21 +18,24 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
 int g_stdin = 0;
-typedef long size_t;
-void *malloc (size_t i);
-int open (char const *s, int mode);
-int read (int fd, void* buf, size_t n);
-void write (int fd, char const* s, int n);
 
-#define O_RDONLY 0
-#define INT_MIN -2147483648
-#define INT_MAX 2147483647
 #define EOF -1
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+
+#if __GNUC__ && !POSIX
+
+#define O_RDONLY 0
+#define INT_MIN -2147483648
+#define INT_MAX 2147483647
+
+typedef long size_t;
+void *malloc (size_t i);
+int open (char const *s, int mode);
+int read (int fd, void* buf, size_t n);
+int write (int fd, char const* s, int n);
 
 void
 exit (int code)
@@ -96,22 +99,24 @@ open (char const *s, int mode)
 int puts (char const*);
 char const* itoa (int);
 
-void
+int
 write (int fd, char const* s, int n)
 {
   int r;
   //syscall (SYS_write, fd, s, n));
   asm (
-       "mov %0,%%ebx\n\t"
-       "mov %1,%%ecx\n\t"
-       "mov %2,%%edx\n\t"
+       "mov %1,%%ebx\n\t"
+       "mov %2,%%ecx\n\t"
+       "mov %3,%%edx\n\t"
 
        "mov $0x4, %%eax\n\t"
        "int $0x80\n\t"
-       : // no outputs "=" (r)
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
        : "" (fd), "" (s), "" (n)
        : "eax", "ebx", "ecx", "edx"
        );
+  return r;
 }
 
 int
@@ -151,7 +156,7 @@ brk (void *p)
 }
 
 int
-putc (int c, int fd)
+fputc (int c, int fd)
 {
   write (fd, (char*)&c, 1);
   return 0;
@@ -240,7 +245,6 @@ assert_fail (char* s)
 
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
-
 int ungetc_char = -1;
 char ungetc_buf[2];
 
@@ -271,6 +275,13 @@ ungetc (int c, int fd)
   return c;
 }
 
+int
+isdigit (int c)
+{
+  return (c>='0') && (c<='9');
+}
+#endif
+
 char itoa_buf[10];
 
 char const*
@@ -300,9 +311,88 @@ itoa (int x)
   return p+1;
 }
 
+#if POSIX
+
+#define _GNU_SOURCE
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#undef puts
+#define puts(x) fdputs(x, STDOUT)
+#define eputs(x) fdputs(x, STDERR)
+#define fputs fdputs
 int
-isdigit (int c)
+fdputs (char const* s, int fd)
 {
-  return (c>='0') && (c<='9');
+  int i = strlen (s);
+  write (fd, s, i);
+  return 0;
 }
+
+#ifdef putc
+#undef putc
+#endif
+#define fputc fdputc
+int
+fdputc (int c, int fd)
+{
+  write (fd, (char*)&c, 1);
+  return 0;
+}
+
+int
+putchar (int c)
+{
+  write (STDOUT, (char*)&c, 1);
+  return 0;
+}
+
+int ungetc_char = -1;
+char ungetc_buf[2];
+
+int
+getchar ()
+{
+  char c;
+  int i;
+  if (ungetc_char == -1)
+    {
+      int r = read (g_stdin, &c, 1);
+      if (r < 1) return -1;
+      i = c;
+    }
+  else
+    i = ungetc_buf[ungetc_char--];
+
+  if (i < 0) i += 256;
+
+  return i;
+}
+
+#define ungetc fdungetc
+int
+fdungetc (int c, int fd)
+{
+  assert (ungetc_char < 2);
+  ungetc_buf[++ungetc_char] = c;
+  return c;
+}
+#else
+
+#define fputs fdputs
+int
+fdputs (char const* s, int fd)
+{
+  int i = strlen (s);
+  write (fd, s, i);
+  return 0;
+}
+
 #endif

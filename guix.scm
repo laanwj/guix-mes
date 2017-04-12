@@ -1,7 +1,7 @@
 ;;; guix.scm -- Guix package definition
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 ;;; Also borrowing code from:
 ;;; guile-sdl2 --- FFI bindings for SDL2
@@ -47,6 +47,7 @@
              (gnu packages)
              (gnu packages base)
              (gnu packages commencement)
+             (gnu packages cross-base)
              (gnu packages gcc)
              (gnu packages guile)
              (gnu packages package-management)
@@ -80,36 +81,54 @@
         (_ #f)))))
 
 (define-public mes
+  (let ((triplet "i686-unknown-linux-gnu"))
+    (package
+      (name "mes")
+      (version "0.4.f84e97fc")
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://gitlab.com/janneke/mes")
+                      (commit "f84e97fc33f5e2a2ad7033795967d44c95d34b8f")))
+                (file-name (string-append name "-" version))
+                (sha256
+                 (base32 "1jpm8m8y2dqsl3sc6flf8da4rpdrqh6zgr2mghzjw0lg34v1r21j"))))
+      (build-system gnu-build-system)
+      (supported-systems '("x86_64-linux"))
+      (native-inputs
+       `(("git" ,git)
+         ("guile" ,guile-2.2)
+         ("gcc" ,gcc-toolchain-4.9)
+         ;; Use cross-compiler rather than #:system "i686-linux" to get
+         ;; MesCC 64 bit .go files installed ready for use with Guile.
+         ("i686-linux-binutils" ,(cross-binutils triplet))
+         ("i686-linux-gcc" ,(let ((triplet triplet)) (cross-gcc triplet)))
+         ("perl" ,perl)))        ; build-aux/gitlog-to-changelog
+      (supported-systems '("i686-linux"))
+      (synopsis "Maxwell Equations of Software")
+      (description
+       "Mes aims to create full source bootstrapping for GuixSD.  It
+consists of a mutual self-hosting [close to Guile-] Scheme interpreter
+prototype in C and a Nyacc-based C compiler in [Guile] Scheme.")
+      (home-page "https://gitlab.com/janneke/mes")
+      (license gpl3+))))
+
+(define-public mes.git
   (package
-    (name "mes")
+    (inherit mes)
+    (name "mes.git")
     (version "git")
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
-    (build-system gnu-build-system)
-    (native-inputs
-     `(("git" ,git)
-       ("guile" ,guile-2.2)
-       ("gcc" ,gcc-toolchain-4.9)
-       ("perl" ,perl)))                ; build-aux/gitlog-to-changelog
-    (supported-systems '("i686-linux"))
     (arguments
-     `(#:system "i686-linux"
-       ;;#:make-flags '("MES_BOOTSTRAP=mes-mes")
-       #:phases
+     `(#:phases
        (modify-phases %standard-phases
          (add-before 'install 'generate-changelog
-           (lambda _
-             (with-output-to-file "ChangeLog"
-               (lambda ()
-                 (display "Please run\n  build-aux/gitlog-to-changelog --srcdir=<git-checkout> > ChangeLog\n")))
-             #t)))))
-    (synopsis "Maxwell Equations of Software")
-    (description
-     "Mes aims to create full source bootstrapping for GuixSD: an
-entirely source-based bootstrap path.  The target is to [have GuixSD]
-boostrap from a minimal, easily inspectable binary --that should be
-readable as source-- into something close to R6RS Scheme.")
-    (home-page "https://gitlab.com/janneke/mes")
-    (license gpl3+)))
+                     (lambda _
+                       (with-output-to-file "ChangeLog"
+                         (lambda ()
+                           (display "Please run
+    build-aux/gitlog-to-changelog --srcdir=<git-checkout> > ChangeLog\n")))
+                       #t)))))))
 
-;; Return it here so 'guix build/environment/package' can consume it directly.
-mes
+;; Return it here so `guix build/environment/package' can consume it directly.
+mes.git

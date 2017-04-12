@@ -18,23 +18,22 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if __GNUC__
+#if !__MESC__
 #include "mlibc.c"
 #endif
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 
 int
 main (int argc, char *argv[])
 {
-  g_stdin = open ("mesmes", 0);
+  g_stdin = open ("scaffold/mesmes", 0);
   int c = getchar ();
-  while (c != -1) {
+  while (c != EOF) {
     putchar (c);
     c = getchar ();
   }
   return c;
 }
 
-#if __GNUC__
+#if !__MESC__ && !POSIX
 #include "mstart.c"
 #endif

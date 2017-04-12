@@ -1,9 +1,11 @@
 #! /bin/sh
 # -*-scheme-*-
-DATADIR=${DATADIR-@DATADIR@}
-[ "$DATADIR" = @"DATADIR"@ ] && DATADIR=.
+GODIR=${GODIR-@GODIR@}
+MODULEDIR=${MODULEDIR-@MODULEDIR@}
+[ "$GODIR" = @"GODIR"@ ] && GODIR=guile
+[ "$MODULEDIR" = @"MODULEDIR"@ ] && MODULEDIR=guile
 export GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
-exec ${GUILE-guile} -L $DATADIR/guile -e '(mescc)' -s "$0" "$@"
+exec ${GUILE-guile} -L $MODULEDIR -C $GODIR -e '(mescc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
@@ -61,4 +63,4 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
            (exit 0)))
     (format (current-error-port) "compiling: ~a\n" file)
     (with-input-from-file file
-      compile)))
+      c99-input->elf)))

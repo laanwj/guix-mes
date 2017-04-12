@@ -46,14 +46,24 @@
 (define (stderr string . rest)
   (apply logf (cons* (current-error-port) string rest)))
 
-(define (mescc)
+(define %datadir (if (string-prefix? "@DATADIR" "@DATADIR@") "" "@DATADIR@"))
+(define %docdir (if (string-prefix? "@DOCDIR" "@DOCDIR@") "doc/" "@DOCDIR@"))
+(define %moduledir "module/")
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") "" "@PREFIX@"))
+(define %version (if (string-prefix? "@VERSION" "@VERSION@") "git" "@VERSION@"))
+
+(define mes? (pair? (current-module)))
+
+(define (c99-input->ast)
   (parse-c99
-   #:inc-dirs (string-split (getenv "C_INCLUDE_PATH") #\:)
+   #:inc-dirs (cons* "." "libc" "src" "out" "out/src" (string-split (getenv "C_INCLUDE_PATH") #\:))
    #:cpp-defs `(
+                "POSIX=0"
                 "_POSIX_SOURCE=0"
                 "__GNUC__=0"
                 "__MESC__=1"
                 "__NYACC__=1" ;; REMOVEME
+                "EOF=-1"
                 "STDIN=0"
                 "STDOUT=1"
                 "STDERR=2"
@@ -62,6 +72,11 @@
                 "INT_MIN=-2147483648"
                 "INT_MAX=2147483647"
 
+                "MES_FULL=0"
+                "FIXED_PRIMITIVES=1"
+
+                ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
+
                 ,(string-append "DATADIR=\"" %datadir "\"")
                 ,(string-append "DOCDIR=\"" %docdir "\"")
                 ,(string-append "PREFIX=\"" %prefix "\"")
@@ -69,16 +84,6 @@
                 ,(string-append "VERSION=\"" %version "\"")
                 )
    #:mode 'code))
-
-(define (write-any x)
-  (write-char (cond ((char? x) x)
-                    ((and (number? x) (< (+ x 256) 0)) (format (current-error-port) "***BROKEN*** x=~a ==> ~a\n" x (dec->hex x)) (integer->char #xaa))
-                    ((number? x) (integer->char (if (>= x 0) x (+ x 256))))
-                    ((procedure? x)
-                     (stderr "write-any: proc: ~a\n" x)
-                     (stderr "  ==> ~a\n" (map dec->hex (x '() '() 0 0)))
-                     barf)
-                    (else (stderr "write-any: ~a\n" x) barf))))
 
 (define (ast:function? o)
   (and (pair? o) (eq? (car o) 'fctn-defn)))
@@ -241,7 +246,7 @@
                   (if constant
                       (wrap-as (append (i386:value->accu constant)
                                        (i386:push-accu)))
-                      TODO:push-function))))))))
+                      (error "TODO:push-function: " o)))))))))
 
 (define (push-ident-address info)
   (lambda (o)
@@ -345,7 +350,7 @@
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (append (i386:local->accu (local:id local))
                                  (i386:byte-base->accu-address)))
-          TODO:base->ident-address-global))))
+          (error "TODO:base->ident-address-global" o)))))
 
 (define (value->ident info)
   (lambda (o value)
@@ -405,6 +410,9 @@
         ((p-expr (string ,string))
          (append-text info (list (lambda (f g ta t d)
                                    (i386:global->accu (+ (data-offset (add-s:-prefix string) globals) d))))))
+        ((p-expr (string . ,strings))
+         (append-text info (list (lambda (f g ta t d)
+                                   (i386:global->accu (+ (data-offset (add-s:-prefix (apply string-append strings)) globals) d))))))
         ((p-expr (fixed ,value))
          (append-text info (value->accu (cstring->number value))))
         ((p-expr (ident ,name))
@@ -525,17 +533,17 @@
                                    ((ident-add info) name 1))))
 
         ((post-dec (p-expr (ident ,name)))
-         (or (assoc-ref locals name) (begin (stderr "i-- ~a\n" name) barf))
+         (or (assoc-ref locals name) (begin (stderr "i-- ~a\n" name) (error "undefined identifier: " name)))
          (append-text info (append ((ident->accu info) name)
                                    ((ident-add info) name -1))))
 
         ((pre-inc (p-expr (ident ,name)))
-         (or (assoc-ref locals name) (begin (stderr "++i ~a\n" name) barf))
+         (or (assoc-ref locals name) (begin (stderr "++i ~a\n" name) (error "undefined identifier: " name)))
          (append-text info (append ((ident-add info) name 1)
                                    ((ident->accu info) name))))
 
         ((pre-dec (p-expr (ident ,name)))
-         (or (assoc-ref locals name) (begin (stderr "--i ~a\n" name) barf))
+         (or (assoc-ref locals name) (begin (stderr "--i ~a\n" name) (error "undefined identifier: " name)))
          (append-text info (append ((ident-add info) name -1)
                                    ((ident->accu info) name))))
 
@@ -627,12 +635,9 @@
                                               (wrap-as (append (i386:accu+n 4)
                                                                (i386:base+n 4)
                                                                (i386:base-address->accu-address))))))))))
-             (_ barf-assign))))
+             (_ (error "expr->accu: unsupported assign: " a)))))
 
-        (_
-         (format (current-error-port) "SKIP: expr->accu=~s\n" o)
-         barf
-         info)))))
+        (_ (error "expr->accu: unsupported: " o))))))
 
 (define (expr->base info)
   (lambda (o)
@@ -692,11 +697,7 @@
          (append-text info (append ((ident->accu info) name)
                                    (wrap-as (i386:accu+value offset))))))
 
-      (_
-       (format (current-error-port) "SKIP: expr->accu*=~s\n" o)
-       barf
-       info)
-      )))
+      (_ (error "expr->accu*: unsupported: " o)))))
 
 (define (ident->constant name value)
   (cons name value))
@@ -717,10 +718,7 @@
     ((decl (decl-spec-list (type-spec (struct-ref (ident ,name)))));; "scm"
      (list "struct" name)) ;; FIXME
     ((typename ,name) name)
-    (_
-     (stderr "SKIP: decl type=~s\n" o)
-     barf
-     o)))
+    (_ (error "decl->type: unsupported: " o))))
 
 (define (expr->global o)
   (pmatch o
@@ -899,7 +897,7 @@
      (cons type name)) ;; FIXME function / int
     ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
      (cons type name)) ;; FIXME: ptr/char
-    (_ (stderr "struct-field: no match: ~s\n" o) barf)))
+    (_ (error "struct-field: unsupported: " o))))
 
 (define (ast->type o)
   (pmatch o
@@ -924,10 +922,7 @@
      (type->size info type))
     (_ (let ((type (assoc-ref (.types info) o)))
          (if type (cadr type)
-             (begin
-               (stderr "***TYPE NOT FOUND**: o=~s\n" o)
-               barf
-               4))))))
+             (error "type->size: unsupported: " o))))))
 
 (define (ident->decl info o)
   ;; (stderr "ident->decl o=~s\n" o)
@@ -1233,7 +1228,7 @@
 
         ;; char c = 'A';
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (char ,value))))))
-         (if (not (.function info)) decl-barf0)
+         (if (not (.function info)) (error "ast->info: unsupported: " o))
          (let* ((locals (add-local locals name type 0))
                 (info (clone info #:locals locals))
                 (value (char->integer (car (string->list value)))))
@@ -1250,7 +1245,7 @@
 
         ;; int i = argc;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
-         (if (not (.function info)) decl-barf2)
+         (if (not (.function info)) (error "ast->info: unsupported: " o))
          (let* ((locals (add-local locals name type 0))
                 (info (clone info #:locals locals)))
            (append-text info (append ((ident->accu info) local)
@@ -1258,9 +1253,7 @@
 
         ;; char *p = "t.c";
         ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (string ,string))))))
-         (when (not (.function info))
-           (stderr "o=~s\n" o)
-           decl-barf3)
+         (if (not (.function info)) (error "ast->info: unsupported: " o))
          (let* ((locals (add-local locals name type 1))
                 (globals (append globals (list (string->global string))))
                 (info (clone info #:locals locals #:globals globals)))
@@ -1283,8 +1276,7 @@
         ;; char arena[20000];
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
          (let ((type (ast->type type)))
-           (if (.function info)
-               TODO:decl-array 
+           (if (.function info) (error "ast->info: unsupported: " o)
                (let* ((globals (.globals info))
                       (count (cstring->number count))
                       (size (type->size info type))
@@ -1507,10 +1499,7 @@
          (format (current-error-port) "SKIP: at=~s\n" o)
          info)
 
-        ((decl . _)
-         (format (current-error-port) "SKIP: decl statement=~s\n" o)
-         barf
-         info)
+        ((decl . _) (error "ast->info: unsupported: " o))
 
         ;; ...
         ((gt . _) ((expr->accu info) o))
@@ -1544,20 +1533,13 @@
        (int->bv32 value)))
     ((initzer (p-expr (string ,string)))
      (int->bv32 (+ (data-offset (add-s:-prefix string) globals) d)))
-    (_ (stderr "initzer->data:SKIP: ~s\n" o)
-       barf
-       (int->bv32 0))))
-
-(define (info->exe info)
-  (display "dumping elf\n" (current-error-port))
-  (for-each write-any (make-elf (.functions info) (.globals info) (.init info))))
+    (_ (error "initzer->data: unsupported: " o))))
 
 (define (.formals o)
   (pmatch o
     ((fctn-defn _ (ftn-declr _ ,formals) _) formals)
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr _ ,formals)) _) formals)
-    (_ (format (current-error-port) ".formals: no match: ~a\n" o)
-       barf)))
+    (_ (error ".formals: " o))))
 
 (define (formal->text n)
   (lambda (o i)
@@ -1572,8 +1554,7 @@
        (wrap-as (append (i386:function-preamble)
                         (append-map (formal->text n) formals (iota n))
                         (i386:function-locals)))))
-    (_ (format (current-error-port) "formals->text: no match: ~a\n" o)
-       barf)))
+    (_ (error "formals->text: unsupported: " o))))
 
 (define (formal:ptr o)
   (pmatch o
@@ -1590,8 +1571,7 @@
     ((param-list . ,formals)
      (let ((n (length formals)))
        (map make-local (map .name formals) (map .type formals) (map formal:ptr formals) (iota n -2 -1))))
-    (_ (format (current-error-port) "formals->info: no match: ~a\n" o)
-       barf)))
+    (_ (error "formals->locals: unsupported: " o))))
 
 (define (function->info info)
   (lambda (o)
@@ -1618,13 +1598,31 @@
       (if (null? elements) info
           (loop (cdr elements) ((ast->info info) (car elements)))))))
 
-(define (compile)
+(define (c99-input->info)
   (stderr "COMPILE\n")
-  (let* ((ast (mescc))
+  (let* ((ast (c99-input->ast))
          (info (make <info>
                  #:functions i386:libc
                  #:types i386:type-alist))
          (ast (append libc ast))
          (info ((ast->info info) ast))
          (info ((ast->info info) _start)))
-    (info->exe info)))
+    info))
+
+(define (write-any x)
+  (write-char (cond ((char? x) x)
+                    ((and (number? x) (< (+ x 256) 0))
+                     (format (current-error-port) "***BROKEN*** x=~a ==> ~a\n" x (dec->hex x)) (integer->char #xaa))
+                    ((number? x) (integer->char (if (>= x 0) x (+ x 256))))
+                    ((procedure? x)
+                     (stderr "write-any: proc: ~a\n" x)
+                     (stderr "  ==> ~a\n" (map dec->hex (x '() '() 0 0)))
+                     (error "procedure: write-any:" x))
+                    (else (stderr "write-any: ~a\n" x) (error "write-any: else: " x)))))
+
+(define (info->elf info)
+  (display "dumping elf\n" (current-error-port))
+  (for-each write-any (make-elf (.functions info) (.globals info) (.init info))))
+
+(define (c99-input->elf)
+  ((compose info->elf c99-input->info)))

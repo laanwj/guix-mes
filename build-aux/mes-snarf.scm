@@ -155,8 +155,10 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
          (functions (filter (negate internal?) functions))
          (symbols (snarf-symbols string))
          (base-name (basename file-name ".c"))
-         (base-name (if (or %gcc? (string-prefix? "mini-" base-name)) base-name
-                        (string-append "mini-" base-name)))
+         (dir (or (getenv "OUT") "out"))
+         (base-name (string-append dir "/" base-name))
+         (base-name (if %gcc? base-name
+                        (string-append base-name ".mes")))
          (header (make <file>
                    #:name (string-append base-name ".h")
                    #:content (string-join (map function->header functions (iota (length functions) (+ %start (length symbols)))) "")))
@@ -181,7 +183,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
   (with-output-to-file (.name file) (lambda () (display (.content file)))))
 
 (define (main args)
-  (let* ((files (if (not (and (pair? (cdr args)) (equal? (cadr args) "--mini"))) (cdr args)
+  (let* ((files (if (not (and (pair? (cdr args)) (equal? (cadr args) "--mes"))) (cdr args)
                     (begin (set! %gcc? #f)
                            (cddr args)))))
     (map file-write (filter content? (append-map generate-includes files)))))

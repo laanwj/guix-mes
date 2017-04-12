@@ -19,54 +19,6 @@
  */
 
 int g_depth;
-#if _POSIX_SOURCE
-
-char const*
-itoa (int x)
-{
-  static char buf[10];
-  char *p = buf+9;
-  *p-- = 0;
-
-  int sign = x < 0;
-  if (sign)
-    x = -x;
-  
-  do
-    {
-      *p-- = '0' + (x % 10);
-      x = x / 10;
-    } while (x);
-
-  if (sign)
-    *p-- = '-';
-
-  return p+1;
-}
-
-// from mlib.c
-#define fputs fdputs
-int
-fdputs (char const* s, int fd)
-{
-  int i = strlen (s);
-  write (fd, s, i);
-  return 0;
-}
-
-#ifdef putc
-#undef putc
-#endif
-#define putc(x) fdputc(x, STDOUT)
-#define fputc fdputc
-int
-fdputc (int c, int fd)
-{
-  write (fd, (char*)&c, 1);
-  return 0;
-}
-#endif
-
 SCM fdisplay_ (SCM, int);
 
 SCM
@@ -184,8 +136,3 @@ xassq (SCM x, SCM a) ///for speed in core only
   while (a != cell_nil && x != CDAR (a)) a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
 }
-
-#if _POSIX_SOURCE
-#undef fdputs
-#undef fdputc
-#endif

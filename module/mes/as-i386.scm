@@ -62,6 +62,7 @@
             i386:byte-base-mem->accu
             i386:local-address->accu
             i386:byte-local->accu
+            i386:byte-local->base
             i386:byte-mem->accu
             i386:base-mem+n->accu
             i386:byte-mem->base

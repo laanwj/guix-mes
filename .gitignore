@@ -1,41 +1,14 @@
 *-
-*.cat
-*.environment.h
 *.go
-*.h
-*.i
-*.o
-*.o-32
-*.symbols.i
 *~
 .#*
 /.config.make
 /.tarball-version
 /ChangeLog
 /a.out
-/mes
-/mes-32
-
-/cons-mes
-/m
-/malloc
-/main
-/micro-mes
-/mini-mes
-/t
-/tiny-mes
-
-/guile-cons-mes
-/guile-m
-/guile-malloc
-/guile-main
-/guile-micro-mes
-/guile-mini-mes
-/guile-t
-/guile-tiny-mes
 
 #keep this: bootstrap
-#/mes-mini-mes
+#/mes.mes
 
 /module/mes/tiny-0-32.mo
 #keep this: bootstrap
