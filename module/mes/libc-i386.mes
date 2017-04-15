@@ -92,6 +92,18 @@
     #xc3                                ; ret
     ))
 
+(define (i386:fsync f g ta t d)
+  '(
+    #x55                                ; push   %ebp
+    #x89 #xe5                           ; mov    %esp,%ebp
+
+    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+    #xb8 #x76 #x00 #x00 #x00            ; mov    $0x76,%eax
+    #xcd #x80                           ; int    $0x80
+
+    #xc9                                ; leave
+    #xc3                                ; ret
+    ))
 
 (define (i386:_start)
  (string-append ".byte"
@@ -110,4 +122,5 @@
    (cons "open" (list i386:open))
    (cons "read" (list i386:read))
    (cons "write" (list i386:write))
+   (cons "fsync" (list i386:fsync))
    (cons "brk" (list i386:brk))))

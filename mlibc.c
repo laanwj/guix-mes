@@ -114,6 +114,24 @@ write (int fd, char const* s, int n)
        );
 }
 
+int
+fsync (int fd)
+{
+  int r;
+  //syscall (SYS_fsync, fd));
+  asm (
+       "mov %1,%%ebx\n\t"
+
+       "mov $0x76, %%eax\n\t"
+       "int $0x80\n\t"
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (fd)
+       : "eax", "ebx"
+       );
+  return r;
+}
+
 void *
 brk (void *p)
 {
