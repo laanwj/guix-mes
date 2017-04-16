@@ -173,3 +173,4 @@
 (mes-use-module (srfi srfi-13))
 (mes-use-module (mes display))
 (mes-use-module (mes catch))
+(mes-use-module (mes posix))

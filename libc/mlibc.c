@@ -79,27 +79,6 @@ read (int fd, void* buf, size_t n)
 }
 
 int
-open (char const *s, int mode)
-{
-  int r;
-  //syscall (SYS_open, mode));
-  asm (
-       "mov %1,%%ebx\n\t"
-       "mov %2,%%ecx\n\t"
-       "mov $0x5,%%eax\n\t"
-       "int $0x80\n\t"
-       "mov %%eax,%0\n\t"
-       : "=r" (r)
-       : "" (s), "" (mode)
-       : "eax", "ebx", "ecx"
-       );
-  return r;
-}
-
-int puts (char const*);
-char const* itoa (int);
-
-int
 write (int fd, char const* s, int n)
 {
   int r;
@@ -120,19 +99,37 @@ write (int fd, char const* s, int n)
 }
 
 int
-fsync (int fd)
+open (char const *s, int mode)
 {
   int r;
-  //syscall (SYS_fsync, fd));
+  //syscall (SYS_open, mode));
   asm (
        "mov %1,%%ebx\n\t"
-
-       "mov $0x76, %%eax\n\t"
+       "mov %2,%%ecx\n\t"
+       "mov $0x5,%%eax\n\t"
        "int $0x80\n\t"
        "mov %%eax,%0\n\t"
        : "=r" (r)
-       : "" (fd)
-       : "eax", "ebx"
+       : "" (s), "" (mode)
+       : "eax", "ebx", "ecx"
+       );
+  return r;
+}
+
+int
+access (char const *s, int mode)
+{
+  int r;
+  //syscall (SYS_access, mode));
+  asm (
+       "mov %1,%%ebx\n\t"
+       "mov %2,%%ecx\n\t"
+       "mov $0x21,%%eax\n\t"
+       "int $0x80\n\t"
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (s), "" (mode)
+       : "eax", "ebx", "ecx"
        );
   return r;
 }
@@ -150,6 +147,24 @@ brk (void *p)
        "mov %%eax,%0\n\t"
        : "=r" (r)
        : "" (p)
+       : "eax", "ebx"
+       );
+  return r;
+}
+
+int
+fsync (int fd)
+{
+  int r;
+  //syscall (SYS_fsync, fd));
+  asm (
+       "mov %1,%%ebx\n\t"
+
+       "mov $0x76, %%eax\n\t"
+       "int $0x80\n\t"
+       "mov %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (fd)
        : "eax", "ebx"
        );
   return r;

@@ -102,6 +102,12 @@ open_input_file (SCM file_name)
 }
 
 SCM
+access_p (SCM file_name, SCM mode)
+{
+  return access (string_to_cstring (file_name), VALUE (mode)) == 0 ? cell_t : cell_f;
+}
+
+SCM
 current_input_port ()
 {
   return MAKE_NUMBER (g_stdin);

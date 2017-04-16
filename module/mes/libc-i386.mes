@@ -32,21 +32,6 @@
     #xcd #x80                           ; int    $0x80
     ))
 
-(define (i386:open f g ta t d)
-  '(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
-
-    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
-    #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
-
-    #xb8 #x05 #x00 #x00 #x00            ; mov    $0x5,%eax
-    #xcd #x80                           ; int    $0x80
-
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
-
 (define (i386:read f g ta t d)
   '(
     #x55                                ; push   %ebp
@@ -73,6 +58,36 @@
     #x8b #x55 #x10                      ; mov    0x10(%ebp),%edx
 
     #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
+    #xcd #x80                           ; int    $0x80
+
+    #xc9                                ; leave
+    #xc3                                ; ret
+    ))
+
+(define (i386:open f g ta t d)
+  '(
+    #x55                                ; push   %ebp
+    #x89 #xe5                           ; mov    %esp,%ebp
+
+    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+    #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
+
+    #xb8 #x05 #x00 #x00 #x00            ; mov    $0x5,%eax
+    #xcd #x80                           ; int    $0x80
+
+    #xc9                                ; leave
+    #xc3                                ; ret
+    ))
+
+(define (i386:access f g ta t d)
+  '(
+    #x55                                ; push   %ebp
+    #x89 #xe5                           ; mov    %esp,%ebp
+
+    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+    #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
+
+    #xb8 #x21 #x00 #x00 #x00            ; mov    $0x21,%eax
     #xcd #x80                           ; int    $0x80
 
     #xc9                                ; leave
@@ -119,8 +134,9 @@
 (define i386:libc
   (list
    (cons "exit" (list i386:exit))
-   (cons "open" (list i386:open))
    (cons "read" (list i386:read))
    (cons "write" (list i386:write))
-   (cons "fsync" (list i386:fsync))
-   (cons "brk" (list i386:brk))))
+   (cons "open" (list i386:open))
+   (cons "access" (list i386:access))
+   (cons "brk" (list i386:brk))
+   (cons "fsync" (list i386:fsync))))
