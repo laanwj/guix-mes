@@ -87,12 +87,9 @@ string_to_cstring (SCM s)
 SCM
 getenv_ (SCM s) ///((name . "getenv"))
 {
-#if _POSIX_SOURCE
-  char *p = getenv (string_to_cstring (s));
+  char *p;
+  p = getenv (string_to_cstring (s));
   return p ? MAKE_STRING (cstring_to_list (p)) : cell_f;
-#else
-  return cell_t;
-#endif
 }
 
 SCM

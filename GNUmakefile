@@ -1,4 +1,5 @@
 SHELL:=bash
+export SHELL
 QUIET:=@
 
 default: all

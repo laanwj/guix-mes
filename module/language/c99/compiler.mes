@@ -377,13 +377,12 @@
           (if global
               (let ((ptr (ident->pointer info o)))
                 (case ptr
-                  ((10)
-                   (list (lambda (f g ta t d)
-                           (i386:global->accu (+ (data-offset o g) d)))))
+                  ;; ((1)
+                  ;;  (list (lambda (f g ta t d)
+                  ;;          (i386:global->accu (+ (data-offset o g) d)))))
                   (else (list (lambda (f g ta t d)
                                 (append (i386:value->accu (+ (data-offset o g) d))))))))
               (error "TODO ident-address->accu" o))))))
-
 
 (define (ident-address->base info)
   (lambda (o)

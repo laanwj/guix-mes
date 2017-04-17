@@ -245,6 +245,9 @@ array_test (char **e)
   puts ("t: *(p + 1)\n");
   if (*(*p + 1) != 'e') return 1;
 
+  puts ("t: getenv ()");
+  if (!getenv ("SHELL")) return 1;
+
   return read_test ();
 }
 

@@ -42,8 +42,8 @@ include make/check.make
 TARGET:=hello.mlibc
 C_FILES:=$(DIR)/hello.c
 INCLUDES:=libc
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
+C_FLAGS:=-nostdinc -g
+LD_FLAGS:=-nostdlib -g
 CROSS:=$(CC32:%gcc=%)
 include make/bin.make
 

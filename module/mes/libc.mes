@@ -34,7 +34,24 @@
 (define _start
   (let* ((argc-argv (i386:_start))
          (ast (with-input-from-string
-                  (string-append "int _start () {int i;asm(\"" argc-argv "\");i=main ();exit (i);}")
+                  (string-append "
+char **g_environment;
+char **
+_env (char **e)
+{
+  return e;
+}
+
+int
+_start ()
+{
+  asm(\"" argc-argv "\");
+  g_environment = _env ();
+  asm (\".byte 0x58\");
+  int r = main ();
+  exit (r);
+}
+")
                 parse-c99)))
     ast))
 
@@ -306,6 +323,43 @@ realloc (int *p, int size)
                 parse-c99)))
     ast))
 
+(define strncmp
+  (let* ((ast (with-input-from-string
+                  "
+int
+strncmp (char const* a, char const* b, int length)
+{
+  while (*a && *b && *a == *b && --length) {a++;b++;}
+  return *a - *b;
+}
+"
+;;paredit:"
+                parse-c99)))
+    ast))
+
+(define c:getenv
+  (let* ((ast (with-input-from-string
+                  "
+char **g_environment;
+char const*
+getenv (char const* s)
+{
+  char **p = g_environment;
+  p = *g_environment;
+  int length = strlen (s);
+  while (*p)
+    {
+      if (!strncmp (s, *p, length) && *(*p + length) == '=') return (*p + length + 1);
+      p++;
+    }
+  return 0;
+}
+"
+;;paredit:"
+                parse-c99)))
+    ast))
+
+
 (define libc
   (list
    strlen
@@ -322,4 +376,6 @@ realloc (int *p, int size)
    isdigit
    malloc
    realloc
+   strncmp
+   c:getenv
    ))

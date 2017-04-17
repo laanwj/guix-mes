@@ -22,21 +22,33 @@
 void
 _start ()
 {
+  //  char **;
+  asm (
+       "mov     %%ebp,%%eax\n\t"
+       "addl    $4,%%eax\n\t"
+       "movzbl  (%%eax),%%eax\n\t"
+       "addl    $3,%%eax\n\t"
+       "shl     $2,%%eax\n\t"
+       "add     %%ebp,%%eax\n\t"
+       "movl    %%eax,%0\n\t"
+       : "=g_environment" (g_environment)
+       : //no inputs ""
+       );
   int r;
   asm (
-       "mov %%ebp,%%eax\n\t"
-       "addl $8,%%eax\n\t"
-       "push %%eax\n\t"
+       "mov     %%ebp,%%eax\n\t"
+       "addl    $8,%%eax\n\t"
+       "push    %%eax\n\t"
 
-       "mov %%ebp,%%eax\n\t"
-       "addl $4,%%eax\n\t"
-       "movzbl (%%eax),%%eax\n\t"
-       "push %%eax\n\t"
+       "mov     %%ebp,%%eax\n\t"
+       "addl    $4,%%eax\n\t"
+       "movzbl  (%%eax),%%eax\n\t"
+       "push     %%eax\n\t"
 
-       "call main\n\t"
-       "movl %%eax,%0\n\t"
+       "call    main\n\t"
+       "movl    %%eax,%0\n\t"
        : "=r" (r)
-       : //no inputs "" (&main)
+       : //no inputs ""
        );
   exit (r);
 }

@@ -18,6 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+char **g_environment = 0;
 int g_stdin = 0;
 
 #define EOF -1
@@ -49,12 +50,6 @@ exit (int code)
        );
   // not reached
   exit (0);
-}
-
-char const*
-getenv (char const* p)
-{
-  return 0;
 }
 
 int
@@ -288,6 +283,28 @@ ungetc (int c, int fd)
   assert (ungetc_char < 2);
   ungetc_buf[++ungetc_char] = c;
   return c;
+}
+
+char const* itoa (int);
+
+int
+strncmp (char const* a, char const* b, int length)
+{
+  while (*a && *b && *a == *b && --length) {a++;b++;}
+  return *a - *b;
+}
+
+char const*
+getenv (char const* s)
+{
+  char **p = g_environment;
+  int length = strlen (s);
+  while (*p)
+    {
+      if (!strncmp (s, *p, length) && *(*p + length) == '=') return (*p + length + 1);
+      p++;
+    }
+  return 0;
 }
 
 int
