@@ -97,7 +97,7 @@
   (list 'begin
         (list 'if (list getenv "MES_DEBUG")
               (list 'begin
-                    (list core:display-error "read ")
+                    (list core:display-error ";;; read ")
                     (list core:display-error file)
                     (list core:display-error "\n")))
      (list 'push! '*input-ports* (list current-input-port))
@@ -126,7 +126,7 @@
 
 (if (getenv "MES_DEBUG")
     (begin
-      (core:display-error "%moduledir=")
+      (core:display-error ";;; %moduledir=")
       (core:display-error %moduledir)
       (core:display-error "\n")))
 

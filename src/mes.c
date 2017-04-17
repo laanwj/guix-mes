@@ -1224,7 +1224,7 @@ mes_builtins (SCM a) ///((internal))
 #include "vector.environment.i"
 #endif
 
-  if (g_debug)
+  if (g_debug > 1)
     {
       fputs ("functions: ", STDERR);
       fputs (itoa (g_function), STDERR);
@@ -1272,7 +1272,8 @@ bload_env (SCM a) ///((internal))
   assert (getchar () == 'M');
   assert (getchar () == 'E');
   assert (getchar () == 'S');
-  eputs ("*GOT MES*\n");
+
+  if (g_debug) eputs ("*GOT MES*\n");
   g_stack = getchar () << 8;
   g_stack += getchar ();
 
@@ -1297,7 +1298,7 @@ bload_env (SCM a) ///((internal))
   set_env_x (cell_symbol_mesc, cell_t, r0);
 #endif
 
-  if (g_debug)
+  if (g_debug > 1)
     {
       eputs ("symbols: ");
       SCM s = g_symbols;
@@ -1333,22 +1334,18 @@ bload_env (SCM a) ///((internal))
 int
 main (int argc, char *argv[])
 {
-#if __GNUC__
-  g_debug = getenv ("MES_DEBUG") != 0;
-  if (g_debug) {eputs ("MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
-#endif
-#if _POSIX_SOURCE
-  if (getenv ("MES_MAX_ARENA")) MAX_ARENA_SIZE = atoi (getenv ("MES_MAX_ARENA"));
-  if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
-#endif
-  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
-  if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);return 0;};
+  char *p;
+  if (p = getenv ("MES_DEBUG")) g_debug = atoi (p);
+  if (g_debug) {eputs (";;; MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
+  if (p = getenv ("MES_MAX_ARENA")) MAX_ARENA_SIZE = atoi (p);
+  if (p = getenv ("MES_ARENA")) ARENA_SIZE = atoi (p);
+  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE\n");
+  if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);puts ("\n");return 0;};
   g_stdin = STDIN;
   r0 = mes_environment ();
 
 #if __MESC__
   SCM program = bload_env (r0);
-  g_debug = 1;
 #else
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
@@ -1362,7 +1359,7 @@ main (int argc, char *argv[])
 #endif
   r0 = acons (cell_symbol_argv, lst, r0);
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
-  if (g_debug)
+  if (g_debug > 1)
     {
       eputs ("program: ");
       display_error_ (r1);

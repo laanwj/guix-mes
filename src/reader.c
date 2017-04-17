@@ -124,10 +124,6 @@ int g_tiny = 0;
 int
 dump ()
 {
-  eputs ("program r2=");
-  display_error_ (r2);
-  eputs ("\n");
-
   r1 = g_symbols;
   gc_push_frame ();
   gc ();
@@ -139,8 +135,7 @@ dump ()
   putchar (g_stack >> 8);
   putchar (g_stack % 256);
   // See HACKING, simple crafted dump for tiny-mes.c
-  //  if (getenv ("MES_TINY"))
-  if (g_tiny)
+  if (g_tiny || getenv ("MES_TINY"))
     {
       eputs ("dumping TINY\n");
 
@@ -171,7 +166,16 @@ dump ()
       g_free = 15;
     }
   else
-    eputs ("dumping FULL\n");
+    {
+      eputs ("dumping FULL\n");
+      if (g_debug > 1)
+        {
+          eputs ("program r2=");
+          display_error_ (r2);
+          eputs ("\n");
+        }
+    }
+
   for (int i=0; i<g_free * sizeof(struct scm); i++)
     putchar (*p++);
   return 0;
