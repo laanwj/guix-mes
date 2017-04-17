@@ -312,6 +312,25 @@ isdigit (int c)
 {
   return (c>='0') && (c<='9');
 }
+
+int
+atoi (char const *s)
+{
+  int i = 0;
+  int sign = 1;
+  if (*s && *s == '-')
+    {
+      sign = -1;
+      s++;
+    }
+  while (isdigit (*s))
+    {
+      i *= 10;
+      i += (*s - '0');
+      s++;
+    }
+  return i * sign;
+}
 #endif
 
 char itoa_buf[10];
