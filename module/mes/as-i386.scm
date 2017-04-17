@@ -97,6 +97,7 @@
             i386:local-ptr->base
             i386:local-address->base
             i386:local-test
+            i386:accu-mem-add
             i386:mem->accu
             i386:mem+n->accu
             i386:pop-accu
@@ -106,6 +107,8 @@
             i386:push-global
             i386:push-global-address
             i386:push-local
+            i386:push-byte-local-de-ref
+            i386:push-byte-local-de-de-ref
             i386:push-local-de-ref
             i386:push-local-address
             i386:ret

@@ -77,6 +77,8 @@ int ARENA_SIZE = 200;
 struct scm scm_fun = {TFUNCTION,0,0};
 SCM cell_fun;
 
+char *env[] = {"foo", "bar", "baz", 0};
+
 #if 1
 int
 add (int a, int b)
@@ -180,7 +182,70 @@ read_test ()
   //if (getchar () != '\0') return 1;
   if (getchar () != 0) return 1;
 
+  puts ("t: i == 'm'\n");
+  char m = 0x1122336d;
+  i = m;
+  if (i != 'm') return 1;
+
   return 0;
+}
+
+int
+array_test (char **e)
+{
+  int i = 0;
+
+  puts ("env [");
+  puts (itoa (env));
+  puts ("]\n");
+
+  puts ("e [");
+  puts (itoa (e));
+  puts ("]\n");
+
+  puts ("env [0] == \"foo\"\n");
+  if (strcmp (env[0], "foo")) return 1;
+
+  puts ("env [1] == \"bar\"\n");
+  if (strcmp (env[1], "bar")) return 1;
+
+  puts ("t: **p in *env[]\n");
+
+  char **pp = env;
+  while (*pp)
+    {
+      puts ("pp [");
+      puts (itoa (pp));
+      puts ("]: ");
+      if (*pp) puts (*pp);
+      puts ("\n");
+      pp++;
+      i++;
+    }
+  if (i != 3) return i;
+
+  pp = env;
+  puts ("t: *pp++ == \"foo\"\n");
+  if (strcmp (*pp++, "foo")) return 1;
+
+  puts ("t: *pp++ == \"bar\"\n");
+  if (strcmp (*pp++, "bar")) return 1;
+
+  char *buf = "hello";
+  puts ("t: buf[0]\n");
+  if (buf[0] != 'h') return 1;
+
+  puts ("t: buf + 1\n");
+  if (*(buf+1) != 'e') return 1;
+
+  char **p = &buf;
+  puts ("t: **p\n");
+  if (**p != 'h') return 1;
+
+  puts ("t: *(p + 1)\n");
+  if (*(*p + 1) != 'e') return 1;
+
+  return read_test ();
 }
 
 int
@@ -266,7 +331,7 @@ math_test ()
   puts ("t: -1 + 2\n");
   if (-1 + 2 != 1) return 1;
 
-  return read_test ();
+  return array_test (env);
 }
 
 SCM
@@ -842,11 +907,15 @@ main (int argc, char *argv[])
   char *p = "t.c\n";
   puts ("t.c\n");
 
-  if (argc > 1 && !strcmp (argv[1], "--help")) return 1;
-  puts ("t: if (argc > 1 && !strcmp (argv[1], \"--help\")\n");
+  puts ("t: argv[0] == \"out/t....\"\n");
+  if (strncmp (argv[0], "out/t", 5)) return 1;
 
-  // FIXME mescc?!
-  if (argc > 1) if (!strcmp (argv[1], "--help")) return 1;
+  puts ("t: *argv\"\n");
+  puts (*argv);
+  puts ("\n");
+
+  puts ("t: if (argc > 1 && !strcmp (argv[1], \"--help\")\n");
+  if (argc > 1 && !strcmp (argv[1], "--help")) return 1;
 
   return test (p);
 

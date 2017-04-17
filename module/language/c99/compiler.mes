@@ -92,9 +92,11 @@
   (pmatch o
     ((fctn-defn _ (ftn-declr (ident ,name) _) _) name)
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) _) name)
+    ((fctn-defn _ (ptr-declr (pointer (pointer)) (ftn-declr (ident ,name) _)) _) name)
     ((param-decl _ (param-declr (ident ,name))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer) (ident ,name)))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer) (array-of (ident ,name))))) name)
+    ((param-decl _ (param-declr (ptr-declr (pointer (pointer)) (ident ,name)))) name)
     (_
      (format (current-error-port) "SKIP: .name =~a\n" o))))
 
@@ -108,7 +110,9 @@
 (define (.statements o)
   (pmatch o
     ((fctn-defn _ (ftn-declr (ident ,name) _) (compd-stmt (block-item-list . ,statements))) statements)
-    ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)))
+    ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)
+    ((fctn-defn _ (ptr-declr (pointer (pointer)) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)
+    (_ (error ".statements: unsupported: " o))))
 
 (define <info> '<info>)
 (define <types> '<types>)
@@ -219,12 +223,32 @@
 
 (define push-global-de-ref push-global)
 
-(define (push-local-de-ref locals)
+(define (push-local-de-ref info)
   (lambda (o)
-    (wrap-as (i386:push-local-de-ref (local:id o)))))
+    (let* ((local o)
+           (ptr (local:pointer local))
+           (size (if (= ptr 1) (type->size info (local:type o))
+                     4)))
+      (if (= size 1)
+          (wrap-as (i386:push-byte-local-de-ref (local:id o)))
+          (wrap-as (i386:push-local-de-ref (local:id o)))))))
+
+
+(define (push-local-de-de-ref info)
+  (lambda (o)
+    (let* ((local o)
+           (ptr (local:pointer local))
+           (size (if (= ptr 2) (type->size info (local:type o));; URG
+                     4)))
+      (if (= size 1)
+          (wrap-as (i386:push-byte-local-de-de-ref (local:id o)))
+          (error "TODO int-de-de-ref")))))
 
 (define (string->global string)
   (make-global (add-s:-prefix string) "string" 0 (append (string->list string) (list #\nul))))
+
+(define (int->global value)
+  (make-global (add-s:-prefix (number->string value)) "int" 0 (int->bv32 value)))
 
 (define (ident->global name type pointer value)
   (make-global name type pointer (int->bv32 value)))
@@ -257,8 +281,14 @@
 (define (push-ident-de-ref info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local ((push-local-de-ref (.locals info)) local)
+      (if local ((push-local-de-ref info) local)
           ((push-global-de-ref (.globals info)) o)))))
+
+(define (push-ident-de-de-ref info)
+  (lambda (o)
+    (let ((local (assoc-ref (.locals info) o)))
+      (if local ((push-local-de-de-ref info) local)
+          (error "TODO: global push-local-de-de-ref")))))
 
 (define (expr->arg info)
   (lambda (o)
@@ -268,7 +298,6 @@
 (define (expr->arg info) ;; FIXME: get Mes curried-definitions
   (lambda (o)
     (let ((text (.text info)))
-      ;;(stderr  "expr->arg o=~s\n" o)
       (pmatch o
 
         ((p-expr (string ,string))
@@ -282,8 +311,14 @@
                ,cast)
          ((expr->arg info) cast))
 
+        ((cast (type-name (decl-spec-list (type-spec (fixed-type ,type)))) ,cast)
+         ((expr->arg info) cast))
+
         ((de-ref (p-expr (ident ,name)))
          (append-text info ((push-ident-de-ref info) name)))
+
+        ((de-ref (de-ref (p-expr (ident ,name))))
+         (append-text info ((push-ident-de-de-ref info) name)))
 
         ((ref-to (p-expr (ident ,name)))
          (append-text info ((push-ident-address info) name)))
@@ -297,19 +332,11 @@
     (let ((local (assoc-ref (.locals info) o))
           (global (assoc-ref (.globals info) o))
           (constant (assoc-ref (.constants info) o)))
-      ;; (stderr "ident->accu: local[~a]: ~a\n" o (and local (local:id local)))
-      ;; (stderr "ident->accu: global[~a]: ~a\n" o global)
-      ;; (stderr "globals: ~a\n" (.globals info))
-      ;; (if (and (not global) (not (local:id local)))
-      ;;     (stderr "globals: ~a\n" (map car (.globals info))))
       (if local
           (let* ((ptr (local:pointer local))
                  (type (ident->type info o))
-                 (size (and type (type->size info type))))
-            ;;(stderr "ident->accu PTR[~a]: ~a\n" o ptr)
-            ;;(stderr "type: ~s\n" type)
-            ;;(stderr "ident->accu PTR[~a]: ~a\n" o ptr)
-            ;;(stderr "locals: ~s\n" locals)
+                 (size (if (= ptr 0) (type->size info type)
+                           4)))
             (case ptr
               ((-1) (wrap-as (i386:local-ptr->accu (local:id local))))
               ((1) (wrap-as (i386:local->accu (local:id local))))
@@ -317,16 +344,67 @@
                (wrap-as (if (= size 1) (i386:byte-local->accu (local:id local))
                             (i386:local->accu (local:id local)))))))
           (if global
-              (let ((ptr (ident->pointer info o)))
-                ;;(stderr "ident->accu PTR[~a]: ~a\n" o ptr)
+              (let* ((ptr (ident->pointer info o))
+                     (type (ident->type info o))
+                     (size (if (= ptr 1) (type->size info type)
+                               4)))
                 (case ptr
                   ((-1) (list (lambda (f g ta t d)
                                 (i386:global->accu (+ (data-offset o g) d)))))
+                  ((1) (list (lambda (f g ta t d)
+                               (i386:global-address->accu (+ (data-offset o g) d)))))
+
+                  ((2) (list (lambda (f g ta t d)
+                               (append (i386:value->accu (+ (data-offset o g) d))))))
                   (else (list (lambda (f g ta t d)
                                 (i386:global-address->accu (+ (data-offset o g) d)))))))
               (if constant (wrap-as (i386:value->accu constant))
                   (list (lambda (f g ta t d)
                           (i386:global->accu (+ ta (function-offset o f)))))))))))
+
+(define (ident-address->accu info)
+  (lambda (o)
+    (let ((local (assoc-ref (.locals info) o))
+          (global (assoc-ref (.globals info) o))
+          (constant (assoc-ref (.constants info) o)))
+      (if local
+          (let* ((ptr (local:pointer local))
+                 (type (ident->type info o))
+                 (size (if (= ptr 1) (type->size info type)
+                           4)))
+            ;;(stderr "ident->accu ~a => ~a\n" o ptr)
+            (wrap-as (i386:local-ptr->accu (local:id local))))
+          (if global
+              (let ((ptr (ident->pointer info o)))
+                (case ptr
+                  ((10)
+                   (list (lambda (f g ta t d)
+                           (i386:global->accu (+ (data-offset o g) d)))))
+                  (else (list (lambda (f g ta t d)
+                                (append (i386:value->accu (+ (data-offset o g) d))))))))
+              (error "TODO ident-address->accu" o))))))
+
+
+(define (ident-address->base info)
+  (lambda (o)
+    (let ((local (assoc-ref (.locals info) o))
+          (global (assoc-ref (.globals info) o))
+          (constant (assoc-ref (.constants info) o)))
+      (if local
+          (let* ((ptr (local:pointer local))
+                 (type (ident->type info o))
+                 (size (if (= ptr 1) (type->size info type)
+                           4)))
+            (wrap-as (i386:local-ptr->base (local:id local))))
+          (if global
+              (let ((ptr (ident->pointer info o)))
+                (case ptr
+                  ((1)
+                   (list (lambda (f g ta t d)
+                           (i386:global->base (+ (data-offset o g) d)))))
+                  (else (list (lambda (f g ta t d)
+                                (append (i386:value->base (+ (data-offset o g) d))))))))
+              (error "TODO ident-address->base" o))))))
 
 (define (value->accu v)
   (wrap-as (i386:value->accu v)))
@@ -334,9 +412,13 @@
 (define (accu->ident info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local (wrap-as (i386:accu->local (local:id local)))
-          (list (lambda (f g ta t d)
-                  (i386:accu->global (+ (data-offset o g) d))))))))
+      (if local
+          (let ((ptr (local:pointer local)))
+            (case ptr
+              (else (wrap-as (i386:accu->local (local:id local))))))
+          (let ((ptr (ident->pointer info o)))
+            (list (lambda (f g ta t d)
+                    (i386:accu->global (+ (data-offset o g) d)))))))))
 
 (define (base->ident info)
   (lambda (o)
@@ -348,8 +430,14 @@
 (define (base->ident-address info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local (wrap-as (append (i386:local->accu (local:id local))
-                                 (i386:byte-base->accu-address)))
+      (if local
+          (let* ((ptr (local:pointer local))
+                 (type (ident->type info o))
+                 (size (if (= ptr 1) (type->size info type)
+                           4)))
+            (wrap-as (append (i386:local->accu (local:id local))
+                             (if (= size 1) (i386:byte-base->accu-address)
+                                 (i386:byte-base->accu-address)))))
           (error "TODO:base->ident-address-global" o)))))
 
 (define (value->ident info)
@@ -366,15 +454,28 @@
           (list (lambda (f g ta t d)
                   (i386:global-add (+ (data-offset o g) d) n)))))))
 
+(define (ident-address-add info)
+  (lambda (o n)
+    (let ((local (assoc-ref (.locals info) o)))
+      (if local (wrap-as (append (i386:push-accu)
+                                 (i386:local->accu (local:id local))
+                                 (i386:accu-mem-add n)
+                                 (i386:pop-accu)))
+          (list (lambda (f g ta t d)
+                  (append (i386:push-accu)
+                          (i386:global->accu (+ (data-offset o g) d))
+                          (i386:accu-mem-add n)
+                          (i386:pop-accu))))))))
+
 ;; FIXME: see ident->accu
 (define (ident->base info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      ;;(stderr "ident->base: local[~a]: ~a\n" o (and local (local:id local)))
       (if local
           (let* ((ptr (local:pointer local))
                  (type (ident->type info o))
-                 (size (and type (type->size info type))))
+                 (size (if (and type (= ptr 1)) (type->size info type)
+                           4)))
             (case ptr
               ((-1) (wrap-as (i386:local-ptr->base (local:id local))))
               ((1) (wrap-as (i386:local->base (local:id local))))
@@ -384,10 +485,11 @@
           (let ((global (assoc-ref (.globals info) o) ))
             (if global
                 (let ((ptr (ident->pointer info o)))
-                  ;;(stderr "ident->accu PTR[~a]: ~a\n" o ptr)
                   (case ptr
                     ((-1) (list (lambda (f g ta t d)
                                   (i386:global->base (+ (data-offset o g) d)))))
+                    ((2) (list (lambda (f g ta t d)
+                                 (i386:global->base (+ (data-offset o g) d)))))
                     (else (list (lambda (f g ta t d)
                                   (i386:global-address->base (+ (data-offset o g) d)))))))
                 (let ((constant (assoc-ref (.constants info) o)))
@@ -405,16 +507,19 @@
         (let* ((id (1+ (length (filter local? (map cdr locals)))))
                (locals (cons (make-local name type pointer id) locals)))
           locals))
-      ;; (stderr "expr->accu o=~a\n" o)
       (pmatch o
         ((p-expr (string ,string))
-         (append-text info (list (lambda (f g ta t d)
-                                   (i386:global->accu (+ (data-offset (add-s:-prefix string) globals) d))))))
+         (let* ((globals (append globals (list (string->global string))))
+                (info (clone info #:globals globals)))
+           (append-text info (list (lambda (f g ta t d)
+                                     (i386:global->accu (+ (data-offset (add-s:-prefix string) globals) d)))))))
+
         ((p-expr (string . ,strings))
          (append-text info (list (lambda (f g ta t d)
                                    (i386:global->accu (+ (data-offset (add-s:-prefix (apply string-append strings)) globals) d))))))
         ((p-expr (fixed ,value))
          (append-text info (value->accu (cstring->number value))))
+
         ((p-expr (ident ,name))
          (append-text info ((ident->accu info) name)))
 
@@ -432,7 +537,9 @@
         ;; g_cells[<expr>]
         ((array-ref ,index (p-expr (ident ,array)))
          (let* ((type (ident->type info array))
-                (size (type->size info type))
+                (ptr (ident->pointer info array))
+                (size (if (< ptr 2) (type->size info type)
+                          4))
                 (info ((expr->accu* info) o)))
            (append-text info (wrap-as (append (case size
                                                 ((1) (i386:byte-mem->accu))
@@ -475,10 +582,23 @@
 
         ((de-ref (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
-                (size (and type (type->size info type))))
+                (ptr (ident->pointer info name))
+                (size (if (= ptr 1) (type->size info type)
+                          4)))
            (append-text info (append ((ident->accu info) name)
                                      (wrap-as (if (= size 1) (i386:byte-mem->accu)
                                                   (i386:mem->accu)))))))
+
+        ((de-ref (post-inc (p-expr (ident ,name))))
+         (let* ((info ((expr->accu info) `(de-ref (p-expr (ident ,name)))))
+                (type (ident->type info name))
+                (ptr (ident->pointer info name))
+                (size (if (> ptr 1) 4 1)))
+           (append-text info ((ident-add info) name size))))
+
+        ((de-ref ,expr)
+         (let ((info ((expr->accu info) expr)))
+           (append-text info (wrap-as (i386:byte-mem->accu))))) ;; FIXME: byte
 
         ((fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
@@ -529,8 +649,11 @@
          ((ast->info info) `(expr-stmt ,o)))
 
         ((post-inc (p-expr (ident ,name)))
-         (append-text info (append ((ident->accu info) name)
-                                   ((ident-add info) name 1))))
+         (let* ((type (ident->type info name))
+                (ptr (ident->pointer info name))
+                (size (if (> ptr 1) 4 1)))
+           (append-text info (append ((ident->accu info) name)
+                                     ((ident-add info) name size)))))
 
         ((post-dec (p-expr (ident ,name)))
          (or (assoc-ref locals name) (begin (stderr "i-- ~a\n" name) (error "undefined identifier: " name)))
@@ -607,6 +730,7 @@
                      (info ((expr->accu* info) a))
                      (info (append-text info (wrap-as (i386:pop-base)))))
                 (append-text info (wrap-as (i386:base->accu-address))))) ; FIXME: size
+             ;; FIXME: c&p above
              ((de-ref (p-expr (ident ,array)))
               (append-text info (append (wrap-as (i386:accu->base))
                                         ((base->ident-address info) array)
@@ -660,14 +784,14 @@
 
 (define (expr->accu* info)
   (lambda (o)
-    ;; (stderr "expr->accu* o=~s\n" o)
-
     (pmatch o
       ;; g_cells[<expr>]
       ((array-ref ,index (p-expr (ident ,array)))
        (let* ((info ((expr->accu info) index))
               (type (ident->type info array))
-              (size (type->size info type)))
+              (ptr (ident->pointer info array))
+              (size (if (< ptr 2) (type->size info type)
+                        4)))
          (append-text info (append (wrap-as (append (i386:accu->base)
                                                     (if (eq? size 1) '()
                                                         (append
@@ -718,11 +842,13 @@
     ((decl (decl-spec-list (type-spec (struct-ref (ident ,name)))));; "scm"
      (list "struct" name)) ;; FIXME
     ((typename ,name) name)
+    (,name name)
     (_ (error "decl->type: unsupported: " o))))
 
 (define (expr->global o)
   (pmatch o
     ((p-expr (string ,string)) (string->global string))
+    ((p-expr (fixed ,value)) (int->global (cstring->number value)))
     (_ #f)))
 
 (define (initzer->global o)
@@ -913,8 +1039,6 @@
     ("int" . (builtin 4 #f))))
 
 (define (type->size info o)
-  ;;(stderr  "types=~s\n" (.types info))
-  ;;(stderr  "type->size o=~s => ~s\n" o   (cadr (assoc-ref (.types info) o)))
   (pmatch o
     ((decl-spec-list (type-spec (fixed-type ,type)))
      (type->size info type))
@@ -925,10 +1049,6 @@
              (error "type->size: unsupported: " o))))))
 
 (define (ident->decl info o)
-  ;; (stderr "ident->decl o=~s\n" o)
-  ;; (stderr "  types=~s\n" (.types info))
-  ;; (stderr "  local=~s\n" (assoc-ref (.locals info) o))
-  ;; (stderr "  global=~s\n" (assoc-ref (.globals info) o))
   (or (assoc-ref (.locals info) o)
       (assoc-ref (.globals info) o)
       (begin
@@ -944,10 +1064,6 @@
         (or (and=> (ident->decl info o) global:pointer) 0))))
 
 (define (type->description info o)
-  ;; (stderr  "type->description =~s\n" o)  
-  ;; (stderr  "types=~s\n" (.types info))
-  ;; (stderr  "type->description o=~s ==> ~s\n" o  (caddr (assoc-ref (.types info) o)))
-  ;; (stderr  "  assoc ~a\n" (assoc-ref (.types info) o))
   (pmatch o
     ((decl-spec-list (type-spec (fixed-type ,type)))
      (type->description info type))
@@ -969,11 +1085,6 @@
                (locals (cons (make-local name type pointer id) locals)))
           locals))
 
-      ;; (stderr "\n ast->info=~s\n" o)
-      ;; (stderr "  globals[~a=>~a]: ~a\n" (length globals) (length (append-map cdr globals)) (map (lambda (s) (if (string? s) (string-delete #\newline s))) (map car globals)))
-      ;; (stderr "  text=~a\n" text)
-      ;; (stderr "   info=~a\n" info)
-      ;; (stderr "   globals=~a\n" globals)
       (pmatch o
         (((trans-unit . _) . _)
          ((ast-list->info info)  o))
@@ -1251,19 +1362,53 @@
            (append-text info (append ((ident->accu info) local)
                                      ((accu->ident info) name)))))
 
-        ;; char *p = "t.c";
+        ;; char *p = "foo";
         ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (string ,string))))))
-         (if (not (.function info)) (error "ast->info: unsupported: " o))
-         (let* ((locals (add-local locals name type 1))
-                (globals (append globals (list (string->global string))))
-                (info (clone info #:locals locals #:globals globals)))
-           (append-text info (append
-                              (list (lambda (f g ta t d)
-                                      (append
-                                       (i386:global->accu (+ (data-offset (add-s:-prefix string) g) d)))))
-                              ((accu->ident info) name)))))
+         (if (.function info)
+             (let* ((locals (add-local locals name type 1))
+                    (globals (append globals (list (string->global string))))
+                    (info (clone info #:locals locals #:globals globals)))
+               (append-text info (append
+                                  (list (lambda (f g ta t d)
+                                          (append
+                                           (i386:global->accu (+ (data-offset (add-s:-prefix string) g) d)))))
+                                  ((accu->ident info) name))))
+             (let* ((global (string->global string))
+                    (globals (append globals (list global)))
+                    (size 4)
+                    (global (make-global name type 1 (string->list (make-string size #\nul))))
+                    (globals (append globals (list global)))
+                    (info (clone info #:globals globals))
+                    (here (data-offset name globals)))
+               (clone info #:init
+                      (append
+                       (.init info)
+                       (list (lambda (functions globals ta t d data)
+                               (append
+                                (list-head data here)
+                                (initzer->data info functions globals ta t d `(initzer (p-expr (string ,string))))
+                                (list-tail data (+ here size))))))))))
         
-        ;; char *p = 0;
+        ;; char const *p;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type)) (type-qual ,qualifier)) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
+         (if (.function info)
+             (let* ((locals (add-local locals name type 1))
+                    (info (clone info #:locals locals)))
+               (append-text info (append (wrap-as (i386:value->accu 0))
+                                         ((accu->ident info) name))))
+             (let ((globals (append globals (list (ident->global name type 1 0)))))
+               (clone info #:globals globals))))
+
+        ;; char *p;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
+         (if (.function info)
+             (let* ((locals (add-local locals name type 1))
+                    (info (clone info #:locals locals)))
+               (append-text info (append (wrap-as (i386:value->accu 0))
+                                         ((accu->ident info) name))))
+             (let ((globals (append globals (list (ident->global name type 1 0)))))
+               (clone info #:globals globals))))
+
         ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (fixed ,value))))))
          (let ((value (cstring->number value)))
            (if (.function info)
@@ -1271,7 +1416,42 @@
                       (info (clone info #:locals locals)))
                  (append-text info (append (wrap-as (i386:value->accu value))
                                            ((accu->ident info) name))))
-               (clone info #:globals (append globals (list (ident->global name type 0 value)))))))
+               (clone info #:globals (append globals (list (ident->global name type 1 value)))))))
+
+        ;; char **p;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
+         (if (.function info)
+             (let* ((locals (add-local locals name type 2))
+                    (info (clone info #:locals locals)))
+               (append-text info (append (wrap-as (i386:value->accu 0))
+                                         ((accu->ident info) name))))
+             (let ((globals (append globals (list (ident->global name type 2 0)))))
+               (clone info #:globals globals))))
+
+        ;; char **p = 0;
+        ;;((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)) (initzer (p-expr (fixed ,value)))))))
+
+        ;; char **p = g_environment;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)) (initzer (p-expr (ident ,b)))))) ;; FIXME: initzer
+         (if (.function info)
+             (let* ((locals (add-local locals name type 2))
+                    (info (clone info #:locals locals)))
+               (append-text info (append
+                                  ((ident->accu info) b)
+                                  ((accu->ident info) name))))
+             (let* ((globals (append globals (list (ident->global name type 2 0))))
+                    (here (data-offset name globals)))
+               (clone info
+                      #:globals globals
+                      #:init (append (.init info)
+                                     (list (lambda (functions globals ta t d data)
+                                             (append
+                                              (list-head data here)
+                                              ;;(initzer->data info functions globals ta t d initzer)
+                                              (initzer->data info functions globals ta t d `(p-expr (ident ,b)))
+                                              (list-tail data (+ here 4))))))))
+             ;;;(clone info #:globals (append globals (list (ident->global name type 1 0))))
+             ))
 
         ;; char arena[20000];
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
@@ -1286,7 +1466,6 @@
 
         ;;struct scm *g_cells = (struct scm*)arena;
         ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (cast (type-name (decl-spec-list (type-spec (struct-ref (ident ,=type)))) (abs-declr (pointer))) (p-expr (ident ,value)))))))
-         ;;(stderr "0TYPE: ~s\n" type)
          (if (.function info)
              (let* ((locals (add-local locals name type 1))
                     (info (clone info #:locals locals)))
@@ -1299,14 +1478,12 @@
 
         ;; SCM tmp;
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name))))
-         ;;(stderr  "1TYPE: ~s\n" type)
          (if (.function info)
              (clone info #:locals (add-local locals name type 0))
              (clone info #:globals (append globals (list (ident->global name type 0 0))))))
 
         ;; SCM g_stack = 0;
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (fixed ,value))))))
-         ;;(stderr  "2TYPE: ~s\n" type)
          (let ((value (cstring->number value)))
            (if (.function info)
                (let* ((locals (add-local locals name type 0))
@@ -1321,7 +1498,6 @@
 
         ;; SCM i = argc;
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
-         ;;(stderr  "3TYPE: ~s\n" type)
          (if (.function info)
              (let* ((locals (add-local locals name type 0))
                     (info (clone info #:locals locals)))
@@ -1350,7 +1526,6 @@
 
         ;; char *p = (char*)g_cells;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (cast (type-name (decl-spec-list (type-spec (fixed-type ,=type))) (abs-declr (pointer))) (p-expr (ident ,value)))))))
-         ;;(stderr  "6TYPE: ~s\n" type)
          (if (.function info)
              (let* ((locals (add-local locals name type 1))
                     (info (clone info #:locals locals)))
@@ -1374,9 +1549,7 @@
 
         ;; char *p = g_cells;
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (ident ,value))))))
-         ;;(stderr  "7TYPE: ~s\n" type)
          (let ((type (decl->type type)))
-           ;;(stderr "0DECL: ~s\n" type)
            (if (.function info)
                (let* ((locals (add-local locals name type  1))
                       (info (clone info #:locals locals)))
@@ -1406,19 +1579,80 @@
         ;; struct
         ((decl (decl-spec-list (type-spec (struct-def (ident ,name) (field-list . ,fields)))))
          (let* ((type (struct->type (list "struct" name) (map struct-field fields))))
-           ;;(stderr "type: ~a\n" type)
            (clone info #:types (append (.types info) (list type)))))
 
+        ;; char *p = &bla;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (ref-to (p-expr (ident ,value)))))))
+         (let ((type (decl->type type)))
+           (if (.function info)
+               (let* ((locals (add-local locals name type 1))
+                      (info (clone info #:locals locals)))
+                 (append-text info (append ((ident-address->accu info) value)
+                                           ((accu->ident info) name))))
+               (error "TODO" o))))
+
+        ;; char **p = &bla;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)) (initzer (ref-to (p-expr (ident ,value)))))))
+         (let ((type (decl->type type)))
+           (if (.function info)
+               (let* ((locals (add-local locals name type 2))
+                      (info (clone info #:locals locals)))
+                 (append-text info (append ((ident-address->accu info) value)
+                                           ((accu->ident info) name))))
+               (error "TODO" o))))
+
+        ;; char *p = bla[0];
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (array-ref ,index (p-expr (ident ,array)))))))
+         (if (.function info)
+             (let* ((locals (add-local locals name type 1))
+                    (info (clone info #:locals locals))
+                    (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
+               (append-text info ((accu->ident info) name)))
+             (error "TODO" o)))
+
+        ;; char *p = *bla;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (de-ref (p-expr (ident ,value)))))))
+         (if (.function info)
+             (let* ((locals (add-local locals name type 2))
+                    (info (clone info #:locals locals))
+                    (local (assoc-ref (.locals info) name)))
+               (append-text info (append ((ident->accu info) value)
+                                         (wrap-as (i386:mem->accu))
+                                         ((accu->ident info) name))))
+             (error "TODO" o)))
+
         ;; DECL
+        ;; char *bla[] = {"a", "b"};
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name))) (initzer (initzer-list . ,initzers)))))
+         (let* ((type (decl->type type))
+                (entries (map initzer->global initzers))
+                (entry-size 4)
+                (size (* (length entries) entry-size)))
+           (if (.function info)
+               (error "TODO: <type> x[] = {};" o)
+               (let* ((global (make-global name type 2 (string->list (make-string size #\nul))))
+                      (globals (append globals entries (list global)))
+                      (info (clone info #:globals globals))
+                      (here (data-offset name globals)))
+                 (clone info #:init
+                        (append
+                         (.init info)
+                         (list (lambda (functions globals ta t d data)
+                                 (append
+                                  (list-head data here)
+                                  (append-map
+                                   (lambda (i)
+                                     (initzer->data info functions globals ta t d i))
+                                   initzers)
+                                  (list-tail data (+ here size)))))))))))
+
         ;;
         ;; struct f = {...};
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ident ,name) (initzer (initzer-list . ,initzers)))))
          (let* ((type (decl->type type))
-                ;;(foo (stderr "1DECL: ~s\n" type))
                 (fields (type->description info type))
                 (size (type->size info type))
                 (field-size 4))  ;; FIXME:4, not fixed
-           ;;(stderr  "7TYPE: ~s\n" type)
            (if (.function info)
                (let* ((globals (append globals (filter-map initzer->global initzers)))
                       (locals (let loop ((fields (cdr fields)) (locals locals))
@@ -1526,7 +1760,6 @@
     ((initzer (p-expr (fixed ,value))) (int->bv32 (cstring->number value)))
     ((initzer (neg (p-expr (fixed ,value)))) (int->bv32 (- (cstring->number value))))
     ((initzer (ref-to (p-expr (ident ,name))))
-     ;;(stderr "INITZER[~a] => 0x~a\n" o (dec->hex (+ ta (function-offset name functions))))
      (int->bv32 (+ ta (function-offset name functions))))
     ((initzer (p-expr (ident ,name)))
      (let ((value (assoc-ref (.constants info) name)))
@@ -1539,6 +1772,7 @@
   (pmatch o
     ((fctn-defn _ (ftn-declr _ ,formals) _) formals)
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr _ ,formals)) _) formals)
+    ((fctn-defn _ (ptr-declr (pointer (pointer)) (ftn-declr _ ,formals)) _) formals)
     (_ (error ".formals: " o))))
 
 (define (formal->text n)
@@ -1558,12 +1792,18 @@
 
 (define (formal:ptr o)
   (pmatch o
-    ((param-decl (decl-spec-list . ,decl) (param-declr (ptr-declr (pointer) . _)))
-     1)
     ((param-decl (decl-spec-list . ,decl) (param-declr (ident ,name)))
      0)
+    ((param-decl (decl-spec-list . ,decl) (param-declr (ptr-declr (pointer) (array-of (ident ,name)))))
+     2)
+    ((param-decl (decl-spec-list . ,decl) (param-declr (ptr-declr (pointer) (ident ,name))))
+     1)
+    ((param-decl (decl-spec-list . ,decl) (param-declr (ptr-declr (pointer) . _)))
+     1)
+    ((param-decl (decl-spec-list . ,decl) (param-declr (ptr-declr (pointer (pointer)) (ident ,name))))
+     2)
     (_
-     (stderr "formal:ptr[~a] => 0\n" o)
+     (stderr "formal:ptr[~a] => ~a\n" o 0)
      0)))
 
 (define (formals->locals o)
@@ -1575,14 +1815,11 @@
 
 (define (function->info info)
   (lambda (o)
-    ;;(stderr "function->info o=~s\n" o)
-    ;;(stderr "formals=~s\n" (.formals o))
     (let* ((name (.name o))
            (formals (.formals o))
            (text (formals->text formals))
            (locals (formals->locals formals)))
       (format (current-error-port) "compiling ~s\n" name)
-      ;;(stderr "locals=~s\n" locals)
       (let loop ((statements (.statements o))
                  (info (clone info #:locals locals #:function (.name o) #:text text)))
         (if (null? statements) (clone info

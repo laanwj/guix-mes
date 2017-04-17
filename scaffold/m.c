@@ -27,6 +27,7 @@ main (int argc, char *argv[])
 {
   g_stdin = open ("scaffold/mesmes", 0);
   int c = getchar ();
+  if (c != 'm') return c;
   while (c != EOF) {
     putchar (c);
     c = getchar ();
