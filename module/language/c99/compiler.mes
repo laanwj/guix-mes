@@ -950,7 +950,8 @@
       ((eq ,a ,b) ((jump i386:Xjump-nz) o))
       ((not _) ((jump i386:Xjump-z) o))
       ((and ,a ,b)
-       (let* ((text (.text info))
+       (let* ((globals (.globals info))
+              (text (.text info))
               (info (clone info #:text '()))
 
               (a-jump ((test->jump->info info) a))
@@ -962,12 +963,19 @@
               (b-length (length (text->list b-text))))
 
          (lambda (body-length)
-           (clone info #:text
-                  (append text
-                          (.text (a-jump (+ b-length body-length)))
-                          (.text (b-jump body-length)))))))
+           (let* ((info (append-text info text))
+                  (a-info (a-jump (+ b-length body-length)))
+                  (info (append-text info (.text a-info)))
+                  (b-info (b-jump body-length))
+                  (info (append-text info (.text b-info))))
+            (clone info
+                   #:globals (append globals
+                                     (list-tail (.globals a-info) (length globals))
+                                     (list-tail (.globals b-info) (length globals))))))))
+
       ((or ,a ,b)
-       (let* ((text (.text info))
+       (let* ((globals (.globals info))
+              (text (.text info))
               (info (clone info #:text '()))
 
               (a-jump ((test->jump->info info) a))
@@ -984,11 +992,16 @@
               (jump-text (wrap-as (i386:Xjump b-length))))
 
          (lambda (body-length)
-           (clone info #:text
-                  (append text
-                          (.text (a-jump jump-length))
-                          jump-text
-                          (.text (b-jump body-length)))))))
+           (let* ((info (append-text info text))
+                  (a-info (a-jump jump-length))
+                  (info (append-text info (.text a-info)))
+                  (info (append-text info jump-text))
+                  (b-info (b-jump body-length))
+                  (info (append-text info (.text b-info))))
+            (clone info
+                   #:globals (append globals
+                                     (list-tail (.globals a-info) (length globals))
+                                     (list-tail (.globals b-info) (length globals))))))))
 
       ((array-ref . _) ((jump i386:jump-byte-z
                               (wrap-as (i386:accu-zero?))) o))
