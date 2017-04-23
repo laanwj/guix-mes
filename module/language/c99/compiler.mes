@@ -295,13 +295,21 @@
     (let ((info ((expr->accu info) o)))
       (append-text info (wrap-as (i386:push-accu))))))
 
+(define (globals:add-string globals)
+  (lambda (o)
+    (let ((string (add-s:-prefix o)))
+      (if (assoc-ref globals string) globals
+          (append globals (list (string->global o)))))))
+
 (define (expr->arg info) ;; FIXME: get Mes curried-definitions
   (lambda (o)
     (let ((text (.text info)))
       (pmatch o
 
         ((p-expr (string ,string))
-         (append-text info ((push-global-address info) (add-s:-prefix string))))
+         (let* ((globals ((globals:add-string (.globals info)) string))
+                (info (clone info #:globals globals)))
+           (append-text info ((push-global-address info) (add-s:-prefix string)))))
 
         ((p-expr (ident ,name))
          (append-text info ((push-ident info) name)))
@@ -602,47 +610,32 @@
         ((fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
                                    (append-text info (wrap-as (asm->hex arg0))))
-             (let* ((globals (append globals (filter-map expr->global expr-list)))
-                    (info (clone info #:globals globals))
-                    (text-length (length text))
+             (let* ((text-length (length text))
                     (args-info (let loop ((expressions (reverse expr-list)) (info info))
                                  (if (null? expressions) info
                                      (loop (cdr expressions) ((expr->arg info) (car expressions))))))
-                    (text (.text args-info))
                     (n (length expr-list)))
                (if (and (not (assoc-ref locals name))
                         (assoc-ref (.functions info) name))
-                   (clone args-info #:text
-                          (append text
-                                  (list (lambda (f g ta t d)
-                                          (i386:call f g ta t d (+ t (function-offset name f)) n))))
-                          #:globals globals)
+                   (append-text args-info (list (lambda (f g ta t d)
+                                                  (i386:call f g ta t d (+ t (function-offset name f)) n))))
                    (let* ((empty (clone info #:text '()))
                           (accu ((expr->accu empty) `(p-expr (ident ,name)))))
-                     (clone args-info #:text
-                            (append text
-                                    (.text accu)
-                                    (list (lambda (f g ta t d)
-                                            (i386:call-accu f g ta t d n))))
-                            #:globals globals))))))
+                     (append-text args-info (append (.text accu)
+                                                    (list (lambda (f g ta t d)
+                                                            (i386:call-accu f g ta t d n))))))))))
 
         ((fctn-call ,function (expr-list . ,expr-list))
-         (let* ((globals (append globals (filter-map expr->global expr-list)))
-                (info (clone info #:globals globals))
-                (text-length (length text))
+         (let* ((text-length (length text))
                 (args-info (let loop ((expressions (reverse expr-list)) (info info))
                              (if (null? expressions) info
                                  (loop (cdr expressions) ((expr->arg info) (car expressions))))))
-                (text (.text args-info))
                 (n (length expr-list))
                 (empty (clone info #:text '()))
                 (accu ((expr->accu empty) function)))
-           (clone info #:text
-                  (append text
-                          (.text accu)
-                          (list (lambda (f g ta t d)
-                                  (i386:call-accu f g ta t d n))))
-                  #:globals globals)))
+           (append-text args-info (append (.text accu)
+                                          (list (lambda (f g ta t d)
+                                                  (i386:call-accu f g ta t d n)))))))
 
         ((cond-expr . ,cond-expr)
          ((ast->info info) `(expr-stmt ,o)))
