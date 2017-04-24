@@ -61,6 +61,9 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
           ((equal? file "--version")
            (format (current-error-port) "mescc.scm (mes) ~a\n" %version)
            (exit 0)))
-    (format (current-error-port) "compiling: ~a\n" file)
+    (format (current-error-port) "input: ~a\n" file)
     (with-input-from-file file
       c99-input->elf)))
+
+(format (current-error-port) "compiler loaded\n")
+(format (current-error-port) "calling ~s\n" (cons 'main (command-line)))

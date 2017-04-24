@@ -63,10 +63,11 @@ exit $r
                      (cdr mfiles)))
          (mfile (if (null? mfiles) (string-append %docdir "examples/main.c")
                     (car mfiles))))
-    (format (current-error-port) "compiling: ~a\n" mfile)
+    (format (current-error-port) "input: ~a\n" mfile)
     (with-input-from-file mfile
       c99-input->elf)))
 
-(format (current-error-port) "calling main, command-line=~s\n" (command-line))
+(format (current-error-port) "compiler loaded\n")
+(format (current-error-port) "calling ~s\n" (cons 'main (command-line)))
 (main (command-line))
 ()

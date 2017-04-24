@@ -31,10 +31,11 @@
   (mes-use-module (nyacc lang c99 parser))
   (mes-use-module (mes libc-i386))))
 
-(define _start
-  (let* ((argc-argv (i386:_start))
-         (ast (with-input-from-string
-                  (string-append "
+(define (_start)
+  (let ((argc-argv (i386:_start)))
+    (format (current-error-port) "parsing: _start\n")
+    (with-input-from-string
+        (string-append "
 char **g_environment;
 char **
 _env (char **e)
@@ -51,13 +52,12 @@ _start ()
   int r = main ();
   exit (r);
 }
-")
-                parse-c99)))
-    ast))
+") parse-c99)))
 
-(define strlen
-  (let* ((ast (with-input-from-string
-                  "
+(define (strlen)
+  (format (current-error-port) "parsing: strlen\n")
+  (with-input-from-string
+      "
 int
 strlen (char const* s)
 {
@@ -65,14 +65,12 @@ strlen (char const* s)
   while (s[i]) i++;
   return i;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+"  parse-c99))
 
-(define getchar
-  (let* ((ast (with-input-from-string
-                  "
+(define (getchar)
+  (format (current-error-port) "parsing: getchar\n")
+  (with-input-from-string
+      "
 int g_stdin = 0;
 int ungetc_char = -1;
 char ungetc_buf[2];
@@ -86,27 +84,25 @@ getchar ()
       int r = read (g_stdin, &c, 1);
       if (r < 1) return -1;
       i = c;
-    }
+   }
   else
     {
-     //FIXME
-     //i = ungetc_buf[ungetc_char--];
-     i = ungetc_buf[ungetc_char];
-     //ungetc_char--;
-     ungetc_char = ungetc_char - 1;
-    }
+       //FIXME
+       //i = ungetc_buf[ungetc_char--];
+       i = ungetc_buf[ungetc_char];
+       //ungetc_char--;
+       ungetc_char = ungetc_char - 1;
+     }
   if (i < 0) i += 256;
 
   return i;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define assert_fail
-  (let* ((ast (with-input-from-string
-                  "
+(define (assert_fail)
+  (format (current-error-port) "parsing: assert_fail\n")
+  (with-input-from-string
+               "
 void
 assert_fail (char* s)
 {
@@ -118,14 +114,12 @@ assert_fail (char* s)
   fail = 0;
   *fail = 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define ungetc
-  (let* ((ast (with-input-from-string
-"
+(define (ungetc)
+  (format (current-error-port) "parsing: ungetc\n")
+  (with-input-from-string
+                "
 //#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 int
 ungetc (int c, int fd)
@@ -138,43 +132,37 @@ ungetc (int c, int fd)
   ungetc_char++;
   ungetc_buf[ungetc_char] = c;
   return c;
-}
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+ }
+" parse-c99))
 
-(define putchar
-  (let* ((ast (with-input-from-string
-                  "
+(define (putchar)
+  (format (current-error-port) "parsing: putchar\n")
+  (with-input-from-string
+               "
 int
 putchar (int c)
 {
   write (1, (char*)&c, 1);
   return 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define fputc
-  (let* ((ast (with-input-from-string
-                  "
+(define (fputc)
+  (format (current-error-port) "parsing: fputc\n")
+  (with-input-from-string
+               "
 int
 fputc (int c, int fd)
 {
   write (fd, (char*)&c, 1);
   return 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define eputs
-  (let* ((ast (with-input-from-string
-                  "
+(define (eputs)
+  (format (current-error-port) "parsing: eputs\n")
+  (with-input-from-string
+               "
 int
 eputs (char const* s)
 {
@@ -182,14 +170,13 @@ eputs (char const* s)
   write (2, s, i);
   return 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define fputs
-  (let* ((ast (with-input-from-string
-                  "
+
+(define (fputs)
+  (format (current-error-port) "parsing: fputs\n")
+  (with-input-from-string
+               "
 int
 fputs (char const* s, int fd)
 {
@@ -197,14 +184,12 @@ fputs (char const* s, int fd)
   write (fd, s, i);
   return 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define puts
-  (let* ((ast (with-input-from-string
-                  "
+(define (puts)
+  (format (current-error-port) "parsing: puts\n")
+  (with-input-from-string
+               "
 int
 puts (char const* s)
 {
@@ -212,31 +197,27 @@ puts (char const* s)
   write (1, s, i);
   return 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define strcmp
-  (let* ((ast (with-input-from-string
-                  "
+(define (strcmp)
+  (format (current-error-port) "parsing: strcmp\n")
+  (with-input-from-string
+               "
 int
 strcmp (char const* a, char const* b)
 {
-  while (*a && *b && *a == *b) 
+  while (*a && *b && *a == *b)
     {
       a++;b++;
     }
   return *a - *b;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define itoa
-  (let* ((ast (with-input-from-string
-                  "
+(define (itoa)
+  (format (current-error-port) "parsing: itoa\n")
+  (with-input-from-string
+               "
 char itoa_buf[10];
 
 char const*
@@ -255,24 +236,22 @@ itoa (int x)
     x = -x;
   
   do
-    {
-      *p-- = '0' + (x % 10);
-      x = x / 10;
-    } while (x);
+     {
+       *p-- = '0' + (x % 10);
+       x = x / 10;
+     } while (x);
 
   if (sign)
     *p-- = '-';
 
   return p+1;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define isdigit
-  (let* ((ast (with-input-from-string
-                  "
+(define (isdigit)
+  (format (current-error-port) "parsing: isdigit\n")
+  (with-input-from-string
+               "
 int
 isdigit (char c)
 {
@@ -280,14 +259,12 @@ isdigit (char c)
   if (c>='0' && c<='9') return 1;
   return 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define atoi
-  (let* ((ast (with-input-from-string
-                  "
+(define (atoi)
+  (format (current-error-port) "parsing: atoi\n")
+  (with-input-from-string
+               "
 int
 atoi (char const *s)
 {
@@ -306,14 +283,12 @@ atoi (char const *s)
     }
   return i * sign;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define malloc
-  (let* ((ast (with-input-from-string
-                  "
+(define (malloc)
+  (format (current-error-port) "parsing: malloc\n")
+  (with-input-from-string
+               "
 //void *g_malloc_base = 0;
 char *g_malloc_base = 0;
 
@@ -328,14 +303,12 @@ malloc (int size)
   brk (p+size);
   return p;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define realloc
-  (let* ((ast (with-input-from-string
-                  "
+(define (realloc)
+  (format (current-error-port) "parsing: realloc\n")
+  (with-input-from-string
+               "
 //void *
 int *
 //realloc (void *p, int size)
@@ -344,27 +317,23 @@ realloc (int *p, int size)
   brk (g_malloc_base + size);
   return g_malloc_base;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define strncmp
-  (let* ((ast (with-input-from-string
-                  "
+(define (strncmp)
+  (format (current-error-port) "parsing: strncmp\n")
+  (with-input-from-string
+               "
 int
 strncmp (char const* a, char const* b, int length)
 {
   while (*a && *b && *a == *b && --length) {a++;b++;}
   return *a - *b;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
+" parse-c99))
 
-(define c:getenv
-  (let* ((ast (with-input-from-string
+(define (c:getenv)
+  (format (current-error-port) "parsing: getenv\n")
+  (with-input-from-string
                   "
 char **g_environment;
 char const*
@@ -380,11 +349,7 @@ getenv (char const* s)
     }
   return 0;
 }
-"
-;;paredit:"
-                parse-c99)))
-    ast))
-
+" parse-c99))
 
 (define libc
   (list

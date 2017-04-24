@@ -1824,7 +1824,7 @@
            (formals (.formals o))
            (text (formals->text formals))
            (locals (formals->locals formals)))
-      (format (current-error-port) "compiling ~s\n" name)
+      (format (current-error-port) "compiling: ~a\n" name)
       (let loop ((statements (.statements o))
                  (info (clone info #:locals locals #:function (.name o) #:text text)))
         (if (null? statements) (clone info
@@ -1841,14 +1841,18 @@
           (loop (cdr elements) ((ast->info info) (car elements)))))))
 
 (define (c99-input->info)
-  (stderr "COMPILE\n")
-  (let* ((ast (c99-input->ast))
-         (info (make <info>
+  (let* ((info (make <info>
                  #:functions i386:libc
                  #:types i386:type-alist))
-         (ast (append libc ast))
+         (foo (stderr "compiling: mlibc\n"))
+         (info (let loop ((info info) (libc libc))
+                 (if (null? libc) info
+                     (loop ((ast->info info) ((car libc))) (cdr libc)))))
+         (foo (stderr "parsing: input\n"))
+         (ast (c99-input->ast))
+         (foo (stderr "compiling: input\n"))
          (info ((ast->info info) ast))
-         (info ((ast->info info) _start)))
+         (info ((ast->info info) (_start))))
     info))
 
 (define (write-any x)
