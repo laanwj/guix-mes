@@ -1354,9 +1354,7 @@ main (int argc, char *argv[])
 #endif
 
   SCM lst = cell_nil;
-#if !__MESC__
   for (int i=argc-1; i>=0; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
-#endif
   r0 = acons (cell_symbol_argv, lst, r0);
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
   if (g_debug > 1)
