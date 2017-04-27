@@ -104,7 +104,6 @@
          ("i686-linux-binutils" ,(cross-binutils triplet))
          ("i686-linux-gcc" ,(let ((triplet triplet)) (cross-gcc triplet)))
          ("perl" ,perl)))        ; build-aux/gitlog-to-changelog
-      (supported-systems '("i686-linux"))
       (synopsis "Maxwell Equations of Software")
       (description
        "Mes aims to create full source bootstrapping for GuixSD.  It
