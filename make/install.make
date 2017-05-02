@@ -114,7 +114,7 @@ update-hash: $(GUIX-HASH) .tarball-version
 	sed -i \
 		-e 's,(base32 "[^"]*"),(base32 "$(shell cat $<)"),'\
 		-e 's,(commit "[^"]*"),(commit "$(shell cat .tarball-version)"),'\
-		-e 's,(version "[^g][^"]*"),(version "$(VERSION).$(shell cut -b1-8 .tarball-version)"),'\
+		-e 's,(version "[^g][^"]*"),(version "$(VERSION)"),'\
 		guix.scm
 	! git diff --exit-code
 	git commit -m 'guix hash: $(shell cat $<)' guix.scm

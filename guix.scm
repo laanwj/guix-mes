@@ -52,7 +52,6 @@
              (gnu packages guile)
              (gnu packages package-management)
              (gnu packages perl)
-             (gnu packages version-control)
              ((guix build utils) #:select (with-directory-excursion))
              (guix build-system gnu)
              (guix build-system trivial)
@@ -81,29 +80,41 @@
         (_ #f)))))
 
 (define-public mes
-  (let ((triplet "i686-unknown-linux-gnu"))
+  (let ((commit "a437c173b9da1949ad966fd50dd4f26e522a910a")
+        (revision "0")
+        (triplet "i686-unknown-linux-gnu")
+        (version "0.5"))
     (package
       (name "mes")
-      (version "0.5.4f2ccd17")
+      (version (string-append version "-" revision "." (string-take commit 7)))
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
                       (url "https://gitlab.com/janneke/mes")
-                      (commit "4f2ccd170df32c0a2988c0886de69a9a2b71f224")))
+                      (commit commit)))
                 (file-name (string-append name "-" version))
+                ;; TODO: Unbundle nyacc.
                 (sha256
-                 (base32 "01m8n7zk4f1ryd61dj589zarx09vbi7fc5f8m1x5zfk6r7l0zja2"))))
+                 (base32 "1ynr0hc0k15307sgzv09k3y5rvy46h0wbh7zcblx1f9v7y8k90zv"))))
       (build-system gnu-build-system)
       (supported-systems '("x86_64-linux"))
       (native-inputs
-       `(("git" ,git)
-         ("guile" ,guile-2.2)
-         ("gcc" ,gcc-toolchain-4.9)
+       `(("guile" ,guile-2.2)
          ;; Use cross-compiler rather than #:system "i686-linux" to get
          ;; MesCC 64 bit .go files installed ready for use with Guile.
          ("i686-linux-binutils" ,(cross-binutils triplet))
          ("i686-linux-gcc" ,(let ((triplet triplet)) (cross-gcc triplet)))
-         ("perl" ,perl)))        ; build-aux/gitlog-to-changelog
+         ("perl" ,perl)))                       ;build-aux/gitlog-to-changelog
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (add-before 'install 'generate-changelog
+             (lambda _
+               (with-output-to-file "ChangeLog"
+                 (lambda ()
+                   (display "Please run
+    build-aux/gitlog-to-changelog --srcdir=<git-checkout> > ChangeLog\n")))
+               #t)))))
       (synopsis "Maxwell Equations of Software")
       (description
        "Mes aims to create full source bootstrapping for GuixSD.  It
@@ -117,17 +128,7 @@ prototype in C and a Nyacc-based C compiler in [Guile] Scheme.")
     (inherit mes)
     (name "mes.git")
     (version "git")
-    (source (local-file %source-dir #:recursive? #t #:select? git-file?))
-    (arguments
-     `(#:phases
-       (modify-phases %standard-phases
-         (add-before 'install 'generate-changelog
-                     (lambda _
-                       (with-output-to-file "ChangeLog"
-                         (lambda ()
-                           (display "Please run
-    build-aux/gitlog-to-changelog --srcdir=<git-checkout> > ChangeLog\n")))
-                       #t)))))))
+    (source (local-file %source-dir #:recursive? #t #:select? git-file?))))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
 mes.git
