@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -17,18 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef __ASSERT_H
+#define __ASSERT_H 1
 
-#include <mlibc.h>
+#if __GNUC__ && POSIX
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include_next <assert.h>
+#else // ! (__GNUC__ && POSIX)
+#define assert(x) ((x) ? (void)0 : assert_fail (#x))
+#endif // ! (__GNUC__ && POSIX)
 
-int
-main (int argc, char *argv[])
-{
-  g_stdin = open ("scaffold/mesmes", 0);
-  int c = getchar ();
-  if (c != 'm') return c;
-  while (c != EOF) {
-    putchar (c);
-    c = getchar ();
-  }
-  return c;
-}
+#endif // __ASSERT_H

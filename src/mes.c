@@ -18,15 +18,11 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if  __MESC__
-char **g_environment;
-int g_stdin = 0;
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
-#endif
-
-#if !__MESC__
-#include "mlibc.c"
-#endif
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <mlibc.h>
 
 int ARENA_SIZE = 100000;
 int MAX_ARENA_SIZE = 20000000;
@@ -1376,7 +1372,3 @@ main (int argc, char *argv[])
     }
   return 0;
 }
-
-#if !_POSIX_SOURCE && !__MESC__
-#include "mstart.c"
-#endif

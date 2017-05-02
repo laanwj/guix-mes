@@ -21,22 +21,12 @@
 char **g_environment = 0;
 int g_stdin = 0;
 
-#define EOF -1
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
+#include <stdio.h>
+#include <mlibc.h>
 
 #if __GNUC__ && !POSIX
 
-#define O_RDONLY 0
-#define INT_MIN -2147483648
-#define INT_MAX 2147483647
-
-typedef long size_t;
-void *malloc (size_t i);
-int open (char const *s, int mode);
-int read (int fd, void* buf, size_t n);
-int write (int fd, char const* s, int n);
+#include <stdlib.h>
 
 void
 exit (int code)
@@ -288,7 +278,7 @@ ungetc (int c, int fd)
 char const* itoa (int);
 
 int
-strncmp (char const* a, char const* b, int length)
+strncmp (char const* a, char const* b, size_t length)
 {
   while (*a && *b && *a == *b && --length) {a++;b++;}
   return *a - *b;
@@ -432,22 +422,13 @@ itoa (int x)
 }
 
 #if POSIX
-
 #define _GNU_SOURCE
 #include <assert.h>
-#include <ctype.h>
-#include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#endif // POSIX
 
-#undef puts
-#define puts(x) fdputs(x, STDOUT)
-#define eputs(x) fdputs(x, STDERR)
-#define fputs fdputs
 int
 fdputs (char const* s, int fd)
 {
@@ -456,10 +437,8 @@ fdputs (char const* s, int fd)
   return 0;
 }
 
-#ifdef putc
-#undef putc
-#endif
-#define fputc fdputc
+#if POSIX
+
 int
 fdputc (int c, int fd)
 {
@@ -496,7 +475,6 @@ getchar ()
   return i;
 }
 
-#define ungetc fdungetc
 int
 fdungetc (int c, int fd)
 {
@@ -504,15 +482,5 @@ fdungetc (int c, int fd)
   ungetc_buf[++ungetc_char] = c;
   return c;
 }
-#else
 
-#define fputs fdputs
-int
-fdputs (char const* s, int fd)
-{
-  int i = strlen (s);
-  write (fd, s, i);
-  return 0;
-}
-
-#endif
+#endif // POSIX

@@ -5,7 +5,7 @@ QUIET:=@
 default: all
 
 MES_DEBUG:=1
-CFLAGS:=--std=gnu99 -O0 -g
+CFLAGS:=--std=gnu99 -O0 -g --include mlibc.c
 OUT:=out
 
 SUBDIRS:=\

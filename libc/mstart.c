@@ -52,4 +52,4 @@ _start ()
        );
   exit (r);
 }
-#endif
+#endif // __GNUC__

@@ -11,6 +11,8 @@ endif
 CLEAN+=$(O_FILES) $(OUT)/$(TARGET)
 DIST-CLEAN+=$(D_FILES)
 
+INCLUDES+=libc/include libc $(OUT)/$(DIR)
+
 $(OUT)/$(TARGET): ld:=$(CROSS)LD
 $(OUT)/$(TARGET): LD:=$(CROSS)$(LD)
 $(OUT)/$(TARGET): CC:=$(CROSS)$(CC)

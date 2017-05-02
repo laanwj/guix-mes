@@ -22,15 +22,7 @@
 #error "POSIX not supported"
 #endif
 
-#if  __MESC__
-char **g_environment;
-int g_stdin = 0;
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
-#endif
-
-#if !__MESC__
-#include "mlibc.c"
-#endif
+#include <mlibc.h>
 
 char arena[300];
 
@@ -346,7 +338,3 @@ main (int argc, char *argv[])
 
   return 0;
 }
-
-#if !__MESC__
-#include "mstart.c"
-#endif

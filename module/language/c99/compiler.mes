@@ -1732,8 +1732,24 @@
          (let ((types (.types info)))
            (clone info #:types (cons (cons name (assoc-ref types type)) types))))
 
+        ;; int foo ();
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
+         info)
+
+        ;; void foo ();
+        ((decl (decl-spec-list (type-spec (void))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
+         info)
+
+        ;; void foo (*);
+        ((decl (decl-spec-list (type-spec (void))) (init-declr-list (init-declr (ptr-declr (pointer) (ftn-declr (ident ,name) (param-list . ,param-list))))))
+         info)
+
+        ;; char const* itoa ();
+        ((decl (decl-spec-list (type-spec (fixed-type ,type)) (type-qual ,qual)) (init-declr-list (init-declr (ptr-declr (pointer) (ftn-declr (ident ,name) (param-list . ,param-list))))))
+         info)
+
         ;; printf (char const* format, ...)
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list ,param-list (ellipsis))))))
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list ,param-list . (ellipsis))))))
          info)
 
         ;; int i = 0, j = 0;

@@ -22,15 +22,11 @@
 #error "POSIX not supported"
 #endif
 
-#if  __MESC__
-char **g_environment;
-int g_stdin = 0;
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
-#endif
-
-#if !__MESC__
-#include "mlibc.c"
-#endif
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <mlibc.h>
 
 int ARENA_SIZE = 100000;
 int MAX_ARENA_SIZE = 40000000;
@@ -1201,23 +1197,18 @@ bload_env (SCM a) ///((internal))
 int
 main (int argc, char *argv[])
 {
-  eputs ("Hello mini-mes!\n");
-#if _POSIX_SOURCE
-  g_debug = getenv ("MES_DEBUG");
-  if (g_debug) {eputs ("MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
-  if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
-#endif
-  g_debug = 1;
-  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE");
-  if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);return 0;};
-  g_stdin = STDIN;
+  char *p;
+  if (p = getenv ("MES_DEBUG")) g_debug = atoi (p);
+  if (g_debug) {eputs (";;; MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
+  if (p = getenv ("MES_MAX_ARENA")) MAX_ARENA_SIZE = atoi (p);
+  if (p = getenv ("MES_ARENA")) ARENA_SIZE = atoi (p);
+  if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE\n");
+  if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);puts ("\n");return 0;};
   r0 = mes_environment ();
 
   SCM program = bload_env (r0);
   SCM lst = cell_nil;
-#if !__MESC__
   for (int i=argc-1; i>=0; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
-#endif
   r0 = acons (cell_symbol_argv, lst, r0);
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
   if (g_debug)
@@ -1239,7 +1230,3 @@ main (int argc, char *argv[])
     }
   return 0;
 }
-
-#if !__MESC__
-#include "mstart.c"
-#endif

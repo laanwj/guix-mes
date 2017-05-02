@@ -18,11 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// #if _POSIX_SOURCE
-// #undef fputs
-// #undef fdputs
-// #undef fdputc
-// #endif
+#include <ctype.h>
 
 SCM
 ___end_of_mes___ ()

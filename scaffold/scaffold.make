@@ -29,11 +29,7 @@ include make/check.make
 
 TARGET:=m.mlibc
 C_FILES:=$(DIR)/m.c
-INCLUDES:=libc
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
-CROSS:=$(CC32:%gcc=%)
-include make/bin.make
+include make/bin-mlibc.make
 
 TARGET:=m.mlibc
 EXPECT:=255
@@ -41,11 +37,7 @@ include make/check.make
 
 TARGET:=hello.mlibc
 C_FILES:=$(DIR)/hello.c
-INCLUDES:=libc
-C_FLAGS:=-nostdinc -g
-LD_FLAGS:=-nostdlib -g
-CROSS:=$(CC32:%gcc=%)
-include make/bin.make
+include make/bin-mlibc.make
 
 TARGET:=hello.mlibc
 EXPECT:=42
@@ -53,11 +45,7 @@ include make/check.make
 
 TARGET:=micro-mes.mlibc
 C_FILES:=$(DIR)/micro-mes.c
-INCLUDES:=libc
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
-CROSS:=$(CC32:%gcc=%)
-include make/bin.make
+include make/bin-mlibc.make
 
 TEST:=micro-mes.mlibc-check
 $(TEST): $(OUT)/micro-mes.mlibc
@@ -66,48 +54,35 @@ include make/check.make
 
 TARGET:=tiny-mes.mlibc
 C_FILES:=$(DIR)/tiny-mes.c
-INCLUDES:=libc
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
-CROSS:=$(CC32:%gcc=%)
-include make/bin.make
+include make/bin-mlibc.make
 
 TARGET:=tiny-mes.mlibc
 include make/check.make
 
 TARGET:=cons-mes.mlibc
 C_FILES:=$(DIR)/cons-mes.c
-INCLUDES:=libc
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
 DEFINES:=VERSION='"$(VERSION)"'
-CROSS:=$(CC32:%gcc=%)
-include make/bin.make
+include make/bin-mlibc.make
 
 TARGET:=cons-mes.mlibc
 include make/check.make
 
 TARGET:=t.mlibc
 C_FILES:=$(DIR)/t.c
-INCLUDES:=libc
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
-CROSS:=$(CC32:%gcc=%)
-include make/bin.make
+include make/bin-mlibc.make
 
 TARGET:=t.mlibc
 include make/check.make
 
+CROSS:=$(CC32:%gcc=%)
+#$(OUT)/$(DIR)/mini-mes.$(CROSS)o: $(SNARF.MES)
 $(OUT)/mini-mes: $(SNARF.MES)
 
 TARGET:=mini-mes.mlibc
 C_FILES:=$(DIR)/mini-mes.c
-DEFINES:=FIXED_PRIMITIVES=1 VERSION='"$(VERSION)"' PREFIX='"$(PREFIX)"'
-INCLUDES:=libc src $(OUT)/src
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
-CROSS:=$(CC32:%gcc=%)
-include make/bin.make
+DEFINES:=FIXED_PRIMITIVES=1 VERSION='"$(VERSION)"' MODULEDIR='"$(MODULEDIR)"' PREFIX='"$(PREFIX)"'
+INCLUDES:=src $(OUT)/src
+include make/bin-mlibc.make
 
 TEST:=mini-mes.mlibc-check
 $(TEST): $(OUT)/mini-mes.mlibc
@@ -174,7 +149,7 @@ $(TEST): $(OUT)/mini-mes.guile
 include make/check.make
 
 # scripts/mescc.mes
-
+ifeq ($(MES_SKIP_MES),)
 TARGET:=m.mes
 C_FILES:=$(DIR)/m.c
 include make/mescc-mes.make
@@ -223,6 +198,7 @@ include make/mescc-mes.make
 
 TARGET:=t.mes
 include make/check.make
+endif
 
 ifneq ($(BOOTSTRAP),)
 $(OUT)/mini-mes.mes: module/mes/read-0-32.mo

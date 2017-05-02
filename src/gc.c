@@ -18,6 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+
 SCM
 gc_up_arena () ///((internal))
 {

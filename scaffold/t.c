@@ -18,14 +18,9 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if  __MESC__
-int g_stdin = 0;
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
-#endif
-
-#if !__MESC__
-#include "mlibc.c"
-#endif
+#include <mlibc.h>
+#include <assert.h>
+#include <stdlib.h>
 
 struct scm {
   int type;
@@ -924,7 +919,3 @@ main (int argc, char *argv[])
 
   return 22;
 }
-
-#if !POSIX && !__MESC__
-#include "mstart.c"
-#endif

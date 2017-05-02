@@ -22,14 +22,7 @@
 #error "POSIX not supported"
 #endif
 
-#if  __MESC__
-int g_stdin = 0;
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
-#endif
-
-#if !__MESC__
-#include "mlibc.c"
-#endif
+#include <mlibc.h>
 
 int
 main (int argc, char *argv[])
@@ -59,7 +52,3 @@ main (int argc, char *argv[])
     }
   return 0;
 }
-
-#if __GNUC__
-#include "mstart.c"
-#endif

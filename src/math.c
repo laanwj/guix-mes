@@ -18,6 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits.h>
+
 SCM
 greater_p (SCM x) ///((name . ">") (arity . n))
 {

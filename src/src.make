@@ -40,25 +40,16 @@ snarf-mes: $(SNARF.MES)
 
 include make/reset.make
 
-# a full 32 bit cross compiler with glibc
-# CROSS:=$(CC32:%gcc=%)
 # TARGET:=$(CROSS)mes
-# $(OUT)/$(DIR)/mes.$(CROSS)o: $(SNARF.MES)
-# C_FILES:=$(DIR)/mes.c
-# DEFINES:=FIXED_PRIMITIVES=1 MES_FULL=1 POSIX=1 VERSION='"$(VERSION)"' MODULEDIR='"$(MODULEDIR)"' PREFIX='"$(PREFIX)"'
-# INCLUDES:=libc $(OUT)/src
-# include make/bin.make
-
-# a simple non-glibc cross compiler, using mlibc.
 CROSS:=$(CC32:%gcc=%)
-TARGET:=$(CROSS)mes
+$(OUT)/$(CROSS)%: $(OUT)/%.mlibc
+	@ln -sf $(<F) $@
+
+TARGET:=mes.mlibc
 $(OUT)/$(DIR)/mes.$(CROSS)o: $(SNARF.MES)
 C_FILES:=$(DIR)/mes.c
 DEFINES:=FIXED_PRIMITIVES=1 MES_FULL=1 VERSION='"$(VERSION)"' MODULEDIR='"$(MODULEDIR)"' PREFIX='"$(PREFIX)"'
-INCLUDES:=libc $(OUT)/src
-C_FLAGS:=-nostdinc
-LD_FLAGS:=-nostdlib
-include make/bin.make
+include make/bin-mlibc.make
 
 TARGET:=mes.guile
 $(OUT)/mes.mes: module/mes/read-0-32.mo

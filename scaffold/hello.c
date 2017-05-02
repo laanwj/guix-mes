@@ -18,15 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if  __MESC__
-char **g_environment;
-int g_stdin = 0;
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
-#endif
-
-#if !__MESC__
-#include "mlibc.c"
-#endif
+#include <mlibc.h>
 
 int
 main (int argc, char *argv[])
@@ -40,7 +32,3 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--help")) {puts ("argc > 1 && --help\n"); return argc;}
   return 42;
 }
-
-#if !__MESC__ && !POSIX
-#include "mstart.c"
-#endif

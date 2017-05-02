@@ -18,17 +18,9 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mlibc.h>
+#ifndef __MLIBC_H
+#define __MLIBC_H
 
-int
-main (int argc, char *argv[])
-{
-  g_stdin = open ("scaffold/mesmes", 0);
-  int c = getchar ();
-  if (c != 'm') return c;
-  while (c != EOF) {
-    putchar (c);
-    c = getchar ();
-  }
-  return c;
-}
+char const* itoa (int);
+
+#endif //__MLIBC_H
