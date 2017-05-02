@@ -56,7 +56,7 @@
 
 (define (c99-input->ast)
   (parse-c99
-   #:inc-dirs (cons* "." "libc" "src" "out" "out/src" (string-split (getenv "C_INCLUDE_PATH") #\:))
+   #:inc-dirs (cons* "." "libc/include" "libc" "src" "out" "out/src" (string-split (getenv "C_INCLUDE_PATH") #\:))
    #:cpp-defs `(
                 "POSIX=0"
                 "_POSIX_SOURCE=0"
@@ -872,9 +872,11 @@
   (define (test->text test)
     (let ((value (pmatch test
                    (0 0)
+                   ((p-expr (char ,value)) (char->integer (car (string->list value))))
                    ((p-expr (ident ,constant)) (assoc-ref (.constants info) constant))
                    ((p-expr (fixed ,value)) (cstring->number value))
-                   ((neg (p-expr (fixed ,value))) (- (cstring->number value))))))
+                   ((neg (p-expr (fixed ,value))) (- (cstring->number value)))
+                   (_ (error "case test: unsupported: " test)))))
       (lambda (n)
         (append (wrap-as (i386:accu-cmp-value value))
                 (jump-z (+ (length (text->list (jump 0)))
@@ -1729,6 +1731,10 @@
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
          (let ((types (.types info)))
            (clone info #:types (cons (cons name (assoc-ref types type)) types))))
+
+        ;; printf (char const* format, ...)
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list ,param-list (ellipsis))))))
+         info)
 
         ((decl (decl-spec-list (stor-spec (typedef)) ,type) ,name)
          (format (current-error-port) "SKIP: typedef=~s\n" o)

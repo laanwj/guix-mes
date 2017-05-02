@@ -331,6 +331,75 @@ atoi (char const *s)
     }
   return i * sign;
 }
+
+int
+printf (char const* format, ...)
+{
+  int va_arg = 0;
+  int va;
+  char const *p = format;
+  while (*p)
+    if (*p != '%')
+      putchar (*p++);
+    else
+      {
+        p++;
+        char c = *p;
+        switch (c)
+          {
+          case '%': {putchar (*p); break;}
+          case 'c':
+            {
+            asm (
+                 "mov    -0xc(%%ebp),%%eax\n\t"
+                 "shl     $0x2,%%eax\n\t"
+                 "add     %%ebp,%%eax\n\t"
+                 "add     $0xc,%%eax\n\t"
+                 "mov     (%%eax),%%eax\n\t"
+                 //"mov     %%eax,%0\n\t"
+                 : "=va" (va)
+                 : //no inputs ""
+                 );
+            putchar ((char)va);
+            va_arg++;
+            break;
+            }
+          case 'd': {
+            asm (
+                 "mov    -0xc(%%ebp),%%eax\n\t"
+                 "shl     $0x2,%%eax\n\t"
+                 "add     %%ebp,%%eax\n\t"
+                 "add     $0xc,%%eax\n\t"
+                 "mov     (%%eax),%%eax\n\t"
+                 //"mov     %%eax,%0\n\t"
+                 : "=va" (va)
+                 : //no inputs ""
+                 );
+            puts (itoa ((int)va));
+            va_arg++;
+            break;
+          }
+          case 's': {
+            asm (
+                 "mov    -0xc(%%ebp),%%eax\n\t"
+                 "shl     $0x2,%%eax\n\t"
+                 "add     %%ebp,%%eax\n\t"
+                 "add     $0xc,%%eax\n\t"
+                 "mov     (%%eax),%%eax\n\t"
+                 //"mov     %%eax,%0\n\t"
+                 : "=va" (va)
+                 : //no inputs ""
+                 );
+            puts ((char*)va);
+            va_arg++;
+            break;
+          }
+          default: putchar (*p);
+          }
+        p++;
+      }
+  return 0;
+}
 #endif
 
 char itoa_buf[10];

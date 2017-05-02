@@ -140,6 +140,17 @@
                 " 0x50"                 ; push   %eax
                 ))
 
+(define (i386:va-arg)
+  (string-append ".byte"
+                 " 0x8b 0x45 0xfc" ; mov    -<0x4>(%ebp),%eax :va_arg
+                 " 0xc1 0xe0 0x2"  ; shl    $0x2,%eax
+                 " 0x01 0xe8"      ; add    %ebp,%eax
+                 " 0x83 0xc0 0xc"  ; add    $0xc,%eax
+                 " 0x8b 0x00"      ; mov    (%eax),%eax
+                 " 0x89 0x45 0xf8" ; mov    %eax,-0x8(%ebp) :va
+                 " 0x50"           ; push   %eax
+                ))
+
 (define i386:libc
   (list
    (cons "exit" (list i386:exit))

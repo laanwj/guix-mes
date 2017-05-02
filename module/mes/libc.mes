@@ -351,6 +351,38 @@ getenv (char const* s)
 }
 " parse-c99))
 
+(define (printf)
+  (format (current-error-port) "parsing: printf\n")
+  (let ((va-arg (i386:va-arg)))
+      (with-input-from-string
+               (string-append "
+int
+printf (char const* format, int va_args)
+{
+  int va_arg = 0;
+  int va;
+  char *p = format;
+  while (*p)
+    if (*p != '%')
+      putchar (*p++);
+    else
+      {
+        p++;
+        char c = *p;
+        switch (c)
+          {
+            case '%': {putchar (*p); break;}
+            case 'c': {asm (\"" va-arg "\"); putchar ((char)va); va_arg++; break;}
+            case 'd': {asm (\"" va-arg "\"); puts (itoa (va)); va_arg++; break;}
+            case 's': {asm (\"" va-arg "\"); puts ((char*)va); va_arg++; break;}
+            default: putchar (*p);
+          }
+        p++;
+      }
+  return 0;
+}
+") parse-c99)))
+
 (define libc
   (list
    strlen
@@ -370,4 +402,5 @@ getenv (char const* s)
    realloc
    strncmp
    c:getenv
+   printf
    ))

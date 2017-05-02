@@ -26,6 +26,7 @@
 
 (define-module (mes libc-i386)
   #:export (i386:libc
-            i386:_start))
+            i386:_start
+            i386:va-arg))
 
 (include-from-path "mes/libc-i386.mes")
