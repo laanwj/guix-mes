@@ -68,10 +68,18 @@
          (without-extension (string-drop-right relative 4)))
     (string-append without-extension ".go")))
 
+(define (scm->mes file)
+  (let* ((relative (relative-file file))
+         (without-extension (string-drop-right relative 4)))
+    (string-append without-extension ".mes")))
+
 (define (file-needs-compilation? file)
   (let ((go (scm->go file)))
     (or (not (file-exists? go))
-        (file-mtime<? go file))))
+        (file-mtime<? go file)
+        (let ((mes (scm->mes file))) ; FIXME: try to respect (include-from-path ".mes")
+          (and (file-exists? mes)
+               (file-mtime<? go mes))))))
 
 (define (file->module file)
   (let* ((relative (relative-file file))
