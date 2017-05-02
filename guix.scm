@@ -84,15 +84,15 @@
   (let ((triplet "i686-unknown-linux-gnu"))
     (package
       (name "mes")
-      (version "0.4.f84e97fc")
+      (version "0.5.4f2ccd17")
       (source (origin
                 (method git-fetch)
                 (uri (git-reference
                       (url "https://gitlab.com/janneke/mes")
-                      (commit "f84e97fc33f5e2a2ad7033795967d44c95d34b8f")))
+                      (commit "4f2ccd170df32c0a2988c0886de69a9a2b71f224")))
                 (file-name (string-append name "-" version))
                 (sha256
-                 (base32 "1jpm8m8y2dqsl3sc6flf8da4rpdrqh6zgr2mghzjw0lg34v1r21j"))))
+                 (base32 "01m8n7zk4f1ryd61dj589zarx09vbi7fc5f8m1x5zfk6r7l0zja2"))))
       (build-system gnu-build-system)
       (supported-systems '("x86_64-linux"))
       (native-inputs
