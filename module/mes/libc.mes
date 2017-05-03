@@ -229,19 +229,19 @@ itoa (int x)
   p += 9;
   *p-- = 0;
 
-  //int sign = x < 0;
-  int sign;
-  sign = x < 0;
+  //int sign = x < 0; // FIXME
+  int sign = 0;
+  if (x < 0) sign = 1;
   if (sign)
     x = -x;
-  
+
   do
      {
        *p-- = '0' + (x % 10);
        x = x / 10;
      } while (x);
 
-  if (sign)
+  if (sign && *(p + 1) != '0')
     *p-- = '-';
 
   return p+1;
