@@ -1736,6 +1736,14 @@
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list ,param-list (ellipsis))))))
          info)
 
+        ;; int i = 0, j = 0;
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) . ,initzer) . ,rest))
+         (let loop ((inits `((init-declr (ident ,name) ,@initzer) ,@rest)) (info info))
+           (if (null? inits) info
+               (loop (cdr inits)
+                     ((ast->info info)
+                      `(decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list ,(car inits))))))))
+
         ((decl (decl-spec-list (stor-spec (typedef)) ,type) ,name)
          (format (current-error-port) "SKIP: typedef=~s\n" o)
          info)
