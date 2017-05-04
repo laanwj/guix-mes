@@ -511,7 +511,8 @@
           (text (.text info))
           (globals (.globals info)))
       (define (add-local locals name type pointer)
-        (let* ((id (1+ (length (filter local? (map cdr locals)))))
+        (let* ((id (if (or (null? locals) (not (local? (cdar locals)))) 1
+                       (1+ (local:id (cdar locals)))))
                (locals (cons (make-local name type pointer id) locals)))
           locals))
       (pmatch o
@@ -712,8 +713,8 @@
                                                     (else (error "mescc: op ~a not supported: ~a\n" op o))))))))
            (pmatch a
              ((p-expr (ident ,name)) (append-text info ((accu->ident info) name)))
-             ((d-sel (ident ,field) . ,d-sel)
-              (let* ((type (list "struct" "scm")) ;; FIXME
+             ((d-sel (ident ,field) ,p-expr)
+              (let* ((type (p-expr->type info p-expr))
                      (fields (type->description info type))
                      (size (type->size info type))
                      (field-size 4) ;; FIXME:4, not fixed
@@ -1070,13 +1071,23 @@
     (if local (local:pointer local)
         (or (and=> (ident->decl info o) global:pointer) 0))))
 
+(define (p-expr->type info o)
+  (pmatch o
+    ((p-expr (ident ,name)) (ident->type info name))
+    ((array-ref (p-expr (fixed ,index)) (p-expr (ident ,array)))
+     (ident->type info array))
+    (_ (error "p-expr->type: unsupported: " o))))
+
 (define (type->description info o)
   (pmatch o
     ((decl-spec-list (type-spec (fixed-type ,type)))
      (type->description info type))
     ((decl-spec-list (type-spec (fixed-type ,type)) (type-qual ,qual))
      (type->description info type))
-    (_ (caddr (assoc-ref (.types info) o)))))
+    (_ (let ((type (assoc-ref (.types info) o)))
+         (if (not type) (stderr "TYPES=~s\n" (.types info)))
+         (if type (caddr type)
+             (error "type->description: unsupported:" o))))))
 
 (define (local? o) ;; formals < 0, locals > 0
   (positive? (local:id o)))
@@ -1088,7 +1099,8 @@
           (constants (.constants info))
           (text (.text info)))
       (define (add-local locals name type pointer)
-        (let* ((id (1+ (length (filter local? (map cdr locals)))))
+        (let* ((id (if (or (null? locals) (not (local? (cdar locals)))) 1
+                       (1+ (local:id (cdar locals)))))
                (locals (cons (make-local name type pointer id) locals)))
           locals))
 
@@ -1460,10 +1472,23 @@
              ;;;(clone info #:globals (append globals (list (ident->global name type 1 0))))
              ))
 
+        ;; struct foo bar[2];
+        ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
+         (let ((type (ast->type `(struct-ref (ident ,type)))))
+           (if (.function info)
+               (let* ((local (car (add-local locals name type -1)))
+                      (count (string->number count))
+                      (size (type->size info type))
+                      (local (make-local name type -1 (+ (local:id local) (* count size))))
+                      (locals (cons local locals))
+                      (info (clone info #:locals locals)))
+                 info)
+               (error "ast->info: unsupported global: " o))))
+
         ;; char arena[20000];
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
          (let ((type (ast->type type)))
-           (if (.function info) (error "ast->info: unsupported: " o)
+           (if (.function info) (error "ast->info: unsupported local: " o)
                (let* ((globals (.globals info))
                       (count (cstring->number count))
                       (size (type->size info type))
@@ -1471,17 +1496,31 @@
                       (globals (append globals (list array))))
                  (clone info #:globals globals)))))
 
+
+        ;; struct foo bar;
+        ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))
+         (if (.function info)
+             (let* ((locals (add-local locals name `("struct" ,type) 1))
+                    (info (clone info #:locals locals)))
+               info)
+             (let* ((size (type->size info (list "struct" type)))
+                    (global (make-global name (list "struct" type) -1 (string->list (make-string size #\nul))))
+                    (globals (append globals (list global)))
+                    (info (clone info #:globals globals)))
+               info)))
+
         ;;struct scm *g_cells = (struct scm*)arena;
         ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (cast (type-name (decl-spec-list (type-spec (struct-ref (ident ,=type)))) (abs-declr (pointer))) (p-expr (ident ,value)))))))
          (if (.function info)
-             (let* ((locals (add-local locals name type 1))
+             (let* ((locals (add-local locals name `("struct" ,type) 1))
                     (info (clone info #:locals locals)))
                (append-text info (append ((ident->accu info) name)
                                          ((accu->ident info) value)))) ;; FIXME: deref?
-             (let* ((globals (append globals (list (ident->global name type 1 0))))
+             (let* ((globals (append globals (list (ident->global name `("struct" ,type) 1 0))))
                     (info (clone info #:globals globals)))
                (append-text info (append ((ident->accu info) name)
                                          ((accu->ident info) value)))))) ;; FIXME: deref?
+
 
         ;; SCM tmp;
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name))))
@@ -1585,7 +1624,7 @@
 
         ;; struct
         ((decl (decl-spec-list (type-spec (struct-def (ident ,name) (field-list . ,fields)))))
-         (let* ((type (struct->type (list "struct" name) (map struct-field fields))))
+         (let ((type (struct->type (list "struct" name) (map struct-field fields))))
            (clone info #:types (append (.types info) (list type)))))
 
         ;; char *p = &bla;
