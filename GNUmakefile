@@ -14,6 +14,7 @@ SUBDIRS:=\
  scaffold\
  scripts\
  tests\
+ tinycc\
 #
 
 include make/common.make
