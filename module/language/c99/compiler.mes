@@ -742,16 +742,16 @@
                      (info (append-text info (wrap-as (append (i386:pop-base))))))
                 (append-text info
                              (append (if (eq? size 1) (wrap-as (i386:byte-base->accu-address))
-                                         (append
-                                          (wrap-as (i386:base-address->accu-address))
-                                          (if (<= size 4) '()
-                                              (wrap-as (append (i386:accu+n 4)
-                                                               (i386:base+n 4)
-                                                               (i386:base-address->accu-address))))
-                                          (if (<= size 8) '()
-                                              (wrap-as (append (i386:accu+n 4)
-                                                               (i386:base+n 4)
-                                                               (i386:base-address->accu-address))))))))))
+                                         (if (<= size 4) (wrap-as (i386:base->accu-address))
+                                          (append
+                                           (wrap-as (i386:base-address->accu-address))
+                                           (wrap-as (append (i386:accu+n 4)
+                                                            (i386:base+n 4)
+                                                            (i386:base-address->accu-address)))
+                                           (if (<= size 8) '()
+                                               (wrap-as (append (i386:accu+n 4)
+                                                                (i386:base+n 4)
+                                                                (i386:base-address->accu-address)))))))))))
              (_ (error "expr->accu: unsupported assign: " a)))))
 
         (_ (error "expr->accu: unsupported: " o))))))
@@ -1074,7 +1074,7 @@
 (define (p-expr->type info o)
   (pmatch o
     ((p-expr (ident ,name)) (ident->type info name))
-    ((array-ref (p-expr (fixed ,index)) (p-expr (ident ,array)))
+    ((array-ref ,index (p-expr (ident ,array)))
      (ident->type info array))
     (_ (error "p-expr->type: unsupported: " o))))
 
@@ -1473,8 +1473,9 @@
              ))
 
         ;; struct foo bar[2];
-        ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
-         (let ((type (ast->type `(struct-ref (ident ,type)))))
+        ;; char arena[20000];
+        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
+         (let ((type (ast->type type)))
            (if (.function info)
                (let* ((local (car (add-local locals name type -1)))
                       (count (string->number count))
@@ -1483,12 +1484,6 @@
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
-               (error "ast->info: unsupported global: " o))))
-
-        ;; char arena[20000];
-        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
-         (let ((type (ast->type type)))
-           (if (.function info) (error "ast->info: unsupported local: " o)
                (let* ((globals (.globals info))
                       (count (cstring->number count))
                       (size (type->size info type))
@@ -1496,6 +1491,23 @@
                       (globals (append globals (list array))))
                  (clone info #:globals globals)))))
 
+        ;; char* a[10];
+        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name) (p-expr (fixed ,count)))))))
+         (let ((type (ast->type type)))
+           (if (.function info)
+               (let* ((local (car (add-local locals name type -1)))
+                      (count (string->number count))
+                      (size (type->size info type))
+                      (local (make-local name type 1 (+ (local:id local) (* count size))))
+                      (locals (cons local locals))
+                      (info (clone info #:locals locals)))
+                 info)
+               (let* ((globals (.globals info))
+                      (count (cstring->number count))
+                      (size (type->size info type))
+                      (array (make-global name type 1 (string->list (make-string (* count size) #\nul))))
+                      (globals (append globals (list array))))
+                 (clone info #:globals globals)))))
 
         ;; struct foo bar;
         ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))

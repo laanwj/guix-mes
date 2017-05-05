@@ -190,6 +190,11 @@ array_test (char **e)
 {
   int i = 0;
 
+  puts ("a[i] = i-1\n");
+  int a[3];
+  for (int i=0; i < 3; i++) a[i] = i-1;
+  for (int i=0; i < 3; i++) if (a[i] != i-1) return 1;
+
   puts ("env [");
   puts (itoa (env));
   puts ("]\n");
