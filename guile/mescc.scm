@@ -1,11 +1,11 @@
 #! /bin/sh
 # -*-scheme-*-
 GODIR=${GODIR-@GODIR@}
-MODULEDIR=${MODULEDIR-@MODULEDIR@}
+GUILEDIR=${GUILEDIR-@GUILEDIR@}
 [ "$GODIR" = @"GODIR"@ ] && GODIR=guile
-[ "$MODULEDIR" = @"MODULEDIR"@ ] && MODULEDIR=guile
+[ "$GUILEDIR" = @"GUILEDIR"@ ] && GUILEDIR=guile
 export GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
-exec ${GUILE-guile} -L $MODULEDIR -C $GODIR -e '(mescc)' -s "$0" "$@"
+exec ${GUILE-guile} -L $GUILEDIR -C $GODIR -e '(mescc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software

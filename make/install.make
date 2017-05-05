@@ -31,8 +31,10 @@ DATADIR:=$(PREFIX)/share
 DOCDIR:=$(DATADIR)/doc
 endif
 LIBDIR:=$(PREFIX)/lib
-MODULEDIR:=$(PREFIX)/share/guile/site/$(GUILE_EFFECTIVE_VERSION)
+
 GODIR:=$(LIBDIR)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
+GUILEDIR:=$(PREFIX)/share/guile/site/$(GUILE_EFFECTIVE_VERSION)
+MODULEDIR:=$(DATADIR)/module
 
 .tarball-version: tree-clean-p
 	echo $(COMMIT) > $@
@@ -74,6 +76,7 @@ install: $(CLEAN) ChangeLog
 	    -e 's,@DATADIR@,$(DATADIR)/,g' \
 	    -e 's,@DOCDIR@,$(DOCDIR)/,g' \
 	    -e 's,@GODIR@,$(GODIR)/,g' \
+	    -e 's,@GUILEDIR@,$(GUILEDIR)/,g' \
 	    -e 's,@MODULEDIR@,$(MODULEDIR)/,g' \
 	    -e 's,@PREFIX@,$(PREFIX)/,g' \
 	    -e 's,@VERSION@,$(VERSION),g' \
@@ -90,9 +93,9 @@ install: $(CLEAN) ChangeLog
 	$(GIT_ARCHIVE_HEAD) doc \
 		| tar -C $(DESTDIR)$(DOCDIR) --strip=1 -xf-
 	cp ChangeLog $(DESTDIR)$(DOCDIR)
-	mkdir -p $(DESTDIR)$(MODULEDIR)
+	mkdir -p $(DESTDIR)$(GUILEDIR)
 	tar -cf- -C module $(INSTALL_SCM_FILES:module/%=%)\
-		| tar -C $(DESTDIR)$(MODULEDIR) -xf-
+		| tar -C $(DESTDIR)$(GUILEDIR) -xf-
 	mkdir -p $(DESTDIR)$(GODIR)
 	tar -cf- -C module $(INSTALL_GO_FILES:module/%=%)\
 		| tar -C $(DESTDIR)$(GODIR) -xf-
