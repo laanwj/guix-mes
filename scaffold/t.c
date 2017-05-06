@@ -478,6 +478,10 @@ struct_test ()
   puts ("t: g_functions[g_function++] = g_foo;\n");
   g_functions[g_function++] = g_foo;
 
+  puts ("t: pbar->arity == 1\n");
+  struct function* barp = &g_bar;
+  if (barp->arity != 1) return 1;
+
   int fn = 0;
   puts ("t: g_functions[g_cells[fn].cdr].arity\n");
   if (g_functions[g_cells[fn].cdr].arity) return 1;

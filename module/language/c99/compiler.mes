@@ -390,7 +390,8 @@
                   ;;          (i386:global->accu (+ (data-offset o g) d)))))
                   (else (list (lambda (f g ta t d)
                                 (append (i386:value->accu (+ (data-offset o g) d))))))))
-              (error "TODO ident-address->accu" o))))))
+              (list (lambda (f g ta t d)
+                          (i386:global->accu (+ ta (function-offset o f))))))))))
 
 (define (ident-address->base info)
   (lambda (o)
@@ -532,8 +533,20 @@
          (append-text info ((ident->accu info) name)))
 
         ((initzer ,initzer) ((expr->accu info) initzer))
+
+        ;; &foo
         ((ref-to (p-expr (ident ,name)))
-         (append-text info ((ident->accu info) name)))
+         (append-text info ((ident-address->accu info) name)))
+
+        ;; &f.field
+        ((ref-to (d-sel (ident ,field) (p-expr (ident ,array))))
+         (let* ((type (ident->type info array))
+                (fields (type->description info type))
+                (field-size 4) ;; FIXME:4, not fixed
+                (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))
+                (text (.text info)))
+           (append-text info (append ((ident->accu info) array)
+                                     (wrap-as (i386:accu+n offset))))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
          (let* ((type (list "struct" name))
@@ -575,6 +588,16 @@
                 (offset (* field-size (1- (length rest))))
                 (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
            (append-text info (wrap-as (i386:mem+n->accu offset)))))
+
+        ((i-sel (ident ,field) (p-expr (ident ,array)))
+         (let* ((type (ident->type info array))
+                (fields (type->description info type))
+                (field-size 4) ;; FIXME:4, not fixed
+                (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))
+                (text (.text info)))
+           (append-text info (append ((ident-address->accu info) array)
+                                     (wrap-as (i386:mem->accu))
+                                     (wrap-as (i386:mem+n->accu offset))))))
 
         ;;; FIXME: FROM INFO ...only zero?!
         ((p-expr (fixed ,value))
@@ -1689,6 +1712,14 @@
          (let ((info ((ast->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,type) (field-list . ,fields))))))))
            ((ast->info info)
             `(decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name)))))))
+
+        ;; struct foo* bar = expr;
+         ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (ref-to (p-expr (ident ,value)))))))
+         (if (.function info) (let* ((locals (add-local locals name (list "struct" type) 1))
+                                     (info (clone info #:locals locals)))
+                 (append-text info (append ((ident-address->accu info) value)
+                                           ((accu->ident info) name))))
+             (error "ast->info: unsupported global:" o)))
 
         ;; char *p = &bla;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (ref-to (p-expr (ident ,value)))))))
