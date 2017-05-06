@@ -347,6 +347,15 @@ math_test ()
   puts ("t: 3 != 3\n");
   if ((3 != 3) !=  0) return 1;
 
+  puts ("t: 011 == 15\n");
+  if (011 != 9) return 1;
+
+  puts ("t: 0b11 == 3\n");
+  if (0b11 != 3) return 1;
+
+  puts ("t: 0x11 == 3\n");
+  if (0x11 != 17) return 1;
+
   return array_test (env);
 }
 

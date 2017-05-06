@@ -1073,6 +1073,7 @@
 
 (define (cstring->number s)
   (cond ((string-prefix? "0x" s) (string->number (string-drop s 2) 16))
+        ((string-prefix? "0b" s) (string->number (string-drop s 2) 2))
         ((string-prefix? "0" s) (string->number s 8))
         (else (string->number s))))
 
