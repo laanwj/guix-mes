@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -63,3 +63,14 @@
   (let ((p (if (procedure? pred) pred
                (lambda (c) (not (eq? pred c))))))
     (list->string (filter p (string->list s)))))
+
+(define (string-index s pred . rest)
+  (let* ((start (and (pair? rest) (car rest)))
+         (end (and start (pair? (cdr rest)) (cadr rest))))
+    (if (not (char? pred)) (error "string-index: not supported: pred=" pred))
+    (if start (error "string-index: not supported: start=" start))
+    (if end (error "string-index: not supported: end=" end))
+    (let loop ((lst (string->list s)) (i 0))
+      (if (null? lst) #f
+          (if (eq? (car lst) pred) i
+              (loop (cdr lst) (1+ i)))))))
