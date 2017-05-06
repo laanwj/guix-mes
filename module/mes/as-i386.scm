@@ -148,6 +148,10 @@
             i386:accu+n
             i386:base+n
             i386:base-address->accu-address
+
+            i386:nz->accu
+            i386:z->accu
+            i386:accu<->stack
             ))
 
 (include-from-path "mes/as-i386.mes")

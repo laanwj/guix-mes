@@ -712,11 +712,20 @@
                                    (wrap-as (i386:value->accu 0))
                                    (wrap-as (i386:sub-base)))))
 
-        ((eq ,a ,b) ((binop->accu info) a b (i386:sub-base)))
+        ((eq ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:z->accu))))
         ((ge ,a ,b) ((binop->accu info) b a (i386:sub-base)))
         ((gt ,a ,b) ((binop->accu info) b a (i386:sub-base)))
-        ((ne ,a ,b) ((binop->accu info) a b (append (i386:sub-base)
-                                                    (i386:xor-zf))))
+
+        ;; FIXME: set accu *and* flags
+        ((ne ,a ,b) ((binop->accu info) a b (append (i386:push-accu)
+                                                    (i386:sub-base)
+                                                    (i386:nz->accu)
+                                                    (i386:accu<->stack)
+                                                    (i386:sub-base)
+                                                    (i386:xor-zf)
+                                                    (i386:pop-accu))))
+
+        ((ne ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:xor-zf))))
         ((le ,a ,b) ((binop->accu info) b a (i386:base-sub)))
         ((lt ,a ,b) ((binop->accu info) b a (i386:base-sub)))
 

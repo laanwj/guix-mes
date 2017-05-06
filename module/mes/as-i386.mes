@@ -483,3 +483,14 @@
 (define (i386:base-sub)
   `(#x29 #xc2))                         ; sub    %eax,%edx
 
+(define (i386:nz->accu)
+  '(#x0f #x95 #xc0                      ; setne   %al
+         #x0f #xb6 #xc0))               ; movzbl %al,%eax
+
+(define (i386:z->accu)
+  '(#x0f #x94 #xc0                      ; sete   %al
+         #x0f #xb6 #xc0))               ; movzbl %al,%eax
+
+(define (i386:accu<->stack)
+  '(#x87 #x04 #x24))                    ; xchg   %eax,(%esp)
+
