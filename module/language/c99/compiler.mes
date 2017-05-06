@@ -1381,7 +1381,7 @@
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
-           (append-text info (append  (wrap-as (i386:ret)))))) 
+           (append-text info (append (wrap-as (i386:ret))))))
 
         ;; DECL
 
@@ -1945,6 +1945,10 @@
 
 (define (function->info info)
   (lambda (o)
+    (define (assert-return text)
+      (let ((return (wrap-as (i386:ret))))
+        (if (equal? (list-tail text (- (length text) (length return))) return) text
+            (append text (wrap-as (i386:ret))))))
     (let* ((name (.name o))
            (formals (.formals o))
            (text (formals->text formals))
@@ -1952,9 +1956,9 @@
       (format (current-error-port) "compiling: ~a\n" name)
       (let loop ((statements (.statements o))
                  (info (clone info #:locals locals #:function (.name o) #:text text)))
-        (if (null? statements) (clone info
-                                      #:function #f
-                                      #:functions (append (.functions info) (list (cons name (.text info)))))
+        (if (null? statements) (assert-return (clone info
+                                                     #:function #f
+                                                     #:functions (append (.functions info) (list (cons name (assert-return (.text info)))))))
             (let* ((statement (car statements)))
               (loop (cdr statements)
                     ((ast->info info) (car statements)))))))))

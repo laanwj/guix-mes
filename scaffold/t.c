@@ -539,6 +539,11 @@ struct_test ()
   return make_tmps_test  (g_cells);
 }
 
+void
+void_func ()
+{
+}
+
 int
 test (char *p)
 {
@@ -909,6 +914,9 @@ test (char *p)
 
   puts ("strcmp (itoa (1), \"1\")\n");
   if (strcmp (itoa (1), "1")) return 1;
+
+  puts ("void_func ()\n");
+  void_func ();
 
   return struct_test ();
 }
