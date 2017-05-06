@@ -44,6 +44,9 @@ module/mes/pretty-print.scm
 Srfi-1 bits from Guile
 module/srfi/srfi-1.scm
 
+Srfi-16 from Guile
+module/srfi/srfi-16.scm
+
 Srfi-26 from Guile
 module/srfi/srfi-26.scm
 
