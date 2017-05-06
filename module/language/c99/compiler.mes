@@ -1683,6 +1683,13 @@
          (let ((type (struct->type (list "struct" name) (map struct-field fields))))
            (clone info #:types (append (.types info) (list type)))))
 
+        ;; struct foo {} bar;
+        ((decl (decl-spec-list (type-spec (struct-def (ident ,type) (field-list . ,fields))))
+               (init-declr-list (init-declr (ident ,name))))
+         (let ((info ((ast->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,type) (field-list . ,fields))))))))
+           ((ast->info info)
+            `(decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name)))))))
+
         ;; char *p = &bla;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (ref-to (p-expr (ident ,value)))))))
          (let ((type (decl->type type)))
