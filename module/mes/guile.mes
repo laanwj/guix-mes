@@ -24,6 +24,9 @@
 
 (define-macro (define-module module . rest) #t)
 (define-macro (use-modules . rest) #t)
+(define-macro (cond-expand-provide . rest) #t)
+
+(mes-use-module (srfi srfi-16))
 
 (define (drain-input port)
   (list->string
