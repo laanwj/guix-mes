@@ -858,7 +858,7 @@
         (let ((s (string-drop o (string-length prefix))))
           (map byte->hex (string-split s #\space))))))
 
-(define (case->jump-info info)
+(define (clause->jump-info info)
   (define (jump n)
     (wrap-as (i386:Xjump n)))
   (define (jump-nz n)
@@ -1092,6 +1092,49 @@
 (define (local? o) ;; formals < 0, locals > 0
   (positive? (local:id o)))
 
+(define (statements->clauses statements)
+  (let loop ((statements statements) (clauses '()))
+    (if (null? statements) clauses
+        (let ((s (car statements)))
+          (pmatch s
+            ((case ,test (compd-stmt (block-item-list . _)))
+             (loop (cdr statements) (append clauses (list s))))
+            ((case ,test (break))
+             (loop (cdr statements) (append clauses (list s))))
+            ((case ,test) (loop (cdr statements) (append clauses (list s))))
+
+            ((case ,test ,statement)
+             (let loop2 ((statement statement) (heads `((case ,test))))
+               (define (heads->case heads statement)
+                 (if (null? heads) statement
+                     (append (car heads) (list (heads->case (cdr heads) statement)))))
+               (pmatch statement
+                 ((case ,t2 ,s2) (loop2 s2 (append heads `((case ,t2)))))
+                 ((default ,s2) (loop2 s2 (append heads `((default)))))
+                 ((compd-stmt (block-item-list . _)) (loop (cdr statements) (append clauses (list (heads->case heads statement)))))
+                 (_ (let loop3 ((statements (cdr statements)) (c (list statement)))
+                      (if (null? statements) (loop statements (append clauses (list (heads->case heads `(compd-stmt (block-item-list ,@c))))))
+                          (let ((s (car statements)))
+                            (pmatch s
+                              ((case . _) (loop statements (append clauses (list (heads->case heads `(compd-stmt (block-item-list ,@c)))))))
+                              ((default _) (loop statements (append clauses (list (heads->case heads `(compd-stmt (block-item-list ,@c)))))))
+                              ((break) (loop (cdr statements) (append clauses (list (heads->case heads `(compd-stmt (block-item-list ,@(append c (list s)))))))))
+                              (_ (loop3 (cdr statements) (append c (list s))))))))))))
+            ((default (compd-stmt (block-item-list _)))
+             (loop (cdr statements) (append clauses (list s))))
+            ((default . ,statement)
+             (let loop2 ((statements (cdr statements)) (c statement))
+               (if (null? statements) (loop statements (append clauses (list `(default ,@c))))
+                   (let ((s (car statements)))
+                     (pmatch s
+                       ((compd-stmt (block-item-list . _)) (loop (cdr statements) (append clauses (list `(default ,s)))))
+                       ((case . _) (loop statements (append clauses (list `(default (compd-stmt (block-item-list ,@c)))))))
+                       ((default _) (loop statements (append clauses (list `(default (compd-stmt (block-item-list ,@c)))))))
+                       ((break) (loop (cdr statements) (append clauses (list `(default (compd-stmt (block-item-list ,@(append c (list s)))))))))
+
+                       (_ (loop2 (cdr statements) (append c (list s)))))))))
+            (_ (error "statements->clauses: unsupported:" s)))))))
+
 (define (ast->info info)
   (lambda (o)
     (let ((globals (.globals info))
@@ -1217,16 +1260,17 @@
                           else-text)
                   #:globals (.globals else-info))))
 
-        ((switch ,expr (compd-stmt (block-item-list . ,cases)))
-         (let* ((expr ((expr->accu info) expr))
+        ((switch ,expr (compd-stmt (block-item-list . ,statements)))
+         (let* ((clauses (statements->clauses statements))
+                (expr ((expr->accu info) expr))
                 (empty (clone info #:text '()))
-                (case-infos (map (case->jump-info empty) cases))
-                (case-lengths (map (lambda (c-j) (length (text->list (.text (c-j 0))))) case-infos))
-                (cases-info (let loop ((cases cases) (info expr) (lengths case-lengths))
-                              (if (null? cases) info
-                                  (let ((c-j ((case->jump-info info) (car cases))))
-                                    (loop (cdr cases) (c-j (apply + (cdr lengths))) (cdr lengths)))))))
-           cases-info))
+                (clause-infos (map (clause->jump-info empty) clauses))
+                (clause-lengths (map (lambda (c-j) (length (text->list (.text (c-j 0))))) clause-infos))
+                (clauses-info (let loop ((clauses clauses) (info expr) (lengths clause-lengths))
+                              (if (null? clauses) info
+                                  (let ((c-j ((clause->jump-info info) (car clauses))))
+                                    (loop (cdr clauses) (c-j (apply + (cdr lengths))) (cdr lengths)))))))
+           clauses-info))
 
         ((for ,init ,test ,step ,body)
          (let* ((info (clone info #:text '())) ;; FIXME: goto in body...

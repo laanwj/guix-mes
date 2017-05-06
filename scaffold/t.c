@@ -128,10 +128,8 @@ swits (int c)
       }
     case -1:
     case 1:
-      {
-        x = 1;
-        break;
-      }
+      x = 1;
+      break;
     default:
       {
         x = 2;
