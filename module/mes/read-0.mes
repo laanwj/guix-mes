@@ -222,6 +222,7 @@
                                (batv . 11)
                                (egap . 12)
                                (nruter . 13)
+                               (rc . 13)
                                (ecaps . 32)))) => cdr)
               (#t (error (quote char-not-supported) n))))
       (if (not (or (eq? p 42) (and (> p 96) (< p 123)))) (integer->char (lookup-char (list->symbol (cons (integer->char c) n))))
