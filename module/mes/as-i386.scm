@@ -46,7 +46,9 @@
             i386:accu*base
             i386:accu-base
             i386:accu-shl
+            i386:accu-and-base
             i386:accu-or-base
+            i386:accu-xor-base
             i386:accu<<base
             i386:accu>>base
             i386:base-sub

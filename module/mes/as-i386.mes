@@ -155,6 +155,12 @@
 (define (i386:accu-or-base)
   '(#x09 #xd0))                         ; or    %edx,%eax
 
+(define (i386:accu-and-base)
+  '(#x21 #xd0))                         ; and    %edx,%eax
+
+(define (i386:accu-xor-base)
+  '(#x31 #xd0))                         ; and    %edx,%eax
+
 (define (i386:accu+accu)
   '(#x01 #xc0))                         ; add    %eax,%eax
 

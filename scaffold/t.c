@@ -332,6 +332,15 @@ math_test ()
   puts ("t: -1 + 2\n");
   if (-1 + 2 != 1) return 1;
 
+  puts ("t: 1 & 3\n");
+  if ((1 & 3) != 1) return 1;
+
+  puts ("t: 1 | 3\n");
+  if ((1 | 2) != 3) return 1;
+
+  puts ("t: ^ 1 \n");
+  if ((1 ^ 3) != 2) return 1;
+
   return array_test (env);
 }
 
