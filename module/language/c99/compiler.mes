@@ -1450,6 +1450,13 @@
              (clone info #:locals (add-local locals name type 0))
              (clone info #:globals (append globals (list (ident->global name type 0 0))))))
 
+        ;; enum e i;
+        ((decl (decl-spec-list (type-spec (enum-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))
+         (let ((type "int")) ;; FIXME
+           (if (.function info)
+               (clone info #:locals (add-local locals name type 0))
+               (clone info #:globals (append globals (list (ident->global name type 0 0)))))))
+
         ;; int i = 0;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (fixed ,value))))))
          (let ((value (cstring->number value)))
@@ -1732,7 +1739,17 @@
         ;; enum 
         ((decl (decl-spec-list (type-spec (enum-def (ident ,name) (enum-def-list . ,fields)))))
          (let ((type (enum->type name fields))
-               (constants (map ident->constant (map cadadr fields) (iota (length fields)))))
+               (constants (let loop ((fields fields) (i 0) (constants constants))
+                            (if (null? fields) constants
+                                (let* ((field (car fields))
+                                       (name (pmatch field
+                                               ((enum-defn (ident ,name) . _) name)))
+                                       (i (pmatch field
+                                           ((enum-defn ,name (p-expr (fixed ,value))) (cstring->number value))
+                                           ((enum-defn ,name) i))))
+                                  (loop (cdr fields)
+                                        (1+ i)
+                                        (append constants (list (ident->constant name i)))))))))
            (clone info
                   #:types (append (.types info) (list type))
                   #:constants (append constants (.constants info)))))
