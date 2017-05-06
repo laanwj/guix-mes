@@ -10,6 +10,35 @@ Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.6 since 0.5
+** Core
+*** configure, build now supports x86 and development for arm with-courage.
+** Language
+*** Nyacc has been unbundled and is now a dependency.
+*** Mes now supports case-lambda.
+*** Mes reader now supports abbreviated form for return character #\cr.
+*** 1 new function
+string-index.
+** Mescc
+*** Mescc can be used on regular C sources, like tinycc's tests/test2 suite.
+*** make check passes 33/55 of tinycc's test suite etest/test2 tests.
+*** Mescc now recognizes `short' as a type.
+*** Mescc now supports sizeof (<identifier>), sizeof(<expression>).
+*** Mescc now respects enum field initializers and supports enum variables.
+*** Mescc now supports binary constants .
+*** Mescc now supports assignments from ==, != boolean expressions .
+*** Mescc now supports &, ^.
+*** Mescc now supports struct pointers.
+*** Mescc now supports struct definition with immediatete variable declaration.
+*** Mescc now supports calling (returning correctly from) void functions.
+*** Mescc now handles case statements breaks without compound correctly.
+*** Mescc now has better [int/pointer] array support.
+*** Mescc now has better support for simple (non-array-)structs.
+*** Mescc now supports multiple declarations in one statement like: int a,b;
+**** 2 new mlibc functions
+printf, strcpy.
+** Noteworthy bug fixes
+*** Installed mes and mes.repl now also run outside of source tree again.
 * Changes in 0.5 since 0.4
 ** Core
 *** Support compilation with Mescc.
