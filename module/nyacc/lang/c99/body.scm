@@ -29,7 +29,7 @@
 
 (use-modules ((srfi srfi-9) #:select (define-record-type)))
 (use-modules ((sxml xpath) #:select (sxpath)))
-(use-modules (ice-9 regex))
+(use-modules (ice-9 pretty-print)) ;; for debugging
 
 (define-record-type cpi
   (make-cpi-1)
@@ -41,40 +41,53 @@
   (inc-defd cpi-idefd set-cpi-idefd!)	; a-l of incfile => defines
   (ptl cpi-ptl set-cpi-ptl!)		; parent typename list
   (ctl cpi-ctl set-cpi-ctl!)		; current typename list
+  ;;(brlev cpi-brlev set-cpi-brlev!	; curr brace level (#includes)
   )
 
 ;;.@deffn Procedure split-cppdef defstr => (<name> . <repl>)| \
-;;     ((<name>  <args> . <repl>)|#f
+;;     (<name>  <args> . <repl>)|#f
 ;; Convert define string to a dict item.  Examples:
 ;; @example
 ;; "ABC=123" => '("ABC" . "123")
 ;; "MAX(X,Y)=((X)>(Y)?(X):(Y))" => ("MAX" ("X" "Y") . "((X)>(Y)?(X):(Y))")
 ;; @end example
 ;; @end deffn
-(cond-expand
- (guile
-  (define split-cppdef
-    (let ((rx1 (make-regexp "^([A-Za-z0-9_]+)\\([^)]*\\)=(.*)$"))
-          (rx2 (make-regexp "^([A-Za-z0-9_]+)=(.*)$")))
-      (lambda (defstr)
-        (let* ((m1 (regexp-exec rx1 defstr))
-               (m2 (or m1 (regexp-exec rx2 defstr))))
-          (cond
-           ((regexp-exec rx1 defstr) =>
-            (lambda (m)
-              (let* ((s1 (match:substring m1 1))
-                     (s2 (match:substring m1 2))
-                     (s3 (match:substring m1 3)))
-                (cons s1 (cons s2 s3)))))
-           ((regexp-exec rx2 defstr) =>
-            (lambda (m)
-              (let* ((s1 (match:substring m2 1))
-                     (s2 (match:substring m2 2)))
-                (cons s1 s2))))
-           (else #f)))))))
- (mes
-  (define (split-cppdef s)
-    (apply cons (string-split s #\=)))))
+(define (split-cppdef defstr)
+  (let ((x2st (string-index defstr #\()) ; start of args
+	(x2nd (string-index defstr #\))) ; end of args
+	(x3 (string-index defstr #\=)))  ; start of replacement
+    (cond
+     ((not x3) #f)
+     ((and x2st x3)
+      ;;(if (not (eq? (1+ x2nd) x3)) (c99-err "bad CPP def: ~S" defstr))
+      (cons* (substring defstr 0 x2st)
+	     (string-split
+	      (string-delete #\space (substring defstr (1+ x2st) x2nd))
+	      #\,)
+	     (substring defstr (1+ x3))))
+     (else
+      (cons (substring defstr 0 x3) (substring defstr (1+ x3)))))))
+#|
+(use-modules (ice-9 regex))
+(define split-cppdef
+  (let ((rx1 (make-regexp "^([A-Za-z0-9_]+)\\(([^)]*)\\)=(.*)$"))
+	(rx2 (make-regexp "^([A-Za-z0-9_]+)=(.*)$")))
+    (lambda (defstr)
+      (let* ()
+	(cond
+	 ((regexp-exec rx1 defstr) =>
+	  (lambda (m1)
+	    (let* ((s1 (match:substring m1 1))
+		   (s2 (match:substring m1 2))
+		   (s3 (match:substring m1 3)))
+	      (cons* s1 (string-split s2 #\,) s3))))
+	 ((regexp-exec rx2 defstr) =>
+	  (lambda (m2)
+	    (let* ((s1 (match:substring m2 1))
+		   (s2 (match:substring m2 2)))
+	      (cons s1 s2))))
+	 (else #f)))))))
+|#
 
 ;; @deffn Procedure make-cpi debug defines incdirs inchelp
 ;; @end deffn
@@ -98,7 +111,7 @@
     (set-cpi-incs! cpi incdirs)		; list of include dir's
     (set-cpi-ptl! cpi '())		; list of lists of typenames
     (set-cpi-ctl! cpi '())		; list of typenames
-    ;; itynd idefd:
+    ;; Break up the helpers into typenames and defines.
     (let iter ((itynd '()) (idefd '()) (helpers inchelp))
       (cond ((null? helpers)
 	     (set-cpi-itynd! cpi itynd)
@@ -108,6 +121,12 @@
 		 (lambda () (split-helper (car helpers)))
 	       (lambda (ityns idefs)
 		 (iter (cons ityns itynd) (cons idefs idefd) (cdr helpers)))))))
+    ;; Assign builtins.
+    (and=> (assoc-ref (cpi-itynd cpi) "__builtin")
+	   (lambda (tl) (set-cpi-ctl! cpi (append tl (cpi-ctl cpi)))))
+    (and=> (assoc-ref (cpi-idefd cpi) "__builtin")
+	   (lambda (tl) (set-cpi-defs! cpi (append tl (cpi-defs cpi)))))
+    ;; Return the populated info.
     cpi))
 
 (define *info* (make-fluid #f))
@@ -183,7 +202,7 @@
 
 ;; ------------------------------------------------------------------------
 
-(define (p-err . args)
+(define (c99-err . args)
   (apply throw 'c99-error args))
 
 ;; @deffn {Procedure} read-cpp-line ch => #f | (cpp-xxxx)??
@@ -228,7 +247,7 @@
 	  (if (access? p R_OK) p (iter (cdr dirl)))))))
 
 (define (def-xdef? name mode)
-  (eqv? mode 'code))
+  (not (eqv? mode 'file)))
 
 ;; @deffn {Procedure} gen-c-lexer [#:mode mode] [#:xdef? proc] => procedure
 ;; Generate a context-sensitive lexer for the C99 language.  The generated
@@ -271,22 +290,19 @@
 	 (t-typename (assq-ref symtab 'typename))
 	 (xp1 (sxpath '(cpp-stmt define)))
 	 (xp2 (sxpath '(decl))))
-    ;; mode: 'code|'file
+    ;; mode: 'code|'file|'decl
     ;; xdef?: (proc name mode) => #t|#f  : do we expand #define?
     (lambda* (#:key (mode 'code) (xdef? #f))
       (let ((bol #t)		      ; begin-of-line condition
+	    (xtxt #f)		      ; parsing cpp expanded text (kludge?)
 	    (ppxs (list 'keep))	      ; CPP execution state stack
-	    (info (fluid-ref *info*)) ; assume make and run in same thread
-	    (x-def? (or xdef? def-xdef?)))
+	    (info (fluid-ref *info*)) ; info shared w/ parser
+	    (brlev 0)		      ; brace level
+	    (x-def? (or xdef? def-xdef?))
+	    )
 	;; Return the first (tval . lval) pair not excluded by the CPP.
 	(lambda ()
 
-	  (define (exec-cpp?) ; exec (vs pass to parser) CPP stmts?
-	    (eqv? mode 'code))
-
-	  (define (cpp-flow? keyw)
-	    (memq keyw '(if elif else)))
-      
 	  (define (add-define tree)
 	    (let* ((tail (cdr tree))
 		   (name (car (assq-ref tail 'name)))
@@ -301,24 +317,13 @@
 	  (define (apply-helper file)
 	    (let* ((tyns (assoc-ref (cpi-itynd info) file))
 		   (defs (assoc-ref (cpi-idefd info) file)))
+	      ;;(simple-format #t "apply-helper ~S => ~S\n" file tyns)	 
+	      ;;(simple-format #t "  itynd= ~S\n" (cpi-itynd info))
 	      (when tyns
 		(for-each add-typename tyns)
 		(set-cpi-defs! info (append defs (cpi-defs info))))
 	      tyns))
 	  
-	  ;; Evaluate expression text in #if of #elif statement.
-	  (define (eval-cpp-cond-text text)
-	    (with-throw-handler
-	     'cpp-error
-	     (lambda ()
-	       (let* ((defs (cpi-defs info))
-		      (rhs (cpp-expand-text text defs))
-		      (exp (parse-cpp-expr rhs)))
-		 (eval-cpp-expr exp defs)))
-	     (lambda (key fmt . args)
-	       (report-error fmt args)
-	       (throw 'c99-error "CPP error"))))
-
 	  (define (inc-stmt->file stmt)
 	    (let* ((arg (cadr stmt)) (len (string-length arg)))
 	      (substring arg 1 (1- len))))
@@ -326,93 +331,146 @@
 	  (define (inc-file->path file)
 	    (find-file-in-dirl file (cpi-incs info)))
 
-	  (define (eval-cpp-stmt-1/code stmt)
-	    ;; eval control flow states: {skip-look, keep, skip-done, skip}
+	  (define (code-if stmt)
+	    ;;(simple-format #t "code-if: ppxs=~S\n" ppxs)
+	    (case (car ppxs)
+	      ((skip-look skip-done skip) ;; don't eval if excluded
+	       ;;(simple-format #t "code-if: SKIP\n")
+	       (set! ppxs (cons 'skip ppxs)))
+	      (else
+	       ;;(simple-format #t "code-if: KEEP\n")
+	       ;;(simple-format #t "  text=~S\n" (cadr stmt))
+	       ;;(simple-format #t "  defs=~S\n" (cpi-defs info))
+	       (let* ((defs (cpi-defs info))
+		      (val (eval-cpp-cond-text (cadr stmt) defs)))
+		 (if (not val) (c99-err "unresolved: ~S" (cadr stmt)))
+		 (if (eq? 'keep (car ppxs))
+		     (if (zero? val)
+			 (set! ppxs (cons 'skip-look ppxs))
+			 (set! ppxs (cons 'keep ppxs)))
+		     (set! ppxs (cons 'skip-done ppxs))))))
+	    stmt)
+
+	  (define (code-elif stmt)
+	    (case (car ppxs)
+	      ((skip) #t) ;; don't eval if excluded
+	      (else
+	       (let* ((defs (cpi-defs info))
+		      (val (eval-cpp-cond-text (cadr stmt) defs)))
+		 (if (not val) (c99-err "unresolved: ~S" (cadr stmt)))
+		 (case (car ppxs)
+		   ((skip-look) (if (not (zero? val)) (set-car! ppxs 'keep)))
+		   ((keep) (set-car! ppxs 'skip-done))))))
+	    stmt)
+
+	  (define (code-else stmt)
+	    (case (car ppxs)
+	      ((skip-look) (set-car! ppxs 'keep))
+	      ((keep) (set-car! ppxs 'skip-done)))
+	    stmt)
+
+	  (define (code-endif stmt)
+	    (set! ppxs (cdr ppxs))
+	    stmt)
+	  
+	  (define (eval-cpp-incl/here stmt) ;; => stmt
+	    ;; include file inplace
+	    (let* ((file (inc-stmt->file stmt))
+		   (path (inc-file->path file)))
+	      (cond
+	       ((apply-helper file))
+	       ((not path) (c99-err "not found: ~S" file)) ; file not found
+	       (else (set! bol #t) (push-input (open-input-file path))))
+	      stmt))
+
+	  (define (eval-cpp-incl/tree stmt) ;; => stmt
+	    ;; include file as a new tree
+	    (let* ((file (inc-stmt->file stmt))
+		   (path (inc-file->path file)))
+	      (cond
+	       ((apply-helper file) stmt)		 ; use helper
+	       ((not path) (c99-err "not found: ~S" file)) ; file not found
+	       ((with-input-from-file path run-parse) => ; add tree to stmt
+		(lambda (tree)
+		  ;;(pretty-print tree (current-error-port))
+		  ;;(pretty-print (xp1 tree))
+		  (for-each add-define (xp1 tree))
+		  (append stmt tree))))))
+
+	  (define (eval-cpp-stmt/code stmt) ;; => stmt
 	    (case (car stmt)
-	      ((if)
-	       (case (car ppxs)
-		 ((skip-look skip-done skip) ;; don't eval if excluded
-		  (set! ppxs (cons 'skip ppxs)))
-		 (else
-		  (let ((val (eval-cpp-cond-text (cadr stmt))))
-		    (if (not val) (p-err "unresolved: ~S" (cadr stmt)))
-		    (if (eq? 'keep (car ppxs))
-			(if (zero? val)
-			    (set! ppxs (cons 'skip-look ppxs))
-			    (set! ppxs (cons 'keep ppxs)))
-			(set! ppxs (cons 'skip-done ppxs)))))))
-	      ((elif)
-	       (case (car ppxs)
-		 ((skip) #t) ;; don't eval if excluded
-		 (else
-		  (let ((val (eval-cpp-cond-text (cadr stmt))))
-		    (if (not val) (p-err "unresolved: ~S" (cadr stmt)))
-		    (case (car ppxs)
-		      ((skip-look) (if (not (zero? val)) (set-car! ppxs 'keep)))
-		      ((keep) (set-car! ppxs 'skip-done)))))))
-	      ((else)
-	       (case (car ppxs)
-		 ((skip-look) (set-car! ppxs 'keep))
-		 ((keep) (set-car! ppxs 'skip-done))))
-	      ((endif)
-	       (set! ppxs (cdr ppxs)))
+	      ((if) (code-if stmt))
+	      ((elif) (code-elif stmt))
+	      ((else) (code-else stmt))
+	      ((endif) (code-endif stmt))
 	      (else
 	       (if (eqv? 'keep (car ppxs))
-		   (eval-cpp-stmt-2/code stmt)))))
-
-	  (define (eval-cpp-stmt-2/code stmt)
-	    ;; eval non-control flow
+		   (case (car stmt)
+		     ((include) (eval-cpp-incl/here stmt))
+		     ((define) (add-define stmt) stmt)
+		     ((undef) (rem-define (cadr stmt)) stmt)
+		     ((error) (c99-err "error: #error ~A" (cadr stmt)))
+		     ((pragma) stmt) ;; ignore for now
+		     (else (error "bad cpp flow stmt")))))))
+	       
+	  (define (eval-cpp-stmt/decl stmt) ;; => stmt
 	    (case (car stmt)
-	      ;; actions
-	      ((include)
-	       (let* ((file (inc-stmt->file stmt))
-		      (path (inc-file->path file)))
-		 (cond
-		  ((apply-helper file)) ; use helper
-		  ((not path) (p-err "not found: ~S" file)) ; file not found
-		  (else (set! bol #t) (push-input (open-input-file path))))))
-	      ((define) (add-define stmt))
-	      ((undef) (rem-define (cadr stmt)))
-	      ((error) (p-err "error: #error ~A" (cadr stmt)))
-	      ((pragma) #t) ;; ignore for now
+	      ((if) (code-if stmt))
+	      ((elif) (code-elif stmt))
+	      ((else) (code-else stmt))
+	      ((endif) (code-endif stmt))
+	      (else
+	       (if (eqv? 'keep (car ppxs))
+		   (case (car stmt)
+		     ((include)		; use tree unless inside braces
+		      (if (zero? brlev)
+			  (eval-cpp-incl/tree stmt)
+			  (eval-cpp-incl/here stmt)))
+		     ((define) (add-define stmt) stmt)
+		     ((undef) (rem-define (cadr stmt)) stmt)
+		     ((error) (c99-err "error: #error ~A" (cadr stmt)))
+		     ((pragma) stmt) ;; ignore for now
+		     (else (error "bad cpp flow stmt")))
+		   stmt))))
+	       
+	  (define (eval-cpp-stmt/file stmt) ;; => stmt
+	    (case (car stmt)
+	      ((if) (cpi-push) stmt)
+	      ((elif else) (cpi-shift) stmt)
+	      ((endif) (cpi-pop) stmt)
+	      ((include) (eval-cpp-incl/tree stmt))
+	      ((define) (add-define stmt) stmt)
+	      ((undef) (rem-define (cadr stmt)) stmt)
+	      ((error) stmt)
+	      ((pragma) stmt) ;; need to work this
 	      (else (error "bad cpp flow stmt"))))
 
-	  (define (eval-cpp-stmt-1/file stmt)
-	    (case (car stmt)
-	      ((if) (cpi-push))
-	      ((elif else) (cpi-shift))
-	      ((endif) (cpi-pop))
-	      (else (eval-cpp-stmt-2/file stmt))))
-	    
-	  (define (eval-cpp-stmt-2/file stmt)
-	    ;; eval non-control flow
-	    (case (car stmt)
-	      ;; includes
-	      ((include)
-	       (let* ((file (inc-stmt->file stmt))
-		      (path (inc-file->path file)))
-		 (cond
-		  ((apply-helper file)) ; use helper
-		  ((not path) (p-err "not found: ~S" file)) ; file not found
-		  ((with-input-from-file path c99-parser-run-parse) => ; include tree
-		   (lambda (tree) (for-each add-define (xp1 tree))))
-		  (else (p-err "included from ~S" path)))))
-	      ((define) (add-define stmt))
-	      ((undef) (rem-define (cadr stmt)))
-	      ((error) #f)
-	      ((pragma) #t) ;; need to work this
-	      (else (error "bad cpp flow stmt"))))
-	    
+	  ;; Maybe evaluate the CPP statement.
 	  (define (eval-cpp-stmt stmt)
 	    (with-throw-handler
 	     'cpp-error
 	     (lambda ()
 	       (case mode
-		 ((code) (eval-cpp-stmt-1/code stmt))
-		 ((file) (eval-cpp-stmt-1/file stmt))))
+		 ((code) (eval-cpp-stmt/code stmt))
+		 ((decl) (eval-cpp-stmt/decl stmt))
+		 ((file) (eval-cpp-stmt/file stmt))
+		 (else (error "lang/c99 coding error"))))
 	     (lambda (key fmt . rest)
 	       (report-error fmt rest)
 	       (throw 'c99-error "CPP error"))))
+
+	  ;; Predicate to determine if we pass the cpp-stmt to the parser.
+	  ;; @itemize
+	  ;; If code mode, never
+	  ;; If file mode, all except includes between { }
+	  ;; If decl mode, only defines and includes outside {}
+	  ;; @end itemize
+	  (define (pass-cpp-stmt? stmt)
+	    (case mode
+	      ((code) #f)
+	      ((decl) (and (zero? brlev) (memq (car stmt) '(include define))))
+	      ((file) (or (zero? brlev) (not (eqv? (car stmt) 'include))))
+	      (else (error "lang/c99 coding error"))))
 
 	  ;; Composition of @code{read-cpp-line} and @code{eval-cpp-line}.
 	  (define (read-cpp-stmt ch)
@@ -422,6 +480,7 @@
 	    (let iter ((ch (read-char)))
 	      (cond
 	       ((eof-object? ch)
+		(set! xtxt #f)
 		(if (pop-input) (iter (read-char)) (assc-$ '($end . ""))))
 	       ((eq? ch #\newline) (set! bol #t) (iter (read-char)))
 	       ((char-set-contains? c:ws ch) (iter (read-char)))
@@ -431,18 +490,22 @@
  		 ((read-comm ch #t) => assc-$)
 		 ((read-cpp-stmt ch) =>
 		  (lambda (stmt)
-		    (eval-cpp-stmt stmt)
-		    (case mode
-		      ((code) (iter (read-char)))
-		      ((file) (assc-$ `(cpp-stmt . ,stmt))))))
+		    (let ((stmt (eval-cpp-stmt stmt))) ; eval can add tree
+		      (if (pass-cpp-stmt? stmt)
+			  (assc-$ `(cpp-stmt . ,stmt))
+			  (iter (read-char))))))
 		 (else (iter ch))))
 	       ((read-ident ch) =>
 		(lambda (name)
 		  (let ((symb (string->symbol name)))
+		    ;;(simple-format #t "id: name=~S xtxt=~S\n" name xtxt)
 		    (cond
-		     ((and (x-def? name mode)
+		     ((and (not xtxt)
+			   (if (procedure? x-def?) (x-def? name mode) x-def?)
 			   (expand-cpp-macro-ref name (cpi-defs info)))
 		      => (lambda (st)
+			   ;;(simple-format #t "repl=~S\n" st)
+			   (set! xtxt #t) ; so we don't re-expand
 			   (push-input (open-input-string st))
 			   (iter (read-char))))
 		     ((assq-ref keytab symb)
@@ -455,6 +518,8 @@
 	       ((read-c-string ch) => assc-$)
 	       ((read-c-chlit ch) => assc-$)
 	       ((read-comm ch #f) => assc-$)
+	       ((and (char=? ch #\{) (set! brlev (1+ brlev)) #f) #f)
+	       ((and (char=? ch #\}) (set! brlev (1- brlev)) #f) #f)
 	       ((read-chseq ch) => identity)
 	       ((assq-ref chrtab ch) => (lambda (t) (cons t (string ch))))
 	       ((eqv? ch #\\) ;; C allows \ at end of line to continue

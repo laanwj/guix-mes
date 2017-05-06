@@ -15,28 +15,21 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;; C preprocessor.  This is not complete.
+;; C preprocessor macro expansion and condition text parse-and-eval
+;; ref: https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
 
 (define-module (nyacc lang c99 cpp)
-  #:export (parse-cpp-stmt
+  #:export (
 	    cpp-line->stmt
-	    parse-cpp-expr
-	    eval-cpp-expr
-	    cpp-expand-text
-	    expand-cpp-macro-ref
-	    )
+	    eval-cpp-cond-text
+	    expand-cpp-macro-ref)
   #:use-module (nyacc parse)
   #:use-module (nyacc lex)
   #:use-module (nyacc lang util)
   #:use-module (rnrs arithmetic bitwise)
+  #:use-module (ice-9 match)
   #:use-module (system base pmatch)
   )
-
-(cond-expand
- (guile-2)
- (guile
-  (use-modules (ice-9 syncase)))
- (mes))
 
 (define c99-std-defs
   '("__DATE__" "__FILE__" "__LINE__" "__STDC__" "__STDC_HOSTED__"
@@ -53,25 +46,42 @@
   (cond
    ((string=? str "__DATE__") "M01 01 2001")
    ((string=? str "__FILE__") "(unknown)")
-   ((string=? str "__LINE__") 0)
-   ((string=? str "__STDC__") 1)
-   ((string=? str "__STDC_HOSTED__") 0)
-   ((string=? "__STDC_VERSION__") 201701)
-   ((string=? "__TIME__") "00:00:00")
+   ((string=? str "__LINE__") "0")
+   ((string=? str "__STDC__") "1")
+   ((string=? str "__STDC_HOSTED__") "0")
+   ((string=? str "__STDC_VERSION__") "201701")
+   ((string=? str "__TIME__") "00:00:00")
    (else #f)))
 
-;; @deffn read-ellipsis ch
+(define inline-whitespace (list->char-set '(#\space #\tab)))
+  
+;;.@deffn {Procedure} skip-il-ws ch
+;; Skip in-line whitespace
+;; @end deffn
+(define (skip-il-ws ch)
+  (cond
+   ((eof-object? ch) ch)
+   ((char-set-contains? inline-whitespace ch) (skip-il-ws (read-char)))
+   (else ch)))
+
+;; @deffn {Procedure} read-ellipsis ch
 ;; read ellipsis
+;; @end deffn
 (define (read-ellipsis ch)
   (cond
    ((eof-object? ch) #f)
    ((char=? ch #\.) (read-char) (read-char) "...") ; assumes correct syntax
    (else #f)))
 
-;; @deffn cpp-define => (define (name "ADD") (args "X" "Y") (repl "X+Y"))
-;; output is like
-;; @code{(name "ABC") (repl "123")} or
-;; @code{(name "ABC") (args "X" "Y") (repl "X+Y")}
+;; @deffn {Procedure} cpp-define
+;; Reads CPP define from current input and generates a cooresponding sxml
+;; expression.
+;; @example
+;;   (define (name "ABC") (repl "123"))
+;; OR
+;;   (define (name "ABC") (args "X" "Y") (repl "X+Y"))
+;; @example
+;; @end deffn
 (define (cpp-define)
 
   (define (p-args la) ;; parse args
@@ -98,7 +108,7 @@
 	`(define (name ,name) (repl ,repl)))))
 	
 
-;; @deffn cpp-include
+;; @deffn {Procedure} cpp-include
 ;; Parse CPP include statement.
 (define (cpp-include)
   (let* ((beg-ch (skip-il-ws (read-char)))
@@ -108,7 +118,7 @@
 		     (iter (cons ch cl) (read-char))))))
     `(include ,path)))
 
-;; @deffn cpp-line->stmt line defs => (stmt-type text)
+;; @deffn {Procedure} cpp-line->stmt line defs => (stmt-type text)
 ;; Parse a line from a CPP statement and return a parse tree.
 ;; @example
 ;; (parse-cpp-stmt "define X 123") => (define "X" "123")
@@ -117,6 +127,7 @@
 ;; @end example
 ;; To evaluate the @code{if} statements use @code{parse-cpp-expr} and
 ;; @code{eval-cpp-expr}.
+;; @end deffn
 (define (cpp-line->stmt line)
   (define (rd-ident) (read-c-ident (skip-il-ws (read-char))))
   (define (rd-num) (and=> (read-c-num (skip-il-ws (read-char))) cdr))
@@ -140,23 +151,13 @@
 (include-from-path "nyacc/lang/c99/mach.d/cpptab.scm")
 (include-from-path "nyacc/lang/c99/mach.d/cppact.scm")
 
-(define cpp-raw-parser
+(define raw-parser
   (make-lalr-parser
    (list (cons 'len-v cpp-len-v) (cons 'pat-v cpp-pat-v) (cons 'rto-v cpp-rto-v)
 	 (cons 'mtab cpp-mtab) (cons 'act-v cpp-act-v))))
 
 (define (cpp-err fmt . args)
   (apply throw 'cpp-error fmt args))
-
-;;.@deffn skip-il-ws ch
-;; Skip in-line whitespace
-(define skip-il-ws
-  (let ((il-ws (list->char-set '(#\space #\tab))))
-    (lambda (ch)
-      (cond
-       ((eof-object? ch) ch)
-       ((char-set-contains? il-ws ch) (skip-il-ws (read-char)))
-       (else ch)))))
 
 ;; Since we want to be able to get CPP statements with comment in tact
 ;; (e.g., for passing to @code{pretty-print-c99}) we need to remove
@@ -171,23 +172,25 @@
 (define gen-cpp-lexer
   (make-lexer-generator cpp-mtab #:comm-skipper cpp-comm-skipper))
 
-;; @deffn parse-cpp-expr text => tree
+;; @deffn {Procedure} parse-cpp-expr text => tree
 ;; Given a string returns a cpp parse tree.  This is called by
 ;; @code{eval-cpp-expr}.  The text will have had all CPP defined symbols
 ;; expanded already so no identifiers should appear in the text.
 ;; A @code{cpp-error} will be thrown if a parse error occurs.
+;; @end deffn
 (define (parse-cpp-expr text)
   (with-throw-handler
    'nyacc-error
    (lambda ()
      (with-input-from-string text
-       (lambda () (cpp-raw-parser (gen-cpp-lexer)))))
+       (lambda () (raw-parser (gen-cpp-lexer)))))
    (lambda (key fmt . args)
      (apply throw 'cpp-error fmt args))))
 
-;; @deffn eval-cpp-expr tree dict => datum
+;; @deffn {Procedure} eval-cpp-expr tree dict => datum
 ;; Evaluate a tree produced from @code{parse-cpp-expr}.
 ;; The tree passed to this routine is 
+;; @end deffn
 (define (eval-cpp-expr tree dict)
   (letrec
       ((tx (lambda (tr ix) (list-ref tr ix)))
@@ -231,227 +234,272 @@
 	    (else (error "incomplete implementation"))))))
     (eval-expr tree)))
 
-;; Note: scan-cpp-input scans replacement text.  When identifiers are found
-;; they are tested for expansion as follows:
-;; @enumerate
-;; @item If already expanded, then ignore.
-;; @item If followed by @code{(}, then use @code{collect-args} to get the
-;; arguments and ...
-;; @item Otherwise insert the replacement text and continue scanning (at
-;; first character of new replacement text.
-;; @end enumerate
-
-;; @deffn rtokl->string tokl => string
+;;.@deffn {Procedure} rtokl->string reverse-token-list => string
 ;; Convert reverse token-list to string.
+;; @end deffn
 (define (rtokl->string tokl)
 
   ;; Turn reverse chl into a string and insert it into the string list stl.
   (define (add-chl chl stl)
     (if (null? chl) stl (cons (list->string chl) stl)))
 
-  ;; Works like this: Scan through the list of tokens (key-val pairs or lone
-  ;; characters).  Lone characters are collected in a list (@code{chl}); pairs
-  ;; are converted into strings and combined with list of characters into a
-  ;; list of strings.  When done the list of strings is combined to one string.
-  (let iter ((stl '()) (chl '()) (nxt #f) (tkl tokl))
+  ;;(simple-format #t "\nused=~S\n" used)
+  ;; Works like this: Scan through the list of tokens (key-val pairs or
+  ;; lone characters).  Lone characters are collected in a list (@code{chl});
+  ;; pairs are converted into strings and combined with list of characters
+  ;; into a list of strings.  When done the list of strings is combined to
+  ;; one string.  (The token 'argval is expansion of argument.)
+  (let iter ((stl '())		   ; list of strings to reverse-append
+	     (chl '())		   ; char list
+	     (nxt #f)		   ; next string to add after chl
+	     (tkl tokl))	   ; input token list
     (cond
-     (nxt (iter (cons nxt (add-chl chl stl)) '() #f tkl))
-     ((null? tkl) (apply string-append (add-chl chl stl)))
-     ((char? (car tkl)) (iter stl (cons (car tkl) chl) nxt (cdr tkl)))
+     (nxt
+      (iter (cons nxt (add-chl chl stl)) '() #f tkl))
+     ((null? tkl)
+      (apply string-append (add-chl chl stl)))
+     ((char? (car tkl))
+      (iter stl (cons (car tkl) chl) nxt (cdr tkl)))
      (else
       (pmatch tkl
-	(((arg . ,arg) dhash (,key . ,val) . ,rest)
+	(((ident . ,rval) dhash (ident . ,lval) . ,rest)
 	 (iter stl chl nxt
-	       (acons key (string-append val arg) (list-tail tkl 3))))
-
-	(((,key . ,val) dhash (arg . ,arg) . ,rest)
-	 (iter stl chl nxt
-	       (acons 'arg (string-append arg val) (list-tail tkl 3))))
-
-	(((arg . ,arg) hash . ,rest)
+	       (acons 'ident (string-append lval rval) (list-tail tkl 3))))
+	(((ident . ,arg) hash . ,rest)
 	 (iter stl chl (string-append "\"" arg "\"") (list-tail tkl 2)))
-
-	(((comm . ,val) . ,rest)
-	 (iter stl chl (string-append "/*" val " */") (cdr tkl)))
-
-	(((ident . ,rval) (ident . ,lval) . ,rest)
-	 (iter stl chl (string-append " " rval) (cdr tkl)))
-
+	(((ident . ,iden) (ident . ,lval) . ,rest)
+	 (iter stl chl iden rest))
+	(((ident . ,iden) . ,rest)
+	 (iter stl chl iden rest))
 	(((string . ,val) . ,rest)
 	 (iter stl (cons #\" chl) val (cons #\" rest)))
-
-	(((ident . ,val) . ,rest)
-	 (iter stl chl val rest))
-
-	(((arg . ,val) . ,rest)
-	 (iter stl chl val rest))
-
 	(((defined . ,val) . ,rest)
 	 (iter stl chl val rest))
-
+	((space space . ,rest)
+	 (iter stl chl nxt rest))
 	((space . ,rest)
 	 (iter stl (cons #\space chl) nxt rest))
-
 	((,asis . ,rest)
 	 (iter stl chl asis rest))
-
-	(otherwise
+	(,otherwise
 	 (error "no match" tkl)))))))
 
-;; @deffn scan-cpp-input argd used dict end-tok => string
-;; Process replacement text from the input port and generate a (reversed)
-;; token-list.  If end-tok, stop at, and push back, @code{,} or @code{)}.
-;; If end-tok is @code{,} then read until @code{,} or @code{(}.
-;; The argument @var{argd} is a dictionary (argument name, argument
-;; value) pairs which will be expanded as needed.  This routine is called
-;; by collect-args, expand-cpp-repl and cpp-expand-text.
-(define (scan-cpp-input argd dict used end-tok)
+;; We just scanned "defined", now need to scan the arg to inhibit expansion.
+;; For example, we have scanned "defined"; we now scan "(FOO)" or "FOO", and
+;; return "defined(FOO)" or "defined FOO".
+(define (scan-defined-arg)
+  (let* ((ch (skip-il-ws (read-char))) (no-ec (not (char=? ch #\())))
+    (let iter ((chl (list ch)) (ch (skip-il-ws (read-char))))
+      (cond
+       ((eof-object? ch)
+	(if no-ec
+	    (string-append "defined " (list->string (reverse chl)))
+	    (cpp-err "illegal argument to `defined'")))
+       ((char-set-contains? c:ir ch)
+	(iter (cons ch chl) (read-char)))
+       (no-ec
+	(unread-char ch)
+	(string-append "defined " (list->string (reverse chl))))
+       ((char=? #\) (skip-il-ws ch))
+	(string-append "defined" (list->string (reverse (cons #\) chl)))))
+       (else
+	(cpp-err "illegal argument to  `defined'"))))))
+
+(define (scan-cpp-input defs used end-tok)
   ;; Works like this: scan for tokens (comments, parens, strings, char's, etc).
   ;; Tokens are collected in a (reverse ordered) list (tkl) and merged together
-  ;; to a string on return using @code{rtokl->string}.
+  ;; to a string on return using @code{rtokl->string}.  Keep track of expanded
+  ;; identifiers and rerun if something got expanded.  Also, keep track of
+  ;; ## and spaces so that we can parse ID /* foo */ ## /* bar */ 123
+  ;; as well as ABC/*foo*/(123,456).
 
-  ;; We just scanned "defined", now need to scan the arg to inhibit expansion.
-  ;; For example, we have scanned "defined"; we now scan "(FOO)" or "FOO", and
-  ;; return "defined(FOO)" or "defined FOO".
-  (define (scan-defined-arg)
-    (let* ((ch (skip-il-ws (read-char))) (no-ec (not (char=? ch #\())))
-      (let iter ((chl (list ch)) (ch (skip-il-ws (read-char))))
-	(cond
-	 ((eof-object? ch)
-	  (if no-ec
-	      (string-append "defined " (list->string (reverse chl)))
-	      (cpp-err "illegal argument to `defined'")))
-	 ((char-set-contains? c:ir ch)
-	  (iter (cons ch chl) (read-char)))
-	 (no-ec
-	  (unread-char ch)
-	  (string-append "defined " (list->string (reverse chl))))
-	 ((char=? #\) (skip-il-ws ch))
-	  (string-append "defined" (list->string (reverse (cons #\) chl)))))
-	 (else
-	  (cpp-err "illegal argument to  `defined'"))))))
+  (define (trim-spaces tkl)
+      (if (and (pair? tkl) (eqv? 'space (car tkl)))
+	  (trim-spaces (cdr tkl))
+	  tkl))
 
-  ;; token list is list of
-  ;; 1) characters as char
-  ;; 2) identifiers as string
-  ;; 3) strings as '(string . <string>)
-  ;; 4) 'hash 'dhash
-  (let iter ((tkl '())		; token list of 
-	     (lvl 0)		; level
-	     (ch (read-char)))	; next character
+  (define (finish rr tkl)
+    (let* ((tkl (if end-tok (trim-spaces tkl) tkl))
+	   (repl (rtokl->string tkl)))
+      ;;(if (null? rr) (simple-format #t "finish ~S\n" tkl))
+      (if (pair? rr)
+	  (expand-cpp-repl repl defs (append rr used)) ;; re-run
+	  repl)))
+     
+  ;;(simple-format #t "scan-cpp-input end-tok=~S\n" end-tok)
+  (let iter ((rr '())			; list symbols resolved
+	     (tkl '())			; token list of
+	     (lv 0)			; level
+	     (ch (skip-il-ws (read-char)))) ; next character
+    ;;(unless end-tok (simple-format #t "tkl=~S ch=~S\n" tkl ch))
     (cond
-     ;; have item to add, but first add in char's
-     ;;(nxt (iter (cons nxt (add-chl chl tkl)) '() #f lvl ch))
-     ;; If end of string or see end-ch at level 0, then return.
-     ((eof-object? ch) (rtokl->string tkl))
-     
-     ((and (eqv? end-tok ch) (zero? lvl))
-      (unread-char ch) (rtokl->string tkl))
-     ((and end-tok (char=? #\) ch) (zero? lvl))
-      (unread-char ch) (rtokl->string tkl))
-     
-     ((read-c-comm ch #f) =>
-      (lambda (cp) (iter (acons `comm (cdr cp) tkl) lvl (read-char))))
-     
-     ((char-set-contains? c:ws ch)
-      (if (and (pair? tkl) (char? (car tkl)))
-	  (iter (cons 'space tkl) lvl (read-char))
-	  (iter tkl lvl (read-char))))
-     
-     ((char=? #\( ch) (iter (cons ch tkl) (1+ lvl) (read-char)))
-     ((char=? #\) ch) (iter (cons ch tkl) (1- lvl) (read-char)))
-     ((char=? #\# ch)
-      (let ((ch (read-char)))
-	(if (eqv? ch #\#)
-	    (iter (cons 'dhash tkl) lvl (read-char))
-	    (iter (cons 'hash tkl) lvl ch))))
-     ((read-c-string ch) =>
-      (lambda (st) (iter (acons 'string (cdr st) tkl) lvl (read-char))))
+     ((eof-object? ch) (finish rr tkl))
+     ((and (eqv? end-tok ch) (zero? lv))
+      (unread-char ch) (finish rr tkl))
+     ((and end-tok (char=? #\) ch) (zero? lv))
+      (unread-char ch) (finish rr tkl))
+     ((or (char-set-contains? c:ws ch)	; whitespace
+	  (read-c-comm ch #f))		; comment
+      (iter rr (cons 'space tkl) lv (skip-il-ws (read-char))))
      ((read-c-ident ch) =>
       (lambda (iden)
 	(if (equal? iden "defined")
-	    ;; "defined" is a special case
-	    (let ((arg (scan-defined-arg)))
-	      (iter (acons 'defined arg tkl) lvl (read-char)))
-	    ;; otherwise ...
-	    (let* ((aval (assoc-ref argd iden))  ; lookup argument
-		   (rval (assoc-ref dict iden))) ; lookup macro def
-	      (cond
-	       ((member iden used)	; name used
-		(iter (cons iden tkl) lvl (read-char)))
-	       (aval			; arg ref
-		(iter (acons 'arg aval tkl) lvl (read-char)))
-	       ((string? rval)		; cpp repl
-		(iter (cons rval tkl) lvl (read-char)))
-	       ((pair? rval)		; cpp macro
-		(let* ((argl (car rval)) (text (cdr rval))
-		       (argd (collect-args argl argd dict used))
-		       (newl (expand-cpp-repl text argd dict (cons iden used))))
-		  (iter (cons newl tkl) lvl (read-char))))
-	       (else			; normal identifier
-		(iter (acons 'ident iden tkl) lvl (read-char))))))))
+	    (iter rr (acons 'defined (scan-defined-arg) tkl) lv (read-char))
+	    (let ((rval (expand-cpp-macro-ref iden defs used)))
+	      (if rval
+		  (iter #t (cons rval tkl) lv (read-char))
+		  (iter rr (acons 'ident iden tkl) lv (read-char)))))))
+     ((read-c-string ch) =>
+      (lambda (st) (iter rr (acons 'string (cdr st) tkl) lv (read-char))))
+     ((char=? #\( ch) (iter rr (cons ch tkl) (1+ lv) (read-char)))
+     ((char=? #\) ch) (iter rr (cons ch tkl) (1- lv) (read-char)))
      (else
-      (iter (cons ch tkl) lvl (read-char))))))
+      (iter rr (cons ch tkl) lv (read-char))))))
 
-;; @deffn collect-args argl argd dict used => argd
-;; to be documented
-;; I think argd is a passthrough for scan-cpp-input
-;; argl: list of formal arguments in #define
-;; argd: used? (maybe just a pass-through for scan-cpp-input
-;; dict: dict of macro defs
-;; used: list of already expanded macros
-;; TODO clean this up
-;; should be looking at #\( and eat up to matching #\)
-(define (collect-args argl argd dict used)
-  (let iter ((argl argl) (argv '()) (ch (skip-il-ws (read-char))))
-    ;; ch should always be #\(, #\, or #\)
+;; @deffn {Procedure} collect-args arglargd defs used => argd
+;; Collect arguments to a macro which appears in C code.  If not looking at
+;; @code{(} return @code{#f}, else scan and eat up to closing @code{)}.
+;; If multiple whitespace characters are skipped at the front then only
+;; one @code{#\space} is re-inserted.
+;; @end deffn
+(define (collect-args argl defs used)
+  (let iter1 ((sp #f) (ch (read-char)))
     (cond
-     ((eqv? ch #\)) (reverse argv))
-     ((null? argl) (cpp-err "arg count"))
-     ((and (null? (cdr argl)) (string=? (car argl) "..."))
-      (let ((val (scan-cpp-input argd dict used #\))))
-	(iter (cdr argl) (acons "__VA_ARGS__" val argv) (read-char))))
-     ((or (eqv? ch #\() (eqv? ch #\,))
-      (let ((val (scan-cpp-input argd dict used #\,)))
-	(iter (cdr argl) (acons (car argl) val argv) (read-char))))
-     (else (error "coding error, ch=" ch)))))
+     ((eof-object? ch) (if sp (unread-char #\space)) #f)
+     ((char-set-contains? inline-whitespace ch) (iter1 #t (read-char)))
+     ((char=? #\( ch)
+      (let iter2 ((argl argl) (argv '()) (ch ch))
+	(cond
+	 ((eqv? ch #\)) (reverse argv))
+	 ((null? argl) (cpp-err "arg count"))
+	 ((and (null? (cdr argl)) (string=? (car argl) "..."))
+	  (let ((val (scan-cpp-input defs used #\))))
+	    (iter2 (cdr argl) (acons "__VA_ARGS__" val argv) (read-char))))
+	 ((or (char=? ch #\() (char=? ch #\,))
+	  (let* ((val (scan-cpp-input defs used #\,)))
+	    (iter2 (cdr argl) (acons (car argl) val argv) (read-char))))
+	 (else
+	  (error "cpp.scm, collect-args: coding error")))))
+     (else (if sp (unread-char #\space)) #f))))
 
-;; @deffn expand-cpp-repl
-;; to be documented
-(define (expand-cpp-repl repl argd dict used)
+;; @deffn {Procedure} px-cpp-ftn-repl argd repl => string
+;; pre-expand CPP function where @var{argd} is an a-list of arg name
+;; and replacement and repl is the defined replacement
+;; 
+;; argd is alist of arguments and token lists
+;; if end-tok == #f ignore levels
+;; ident space fixed float chseq hash dhash arg
+;; need to decide if we should use `(space ,tkl) or `((space) ,tkl)
+;; This should replace args and execute hash and double-hash ??
+;; @end deffn
+(define (px-cpp-ftn argd repl)
   (with-input-from-string repl
-    (lambda () (scan-cpp-input argd dict used #f))))
+    (lambda ()
+      ;;(simple-format #t "px-cpp-ftn argd=~S repl=~S\n" argd repl)
+      (px-cpp-ftn-1 argd))))
 
-;; @deffn cpp-expand-text text dict => string
-(define (cpp-expand-text text dict)
+(define (px-cpp-ftn-1 argd)
+
+  ;; Turn reverse chl into a string and insert it into the token stream.
+  (define (ins-chl chl stl)
+    (if (null? chl) stl (cons (list->string (reverse chl)) stl)))
+
+  (define (rem-space chl)
+    (let iter ((chl chl))
+      (cond
+       ((null? chl) chl)
+       ((char-set-contains? c:ws (car chl)) (iter (cdr chl)))
+       (else chl))))
+
+  (define (mk-string str) (string-append "\"" str "\""))
+
+  (let iter ((stl '())			; string list
+	     (chl '())			; character list
+	     (nxt #f)			; next string after char list
+	     (ch (read-char)))		; next character
+    ;;(simple-format #t "px-1: stl=~S chl=~S nxt=~S ch=~S\n" stl chl nxt ch)
+    (cond
+     (nxt (iter (cons nxt (ins-chl chl stl)) '() #f ch))
+     ((eof-object? ch)
+      (apply string-append (reverse (ins-chl chl stl))))
+     ((char-set-contains? c:ws ch)
+      (iter stl (cons #\space chl) nxt (skip-il-ws (read-char))))
+     ((read-c-comm ch #f) (iter stl (cons #\space chl) nxt (read-char)))
+     ((read-c-string ch) =>
+      (lambda (st) (iter stl chl (mk-string (cdr st)) (read-char))))
+     ((char=? #\( ch) (iter stl (cons ch chl) nxt (read-char)))
+     ((char=? #\) ch) (iter stl (cons ch chl) nxt (read-char)))
+     ((read-c-ident ch) =>		; replace if aval
+      (lambda (iden)
+	(iter stl chl (or (assoc-ref argd iden) iden) (read-char))))
+     ((char=? #\# ch)
+      (let ((ch (read-char)))
+	(if (eqv? ch #\#)
+	    (iter stl (rem-space chl) nxt (skip-il-ws (read-char)))
+	    (let* ((aref (read-c-ident (skip-il-ws ch)))
+		   (aval (assoc-ref argd aref)))
+	      (if (not aref) (cpp-err "expecting arg-ref"))
+	      (if (not aval) (cpp-err "expecting arg-val"))
+	      (iter stl chl (mk-string aval) (read-char))))))
+     (else (iter stl (cons ch chl) nxt (read-char))))))
+  
+;; @deffn {Procedure} cpp-expand-text text defs [used] => string
+;; Expand the string @var{text} using the provided CPP @var{defs} a-list.
+;; Identifiers in the list of strings @var{used} will not be expanded.
+;; @end deffn
+(define* (cpp-expand-text text defs #:optional (used '()))
+  ;;(simple-format #t "cpp-expand-text ~S\n" text)
   (with-input-from-string text
-    (lambda () (scan-cpp-input '() dict '() #f))))
+    (lambda () (scan-cpp-input defs used #f))))
 
-;; @deffn expand-cpp-macro-ref ident dict => repl|#f
-;; Given an identifier seen in C99 input, this checks for associated
-;; definition in @var{dict} (generated from CPP defines).  If found,
-;; the expansion is returned as a string.  If @var{ident} refers
+;; @deffn {Procedure} expand-cpp-repl
+;; to be documented
+;; @end deffn
+(define (expand-cpp-repl text defs used)
+  ;;(simple-format #t "expand-cpp-repl text=~S used=~S\n" text used)
+  (with-input-from-string text
+    (lambda () (scan-cpp-input defs used #f))))
+
+;; === exports =======================
+
+;; @deffn {Procedure} eval-cpp-cond-text text defs => string
+;; Evaluate CPP condition expression (text).
+;; @end deffn
+(define (eval-cpp-cond-text text defs)
+  (with-throw-handler
+   'cpp-error
+   (lambda ()
+     (let* ((rhs (cpp-expand-text text defs))
+	    (exp (parse-cpp-expr rhs)))
+       (eval-cpp-expr exp defs)))
+   (lambda (key fmt . args)
+     (report-error fmt args)
+     (throw 'c99-error "CPP error"))))
+
+;; @deffn {Procedure} expand-cpp-macro-ref ident defs [used] => repl|#f
+;; Given an identifier seen in the current input, this checks for associated
+;; definition in @var{defs} (generated from CPP defines).  If found as simple
+;; macro, the expansion is returned as a string.  If @var{ident} refers
 ;; to a macro with arguments, then the arguments will be read from the
-;; current input.  The format of the @code{dict} entries are
+;; current input.  The format of the @code{defs} entries are
 ;; @example
 ;; ("ABC" . "123")
 ;; ("MAX" ("X" "Y") . "((X)>(Y)?(X):(Y))")
 ;; @end example
-(define (expand-cpp-macro-ref ident dict . rest)
-  (let ((used (if (pair? rest) (car rest) '()))
-	(rval (assoc-ref dict ident)))
+;; @end deffn
+(define* (expand-cpp-macro-ref ident defs #:optional (used '()))
+  (let ((rval (assoc-ref defs ident)))
+    ;;(simple-format #t "ex-mac-ref rval=~S\n" rval)
     (cond
-     ((not rval) #f)
-     ((member ident used) ident)
-     ((string? rval)
-      (let ((expd (expand-cpp-repl rval '() dict (cons ident used))))
-	expd))
+     ((member ident used) #f)
+     ((string? rval) (expand-cpp-repl rval defs (cons ident used)))
      ((pair? rval)
-      (let* ((argl (car rval)) (repl (cdr rval))
-	     (argd (collect-args argl '() dict '()))
-	     (expd (expand-cpp-repl repl argd dict (cons ident used))))
-	expd))
-     ((c99-std-val ident))
+      ;;(simple-format #t "rval = ~S\n" rval)
+      (and=> (collect-args (car rval) defs used)
+	     (lambda (argd)
+	       (expand-cpp-repl (px-cpp-ftn argd (cdr rval))
+				defs (cons ident used)))))
+     ((c99-std-val ident) => identity)
      (else #f))))
 
 ;;; --- last line ---

@@ -1,6 +1,6 @@
 ;;; nyacc/lang/c99/pprint.scm
 ;;;
-;;; Copyright (C) 2015,2016 Matthew R. Wette
+;;; Copyright (C) 2015-2017 Matthew R. Wette
 ;;;
 ;;; This program is free software: you can redistribute it and/or modify
 ;;; it under the terms of the GNU General Public License as published by 
@@ -79,14 +79,26 @@
 
 (define protect-expr? (make-protect-expr op-prec op-assc))
 
-;; @deffn pretty-print-c99 tree [#:indent-level 2]
+;; @deffn pretty-print-c99 tree [port] [options]
 ;; Convert and print a C99 sxml tree to the current output port.
 ;; The optional keyword argument @code{#:indent-level} provides the
 ;; indent level, with default of 2.
-(define* (pretty-print-c99 tree #:key (indent-level 2) (ugly #f))
+;; @table code
+;; @item #:indent-level <level>
+;; indent level for C code
+;; @item #:per-line-prefix <string>
+;; string
+;; @item #:ugly #t|#f
+;; pring ugly
+;; @end table
+;; @end deffn
+(define* (pretty-print-c99 tree
+			   #:optional (port (current-output-port))
+			   #:key (indent-level 2) ugly per-line-prefix)
 
-  ;;(define fmtr (make-pp-formatter))
-  (define fmtr (if ugly (make-pp-formatter/ugly) (make-pp-formatter)))
+  (define fmtr
+    ((if ugly make-pp-formatter/ugly make-pp-formatter)
+     port #:per-line-prefix per-line-prefix))
   (define (push-il)(fmtr 'push))
   (define (pop-il) (fmtr 'pop))
 
@@ -282,15 +294,18 @@
     (sxml-match tree
       ;; sxml-match continues here to avoid stack overflow
       ;; |#
-      
+
+      ((udecl . ,rest)
+       (ppx `(decl . ,rest)))
       ((decl ,decl-spec-list)
        (ppx decl-spec-list) (sf ";\n"))
       ((decl ,decl-spec-list ,init-declr-list)
-       (ppx decl-spec-list) (ppx init-declr-list) (sf ";\n"))
+       (ppx decl-spec-list) (sf " ") (ppx init-declr-list) (sf ";\n"))
       ((decl ,decl-spec-list ,init-declr-list ,comment)
-       (ppx decl-spec-list) (ppx init-declr-list) (sf "; ") (ppx comment))
+       (ppx decl-spec-list) (sf " ")
+       (ppx init-declr-list) (sf "; ") (ppx comment))
       ((decl-no-newline ,decl-spec-list ,init-declr-list) ; for (int i = 0;
-       (ppx decl-spec-list) (ppx init-declr-list) (sf ";"))
+       (ppx decl-spec-list) (sf " ") (ppx init-declr-list) (sf ";"))
 
       ((comp-decl ,spec-qual-list ,declr-list)
        (ppx spec-qual-list) (ppx declr-list) (sf ";\n"))
@@ -298,29 +313,27 @@
        (ppx spec-qual-list) (ppx declr-list) (sf "; ") (ppx comment))
 
       ((decl-spec-list . ,dsl)
-       (let iter ((dsl dsl))
-	 (when (pair? dsl)
-	   (case (sx-tag (car dsl))
-	     ((stor-spec) (sf "~A " (car (sx-ref (car dsl) 1))))
-	     ((type-qual) (sf "~A " (sx-ref (car dsl) 1)))
-	     ((type-spec) (ppx (car dsl)))
-	     (else (sf "[?:~S] " (car dsl))))
-	   ;;(if (pair? (cdr dsl)) (sf " "))
-	   (iter (cdr dsl)))))
+       (pair-for-each
+	(lambda (dsl)
+	  (case (sx-tag (car dsl))
+	    ((stor-spec) (sf "~A" (car (sx-ref (car dsl) 1))))
+	    ((type-qual) (sf "~A" (sx-ref (car dsl) 1)))
+	    ((type-spec) (ppx (car dsl)))
+	    (else (sf "[?:~S]" (car dsl))))
+	  (if (pair? (cdr dsl)) (sf " ")))
+	dsl))
 
       ((init-declr-list . ,rest)
        (pair-for-each
 	(lambda (pair)
-	  (sf " ")
 	  (ppx (car pair))
-	  (if (pair? (cdr pair)) (sf ",")))
+	  (if (pair? (cdr pair)) (sf ", ")))
 	rest))
       ((comp-declr-list . ,rest)
        (pair-for-each
 	(lambda (pair)
-	  (sf " ")
 	  (ppx (car pair))
-	  (if (pair? (cdr pair)) (sf ",")))
+	  (if (pair? (cdr pair)) (sf ", ")))
 	rest))
 
       ((init-declr ,declr ,initr) (comp declr initr))
@@ -338,7 +351,7 @@
 	 ((union-def) (ppx arg))
 	 ((enum-def) (ppx arg))
 	 ((typename) (sf "~A" (sx-ref arg 1)))
-	 ((void) (sf "void"))
+	 ((void) (sf "void "))
 	 (else (error "missing " arg))))
 
       ((struct-ref (ident ,name)) (sf "struct ~A" name))
@@ -366,6 +379,8 @@
 
       ((enum-defn (ident ,name) (p-expr (fixed ,value)))
        (sf "~A = ~A,\n" name value))
+      ((enum-defn (ident ,name) (neg (p-expr (fixed ,value))))
+       (sf "~A = -~A,\n" name value))
       ((enum-defn (ident ,name))
        (sf "~A,\n" name))
 
@@ -514,7 +529,6 @@
 	      (declr (sx-ref tree 2))
 	      (compd-stmt (sx-ref tree 3)))
 	 (ppx decl-spec-list)
-	 (sf " ")
 	 (ppx declr)
 	 (sf " ")
 	 (ppx compd-stmt)))

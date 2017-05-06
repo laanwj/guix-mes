@@ -29,11 +29,12 @@
   #:use-module ((srfi srfi-43) #:select (vector-map))
   )
 
-;; @item c99-spec
+;; @deffn {Variable} c99-spec
 ;; This variable is the specification a-list for the hacked ISO C99 language.
 ;; Run this through @code{make-lalr-machine} to get an a-list for the
 ;; automaton.  The grammar is modified to parse CPP statements and comments.
 ;; The output of the end parser will be a SXML tree (w/o the @code{*TOP*} node.
+;; @end deffn
 (define c99-spec
   (lalr-spec
    (notice (string-append "Copyright (C) 2016,2017 Matthew R. Wette"
@@ -649,7 +650,8 @@
     ;; non-terminal leaves
     (identifier
      ($ident ($$ `(ident ,$1)))
-     ('cpp-ident ($$ `(ident ,$1))))
+     ('cpp-ident ($$ `(ident ,$1)))
+     )
     (constant
      ($fixed ($$ `(fixed ,$1)))		; integer-constant
      ($float ($$ `(float ,$1)))		; floating-constant
@@ -672,22 +674,22 @@
 ;;; =====================================
 
 ;; The following are needed by the code in pbody.scm.
-(define c99-mach-len-v (assq-ref c99-mach 'len-v))
-(define c99-mach-pat-v (assq-ref c99-mach 'pat-v))
-(define c99-mach-rto-v (assq-ref c99-mach 'rto-v))
-(define c99-mach-mtab (assq-ref c99-mach 'mtab))
-(define c99-mach-act-v (vector-map
-                        (lambda (ix f) (eval f (current-module)))
-                        (vector-map (lambda (ix actn) (wrap-action actn))
-                                    (assq-ref c99-mach 'act-v))))
+(define c99-len-v (assq-ref c99-mach 'len-v))
+(define c99-pat-v (assq-ref c99-mach 'pat-v))
+(define c99-rto-v (assq-ref c99-mach 'rto-v))
+(define c99-mtab (assq-ref c99-mach 'mtab))
+(define c99-act-v (vector-map
+		   (lambda (ix f) (eval f (current-module)))
+		   (vector-map (lambda (ix actn) (wrap-action actn))
+			       (assq-ref c99-mach 'act-v))))
 
 (include-from-path "nyacc/lang/c99/body.scm")
 
-(define c99-mach-raw-parser (make-lalr-parser c99-mach))
+(define raw-parser (make-lalr-parser c99-mach))
 
-(define (c99-mach-run-parse)
+(define (run-parse)
   (let ((info (fluid-ref *info*)))
-    (c99-mach-raw-parser (gen-c-lexer) #:debug (cpi-debug info))))
+    (raw-parser (gen-c-lexer) #:debug (cpi-debug info))))
 
 (define* (dev-parse-c99 #:key
 			(cpp-defs '())	; CPP defines
@@ -703,8 +705,8 @@
        (with-fluid*
 	   *info* info
 	   (lambda ()
-	     (c99-mach-raw-parser (gen-c-lexer #:mode mode #:xdef? xdef?)
-                                  #:debug debug)))))
+	     (raw-parser (gen-c-lexer #:mode mode #:xdef? xdef?)
+			 #:debug debug)))))
    (lambda (key fmt . rest)
      (report-error fmt rest)
      #f)))
@@ -713,29 +715,32 @@
 
 ;;; =====================================
 
-;; @item gen-c99-files [dir] => #t
+;; @deffn {Procedure} gen-c99-files [dir] => #t
 ;; Update or generate the files @quot{c99act.scm} and @quot{c99tab.scm}.
 ;; These are the tables and actions for the C99 parser.
 ;; If there are no changes to existing files, no update occurs.
+;; @end deffn
 (define (gen-c99-files . rest)
   (define (lang-dir path)
     (if (pair? rest) (string-append (car rest) "/" path) path))
   (define (xtra-dir path)
     (lang-dir (string-append "mach.d/" path)))
 
-  (write-lalr-actions c99-mach (xtra-dir "c99act.scm.new"))
-  (write-lalr-tables c99-mach (xtra-dir "c99tab.scm.new"))
+  (write-lalr-actions c99-mach (xtra-dir "c99act.scm.new") #:prefix "c99-")
+  (write-lalr-tables c99-mach (xtra-dir "c99tab.scm.new") #:prefix "c99-")
   (let ((a (move-if-changed (xtra-dir "c99act.scm.new")
 			    (xtra-dir "c99act.scm")))
 	(b (move-if-changed (xtra-dir "c99tab.scm.new")
 			    (xtra-dir "c99tab.scm"))))
-    (when (or a b) 
-      (system (string-append "touch " (lang-dir "parser.scm"))))))
+    #;(when (or a b) 
+    (system (string-append "touch " (lang-dir "parser.scm"))))
+    (or a b)))
 
-;; @item gen-c99x-files [dir] => #t
+;; @deffn {Procedure} gen-c99x-files [dir] => #t
 ;; Update or generate the files @quot{c99xact.scm} and @quot{c99xtab.scm}.
 ;; These are the tables and actions for the C99 expression parser.
 ;; If there are no changes to existing files, no update occurs.
+;; @end deffn
 (define (gen-c99x-files . rest)
   (define (lang-dir path)
     (if (pair? rest) (string-append (car rest) "/" path) path))
@@ -746,8 +751,10 @@
 	 (cexpr-mach (compact-machine
 		      (hashify-machine
 		       (make-lalr-machine cexpr-spec)))))
-    (write-lalr-actions cexpr-mach (xtra-dir "c99xact.scm.new"))
-    (write-lalr-tables cexpr-mach (xtra-dir "c99xtab.scm.new")))
+    (write-lalr-actions cexpr-mach (xtra-dir "c99xact.scm.new")
+			#:prefix "c99x-")
+    (write-lalr-tables cexpr-mach (xtra-dir "c99xtab.scm.new")
+		       #:prefix "c99x-"))
     
   (let ((a (move-if-changed (xtra-dir "c99xact.scm.new")
 			    (xtra-dir "c99xact.scm")))
@@ -756,6 +763,7 @@
     (when (or a b) 
       (system (string-append "touch " (lang-dir "parser.scm")))
       #;(compile-file (lang-dir "xparser.scm"))
-      )))
+      )
+    (or a b)))
 
 ;; --- last line ---

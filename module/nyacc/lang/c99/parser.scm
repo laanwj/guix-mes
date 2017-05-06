@@ -25,20 +25,13 @@
   #:use-module (nyacc lang c99 cpp)
   )
 
-(cond-expand
- (guile-2)
- (guile
-  (use-modules (ice-9 syncase))
-  (use-modules (ice-9 optargs)))
- (mes))
-
 (include-from-path "nyacc/lang/c99/mach.d/c99tab.scm")
 (include-from-path "nyacc/lang/c99/body.scm")
 (include-from-path "nyacc/lang/c99/mach.d/c99act.scm")
 
 ;; Parse given a token generator.  Uses fluid @code{*info*}.
 ;; A little ugly wrt re-throw but
-(define c99-raw-parser
+(define raw-parser
   (let ((parser (make-lalr-parser
 		     (list (cons 'len-v c99-len-v) (cons 'pat-v c99-pat-v)
 			   (cons 'rto-v c99-rto-v) (cons 'mtab c99-mtab)
@@ -53,12 +46,12 @@
 	 (throw 'c99-error "C99 parse error"))))))
 
 ;; This is used to parse included files at top level.
-(define (c99-parser-run-parse)
+(define (run-parse)
   (let ((info (fluid-ref *info*)))
-    (c99-raw-parser (gen-c-lexer) #:debug (cpi-debug info))))
+    (raw-parser (gen-c-lexer #:mode 'decl) #:debug (cpi-debug info))))
 
 ;; @deffn {Procedure} parse-c99 [#:cpp-defs def-a-list] [#:inc-dirs dir-list] \
-;;               [#:mode ('code|'file)] [#:debug bool]
+;;               [#:mode ('code|'file|'decl)] [#:debug bool]
 ;; This needs to be explained in some detail.
 ;; tdd = typedef dict: (("<time>" time_t) ... ("<unistd.h>" ...))
 ;; Default mode is @code{'code}.
@@ -69,12 +62,15 @@
 ;;            #:inc-help (append '("myinc.h" "foo_t" "bar_t") c99-std-help)
 ;;            #:mode 'file))
 ;; @end example
+;; Note: for @code{file} mode user still needs to make sure CPP conditional
+;; expressions can be fully evaluated, which may mean adding compiler generated
+;; defines (e.g., using @code{gen-cpp-defs}).
 ;; @end deffn
 (define* (parse-c99 #:key
 		    (cpp-defs '())	; CPP defines
 		    (inc-dirs '())	; include dirs
 		    (inc-help '())	; include helpers
-		    (mode 'code)	; mode: 'file or 'code
+		    (mode 'code)	; mode: 'file, 'code or 'decl
 		    (xdef? #f)		; pred to determine expand
 		    (debug #f))		; debug
   (catch
@@ -86,8 +82,8 @@
        (with-fluid*
 	   *info* info
 	   (lambda ()
-	     (c99-raw-parser (gen-c-lexer #:mode mode #:xdef? xdef?)
-                             #:debug debug)))))
+	     (raw-parser (gen-c-lexer #:mode mode #:xdef? xdef?)
+			 #:debug debug)))))
    (lambda (key fmt . rest)
      (report-error fmt rest)
      #f)))

@@ -20,7 +20,6 @@
 
 (define-module (nyacc parse)
   #:export (make-lalr-parser make-lalr-ia-parser)
-  #:use-module (ice-9 optargs)
   #:use-module (nyacc util)
   #:use-module ((srfi srfi-43) #:select (vector-map vector-for-each))
   )

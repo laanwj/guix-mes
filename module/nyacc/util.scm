@@ -28,7 +28,6 @@
 	    ugly-print
 	    tzort
 	    )
-  #:use-module (ice-9 optargs)
   #:use-module ((srfi srfi-43) #:select (vector-fold))
   )
 
