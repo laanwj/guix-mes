@@ -262,7 +262,13 @@
 (define (push-ident info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local ((push-local (.locals info)) local)
+      (if local
+          (begin
+            (let* ((ptr (local:pointer local))
+                   (size (if (= ptr 1) (type->size info (local:type local))
+                             4)))
+             (if (= ptr -1) ((push-local-address (.locals info)) local)
+                 ((push-local (.locals info)) local))))
           (let ((global (assoc-ref (.globals info) o)))
             (if global
                 ((push-global (.globals info)) o) ;; FIXME: char*/int
@@ -548,6 +554,10 @@
            (append-text info (append ((ident->accu info) array)
                                      (wrap-as (i386:accu+n offset))))))
 
+        ;; &a[x];
+        ((ref-to (array-ref ,index (p-expr (ident ,array))))
+         ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array)))))
+
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
          (let* ((type (list "struct" name))
                 (fields (or (type->description info type) '()))
@@ -624,7 +634,8 @@
          (let* ((info ((expr->accu info) `(de-ref (p-expr (ident ,name)))))
                 (type (ident->type info name))
                 (ptr (ident->pointer info name))
-                (size (if (> ptr 1) 4 1)))
+                (size (if (= ptr 1) (type->size info type)
+                          4)))
            (append-text info ((ident-add info) name size))))
 
         ((de-ref ,expr)
@@ -756,6 +767,14 @@
         ((cast ,cast ,o)
          ((expr->accu info) o))
 
+        ((assn-expr (de-ref (post-inc (p-expr (ident ,name)))) (op ,op) ,b)
+         (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
+           (append-text info ((ident-add info) name 1)))) ;; FIXME: size
+
+        ((assn-expr (de-ref (post-dec (p-expr (ident ,name)))) (op ,op) ,b)
+         (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
+           (append-text info ((ident-add info) name -1)))) ;; FIXME: size
+
         ((assn-expr ,a (op ,op) ,b)
          (let* ((info ((expr->accu info) b))
                 (info (if (equal? op "=") info
@@ -783,15 +802,12 @@
                 (append-text info (wrap-as (i386:base->accu-address))))) ; FIXME: size
              ;; FIXME: c&p above
              ((de-ref (p-expr (ident ,array)))
-              (append-text info (append (wrap-as (i386:accu->base))
-                                        ((base->ident-address info) array)
-                                        (wrap-as (i386:base->accu)))))
-             ((de-ref (post-inc (p-expr (ident ,name))))
-              (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
-                (append-text info ((ident-add info) name 1))))
-             ((de-ref (post-dec (p-expr (ident ,name))))
-              (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
-                (append-text info ((ident-add info) name -1))))
+              (let* ((type (ident->type info array))
+                     (ptr (ident->pointer info array))
+                     (size (if (> ptr 1) 4 1)))
+                (append-text info (append (wrap-as (i386:accu->base))
+                                          ((base->ident-address info) array)
+                                          (i386:base->accu)))))
              ((array-ref ,index (p-expr (ident ,array)))
               (let* ((type (ident->type info array))
                      (size (type->size info type))
@@ -1803,10 +1819,19 @@
                (append-text info ((accu->ident info) name)))
              (error "TODO" o)))
 
+        ;; char *foo = &bar[0];
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (ref-to (array-ref ,index (p-expr (ident ,array))))))))
+         (if (.function info)
+             (let* ((locals (add-local locals name type 1))
+                    (info (clone info #:locals locals))
+                    (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
+               (append-text info ((accu->ident info) name)))
+             (error "TODO" o)))
+
         ;; char *p = *bla;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (de-ref (p-expr (ident ,value)))))))
          (if (.function info)
-             (let* ((locals (add-local locals name type 2))
+             (let* ((locals (add-local locals name type 1))
                     (info (clone info #:locals locals))
                     (local (assoc-ref (.locals info) name)))
                (append-text info (append ((ident->accu info) value)
