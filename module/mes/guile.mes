@@ -26,6 +26,14 @@
 (define-macro (use-modules . rest) #t)
 (define-macro (cond-expand-provide . rest) #t)
 
+(define-macro (include-from-path file)
+  (let loop ((path (cons %moduledir (string-split (or (getenv "GUILE_LOAD_PATH") "") #\:))))
+    (if (getenv "MES_DEBUG") (format (current-error-port) "include-from-path: ~s [PATH:~s]\n" file path))
+    (if (null? path) (error "include-from-path: not found: " file)
+        (let ((file (string-append (car path) "/" file)))
+          (if (access? file R_OK) `(load ,file)
+              (loop (cdr path)))))))
+
 (mes-use-module (srfi srfi-16))
 
 (define (drain-input port)
