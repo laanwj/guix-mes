@@ -20,7 +20,7 @@ all-go: SCM_FILES:=$(SCM_FILES)
 all-go: GUILE_FLAGS:=$(GUILE_FLAGS)
 all-go: $(SCM_FILES)
 	$(QUIET)rm -f $@
-	$(QUIET)cd $(DIR) && srcdir=$(srcdir) host=$(host) $(GUILE) $(GUILE_FLAGS:guile=../guile) -s ../build-aux/compile-all.scm $(SCM_FILES:$(DIR)/%=%)
+	$(QUIET)cd guile && srcdir=$(srcdir) host=$(host) $(GUILE) $(GUILE_FLAGS:guile=.) -s ../build-aux/compile-all.scm $(SCM_FILES:$(DIR)/%=%)
 
 $(GO_FILES): all-go
 

@@ -17,7 +17,6 @@ Missing dependencies, run
 EOF
     exit 1
 fi
-unset GUILE_AUTO_COMPILE GUILE_LOAD_COMPILED_PATH
 exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
 !#
 
@@ -119,12 +118,13 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
             (map string->number version)))
 
 (define required '())
-(define* (check-version command expected
-                        #:optional
+(define* (check-version name expected
+                        #:key
                         (deb #f)
                         (version-option '--version)
-                        (compare tuple<=))
-  (stderr "checking for ~a~a..." command
+                        (compare tuple<=)
+                        (command name))
+  (stderr "checking for ~a~a..." name
           (if (null? expected) ""
               (format #f " [~a]" (version->string expected))))
   (let* ((output (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
@@ -133,8 +133,8 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
     (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
                           (if actual " no, found" "")) (version->string actual))
     (or pass?
-        (if (not (pair? command)) (begin (set! required (cons (or deb command) required)) pass?)
-            (check-version (cdr command) expected deb version-option compare)))))
+        (if (not (pair? name)) (begin (set! required (cons (or deb name) required)) pass?)
+            (check-version (cdr name) expected deb version-option compare)))))
 
 (define* (check-pkg-config package expected #:optional (deb #f))
   (check-version (format #f "pkg-config --modversion ~a" package) expected deb))
@@ -205,6 +205,7 @@ Usage: ./configure [OPTION]...
     (check-version 'guile '(2 0))
     (check-version 'make '(4 0))
     (check-version 'perl '(5))
+    (check-version 'nyacc '(0 78 0) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
 
     (when (pair? required)
       (stderr "\nMissing dependencies [~a], run\n\n" ((->string ", ") required))

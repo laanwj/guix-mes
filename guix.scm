@@ -50,6 +50,7 @@
              (gnu packages cross-base)
              (gnu packages gcc)
              (gnu packages guile)
+             (gnu packages mes)
              (gnu packages package-management)
              (gnu packages perl)
              ((guix build utils) #:select (with-directory-excursion))
@@ -93,11 +94,12 @@
                       (url "https://gitlab.com/janneke/mes")
                       (commit commit)))
                 (file-name (string-append name "-" version))
-                ;; TODO: Unbundle nyacc.
                 (sha256
                  (base32 "1ynr0hc0k15307sgzv09k3y5rvy46h0wbh7zcblx1f9v7y8k90zv"))))
       (build-system gnu-build-system)
       (supported-systems '("x86_64-linux"))
+      (propagated-inputs
+       `(("nyacc" ,nyacc)))
       (native-inputs
        `(("guile" ,guile-2.2)
          ;; Use cross-compiler rather than #:system "i686-linux" to get
@@ -126,7 +128,7 @@ prototype in C and a Nyacc-based C compiler in [Guile] Scheme.")
 (define-public mes.git
   (package
     (inherit mes)
-    (name "mes.git")
+    (name "mes")
     (version "git")
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))))
 

@@ -12,6 +12,9 @@ Building and Installing Mes
     guix environment --system=i686-linux -l guix.scm #32 bit only
 
 ** Other GNU/Linux
+*** Nyacc, 0.78.0 is known to work.
+Matt Wette's C99 LALR parser.
+
 *** A C compiler, GNU Gcc 4.9.3 is known to work.
 The idea is to drop this requirement, of course.
 
@@ -24,7 +27,6 @@ Not strictly necessary.
 
 *** /bin/sh, GNU Bash 4.3 is known to work.
 Let's just say for now that it gets awkward without a shell.
-
 
 *** Development (but see [[./guix.scm]])
 

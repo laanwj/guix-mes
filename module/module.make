@@ -39,10 +39,6 @@ SCM_FILES:=$(filter-out %optargs.scm, $(SCM_FILES))
 SCM_FILES:=$(filter-out %pretty-print.scm, $(SCM_FILES))
 SCM_FILES:=$(filter-out %syntax.scm, $(SCM_FILES))
 SCM_FILES:=$(filter-out module/mes/peg/%.scm, $(SCM_FILES))
-SCM_FILES:=$(filter-out module/nyacc/lang/c99/body.scm, $(SCM_FILES))
-SCM_FILES:=$(filter-out module/nyacc/lang/c99/mach.d/%.scm, $(SCM_FILES))
-SCM_FILES:=$(filter-out module/nyacc/lang/c99/mach.scm, $(SCM_FILES))
-SCM_FILES:=$(filter-out module/nyacc/lang/c99/xparser.scm, $(SCM_FILES))
 include make/guile.make
 
 # FIXME: https://gitlab.com/janneke/guile/commits/1.8
