@@ -1971,6 +1971,10 @@
         ((decl (decl-spec-list (type-spec (fixed-type ,type)) (type-qual ,qual)) (init-declr-list (init-declr (ptr-declr (pointer) (ftn-declr (ident ,name) (param-list . ,param-list))))))
          info)
 
+        ;; char *strcpy ();
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ftn-declr (ident ,name) (param-list . ,param-list))))))
+         info)
+
         ;; printf (char const* format, ...)
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list ,param-list . (ellipsis))))))
          info)

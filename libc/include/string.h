@@ -36,6 +36,7 @@ typedef long size_t;
 size_t strlen (char const*);
 int strcmp (char const*, char const*);
 int strncmp (char const*, char const*, size_t);
+char *strcpy (char *dest, char const *src);
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __STRING_H

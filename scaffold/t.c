@@ -567,6 +567,17 @@ struct_test ()
   return make_tmps_test  (g_cells);
 }
 
+int
+string_test ()
+{
+  puts ("t: strcpy (buf, \"hallo\")\n");
+  char buf[10];
+  strcpy (buf, "hallo");
+  if (strcmp (buf, "hallo")) return 1;
+
+  return struct_test ();
+}
+
 void
 void_func ()
 {
@@ -946,7 +957,7 @@ test (char *p)
   puts ("void_func ()\n");
   void_func ();
 
-  return struct_test ();
+  return string_test ();
 }
 #endif
 

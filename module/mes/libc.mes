@@ -214,6 +214,20 @@ strcmp (char const* a, char const* b)
 }
 " parse-c99))
 
+(define (strcpy)
+  (format (current-error-port) "parsing: strcpy\n")
+  (with-input-from-string
+               "
+char *
+strcpy (char *dest, char const *src)
+{
+  char *p = dest;
+  while (*src) *p++ = *src++;
+  *p = 0;
+  return dest;
+}
+" parse-c99))
+
 (define (itoa)
   (format (current-error-port) "parsing: itoa\n")
   (with-input-from-string
@@ -395,6 +409,7 @@ printf (char const* format, int va_args)
    fputs
    puts
    strcmp
+   strcpy
    itoa
    isdigit
    atoi

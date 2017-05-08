@@ -210,6 +210,15 @@ strcmp (char const* a, char const* b)
   return *a - *b;
 }
 
+char *
+strcpy (char *dest, char const *src)
+{
+  char *p = dest;
+  while (*src) *p++ = *src++;
+  *p = 0;
+  return dest;
+}
+
 int
 eputs (char const* s)
 {
