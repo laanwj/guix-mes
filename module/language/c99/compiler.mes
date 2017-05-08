@@ -1132,6 +1132,7 @@
 
 (define i386:type-alist
   '(("char" . (builtin 1 #f))
+    ("short" . (builtin 2 #f))
     ("int" . (builtin 4 #f))))
 
 (define (type->size info o)
