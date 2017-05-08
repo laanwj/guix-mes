@@ -1221,7 +1221,6 @@
                        (1+ (local:id (cdar locals)))))
                (locals (cons (make-local name type pointer id) locals)))
           locals))
-
       (pmatch o
         (((trans-unit . _) . _)
          ((ast-list->info info)  o))
@@ -1453,6 +1452,9 @@
            (append-text info (append 
                               (list (lambda (f g ta t d)
                                       (jump (- (label-offset (.function info) label f) offset))))))))
+
+        ((return (expr))
+         (append-text info (append (wrap-as (i386:ret)))))
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
