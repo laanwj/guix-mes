@@ -523,6 +523,7 @@
                (locals (cons (make-local name type pointer id) locals)))
           locals))
       (pmatch o
+        ((expr) info)
         ((p-expr (string ,string))
          (let* ((globals (append globals (list (string->global string))))
                 (info (clone info #:globals globals)))
@@ -558,12 +559,24 @@
         ((ref-to (array-ref ,index (p-expr (ident ,array))))
          ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array)))))
 
+        ((sizeof-expr (p-expr (ident ,name)))
+         (let* ((type (ident->type info name))
+                (fields (or (type->description info type) '()))
+                (size (type->size info type)))
+           (append-text info (wrap-as (i386:value->accu size)))))
+
+        ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,name)))))
+         (let* ((type name)
+                (fields (or (type->description info type) '()))
+                (size (type->size info type)))
+           (append-text info (wrap-as (i386:value->accu size)))))
+
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
          (let* ((type (list "struct" name))
                 (fields (or (type->description info type) '()))
                 (size (type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
-        
+
         ;; c+p expr->arg
         ;; g_cells[<expr>]
         ((array-ref ,index (p-expr (ident ,array)))
@@ -1452,9 +1465,6 @@
            (append-text info (append 
                               (list (lambda (f g ta t d)
                                       (jump (- (label-offset (.function info) label f) offset))))))))
-
-        ((return (expr))
-         (append-text info (append (wrap-as (i386:ret)))))
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
