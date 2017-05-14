@@ -81,10 +81,10 @@
         (_ #f)))))
 
 (define-public mes
-  (let ((commit "a437c173b9da1949ad966fd50dd4f26e522a910a")
+  (let ((commit "d4420bbcc9f994e2cce430cf156f383dc4092bca")
         (revision "0")
         (triplet "i686-unknown-linux-gnu")
-        (version "0.5"))
+        (version "0.6"))
     (package
       (name "mes")
       (version (string-append version "-" revision "." (string-take commit 7)))
@@ -95,7 +95,7 @@
                       (commit commit)))
                 (file-name (string-append name "-" version))
                 (sha256
-                 (base32 "1ynr0hc0k15307sgzv09k3y5rvy46h0wbh7zcblx1f9v7y8k90zv"))))
+                 (base32 "0qqywk3siyhf08v7xac08lqldklrqfndlp495wgy6ii9fn93197k"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
