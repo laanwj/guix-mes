@@ -97,16 +97,19 @@
                 (sha256
                  (base32 "1ynr0hc0k15307sgzv09k3y5rvy46h0wbh7zcblx1f9v7y8k90zv"))))
       (build-system gnu-build-system)
-      (supported-systems '("x86_64-linux"))
+      (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
        `(("nyacc" ,nyacc)))
       (native-inputs
        `(("guile" ,guile-2.2)
-         ;; Use cross-compiler rather than #:system "i686-linux" to get
-         ;; MesCC 64 bit .go files installed ready for use with Guile.
-         ("i686-linux-binutils" ,(cross-binutils triplet))
-         ("i686-linux-gcc" ,(let ((triplet triplet)) (cross-gcc triplet)))
-         ("perl" ,perl)))                       ;build-aux/gitlog-to-changelog
+         ,@(if (or (equal? (%current-system) "x86_64-linux")
+                   (equal? (%current-target-system) "x86_64-linux"))
+               ;; Use cross-compiler rather than #:system "i686-linux" to get
+               ;; MesCC 64 bit .go files installed ready for use with Guile.
+               `(("i686-linux-binutils" ,(cross-binutils triplet))
+                 ("i686-linux-gcc" ,(cross-gcc triplet)))
+               '())
+         ("perl" ,perl)))               ;build-aux/gitlog-to-changelog
       (arguments
        `(#:phases
          (modify-phases %standard-phases

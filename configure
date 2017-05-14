@@ -139,26 +139,33 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 (define* (check-pkg-config package expected #:optional (deb #f))
   (check-version (format #f "pkg-config --modversion ~a" package) expected deb))
 
-(define (check-compile-header-c++ header)
-  (and (= 0 (system (format #f "echo '#include \"~a\"' | gcc --language=c++ --std=c++11 -E - > /dev/null 2>&1" header)))
+(define (check-compile-header-c header)
+  (and (= 0 (system (format #f "echo '#include ~s' | gcc -E - > /dev/null 2>&1" header)))
        'yes))
 
-(define* (check-header-c++ header deb #:optional (check check-compile-header-c++))
+(define (check-compile-header-c++ header)
+  (and (= 0 (system (format #f "echo '#include ~s' | gcc --language=c++ --std=c++11 -E - > /dev/null 2>&1" header)))
+       'yes))
+
+(define* (check-header-c header deb #:optional (check check-compile-header-c))
   (stderr "checking for ~a..." header)
   (let ((result (check header)))
     (stderr " ~a\n" (if result result "no"))
     (if (not result)
         (set! required (cons deb required)))))
 
+(define* (check-header-c++ header deb #:optional (check check-compile-header-c++))
+  (check-header-c header deb check))
+
 (define guix?
-  (and (zero? (system "guix --version &>/dev/null")) 1))
+  (and (zero? (system "guix --version 1>/dev/null 2>/dev/null")) 1))
 ;;;
 
 (define CC (or (getenv "CC") "gcc"))
 (define BUILD_TRIPLET (gulp-pipe (string-append CC " -dumpmachine 2>/dev/null")))
 (define ARCH (car (string-split BUILD_TRIPLET #\-)))
 (define CC32 (or (getenv "CC32")
-                 (if (equal? ARCH "i686") CC
+                 (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
                      "i686-unknown-linux-gnu-gcc")))
 
 (define (parse-opts args)
@@ -169,6 +176,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
             (prefix (value #t))
             (sysconfdir (value #t))
             (verbose (single-char #\v))
+            (with-courage)
             ;;ignore
             (enable-fast-install)))
          (options (getopt-long args option-spec))
@@ -187,6 +195,7 @@ Usage: ./configure [OPTION]...
   --prefix=DIR         install in PREFIX [~a]
   --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
   -v, --verbose        be verbose
+  --with-courage       assert being courageous to configure for unsupported platform
 " PREFIX)
              (exit (or (and usage? 2) 0)))
         options)))
@@ -197,10 +206,16 @@ Usage: ./configure [OPTION]...
          (host-triplet (option-ref options 'host BUILD_TRIPLET))
          (prefix (option-ref options 'prefix PREFIX))
          (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
-         (verbose? (option-ref options 'verbose #f)))
+         (verbose? (option-ref options 'verbose #f))
+         (with-courage? (option-ref options 'with-courage #f)))
     (set! *verbose?* verbose?)
     (check-version 'bash '(4 0))
+    (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
+          (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
+          (exit 1))
     (check-version CC '(4 8))
+    (check-header-c "stdio.h" "libc-dev")
+    (check-header-c "limits.h" "linux-headers")
     (check-version CC32 '(4 8))
     (check-version 'guile '(2 0))
     (check-version 'make '(4 0))
