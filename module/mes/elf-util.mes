@@ -46,7 +46,7 @@
         ((char? o) (number->string (char->integer o) 16))))
 
 (define (functions->lambdas functions)
-  (append-map cdr functions))
+  (append-map (lambda (f) (or (cdr f) '())) functions))
 
 (define (lambda/label->list f g ta t d)
   (lambda (l/l)
@@ -110,7 +110,7 @@
 (define data-offset
   (let ((cache '()))
     (lambda (name globals)
-      (or (assoc-ref cache name)
+      (or ;;(assoc-ref cache name)
           (let* ((prefix (member name (reverse globals)
                                  (lambda (a b)
                                    (equal? (car b) name)))))

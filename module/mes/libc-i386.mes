@@ -24,105 +24,112 @@
 
 ;;; Code:
 
-(define (i386:exit f g ta t d)
-  '(
-    #x5b                                ; pop    %ebx
-    #x5b                                ; pop    %ebx
-    #xb8 #x01 #x00 #x00 #x00            ; mov    $0x1,%eax
-    #xcd #x80                           ; int    $0x80
-    ))
+(define i386:exit
+  '(lambda (f g ta t d)
+     (list
+      #x5b                                ; pop    %ebx
+      #x5b                                ; pop    %ebx
+      #xb8 #x01 #x00 #x00 #x00            ; mov    $0x1,%eax
+      #xcd #x80                           ; int    $0x80
+      )))
 
-(define (i386:read f g ta t d)
-  '(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
+(define i386:read
+  '(lambda (f g ta t d)
+     (list
+      #x55                                ; push   %ebp
+      #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
-    #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
-    #x8b #x55 #x10                      ; mov    0x10(%ebp),%edx
+      #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+      #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
+      #x8b #x55 #x10                      ; mov    0x10(%ebp),%edx
 
-    #xb8 #x03 #x00 #x00 #x00            ; mov    $0x3,%eax
-    #xcd #x80                           ; int    $0x80
+      #xb8 #x03 #x00 #x00 #x00            ; mov    $0x3,%eax
+      #xcd #x80                           ; int    $0x80
 
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
+      #xc9                                ; leave
+      #xc3                                ; ret
+      )))
 
-(define (i386:write f g ta t d)
-  '(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
+(define i386:write
+  '(lambda (f g ta t d)
+   (list
+     #x55                                ; push   %ebp
+     #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
-    #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
-    #x8b #x55 #x10                      ; mov    0x10(%ebp),%edx
+     #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+     #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
+     #x8b #x55 #x10                      ; mov    0x10(%ebp),%edx
 
-    #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
-    #xcd #x80                           ; int    $0x80
+     #xb8 #x04 #x00 #x00 #x00            ; mov    $0x4,%eax
+     #xcd #x80                           ; int    $0x80
 
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
+     #xc9                                ; leave
+     #xc3                                ; ret
+     )))
 
-(define (i386:open f g ta t d)
-  '(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
+(define i386:open
+  '(lambda (f g ta t d)
+     (list
+      #x55                                ; push   %ebp
+      #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
-    #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
-    #x8b #x55 #x10                      ; mov    0x10(%ebp),%edx
+      #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+      #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
+      #x8b #x55 #x10                      ; mov    0x10(%ebp),%edx
 
-    #xb8 #x05 #x00 #x00 #x00            ; mov    $0x5,%eax
-    #xcd #x80                           ; int    $0x80
+      #xb8 #x05 #x00 #x00 #x00            ; mov    $0x5,%eax
+      #xcd #x80                           ; int    $0x80
 
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
+      #xc9                                ; leave
+      #xc3                                ; ret
+      )))
 
-(define (i386:access f g ta t d)
-  '(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
+(define i386:access
+  '(lambda (f g ta t d)
+    (list
+      #x55                                ; push   %ebp
+      #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
-    #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
+      #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+      #x8b #x4d #x0c                      ; mov    0xc(%ebp),%ecx
 
-    #xb8 #x21 #x00 #x00 #x00            ; mov    $0x21,%eax
-    #xcd #x80                           ; int    $0x80
+      #xb8 #x21 #x00 #x00 #x00            ; mov    $0x21,%eax
+      #xcd #x80                           ; int    $0x80
 
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
+      #xc9                                ; leave
+      #xc3                                ; ret
+      )))
 
-(define (i386:brk f g ta t d)
-  '(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
+(define i386:brk
+  '(lambda (f g ta t d)
+     (list
+      #x55                                ; push   %ebp
+      #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
-    #xb8 #x2d #x00 #x00 #x00            ; mov    $0x2d,%eax
-    #xcd #x80                           ; int    $0x80
+      #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+      #xb8 #x2d #x00 #x00 #x00            ; mov    $0x2d,%eax
+      #xcd #x80                           ; int    $0x80
 
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
+      #xc9                                ; leave
+      #xc3                                ; ret
+      )))
 
-(define (i386:fsync f g ta t d)
-  '(
-    #x55                                ; push   %ebp
-    #x89 #xe5                           ; mov    %esp,%ebp
+(define i386:fsync
+  '(lambda (f g ta t d)
+     (list
+      #x55                                ; push   %ebp
+      #x89 #xe5                           ; mov    %esp,%ebp
 
-    #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
-    #xb8 #x76 #x00 #x00 #x00            ; mov    $0x76,%eax
-    #xcd #x80                           ; int    $0x80
+      #x8b #x5d #x08                      ; mov    0x8(%ebp),%ebx
+      #xb8 #x76 #x00 #x00 #x00            ; mov    $0x76,%eax
+      #xcd #x80                           ; int    $0x80
 
-    #xc9                                ; leave
-    #xc3                                ; ret
-    ))
+      #xc9                                ; leave
+      #xc3                                ; ret
+      )))
 
 (define (i386:_start)
- (string-append ".byte"
+  (string-append ".byte"
                 " 0x89 0xe8"      ; mov    %ebp,%eax
                 " 0x83 0xc0 0x08" ; add    $0x8,%eax
                 " 0x50"           ; push   %eax

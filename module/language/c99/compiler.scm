@@ -30,13 +30,15 @@
   #:use-module (mes elf)
   #:use-module (mes elf-util)
   #:use-module (mes as-i386)
-  #:use-module (mes libc-i386)
-  #:use-module (mes libc)
   #:use-module (nyacc lang c99 parser)
   #:export (c99-input->ast
             c99-input->elf
             c99-input->info
-            info->elf))
+            c99-input->object
+            infos->object
+            info->elf
+            infos->elf
+            object->elf))
 
 (cond-expand
  (guile-2)

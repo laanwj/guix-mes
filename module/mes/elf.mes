@@ -201,7 +201,7 @@
     (define (symbol->table-entry o)
       (let* ((name (car o))
              (offset (function-offset name functions))
-             (len (length (text->list (cddr o))))
+             (len (if (not (cdr o)) 0 (length (text->list (cddr o)))))
              (str (append-map (lambda (x) (cons 0 (string->list x))) (cdr (member name (reverse (map car functions))))))
              (i (1+ (length str))))
         (symbol-table-entry i (+ vaddress text-offset offset) len stt-func 0 1)))

@@ -5,6 +5,6 @@ $(OUT)/$(TARGET): $(INSTALL_GO_FILES)
 $(OUT)/$(TARGET): $(C_FILES)
 	@echo " mescc.scm	$(notdir $<) -> $(notdir $@)"
 	@rm -f $@
-	$(QUIET) INCLUDES=$(C_INCLUDE_PATH) guile/mescc.scm $< > $@ || rm -f $@
+	$(QUIET) guile/mescc.scm $(C_INCLUDE_PATH:%=-I %) -o $@ $< || rm -f $@
 	@[ -f $@ ] && chmod +x $@ ||:
 include make/reset.make
