@@ -66,11 +66,11 @@
 
 (define (string-index s pred . rest)
   (let* ((start (and (pair? rest) (car rest)))
-         (end (and start (pair? (cdr rest)) (cadr rest))))
-    (if (not (char? pred)) (error "string-index: not supported: pred=" pred))
+         (end (and start (pair? (cdr rest)) (cadr rest)))
+         (pred (if (char? pred) (lambda (c) (eq? c pred)) pred)))
     (if start (error "string-index: not supported: start=" start))
     (if end (error "string-index: not supported: end=" end))
     (let loop ((lst (string->list s)) (i 0))
       (if (null? lst) #f
-          (if (eq? (car lst) pred) i
+          (if (pred (car lst)) i
               (loop (cdr lst) (1+ i)))))))
