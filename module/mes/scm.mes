@@ -223,9 +223,18 @@
                       (list-head lst (- end start))))))
 
 (define (string-prefix? prefix string)
+  (let ((length (string-length string))
+        (prefix-length (string-length prefix)))
   (and
-   (>= (string-length string) (string-length prefix))
-   (equal? (substring string 0 (string-length prefix)) prefix)))
+   (>= length prefix-length)
+   (equal? (substring string 0 prefix-length) prefix))))
+
+(define (string-suffix? suffix string)
+  (let ((length (string-length string))
+        (suffix-length (string-length suffix)))
+    (and
+     (>= length suffix-length)
+     (equal? (substring string (- length suffix-length)) suffix))))
 
 (define (string->number s . rest)
   (let* ((radix (if (null? rest) 10 (car rest)))
