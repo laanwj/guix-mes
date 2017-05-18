@@ -74,3 +74,14 @@
       (if (null? lst) #f
           (if (pred (car lst)) i
               (loop (cdr lst) (1+ i)))))))
+
+(define (string-rindex s pred . rest)
+  (let* ((start (and (pair? rest) (car rest)))
+         (end (and start (pair? (cdr rest)) (cadr rest)))
+         (pred (if (char? pred) (lambda (c) (eq? c pred)) pred)))
+    (if start (error "string-rindex: not supported: start=" start))
+    (if end (error "string-rindex: not supported: end=" end))
+    (let loop ((lst (reverse (string->list s))) (i (1- (string-length s))))
+      (if (null? lst) #f
+          (if (pred (car lst)) i
+              (loop (cdr lst) (1- i)))))))
