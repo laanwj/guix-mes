@@ -17,6 +17,8 @@ cons
 (display #f) (newline)
 'foo
 (display 'foo) (newline)
+(display #o77) (newline)
+(display #o-6) (newline)
 (display #x16) (newline)
 (display #x-16) (newline)
 (display #\A) (newline)

@@ -252,6 +252,15 @@
            (read-hex c p 1 0)))
      (read-byte) (peek-byte)))
 
+  (define (read-octal)
+    (define (read-octal c p s n)
+      (if (not (or (and (> p 47) (< p 56)))) (* s (+ (ash n 3) (- c 48)))
+          (read-octal (read-byte) (peek-byte) s (+ (ash n 3) (- c 48)))))
+    ((lambda (c p)
+       (if (eq? c 45) (read-octal (read-byte) (peek-byte) -1 0)
+           (read-octal c p 1 0)))
+     (read-byte) (peek-byte)))
+
   (define (reader:read-string)
     (define (append-char s c)
       (append2 s (cons (integer->char c) (list))))
@@ -293,6 +302,7 @@
                          (read-word (read-byte) w a)))
      ((eq? c 40) (list->vector (read-list a)))
      ((eq? c 92) (read-character))
+     ((eq? c 111) (read-octal))
      ((eq? c 120) (read-hex))
      ((eq? c 44) (cond ((eq? (peek-byte) 64)
                         (read-byte)
