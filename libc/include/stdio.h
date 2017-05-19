@@ -22,6 +22,7 @@
 
 char **g_environment;
 int g_stdin;
+int g_stdout;
 
 #define EOF -1
 #define NULL 0

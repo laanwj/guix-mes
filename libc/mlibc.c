@@ -84,19 +84,29 @@ write (int fd, char const* s, int n)
 }
 
 int
-open (char const *s, int mode)
+open (char const *s, int flags, ...)
 {
+  int mode;
+  asm (
+       "mov %%ebp,%%eax\n\t"
+       "add $0x10,%%eax\n\t"
+       "mov (%%eax),%%eax\n\t"
+       "mov %%eax,%0\n\t"
+       : "=mode" (mode)
+       : //no inputs ""
+       );
   int r;
   //syscall (SYS_open, mode));
   asm (
        "mov %1,%%ebx\n\t"
        "mov %2,%%ecx\n\t"
+       "mov %3,%%edx\n\t"
        "mov $0x5,%%eax\n\t"
        "int $0x80\n\t"
        "mov %%eax,%0\n\t"
        : "=r" (r)
-       : "" (s), "" (mode)
-       : "eax", "ebx", "ecx"
+       : "" (s), "" (flags), "" (mode)
+       : "eax", "ebx", "ecx", "edx"
        );
   return r;
 }

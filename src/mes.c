@@ -1338,6 +1338,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);puts ("\n");return 0;};
   g_stdin = STDIN;
+  g_stdout = STDOUT;
   r0 = mes_environment ();
 
 #if __MESC__

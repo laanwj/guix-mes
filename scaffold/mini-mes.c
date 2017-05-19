@@ -1204,6 +1204,7 @@ main (int argc, char *argv[])
   if (p = getenv ("MES_ARENA")) ARENA_SIZE = atoi (p);
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);puts ("\n");return 0;};
+  g_stdout = STDOUT;
   r0 = mes_environment ();
 
   SCM program = bload_env (r0);

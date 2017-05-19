@@ -58,8 +58,9 @@ write_byte (SCM x) ///((arity . n))
 {
   SCM c = car (x);
   SCM p = cdr (x);
-  int fd = 1;
-  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER) fd = VALUE (car (p));
+  int fd = g_stdout;
+  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER && VALUE (CAR (p)) != 1)
+    fd = VALUE (CAR (p));
   char cc = VALUE (c);
   write (fd, (char*)&cc, 1);
 #if !__MESC__
@@ -95,12 +96,6 @@ getenv_ (SCM s) ///((name . "getenv"))
 }
 
 SCM
-open_input_file (SCM file_name)
-{
-  return MAKE_NUMBER (open (string_to_cstring (file_name), O_RDONLY));
-}
-
-SCM
 access_p (SCM file_name, SCM mode)
 {
   return access (string_to_cstring (file_name), VALUE (mode)) == 0 ? cell_t : cell_f;
@@ -113,10 +108,39 @@ current_input_port ()
 }
 
 SCM
+open_input_file (SCM file_name)
+{
+  return MAKE_NUMBER (open (string_to_cstring (file_name), O_RDONLY));
+}
+
+SCM
 set_current_input_port (SCM port)
 {
   g_stdin = VALUE (port) ? VALUE (port) : STDIN;
   return current_input_port ();
+}
+
+SCM
+current_output_port ()
+{
+  return MAKE_NUMBER (g_stdout);
+}
+
+SCM
+open_output_file (SCM x) ///((arity . n))
+{
+  SCM file_name = car (x);
+  x = cdr (x);
+  int mode = S_IRUSR|S_IWUSR;
+  if (TYPE (x) == TPAIR && TYPE (car (x)) == TNUMBER) mode = VALUE (car (x));
+  return MAKE_NUMBER (open (string_to_cstring (file_name), O_WRONLY|O_CREAT|O_TRUNC,mode));
+}
+
+SCM
+set_current_output_port (SCM port)
+{
+  g_stdout = VALUE (port) ? VALUE (port) : STDOUT;
+  return current_output_port ();
 }
 
 SCM

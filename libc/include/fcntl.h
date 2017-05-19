@@ -28,7 +28,16 @@
 
 #else // ! (__GNUC__ && POSIX)
 #define O_RDONLY 0
-int open (char const *s, int mode);
+#define O_WRONLY 1
+#define O_RDWR 2
+#define O_CREAT 64
+#define O_TRUNC 512
+
+#define S_IRWXU 00700
+#define S_IXUSR 00100
+#define S_IWUSR 00200
+#define S_IRUSR 00400
+int open (char const *s, int flags, ...);
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __FCNTL_H

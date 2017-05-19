@@ -67,7 +67,6 @@
                 "STDIN=0"
                 "STDOUT=1"
                 "STDERR=2"
-                "O_RDONLY=0"
 
                 "INT_MIN=-2147483648"
                 "INT_MAX=2147483647"
