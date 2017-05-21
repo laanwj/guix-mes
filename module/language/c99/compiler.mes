@@ -35,7 +35,6 @@
   (mes-use-module (mes elf-util))
   (mes-use-module (mes elf))
   (mes-use-module (mes as-i386))
-  (mes-use-module (mes libc))
   (mes-use-module (mes optargs))))
 
 (define (logf port string . rest)
@@ -1149,7 +1148,7 @@
   (or (assoc-ref (.locals info) o)
       (assoc-ref (.globals info) o)
       (begin
-        (stderr "NO IDENT: ~a\n" (assoc-ref (.functions info) o))
+        (stderr "NO IDENT: ~a\n" o)
         (assoc-ref (.functions info) o))))
 
 (define (ident->type info o)
@@ -1261,6 +1260,12 @@
 
         ((compd-stmt (block-item-list . ,statements)) ((ast-list->info info) statements))
         
+        ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
+         (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list))))
+                                   (append-text info (wrap-as (asm->hex arg0))))
+             (let ((info ((expr->accu info) `(fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))))
+               (append-text info (wrap-as (i386:accu-zero?))))))
+
         ((if ,test ,body)
          (let* ((text-length (length text))
 
@@ -2161,18 +2166,11 @@
 
 (define* (c99-input->info #:key (defines '()) (includes '()))
   (lambda ()
-    (let* ((info (make <info>
-                   #:functions i386:libc
-                   #:types i386:type-alist))
-           (foo (stderr "compiling: mlibc\n"))
-           (info (let loop ((info info) (libc libc))
-                   (if (null? libc) info
-                       (loop ((ast->info info) ((car libc))) (cdr libc)))))
+    (let* ((info (make <info> #:types i386:type-alist))
            (foo (stderr "parsing: input\n"))
            (ast (c99-input->ast #:defines defines #:includes includes))
            (foo (stderr "compiling: input\n"))
            (info ((ast->info info) ast))
-           (info ((ast->info info) (_start)))
            (info (clone info #:text '() #:locals '())))
       info)))
 

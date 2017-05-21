@@ -18,7 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mlibc.h>
+#include <stdio.h>
 
 int
 main (int argc, char *argv[])

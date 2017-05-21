@@ -1,4 +1,4 @@
-C_FLAGS:=-nostdinc --include mstart.c -fno-builtin
+C_FLAGS:=-nostdinc -fno-builtin
 LD_FLAGS:=-nostdlib
 CROSS:=$(CC32:%gcc=%)
 

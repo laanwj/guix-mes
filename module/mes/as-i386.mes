@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;;; libc-i386.mes defines i386 assembly
+;;; as-i386.mes defines i386 assembly
 
 ;;; Code:
 

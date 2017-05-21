@@ -2,7 +2,9 @@ ifeq ($(TEST),)
 TEST:=$(TARGET)-check
 $(TEST): EXT:=$(EXT)
 $(TEST): EXPECT:=$(EXPECT)
+$(TEST): SHELL:=$(SHELL)
 $(TEST): $(OUT)/$(TARGET)
+	@export SHELL=$(SHELL)
 ifeq ($(EXPECT),)
 	$< - arg1 arg2 arg3 arg4 > $(<:.$(EXT)=.stdout)
 else

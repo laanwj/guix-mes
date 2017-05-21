@@ -59,7 +59,7 @@ include make/mescc-guile.make
 
 MAINTAINER-CLEAN+=mes.mes
 ifeq ($(wildcard mes.mes),)
-safe-MES_MAX_ARENA=$(MES_MAX_ARENA)
+safe-MES_MAX_ARENA:=$(MES_MAX_ARENA)
 MES_MAX_ARENA:=80000000
 TARGET:=mes.mes
 $(OUT)/mes.mes: module/mes/read-0-32.mo
