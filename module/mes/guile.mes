@@ -138,17 +138,7 @@
       string-port)))
 
 (define (read-string)
-  (define (append-char s c)
-    (append2 s (cons c (list))))
   (define (read-string c p s)
-    (cond
-     ((and (eq? c #\\) (or (eq? p #\\) (eq? p #\")))
-      ((lambda (c)
-         (read-string (read-char) (peek-char) (append-char s c)))
-       (read-char)))
-     ((and (eq? c #\\) (eq? p #\n))
-      (read-char)
-      (read-string (read-char) (peek-char) (append-char s 10)))
-     ((eq? c #\*eof*) s)
-     (#t (read-string (read-char) (peek-char) (append-char s c)))))
-  (list->string (read-string (read-char) (peek-char) (list))))
+    (if (eq? c #\*eof*) s
+        (read-string (read-char) (peek-char) (cons c s))))
+  (list->string (reverse (read-string (read-char) (peek-char) (list)))))
