@@ -355,3 +355,7 @@
       (let ((y (car rest)))
         (let ((z (if (< x y) x y)))
           (apply min (cons z (cdr rest)))))))
+
+(define (negate proc)
+  (lambda args
+    (not (apply proc args))))
