@@ -2200,6 +2200,9 @@
          #:functions (map function:object->text (.functions o))
          #:init (map init:object->text (.init o))))
 
+(define* (c99-ast->info ast)
+  ((ast->info (make <info> #:types i386:type-alist)) ast))
+
 (define* (c99-input->elf #:key (defines '()) (includes '()))
   ((compose info->elf info:object->text (c99-input->info #:defines defines #:includes includes))))
 

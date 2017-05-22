@@ -31,7 +31,8 @@
   #:use-module (mes elf-util)
   #:use-module (mes as-i386)
   #:use-module (nyacc lang c99 parser)
-  #:export (c99-input->ast
+  #:export (c99-ast->info
+            c99-input->ast
             c99-input->elf
             c99-input->info
             c99-input->object
