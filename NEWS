@@ -10,6 +10,34 @@ Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.7 since 0.6
+** Core
+*** The minimal C reader is now always included; dependencies
+on i686-unknown-linux-gnu-gcc and binary read-0-32.mo have been
+dropped, these are now optional.
+** Language
+*** Mes reader now supports octal numbers #oXXX.
+*** 10 new functions
+current-output-port, getopt-long, negate, open-output-file,
+option-ref, set-current-output-port, string-rindex, string-suffix?,
+with-ouwith-output-to-file, with-output-to-port.
+** Mescc
+*** Mescc can now be installed and used alongside a gcc installation.
+*** Mescc can now handle const anywhere.
+*** Mescc now supports array fields in structs.
+*** Mescc now supports forward declarations and typedef.
+*** Mescc can now handle comments anywhere.
+*** Mescc now supports addition and substraction for enum field values.
+*** Mescc now supports anonymous enums.
+*** Mescc now supports all C99 header files needed to compile tcc.c.
+*** build: C sources are now preprocessed separately, then compiled and linked.
+*** build: mlibc and C sources are now compiled separately and then linked.
+*** mlibc has been moved from Scheme snippets into C.
+*** Mescc now supports -c, -D, -E, -I and -o options.
+**** open now supports optional third mode parameter.
+** Noteworthy bug fixes
+*** string-index now supports function predicate.
+*** number->string for radix > 10 now produces `a' instead of `:'.
 * Changes in 0.6 since 0.5
 ** Core
 *** configure, build now supports x86 and development for arm with-courage.

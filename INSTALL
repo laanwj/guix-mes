@@ -38,11 +38,17 @@ Let's just say for now that it gets awkward without a shell.
 * Build it
 
    ./configure
-   make all
+   make
+
+** For a quick build, skip running mescc on Mes
+   make MES_SKIP_MES=1
 
 * Check it
 
    make check
+
+** For a quick check, skip running mescc on Mes
+   make MES_SKIP_MES=1
 
 * Install it
 

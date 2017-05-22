@@ -39,14 +39,22 @@ generates several recipies of sh build scripts in out/.
 
 * ROADMAP
 ** TODO 
+*** release 0.8
+  - move from lambda-based .o format to stage0's hex2.
+  - use stage0's linker to produce ELF.
+  - simplify [at least bootstrap] build process.
 *** release 0.x, unsorted
-  - discuss full source bootstrap strategy on guile-user with Jeremiah
-    Orians (stage0+) Luca Saiu (GNU Epsilon).
-  - fix bugs
-  - produce intermediate annotated assembly-like mes.S
-  - and/or: connect to OriansJ's stage0...LISP bootstrapping tools
+  - seamless connection to stage0.
+  - mescc: compile tcc.c.
+  - mescc: support unsigned comparison, arithmetic.
+  - mescc: support bitfields.
+  - mescc: support unions.
+  - mescc: support anonymous unions.
+  - mescc: refactor compiler.mes, esp. (decl ..) bits.
+  - rewrite src/mes.c in stage0's stage2 LISP.
+  - and/or: rewrite src/mes.c in [annotated] assembly.
+  - and/or: rewrite src/mes.c in annotated hex2.
   - and/or: connect to GNU Epsilon's VM
-  - and/or: translate Mes.c interpreter into VM
   - and/or: compile Scheme to C, rewrite Mes.c into Mes.scm.
   - real module support, bonus for supporting Guile's define-module/define-public syntax
   - get full source syntax-case up (Andre van Tonder?) OR drop
@@ -60,6 +68,9 @@ generates several recipies of sh build scripts in out/.
   - work to replace GuixSD's bootstrap binaries for x86
   - more architectures?
 ** DONE
+** 0.7: Mescc supports -E, -c, -o options, include more complete set of header files,
+enough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
+** 0.6: Work with unmodified, unbundled Nyacc; compile 33/55 tinycc's tests/test2 suite.
 ** 0.5: Mutual self-hosting Scheme interpreter and C compiler: mes.c and mescc,
         Support call-with-current-continuation, refactor catch/throw
 ** 0.4: Support Nyacc, Gcc-compiled Mes compiles minimal main.c using nyacc
@@ -193,3 +204,17 @@ https://web.archive.org/web/20160604041431/http://homepage.ntlworld.com/edmund.g
 https://github.com/rswier/c4/blob/master/c4.c
 ** Compilers for free
 http://codon.com/compilers-for-free
+** Small lisps
+*** [[https://www.mirrorservice.org/sites/www.bitsavers.org/bits/TI/Explorer/zeta-c/][ZETA-C]]
+** Small C compilers
+*** tinycc
+*** [[https://github.com/rui314/8cc][8cc]] -- a C11 compiler, but simple
+8cc is a compiler for the C programming language. It's intended to
+support all C11 language features while keeping the code as small and
+simple as possible.
+*** pcc
+*** early GCC?
+*** [[http://tack.sourceforge.net/][ack]]
+<rain1> it may be possible to compile like this:  mes |> ack |> pcc |> tcc |>
+        gcc 4.7.4 |> gcc later version... up to modern
+** rain1's Bootstrapping Wiki: https://bootstrapping.miraheze.org/wiki/Main_Page
