@@ -102,8 +102,8 @@
        `(("nyacc" ,nyacc)))
       (native-inputs
        `(("guile" ,guile-2.2)
-         ,@(if (or (equal? (%current-system) "x86_64-linux")
-                   (equal? (%current-target-system) "x86_64-linux"))
+         ,@(if (string-prefix? "x86_64-linux" (or (%current-target-system)
+                                                  (%current-system)))
                ;; Use cross-compiler rather than #:system "i686-linux" to get
                ;; MesCC 64 bit .go files installed ready for use with Guile.
                `(("i686-linux-binutils" ,(cross-binutils triplet))
