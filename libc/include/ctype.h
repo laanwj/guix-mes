@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __CTYPE_H
-#define __CTYPE_H 1
+#ifndef __MES_CTYPE_H
+#define __MES_CTYPE_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -30,4 +30,4 @@
 int isdigit (int);
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __CTYPE_H
+#endif // __MES_CTYPE_H

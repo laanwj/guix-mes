@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __STDIO_H
-#define __STDIO_H 1
+#ifndef __MES_STDIO_H
+#define __MES_STDIO_H 1
 
 char **g_environment;
 int g_stdin;
@@ -57,12 +57,34 @@ int fdputc (int c, int fd);
 #define ungetc fdungetc
 int fdungetc (int c, int fd);
 
-#else // !POSIX
+#else // ! (__GNUC__ && POSIX)
 
+// Hmm
+#define stdin 0
+#define stdout 1
+#define stderr 2
+
+// TODO: fseek etc
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+
+#if __GNUC__
 #undef fputs
 #undef fdputs
 int fdputs (char const* s, int fd);
+#endif // __MES_GNUC__
 
-#endif // __GNUC__ && POSIX
+int eputs (char const* s);
+int fputs (char const* s, int fd);
+int puts (char const* s);
+int putchar (int c);
+int fputc (int c, int fd);
+int getchar ();
+int ungetc (int c, int fd);
 
-#endif // __STDIO_H
+typedef int FILE;
+
+#endif // ! (__GNUC__ && POSIX)
+
+#endif // __MES_STDIO_H

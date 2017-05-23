@@ -54,35 +54,36 @@
 (define mes? (pair? (current-module)))
 
 (define* (c99-input->ast #:key (defines '()) (includes '()))
-  (parse-c99
-   #:inc-dirs (append includes (cons* "." "libc/include" "libc" "src" "out" "out/src" (string-split (getenv "C_INCLUDE_PATH") #\:)))
-   #:cpp-defs `(
-                "POSIX=0"
-                "_POSIX_SOURCE=0"
-                "__GNUC__=0"
-                "__MESC__=1"
-                "__NYACC__=1" ;; REMOVEME
-                "EOF=-1"
-                "STDIN=0"
-                "STDOUT=1"
-                "STDERR=2"
-
-                "INT_MIN=-2147483648"
-                "INT_MAX=2147483647"
-
-                "MES_FULL=0"
-                "FIXED_PRIMITIVES=1"
-
-                ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
-
-                ,(string-append "DATADIR=\"" %datadir "\"")
-                ,(string-append "DOCDIR=\"" %docdir "\"")
-                ,(string-append "PREFIX=\"" %prefix "\"")
-                ,(string-append "MODULEDIR=\"" %moduledir "\"")
-                ,(string-append "VERSION=\"" %version "\"")
-                ,@defines
-                )
-   #:mode 'code))
+  (let ((include (if (equal? %prefix "") "libc/include" (string-append %prefix "/include"))))
+    (parse-c99
+     #:inc-dirs (append includes (cons* "." "libc" "src" "out" "out/src" include (string-split (getenv "C_INCLUDE_PATH") #\:)))
+     #:cpp-defs `(
+                  "POSIX=0"
+                  "_POSIX_SOURCE=0"
+                  "__GNUC__=0"
+                  "__MESC__=1"
+                  "__NYACC__=1" ;; REMOVEME
+                  "EOF=-1"
+                  "STDIN=0"
+                  "STDOUT=1"
+                  "STDERR=2"
+                  
+                  "INT_MIN=-2147483648"
+                  "INT_MAX=2147483647"
+                  
+                  "MES_FULL=0"
+                  "FIXED_PRIMITIVES=1"
+                  
+                  ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
+                  
+                  ,(string-append "DATADIR=\"" %datadir "\"")
+                  ,(string-append "DOCDIR=\"" %docdir "\"")
+                  ,(string-append "PREFIX=\"" %prefix "\"")
+                  ,(string-append "MODULEDIR=\"" %moduledir "\"")
+                  ,(string-append "VERSION=\"" %version "\"")
+                  ,@defines
+                  )
+     #:mode 'code)))
 
 (define (ast:function? o)
   (and (pair? o) (eq? (car o) 'fctn-defn)))

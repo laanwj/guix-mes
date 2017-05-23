@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __STRING_H
-#define __STRING_H 1
+#ifndef __MES_STRING_H
+#define __MES_STRING_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -28,8 +28,8 @@
 
 #else // ! (__GNUC__ && POSIX)
 
-#ifndef __SIZE_T
-#define __SIZE_T
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
 typedef long size_t;
 #endif
 
@@ -39,4 +39,4 @@ int strncmp (char const*, char const*, size_t);
 char *strcpy (char *dest, char const *src);
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __STRING_H
+#endif // __MES_STRING_H

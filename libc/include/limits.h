@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __LIMITS_H
-#define __LIMITS_H 1
+#ifndef __MES_LIMITS_H
+#define __MES_LIMITS_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -31,4 +31,4 @@
 #define INT_MAX 2147483647
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __LIMITS_H
+#endif // __MES_LIMITS_H

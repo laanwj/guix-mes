@@ -25,6 +25,8 @@
 int g_depth;
 SCM fdisplay_ (SCM, int);
 
+SCM display_helper (SCM x, int cont, char* sep, int fd);
+
 SCM
 display_helper (SCM x, int cont, char* sep, int fd)
 {

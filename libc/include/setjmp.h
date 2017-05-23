@@ -17,25 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_UNISTD_H
-#define __MES_UNISTD_H 1
+#ifndef __MES_SETJMP_H
+#define __MES_SETJMP_H 1
 
 #if __GNUC__ && POSIX
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#include_next <unistd.h>
-
+#include_next <setjmp.h>
 #else // ! (__GNUC__ && POSIX)
 
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-typedef long size_t;
-#endif
+typedef int jmp_buf;
 
-int access (char const *s, int mode);
-int read (int fd, void* buf, size_t n);
-int write (int fd, char const* s, int n);
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __MES_UNISTD_H
+#endif // __MES_SETJMP_H
+

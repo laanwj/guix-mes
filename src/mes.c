@@ -1239,6 +1239,8 @@ mes_builtins (SCM a) ///((internal))
   return a;
 }
 
+SCM read_input_file_env (SCM);
+
 SCM
 load_env (SCM a) ///((internal))
 {

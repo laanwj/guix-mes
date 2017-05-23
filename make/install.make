@@ -99,6 +99,10 @@ install: $(CLEAN) ChangeLog
 	mkdir -p $(DESTDIR)$(GODIR)
 	tar -cf- -C module $(INSTALL_GO_FILES:module/%=%)\
 		| tar -C $(DESTDIR)$(GODIR) -xf-
+	mkdir -p $(DESTDIR)$(PREFIX)/lib
+	$(GIT_ARCHIVE_HEAD) libc/include \
+		| tar -C $(DESTDIR)$(PREFIX) --strip=1 -xf-
+	cp out/libc/libc-mes.guile-o $(DESTDIR)$(PREFIX)/lib/libc-mes.o
 
 release: tree-clean-p check dist
 	git tag v$(VERSION)

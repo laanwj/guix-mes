@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __ASSERT_H
-#define __ASSERT_H 1
+#ifndef __MES_ASSERT_H
+#define __MES_ASSERT_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -27,6 +27,7 @@
 #include_next <assert.h>
 #else // ! (__GNUC__ && POSIX)
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))
+void assert_fail (char* s);
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __ASSERT_H
+#endif // __MES_ASSERT_H

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __FCNTL_H
-#define __FCNTL_H 1
+#ifndef __MES_FCNTL_H
+#define __MES_FCNTL_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -40,4 +40,4 @@
 int open (char const *s, int flags, ...);
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __FCNTL_H
+#endif // __MES_FCNTL_H

@@ -292,7 +292,7 @@ strncmp (char const* a, char const* b, int length)
 }
 
 char **g_environment;
-char const*
+char *
 getenv (char const* s)
 {
   char **p = g_environment;

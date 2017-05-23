@@ -18,8 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MLIBC_H
-#define __MLIBC_H
+#ifndef __MES_MLIBC_H
+#define __MES_MLIBC_H
 
 char const* itoa (int);
 

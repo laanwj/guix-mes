@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __ERRNO_H
-#define __ERRNO_H 1
+#ifndef __MES_ERRNO_H
+#define __MES_ERRNO_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -27,4 +27,4 @@
 #include_next <errno.h>
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __ERRNO_H
+#endif // __MES_ERRNO_H

@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __STDLIB_H
-#define __STDLIB_H 1
+#ifndef __MES_STDLIB_H
+#define __MES_STDLIB_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -27,14 +27,18 @@
 #include_next <stdlib.h>
 #else  // !(__GNUC__ && POSIX)
 
-#ifndef __SIZE_T
-#define __SIZE_T
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
 typedef long size_t;
 #endif
 
+char* getenv (char const* s);
+int atoi (char const *s);
 void *malloc (size_t);
+void *realloc (void *p, size_t size);
 void exit (int);
+
 #endif // !(__GNUC__ && POSIX)
 
-#endif // __STDLIB_H
+#endif // __MES_STDLIB_H
 
