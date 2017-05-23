@@ -252,7 +252,7 @@
          (sign (if (< n 0) '(#\-) '())))
     (let loop ((n (abs n)) (lst '()))
       (let* ((i (remainder n radix))
-             (lst (cons (integer->char (+ i (if (<= i 10) (char->integer #\0)
+             (lst (cons (integer->char (+ i (if (< i 10) (char->integer #\0)
                                                 (- (char->integer #\a) 10)))) lst))
              (n (quotient n radix)))
         (if (= 0 n) (list->string (append sign lst))
