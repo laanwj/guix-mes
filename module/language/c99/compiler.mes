@@ -1776,22 +1776,18 @@
                                                    (int->bv32 (+ d (data-offset ,value g)))
                                                    (list-tail data (+ here 4))))))))))))
 
-        ;; enum 
+        ;; enum foo { };
         ((decl (decl-spec-list (type-spec (enum-def (ident ,name) (enum-def-list . ,fields)))))
          (let ((type (enum->type name fields))
-               (constants (let loop ((fields fields) (i 0) (constants constants))
-                            (if (null? fields) constants
-                                (let* ((field (car fields))
-                                       (name (pmatch field
-                                               ((enum-defn (ident ,name) . _) name)))
-                                       (i (pmatch field
-                                           ((enum-defn ,name (p-expr (fixed ,value))) (cstring->number value))
-                                           ((enum-defn ,name) i))))
-                                  (loop (cdr fields)
-                                        (1+ i)
-                                        (append constants (list (ident->constant name i)))))))))
+               (constants (enum-def-list->constants constants fields)))
            (clone info
                   #:types (append (.types info) (list type))
+                  #:constants (append constants (.constants info)))))
+
+        ;; enum {};
+        ((decl (decl-spec-list (type-spec (enum-def (enum-def-list . ,fields)))))
+         (let ((constants (enum-def-list->constants constants fields)))
+           (clone info
                   #:constants (append constants (.constants info)))))
 
         ;; struct
@@ -2034,6 +2030,19 @@
         ;; (array-ref
         (_ (let ((info ((expr->accu info) o)))
              (append-text info (wrap-as (i386:accu-zero?)))))))))
+
+(define (enum-def-list->constants constants fields)
+  (let loop ((fields fields) (i 0) (constants constants))
+    (if (null? fields) constants
+        (let* ((field (car fields))
+               (name (pmatch field
+                       ((enum-defn (ident ,name) . _) name)))
+               (i (pmatch field
+                    ((enum-defn ,name (p-expr (fixed ,value))) (cstring->number value))
+                    ((enum-defn ,name) i))))
+          (loop (cdr fields)
+                (1+ i)
+                (append constants (list (ident->constant name i))))))))
 
 (define (initzer->non-const info)
   (lambda (o)
