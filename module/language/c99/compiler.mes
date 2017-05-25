@@ -53,7 +53,7 @@
 
 (define mes? (pair? (current-module)))
 
-(define* (c99-input->ast #:key (defines '()) (includes '()))
+(define* (c99-input->full-ast #:key (defines '()) (includes '()))
   (let ((include (if (equal? %prefix "") "libc/include" (string-append %prefix "/include"))))
     (parse-c99
      #:inc-dirs (append includes (cons* "." "libc" "src" "out" "out/src" include (string-split (getenv "C_INCLUDE_PATH") #\:)))
@@ -84,6 +84,19 @@
                   ,@defines
                   )
      #:mode 'code)))
+
+(define (ast-strip-comment o)
+  (pmatch o
+    ((comment . ,comment) #f)
+    (((comment . ,comment) . ,t) (filter-map ast-strip-comment t))
+    (((comment . ,comment) . ,cdr) cdr)
+    ((,car . (comment . ,comment)) car)
+    ((,h . ,t) (if (list? o) (filter-map ast-strip-comment o)
+                   (cons (ast-strip-comment h) (ast-strip-comment t))))
+    (_  o)))
+
+(define* (c99-input->ast #:key (defines '()) (includes '()))
+  (ast-strip-comment (c99-input->full-ast #:defines defines #:includes includes)))
 
 (define (ast:function? o)
   (and (pair? o) (eq? (car o) 'fctn-defn)))
@@ -1245,7 +1258,6 @@
         ((trans-unit . ,elements)
          ((ast-list->info info) elements))
         ((fctn-defn . _) ((function->info info) o))
-        ((comment . _) info)
         ((cpp-stmt (define (name ,name) (repl ,value)))
          info)
 
@@ -1699,10 +1711,6 @@
                (let ((globals (append globals (list (ident->global name type 0 value)))))
                  (clone info #:globals globals)))))
 
-        ;; SCM g_stack = 0; // comment
-        ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident _) (initzer (p-expr (fixed _))))) (comment _))
-         ((ast->info info) (list-head o (- (length o) 1))))
-
         ;; SCM i = argc;
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name) (initzer (p-expr (ident ,local))))))
          (if (.function info)
@@ -1960,9 +1968,6 @@
 
 
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
-         (declare name))
-
-        ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))) (comment ,comment))
          (declare name))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
