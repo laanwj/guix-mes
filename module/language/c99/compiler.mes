@@ -1172,7 +1172,16 @@
 (define i386:type-alist
   '(("char" . (builtin 1 #f))
     ("short" . (builtin 2 #f))
-    ("int" . (builtin 4 #f))))
+    ("int" . (builtin 4 #f))
+    ("long" . (builtin 4 #f))
+    ("long long" . (builtin 8 #f))
+    ;; FIXME sign
+    ("unsigned char" . (builtin 1 #f))
+    ("unsigned short" . (builtin 2 #f))
+    ("unsigned" . (builtin 4 #f))
+    ("unsigned int" . (builtin 4 #f))
+    ("unsigned long" . (builtin 4 #f))
+    ("unsigned long long" . (builtin 8 #f))))
 
 (define (type->size info o)
   (pmatch o
