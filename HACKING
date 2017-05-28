@@ -3,6 +3,40 @@
 * SETUP
     guix environment -l guix.scm     #64 bit + 32bit
     guix environment --system=i686-linux -l guix.scm #32 bit only
+* BUILD
+There are two major modes to build Mes: true bootstrap and
+development.
+
+** DEVELOPMENT BUILD
+To help development we assume ./configure sets these variables for make
+
+   CC    -- gcc
+   CC32  -- i686-unknown-linux-gnu-gcc (or on x86, also gcc)
+   GUILE -- guile
+   MES   -- unset
+
+Mes is supposed to serve as a full equivalent for GUILE, however mes is much, much
+slower than guile.  That's why we usually don't use mes during development.
+
+gcc is used to verify the sanity of our C sources.
+
+i686-unknown-linux-gnu-gcc is used to compare hex/assembly, to test
+the gcc variant of mlbic: libc/libc-gcc.c and steal ideas.
+
+guile is used to develop mescc, the C compiler in Scheme that during
+bootstrapping will be executed by mes.
+
+** BOOTSTRAP BUILD
+In bootstrap mode, we don't have gcc (CC), we don't have pa 32 bit gcc
+(CC32), we have no guile (GUILE)...but we should have a bootstrap mes
+(MES).  FIXME.
+
+mes is built from src/*.c and some out/src/*.h files that are snarfed from
+src/*.c by build-aux/mes-snarf.scm.
+
+Also, during bootstrap we don't have make.  Running `make build-scripts'
+generates several recipies of sh build scripts in out/.
+
 * ROADMAP
 ** TODO 
 *** release 0.x, unsorted

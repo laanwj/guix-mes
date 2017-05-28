@@ -40,7 +40,6 @@ snarf-mes: $(SNARF.MES)
 
 include make/reset.make
 
-# TARGET:=$(CROSS)mes
 CROSS:=$(CC32:%gcc=%)
 $(OUT)/$(CROSS)%: $(OUT)/%.mlibc
 	@ln -sf $(<F) $@
@@ -56,7 +55,7 @@ $(OUT)/mes.guile: $(SNARF.MES)
 C_FILES:=$(DIR)/mes.c
 include make/mescc-guile.make
 
-ifeq (0,1) # No bootstrap mes.mes ATM
+ifneq ($(MES_BOOTSTRAP),)
 safe-MES_MAX_ARENA:=$(MES_MAX_ARENA)
 MES_MAX_ARENA:=80000000
 TARGET:=mes.mes

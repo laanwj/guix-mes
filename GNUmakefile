@@ -21,6 +21,15 @@ SUBDIRS:=\
 include make/common.make
 -include .local.make
 
+build-scripts:
+	make --dry-run MES=$(OUT)/mes CC= CC32= GUILE= MES_BOOTSTRAP=1 > $(OUT)/make.sh
+	make --dry-run MES=$(OUT)/mes CC= CC32= GUILE= MES_BOOTSTRAP=1 | tail +$(wc -l make.sh) > $(OUT)/make-check.sh
+	make --dry-run MES=$(OUT)/mes CC= CC32= GUILE= MES_BOOTSTRAP=1 | tail +$(wc -l make.sh) > $(OUT)/make-install.sh
+
+	make --dry-run > $(OUT)/make-dev.sh
+	make --dry-run | tail +$(wc -l make.sh) > $(OUT)/make-dev-check.sh
+	make --dry-run | tail +$(wc -l make.sh) > $(OUT)/make-dev-install.sh
+
 help: help-top
 
 install: all
@@ -34,6 +43,7 @@ Usage: make [OPTION]... [TARGET]...
 
 Targets:
   all               update everything
+  build-scripts     generate build scripts
   check             run unit tests
   clean             remove all generated stuff
   dist              create tarball in $(TARBALL)

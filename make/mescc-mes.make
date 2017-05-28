@@ -1,3 +1,4 @@
+ifneq ($(MES),)
 CROSS:=mes-
 C_FILES:=libc/libc-mes.c $(C_FILES)
 O_FILES:=$(C_FILES:%.c=$(OUT)/%.$(CROSS)o)
@@ -93,4 +94,5 @@ $(foreach c-file,$(strip $(filter %.c,$(C_FILES))),$(eval $(call mescc.mes-c-pre
 $(foreach c-file,$(strip $(filter %.c,$(C_FILES))),$(eval $(call mescc.mes-c-compile-E,$(c-file:%.c=$(OUT)/%.$(CROSS)E),$(DEFINES),$(INCLUDES))))
 endif
 
+endif
 include make/reset.make

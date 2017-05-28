@@ -62,7 +62,7 @@ INSTALL_GO_FILES:=
 install: $(CLEAN) ChangeLog
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	install $(OUT)/mes $(DESTDIR)$(PREFIX)/bin/mes
-ifeq (0,1) # No bootstrap mes.mes ATM
+ifneq ($(MES_BOOTSTRAP),)
 	install $(OUT)/mes.mes $(DESTDIR)$(PREFIX)/bin/mes.mes
 endif
 	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/mescc.mes

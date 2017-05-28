@@ -94,7 +94,7 @@ TARGET:=t.guile
 include make/check.make
 
 # scripts/mescc.mes
-ifeq ($(MES_SKIP_MES),)
+ifneq ($(MES),)
 TARGET:=m.mes
 C_FILES:=$(DIR)/m.c
 include make/mescc-mes.make
@@ -103,7 +103,7 @@ TARGET:=m.mes
 EXPECT:=255
 include make/check.make
 
-ifneq ($(SCAFFOLD),)
+ifneq ($(MES_SCAFFOLD),)
 TARGET:=hello.mes
 C_FILES:=$(DIR)/hello.c
 include make/mescc-mes.make

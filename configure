@@ -237,6 +237,7 @@ Usage: ./configure [OPTION]...
         (stdout "CC:=~a\n" CC)
         (stdout "CC32:=~a\n" CC32)
         (stdout "GUILE:=~a\n" GUILE)
+        (stdout "GUILE_FOR_BUILD:=~a\n" GUILE)
         (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
         (stdout "GUIX_P:=~a\n" (if guix? guix? ""))
         (stdout "PACKAGE:=~a\n" PACKAGE)

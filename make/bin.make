@@ -1,3 +1,4 @@
+ifneq ($(CC),)
 O_FILES := $(C_FILES:%.c=$(OUT)/%.$(CROSS)o)
 D_FILES := $(O_FILES:%o=%d)
 
@@ -23,3 +24,4 @@ $(OUT)/$(TARGET): $(O_FILES)
 	$(QUIET)$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 include make/compile.make
+endif

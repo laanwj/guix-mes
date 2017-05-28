@@ -1,3 +1,4 @@
+ifneq ($(GUILE),)
 CROSS:=guile-
 C_FILES:=libc/libc-mes.c $(C_FILES)
 #C_FILES:=libc/mini-libc-mes.c $(C_FILES)
@@ -83,4 +84,5 @@ $(foreach c-file,$(strip $(filter %.c,$(C_FILES))),$(eval $(call mescc.scm-c-pre
 $(foreach c-file,$(strip $(filter %.c,$(C_FILES))),$(eval $(call mescc.scm-c-compile-E,$(c-file:%.c=$(OUT)/%.$(CROSS)E),$(DEFINES),$(INCLUDES))))
 endif
 
+endif
 include make/reset.make
