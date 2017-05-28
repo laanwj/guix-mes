@@ -35,7 +35,9 @@ $(OUT)/$(1:.c=.$(CROSS)o): CC:=$(MESCC.mes)
 $(OUT)/$(1:.c=.$(CROSS)o): COMPILE.c:=$(MESCC.mes) -c
 $(OUT)/$(1:.c=.$(CROSS)o): CPPFLAGS:=$(2:%=-D %) $(3:%=-I %)
 $(OUT)/$(1:.c=.$(CROSS)o): COMPILE.c:=$(MESCC.mes) -c $(CPPFLAGS)
+$(OUT)/$(1:.c=.$(CROSS)o): OUT:=$(OUT)
 $(OUT)/$(1:.c=.$(CROSS)o): $(MAKEFILE_LIST)
+$(OUT)/$(1:.c=.$(CROSS)o): $(OUT)/mes
 $(OUT)/$(1:.c=.$(CROSS)o): scripts/mes
 $(OUT)/$(1:.c=.$(CROSS)o): $(INSTALL_MES_FILES)
 $(OUT)/$(1:.c=.$(CROSS)o): $(1)
@@ -49,9 +51,11 @@ $(OUT)/$(1:.c=.$(CROSS)E): CROSS:=$(CROSS)
 $(OUT)/$(1:.c=.$(CROSS)E): cc:=MESCC.mes
 $(OUT)/$(1:.c=.$(CROSS)E): CC:=$(MESCC.mes)
 $(OUT)/$(1:.c=.$(CROSS)E): CPPFLAGS:=$(2:%=-D %) $(3:%=-I %)
+$(OUT)/$(1:.c=.$(CROSS)E): OUT:=$(OUT)
 $(OUT)/$(1:.c=.$(CROSS)E): PREPROCESS.c:=$(MESCC.mes) -E $(CPPFLAGS)
 $(OUT)/$(1:.c=.$(CROSS)E): $(MAKEFILE_LIST)
-$(OUT)/$(1:.c=.$(CROSS)o): scripts/mes
+$(OUT)/$(1:.c=.$(CROSS)E): $(OUT)/mes
+$(OUT)/$(1:.c=.$(CROSS)E): scripts/mes
 $(OUT)/$(1:.c=.$(CROSS)E): $(INSTALL_MES_FILES)
 $(OUT)/$(1:.c=.$(CROSS)E): $(1)
 	@echo "  $$(cc)	$$(notdir $(1)) -> $$(notdir $$@)"
@@ -65,7 +69,9 @@ $(1:.$(CROSS)E=.$(CROSS)o): cc:=MESCC.mes
 $(1:.$(CROSS)E=.$(CROSS)o): CC:=$(MESCC.mes)
 $(1:.$(CROSS)E=.$(CROSS)o): CPPFLAGS:=$(2:%=-D %) $(3:%=-I %)
 $(1:.$(CROSS)E=.$(CROSS)o): COMPILE.c:=$(MESCC.mes) -c $(CPPFLAGS)
+$(1:.$(CROSS)E=.$(CROSS)o): OUT:=$(OUT)
 $(1:.$(CROSS)E=.$(CROSS)o): $(MAKEFILE_LIST)
+$(1:.$(CROSS)E=.$(CROSS)o): $(OUT)/mes
 $(1:.$(CROSS)E=.$(CROSS)o): scripts/mes
 $(1:.$(CROSS)E=.$(CROSS)o): $(INSTALL_MES_FILES)
 $(1:.$(CROSS)E=.$(CROSS)o): $(1)

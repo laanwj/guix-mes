@@ -1,35 +1,3 @@
-CLEAN+=module/mes/read-0.mo
-module/mes/read-0.mo: module/mes/read-0.mes $(OUT)/mes
-	@rm -f $@
-	@echo " DUMP	$(notdir $^) -> $(notdir $@)"
-	$(QUIET)$(OUT)/mes --dump < $< > $@
-
-CLEAN+=module/mes/read-0-32.mo
-CROSS:=$(CC32:%gcc=%)
-module/mes/read-0-32.mo: CROSS:=$(CROSS)
-module/mes/read-0-32.mo: module/mes/read-0.mes
-module/mes/read-0-32.mo: $(OUT)/$(CROSS)mes
-	@rm -f $@
-	@echo " DUMP	$(notdir $^) -> $(notdir $@)"
-	$(QUIET)MES_MINI=1 $(OUT)/$(CROSS)mes --dump < $< > $@
-
-CLEAN+=module/mes/tiny-0-32.mo
-module/mes/tiny-0-32.mo: CROSS:=$(CROSS)
-module/mes/tiny-0-32.mo: $(OUT)/$(CROSS)mes
-	@rm -f $@
-	@echo " DUMP	$(notdir $^) -> $(notdir $@)"
-	$(QUIET) MES_TINY=1 $(OUT)/$(CROSS)mes --dump --tiny < $< > $@
-
-MO_FILES:=\
- module/mes/read-0.mo\
- module/mes/read-0-32.mo\
- module/mes/tiny-0-32.mo\
-#
-all-mo: $(MO_FILES)
-clean-mo: MO_FILES:=$(MO_FILES)
-clean-mo:
-	@$(QUIET)rm -f $(MO_FILES)
-
 MES_FILES:=$(shell $(GIT_LS_FILES) module/*.mes)
 SCM_FILES:=$(shell $(GIT_LS_FILES) module/language/ module/nyacc/ module/mes/)
 SCM_FILES:=$(filter %.scm, $(SCM_FILES))

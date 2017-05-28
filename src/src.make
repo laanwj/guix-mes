@@ -52,17 +52,14 @@ DEFINES:=FIXED_PRIMITIVES=1 MES_FULL=1 VERSION='"$(VERSION)"' MODULEDIR='"$(MODU
 include make/bin-mlibc.make
 
 TARGET:=mes.guile
-$(OUT)/mes.mes: module/mes/read-0-32.mo
 $(OUT)/mes.guile: $(SNARF.MES)
 C_FILES:=$(DIR)/mes.c
 include make/mescc-guile.make
 
-MAINTAINER-CLEAN+=mes.mes
-ifeq ($(wildcard mes.mes),)
+ifeq (0,1) # No bootstrap mes.mes ATM
 safe-MES_MAX_ARENA:=$(MES_MAX_ARENA)
 MES_MAX_ARENA:=80000000
 TARGET:=mes.mes
-$(OUT)/mes.mes: module/mes/read-0-32.mo
 $(OUT)/mes.mes: $(SNARF.MES)
 mes.mes: $(OUT)/mes.mes
 	cp $< $@

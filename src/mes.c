@@ -209,9 +209,7 @@ int g_function = 0;
 #include "math.mes.h"
 #include "mes.mes.h"
 #include "posix.mes.h"
-#if MES_FULL
 #include "reader.mes.h"
-#endif
 #include "vector.mes.h"
 #else
 #include "gc.h"
@@ -1187,18 +1185,14 @@ mes_builtins (SCM a) ///((internal))
 #include "lib.mes.i"
 #include "vector.mes.i"
 #include "gc.mes.i"
-#if MES_FULL
 #include "reader.mes.i"
-#endif
 
 #include "gc.mes.environment.i"
 #include "lib.mes.environment.i"
 #include "math.mes.environment.i"
 #include "mes.mes.environment.i"
 #include "posix.mes.environment.i"
-#if MES_FULL
 #include "reader.mes.environment.i"
-#endif
 #include "vector.mes.environment.i"
 #else
 #include "mes.i"
@@ -1325,9 +1319,7 @@ bload_env (SCM a) ///((internal))
 
 #include "vector.c"
 #include "gc.c"
-#if _POSIX_SOURCE || MES_FULL
 #include "reader.c"
-#endif
 
 int
 main (int argc, char *argv[])
@@ -1343,14 +1335,10 @@ main (int argc, char *argv[])
   g_stdout = STDOUT;
   r0 = mes_environment ();
 
-#if __MESC__
-  SCM program = bload_env (r0);
-#else
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
   g_tiny = argc > 2 && !strcmp (argv[2], "--tiny");
   if (argc > 1 && !strcmp (argv[1], "--dump")) return dump ();
-#endif
 
   SCM lst = cell_nil;
   for (int i=argc-1; i>=0; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);

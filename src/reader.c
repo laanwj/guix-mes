@@ -21,12 +21,6 @@
 #include <ctype.h>
 
 SCM
-___end_of_mes___ ()
-{
-  return 0;
-}
-
-SCM
 read_input_file_env_ (SCM e, SCM a)
 {
   if (e == cell_nil) return e;
@@ -130,46 +124,12 @@ dump ()
   putchar ('S');
   putchar (g_stack >> 8);
   putchar (g_stack % 256);
-  // See HACKING, simple crafted dump for tiny-mes.c
-  if (g_tiny || getenv ("MES_TINY"))
+  eputs ("dumping\n");
+  if (g_debug > 1)
     {
-      eputs ("dumping TINY\n");
-
-      TYPE (9) = 0x2d2d2d2d;
-      CAR (9) = 0x2d2d2d2d;
-      CDR (9) = 0x3e3e3e3e;
-
-      TYPE (10) = TPAIR;
-      CAR (10) = 11;
-      CDR (10) = 12;
-
-      TYPE (11) = TCHAR;
-      CAR (11) = 0x58585858;
-      CDR (11) = 65;
-
-      TYPE (12) = TPAIR;
-      CAR (12) = 13;
-      CDR (12) = 1;
-
-      TYPE (13) = TCHAR;
-      CAR (11) = 0x58585858;
-      CDR (13) = 66;
-
-      TYPE (14) = 0x3c3c3c3c;
-      CAR (14) = 0x2d2d2d2d;
-      CDR (14) = 0x2d2d2d2d;
-
-      g_free = 15;
-    }
-  else
-    {
-      eputs ("dumping FULL\n");
-      if (g_debug > 1)
-        {
-          eputs ("program r2=");
-          display_error_ (r2);
-          eputs ("\n");
-        }
+      eputs ("program r2=");
+      display_error_ (r2);
+      eputs ("\n");
     }
 
   for (int i=0; i<g_free * sizeof(struct scm); i++)

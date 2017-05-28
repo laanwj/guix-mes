@@ -10,10 +10,6 @@
 #keep this: bootstrap
 #/mes.mes
 
-/module/mes/tiny-0-32.mo
-#keep this: bootstrap
-#/module/mes/read-0-32.mo
-/module/mes/read-0.mo
 /out
 ?
 ?.mes

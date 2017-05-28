@@ -62,7 +62,9 @@ INSTALL_GO_FILES:=
 install: $(CLEAN) ChangeLog
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	install $(OUT)/mes $(DESTDIR)$(PREFIX)/bin/mes
-	install mes.mes $(DESTDIR)$(PREFIX)/bin/mes.mes
+ifeq (0,1) # No bootstrap mes.mes ATM
+	install $(OUT)/mes.mes $(DESTDIR)$(PREFIX)/bin/mes.mes
+endif
 	install scripts/mescc.mes $(DESTDIR)$(PREFIX)/bin/mescc.mes
 	install scripts/repl.mes $(DESTDIR)$(PREFIX)/bin/repl.mes
 	install guile/mescc.scm $(DESTDIR)$(PREFIX)/bin/mescc.scm
@@ -85,8 +87,6 @@ install: $(CLEAN) ChangeLog
 		$(DESTDIR)$(PREFIX)/bin/mescc.mes \
 		$(DESTDIR)$(PREFIX)/bin/mescc.scm \
 		$(DESTDIR)$(PREFIX)/bin/repl.mes
-	cp module/mes/read-0.mo $(DESTDIR)$(DATADIR)/module/mes
-	cp module/mes/read-0-32.mo $(DESTDIR)$(DATADIR)/module/mes
 	mkdir -p $(DESTDIR)$(DOCDIR)
 	$(GIT_ARCHIVE_HEAD) $(READMES) \
 		| tar -C $(DESTDIR)$(DOCDIR) -xf-

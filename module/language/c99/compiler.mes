@@ -60,9 +60,8 @@
      #:cpp-defs `(
                   "POSIX=0"
                   "_POSIX_SOURCE=0"
-                  "__GNUC__=0"
+                  "__GNUC__=0"  ;; FIXME: TCC uses #ifdef __GNUC__, but NYACC needs it for #if __GNUC__
                   "__MESC__=1"
-                  "__NYACC__=1" ;; REMOVEME
                   "EOF=-1"
                   "STDIN=0"
                   "STDOUT=1"
@@ -71,7 +70,6 @@
                   "INT_MIN=-2147483648"
                   "INT_MAX=2147483647"
                   
-                  "MES_FULL=0"
                   "FIXED_PRIMITIVES=1"
                   
                   ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")

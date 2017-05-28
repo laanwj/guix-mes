@@ -108,10 +108,8 @@ set disassemble-next-line
 gdb-display-disassembly-buffer
 b *0x804a79d
 ** Create memory dump with 32 bit Gcc compiled Mes
-guix environment --ad-hoc --system=i686-linux gcc-toolchain -- bash -c 'make mes CC=i686-unknown-linux-gnu-gcc LIBRARY_PATH=${PATH%%/bin:*}/lib'
-mv mes mes-32
-MES_TINY=1 ./mes-32 --dump < module/mes/tiny-0.mes > module/mes/tiny-0-32.mo
-./mes-32 --dump < module/mes/read-0.mes > module/mes/read-0-32.mo
+make out/i686-unknown-linux-gnu-mes
+out/i686-unknown-linux-gnu-mes --dump < module/mes/read-0.mes > module/mes/read-0-32.mo
 ** C parser/compiler
 *** [[https://savannah.gnu.org/projects/nyacc][nyacc]]
 *** PEG: [[http://piumarta.com/software/peg/][parse C using PEG]]
