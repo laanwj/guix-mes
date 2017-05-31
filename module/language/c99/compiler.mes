@@ -559,9 +559,7 @@
         ;; &f.field
         ((ref-to (d-sel (ident ,field) (p-expr (ident ,array))))
          (let* ((type (ident->type info array))
-                (fields (type->description info type))
-                (field-size 4) ;; FIXME:4, not fixed
-                (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))
+                (offset (field-offset info type field))
                 (text (.text info)))
            (append-text info (append ((ident->accu info) array)
                                      (wrap-as (i386:accu+n offset))))))
@@ -572,25 +570,21 @@
 
         ((sizeof-expr (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
-                (fields (or (type->description info type) '()))
                 (size (type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,name)))))
          (let* ((type name)
-                (fields (or (type->description info type) '()))
                 (size (type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
          (let* ((type (list "struct" name))
-                (fields (or (type->description info type) '()))
                 (size (type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
          (let* ((type (list "struct" name))
-                (fields (or (type->description info type) '()))
                 (size (type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
@@ -607,33 +601,33 @@
                                                 ((4) (i386:mem->accu))
                                                 (else '())))))))
 
+        ;; foo.bar[baz])
+        ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
+        ;; foo->bar[baz])
+        ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,struct))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
         ;; f.field
         ((d-sel (ident ,field) (p-expr (ident ,array)))
          (let* ((type (ident->type info array))
-                (fields (type->description info type))
-                (field-size 4) ;; FIXME:4, not fixed
-                (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))
+                (offset (field-offset info type field))
                 (text (.text info)))
            (append-text info (append ((ident->accu info) array)
                                      (wrap-as (i386:mem+n->accu offset))))))
 
         ((d-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
          (let* ((type (ident->type info array))
-                (fields (or (type->description info type) '()))
-                (field-size 4) ;; FIXME:4, not fixed
-                (rest (or (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))
-                          (begin
-                            (stderr "no field:~a\n" field)
-                            '())))
-                (offset (* field-size (1- (length rest))))
+                (offset (field-offset info type field))
                 (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
            (append-text info (wrap-as (i386:mem+n->accu offset)))))
 
         ((i-sel (ident ,field) (p-expr (ident ,array)))
          (let* ((type (ident->type info array))
-                (fields (type->description info type))
-                (field-size 4) ;; FIXME:4, not fixed
-                (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))
+                (offset (field-offset info type field))
                 (text (.text info)))
            (append-text info (append ((ident-address->accu info) array)
                                      (wrap-as (i386:mem->accu))
@@ -822,10 +816,7 @@
              ((p-expr (ident ,name)) (append-text info ((accu->ident info) name)))
              ((d-sel (ident ,field) ,p-expr)
               (let* ((type (p-expr->type info p-expr))
-                     (fields (type->description info type))
-                     (size (type->size info type))
-                     (field-size 4) ;; FIXME:4, not fixed
-                     (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))                
+                     (offset (field-offset info type field))
                      (info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))
                      (info (append-text info (wrap-as (i386:pop-base)))))
@@ -838,6 +829,16 @@
                 (append-text info (append (wrap-as (i386:accu->base))
                                           ((base->ident-address info) array)
                                           (i386:base->accu)))))
+             ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
+              (let* ((info (append-text info (wrap-as (i386:push-accu))))
+                     (info ((expr->accu* info) a))
+                     (info (append-text info (wrap-as (i386:pop-base)))))
+                (append-text info (wrap-as (i386:base->accu-address)))))
+             ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,struct))))
+              (let* ((info (append-text info (wrap-as (i386:push-accu))))
+                     (info ((expr->accu* info) a))
+                     (info (append-text info (wrap-as (i386:pop-base)))))
+                (append-text info (wrap-as (i386:base->accu-address)))))
              ((array-ref ,index (p-expr (ident ,array)))
               (let* ((type (ident->type info array))
                      (size (type->size info type))
@@ -903,21 +904,41 @@
       ;; g_cells[<expr>].type
       ((d-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
        (let* ((type (ident->type info array))
-              (fields (or (type->description info type) '()))
-              (field-size 4) ;; FIXME:4, not fixed
-              (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))
+              (offset (field-offset info type field))
               (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
          (append-text info (wrap-as (append (i386:accu+value offset))))))
 
       ((d-sel (ident ,field) (p-expr (ident ,name)))
        (let* ((type (ident->type info name))
-              (fields (or (type->description info type) '()))
-              (field-size 4) ;; FIXME
-              (offset (* field-size (1- (length (member field (reverse fields) (lambda (a b) (equal? a (cdr b))))))))
+              (offset (field-offset info type field))
               (text (.text info)))
          (append-text info (append ((ident->accu info) name)
                                    (wrap-as (i386:accu+value offset))))))
 
+      ;; foo.bar[baz]
+      ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,name))))
+       (let* ((type (ident->type info name))
+              (offset (field-offset info type field))
+              (info ((expr->accu info) index)))
+         (append-text info (append (wrap-as (append (i386:accu-shl 2) ;; FIXME: assume size=4
+                                                    (i386:push-accu)))
+                                   ((ident-address->accu info) name)
+                                   (wrap-as (append (i386:accu+value offset)
+                                                    (i386:pop-base)
+                                                    (i386:accu+base)))))))
+
+      ;; foo->bar[baz]
+      ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,name))))
+       (let* ((type (ident->type info name))
+              (offset (field-offset info type field))
+              (info ((expr->accu info) index)))
+         (append-text info (append (wrap-as (append (i386:accu-shl 2) ;; FIXME: assume size=4
+                                                    (i386:push-accu)))
+                                   ((ident->accu info) name)
+                                   (wrap-as (append (i386:accu+value offset)
+                                                    (i386:pop-base)
+                                                    (i386:accu+base)))))))
+      
       (_ (error "expr->accu*: unsupported: " o)))))
 
 (define (ident->constant name value)
@@ -930,7 +951,55 @@
   (make-type name 'enum 4 fields))
 
 (define (struct->type name fields)
-  (make-type name 'struct (* 4 (length fields)) fields)) ;; FIXME
+  (make-type name 'struct (apply + (map field:size fields)) fields))
+
+(define i386:type-alist
+  '(("char" . (builtin 1 #f))
+    ("short" . (builtin 2 #f))
+    ("int" . (builtin 4 #f))
+    ("long" . (builtin 4 #f))
+    ("long long" . (builtin 8 #f))
+    ;; FIXME sign
+    ("unsigned char" . (builtin 1 #f))
+    ("unsigned short" . (builtin 2 #f))
+    ("unsigned" . (builtin 4 #f))
+    ("unsigned int" . (builtin 4 #f))
+    ("unsigned long" . (builtin 4 #f))
+    ("unsigned long long" . (builtin 8 #f))))
+
+(define (field:size o)
+  (pmatch o
+    ((,name ,type ,size ,pointer) size)
+    (_ 4)))
+
+(define (type->size info o)
+  (pmatch o
+    ((decl-spec-list (type-spec (fixed-type ,type)))
+     (type->size info type))
+    ((decl-spec-list (type-spec (fixed-type ,type)) (type-qual ,qual))
+     (type->size info type))
+    ((decl-spec-list (type-qual ,qual) (type-spec (fixed-type ,type)))
+     (type->size info type))
+    ((struct-ref (ident ,type))
+     (type->size info `("struct" ,type)))
+    (_ (let ((type (get-type (.types info) o)))
+         (if type (cadr type)
+             (error "type->size: unsupported: " o))))))
+
+(define (field-offset info struct field)
+  (let* ((fields (type->description info struct))
+         (prefix (and=> (member field (reverse fields) (lambda (a b) (equal? a (car b)))) cdr
+)))
+    (apply + (map field:size prefix))))
+
+(define (ast->type o)
+  (pmatch o
+    ((fixed-type ,type)
+     type)
+    ((struct-ref (ident ,type))
+     (list "struct" type))
+    (_ (stderr "SKIP: type=~s\n" o)
+       "int")))
 
 (define (decl->type o)
   (pmatch o
@@ -1127,73 +1196,43 @@
   (pmatch o
     ((comp-decl (decl-spec-list (type-spec (enum-ref (ident ,type))))
                 (comp-declr-list (comp-declr (ident ,name))))
-     (cons type name))
+     (list name type 4))
     ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ident ,name))))
-     (cons type name))
+     (list name type 4))
     ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ident ,name))))
-     (cons type name))
+     (list name type 4))
     ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-     (cons type name)) ;; FIXME: **
+     (list name type 4)) ;; FIXME: **
     ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)))))
-     (cons type name)) ;; FIXME function / int
+     (list name type 4)) ;; FIXME function / int
     ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-     (cons type name)) ;; FIXME: ptr/char
+     (list name type 4)) ;; FIXME: ptr/char
     ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-     (cons type name)) ;; FIXME: **
+     (list name type 4)) ;; FIXME: **
     ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-     (cons '(void) name)) ;; FIXME: *
+     (list name '(void) 4)) ;; FIXME: *
     ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)))))
-     (cons '(void) name))
+     (list name '(void) 4))
     ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-     (cons '(void) name))
-    ;; FIXME: BufferedFile *include_stack[INCLUDE_STACK_SIZE];
-    ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (array-of (ident ,name) (p-expr (fixed ,size)))))))
-     (cons type name)) ;; FIXME: decl, array size
-    ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (array-of (ident ,name) (p-expr (fixed ,size))))))
-     (cons type name))
+     (list name '(void) 4))
+    ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (array-of (ident ,name) (p-expr (fixed ,count)))))))
+     (let ((size 4)
+           (count (cstring->number count)))
+       (list name type (* count size) 0)))
+    ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
+     (let ((size 4)
+           (count (cstring->number count)))
+       (list name type (* count size) 0)))
+    ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (array-of (ident ,name) (p-expr (fixed ,count))))))
+     (let ((size 4)
+           (count (cstring->number count)))
+       (list name type (* count size) 0)))
     ;; struct InlineFunc **inline_fns;
     ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-     (cons type name))
+     (list name type 4))
     ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-     (cons type name))
+     (list name type 4))
     (_ (error "struct-field: unsupported: " o))))
-
-(define (ast->type o)
-  (pmatch o
-    ((fixed-type ,type)
-     type)
-    ((struct-ref (ident ,type))
-     (list "struct" type))
-    (_ (stderr "SKIP: type=~s\n" o)
-       "int")))
-
-(define i386:type-alist
-  '(("char" . (builtin 1 #f))
-    ("short" . (builtin 2 #f))
-    ("int" . (builtin 4 #f))
-    ("long" . (builtin 4 #f))
-    ("long long" . (builtin 8 #f))
-    ;; FIXME sign
-    ("unsigned char" . (builtin 1 #f))
-    ("unsigned short" . (builtin 2 #f))
-    ("unsigned" . (builtin 4 #f))
-    ("unsigned int" . (builtin 4 #f))
-    ("unsigned long" . (builtin 4 #f))
-    ("unsigned long long" . (builtin 8 #f))))
-
-(define (type->size info o)
-  (pmatch o
-    ((decl-spec-list (type-spec (fixed-type ,type)))
-     (type->size info type))
-    ((decl-spec-list (type-spec (fixed-type ,type)) (type-qual ,qual))
-     (type->size info type))
-    ((decl-spec-list (type-qual ,qual) (type-spec (fixed-type ,type)))
-     (type->size info type))
-    ((struct-ref (ident ,type))
-     (type->size info `("struct" ,type)))
-    (_ (let ((type (get-type (.types info) o)))
-         (if type (cadr type)
-             (error "type->size: unsupported: " o))))))
 
 (define (ident->decl info o)
   (or (assoc-ref (.locals info) o)
@@ -1708,7 +1747,7 @@
                (let* ((local (car (add-local locals name type -1)))
                       (count (string->number count))
                       (size (type->size info type))
-                      (local (make-local name type -1 (+ (local:id local) (* count size))))
+                      (local (make-local name type -1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))                      
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
@@ -1726,7 +1765,7 @@
                (let* ((local (car (add-local locals name type -1)))
                       (count (string->number count))
                       (size (type->size info type))
-                      (local (make-local name type 1 (+ (local:id local) (* count size))))
+                      (local (make-local name type 1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
@@ -1740,9 +1779,11 @@
         ;; struct foo bar;
         ((decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))
          (if (.function info)
-             (let* ((locals (add-local locals name `("struct" ,type) 1))
-                    (info (clone info #:locals locals)))
-               info)
+             (let* ((size (type->size info (list "struct" type)))
+                    (local (car (add-local locals name type 1)))
+                    (local (make-local name `("struct" ,type) -1 (+ (local:id (cdr local)) -1 (quotient (+ size 3) 4))))
+                    (locals (cons local locals)))
+               (clone info #:locals locals))
              (let* ((size (type->size info (list "struct" type)))
                     (global (make-global name (list "struct" type) -1 (string->list (make-string size #\nul))))
                     (globals (append globals (list global)))
@@ -1761,11 +1802,15 @@
                (append-text info (append ((ident->accu info) name)
                                          ((accu->ident info) value)))))) ;; FIXME: deref?
 
-
         ;; SCM tmp;
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name))))
          (if (.function info)
-             (clone info #:locals (add-local locals name type 0))
+             (let ((size (type->size info type)))
+               (if (<= size 4) (clone info #:locals (add-local locals name type 0))
+                   (let* ((local (car (add-local locals name type 1)))
+                          (local (make-local name type -1 (+ (local:id (cdr local)) -1 (quotient (+ size 3) 4))))
+                          (locals (cons local locals)))
+                     (clone info #:locals locals))))
              (clone info #:globals (append globals (list (ident->global name type 0 0))))))
 
         ;; SCM g_stack = 0;
@@ -1989,7 +2034,6 @@
          (let* ((type (decl->type type))
                 (fields (type->description info type))
                 (size (type->size info type))
-                (field-size 4)  ;; FIXME:4, not fixed
                 (initzers (map (initzer->non-const info) initzers)))
            (if (.function info)
                (let* ((globals (append globals (filter-map initzer->global initzers)))
@@ -1999,9 +2043,9 @@
                       (locals (add-local locals name type -1))
                       (info (clone info #:locals locals #:globals globals))
                       (empty (clone info #:text '())))
-                 (let loop ((fields (iota (length fields))) (initzers initzers) (info info))
+                 (let loop ((fields fields) (initzers initzers) (info info))
                    (if (null? fields) info
-                       (let ((offset (* field-size (car fields)))
+                       (let ((offset (field-offset info type (caar fields)))
                              (initzer (car initzers)))
                          (loop (cdr fields) (cdr initzers)
                                (clone info #:text
@@ -2014,11 +2058,10 @@
                (let* ((globals (append globals (filter-map initzer->global initzers)))
                       (global (make-global name type -1 (string->list (make-string size #\nul))))
                       (globals (append globals (list global)))
-                      (info (clone info #:globals globals))
-                      (field-size 4))
-                 (let loop ((fields (iota (length fields))) (initzers initzers) (info info))
+                      (info (clone info #:globals globals)))
+                 (let loop ((fields fields) (initzers initzers) (info info))
                    (if (null? fields) info
-                       (let ((offset (* field-size (car fields)))
+                       (let ((offset (field-offset info type (caar fields)))
                              (initzer (car initzers)))
                          (loop (cdr fields) (cdr initzers)
                                (clone info #:init
@@ -2030,7 +2073,7 @@
                                              (append
                                               (list-head data (+ here ,offset))
                                               (initzer->data f g ta t d ',(car initzers))
-                                              (list-tail data (+ here ,offset ,field-size))))))))))))))))
+                                              (list-tail data (+ here ,offset ,(field:size (car fields))))))))))))))))))
 
 
         ;;char cc = g_cells[c].cdr;  ==> generic?

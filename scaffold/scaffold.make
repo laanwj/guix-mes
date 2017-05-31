@@ -27,6 +27,15 @@ include make/bin.make
 TARGET:=t
 include make/check.make
 
+TARGET:=t-tcc
+C_FILES:=$(DIR)/t-tcc.c
+DEFINES:=POSIX=1
+INCLUDES:=libc
+include make/bin.make
+
+TARGET:=t-tcc
+include make/check.make
+
 TARGET:=m.mlibc
 C_FILES:=$(DIR)/m.c
 include make/bin-mlibc.make
@@ -59,6 +68,18 @@ include make/bin-mlibc.make
 TARGET:=t.mlibc
 include make/check.make
 
+TARGET:=t-tcc.mlibc
+C_FILES:=$(DIR)/t-tcc.c
+include make/bin-mlibc.make
+
+TARGET:=t-tcc.mlibc
+include make/check.make
+
+CROSS:=$(CC32:%gcc=%)
+#$(OUT)/$(DIR)/mini-mes.$(CROSS)o: $(SNARF.MES)
+$(OUT)/mini-mes: $(SNARF.MES)
+
+TARGET:=mini-mes.mlibc
 # guile/mescc.scm
 
 TARGET:=m.guile
@@ -91,6 +112,13 @@ C_FILES:=$(DIR)/t.c
 include make/mescc-guile.make
 
 TARGET:=t.guile
+include make/check.make
+
+TARGET:=t-tcc.guile
+C_FILES:=$(DIR)/t-tcc.c
+include make/mescc-guile.make
+
+TARGET:=t-tcc.guile
 include make/check.make
 
 # scripts/mescc.mes
