@@ -1,7 +1,7 @@
 ifneq ($(GUILE),)
 CROSS:=guile-
-C_FILES:=libc/libc-mes.c $(C_FILES)
-#C_FILES:=libc/mini-libc-mes.c $(C_FILES)
+C_FILES:=mlibc/libc-mes.c $(C_FILES)
+#C_FILES:=mlibc/mini-libc-mes.c $(C_FILES)
 O_FILES:=$(C_FILES:%.c=$(OUT)/%.$(CROSS)o)
 
 ifneq ($(DEBUG),)
@@ -14,7 +14,7 @@ CLEAN+=$(O_FILES) $(OUT)/$(TARGET)
 
 CLEAN+=$(OUT)/$(TARGET)
 
-INCLUDES+=libc/include libc $(OUT)/$(DIR)
+INCLUDES+=mlibc/include mlibc $(OUT)/$(DIR)
 MESCC.scm:=guile/mescc.scm
 MESLD.scm:=guile/mescc.scm
 
@@ -73,8 +73,8 @@ endef
 ifeq ($(MLIBC.scm),)
 MLIBC.scm:=DONE
 else
-C_FILES:=$(filter-out libc/libc-mes.c,$(C_FILES))
-C_FILES:=$(filter-out libc/mini-libc-mes.c,$(C_FILES))
+C_FILES:=$(filter-out mlibc/libc-mes.c,$(C_FILES))
+C_FILES:=$(filter-out mlibc/mini-libc-mes.c,$(C_FILES))
 endif
 
 ifneq ($(MESC_DIRECT),)

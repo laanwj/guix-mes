@@ -22,7 +22,7 @@ snarf-gcc: $(SNARF.GCC)
 $(OUT)/$(DIR)/mes.o: $(SNARF.GCC)
 
 DEFINES:=FIXED_PRIMITIVES=1 MES_FULL=1 POSIX=1 VERSION='"$(VERSION)"' MODULEDIR='"$(MODULEDIR)"' PREFIX='"$(PREFIX)"'
-INCLUDES:=libc $(OUT)/$(DIR)
+INCLUDES:=mlibc $(OUT)/$(DIR)
 TARGET:=mes
 C_FILES:=$(DIR)/mes.c
 include make/bin.make

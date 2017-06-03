@@ -1,7 +1,7 @@
 TARGET:=m
 C_FILES:=$(DIR)/m.c
 DEFINES:=POSIX=1
-INCLUDES:=libc
+INCLUDES:=mlibc
 include make/bin.make
 
 TARGET:=m
@@ -11,7 +11,7 @@ include make/check.make
 TARGET:=hello
 C_FILES:=$(DIR)/hello.c
 DEFINES:=POSIX=1
-INCLUDES:=libc
+INCLUDES:=mlibc
 include make/bin.make
 
 TARGET:=hello
@@ -21,7 +21,7 @@ include make/check.make
 TARGET:=t
 C_FILES:=$(DIR)/t.c
 DEFINES:=POSIX=1
-INCLUDES:=libc
+INCLUDES:=mlibc
 include make/bin.make
 
 TARGET:=t
@@ -30,7 +30,7 @@ include make/check.make
 TARGET:=t-tcc
 C_FILES:=$(DIR)/t-tcc.c
 DEFINES:=POSIX=1
-INCLUDES:=libc
+INCLUDES:=mlibc
 include make/bin.make
 
 TARGET:=t-tcc
