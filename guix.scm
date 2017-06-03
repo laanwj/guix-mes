@@ -129,11 +129,14 @@ prototype in C and a Nyacc-based C compiler in [Guile] Scheme.")
       (license gpl3+))))
 
 (define-public mes.git
-  (package
-    (inherit mes)
-    (name "mes")
-    (version "git")
-    (source (local-file %source-dir #:recursive? #t #:select? git-file?))))
+ (let ((version "0.6")
+        (revision "0")
+        (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
+    (package
+      (inherit mes)
+      (name "mes.git")
+      (version (string-append version "-" revision "." (string-take commit 7)))
+      (source (local-file %source-dir #:recursive? #t #:select? git-file?)))))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
 mes.git
