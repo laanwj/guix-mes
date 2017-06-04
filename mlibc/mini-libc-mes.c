@@ -18,6 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+int g_stdin = 0;
+
 void
 exit ()
 {
@@ -60,6 +62,7 @@ _env (char **e)
   return e;
 }
 
+int main(int,char*[]);
 int
 _start ()
 {

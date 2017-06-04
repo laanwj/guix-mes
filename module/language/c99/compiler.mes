@@ -2452,6 +2452,6 @@
 
 (define (alist-add a b)
   (let* ((b-keys (map car b))
-         (a (filter (lambda (f) (or (cdr f) (not (member f b-keys)))) a))
+         (a (filter (lambda (f) (or (cdr f) (not (member (car f) b-keys)))) a))
          (a-keys (map car a)))
     (append a (filter (lambda (e) (not (member (car e) a-keys))) b))))

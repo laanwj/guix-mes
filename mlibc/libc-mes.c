@@ -45,7 +45,7 @@ write ()
   asm (".byte 0x8b 0x5d 0x08");                   // mov    0x8(%ebp),%ebx
   asm (".byte 0x8b 0x4d 0x0c");                   // mov    0xc(%ebp),%ecx
   asm (".byte 0x8b 0x55 0x10");                   // mov    0x10(%ebp),%edx
-              
+
   asm (".byte 0xb8 0x04 0x00 0x00 0x00");         // mov    $0x4,%eax
   asm (".byte 0xcd 0x80");                        // int    $0x80
 }
@@ -360,6 +360,7 @@ _env (char **e)
   return e;
 }
 
+int main(int,char*[]);
 int
 _start ()
 {
