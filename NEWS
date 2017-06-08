@@ -10,6 +10,18 @@ Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.8 since 0.7
+** Mescc
+*** Mescc now has experimental annotation support for hex2.
+*** Mescc now depends on the hex2 linker from [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]].
+Direct ELF output support has been removed.
+ELF symbol and string table creation has been removed.
+*** Mescc has been simplified by leveraging use labels in hex2 output.
+*** Mescc now supports continue in loops.
+*** Mescc now compiles to hex2 object files.
+** Language
+*** 1 new function
+list-index.
 * Changes in 0.7 since 0.6
 ** Core
 *** The minimal C reader is now always included; dependencies

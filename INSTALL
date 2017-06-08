@@ -6,36 +6,41 @@ Building and Installing Mes
    git clone https://gitlab.com/janneke/mes
 
 * Prerequisites
-** Guix
+** Bootstrapping
+For bootstrapping, the only dependency is the hex2 linker
+*** [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]], 0.1 is known to work.
+For development
+**
+** Development
+For development, there are some more dependencies.
+*** Guix
 
     guix environment -l guix.scm     #64 bit + 32bit
     guix environment --system=i686-linux -l guix.scm #32 bit only
 
-** Other GNU/Linux
-*** [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]], 0.0 is known to work.
+*** Other GNU/Linux
+**** [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]], 0.0 is known to work.
 
-*** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.78.0 is known to work.
+**** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.78.0 is known to work.
 Matt Wette's C99 LALR parser.
 
-*** GNU Gcc, 4.9.3 is known to work.
+**** GNU Gcc, 4.9.3 is known to work.
 The idea is to drop this requirement, of course.
 
-*** GNU Guile, version 2.0.12 or is know to work.
+**** GNU Guile, version 2.0.12 or is know to work.
 Guile is not strictly necessary but it is used by the configure script
 and in development.
 
-*** GNU Make, version 4.0 is know to work.
+**** GNU Make, version 4.0 is know to work.
 Not strictly necessary.
 
-*** /bin/sh, GNU Bash 4.3 is known to work.
+**** /bin/sh, GNU Bash 4.3 is known to work.
 Let's just say for now that it gets awkward without a shell.
 
-*** Development (but see [[./guix.scm]])
-
-*** GNU coreutils
-*** sed, GNU sed 4.2 is known to work.
-*** git, 2.10 is known to work.
-*** Perl, 5.22 is known to work.
+**** GNU coreutils
+**** sed, GNU sed 4.2 is known to work.
+**** git, 2.10 is known to work.
+**** Perl, 5.22 is known to work.
 
 * Build it
 

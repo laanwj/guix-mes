@@ -40,10 +40,9 @@ generates several recipies of sh build scripts in out/.
 * ROADMAP
 ** TODO 
 *** release 0.8
-  - move from lambda-based .o format to stage0's hex2.
-  - use stage0's linker to produce ELF.
-  - simplify [at least bootstrap] build process.
+  - produce ELF_sym and ELF_str tables from hex2; nicer for objdump -d, gdb
 *** release 0.x, unsorted
+  - simplify [at least the bootstrap] build process.
   - seamless connection to stage0.
   - mescc: compile tcc.c.
   - mescc: support unsigned comparison, arithmetic.
@@ -217,4 +216,8 @@ simple as possible.
 *** [[http://tack.sourceforge.net/][ack]]
 <rain1> it may be possible to compile like this:  mes |> ack |> pcc |> tcc |>
         gcc 4.7.4 |> gcc later version... up to modern
+*** [[https://web.archive.org/web/20160402225843/http://homepage.ntlworld.com/edmund.grimley-evans/cc500/][cc500]]
 ** rain1's Bootstrapping Wiki: https://bootstrapping.miraheze.org/wiki/Main_Page
+** rain1's hex86
+https://notabug.org/rain1/hex86/src/master/tests/hex0b3.hex86
+
