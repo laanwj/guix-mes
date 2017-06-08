@@ -51,6 +51,7 @@ DEFINES:=FIXED_PRIMITIVES=1 MES_FULL=1 VERSION='"$(VERSION)"' MODULEDIR='"$(MODU
 include make/bin-mlibc.make
 
 TARGET:=mes.guile
+$(OUT)/$(DIR)/mes.guile-E: $(SNARF.MES)
 $(OUT)/mes.guile: $(SNARF.MES)
 C_FILES:=$(DIR)/mes.c
 include make/mescc-guile.make
@@ -59,6 +60,7 @@ ifneq ($(MES_BOOTSTRAP),)
 safe-MES_MAX_ARENA:=$(MES_MAX_ARENA)
 MES_MAX_ARENA:=80000000
 TARGET:=mes.mes
+$(OUT)/$(DIR)/mes.mes-E: $(SNARF.MES)
 $(OUT)/mes.mes: $(SNARF.MES)
 mes.mes: $(OUT)/mes.mes
 	cp $< $@
