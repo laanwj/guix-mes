@@ -15,8 +15,8 @@ CLEAN+=$(O_FILES) $(OUT)/$(TARGET)
 CLEAN+=$(OUT)/$(TARGET)
 
 INCLUDES+=mlibc/include mlibc $(OUT)/$(DIR)
-MESCC.scm:=guile/mescc.scm
-MESLD.scm:=guile/mescc.scm
+MESCC.scm:=guile/mescc.scm -g
+MESLD.scm:=guile/mescc.scm -g
 
 $(OUT)/$(TARGET): ld:=MESLD.scm
 $(OUT)/$(TARGET): LD:=$(MESLD.scm)

@@ -26,16 +26,16 @@
 ;;; Code:
 
 (cond-expand
- (guile-2
-  (set-port-encoding! (current-output-port) "ISO-8859-1"))
+ (guile-2)
  (guile)
  (mes
   (mes-use-module (srfi srfi-26))
   (mes-use-module (mes pmatch))
   (mes-use-module (nyacc lang c99 parser))
+  (mes-use-module (nyacc lang c99 pprint))
   (mes-use-module (mes elf-util))
-  (mes-use-module (mes elf))
   (mes-use-module (mes as-i386))
+  (mes-use-module (mes hex2))
   (mes-use-module (mes optargs))))
 
 (define (logf port string . rest)
@@ -141,20 +141,18 @@
 (define <constants> '<constants>)
 (define <functions> '<functions>)
 (define <globals> '<globals>)
-(define <init> '<init>)
 (define <locals> '<locals>)
 (define <function> '<function>)
 (define <text> '<text>)
 (define <break> '<break>)
 
-(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (init '()) (locals '()) (function #f) (text '()) (break '()))
+(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (function #f) (text '()) (break '()))
   (pmatch o
     (<info> (list <info>
                   (cons <types> types)
                   (cons <constants> constants)
                   (cons <functions> functions)
                   (cons <globals> globals)
-                  (cons <init> init)
                   (cons <locals> locals)
                   (cons <function> function)
                   (cons <text> text)
@@ -175,10 +173,6 @@
 (define (.globals o)
   (pmatch o
     ((<info> . ,alist) (assq-ref alist <globals>))))
-
-(define (.init o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <init>))))
 
 (define (.locals o)
   (pmatch o
@@ -205,7 +199,6 @@
                (constants (.constants o))
                (functions (.functions o))
                (globals (.globals o))
-               (init (.init o))
                (locals (.locals o))
                (function (.function o))
                (text (.text o))
@@ -216,18 +209,15 @@
                           (constants constants)
                           (functions functions)
                           (globals globals)
-                          (init init)
                           (locals locals)
                           (function function)
                           (text text)
                           (break break))
-                         (make <info> #:types types #:constants constants #:functions functions #:globals globals #:init init #:locals locals #:function function #:text text #:break break))))))
+                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:function function #:text text #:break break))))))
 
 (define (push-global globals)
   (lambda (o)
-    (list
-     `(lambda (f g ta t d)
-        (i386:push-global (+ (data-offset ,o g) d))))))
+    (list (i386:push-label-mem o))))
 
 (define (push-local locals)
   (lambda (o)
@@ -235,9 +225,7 @@
 
 (define (push-global-address globals)
   (lambda (o)
-    (list
-     `(lambda (f g ta t d)
-       (i386:push-global-address (+ (data-offset ,o g) d))))))
+    (list (i386:push-label o))))
 
 (define (push-local-address locals)
   (lambda (o)
@@ -273,7 +261,7 @@
   (make-global (add-s:-prefix (number->string value)) "int" 0 (int->bv32 value)))
 
 (define (ident->global name type pointer value)
-  (make-global name type pointer (int->bv32 value)))
+  (make-global name type pointer (if (pair? value) value (int->bv32 value))))
 
 (define (make-local name type pointer id)
   (cons name (list type pointer id)))
@@ -298,13 +286,16 @@
                   (if constant
                       (wrap-as (append (i386:value->accu constant)
                                        (i386:push-accu)))
-                      (error "TODO:push-function: " o)))))))))
+                      ((push-global-address #f) `(address ,o))))))))))
 
 (define (push-ident-address info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
       (if local ((push-local-address (.locals info)) local)
-          ((push-global-address (.globals info)) o)))))
+          (let ((global (assoc-ref (.globals info) o)))
+          (if global
+              ((push-global-address (.globals info)) o)
+              ((push-global-address #f) `(address ,o))))))))
 
 (define (push-ident-de-ref info)
   (lambda (o)
@@ -385,41 +376,25 @@
                      (size (if (= ptr 1) (type->size info type)
                                4)))
                 (case ptr
-                  ((-1) (list `(lambda (f g ta t d)
-                                 (i386:global->accu (+ (data-offset ,o g) d)))))
-                  ((1) (list `(lambda (f g ta t d)
-                                (i386:global-address->accu (+ (data-offset ,o g) d)))))
-
-                  ((2) (list `(lambda (f g ta t d)
-                                (append (i386:value->accu (+ (data-offset ,o g) d))))))
-                  (else (list `(lambda (f g ta t d)
-                                 (i386:global-address->accu (+ (data-offset ,o g) d)))))))
+                  ((-1) (list (i386:label->accu o)))
+                  ((1) (list (i386:label-mem->accu o)))
+                  ((2) (list (i386:label->accu o)))
+                  (else (list (i386:label-mem->accu o)))))
               (if constant (wrap-as (i386:value->accu constant))
-                  (list `(lambda (f g ta t d)
-                           (i386:global->accu (+ ta (function-offset ,o f)))))))))))
+                  (list (i386:label->accu `(address ,o)))))))))
 
 (define (ident-address->accu info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o))
           (global (assoc-ref (.globals info) o))
           (constant (assoc-ref (.constants info) o)))
-      (if local
-          (let* ((ptr (local:pointer local))
-                 (type (ident->type info o))
-                 (size (if (= ptr 1) (type->size info type)
-                           4)))
-            ;;(stderr "ident->accu ~a => ~a\n" o ptr)
+      (if local (let* ((ptr (local:pointer local))
+                       (type (ident->type info o))
+                       (size (if (= ptr 1) (type->size info type)
+                                 4)))
             (wrap-as (i386:local-ptr->accu (local:id local))))
-          (if global
-              (let ((ptr (ident->pointer info o)))
-                (case ptr
-                  ;; ((1)
-                  ;;  (list `(lambda (f g ta t d)
-                  ;;          (i386:global->accu (+ (data-offset ,o g) d)))))
-                  (else (list `(lambda (f g ta t d)
-                                (append (i386:value->accu (+ (data-offset ,o g) d))))))))
-              (list `(lambda (f g ta t d)
-                          (i386:global->accu (+ ta (function-offset ,o f))))))))))
+          (if global (list (i386:label->accu o))
+              (list (i386:label->accu `(address ,o))))))))
 
 (define (ident-address->base info)
   (lambda (o)
@@ -432,15 +407,8 @@
                  (size (if (= ptr 1) (type->size info type)
                            4)))
             (wrap-as (i386:local-ptr->base (local:id local))))
-          (if global
-              (let ((ptr (ident->pointer info o)))
-                (case ptr
-                  ((1)
-                   (list `(lambda (f g ta t d)
-                           (i386:global->base (+ (data-offset ,o g) d)))))
-                  (else (list `(lambda (f g ta t d)
-                                (append (i386:value->base (+ (data-offset ,o g) d))))))))
-              (error "TODO ident-address->base" o))))))
+          (if global (list (i386:label->base o))
+              (list (i386:label->accu `(address ,o))))))))
 
 (define (value->accu v)
   (wrap-as (i386:value->accu v)))
@@ -448,20 +416,15 @@
 (define (accu->ident info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
-      (if local
-          (let ((ptr (local:pointer local)))
-            (case ptr
-              (else (wrap-as (i386:accu->local (local:id local))))))
+      (if local (wrap-as (i386:accu->local (local:id local)))
           (let ((ptr (ident->pointer info o)))
-            (list `(lambda (f g ta t d)
-                    (i386:accu->global (+ (data-offset ,o g) d)))))))))
+            (list (i386:accu->label o)))))))
 
 (define (base->ident info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (i386:base->local (local:id local)))
-          (list `(lambda (f g ta t d)
-                  (i386:base->global (+ (data-offset ,o g) d))))))))
+          (list (i386:base->label o))))))
 
 (define (base->ident-address info)
   (lambda (o)
@@ -480,15 +443,13 @@
   (lambda (o value)
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (i386:value->local (local:id local) value))
-          (list `(lambda (f g ta t d)
-                  (i386:value->global (+ (data-offset ,o g) d) value)))))))
+          (list (i386:value->label o value))))))
 
 (define (ident-add info)
   (lambda (o n)
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (i386:local-add (local:id local) n))
-          (list `(lambda (f g ta t d)
-                  (i386:global-add (+ (data-offset ,o g) d) ,n)))))))
+          (list (i386:label-mem-add o n))))))
 
 (define (ident-address-add info)
   (lambda (o n)
@@ -497,11 +458,10 @@
                                  (i386:local->accu (local:id local))
                                  (i386:accu-mem-add n)
                                  (i386:pop-accu)))
-          (list `(lambda (f g ta t d)
-                  (append (i386:push-accu)
-                          (i386:global->accu (+ (data-offset ,o g) d))
-                          (i386:accu-mem-add ,n)
-                          (i386:pop-accu))))))))
+          (list (wrap-as (append (i386:push-accu)
+                                 (i386:label->accu o)
+                                 (i386:accu-mem-add n)
+                                 (i386:pop-accu))))))))
 
 ;; FIXME: see ident->accu
 (define (ident->base info)
@@ -522,16 +482,12 @@
             (if global
                 (let ((ptr (ident->pointer info o)))
                   (case ptr
-                    ((-1) (list `(lambda (f g ta t d)
-                                  (i386:global->base (+ (data-offset ,o g) d)))))
-                    ((2) (list `(lambda (f g ta t d)
-                                 (i386:global->base (+ (data-offset ,o g) d)))))
-                    (else (list `(lambda (f g ta t d)
-                                  (i386:global-address->base (+ (data-offset ,o g) d)))))))
+                    ((-1) (list (i386:label->base o)))
+                    ((2) (list (i386:label->base o)))
+                    (else (list (i386:label-mem->base o)))))
                 (let ((constant (assoc-ref (.constants info) o)))
                   (if constant (wrap-as (i386:value->base constant))
-                      (list `(lambda (f g ta t d)
-                              (i386:global->base (+ ta (function-offset ,o f)))))))))))))
+                      (list (i386:label->base `(address ,o)))))))))))
 
 (define (expr->accu info)
   (lambda (o)
@@ -549,12 +505,10 @@
         ((p-expr (string ,string))
          (let* ((globals (append globals (list (string->global string))))
                 (info (clone info #:globals globals)))
-           (append-text info (list `(lambda (f g ta t d)
-                                     (i386:global->accu (+ (data-offset ,(add-s:-prefix string) g) d)))))))
+           (append-text info (list (i386:label->accu (add-s:-prefix string))))))
 
         ((p-expr (string . ,strings))
-         (append-text info (list `(lambda (f g ta t d)
-                                   (i386:global->accu (+ (data-offset ,(add-s:-prefix (apply string-append strings)) g) d))))))
+         (append-text info (list (i386:label->accu (add-s:-prefix (apply string-append strings))))))
         ((p-expr (fixed ,value))
          (append-text info (value->accu (cstring->number value))))
 
@@ -685,15 +639,16 @@
                                  (if (null? expressions) info
                                      (loop (cdr expressions) ((expr->arg info) (car expressions))))))
                     (n (length expr-list)))
-               (if (and (not (assoc-ref locals name))
-                        (assoc name (.functions info)))
-                   (append-text args-info (list `(lambda (f g ta t d)
-                                                  (i386:call f g ta t d (+ t (function-offset ,name f)) ,n))))
+               (if (not (assoc-ref locals name))
+                   (begin
+                     (if (and (not (assoc name (.functions info)))
+                              (not (assoc name globals)))
+                         (stderr "warning: undeclared function: ~a\n" name))
+                     (append-text args-info (list (i386:call-label name n))))
                    (let* ((empty (clone info #:text '()))
                           (accu ((expr->accu empty) `(p-expr (ident ,name)))))
                      (append-text args-info (append (.text accu)
-                                                    (list `(lambda (f g ta t d)
-                                                            (i386:call-accu f g ta t d ,n))))))))))
+                                                    (list (i386:call-accu n)))))))))
 
         ((fctn-call ,function (expr-list . ,expr-list))
          (let* ((text-length (length text))
@@ -704,8 +659,7 @@
                 (empty (clone info #:text '()))
                 (accu ((expr->accu empty) function)))
            (append-text args-info (append (.text accu)
-                                          (list `(lambda (f g ta t d)
-                                                  (i386:call-accu f g ta t d ,n)))))))
+                                          (list (i386:call-accu n))))))
 
         ((cond-expr . ,cond-expr)
          ((ast->info info) `(expr-stmt ,o)))
@@ -838,8 +792,7 @@
                      (ptr (ident->pointer info array))
                      (size (if (> ptr 1) 4 1)))
                 (append-text info (append (wrap-as (i386:accu->base))
-                                          ((base->ident-address info) array)
-                                          (i386:base->accu)))))
+                                          ((base->ident-address info) array)))))
              ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
               (let* ((info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))
@@ -853,9 +806,9 @@
              ((array-ref ,index (p-expr (ident ,array)))
               (let* ((type (ident->type info array))
                      (size (type->size info type))
-                     (info (append-text info (wrap-as (append (i386:push-accu)))))
+                     (info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))
-                     (info (append-text info (wrap-as (append (i386:pop-base))))))
+                     (info (append-text info (wrap-as (i386:pop-base)))))
                 (append-text info
                              (append (if (eq? size 1) (wrap-as (i386:byte-base->accu-address))
                                          (if (<= size 4) (wrap-as (i386:base->accu-address))
@@ -888,8 +841,8 @@
 (define (append-text info text)
   (clone info #:text (append (.text info) text)))
 
-(define (wrap-as o)
-  (list `(lambda (f g ta t d) ,(cons 'list o))))
+(define (wrap-as o . annotation)
+  `(,@annotation ,o))
 
 (define (expr->accu* info)
   (lambda (o)
@@ -917,7 +870,7 @@
        (let* ((type (ident->type info array))
               (offset (field-offset info type field))
               (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
-         (append-text info (wrap-as (append (i386:accu+value offset))))))
+         (append-text info (wrap-as (i386:accu+value offset)))))
 
       ((d-sel (ident ,field) (p-expr (ident ,name)))
        (let* ((type (ident->type info name))
@@ -1366,10 +1319,12 @@
         ((compd-stmt (block-item-list . ,statements)) ((ast-list->info info) statements))
         
         ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
-         (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list))))
-                                   (append-text info (wrap-as (asm->hex arg0))))
-             (let ((info ((expr->accu info) `(fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))))
-               (append-text info (wrap-as (i386:accu-zero?))))))
+         (let* ((source (with-output-to-string (lambda () (pretty-print-c99 o))))
+                (info (append-text info (wrap-as `(#:comment ,source)))))
+           (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list))))
+                                     (append-text info (wrap-as (asm->hex arg0))))
+              (let ((info ((expr->accu info) `(fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))))
+                (append-text info (wrap-as (i386:accu-zero?)))))))
 
         ((if ,test ,body)
          (let* ((text-length (length text))
@@ -1514,7 +1469,9 @@
                   #:locals locals)))
 
         ((while ,test ,body)
-         (let* ((skip-info (lambda (body-length test-length)
+         (let* ((source (with-output-to-string (lambda () (pretty-print-c99 `(while ,test (ellipsis))))))
+                ;;(source (with-output-to-string (lambda () (pretty-print-c99 `(while ,test (compd-stmt (block-item-list)))))))
+                (skip-info (lambda (body-length test-length)
                              (clone info
                                     #:text (append text (wrap-as (i386:Xjump body-length)))
                                     #:break (cons (+ (length (object->list text)) body-length test-length
@@ -1542,6 +1499,7 @@
 
            (clone info #:text
                   (append
+                   (wrap-as `(#:comment ,source))
                    (.text body-info)
                    test-text
                    jump-text)
@@ -1571,15 +1529,13 @@
                   #:globals (.globals body-info))))
 
         ((labeled-stmt (ident ,label) ,statement)
-         (let ((info (append-text info (list label))))
+         (let ((info (append-text info `((#:label ,label)))))
            ((ast->info info) statement)))
 
         ((goto (ident ,label))
          (let* ((jump (lambda (n) (i386:XXjump n)))
                 (offset (+ (length (jump 0)) (length (object->list text)))))
-           (append-text info (append 
-                              (list `(lambda (f g ta t d)
-                                      (i386:XXjump (- (label-offset ,(.function info) ,label f) ,offset))))))))
+           (append-text info (list (i386:jump-label `(label ,label))))))
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
@@ -1641,26 +1597,14 @@
                     (globals (append globals (list (string->global string))))
                     (info (clone info #:locals locals #:globals globals)))
                (append-text info (append
-                                  (list `(lambda (f g ta t d)
-                                          (append
-                                           (i386:global->accu (+ (data-offset ,(add-s:-prefix string) g) d)))))
+                                  (list (i386:label->accu (add-s:-prefix string)))
                                   ((accu->ident info) name))))
              (let* ((global (string->global string))
                     (globals (append globals (list global)))
                     (size 4)
-                    (global (make-global name type 1 (string->list (make-string size #\nul))))
-                    (globals (append globals (list global)))
-                    (info (clone info #:globals globals)))
-               (clone info #:init
-                      (append
-                       (.init info)
-                       (list
-                        `(lambda (f g ta t d data)
-                           (let (((here (data-offset ,name g))))
-                             (append
-                              (list-head data here)
-                              (initzer->data f g ta t d '(initzer (p-expr (string ,string))))
-                              (list-tail data (+ here ,size)))))))))))
+                    (global (make-global name type 1 (initzer->data `(initzer (p-expr (string ,string))))))
+                    (globals (append globals (list global))))
+               (clone info #:globals globals))))
         
         ;; char *p;
         ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
@@ -1712,9 +1656,6 @@
              (let ((globals (append globals (list (ident->global name type 2 0)))))
                (clone info #:globals globals))))
 
-        ;; char **p = 0;
-        ;;((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)) (initzer (p-expr (fixed ,value)))))))
-
         ;; char **p = g_environment;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)) (initzer (p-expr (ident ,b)))))) ;; FIXME: initzer
          (if (.function info)
@@ -1723,18 +1664,10 @@
                (append-text info (append
                                   ((ident->accu info) b)
                                   ((accu->ident info) name))))
-             (let* ((globals (append globals (list (ident->global name type 2 0))))
-                    (value (assoc-ref constants b)))
-               (clone info
-                      #:globals globals
-                      #:init (append (.init info)
-                                     (list
-                                      `(lambda (f g ta t d data)
-                                         (let ((here (data-offset ,name g)))
-                                           (append
-                                            (list-head data here)
-                                            (initzer->data f g ta t d '(p-expr (fixed ,value)))
-                                            (list-tail data (+ here 4)))))))))))
+             (let* ((value (assoc-ref constants b))
+                    (global (ident->global name type 2 (initzer->data `(p-expr (fixed ,value)))))
+                    (globals (append globals (list global))))
+               (clone info #:globals globals))))
 
         ;; struct foo bar[2];
         ;; char arena[20000];
@@ -1843,9 +1776,8 @@
                   (append text
                           (.text accu)
                           ((accu->ident info) name)
-                          (list `(lambda (f g ta t d)
-                                  (append (i386:value->base ta)
-                                          (i386:accu+base)))))
+                          (wrap-as (append (i386:label->base '(address "_start"))
+                                           (i386:accu+base))))
                   #:locals locals)))
 
         ;; char *p = (char*)g_cells;
@@ -1855,22 +1787,8 @@
                     (info (clone info #:locals locals)))
                (append-text info (append ((ident->accu info) value)
                                          ((accu->ident info) name))))
-             (let* ((globals (append globals (list (ident->global name type 1 0)))))
-               (clone info
-                      #:globals globals
-                      #:init (append (.init info)
-                                     (list
-                                      `(lambda (f g ta t d data)
-                                         (let ((here (data-offset ,name g))
-                                               (there (data-offset ,value g)))
-                                           (append
-                                            (list-head data here)
-                                            ;; FIXME: type
-                                            ;; char *x = arena;
-                                            (int->bv32 (+ d (data-offset ,value g)))
-                                            ;; char *y = x;
-                                            ;;(list-head (list-tail data there) 4)
-                                            (list-tail data (+ here 4)))))))))))
+             (let ((globals (append globals (list (ident->global name type 1 `(,value #f #f #f))))))
+               (clone info #:globals globals))))
 
         ;; char *p = g_cells;
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (ident ,value))))))
@@ -1880,18 +1798,8 @@
                       (info (clone info #:locals locals)))
                  (append-text info (append ((ident->accu info) value)
                                            ((accu->ident info) name))))
-               (let* ((globals (append globals (list (ident->global name type 1 0)))))
-                 (clone info
-                        #:globals globals
-                        #:init (append (.init info)
-                                       (list `(lambda (f g ta t d data)
-                                                (let ((here (data-offset ,name g)))
-                                                  (append
-                                                   (list-head data here)
-                                                   ;; FIXME: type
-                                                   ;; char *x = arena;p
-                                                   (int->bv32 (+ d (data-offset ,value g)))
-                                                   (list-tail data (+ here 4))))))))))))
+               (let ((globals (append globals (list (ident->global name type 1 `(,value #f #f #f))))))
+                 (clone info #:globals globals)))))
 
         ;; enum foo { };
         ((decl (decl-spec-list (type-spec (enum-def (ident ,name) (enum-def-list . ,fields)))))
@@ -2008,22 +1916,10 @@
                 (initzers (map (initzer->non-const info) initzers)))
            (if (.function info)
                (error "TODO: <type> x[] = {};" o)
-               (let* ((global (make-global name type 2 (string->list (make-string size #\nul))))
-                      (globals (append globals entries (list global)))
-                      (info (clone info #:globals globals)))
-                 (clone info #:init
-                        (append
-                         (.init info)
-                         (list
-                          `(lambda (f g ta t d data)
-                             (let ((here (data-offset ,name g)))
-                               (append
-                                (list-head data here)
-                                (append-map
-                                 (lambda (i)
-                                   (initzer->data f g ta t d i))
-                                 ',initzers)
-                                (list-tail data (+ here ,size))))))))))))
+               (let* (;;(global (make-global name type 2 (string->list (make-string size #\nul))))
+                      (global (make-global name type 2 (append-map initzer->data initzers)))
+                      (globals (append globals entries (list global))))
+                 (clone info #:globals globals)))))
 
         ;;
         ;; struct f = {...};
@@ -2053,24 +1949,9 @@
                                        (.text ((expr->accu empty) initzer))
                                        (wrap-as (i386:accu->base-address+n offset)))))))))
                (let* ((globals (append globals (filter-map initzer->global initzers)))
-                      (global (make-global name type -1 (string->list (make-string size #\nul))))
-                      (globals (append globals (list global)))
-                      (info (clone info #:globals globals)))
-                 (let loop ((fields fields) (initzers initzers) (info info))
-                   (if (null? fields) info
-                       (let ((offset (field-offset info type (caar fields)))
-                             (initzer (car initzers)))
-                         (loop (cdr fields) (cdr initzers)
-                               (clone info #:init
-                                      (append
-                                       (.init info)
-                                       (list
-                                        `(lambda (f g ta t d data)
-                                           (let ((here (data-offset ,name g)))
-                                             (append
-                                              (list-head data (+ here ,offset))
-                                              (initzer->data f g ta t d ',(car initzers))
-                                              (list-tail data (+ here ,offset ,(field:size (car fields))))))))))))))))))
+                      (global (make-global name type 2 (append-map initzer->data initzers)))
+                      (globals (append globals (list global))))
+                 (clone info #:globals globals)))))
 
 
         ;;char cc = g_cells[c].cdr;  ==> generic?
@@ -2083,18 +1964,9 @@
                  (clone info #:text
                         (append (.text ((expr->accu info) initzer))
                                 ((accu->ident info) name))))
-               (let* ((globals (append globals (list (ident->global name type 1 0)))))
-                 (clone info
-                        #:globals globals
-                        #:init (append (.init info)
-                                       (list
-                                        `(lambda (f g ta t d data)
-                                           (let ((here (data-offset ,name g)))
-                                             (append
-                                              (list-head data here)
-                                              (initzer->data f g ta t d ',initzer)
-                                              (list-tail data (+ here 4))))))))))))
-
+               (let* ((global (make-global name type 2 (initzer->data initzer)))
+                      (globals (append globals (list global))))
+                 (clone info #:globals globals)))))
 
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
          (declare name))
@@ -2264,14 +2136,12 @@
          `(initzer (p-expr (fixed ,(number->string value))))))
       (_ o))))
 
-(define (initzer->data f g ta t d o)
+(define (initzer->data o)
   (pmatch o
     ((initzer (p-expr (fixed ,value))) (int->bv32 (cstring->number value)))
     ((initzer (neg (p-expr (fixed ,value)))) (int->bv32 (- (cstring->number value))))
-    ((initzer (ref-to (p-expr (ident ,name))))
-     (int->bv32 (+ ta (function-offset name f))))
-    ((initzer (p-expr (string ,string)))
-     (int->bv32 (+ (data-offset (add-s:-prefix string) g) d)))
+    ((initzer (ref-to (p-expr (ident ,name)))) `(,name #f #f #f))
+    ((initzer (p-expr (string ,string))) `(,(add-s:-prefix string) #f #f #f))
     (_ (error "initzer->data: unsupported: " o))))
 
 (define (.formals o)
@@ -2345,46 +2215,8 @@
       (if (null? elements) info
           (loop (cdr elements) ((ast->info info) (car elements)))))))
 
-(define current-eval
-  (let ((module (current-module)))
-    (lambda (e) (eval e module))))
-
 (define (object->list object)
-  (text->list (map current-eval object)))
-
-(define (dec->xhex o)
-  (string-append "#x" (dec->hex (if (>= o 0) o (+ o #x100)))))
-
-(define (write-lambda o)
-  (newline)
-  (display "    ")
-  (if (or (not (pair? o))
-          (not (eq? (caaddr o) 'list))) (write o)
-          (list (car o) (cadr o)
-                (display (string-append "(lambda (f g ta t d) (list "
-                                        (string-join (map dec->xhex (cdaddr o)) " ")
-                                        "))")))))
-
-(define (write-function o)
-  (stderr "function: ~s\n" (car o))
-  (newline)
-  (display "  (")
-  (write (car o)) (display " ")
-  (if (not (cdr o)) (display ". #f")
-      (for-each write-lambda (cdr o)))
-  (display ")"))
-
-(define (write-info o)
-  (stderr "object:\n")
-  (display "(make <info>\n")
-  (display "  #:types\n  '") (pretty-print (.types o) #:width 80)
-  (display "  #:constants\n  '") (pretty-print (.constants o) #:width 80)
-  (display "  #:functions '(") (for-each write-function (.functions o)) (display ")") (newline)
-  (stderr "globals:\n")
-  (display "  #:globals\n  '") (pretty-print (.globals o) #:width 80)
-  (stderr "init:\n")
-  (display "  #:init\n  '") (pretty-print (.init o) #:width 80)
-  (display ")\n"))
+  (apply append (filter (lambda (x) (and (pair? x) (not (member (car x) '(#:comment #:label))))) object)))
 
 (define* (c99-input->info #:key (defines '()) (includes '()))
   (lambda ()
@@ -2396,63 +2228,15 @@
            (info (clone info #:text '() #:locals '())))
       info)))
 
-(define (write-any x)
-  (write-char (cond ((char? x) x)
-                    ((and (number? x) (< (+ x 256) 0))
-                     (format (current-error-port) "***BROKEN*** x=~a ==> ~a\n" x (dec->hex x)) (integer->char #xaa))
-                    ((number? x) (integer->char (if (>= x 0) x (+ x 256))))
-                    ((procedure? x)
-                     (stderr "write-any: proc: ~a\n" x)
-                     (stderr "  ==> ~a\n" (map dec->hex (x '() '() 0 0)))
-                     (error "procedure: write-any:" x))
-                    (else (stderr "write-any: ~a\n" x) (error "write-any: else: " x)))))
-
-(define (info->elf info)
-  (display "dumping elf\n" (current-error-port))
-  (for-each write-any (make-elf (filter cdr (.functions info)) (.globals info) (.init info))))
-
-(define (function:object->text o)
-  (cons (car o) (and (cdr o) (map current-eval (cdr o)))))
-
-(define (init:object->text o)
-  (current-eval o))
-
-(define (info:object->text o)
-  (clone o
-         #:functions (map function:object->text (.functions o))
-         #:init (map init:object->text (.init o))))
+(define* (info->object o)
+  `((functions . ,(.functions o))
+    (globals . ,(map (lambda (g) (cons (car g) (global:value (cdr g)))) (.globals o)))))
 
 (define* (c99-ast->info ast)
   ((ast->info (make <info> #:types i386:type-alist)) ast))
 
 (define* (c99-input->elf #:key (defines '()) (includes '()))
-  ((compose info->elf info:object->text (c99-input->info #:defines defines #:includes includes))))
+  ((compose object->elf info->object (c99-input->info #:defines defines #:includes includes))))
 
 (define* (c99-input->object #:key (defines '()) (includes '()))
-  ((compose write-info (c99-input->info #:defines defines #:includes includes))))
-
-(define (object->elf info)
-  ((compose info->elf info:object->text) info))
-
-(define (infos->object infos)
-  ((compose write-info merge-infos) infos))
-
-(define (infos->elf infos)
-  ((compose object->elf merge-infos) infos))
-
-(define (merge-infos infos)
-  (let loop ((infos infos) (info (make <info>)))
-    (if (null? infos) info
-        (loop (cdr infos)
-              (clone info
-                     #:types (alist-add (.types info) (.types (car infos)))
-                     #:constants (alist-add (.constants info) (.constants (car infos)))
-                     #:functions (alist-add (.functions info) (.functions (car infos)))
-                     #:globals (alist-add (.globals info) (.globals (car infos)))
-                     #:init (append (.init info) (.init (car infos))))))))
-
-(define (alist-add a b)
-  (let* ((b-keys (map car b))
-         (a (filter (lambda (f) (or (cdr f) (not (member (car f) b-keys)))) a))
-         (a-keys (map car a)))
-    (append a (filter (lambda (e) (not (member (car e) a-keys))) b))))
+  ((compose write-hex3 info->object (c99-input->info #:defines defines #:includes includes))))

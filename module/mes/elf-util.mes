@@ -29,7 +29,19 @@
  (guile)
  (guile-2)
  (mes
+  (mes-use-module (srfi srfi-1))
   (mes-use-module (srfi srfi-1))))
+
+
+(define (int->bv32 value)
+  (let ((bv (make-bytevector 4)))
+    (bytevector-u32-native-set! bv 0 value)
+    bv))
+
+(define (int->bv16 value)
+  (let ((bv (make-bytevector 2)))
+    (bytevector-u16-native-set! bv 0 value)
+    bv))
 
 (define (make-global name type pointer value)
   (cons name (list type pointer value)))
@@ -43,28 +55,64 @@
 
 (define (dec->hex o)
   (cond ((number? o) (number->string o 16))
-        ((char? o) (number->string (char->integer o) 16))))
+        ((char? o) (number->string (char->integer o) 16))
+        (else (format #f "~s" o))))
 
-(define (functions->lambdas functions)
-  (append-map (lambda (f) (or (cdr f) '())) functions))
-
-(define (lambda/label->list f g ta t d)
-  (lambda (l/l)
-    (if (not (procedure? l/l)) '() (l/l f g ta t d))))
+(define (functions->lines functions)
+  (filter (lambda (x) (not (and (pair? x) (pair? (car x)) (member (caar x) '(#:comment #:label))))) (append-map cdr functions))
+  ;;(append-map cdr functions)
+  )
 
 (define (text->list o)
-  (append-map (lambda/label->list '() '() 0 0 0) o))
+  (append-map cdr o))
 
 (define functions->text
   (let ((cache '()))
     (lambda (functions globals ta t d)
-      (or (assoc-ref cache (cons ta (map car functions)))
-          (let ((text (let loop ((lambdas/labels (functions->lambdas functions)) (text '()))
-                        (if (null? lambdas/labels) text
-                            (loop (cdr lambdas/labels)
-                                  (append text ((lambda/label->list functions globals ta (- (length text)) d) (car lambdas/labels))))))))
-            (set! cache (assoc-set! cache (cons ta (map car functions)) text))
-            text)))))
+      (let ((text (or (assoc-ref cache (cons ta (map car functions)))
+                      (let ((text (apply append (functions->lines functions))))
+                    (set! cache (assoc-set! cache (cons ta (map car functions)) text))
+                    text))))
+        (if (= ta 0) text
+            (let loop ((f functions))
+              (if (null? f) '()
+                  (append ((function->text functions globals ta t d) (car f))
+                          (loop (cdr f))))))))))
+
+(define (function->text functions globals ta t d)
+  (lambda (o)
+    (let ((text (apply append (cdr o)))
+          (offset (function-offset (car o) functions)))
+      (let loop ((text text) (off offset))
+        (if (null? text) '()
+            (let ((label (car text)))
+              (if (number? label) (cons label (loop (cdr text) (1+ off)))
+                  (if (and (pair? label) (member (car label) '(#:comment #:label))) ;;(cons #x90 (loop (cdr text) (1+ off)))
+                      (loop (cdr text) off)
+                   (let* ((prefix (if (and (pair? (cdr text))
+                                           (pair? (cddr text))
+                                           (boolean? (caddr text))) 4
+                                           2))
+                          ;;(foo (format (current-error-port) "LABEL=~s\n" label))
+                          ;; FiXME: address vs relative address
+                          (address? (and (pair? label) (member (car label) '(address))))
+                          (label (if address? (cadr label) label))
+                          (function-address (function-offset label functions))
+                          (data-address (data-offset label globals))
+                          (label-address (label-offset (car o) (and (pair? label)
+                                                                    `((#:label ,(cadr label)))) functions))
+                          ;; (foo (format (current-error-port) "  address?=~s\n" address?))
+                          ;; (foo (format (current-error-port) "  d=~s\n" data-address))
+                          ;; (foo (format (current-error-port) "  f=~s\n" function-address))
+                          ;; (foo (format (current-error-port) "  l=~s\n" label-address))
+                          (address (or (and=> data-address (lambda (a) (+ a d)))
+                                       (if address?
+                                           (and=> function-address (lambda (a) (+ a ta)))
+                                           (and=> function-address (lambda (a) (- a off prefix))))
+                                       (and=> label-address (lambda (a) (- a (- off offset) prefix)))
+                                       (error "unresolved label: " label))))
+                     (append ((if (= prefix 2) int->bv16 int->bv32) address)
+                             (loop (list-tail text prefix) (+ off prefix))))))))))))
 
 (define (function-prefix name functions)
   ;; FIXME
@@ -85,7 +133,7 @@
                                      (if (null? (cdr prefix)) 0
                                          (function-offset (caar prefix) functions)))))))
             (if (and offset (or (equal? name "_start") (> offset 0))) (set! cache (assoc-set! cache name offset)))
-            (or offset 0))))))
+            offset)))))
 
 (define label-offset
   (let ((cache '()))
@@ -95,26 +143,45 @@
             (if (not prefix) 0
                 (let* ((function-entry (car prefix))
                        (offset (let loop ((text (cdr function-entry)))
-                                 (if (or (equal? (car text) label) (null? text)) 0
-                                     (let* ((l/l (car text))
-                                            (t ((lambda/label->list '() '() 0 0 0) l/l))
-                                            (n (length t)))
+                                 ;; FIXME: unresolved label
+                                 ;;(if (null? text) (error "unresolved label:"))
+                                 (if (or (null? text) (equal? (car text) label)) 0
+                                     (let* ((t (car text))
+                                            (n (if (and (pair? (car t))
+                                                        (member (caar t) '(#:label #:comment))) 0 (length t))))
                                        (+ (loop (cdr text)) n))))))
                   (when (> offset 0)
                     (set! cache (assoc-set! cache (cons function label) offset)))
                   offset)))))))
 
-(define (globals->data globals)
-  (append-map (compose global:value cdr) globals))
+(define (globals->data functions globals t d)
+  (let loop ((text (append-map cdr globals)))
+    (if (null? text) '()
+        (let ((label (car text)))
+          (if (or (char? label) (number? label)) (cons label (loop (cdr text)))
+              (let* ((prefix (if (and (pair? (cdr text))
+                                      (pair? (cddr text))
+                                      (boolean? (caddr text))) 4
+                                      2))
+                     (function-address (function-offset label functions))
+                     (data-address (data-offset label globals))
+                     (address (or (and=> data-address (lambda (a) (+ a d)))
+                                  (and=> function-address (lambda (a) (+ a t)))
+                                  (error "unresolved label: " label))))
+                      (append ((if (= prefix 2) int->bv16 int->bv32) address)
+                              (loop (list-tail text prefix)))))))))
+
+(define (simple-globals->data globals)
+  (append-map cdr globals))
 
 (define data-offset
   (let ((cache '()))
     (lambda (name globals)
-      (or ;;(assoc-ref cache name)
-          (let* ((prefix (member name (reverse globals)
-                                 (lambda (a b)
-                                   (equal? (car b) name)))))
-            (if (not prefix) 0
-                (let ((offset (length (globals->data (cdr prefix)))))
-                 (set! cache (assoc-set! cache name offset))
-                 offset)))))))
+      (or (assoc-ref cache name)
+          (let ((prefix (member name (reverse globals)
+                                (lambda (a b)
+                                  (equal? (car b) name)))))
+            (and prefix
+                 (let ((offset (length (simple-globals->data (cdr prefix)))))
+                   (set! cache (assoc-set! cache name offset))
+                   offset)))))))

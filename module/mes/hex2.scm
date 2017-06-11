@@ -22,26 +22,16 @@
 
 ;;; Code:
 
-(define-module (mes elf-util)
+(define-module (mes hex2)
   #:use-module (srfi srfi-1)
-  #:use-module (mes bytevectors)
-  #:export (data-offset
-            dec->hex
-            add-s:-prefix
-            drop-s:-prefix
-            function-offset
-            int->bv16
-            int->bv32
-            label-offset
-            functions->lambdas
-            functions->text
-            lambda/label->list
-            text->list
-            globals->data
-            make-global
-            global:type
-            global:pointer
-            global:value))
+  #:use-module (srfi srfi-26)
+  #:use-module (mes elf-util)
+  #:use-module (mes elf)
+  #:export (objects->hex2
+            objects->hex3
+            objects->elf
+            write-hex2
+            write-hex3))
 
 (cond-expand
  (guile-2)
@@ -49,4 +39,4 @@
   (use-modules (ice-9 syncase)))
  (mes))
 
-(include-from-path "mes/elf-util.mes")
+(include-from-path "mes/hex2.mes")

@@ -18,19 +18,21 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 int
 main (int argc, char *argv[])
 {
-  g_stdin = open ("scaffold/mesmes", 0);
-  int c = getchar ();
-  if (c != 'm') return c;
-  while (c != EOF) {
-    putchar (c);
-    c = getchar ();
-  }
-  return c;
+  eputs ("Hi Mes!\n");
+#if __MESC_MES__
+  eputs ("MESC.MES\n");
+#else
+  puts ("MESC.GUILE\n");
+#endif
+  if (argc > 1 && !strcmp (argv[1], "--help"))
+    {
+      eputs ("argc > 1 && --help\n");
+      return argc;
+    }
+  return 42;
 }

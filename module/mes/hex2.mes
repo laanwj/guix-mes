@@ -1,0 +1,194 @@
+;;; -*-scheme-*-
+
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; hex2.mes produces stage0' hex2 object format
+
+;;; Code:
+
+(cond-expand
+ (guile)
+ (mes
+  (mes-use-module (srfi srfi-1))
+  (mes-use-module (srfi srfi-26))
+  (mes-use-module (mes elf-util))
+  (mes-use-module (mes elf))
+  (mes-use-module (mes optargs))))
+
+(define (logf port string . rest)
+  (apply format (cons* port string rest))
+  (force-output port)
+  #t)
+
+(define (stderr string . rest)
+  (apply logf (cons* (current-error-port) string rest)))
+
+(define (dec->xhex o)
+  (if (number? o) (string-append "#x" (dec->hex o))
+      (format #f "~s" o)))
+
+(define (write-hex3 o)
+  (define (write-line o)
+    (cond ((null? o))
+          ((not (pair? o))
+           (display (dec->xhex o)))
+          ((string? (car o))
+           (format #t ";; ~a\n" (car o))
+           (display (string-join (map dec->xhex (cdr o)) " ")))
+          ((number? (car o))
+           (display (string-join (map dec->xhex o) " ")))
+          ((member (car o) '(#:comment #:label))
+           (write o))
+          ((and (pair? (car o)) (member (caar o) '(#:comment #:label)))
+           (write (car o)))
+          (else (error "write-line LINE:" o))))
+  (define (write-function o)
+    (stderr "function: ~s\n" (car o))
+    (format #t "\n(~s " (car o))
+    (if (pair? (cadr o)) (for-each
+                          (lambda (x) (display "\n  (") (write-line x) (display ")"))
+                          (filter pair? (cdr o)))
+        (write-line o))
+    (display ")"))
+  (define (write-global o)
+    (stderr "global: ~s\n" (car o))
+    (format #t "\n(~s "(car o))
+    (display (string-join (map dec->xhex (cdr o)) " "))
+    (display ")"))
+  (define (write-init o)
+    (stderr "init: ~s\n" o)
+    (format #t "\n  (~s "(car o))
+    (display (string-join (map dec->xhex (global:value (cdr o))) " "))
+    (display ")"))
+  (stderr "object:\n")
+  (display ";;; hex3: hex2 in sexps with annotated labels\n")
+  (display "((functions ")
+  (for-each write-function (filter cdr (assoc-ref o 'functions)))
+  (display ")\n")
+  (display "(globals ")
+  (for-each write-global (assoc-ref o 'globals))
+  (display "))\n"))
+
+(define (objects->hex2 objects)
+  ((compose write-hex2 merge-objects) objects))
+
+(define (objects->hex3 objects)
+  ((compose write-hex3 merge-objects) objects))
+
+(define (objects->elf objects)
+  ((compose object->elf merge-objects) objects))
+
+(define (merge-objects objects)
+  (let loop ((objects (cdr objects)) (object (car objects)))
+    (if (null? objects) object
+        (loop (cdr objects)
+              `((functions . ,(alist-add (assoc-ref object 'functions) (assoc-ref (car objects) 'functions)))
+                (globals . ,(alist-add (assoc-ref object 'globals) (assoc-ref (car objects) 'globals))))))))
+
+(define (alist-add a b)
+  (let* ((b-keys (map car b))
+         (a (filter (lambda (f) (or (cdr f) (not (member (car f) b-keys)))) a))
+         (a-keys (map car a)))
+    (append a (filter (lambda (e) (not (member (car e) a-keys))) b))))
+
+(define (write-hex2 o)
+  (let* ((functions (assoc-ref o 'functions))
+         (function-names (map car functions))
+         (globals (assoc-ref o 'globals))
+         (global-names (map car globals))
+         (strings (filter (cut string-prefix? "s:" <>) global-names)))
+    (define (string->label o)
+      (format #f "string_~a" (list-index (lambda (s) (equal? s o)) strings)))
+    (define (dec->hex o)
+      (cond ((number? o) (string-append (if (and (>= o 0) (< o 16)) "0" "")
+                                        (number->string
+                                         (if (>= o 0) o (+ o #x100))
+                                         16)))
+            ((char? o) (dec->hex (char->integer o)))
+            ((and (string? o) (string-prefix? "s:" o))
+             (format #f "&~a" (string->label o)))
+            ((string? o) (format #f "~a" o))
+            (else (format #f "~a" o))))
+    (define (write-line o)
+      (newline)
+      (cond ((not (pair? o))
+             (display (dec->hex o)))
+            ((number? (car o))
+             ;;(display (string-join (map dec->hex (filter identity o)) " "))
+             (let ((text (let loop ((text o))
+                           (if (null? text) '()
+                               (let ((label (car text)))
+                                 (if (number? label) (cons label (loop (cdr text)))
+                                     (if (and (pair? label) (member (car label) '(#:comment #:label))) (loop (cdr text))
+                                         (let* ((prefix (if (and (pair? (cdr text))
+                                                                 (pair? (cddr text))
+                                                                 (boolean? (caddr text))) 4
+                                                                 2))
+                                                (address? (and (pair? label) (member (car label) '(address))))
+                                                (label (if address? (cadr label) label))
+                                                (function? (member label function-names))
+                                                (string-label (string->label label))
+                                                (string? (not (equal? string-label "string_#f")))
+                                                (global? (member label global-names))
+                                                (label? (and (pair? label) (eq? (car label) #:label))))
+                                           (cons (cond
+                                                  ((eq? prefix 1) (format #f "!~a" label))
+                                                  ((eq? prefix 2) (format #f "@~a" label))
+                                                  (label? (format #f "%label_~a" label))
+                                                  (function? (format #f "%~a" label))
+                                                  (string? (format #f "&~a" string-label))
+                                                  (global? (format #f "&~a" label))
+                                                  (else (format #f "%~a" label)))
+                                                 (loop (list-tail text prefix)))))))))))
+               (display (string-join (map dec->hex text) " "))))
+            ((member (car o) '(#:comment))
+             (format #t "# ~a" (cadr o)))
+            ((eq? (car o) #:label)
+             (format #t ":~a\n" (cadr o)))
+            ((and (pair? (car o)) (eq? (caar o) #:label))
+             (format #t ":~a\n" (cadar o)))
+            ((and (pair? (car o)) (member (caar o) '(#:comment)))
+             (format #t "# ~a" (cadar o)))
+            ((and (pair? (car o)) (member (caar o) '(#:comment #:label)))
+             (write (car o)))
+            (else (error "write-line LINE:" o))))
+    (define (write-function o)
+      (format #t "\n\n:~a" (car o))
+      (if (pair? (cadr o)) (for-each write-line (cdr o))
+          (write-line (cdr o))))
+    (define (write-global o)
+      (let ((label (if (not (string-prefix? "s:" (car o))) (car o)
+                       (string->label (car o)))))
+        (format #t "\n:~a\n" label)
+        (display (string-join (map dec->hex (cdr o)) " "))
+        (newline)))
+    (display "### stage0's hex2 format for x86\n")
+    (display "###    !<label>          1 byte relative\n")
+    (display "###    $<label>          2 byte address\n")
+    (display "###    @<label>          2 byte relative\n")
+    (display "###    &<label>          4 byte address\n")
+    (display "###    %<label>          4 byte relative\n")
+    (display "###    label_<label>     function-local\n")
+    (display "###    string_<index>    string #<index>\n")
+    (display "\n##.text")
+    (for-each write-function (filter cdr functions))
+    (display "\n\n##.data\n")
+    (for-each write-global globals)))

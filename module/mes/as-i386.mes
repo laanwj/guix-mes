@@ -28,7 +28,7 @@
  (guile-2)
  (guile)
  (mes
-  (mes-use-module (mes elf))))
+  (mes-use-module (mes elf-util))))
 
 (define (i386:function-preamble)
   '(#x55                                ; push   %ebp
@@ -40,13 +40,11 @@
 (define (i386:function-locals)
   '(#x83 #xec #x40))              ; sub    $0x10,%esp -- 16 local vars
 
-(define (i386:push-global-address o)
-  (or o (error "invalid value: push-global-address: " o))
-  `(#x68 ,@(int->bv32 o)))              ; push  $0x<o>
+(define (i386:push-label label)
+  `(#x68 ,label #f #f #F))              ; push  $0x<o>
 
-(define (i386:push-global o)
-  (or o (error "invalid value: push-global: " o))
-  `(#xa1 ,@(int->bv32 o)                ; mov    0x804a000,%eax
+(define (i386:push-label-mem label)
+  `(#xa1 ,label #f #f #f                ; mov    0x804a000,%eax
          #x50))                         ; push  %eax
 
 (define (i386:push-local n)
@@ -118,18 +116,8 @@
   (or n (error "invalid value: base->local: " n))
   `(#x89 #x55 ,(- 0 (* 4 n))))          ; mov    %edx,-<0xn>(%ebp)
 
-(define (i386:base->global n)
-  (or n (error "invalid value: base->global: " n))
-  `(#x89 #x15 ,@(int->bv32 n)))         ; mov    %edx,0x0
-
-(define (i386:accu->global n)
-  (or n (error "invalid value: accu->global: " n))
-  `(#xa3 ,@(int->bv32 n)))              ; mov    %eax,0x0
-
-(define (i386:accu->global-address n)
-  (or n (error "invalid value: accu->global-address: " n))
-  `(#x8b #x15 ,@(int->bv32 n)           ; mov    0x<n>,%edx
-         #x89 #x02 ))                   ; mov    %eax,(%edx)
+(define (i386:accu->label label)
+  `(#xa3 ,label #f #f #f))
 
 (define (i386:accu-zero?)
   '(#x85 #xc0))                         ; cmpl   %eax,%eax
@@ -225,17 +213,20 @@
   `(#x89 #xea                           ; mov    %ebp,%edx
          #x83 #xc2 ,(- 0 (* 4 n))))     ; add    $0x<n>,%edx
 
-(define (i386:global->base n)
-  (or n (error "invalid value: global->base: " n))
-  `(#xba ,@(int->bv32 n)))              ; mov   $<n>,%edx
+(define (i386:label->accu label)
+  `(#xb8 ,label #f #f #f))              ; mov    $<>,%eax
 
-(define (i386:global-address->accu n)
-  (or n (error "invalid value: global-address->accu: " n))
-  `(#xa1 ,@(int->bv32 n)))              ; mov    0x<n>,%eax
+(define (i386:label->base label)
+  `(#xba ,label #f #f #f))              ; mov   $<n>,%edx
 
-(define (i386:global-address->base n)
-  (or n (error "invalid value: global-address->base: " n))
-  `(#x8b #x15 ,@(int->bv32 n)))         ; mov    0x<n>,%edx
+(define (i386:label-mem->accu label)
+  `(#xa1 ,label #f #f #f))              ; mov    0x<n>,%eax
+
+(define (i386:label-mem->base label)
+  `(#x8b #x15 ,label #f #f #f))         ; mov    0x<n>,%edx
+
+(define (i386:label-mem-add label v)
+  `(#x83 #x05 ,label #f #f #f ,v))      ; addl   $<v>,0x<n>
 
 (define (i386:byte-base-mem->accu)
   '(#x01 #xd0                           ; add    %edx,%eax
@@ -304,17 +295,9 @@
 (define (i386:accu-mem-add v)
   `(#x83 #x00 ,v))                      ; addl   $<v>,(%eax)
 
-(define (i386:global-add n v)
-  (or n (error "invalid value: i386:global-add: " n))
-  `(#x83 #x05 ,@(int->bv32 n) ,v))      ; addl   $<v>,0x<n>
-
-(define (i386:global->accu o)
-  (or o (error "invalid value: i386:global->accu: " o))
-  `(#xb8 ,@(int->bv32 o)))              ; mov    $<>,%eax
-
-(define (i386:value->global n v)
-  (or n (error "invalid value: value->global: " n))
-  `(#xc7 #x05 ,@(int->bv32 n)           ; movl   $<v>,(<n>)
+(define (i386:value->label label v)
+  (or v (error "invalid value: value->label: " v))
+  `(#xc7 #x05 ,label #f #f #f           ; movl   $<v>,(<n>)
          ,@(int->bv32 v)))
 
 (define (i386:value->local n v)
@@ -326,12 +309,11 @@
   (or n (error "invalid value: local-test: " n))
   `(#x83 #x7d ,(- 0 (* 4 n)) ,v))       ; cmpl   $<v>,0x<n>(%ebp)
 
-(define (i386:call f g ta t d address n)
-  (or address (error "invalid value: i386:call: " address))
-  `(#xe8 ,@(int->bv32 (- address 5))    ; call   relative $00
+(define (i386:call-label label n)
+  `(#xe8 ,label #f #f #f                ; call   relative $00
          #x83 #xc4 ,(* n 4)))           ; add    $00,%esp
 
-(define (i386:call-accu f g ta t d n)
+(define (i386:call-accu n)
   `(,@(i386:push-accu)
     ,@(i386:pop-accu)
     #xff #xd0                           ; call   *%eax
@@ -363,6 +345,9 @@
 (define (i386:XXjump n)
   (or n (error "invalid value: i386:XXjump: n: " n))
   `(#xe9 ,@(int->bv32 n)))              ; jmp . + <n>
+
+(define (i386:jump-label label)
+  `(#xe9 ,label #f #f #f))              ; jmp . + <n>
 
 (define (i386:Xjump-nz n)
   (or n (error "invalid value: i386:Xjump-nz: n: " n))

@@ -28,19 +28,18 @@
   #:use-module (system base pmatch)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 pretty-print)
-  #:use-module (mes elf)
   #:use-module (mes elf-util)
+  #:use-module (mes elf)
   #:use-module (mes as-i386)
+  #:use-module (mes hex2)
   #:use-module (nyacc lang c99 parser)
+  #:use-module (nyacc lang c99 pprint)
   #:export (c99-ast->info
             c99-input->ast
             c99-input->elf
             c99-input->info
             c99-input->object
-            infos->object
-            info->elf
-            infos->elf
-            object->elf))
+            info->object))
 
 (cond-expand
  (guile-2)

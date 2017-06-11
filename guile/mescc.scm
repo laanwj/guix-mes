@@ -36,6 +36,8 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
 
 (define-module (mescc)
   #:use-module (language c99 compiler)
+  #:use-module (mes elf)
+  #:use-module (mes hex2)
   #:use-module (ice-9 getopt-long)
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
@@ -58,6 +60,7 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
           '((c (single-char #\c))
             (D (single-char #\D) (value #t))
             (E (single-char #\E))
+            (g (single-char #\g))
             (help (single-char #\h))
             (I (single-char #\I) (value #t))
             (o (single-char #\o) (value #t))
@@ -72,10 +75,11 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
           (format (current-output-port) "mescc.scm (mes) ~a\n" %version))
      (and (or help? usage?)
           (format (or (and usage? (current-error-port)) (current-output-port)) "\
-Usage: mescc [OPTION]... FILE...
+Usage: mescc.scm [OPTION]... FILE...
   -c                 compile and assemble, but do not link
   -D DEFINE          define DEFINE
   -E                 preprocess only; do not compile, assemble or link
+  -g                 add debug info [GDB, objdump] using hex3 format
   -h, --help         display this help and exit
   -I DIR             append DIR to include path
   -o FILE            write output to FILE
@@ -84,10 +88,10 @@ Usage: mescc [OPTION]... FILE...
           (exit (or (and usage? 2) 0)))
      options)))
 
-(define (object->info file)
-  (let* ((lst (with-input-from-file file read))
-         (module (resolve-module '(language c99 compiler))))
-    (eval lst module)))
+(define (read-object file)
+  (let ((char (with-input-from-file file read-char)))
+    (if (eq? char #\#) (error "hex2 format not supported:" file)))
+  (with-input-from-file file read))
 
 (define (main:ast->info file)
   (let ((ast (with-input-from-file file read)))
@@ -122,6 +126,7 @@ Usage: mescc [OPTION]... FILE...
                    (car files)))
          (preprocess? (option-ref options 'E #f))
          (compile? (option-ref options 'c #f))
+         (debug-info? (option-ref options 'g #f))
          (asts (filter ast? files))
          (objects (filter object? files))
          (sources (filter (cut string-suffix? ".c" <>) files))
@@ -131,7 +136,8 @@ Usage: mescc [OPTION]... FILE...
                                            (else "a.out"))))
          (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o)))))
          (defines (reverse (filter-map (multi-opt 'D) options)))
-         (includes (reverse (filter-map (multi-opt 'I) options))))
+         (includes (reverse (filter-map (multi-opt 'I) options)))
+         (objects->hex (if debug-info? objects->hex3 objects->hex2)))
     (when (getenv "MES_DEBUG") (format (current-error-port) "options=~s\n" options)
           (format (current-error-port) "output: ~a\n" out))
     (if (and (pair? sources) (pair? objects)) (error "cannot mix source and object files:" files))
@@ -139,16 +145,18 @@ Usage: mescc [OPTION]... FILE...
       (lambda ()
         (if (and (not compile?)
                  (not preprocess?)) (set-port-encoding! (current-output-port) "ISO-8859-1"))
-        (cond ((pair? objects) (let ((infos (map object->info objects)))
-                                 (if compile? (infos->object infos)
-                                     (infos->elf infos))))
-              ((pair? asts) (let ((infos (map main:ast->info asts)))
-                              (if compile? (infos->object infos)
-                                  (infos->elf infos))))
+        (cond ((pair? objects) (let ((objects (map read-object objects)))
+                                 (if compile? (objects->hex objects)
+                                     (objects->elf objects))))
+              ((pair? asts) (let* ((infos (map main:ast->info asts))
+                                   (objects (map info->object infos)))
+                              (if compile? (objects->hex objects)
+                                  (objects->elf objects))))
               ((pair? sources) (if preprocess? (map (source->ast defines includes) sources)
-                                   (let ((infos (map (source->info defines includes) sources)))
-                                     (if compile? (infos->object infos)
-                                         (infos->elf infos))))))))
+                                   (let* ((infos (map (source->info defines includes) sources))
+                                          (objects (map info->object infos)))
+                                     (if compile? (objects->hex objects)
+                                         (objects->elf objects))))))))
     (if (and (not compile?)
              (not preprocess?))
         (chmod out #o755))))

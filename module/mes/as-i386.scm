@@ -25,15 +25,14 @@
 ;;; Code:
 
 (define-module (mes as-i386)
-  #:use-module (mes elf)
+  #:use-module (mes elf-util)
   #:export (
             i386:accu-not
             i386:accu-cmp-value
             i386:accu->base
             i386:accu->base-address
             i386:accu->base-address+n
-            i386:accu->global
-            i386:accu->global-address
+            i386:accu->label
             i386:accu->local
             i386:accu-non-zero?
             i386:accu-test
@@ -55,7 +54,7 @@
             i386:base->accu
             i386:base->accu-address
             i386:byte-accu->base-address
-            i386:base->global
+            i386:base->label
             i386:base->local
             i386:base-mem->accu
             i386:byte-base-sub
@@ -70,18 +69,18 @@
             i386:byte-mem->base
             i386:byte-test-base
             i386:byte-sub-base
-            i386:call
             i386:call-accu
+            i386:call-label
             i386:formal
             i386:function-locals
             i386:function-preamble
-            i386:global-add
-            i386:global->accu
-            i386:global->base
-            i386:global-address->accu
-            i386:global-address->base
+            i386:label-mem-add
+            i386:label->accu
+            i386:label->base
+            i386:label-mem->accu
+            i386:label-mem->base
             i386:jump
-            i386:jump
+            i386:jump-label
             i386:jump-byte-nz
             i386:jump-byte-z
             i386:jump-c
@@ -106,8 +105,8 @@
             i386:push-accu
             i386:pop-base
             i386:push-base
-            i386:push-global
-            i386:push-global-address
+            i386:push-label
+            i386:push-label-mem
             i386:push-local
             i386:push-byte-local-de-ref
             i386:push-byte-local-de-de-ref
@@ -121,7 +120,7 @@
             i386:value->accu
             i386:value->accu-address
             i386:value->accu-address+n
-            i386:value->global
+            i386:value->label
             i386:value->local
             i386:value->base
             i386:xor-accu

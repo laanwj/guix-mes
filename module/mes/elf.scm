@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -24,11 +24,9 @@
 
 (define-module (mes elf)
   #:use-module (srfi srfi-1)
-  #:use-module (mes bytevectors)
   #:use-module (mes elf-util)
-  #:export (int->bv16
-            int->bv32
-            make-elf))
+  #:export (make-elf
+            object->elf))
 
 (cond-expand
  (guile-2)

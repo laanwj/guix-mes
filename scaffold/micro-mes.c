@@ -22,7 +22,7 @@
 #error "POSIX not supported"
 #endif
 
-#include <mlibc.h>
+#include <stdio.h>
 
 typedef int SCM;
 

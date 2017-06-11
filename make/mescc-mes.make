@@ -14,8 +14,8 @@ CLEAN+=$(O_FILES) $(OUT)/$(TARGET)
 CLEAN+=$(OUT)/$(TARGET)
 
 INCLUDES+=mlibc/include mlibc $(OUT)/$(DIR)
-MESCC.mes:=scripts/mescc.mes
-MESLD.mes:=scripts/mescc.mes
+MESCC.mes:=scripts/mescc.mes -g
+MESLD.mes:=scripts/mescc.mes -g
 
 $(OUT)/$(TARGET): ld:=MESLD.mes
 $(OUT)/$(TARGET): LD:=$(MESLD.mes)

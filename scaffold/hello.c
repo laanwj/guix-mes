@@ -18,17 +18,11 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mlibc.h>
+#include <stdio.h>
 
 int
 main (int argc, char *argv[])
 {
-  puts ("Hi Mes!\n");
-#if __MESC_MES__
-  puts ("MESC.MES\n");
-#else
-  puts ("MESC.GUILE\n");
-#endif
-  if (argc > 1 && !strcmp (argv[1], "--help")) {puts ("argc > 1 && --help\n"); return argc;}
+  eputs ("Hello, Mescc!\n");
   return 42;
 }
