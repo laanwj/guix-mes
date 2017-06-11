@@ -65,6 +65,21 @@
 	  (else
 	   (and (pred (car ls)) (lp (cdr ls)))))))
 
+(define (list-index pred clist1 . rest)
+  (if (null? rest)
+    (let lp ((l clist1) (i 0))
+      (if (null? l)
+	#f
+	(if (pred (car l))
+	  i
+	  (lp (cdr l) (+ i 1)))))
+    (let lp ((lists (cons clist1 rest)) (i 0))
+      (cond ((any1 null? lists)
+	     #f)
+	    ((apply pred (map car lists)) i)
+	    (else
+	     (lp (map cdr lists) (+ i 1)))))))
+
 ;;; Set operations on lists
 
 (define (lset-union = . rest)
