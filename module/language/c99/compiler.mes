@@ -217,7 +217,7 @@
 
 (define (push-global globals)
   (lambda (o)
-    (list (i386:push-label-mem o))))
+    (list (i386:push-label-mem `(#:address ,o)))))
 
 (define (push-local locals)
   (lambda (o)
@@ -255,10 +255,10 @@
           (error "TODO int-de-de-ref")))))
 
 (define (string->global string)
-  (make-global (add-s:-prefix string) "string" 0 (append (string->list string) (list #\nul))))
+  (make-global `(#:string ,string) "string" 0 (append (string->list string) (list #\nul))))
 
 (define (int->global value)
-  (make-global (add-s:-prefix (number->string value)) "int" 0 (int->bv32 value)))
+  (make-global `(#:string ,(number->string value)) "int" 0 (int->bv32 value)))
 
 (define (ident->global name type pointer value)
   (make-global name type pointer (if (pair? value) value (int->bv32 value))))
@@ -286,7 +286,7 @@
                   (if constant
                       (wrap-as (append (i386:value->accu constant)
                                        (i386:push-accu)))
-                      ((push-global-address #f) `(address ,o))))))))))
+                      ((push-global-address #f) `(#:address ,o))))))))))
 
 (define (push-ident-address info)
   (lambda (o)
@@ -295,7 +295,7 @@
           (let ((global (assoc-ref (.globals info) o)))
           (if global
               ((push-global-address (.globals info)) o)
-              ((push-global-address #f) `(address ,o))))))))
+              ((push-global-address #f) `(#:address ,o))))))))
 
 (define (push-ident-de-ref info)
   (lambda (o)
@@ -316,7 +316,7 @@
 
 (define (globals:add-string globals)
   (lambda (o)
-    (let ((string (add-s:-prefix o)))
+    (let ((string `(#:string ,o)))
       (if (assoc-ref globals string) globals
           (append globals (list (string->global o)))))))
 
@@ -328,7 +328,7 @@
         ((p-expr (string ,string))
          (let* ((globals ((globals:add-string (.globals info)) string))
                 (info (clone info #:globals globals)))
-           (append-text info ((push-global-address info) (add-s:-prefix string)))))
+           (append-text info ((push-global-address info) `(#:string ,string)))))
 
         ((p-expr (ident ,name))
          (append-text info ((push-ident info) name)))
@@ -376,12 +376,12 @@
                      (size (if (= ptr 1) (type->size info type)
                                4)))
                 (case ptr
-                  ((-1) (list (i386:label->accu o)))
-                  ((1) (list (i386:label-mem->accu o)))
-                  ((2) (list (i386:label->accu o)))
-                  (else (list (i386:label-mem->accu o)))))
+                  ((-1) (list (i386:label->accu `(#:address ,o))))
+                  ((1) (list (i386:label-mem->accu `(#:address ,o))))
+                  ((2) (list (i386:label->accu `(#:address ,o))))
+                  (else (list (i386:label-mem->accu `(#:address ,o))))))
               (if constant (wrap-as (i386:value->accu constant))
-                  (list (i386:label->accu `(address ,o)))))))))
+                  (list (i386:label->accu `(#:address ,o)))))))))
 
 (define (ident-address->accu info)
   (lambda (o)
@@ -393,8 +393,8 @@
                        (size (if (= ptr 1) (type->size info type)
                                  4)))
             (wrap-as (i386:local-ptr->accu (local:id local))))
-          (if global (list (i386:label->accu o))
-              (list (i386:label->accu `(address ,o))))))))
+          (if global (list (i386:label->accu `(#:address ,o)))
+              (list (i386:label->accu `(#:address ,o))))))))
 
 (define (ident-address->base info)
   (lambda (o)
@@ -407,8 +407,8 @@
                  (size (if (= ptr 1) (type->size info type)
                            4)))
             (wrap-as (i386:local-ptr->base (local:id local))))
-          (if global (list (i386:label->base o))
-              (list (i386:label->accu `(address ,o))))))))
+          (if global (list (i386:label->base `(#:address ,o)))
+              (list (i386:label->accu `(#:address ,o))))))))
 
 (define (value->accu v)
   (wrap-as (i386:value->accu v)))
@@ -418,13 +418,13 @@
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (i386:accu->local (local:id local)))
           (let ((ptr (ident->pointer info o)))
-            (list (i386:accu->label o)))))))
+            (list (i386:accu->label `(#:address ,o))))))))
 
 (define (base->ident info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (i386:base->local (local:id local)))
-          (list (i386:base->label o))))))
+          (list (i386:base->label `(#:address ,o)))))))
 
 (define (base->ident-address info)
   (lambda (o)
@@ -443,13 +443,13 @@
   (lambda (o value)
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (i386:value->local (local:id local) value))
-          (list (i386:value->label o value))))))
+          (list (i386:value->label `(#:address ,o) value))))))
 
 (define (ident-add info)
   (lambda (o n)
     (let ((local (assoc-ref (.locals info) o)))
       (if local (wrap-as (i386:local-add (local:id local) n))
-          (list (i386:label-mem-add o n))))))
+          (list (i386:label-mem-add `(#:address ,o) n))))))
 
 (define (ident-address-add info)
   (lambda (o n)
@@ -459,7 +459,7 @@
                                  (i386:accu-mem-add n)
                                  (i386:pop-accu)))
           (list (wrap-as (append (i386:push-accu)
-                                 (i386:label->accu o)
+                                 (i386:label->accu `(#:address ,o))
                                  (i386:accu-mem-add n)
                                  (i386:pop-accu))))))))
 
@@ -482,12 +482,12 @@
             (if global
                 (let ((ptr (ident->pointer info o)))
                   (case ptr
-                    ((-1) (list (i386:label->base o)))
-                    ((2) (list (i386:label->base o)))
-                    (else (list (i386:label-mem->base o)))))
+                    ((-1) (list (i386:label->base `(#:address ,o))))
+                    ((2) (list (i386:label->base `(#:address ,o))))
+                    (else (list (i386:label-mem->base `(#:address ,o))))))
                 (let ((constant (assoc-ref (.constants info) o)))
                   (if constant (wrap-as (i386:value->base constant))
-                      (list (i386:label->base `(address ,o)))))))))))
+                      (list (i386:label->base `(#:address ,o)))))))))))
 
 (define (expr->accu info)
   (lambda (o)
@@ -505,10 +505,10 @@
         ((p-expr (string ,string))
          (let* ((globals (append globals (list (string->global string))))
                 (info (clone info #:globals globals)))
-           (append-text info (list (i386:label->accu (add-s:-prefix string))))))
+           (append-text info (list (i386:label->accu `(#:string ,string))))))
 
         ((p-expr (string . ,strings))
-         (append-text info (list (i386:label->accu (add-s:-prefix (apply string-append strings))))))
+         (append-text info (list (i386:label->accu `(#:string ,(apply string-append strings))))))
         ((p-expr (fixed ,value))
          (append-text info (value->accu (cstring->number value))))
 
@@ -644,7 +644,7 @@
                      (if (and (not (assoc name (.functions info)))
                               (not (assoc name globals)))
                          (stderr "warning: undeclared function: ~a\n" name))
-                     (append-text args-info (list (i386:call-label name n))))
+                     (append-text args-info (list (i386:call-label `(#:relative ,name) n))))
                    (let* ((empty (clone info #:text '()))
                           (accu ((expr->accu empty) `(p-expr (ident ,name)))))
                      (append-text args-info (append (.text accu)
@@ -1535,7 +1535,7 @@
         ((goto (ident ,label))
          (let* ((jump (lambda (n) (i386:XXjump n)))
                 (offset (+ (length (jump 0)) (length (object->list text)))))
-           (append-text info (list (i386:jump-label `(label ,label))))))
+           (append-text info (list (i386:jump-label `(#:local ,label))))))
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
@@ -1597,7 +1597,7 @@
                     (globals (append globals (list (string->global string))))
                     (info (clone info #:locals locals #:globals globals)))
                (append-text info (append
-                                  (list (i386:label->accu (add-s:-prefix string)))
+                                  (list (i386:label->accu `(#:string ,string)))
                                   ((accu->ident info) name))))
              (let* ((global (string->global string))
                     (globals (append globals (list global)))
@@ -1776,7 +1776,7 @@
                   (append text
                           (.text accu)
                           ((accu->ident info) name)
-                          (wrap-as (append (i386:label->base '(address "_start"))
+                          (wrap-as (append (i386:label->base `(#:address "_start"))
                                            (i386:accu+base))))
                   #:locals locals)))
 
@@ -2141,7 +2141,7 @@
     ((initzer (p-expr (fixed ,value))) (int->bv32 (cstring->number value)))
     ((initzer (neg (p-expr (fixed ,value)))) (int->bv32 (- (cstring->number value))))
     ((initzer (ref-to (p-expr (ident ,name)))) `(,name #f #f #f))
-    ((initzer (p-expr (string ,string))) `(,(add-s:-prefix string) #f #f #f))
+    ((initzer (p-expr (string ,string))) `((#:string ,string) #f #f #f))
     (_ (error "initzer->data: unsupported: " o))))
 
 (define (.formals o)

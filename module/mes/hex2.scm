@@ -24,7 +24,6 @@
 
 (define-module (mes hex2)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
   #:use-module (mes elf-util)
   #:use-module (mes elf)
   #:export (objects->hex2

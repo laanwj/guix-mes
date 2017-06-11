@@ -27,8 +27,6 @@
   #:use-module (mes bytevectors)
   #:export (data-offset
             dec->hex
-            add-s:-prefix
-            drop-s:-prefix
             function-offset
             int->bv16
             int->bv32
