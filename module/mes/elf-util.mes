@@ -70,21 +70,21 @@
   ;; FIXME
   ;;(member name (reverse functions) (lambda (a b) (equal? (car b) name)))
   (let* ((x functions)
-         (x (if (and (pair? x) (equal? (caar x) "exit")) (reverse x) x)))
+         (x (if (and (pair? x) (equal? (caar x) "_start")) (reverse x) x)))
     (member name x (lambda (a b) (equal? (car b) name)))))
 
 (define function-offset
   (let ((cache '()))
     (lambda (name functions)
       (or (assoc-ref cache name)
-          (let* ((functions (if (and (pair? functions) (equal? (caar functions) "exit")) functions (reverse functions)))
+          (let* ((functions (if (and (pair? functions) (equal? (caar functions) "_start")) functions (reverse functions)))
                  (prefix (and=> (function-prefix name functions) cdr))
                  (offset (and prefix
                               (if (null? prefix) 0
                                   (+ (length (functions->text (list (car prefix)) '() 0 0 0))
                                      (if (null? (cdr prefix)) 0
                                          (function-offset (caar prefix) functions)))))))
-            (if (and offset (or (equal? name "exit") (> offset 0))) (set! cache (assoc-set! cache name offset)))
+            (if (and offset (or (equal? name "_start") (> offset 0))) (set! cache (assoc-set! cache name offset)))
             (or offset 0))))))
 
 (define label-offset

@@ -19,6 +19,42 @@
  */
 
 int g_stdin = 0;
+char **g_environment;
+int _env ();
+int exit ();
+int main(int,char*[]);
+
+int
+_start ()
+{
+  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
+  asm (".byte 0x83 0xc0 0x08"); // add    $0x8,%eax
+  asm (".byte 0x50");           // push   %eax
+
+  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
+  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
+  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
+  asm (".byte 0x50");           // push   %eax
+
+  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
+  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
+  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
+  asm (".byte 0x83 0xc0 0x03"); // add    $0x3,%eax
+  asm (".byte 0xc1 0xe0 0x02"); // shl    $0x2,%eax
+  asm (".byte 0x01 0xe8");      // add    %ebp,%eax
+  asm (".byte 0x50");           // push   %eax
+
+  g_environment = _env ();
+  asm (".byte 0x58");
+  int r = main ();
+  exit (r);
+}
+
+char **
+_env (char **e)
+{
+  return e;
+}
 
 void
 exit ()
@@ -351,38 +387,4 @@ printf (char const* format, int va_args)
         p++;
       }
   return 0;
-}
-
-char **g_environment;
-char **
-_env (char **e)
-{
-  return e;
-}
-
-int main(int,char*[]);
-int
-_start ()
-{
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x08"); // add    $0x8,%eax
-  asm (".byte 0x50");           // push   %eax
-
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
-  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
-  asm (".byte 0x50");           // push   %eax
-
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
-  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
-  asm (".byte 0x83 0xc0 0x03"); // add    $0x3,%eax
-  asm (".byte 0xc1 0xe0 0x02"); // shl    $0x2,%eax
-  asm (".byte 0x01 0xe8");      // add    %ebp,%eax
-  asm (".byte 0x50");           // push   %eax
-
-  g_environment = _env ();
-  asm (".byte 0x58");
-  int r = main ();
-  exit (r);
 }
