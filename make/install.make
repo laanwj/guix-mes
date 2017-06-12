@@ -34,7 +34,7 @@ LIBDIR:=$(PREFIX)/lib
 
 GODIR:=$(LIBDIR)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
 GUILEDIR:=$(PREFIX)/share/guile/site/$(GUILE_EFFECTIVE_VERSION)
-MODULEDIR:=$(DATADIR)/module
+MODULEDIR:=$(DATADIR)/module/
 
 .tarball-version: tree-clean-p
 	echo $(COMMIT) > $@
@@ -79,7 +79,7 @@ endif
 	    -e 's,@DOCDIR@,$(DOCDIR)/,g' \
 	    -e 's,@GODIR@,$(GODIR)/,g' \
 	    -e 's,@GUILEDIR@,$(GUILEDIR)/,g' \
-	    -e 's,@MODULEDIR@,$(MODULEDIR)/,g' \
+	    -e 's,@MODULEDIR@,$(MODULEDIR),g' \
 	    -e 's,@PREFIX@,$(PREFIX)/,g' \
 	    -e 's,@VERSION@,$(VERSION),g' \
 		$(DESTDIR)$(DATADIR)/module/mes/base-0.mes \
