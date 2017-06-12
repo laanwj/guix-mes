@@ -61,8 +61,8 @@
 #65 01 00 00           # p_filesz
 #65 01 00 00           # p_memsz
 
-00 20 00 00           # p_filesz
-00 20 00 00           # p_memsz
+ff ff 00 00           # p_filesz
+ff ff 00 00           # p_memsz
 
 
 07 00 00 00           # p_flags

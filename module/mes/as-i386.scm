@@ -79,8 +79,15 @@
             i386:label->base
             i386:label-mem->accu
             i386:label-mem->base
+
             i386:jump
             i386:jump-label
+            i386:jump-label-byte-z
+            i386:jump-label-g
+            i386:jump-label-ge
+            i386:jump-label-nz
+            i386:jump-label-z
+
             i386:jump-byte-nz
             i386:jump-byte-z
             i386:jump-c

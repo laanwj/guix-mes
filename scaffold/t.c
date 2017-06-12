@@ -76,7 +76,6 @@ SCM cell_fun;
 
 char *env[] = {"foo", "bar", "baz", 0};
 
-#if 1
 int
 add (int a, int b)
 {
@@ -95,6 +94,7 @@ identity (int i)
   return i;
 }
 
+#if 1
 int
 label (int c)
 {
@@ -584,7 +584,9 @@ void
 void_func ()
 {
 }
+#endif
 
+#if 1
 int
 test (char *p)
 {
@@ -809,7 +811,7 @@ test (char *p)
   puts ("t: while (1) ... break;\n");
   while (1) {f=0;break;}
 
-  puts ("t: while (1) ... break;\n");
+  puts ("t: while (1) {while (1) break;break;}\n");
   while (1) {while (1) break;break;}
 
   puts ("t: while (1) { goto label; };\n");

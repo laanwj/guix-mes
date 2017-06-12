@@ -349,6 +349,27 @@
 (define (i386:jump-label label)
   `(#xe9 ,label #f #f #f))              ; jmp . + <n>
 
+(define (i386:jump-label-z label)
+  `(#x0f #x84 ,label #f #f #f))         ; jz . + <n>
+
+(define (i386:jump-label-byte-z label)
+  `(#x84 #xc0                           ; test   %al,%al
+    #x74 ,label))                       ; jne <n>
+
+;; signed
+(define (i386:jump-label-g label)
+  `(#x0f #x8f ,label #f #f #f))         ; jg/jnle <n>
+
+;; signed
+(define (i386:jump-label-ge label)
+  `(#x0f #x8d ,label #f #f #f))         ; jge/jnl <n>
+
+(define (i386:jump-label-nz label)
+  `(#x0f #x85 ,label #f #f #f))         ; jnz . + <n>
+
+(define (i386:jump-label-z label)
+  `(#x0f #x84 ,label #f #f #f))         ; jz . + <n>
+
 (define (i386:Xjump-nz n)
   (or n (error "invalid value: i386:Xjump-nz: n: " n))
   `(#x0f #x85 ,@(int->bv32 n)))         ; jnz . + <n>
