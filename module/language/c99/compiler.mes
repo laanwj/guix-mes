@@ -1369,7 +1369,10 @@
          info)
 
         ((break)
-         (append-text info (wrap-as (i386:Xjump (- (car (.break info)) (length (object->list text)))))))
+         (let ((label (car (.break info))))
+           (if (number? label)
+               (append-text info (wrap-as (i386:Xjump (- label (length (object->list text))))));;REMOVEME
+               (append-text info (wrap-as (i386:jump-label `(#:local ,label)))))))
 
         ;; FIXME: expr-stmt wrapper?
         (trans-unit info)
@@ -1529,40 +1532,20 @@
 
         ((while ,test ,body)
          (let* ((source (with-output-to-string (lambda () (pretty-print-c99 `(while ,test (ellipsis))))))
-                ;;(source (with-output-to-string (lambda () (pretty-print-c99 `(while ,test (compd-stmt (block-item-list)))))))
-                (skip-info (lambda (body-length test-length)
-                             (clone info
-                                    #:text (append text (wrap-as (i386:Xjump body-length)))
-                                    #:break (cons (+ (length (object->list text)) body-length test-length
-                                                     (length (i386:Xjump 0)))
-                                                  (.break info)))))
-                (text (.text (skip-info 0 0)))
-                (text-length (length text))
-                (body-info (lambda (body-length test-length)
-                             ((ast->info (skip-info body-length test-length)) body)))
-
-                (body-text (list-tail (.text (body-info 0 0)) text-length))
-                (body-length (length (object->list body-text)))
-
-                (empty (clone info #:text '()))
-                (test-jump->info ((test->jump->info empty) test))
-                (test+jump-info (test-jump->info 0))
-                (test-length (length (object->list (.text test+jump-info))))
-
-                (jump-text (wrap-as (i386:Xjump (- (+ body-length test-length)))))
-                (jump-length (length (object->list jump-text)))
-
-                (test-text (.text (test-jump->info jump-length)))
-
-                (body-info (body-info body-length (length (object->list test-text)))))
-
-           (clone info #:text
-                  (append
-                   (wrap-as `(#:comment ,source))
-                   (.text body-info)
-                   test-text
-                   jump-text)
-                  #:globals (.globals body-info))))
+                (info (append-text info (wrap-as `(#:comment ,source))))
+                (here (number->string (length text)))
+                (while-label (string-append (.function info) "_while_" here))
+                (skip-label (string-append (.function info) "_skip_" here))
+                (break-label (string-append (.function info) "_break_" here))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,skip-label)))))
+                (info (clone info #:break (cons break-label (.break info))))
+                (info (append-text info (wrap-as `(#:label ,while-label))))
+                (info ((ast->info info) body))
+                (info (append-text info (wrap-as `(#:label ,skip-label))))
+                (info ((test-jump-label->info info break-label) test))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,while-label)))))
+                (info (append-text info (wrap-as `(#:label ,break-label)))))
+           (clone info #:break (cdr (.break info)))))
 
         ((do-while ,body ,test)
          (let* ((text-length (length text))
@@ -1594,7 +1577,7 @@
         ((goto (ident ,label))
          (let* ((jump (lambda (n) (i386:XXjump n)))
                 (offset (+ (length (jump 0)) (length (object->list text)))))
-           (append-text info (list (i386:jump-label `(#:local ,label))))))
+           (append-text info (wrap-as (i386:jump-label `(#:local ,label))))))
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
