@@ -1399,59 +1399,32 @@
               (let ((info ((expr->accu info) `(fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))))
                 (append-text info (wrap-as (i386:accu-zero?)))))))
 
-        ((if ,test ,body)
-         (let* ((text-length (length text))
-
-                (test-jump->info ((test->jump->info info) test))
-                (test+jump-info (test-jump->info 0))
-                (test-length (length (.text test+jump-info)))
-
-                (body-info ((ast->info test+jump-info) body))
-                (text-body-info (.text body-info))
-                (body-text (list-tail text-body-info test-length))
-                (body-length (length (object->list body-text)))
-
-                (text+test-text (.text (test-jump->info body-length)))
-                (test-text (list-tail text+test-text text-length)))
-
-           (clone info #:text
-                  (append text
-                          test-text
-                          body-text)
-                  #:globals (.globals body-info))))
+        ((if ,test ,then)
+         (let* ((source (with-output-to-string (lambda () (pretty-print-c99 `(if ,test (ellipsis))))))
+                (info (append-text info (wrap-as `(#:comment ,source))))
+                (here (number->string (length text)))
+                (break-label (string-append (.function info) "_break_" here))
+                (info ((test-jump-label->info info break-label) test))
+                (info ((ast->info info) then))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,break-label)))))
+                (info (append-text info (wrap-as `(#:label ,break-label)))))
+           (clone info
+                  #:locals locals)))
 
         ((if ,test ,then ,else)
-         (let* ((text-length (length text))
-
-                (test-jump->info ((test->jump->info info) test))
-                (test+jump-info (test-jump->info 0))
-                (test-length (length (.text test+jump-info)))
-
-                (then-info ((ast->info test+jump-info) then))
-                (text-then-info (.text then-info))
-                (then-text (list-tail text-then-info test-length))
-                (then-jump-text (wrap-as (i386:Xjump 0)))
-                (then-jump-length (length (object->list then-jump-text)))
-                (then-length (+ (length (object->list then-text)) then-jump-length))
-
-                (then+jump-info (clone then-info #:text (append text-then-info then-jump-text)))
-                (else-info ((ast->info then+jump-info) else))
-                (text-else-info (.text else-info))
-                (else-text (list-tail text-else-info (length (.text then+jump-info))))
-                (else-length (length (object->list else-text)))
-
-                (text+test-text (.text (test-jump->info then-length)))
-                (test-text (list-tail text+test-text text-length))
-                (then-jump-text (wrap-as (i386:Xjump else-length))))
-
-           (clone info #:text
-                  (append text
-                          test-text
-                          then-text
-                          then-jump-text
-                          else-text)
-                  #:globals (append (.globals then-info)
-                                    (list-tail (.globals else-info) (length globals))))))
+         (let* ((source (with-output-to-string (lambda () (pretty-print-c99 `(if ,test (ellipsis) (ellipsis))))))
+                (info (append-text info (wrap-as `(#:comment ,source))))
+                (here (number->string (length text)))
+                (else-label (string-append (.function info) "_else_" here))
+                (break-label (string-append (.function info) "_break_" here))
+                (info ((test-jump-label->info info else-label) test))
+                (info ((ast->info info) then))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,break-label)))))
+                (info (append-text info (wrap-as `(#:label ,else-label))))
+                (info ((ast->info info) else))
+                (info (append-text info (wrap-as `(#:label ,break-label)))))
+           (clone info
+                  #:locals locals)))
 
         ;; Hmm?
         ((expr-stmt (cond-expr ,test ,then ,else))
