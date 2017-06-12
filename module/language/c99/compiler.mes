@@ -1481,43 +1481,29 @@
            clauses-info))
 
         ((for ,init ,test ,step ,body)
-         (let* ((info (clone info #:text '())) ;; FIXME: goto in body...
-
+         (let* ((source (with-output-to-string (lambda () (pretty-print-c99 `(for ,init ,test ,step (ellipsis))))))
+                (info (append-text info (wrap-as `(#:comment ,source))))
+                (here (number->string (length text)))
+                (loop-label (string-append (.function info) "_loop_" here))
+                (continue-label (string-append (.function info) "_continue_" here))
+                (initial-skip-label (string-append (.function info) "_initial_skip_" here))
+                (break-label (string-append (.function info) "_break_" here))
                 (info ((ast->info info) init))
-
-                (init-text (.text info))
-                (init-locals (.locals info))
-                (info (clone info #:text '()))
-
-                (body-info ((ast->info info) body))
-                (body-text (.text body-info))
-                (body-length (length (object->list body-text)))
-
-                (step-info ((expr->accu info) step))
-                (step-text (.text step-info))
-                (step-length (length (object->list step-text)))
-
-                (test-jump->info ((test->jump->info info) test))
-                (test+jump-info (test-jump->info 0))
-                (test-length (length (object->list (.text test+jump-info))))
-
-                (skip-body-text (wrap-as (i386:Xjump (+ body-length step-length))))
-
-                (jump-text (wrap-as (i386:Xjump (- (+ body-length step-length test-length)))))
-                (jump-length (length (object->list jump-text)))
-
-                (test-text (.text (test-jump->info jump-length))))
-
-           (clone info #:text
-                  (append text
-                          init-text
-                          skip-body-text
-                          body-text
-                          step-text
-                          test-text
-                          jump-text)
-                  #:globals (append globals (list-tail (.globals body-info) (length globals)))
-                  #:locals locals)))
+                (info (clone info #:break (cons break-label (.break info))))
+                (info (clone info #:continue (cons continue-label (.continue info))))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,initial-skip-label)))))
+                (info (append-text info (wrap-as `(#:label ,loop-label))))
+                (info ((ast->info info) body))
+                (info (append-text info (wrap-as `(#:label ,continue-label))))
+                (info ((expr->accu info) step))
+                (info (append-text info (wrap-as `(#:label ,initial-skip-label))))
+                (info ((test-jump-label->info info break-label) test))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,loop-label)))))
+                (info (append-text info (wrap-as `(#:label ,break-label)))))
+           (clone info
+                  #:locals locals
+                  #:break (cdr (.break info))
+                  #:continue (cdr (.continue info)))))
 
         ((while ,test ,body)
          (let* ((source (with-output-to-string (lambda () (pretty-print-c99 `(while ,test (ellipsis))))))
