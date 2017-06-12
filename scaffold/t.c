@@ -814,6 +814,10 @@ test (char *p)
   puts ("t: while (1) {while (1) break;break;}\n");
   while (1) {while (1) break;break;}
 
+  puts ("t: while () {continue;...}\n");
+  while (one--) {continue;one=1;}
+  one += 2;
+
   puts ("t: while (1) { goto label; };\n");
   while (1) {
     goto ok00;

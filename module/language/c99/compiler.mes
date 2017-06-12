@@ -145,8 +145,9 @@
 (define <function> '<function>)
 (define <text> '<text>)
 (define <break> '<break>)
+(define <continue> '<continue>)
 
-(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (function #f) (text '()) (break '()))
+(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (function #f) (text '()) (break '()) (continue '()))
   (pmatch o
     (<info> (list <info>
                   (cons <types> types)
@@ -156,7 +157,8 @@
                   (cons <locals> locals)
                   (cons <function> function)
                   (cons <text> text)
-                  (cons <break> break)))))
+                  (cons <break> break)
+                  (cons <continue> continue)))))
 
 (define (.types o)
   (pmatch o
@@ -190,6 +192,10 @@
   (pmatch o
     ((<info> . ,alist) (assq-ref alist <break>))))
 
+(define (.continue o)
+  (pmatch o
+    ((<info> . ,alist) (assq-ref alist <continue>))))
+
 (define (info? o)
   (and (pair? o) (eq? (car o) <info>)))
 
@@ -202,7 +208,8 @@
                (locals (.locals o))
                (function (.function o))
                (text (.text o))
-               (break (.break o)))
+               (break (.break o))
+               (continue (.continue o)))
            (let-keywords rest
                          #f
                          ((types types)
@@ -212,8 +219,9 @@
                           (locals locals)
                           (function function)
                           (text text)
-                          (break break))
-                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:function function #:text text #:break break))))))
+                          (break break)
+                          (continue continue))
+                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:function function #:text text #:break break #:continue continue))))))
 
 (define (push-global globals)
   (lambda (o)
@@ -1374,6 +1382,9 @@
                (append-text info (wrap-as (i386:Xjump (- label (length (object->list text))))));;REMOVEME
                (append-text info (wrap-as (i386:jump-label `(#:local ,label)))))))
 
+        ((continue)
+         (append-text info (wrap-as (i386:jump-label `(#:local ,(car (.continue info)))))))
+
         ;; FIXME: expr-stmt wrapper?
         (trans-unit info)
         ((expr-stmt) info)
@@ -1534,18 +1545,22 @@
          (let* ((source (with-output-to-string (lambda () (pretty-print-c99 `(while ,test (ellipsis))))))
                 (info (append-text info (wrap-as `(#:comment ,source))))
                 (here (number->string (length text)))
-                (while-label (string-append (.function info) "_while_" here))
-                (skip-label (string-append (.function info) "_skip_" here))
+                (loop-label (string-append (.function info) "_loop_" here))
+                (continue-label (string-append (.function info) "_continue_" here))
                 (break-label (string-append (.function info) "_break_" here))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,skip-label)))))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,continue-label)))))
                 (info (clone info #:break (cons break-label (.break info))))
-                (info (append-text info (wrap-as `(#:label ,while-label))))
+                (info (clone info #:continue (cons continue-label (.continue info))))
+                (info (append-text info (wrap-as `(#:label ,loop-label))))
                 (info ((ast->info info) body))
-                (info (append-text info (wrap-as `(#:label ,skip-label))))
+                (info (append-text info (wrap-as `(#:label ,continue-label))))
                 (info ((test-jump-label->info info break-label) test))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,while-label)))))
+                (info (append-text info (wrap-as (i386:jump-label `(#:local ,loop-label)))))
                 (info (append-text info (wrap-as `(#:label ,break-label)))))
-           (clone info #:break (cdr (.break info)))))
+           (clone info
+                  #:locals locals
+                  #:break (cdr (.break info))
+                  #:continue (cdr (.continue info)))))
 
         ((do-while ,body ,test)
          (let* ((text-length (length text))
