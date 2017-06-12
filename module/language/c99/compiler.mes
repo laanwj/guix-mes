@@ -1061,104 +1061,6 @@
            (loop '() cases
                  ((ast->info clause) o))))))))
 
-(define (test->jump->info info)
-  (define (jump type . test)
-    (lambda (o)
-      (let* ((text (.text info))
-             (info (clone info #:text '()))
-             (info ((ast->info info) o))
-             (jump-text (lambda (body-length)
-                          (wrap-as (type body-length)))))
-        (lambda (body-length)
-          (clone info #:text
-                 (append text
-                         (.text info)
-                         (if (null? test) '() (car test))
-                         (jump-text body-length)))))))
-  (lambda (o)
-    (pmatch o
-      ;; unsigned
-      ;; ((le ,a ,b) ((jump i386:Xjump-ncz) o)) ; ja
-      ;; ((lt ,a ,b) ((jump i386:Xjump-nc) o))  ; jae
-      ;; ((ge ,a ,b) ((jump i386:Xjump-ncz) o))
-      ;; ((gt ,a ,b) ((jump i386:Xjump-nc) o))
-
-      ((le ,a ,b) ((jump i386:Xjump-g) o))
-      ((lt ,a ,b) ((jump i386:Xjump-ge) o))
-      ((ge ,a ,b) ((jump i386:Xjump-g) o))
-      ((gt ,a ,b) ((jump i386:Xjump-ge) o))
-
-      ((ne ,a ,b) ((jump i386:Xjump-nz) o))
-      ((eq ,a ,b) ((jump i386:Xjump-nz) o))
-      ((not _) ((jump i386:Xjump-z) o))
-      ((and ,a ,b)
-       (let* ((globals (.globals info))
-              (text (.text info))
-              (info (clone info #:text '()))
-
-              (a-jump ((test->jump->info info) a))
-              (a-text (.text (a-jump 0)))
-              (a-length (length (object->list a-text)))
-
-              (b-jump ((test->jump->info info) b))
-              (b-text (.text (b-jump 0)))
-              (b-length (length (object->list b-text))))
-
-         (lambda (body-length)
-           (let* ((info (append-text info text))
-                  (a-info (a-jump (+ b-length body-length)))
-                  (info (append-text info (.text a-info)))
-                  (b-info (b-jump body-length))
-                  (info (append-text info (.text b-info))))
-            (clone info
-                   #:globals (append globals
-                                     (list-tail (.globals a-info) (length globals))
-                                     (list-tail (.globals b-info) (length globals))))))))
-
-      ((or ,a ,b)
-       (let* ((globals (.globals info))
-              (text (.text info))
-              (info (clone info #:text '()))
-
-              (a-jump ((test->jump->info info) a))
-              (a-text (.text (a-jump 0)))
-              (a-length (length (object->list a-text)))
-
-              (jump-text (wrap-as (i386:Xjump 0)))
-              (jump-length (length (object->list jump-text)))
-
-              (b-jump ((test->jump->info info) b))
-              (b-text (.text (b-jump 0)))
-              (b-length (length (object->list b-text)))
-
-              (jump-text (wrap-as (i386:Xjump b-length))))
-
-         (lambda (body-length)
-           (let* ((info (append-text info text))
-                  (a-info (a-jump jump-length))
-                  (info (append-text info (.text a-info)))
-                  (info (append-text info jump-text))
-                  (b-info (b-jump body-length))
-                  (info (append-text info (.text b-info))))
-            (clone info
-                   #:globals (append globals
-                                     (list-tail (.globals a-info) (length globals))
-                                     (list-tail (.globals b-info) (length globals))))))))
-
-      ((array-ref . _) ((jump i386:jump-byte-z
-                              (wrap-as (i386:accu-zero?))) o))
-
-      ((de-ref _) ((jump i386:jump-byte-z
-                         (wrap-as (i386:accu-zero?))) o))
-
-      ((assn-expr (p-expr (ident ,name)) ,op ,expr)
-       ((jump i386:Xjump-z
-              (append
-               ((ident->accu info) name)
-               (wrap-as (i386:accu-zero?)))) o))
-
-      (_ ((jump i386:Xjump-z (wrap-as (i386:accu-zero?))) o)))))
-
 (define (test-jump-label->info info label)
   (define (jump type . test)
     (lambda (o)
@@ -1376,12 +1278,11 @@
 
         ((break)
          (let ((label (car (.break info))))
-           (if (number? label)
-               (append-text info (wrap-as (i386:Xjump (- label (length (object->list text))))));;REMOVEME
-               (append-text info (wrap-as (i386:jump-label `(#:local ,label)))))))
+           (append-text info (wrap-as (i386:jump-label `(#:local ,label))))))
 
         ((continue)
-         (append-text info (wrap-as (i386:jump-label `(#:local ,(car (.continue info)))))))
+         (let ((label (car (.continue info))))
+           (append-text info (wrap-as (i386:jump-label `(#:local ,label))))))
 
         ;; FIXME: expr-stmt wrapper?
         (trans-unit info)
@@ -1534,9 +1435,7 @@
            ((ast->info info) statement)))
 
         ((goto (ident ,label))
-         (let* ((jump (lambda (n) (i386:XXjump n)))
-                (offset (+ (length (jump 0)) (length (object->list text)))))
-           (append-text info (wrap-as (i386:jump-label `(#:local ,label))))))
+         (append-text info (wrap-as (i386:jump-label `(#:local ,label)))))
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
