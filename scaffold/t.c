@@ -947,9 +947,6 @@ test (char *p)
   puts ("strcmp (itoa (-1), \"-1\")\n");
   if (strcmp (itoa (-1), "-1")) return 1;
 
-  char *fixme_globals;
-  fixme_globals = "0";
-  fixme_globals = "1";
   puts ("strcmp (itoa (0), \"0\")\n");
   if (strcmp (itoa (0), "0")) return 1;
 

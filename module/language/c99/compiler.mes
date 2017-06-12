@@ -258,7 +258,7 @@
   (make-global `(#:string ,string) "string" 0 (append (string->list string) (list #\nul))))
 
 (define (int->global value)
-  (make-global `(#:string ,(number->string value)) "int" 0 (int->bv32 value)))
+  (make-global (number->string value) "int" 0 (int->bv32 value)))
 
 (define (ident->global name type pointer value)
   (make-global name type pointer (if (pair? value) value (int->bv32 value))))
@@ -503,7 +503,7 @@
       (pmatch o
         ((expr) info)
         ((p-expr (string ,string))
-         (let* ((globals (append globals (list (string->global string))))
+         (let* ((globals ((globals:add-string globals) string))
                 (info (clone info #:globals globals)))
            (append-text info (list (i386:label->accu `(#:string ,string))))))
 
@@ -973,16 +973,21 @@
     (,name name)
     (_ (error "decl->type: unsupported: " o))))
 
-(define (expr->global o)
-  (pmatch o
-    ((p-expr (string ,string)) (string->global string))
-    ((p-expr (fixed ,value)) (int->global (cstring->number value)))
-    (_ #f)))
+(define (expr->global globals)
+  (lambda (o)
+    (pmatch o
+      ((p-expr (string ,string))
+       (let ((g `(#:string ,string)))
+         (or (assoc g globals)
+             (string->global string))))
+      ((p-expr (fixed ,value)) (int->global (cstring->number value)))
+      (_ #f))))
 
-(define (initzer->global o)
-  (pmatch o
-    ((initzer ,initzer) (expr->global initzer))
-    (_ #f)))
+(define (initzer->global globals)
+  (lambda (o)
+    (pmatch o
+      ((initzer ,initzer) ((expr->global globals) initzer))
+      (_ #f))))
 
 (define (byte->hex o)
   (string->number (string-drop o 2) 16))
@@ -1594,13 +1599,12 @@
         ((decl (decl-spec-list (type-spec (fixed-type ,type)) . _) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (string ,string))))))
          (if (.function info)
              (let* ((locals (add-local locals name type 1))
-                    (globals (append globals (list (string->global string))))
+                    (globals ((globals:add-string globals) string))
                     (info (clone info #:locals locals #:globals globals)))
                (append-text info (append
                                   (list (i386:label->accu `(#:string ,string)))
                                   ((accu->ident info) name))))
-             (let* ((global (string->global string))
-                    (globals (append globals (list global)))
+             (let* ((globals ((globals:add-string globals) string))
                     (size 4)
                     (global (make-global name type 1 (initzer->data `(initzer (p-expr (string ,string))))))
                     (globals (append globals (list global))))
@@ -1910,7 +1914,7 @@
         ;; char *bla[] = {"a", "b"};
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name))) (initzer (initzer-list . ,initzers)))))
          (let* ((type (decl->type type))
-                (entries (map initzer->global initzers))
+                (entries (map (initzer->global globals) initzers))
                 (entry-size 4)
                 (size (* (length entries) entry-size))
                 (initzers (map (initzer->non-const info) initzers)))
@@ -1918,6 +1922,8 @@
                (error "TODO: <type> x[] = {};" o)
                (let* (;;(global (make-global name type 2 (string->list (make-string size #\nul))))
                       (global (make-global name type 2 (append-map initzer->data initzers)))
+                      (global-names (map car globals))
+                      (entries (filter (lambda (g) (not (member (car g) global-names))) entries))
                       (globals (append globals entries (list global))))
                  (clone info #:globals globals)))))
 
@@ -1929,7 +1935,10 @@
                 (size (type->size info type))
                 (initzers (map (initzer->non-const info) initzers)))
            (if (.function info)
-               (let* ((globals (append globals (filter-map initzer->global initzers)))
+               (let* ((initzer-globals (filter-map (initzer->global globals) initzers))
+                      (global-names (map car globals))
+                      (initzer-globals (filter (lambda (g) (not (member (car g) global-names))) initzer-globals))
+                      (globals (append globals initzer-globals))
                       (locals (let loop ((fields (cdr fields)) (locals locals))
                                 (if (null? fields) locals
                                     (loop (cdr fields) (add-local locals "foobar" "int" 0)))))
@@ -1948,11 +1957,13 @@
                                        (wrap-as (append (i386:accu->base)))
                                        (.text ((expr->accu empty) initzer))
                                        (wrap-as (i386:accu->base-address+n offset)))))))))
-               (let* ((globals (append globals (filter-map initzer->global initzers)))
+               (let* ((initzer-globals (filter-map (initzer->global globals) initzers))
+                      (global-names (map car globals))
+                      (initzer-globals (filter (lambda (g) (not (member (car g) global-names))) initzer-globals))
+                      (globals (append globals initzer-globals))
                       (global (make-global name type 2 (append-map initzer->data initzers)))
                       (globals (append globals (list global))))
                  (clone info #:globals globals)))))
-
 
         ;;char cc = g_cells[c].cdr;  ==> generic?
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ident ,name) (initzer ,initzer))))
@@ -1960,10 +1971,9 @@
                (initzer ((initzer->non-const info) initzer)))
            (if (.function info)
                (let* ((locals (add-local locals name type 0))
-                      (info (clone info #:locals locals)))
-                 (clone info #:text
-                        (append (.text ((expr->accu info) initzer))
-                                ((accu->ident info) name))))
+                      (info (clone info #:locals locals))
+                      (info ((expr->accu info) initzer)))
+                 (append-text info ((accu->ident info) name)))
                (let* ((global (make-global name type 2 (initzer->data initzer)))
                       (globals (append globals (list global))))
                  (clone info #:globals globals)))))
