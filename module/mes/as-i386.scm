@@ -79,7 +79,6 @@
             i386:label->base
             i386:label-mem->accu
             i386:label-mem->base
-
             i386:jump
             i386:jump-label
             i386:jump-label-byte-z
@@ -87,16 +86,6 @@
             i386:jump-label-ge
             i386:jump-label-nz
             i386:jump-label-z
-
-            i386:jump-byte-nz
-            i386:jump-byte-z
-            i386:jump-c
-            i386:jump-cz
-            i386:jump-le
-            i386:jump-nc
-            i386:jump-ncz
-            i386:jump-nz
-            i386:jump-z
             i386:local->accu
             i386:local->base
             i386:local-add
@@ -123,7 +112,6 @@
             i386:ret-local
             i386:sub-base
             i386:test-base
-            i386:test-jump-z
             i386:value->accu
             i386:value->accu-address
             i386:value->accu-address+n
@@ -132,29 +120,9 @@
             i386:value->base
             i386:xor-accu
             i386:xor-zf
-
-            ;; long jump
-            i386:Xjump
-            ;;i386:Xjump-c
-            ;;i386:Xjump-cz
-            i386:Xjump-nc
-            i386:Xjump-ncz
-
-            i386:Xjump-nz
-            i386:Xjump-z
-
-            i386:Xjump-g
-            i386:Xjump-ge
-
-            ;; i386:Xjump-l
-            ;; i386:Xjump-le
-
-            i386:XXjump
-
             i386:accu+n
             i386:base+n
             i386:base-address->accu-address
-
             i386:nz->accu
             i386:z->accu
             i386:accu<->stack

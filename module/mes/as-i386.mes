@@ -338,14 +338,6 @@
 (define (i386:accu-test)
   '(#x85 #xc0))                         ; test   %eax,%eax
 
-(define (i386:Xjump n)
-  (or n (error "invalid value: i386:Xjump: n: " n))
-  `(#xe9 ,@(int->bv32 (if (>= n 0) n (- n 5))))) ; jmp . + <n>
-
-(define (i386:XXjump n)
-  (or n (error "invalid value: i386:XXjump: n: " n))
-  `(#xe9 ,@(int->bv32 n)))              ; jmp . + <n>
-
 (define (i386:jump-label label)
   `(#xe9 ,label #f #f #f))              ; jmp . + <n>
 
@@ -369,107 +361,6 @@
 
 (define (i386:jump-label-z label)
   `(#x0f #x84 ,label #f #f #f))         ; jz . + <n>
-
-(define (i386:Xjump-nz n)
-  (or n (error "invalid value: i386:Xjump-nz: n: " n))
-  `(#x0f #x85 ,@(int->bv32 n)))         ; jnz . + <n>
-
-(define (i386:Xjump-z n)
-  (or n (error "invalid value: i386:Xjump-z: n: " n))
-  `(#x0f #x84 ,@(int->bv32 n)))         ; jz . + <n>
-
-(define (i386:jump n) ;;FIXME: NEED THIS WEIRDNESS for t.c
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP n=" n))
-  `(#xeb ,(if (>= n 0) (- n 2) (- n 2)))) ; jmp <n>
-
-(define (i386:jump-c n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP n=" n))
-  `(#x72 ,(if (>= n 0) n (- n 2))))     ; jc <n>
-
-(define (i386:jump-cz n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP n=" n))
-  `(#x76 ,(if (>= n 0) n (- n 2))))     ; jbe <n>
-
-(define (i386:jump-ncz n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP-ncz n=" n))
-  `(#x77 ,(if (>= n 0) n (- n 2))))     ; ja <n>
-
-(define (i386:jump-nc n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP-nc n=" n))
-  `(#x73 ,(if (>= n 0) n (- n 2))))     ; jnc <n>
-
-;; unsigned
-(define (i386:Xjump-nc n)
-  (or n (error "invalid value i386:Xjump-nc: " n))
-  `(#x0f #x83 ,@(int->bv32 n)))         ; jnc <n>
-
-;; unsigned
-(define (i386:Xjump-ncz n)
-  (or n (error "invalid value: i386:Xjump-ncz" n))
-  `(#x0f #x87 ,@(int->bv32 n)))         ; ja <n>
-
-;; unsigned
-;; (define (i386:Xjump-c n)
-;;   (or n urg:Xjump-c)
-;;   `(#x0f #x82 ,@(int->bv32 n)))     ; jc <n>
-
-;; unsigned
-;; (define (i386:Xjump-cz n)
-;;   (or n urg:Xjump-cz)
-;;   `(#x0f #x86 ,@(int->bv32 n)))         ; jbe <n>
-
-;; signed
-(define (i386:Xjump-g n)
-  (or n (error "invalid value: i386:Xjump-g: " n))
-  `(#x0f #x8f ,@(int->bv32 n)))         ; jg/jnle <n>
-
-;; signed
-(define (i386:Xjump-ge n)
-  (or n (error "invalid value: Xjump-ge: " n))
-  `(#x0f #x8d ,@(int->bv32 n)))         ; jge/jnl <n>
-
-;; ;; signed
-;; (define (i386:Xjump-l n)
-;;   (or n urg:Xjump-l)
-;;   `(#x0f #x8c ,@(int->bv32 n)))         ; jl/jnge <n>
-
-;; ;; signed
-;; (define (i386:Xjump-le n)
-;;   (or n urg:Xjump-le)
-;;   `(#x0f #x8e ,@(int->bv32 n)))         ; jle/jgn <n>
-
-(define (i386:jump-z n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP-z n=" n))
-  `(#x74 ,(if (>= n 0) n (- n 2))))     ; jz <n>
-
-(define (i386:jump-nz n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP-nz n=" n))
-  `(#x75 ,(if (>= n 0) n (- n 2))))     ; jnz <n>
-
-(define (i386:test-jump-z n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP-z n=" n))
-  `(#x85 #xc0                           ; test   %eax,%eax
-    #x74 ,(if (>= n 0) n (- n 4))))     ; jz <n>
-
-(define (i386:jump-byte-nz n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP-byte-nz n=" n))
-  `(#x84 #xc0                           ; test   %al,%al
-    #x75 ,(if (>= n 0) n (- n 4))))     ; jne <n>
-
-(define (i386:jump-byte-z n)
-  (when (or (> n #x80) (< n #x-80))
-    (error "JUMP-byte-z n=" n))
-  `(#x84 #xc0                           ; test   %al,%al
-    #x74 ,(if (>= n 0) n (- n 4))))     ; jne <n>
 
 (define (i386:byte-test-base)
   `(#x38 #xc2))                         ; cmp    %al,%dl
