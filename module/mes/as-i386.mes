@@ -338,28 +338,28 @@
 (define (i386:accu-test)
   '(#x85 #xc0))                         ; test   %eax,%eax
 
-(define (i386:jump-label label)
+(define (i386:jump label)
   `(#xe9 ,label #f #f #f))              ; jmp . + <n>
 
-(define (i386:jump-label-z label)
+(define (i386:jump-z label)
   `(#x0f #x84 ,label #f #f #f))         ; jz . + <n>
 
-(define (i386:jump-label-byte-z label)
+(define (i386:jump-byte-z label)
   `(#x84 #xc0                           ; test   %al,%al
     #x74 ,label))                       ; jne <n>
 
 ;; signed
-(define (i386:jump-label-g label)
+(define (i386:jump-g label)
   `(#x0f #x8f ,label #f #f #f))         ; jg/jnle <n>
 
 ;; signed
-(define (i386:jump-label-ge label)
+(define (i386:jump-ge label)
   `(#x0f #x8d ,label #f #f #f))         ; jge/jnl <n>
 
-(define (i386:jump-label-nz label)
+(define (i386:jump-nz label)
   `(#x0f #x85 ,label #f #f #f))         ; jnz . + <n>
 
-(define (i386:jump-label-z label)
+(define (i386:jump-z label)
   `(#x0f #x84 ,label #f #f #f))         ; jz . + <n>
 
 (define (i386:byte-test-base)

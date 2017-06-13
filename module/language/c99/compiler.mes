@@ -742,7 +742,7 @@
                 (skip-b-label (string-append (.function info) "_skip_b_" here))
                 (info ((expr->accu info) a))
                 (info (append-text info (wrap-as (i386:accu-test))))
-                (info (append-text info (wrap-as (i386:jump-label-nz `(#:local ,skip-b-label)))))
+                (info (append-text info (wrap-as (i386:jump-nz `(#:local ,skip-b-label)))))
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info ((expr->accu info) b))
                 (info (append-text info (wrap-as (i386:accu-test))))
@@ -754,7 +754,7 @@
                 (skip-b-label (string-append (.function info) "_skip_b_" here))
                 (info ((expr->accu info) a))
                 (info (append-text info (wrap-as (i386:accu-test))))
-                (info (append-text info (wrap-as (i386:jump-label-z `(#:local ,skip-b-label)))))
+                (info (append-text info (wrap-as (i386:jump-z `(#:local ,skip-b-label)))))
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info ((expr->accu info) b))
                 (info (append-text info (wrap-as (i386:accu-test))))
@@ -1012,11 +1012,11 @@
   (define body-label
     (string-append label "body" (number->string i)))
   (define (jump label)
-    (wrap-as (i386:jump-label `(#:local ,label))))
+    (wrap-as (i386:jump `(#:local ,label))))
   (define (jump-nz label)
-    (wrap-as (i386:jump-label-nz `(#:local ,label))))
+    (wrap-as (i386:jump-nz `(#:local ,label))))
   (define (jump-z label)
-    (wrap-as (i386:jump-label-z `(#:local ,label))))
+    (wrap-as (i386:jump-z `(#:local ,label))))
   (define (test->text test)
     (let ((value (pmatch test
                    (0 0)
@@ -1055,7 +1055,7 @@
            (if last? clause
                (let ((next-body-label (string-append label "body"
                                                      (number->string (1+ i)))))
-                 (append-text clause (wrap-as (i386:jump-label `(#:local ,next-body-label))))))))
+                 (append-text clause (wrap-as (i386:jump `(#:local ,next-body-label))))))))
         (_
          (let ((clause (or clause (cases+jump info cases))))
            (loop '() cases
@@ -1072,19 +1072,19 @@
   (lambda (o)
     (pmatch o
       ;; unsigned
-      ;; ((le ,a ,b) ((jump i386:jump-label-ncz) o)) ; ja
-      ;; ((lt ,a ,b) ((jump i386:jump-label-nc) o))  ; jae
-      ;; ((ge ,a ,b) ((jump i386:jump-label-ncz) o))
-      ;; ((gt ,a ,b) ((jump i386:jump-label-nc) o))
+      ;; ((le ,a ,b) ((jump i386:jump-ncz) o)) ; ja
+      ;; ((lt ,a ,b) ((jump i386:jump-nc) o))  ; jae
+      ;; ((ge ,a ,b) ((jump i386:jump-ncz) o))
+      ;; ((gt ,a ,b) ((jump i386:jump-nc) o))
 
-      ((le ,a ,b) ((jump i386:jump-label-g) o))
-      ((lt ,a ,b) ((jump i386:jump-label-ge) o))
-      ((ge ,a ,b) ((jump i386:jump-label-g) o))
-      ((gt ,a ,b) ((jump i386:jump-label-ge) o))
+      ((le ,a ,b) ((jump i386:jump-g) o))
+      ((lt ,a ,b) ((jump i386:jump-ge) o))
+      ((ge ,a ,b) ((jump i386:jump-g) o))
+      ((gt ,a ,b) ((jump i386:jump-ge) o))
 
-      ((ne ,a ,b) ((jump i386:jump-label-nz) o))
-      ((eq ,a ,b) ((jump i386:jump-label-nz) o))
-      ((not _) ((jump i386:jump-label-z) o))
+      ((ne ,a ,b) ((jump i386:jump-nz) o))
+      ((eq ,a ,b) ((jump i386:jump-nz) o))
+      ((not _) ((jump i386:jump-z) o))
 
       ((and ,a ,b)
        (let* ((info ((test-jump-label->info info label) a))
@@ -1096,24 +1096,24 @@
               (skip-b-label (string-append label "_skip_b_" here))
               (b-label (string-append label "_b_" here))
               (info ((test-jump-label->info info b-label) a))
-              (info (append-text info (wrap-as (i386:jump-label `(#:local ,skip-b-label)))))
+              (info (append-text info (wrap-as (i386:jump `(#:local ,skip-b-label)))))
               (info (append-text info (wrap-as `(#:label ,b-label))))
               (info ((test-jump-label->info info label) b))
               (info (append-text info (wrap-as `(#:label ,skip-b-label)))))
          info))
 
-      ((array-ref . _) ((jump i386:jump-label-byte-z
+      ((array-ref . _) ((jump i386:jump-byte-z
                               (wrap-as (i386:accu-zero?))) o))
 
-      ((de-ref _) ((jump i386:jump-label-byte-z
+      ((de-ref _) ((jump i386:jump-byte-z
                          (wrap-as (i386:accu-zero?))) o))
 
       ((assn-expr (p-expr (ident ,name)) ,op ,expr)
-       ((jump i386:jump-label-z
+       ((jump i386:jump-z
               (append ((ident->accu info) name)
                       (wrap-as (i386:accu-zero?)))) o))
 
-      (_ ((jump i386:jump-label-z (wrap-as (i386:accu-zero?))) o)))))
+      (_ ((jump i386:jump-z (wrap-as (i386:accu-zero?))) o)))))
 
 (define (cstring->number s)
   (cond ((string-prefix? "0x" s) (string->number (string-drop s 2) 16))
@@ -1278,11 +1278,11 @@
 
         ((break)
          (let ((label (car (.break info))))
-           (append-text info (wrap-as (i386:jump-label `(#:local ,label))))))
+           (append-text info (wrap-as (i386:jump `(#:local ,label))))))
 
         ((continue)
          (let ((label (car (.continue info))))
-           (append-text info (wrap-as (i386:jump-label `(#:local ,label))))))
+           (append-text info (wrap-as (i386:jump `(#:local ,label))))))
 
         ;; FIXME: expr-stmt wrapper?
         (trans-unit info)
@@ -1307,7 +1307,7 @@
                 (else-label (string-append label "else"))
                 (info ((test-jump-label->info info break-label) test))
                 (info ((ast->info info) then))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,break-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,break-label)))))
                 (info (append-text info (wrap-as `(#:label ,break-label)))))
            (clone info
                   #:locals locals)))
@@ -1321,7 +1321,7 @@
                 (else-label (string-append label "else"))
                 (info ((test-jump-label->info info else-label) test))
                 (info ((ast->info info) then))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,break-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,break-label)))))
                 (info (append-text info (wrap-as `(#:label ,else-label))))
                 (info ((ast->info info) else))
                 (info (append-text info (wrap-as `(#:label ,break-label)))))
@@ -1338,7 +1338,7 @@
                 (break-label (string-append label "break"))
                 (info ((test-jump-label->info info else-label) test))
                 (info ((ast->info info) then))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,break-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,break-label)))))
                 (info (append-text info (wrap-as `(#:label ,else-label))))
                 (info ((ast->info info) else))
                 (info (append-text info (wrap-as `(#:label ,break-label)))))
@@ -1373,14 +1373,14 @@
                 (info ((ast->info info) init))
                 (info (clone info #:break (cons break-label (.break info))))
                 (info (clone info #:continue (cons continue-label (.continue info))))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,initial-skip-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,initial-skip-label)))))
                 (info (append-text info (wrap-as `(#:label ,loop-label))))
                 (info ((ast->info info) body))
                 (info (append-text info (wrap-as `(#:label ,continue-label))))
                 (info ((expr->accu info) step))
                 (info (append-text info (wrap-as `(#:label ,initial-skip-label))))
                 (info ((test-jump-label->info info break-label) test))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,loop-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,loop-label)))))
                 (info (append-text info (wrap-as `(#:label ,break-label)))))
            (clone info
                   #:locals locals
@@ -1395,14 +1395,14 @@
                 (break-label (string-append label "break"))
                 (loop-label (string-append label "loop"))
                 (continue-label (string-append label "continue"))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,continue-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,continue-label)))))
                 (info (clone info #:break (cons break-label (.break info))))
                 (info (clone info #:continue (cons continue-label (.continue info))))
                 (info (append-text info (wrap-as `(#:label ,loop-label))))
                 (info ((ast->info info) body))
                 (info (append-text info (wrap-as `(#:label ,continue-label))))
                 (info ((test-jump-label->info info break-label) test))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,loop-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,loop-label)))))
                 (info (append-text info (wrap-as `(#:label ,break-label)))))
            (clone info
                   #:locals locals
@@ -1423,7 +1423,7 @@
                 (info ((ast->info info) body))
                 (info (append-text info (wrap-as `(#:label ,continue-label))))
                 (info ((test-jump-label->info info break-label) test))
-                (info (append-text info (wrap-as (i386:jump-label `(#:local ,loop-label)))))
+                (info (append-text info (wrap-as (i386:jump `(#:local ,loop-label)))))
                 (info (append-text info (wrap-as `(#:label ,break-label)))))
            (clone info
                   #:locals locals
@@ -1435,7 +1435,7 @@
            ((ast->info info) statement)))
 
         ((goto (ident ,label))
-         (append-text info (wrap-as (i386:jump-label `(#:local ,label)))))
+         (append-text info (wrap-as (i386:jump `(#:local ,label)))))
 
         ((return ,expr)
          (let ((info ((expr->accu info) expr)))
