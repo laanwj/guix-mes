@@ -17,14 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_TIME_H
-#define __MES_TIME_H 1
+#ifndef __MES_STDNORETURN_H
+#define __MES_STDNORETURN_H 1
 
 #if __GNUC__ && POSIX
-#include_next <time.h>
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include_next <stdnoreturn.h>
+
 #else // ! (__GNUC__ && POSIX)
-typedef int time_t;
+// whut?
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __MES_TIME_H
-
+#endif // __MES_STDNORETURN_H
