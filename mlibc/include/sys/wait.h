@@ -17,17 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_INTTYPES_H
-#define __MES_INTTYPES_H 1
+#ifndef __MES_SYS_WAIT_H
+#define __MES_SYS_WAIT_H 1
 
 #if __GNUC__ && POSIX
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#include_next <inttypes.h>
-#else // ! (__GNUC__ && POSIX)
+#include_next <sys/wait.h>
+#endif // (__GNUC__ && POSIX)
 
-#include <stdint.h>
-#endif // ! (__GNUC__ && POSIX)
+#endif // __MES_SYS_WAIT_H
 
-#endif // __MES_INTTYPES_H

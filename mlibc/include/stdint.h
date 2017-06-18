@@ -17,17 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_INTTYPES_H
-#define __MES_INTTYPES_H 1
+#ifndef __MES_STDINT_H
+#define __MES_STDINT_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include_next <inttypes.h>
+#include_next <stdint.h>
+
 #else // ! (__GNUC__ && POSIX)
 
-#include <stdint.h>
+typedef unsigned char uint8_t;
+typedef char int8_t;
+typedef unsigned short uint16_t;
+typedef short int16_t;
+typedef unsigned uint32_t;
+typedef int int32_t;
+typedef unsigned long long uint64_t;
+typedef long long int64_t;
+
+// FIXME
+typedef int intmax_t;
+typedef unsigned uintmax_t;
+typedef int* intptr_t;
+typedef unsigned* uintptr_t;
+
+typedef unsigned ptrdiff_t;
+
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __MES_INTTYPES_H
+#endif // __MES_STDINT_H

@@ -17,17 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_INTTYPES_H
-#define __MES_INTTYPES_H 1
+#ifndef __MES_ALLOCA_H
+#define __MES_ALLOCA_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include_next <inttypes.h>
-#else // ! (__GNUC__ && POSIX)
+#include_next <alloca.h>
 
-#include <stdint.h>
+#else // ! (__GNUC__ && POSIX)
+void* alloca (size_t);
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __MES_INTTYPES_H
+#endif // __MES_ALLOCA_H
