@@ -1,0 +1,85 @@
+### Copyright (C) 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+### This file is part of stage0.
+###
+### stage0 is free software: you an redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation, either version 3 of the License, or
+### (at your option) any later version.
+###
+### stage0 is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with stage0.  If not, see <http://www.gnu.org/licenses/>.
+
+### stage0's hex2 format for x86
+###    !<label>          1 byte relative
+###    $<label>          2 byte address
+###    @<label>          2 byte relative
+###    &<label>          4 byte address
+###    %<label>          4 byte relative
+###    local_<label>     function-local
+###    string_<index>    string #<index>
+
+### elf32-body-exit-42.hex2: 32 bit elf body in hex2 for `exit 42'
+
+# @80
+:ELF_text
+:_start
+# exit(42)
+bb 2a 00 00 00      # mov    $42,%ebx
+b8 01 00 00 00      # mov    $0x1,%eax
+cd 80               # int    $0x80
+
+00 00 00 00
+
+# @90
+:main
+c9        # RET
+
+00 00 00
+00 00 00 00
+00 00 00 00
+00 00 00 00
+
+# @a0
+:ELF_data
+65 78 69 74 34 32 20 64 61 74 61 20 68 65 72 65 # exit42 data here"
+
+#@ b0
+
+:ELF_str
+00                   # 0
+5f 73 74 61 72 74 00 # _start
+6d 61 69 6e 00       # main
+
+00 00 00
+
+#@ c0
+:ELF_sym
+00 00 00 00 # st-name
+00 00 00 00 # st-offset: &_start - BaseAddress
+00 00 00 00 # st-len   : &main - _start
+00          # st-info = stt-func= 2             
+00          # st-other
+01 00       # st-shndx: 1
+
+# _start
+01 00 00 00 # st-name
+&_start
+10 00 00 00 # st-len   : &main - _start
+02          # st-info = stt-func= 2             
+00          # st-other
+01 00       # st-shndx: 1
+
+# main
+08 00 00 00 # st-name
+&main
+10 00 00 00 # st-len   : &ELF_data - main
+02          # st-info = stt-func= 2             
+00          # st-other
+01 00       # st-shndx: 1
+
+
