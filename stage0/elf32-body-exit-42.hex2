@@ -25,30 +25,38 @@
 
 ### elf32-body-exit-42.hex2: 32 bit elf body in hex2 for `exit 42'
 
-# @80
+# @200
 :ELF_text
 :_start
 # exit(42)
+#e8 0b 00 00 00      # call   +11 <main>
+e8 %main
+00 00 00
+00 00 00 00
+00 00 00 00
+
+# @210
+:main
 bb 2a 00 00 00      # mov    $42,%ebx
 b8 01 00 00 00      # mov    $0x1,%eax
 cd 80               # int    $0x80
 
 00 00 00 00
 
-# @90
-:main
-c9        # RET
+# # @210
+# :main
+# c9        # RET
 
-00 00 00
-00 00 00 00
-00 00 00 00
-00 00 00 00
+# 00 00 00
+# 00 00 00 00
+# 00 00 00 00
+# 00 00 00 00
 
-# @a0
+# @220
 :ELF_data
 65 78 69 74 34 32 20 64 61 74 61 20 68 65 72 65 # exit42 data here"
 
-#@ b0
+# @230
 
 :ELF_str
 00                   # 0
@@ -57,12 +65,12 @@ c9        # RET
 
 00 00 00
 
-#@ c0
+# @240
 :ELF_sym
 00 00 00 00 # st-name
 00 00 00 00 # st-offset: &_start - BaseAddress
 00 00 00 00 # st-len   : &main - _start
-00          # st-info = stt-func= 2             
+00          # st-info = stt-func= 2
 00          # st-other
 01 00       # st-shndx: 1
 
@@ -70,7 +78,7 @@ c9        # RET
 01 00 00 00 # st-name
 &_start
 10 00 00 00 # st-len   : &main - _start
-02          # st-info = stt-func= 2             
+02          # st-info = stt-func= 2
 00          # st-other
 01 00       # st-shndx: 1
 
@@ -78,8 +86,6 @@ c9        # RET
 08 00 00 00 # st-name
 &main
 10 00 00 00 # st-len   : &ELF_data - main
-02          # st-info = stt-func= 2             
+02          # st-info = stt-func= 2
 00          # st-other
 01 00       # st-shndx: 1
-
-

@@ -1,3 +1,4 @@
+### Copyright (C) 2016 Jeremiah Orians
 ### Copyright (C) 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ### This file is part of stage0.
 ###
@@ -43,10 +44,10 @@
 01 00 00 00           # e_version Indicating original elf
 
 &ELF_text             # e_entry Address of the entry point
-#&ELF_program_headers - &ELF_base           # e_phoff Address of program header table
-34 00 00 00           # e_phoff Address of program header table
-#&ELF_section_headers - &ELF_base           # e_phoff Address of program header table
-40 01 00 00           # e_shoff Address of section header table
+    #&ELF_program_headers - &ELF_base           # e_phoff Address of program header table
+40 00 00 00           # e_phoff Address of program header table
+    #&ELF_section_headers - &ELF_base           # e_phoff Address of program header table
+d0 00 00 00           # e_shoff Address of section header table
 
 00 00 00 00           # e_flags
 
@@ -60,6 +61,12 @@
 
 04 00                 # e_shstrndx index of the section names
 
+# @34
+00 00 00 00
+00 00 00 00
+00 00 00 00
+
+# @40
 :ELF_program_header__text
 01 00 00 00 # ph_type: PT-LOAD = 1
 00 00 00 00 # ph_offset
@@ -70,7 +77,7 @@
 07 00 00 00 # ph_flags: PF-X|PF-W|PF-R = 7
 01 00 00 00 # ph_align
 
-# @54
+# @60
 :ELF_program_header__data
 01 00 00 00 # ph_type: PT-LOAD = 1
 00 00 00 00 # ph_offset
@@ -81,7 +88,146 @@ ff ff 00 00 # ph_memsz
 07 00 00 00 # ph_flags: PF-X|PF-W|PF-R = 7
 01 00 00 00 # ph_align
 
-# @74
+# @80
+:ELF_comment
+4d 45 53 00  # MES
+00 00 00 00
+00 00 00 00  # align
+00 00 00 00  # align
+
+4d 45 53 00  # MES
+00 00 00 00
+00 00 00 00  # align
+00 00 00 00  # align
+
+# @a0
+:ELF_shstr
+00
+:ELF_shstr__text
+2e 74 65 78 74 00              # .text
+:ELF_shstr__data
+2e 64 61 74 61 00              # .data
+:ELF_shstr__comment
+2e 63 6f 6d 6d 65 6e 74 00     # .comment
+:ELF_shstr__shstrtab
+2e 73 68 73 74 72 74 61 62 00  # .shstrtab
+:ELF_shstr__symtab
+2e 73 79 6d 74 61 62 00        # .symtab
+:ELF_shstr__strtab
+2e 73 74 72 74 61 62 00        # .strtab
+
+# @d0
+
+:ELF_sections_headers
+00 00 00 00                    # sh_name
+00 00 00 00                    # sh_type
+00 00 00 00                    # sh_flags
+00 00 00 00                    # sh_addr
+00 00 00 00                    # sh_offset
+00 00 00 00                    # sh_length
+00 00 00 00                    # sh_link
+00 00 00 00                    # sh_info
+01 00 00 00                    # sh_1?
+00 00 00 00                    # sh_entsize
+
+## FIXME: M0 for calculations?
+:ELF_section_header_text
+    #@ELF_shstr__text - @ELF_shstr  # sh_name
+01 00 00 00                    # sh_name
+01 00 00 00                    # sh_type = SHT_PROGBITS = 1
+06 00 00 00                    # sh_flags = SHF-ALLOC|SHF-EXEC =2 | 4 = 6
+#&ELF_base                      # sh_addr
+&ELF_text                      # sh_addr
+    #@ELF_text - @ELF_base     # sh_addr
+00 02 00 00                    # sh_offset
+    #@ELF_data - @ELF_text  # sh_length
+20 00 00 00                    # sh_length
+00 00 00 00                    # sh_link
+00 00 00 00                    # sh_info
+01 00 00 00                    # sh_1?
+00 00 00 00                    # sh_entsize
+
+:ELF_section_header_data
+    #@ELF_shstr__data - @ELF_shstr  # sh_name
+07 00 00 00                    # sh_name
+01 00 00 00                    # sh_type = SHT_PROGBITS = 1
+03 00 00 00                    # sh_flags = SHF-WRITE|SHF-ALLOC = 1 | 2 = 3
+#&ELF_base                      # sh_addr
+&ELF_data                      # sh_addr
+    #@ELF_data - @ELF_base     # sh_addr
+20 02 00 00                    # sh_offset
+    #@ELF_comment - @ELF_data  # sh_length
+10 00 00 00                    # sh_length
+00 00 00 00                    # sh_link
+00 00 00 00                    # sh_info
+01 00 00 00                    # sh_1?
+00 00 00 00                    # sh_entsize
+
+:ELF_section_header_comment
+    #@ELF_shstr__comment - @ELF_shstr  # sh_name
+0d 00 00 00                    # sh_name
+01 00 00 00                    # sh_type = SHT_PROGBITS = 1
+00 00 00 00                    # sh_flags
+#&ELF_base                      # sh_addr
+&ELF_comment                   # sh_addr
+80 00 00 00                    # sh_offset
+00 00 00 00                    # sh_length
+00 00 00 00                    # sh_link
+00 00 00 00                    # sh_info
+01 00 00 00                    # sh_1?
+00 00 00 00                    # sh_entsize
+
+:ELF_section_header_shstr
+    #@ELF_shstr__shstr - @ELF_shstr  # sh_name
+16 00 00 00                    # sh_name
+03 00 00 00                    # sh_type: str-sht-strtab
+00 00 00 00                    # sh_flags
+#&ELF_base                      # sh_addr
+&ELF_shstr                     # sh_addr
+a0 00 00 00                    # sh_offset
+30 00 00 00                    # sh_length
+00 00 00 00                    # sh_link
+00 00 00 00                    # sh_info
+01 00 00 00                    # sh_1?
+00 00 00 00                    # sh_entsize
+
+:ELF_section_header_sym
+    #@ELF_shstr__sym - @ELF_shstr  # sh_name
+20 00 00 00                    # sh_name
+02 00 00 00                    # sh_type: str-sht-symtab
+00 00 00 00                    # sh_flags
+#&ELF_base                      # sh_addr
+&ELF_sym                       # sh_addr
+40 02 00 00                    # sh_offset
+30 00 00 00                    # sh_length
+06 00 00 00                    # sh_link:6
+00 00 00 00                    # sh_info
+01 00 00 00                    # sh_1?
+10 00 00 00                    # sh_entsize
+
+:ELF_section_header_str
+    #@ELF_shstr__str - @ELF_shstr  # sh_name
+28 00 00 00                    # sh_name
+03 00 00 00                    # sh_type: str-sht-strtab
+00 00 00 00                    # sh_flags
+#&ELF_base                      # sh_addr
+&ELF_str                       # sh_addr
+30 02 00 00                    # sh_offset
+10 00 00 00                    # sh_length
+00 00 00 00                    # sh_link
+00 00 00 00                    # sh_info
+01 00 00 00                    # sh_1?
+00 00 00 00                    # sh_entsize
+
+# @1e8
+00 00 00 00  # align
+00 00 00 00
+
+# @1f0
+
+00 00 00 00  # align
 00 00 00 00
 00 00 00 00
 00 00 00 00
+
+# @200
