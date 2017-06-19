@@ -29,28 +29,18 @@
 :ELF_text
 :_start
 # exit(42)
-#e8 0b 00 00 00      # call   +11 <main>
-e8 %main
+e8 %main                       # call   +11 <main>
 00 00 00
 00 00 00 00
 00 00 00 00
 
 # @210
 :main
-bb 2a 00 00 00      # mov    $42,%ebx
-b8 01 00 00 00      # mov    $0x1,%eax
-cd 80               # int    $0x80
+bb 2a 00 00 00                 # mov    $42,%ebx
+b8 01 00 00 00                 # mov    $0x1,%eax
+cd 80                          # int    $0x80
 
 00 00 00 00
-
-# # @210
-# :main
-# c9        # RET
-
-# 00 00 00
-# 00 00 00 00
-# 00 00 00 00
-# 00 00 00 00
 
 # @220
 :ELF_data
@@ -59,33 +49,35 @@ cd 80               # int    $0x80
 # @230
 
 :ELF_str
-00                   # 0
-5f 73 74 61 72 74 00 # _start
-6d 61 69 6e 00       # main
+00                             # 0
+:ELF_str__start
+5f 73 74 61 72 74 00           # _start
+:ELF_str__main
+6d 61 69 6e 00                 # main
 
 00 00 00
 
 # @240
 :ELF_sym
-00 00 00 00 # st-name
-00 00 00 00 # st-offset: &_start - BaseAddress
-00 00 00 00 # st-len   : &main - _start
-00          # st-info = stt-func= 2
-00          # st-other
-01 00       # st-shndx: 1
+00 00 00 00                    # st-name
+00 00 00 00                    # st-offset: &_start - BaseAddress
+00 00 00 00                    # st-len   : &main - _start
+00                             # st-info = stt-func= 2
+00                             # st-other
+01 00                          # st-shndx: 1
 
 # _start
-01 00 00 00 # st-name
+%ELF_str__start>ELF_str        # st-name
 &_start
-10 00 00 00 # st-len   : &main - _start
-02          # st-info = stt-func= 2
-00          # st-other
-01 00       # st-shndx: 1
+10 00 00 00                    # st-len   : &main - _start
+02                             # st-info = stt-func= 2
+00                             # st-other
+01 00                          # st-shndx: 1
 
 # main
-08 00 00 00 # st-name
+%ELF_str__main>ELF_str         # st-name
 &main
-10 00 00 00 # st-len   : &ELF_data - main
-02          # st-info = stt-func= 2
-00          # st-other
-01 00       # st-shndx: 1
+10 00 00 00                    # st-len   : &ELF_data - main
+02                             # st-info = stt-func= 2
+00                             # st-other
+01 00                          # st-shndx: 1
