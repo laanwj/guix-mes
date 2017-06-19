@@ -9,7 +9,7 @@ if [ -x "$GUILE" ]; then
 else
     pm=$({ guix --help || dpkg --help; }|head -n 1|sed 's,.*Usage: \([^ ]*\).*,\1,g')
 #-paredit:'})(
-    case "$pm" in dpkg) message="sudo apt-get install guile-2.0";; *) message="guix package -i guile";; esac
+    case "$pm" in dpkg) message="sudo apt-get install guile-2.0";; *) message="guix environment guix.scm";; esac
     cat <<EOF
 Missing dependencies, run
 
@@ -17,7 +17,7 @@ Missing dependencies, run
 EOF
     exit 1
 fi
-exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1+"$@"}
+exec ${GUILE} --no-auto-compile -L $(pwd) -C $(pwd) -e 'main' -s "$0" ${1+"$@"}
 !#
 
 ;;; Mes --- Maxwell Equations of Software
@@ -38,6 +38,8 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+(define (main args)
+  ((@@ (configure) main) args))
 
 (define-module (configure)
   #:use-module (ice-9 and-let-star)
@@ -117,9 +119,11 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
                                        (char-set-complement (char-set #\.)))))
             (map string->number version)))
 
+(define optional '())
 (define required '())
 (define* (check-version name expected
                         #:key
+                        optional?
                         (deb #f)
                         (version-option '--version)
                         (compare tuple<=)
@@ -133,7 +137,9 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
     (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
                           (if actual " no, found" "")) (version->string actual))
     (or pass?
-        (if (not (pair? name)) (begin (set! required (cons (or deb name) required)) pass?)
+        (if (not (pair? name)) (begin (if optional? (set! optional (cons (or deb name) optional))
+                                          (set! required (cons (or deb name) required)))
+                                      pass?)
             (check-version (cdr name) expected deb version-option compare)))))
 
 (define* (check-pkg-config package expected #:optional (deb #f))
@@ -162,7 +168,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -e '(@@ (configure) main)' -s "$0" ${1
 ;;;
 
 (define CC (or (getenv "CC") "gcc"))
-(define BUILD_TRIPLET (gulp-pipe (string-append CC " -dumpmachine 2>/dev/null")))
+(define BUILD_TRIPLET %host-type)
 (define ARCH (car (string-split BUILD_TRIPLET #\-)))
 (define CC32 (or (getenv "CC32")
                  (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
@@ -213,10 +219,13 @@ Usage: ./configure [OPTION]...
     (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
           (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
           (exit 1))
-    (check-version CC '(4 8))
-    (check-header-c "stdio.h" "libc-dev")
-    (check-header-c "limits.h" "linux-headers")
-    (check-version CC32 '(4 8))
+    (if (not (check-version CC '(4 8) #:optional? #t))
+        (set! CC #f))
+    (when CC
+      (check-header-c "stdio.h" "libc-dev")
+      (check-header-c "limits.h" "linux-headers"))
+    (if (not (check-version CC32 '(4 8) #:optional? #t))
+        (set! CC32 #f))
     (check-version 'guile '(2 0))
     (check-version 'make '(4 0))
     (check-version 'perl '(5))
@@ -234,8 +243,8 @@ Usage: ./configure [OPTION]...
         (stdout "host:=~a\n" host-triplet)
         (stdout "srcdir:=.\n")
         (stdout "ARCH:=~a\n" ARCH)
-        (stdout "CC:=~a\n" CC)
-        (stdout "CC32:=~a\n" CC32)
+        (stdout "CC:=~a\n" (or CC ""))
+        (stdout "CC32:=~a\n" (or CC32 ""))
         (stdout "GUILE:=~a\n" GUILE)
         (stdout "GUILE_FOR_BUILD:=~a\n" GUILE)
         (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
