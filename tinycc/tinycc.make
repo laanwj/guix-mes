@@ -73,6 +73,7 @@ TINYCC_REST:=\
 #
 
 define tinycc-test
+ifneq ($(CC32),)
 EXT:=mlibc
 TARGET:=$(1).mlibc
 C_FILES:=$$(TINYCC_TEST2)/$(1).c
@@ -82,6 +83,7 @@ include make/bin-mlibc.make
 EXT:=mlibc
 TARGET:=$(1).mlibc
 include make/check-tinycc.make
+endif
 
 EXT:=guile
 TARGET:=$(1).guile

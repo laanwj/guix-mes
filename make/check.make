@@ -1,3 +1,4 @@
+ifneq ($(CC),)
 ifeq ($(TEST),)
 TEST:=$(TARGET)-check
 $(TEST): EXPECT:=$(EXPECT)
@@ -13,4 +14,6 @@ endif
 CHECK+=$(TEST)
 $(TEST): TEST:=$(TEST)
 $(DIR)-check: $(TEST)
+endif
 include make/reset.make
+

@@ -42,7 +42,7 @@ include make/bin-mlibc.make
 
 TARGET:=m.mlibc
 EXPECT:=255
-include make/check.make
+include make/check-mlibc.make
 
 TARGET:=hello.mlibc
 C_FILES:=$(DIR)/hello.c
@@ -50,7 +50,7 @@ include make/bin-mlibc.make
 
 TARGET:=hello.mlibc
 EXPECT:=42
-include make/check.make
+include make/check-mlibc.make
 
 TARGET:=micro-mes.mlibc
 C_FILES:=$(DIR)/micro-mes.c
@@ -59,21 +59,21 @@ include make/bin-mlibc.make
 TEST:=micro-mes.mlibc-check
 $(TEST): $(OUT)/micro-mes.mlibc
 	$< 2 3; r=$$?; [ $$r = 3 ]
-include make/check.make
+include make/check-mlibc.make
 
 TARGET:=t.mlibc
 C_FILES:=$(DIR)/t.c
 include make/bin-mlibc.make
 
 TARGET:=t.mlibc
-include make/check.make
+include make/check-mlibc.make
 
 TARGET:=t-tcc.mlibc
 C_FILES:=$(DIR)/t-tcc.c
 include make/bin-mlibc.make
 
 TARGET:=t-tcc.mlibc
-include make/check.make
+include make/check-mlibc.make
 
 CROSS:=$(CC32:%gcc=%)
 #$(OUT)/$(DIR)/mini-mes.$(CROSS)o: $(SNARF.MES)
