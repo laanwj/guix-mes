@@ -30,6 +30,7 @@
   (set-port-encoding! (current-output-port) "ISO-8859-1"))
  (guile)
  (mes
+  (mes-use-module (srfi srfi-26))
   (mes-use-module (mes pmatch))
   (mes-use-module (nyacc lang c99 parser))
   (mes-use-module (mes elf-util))
@@ -56,7 +57,7 @@
 (define* (c99-input->full-ast #:key (defines '()) (includes '()))
   (let ((include (if (equal? %prefix "") "mlibc/include" (string-append %prefix "/share/mlibc/include"))))
     (parse-c99
-     #:inc-dirs (append includes (cons* "." "mlibc" "src" "out" "out/src" include (string-split (getenv "C_INCLUDE_PATH") #\:)))
+     #:inc-dirs (append includes (cons* "." "mlibc" "src" "out" "out/src" include (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
      #:cpp-defs `(
                   "POSIX=0"
                   "_POSIX_SOURCE=0"
