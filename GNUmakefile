@@ -14,6 +14,7 @@ SUBDIRS:=\
  src\
  scaffold\
  scripts\
+ stage0\
  tests\
  tinycc\
 #

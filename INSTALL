@@ -12,13 +12,15 @@ Building and Installing Mes
     guix environment --system=i686-linux -l guix.scm #32 bit only
 
 ** Other GNU/Linux
-*** Nyacc, 0.78.0 is known to work.
+*** [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]], 0.0 is known to work.
+
+*** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.78.0 is known to work.
 Matt Wette's C99 LALR parser.
 
-*** A C compiler, GNU Gcc 4.9.3 is known to work.
+*** GNU Gcc, 4.9.3 is known to work.
 The idea is to drop this requirement, of course.
 
-*** Guile, version 2.0.12 or is know to work.
+*** GNU Guile, version 2.0.12 or is know to work.
 Guile is not strictly necessary but it is used by the configure script
 and in development.
 

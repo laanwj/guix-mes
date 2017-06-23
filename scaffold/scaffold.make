@@ -6,7 +6,7 @@ include make/bin.make
 
 TARGET:=m
 EXPECT:=255
-include make/check.make
+include make/check-cc.make
 
 TARGET:=hello
 C_FILES:=$(DIR)/hello.c
@@ -16,7 +16,7 @@ include make/bin.make
 
 TARGET:=hello
 EXPECT:=42
-include make/check.make
+include make/check-cc.make
 
 TARGET:=t
 C_FILES:=$(DIR)/t.c
@@ -25,7 +25,7 @@ INCLUDES:=mlibc
 include make/bin.make
 
 TARGET:=t
-include make/check.make
+include make/check-cc.make
 
 TARGET:=t-tcc
 C_FILES:=$(DIR)/t-tcc.c
@@ -34,7 +34,7 @@ INCLUDES:=mlibc
 include make/bin.make
 
 TARGET:=t-tcc
-include make/check.make
+include make/check-cc.make
 
 TARGET:=m.mlibc
 C_FILES:=$(DIR)/m.c
