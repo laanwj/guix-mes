@@ -20,22 +20,29 @@
 
 ;;; Commentary:
 
+;;; compiler.mes produces an i386 binary from the C produced by
+;;; Nyacc c99.
+
 ;;; Code:
 
-(define-module (mes hex2)
-  #:use-module (srfi srfi-1)
-  #:use-module (system base pmatch)
-  #:use-module (mes as)
-  #:use-module (mes elf)
-  #:export (object->hex2
-            objects->hex2
-            object->elf
-            objects->elf))
-
 (cond-expand
+ (guile)
  (guile-2)
- (guile
-  (use-modules (ice-9 syncase)))
- (mes))
+ (mes
+  (mes-use-module (srfi srfi-1))
+  (mes-use-module (mes bytevectors))))
 
-(include-from-path "mes/hex2.mes")
+(define (int->bv32 value)
+  (let ((bv (make-bytevector 4)))
+    (bytevector-u32-native-set! bv 0 value)
+    bv))
+
+(define (int->bv16 value)
+  (let ((bv (make-bytevector 2)))
+    (bytevector-u16-native-set! bv 0 value)
+    bv))
+
+(define (dec->hex o)
+  (cond ((number? o) (number->string o 16))
+        ((char? o) (number->string (char->integer o) 16))
+        (else (format #f "~s" o))))

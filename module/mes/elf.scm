@@ -23,10 +23,7 @@
 ;;; Code:
 
 (define-module (mes elf)
-  #:use-module (srfi srfi-1)
-  #:use-module (mes elf-util)
-  #:export (make-elf
-            object->elf))
+  #:export (hex2->elf))
 
 (cond-expand
  (guile-2)

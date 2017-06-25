@@ -28,7 +28,7 @@
  (guile)
  (mes
   (mes-use-module (srfi srfi-1))
-  (mes-use-module (mes elf-util))
+  (mes-use-module (mes as))
   (mes-use-module (mes elf))
   (mes-use-module (mes optargs))
   (mes-use-module (mes pmatch))))
@@ -44,8 +44,11 @@
 (define (objects->hex2 objects)
   ((compose object->hex2 merge-objects) objects))
 
+(define (object->elf o)
+  ((compose hex2->elf object->hex2) o))
+
 (define (objects->elf objects)
-  (error "->ELF support dropped, use hex2"))
+  ((compose hex2->elf object->hex2 merge-objects) objects))
 
 (define (merge-objects objects)
   (let loop ((objects (cdr objects)) (object (car objects)))

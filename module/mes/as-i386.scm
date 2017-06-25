@@ -25,7 +25,7 @@
 ;;; Code:
 
 (define-module (mes as-i386)
-  #:use-module (mes elf-util)
+  #:use-module (mes as)
   #:export (
             i386:accu-not
             i386:accu-cmp-value

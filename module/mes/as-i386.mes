@@ -28,7 +28,7 @@
  (guile-2)
  (guile)
  (mes
-  (mes-use-module (mes elf-util))))
+  (mes-use-module (mes as))))
 
 (define (i386:function-preamble)
   '(#x55                                ; push   %ebp

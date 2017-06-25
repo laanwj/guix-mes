@@ -33,7 +33,7 @@
   (mes-use-module (mes pmatch))
   (mes-use-module (nyacc lang c99 parser))
   (mes-use-module (nyacc lang c99 pprint))
-  (mes-use-module (mes elf-util))
+  (mes-use-module (mes as))
   (mes-use-module (mes as-i386))
   (mes-use-module (mes hex2))
   (mes-use-module (mes optargs))))
@@ -261,6 +261,13 @@
       (if (= size 1)
           (wrap-as (i386:push-byte-local-de-de-ref (local:id o)))
           (error "TODO int-de-de-ref")))))
+
+(define (make-global name type pointer value)
+  (cons name (list type pointer value)))
+
+(define global:type car)
+(define global:pointer cadr)
+(define global:value caddr)
 
 (define (string->global string)
   (make-global `(#:string ,string) "string" 0 (append (string->list string) (list #\nul))))
