@@ -79,7 +79,7 @@ Usage: mescc.scm [OPTION]... FILE...
   -c                 compile and assemble, but do not link
   -D DEFINE          define DEFINE
   -E                 preprocess only; do not compile, assemble or link
-  -g                 add debug info [GDB, objdump] using hex3 format
+  -g                 add debug info [GDB, objdump] TODO: hex2 footer
   -h, --help         display this help and exit
   -I DIR             append DIR to include path
   -o FILE            write output to FILE
@@ -136,8 +136,7 @@ Usage: mescc.scm [OPTION]... FILE...
                                            (else "a.out"))))
          (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o)))))
          (defines (reverse (filter-map (multi-opt 'D) options)))
-         (includes (reverse (filter-map (multi-opt 'I) options)))
-         (objects->hex (if debug-info? objects->hex3 objects->hex2)))
+         (includes (reverse (filter-map (multi-opt 'I) options))))
     (when (getenv "MES_DEBUG") (format (current-error-port) "options=~s\n" options)
           (format (current-error-port) "output: ~a\n" out))
     (if (and (pair? sources) (pair? objects)) (error "cannot mix source and object files:" files))
@@ -146,16 +145,16 @@ Usage: mescc.scm [OPTION]... FILE...
         (if (and (not compile?)
                  (not preprocess?)) (set-port-encoding! (current-output-port) "ISO-8859-1"))
         (cond ((pair? objects) (let ((objects (map read-object objects)))
-                                 (if compile? (objects->hex objects)
+                                 (if compile? (objects->hex2 objects)
                                      (objects->elf objects))))
               ((pair? asts) (let* ((infos (map main:ast->info asts))
                                    (objects (map info->object infos)))
-                              (if compile? (objects->hex objects)
+                              (if compile? (objects->hex2 objects)
                                   (objects->elf objects))))
               ((pair? sources) (if preprocess? (map (source->ast defines includes) sources)
                                    (let* ((infos (map (source->info defines includes) sources))
                                           (objects (map info->object infos)))
-                                     (if compile? (objects->hex objects)
+                                     (if compile? (objects->hex2 objects)
                                          (objects->elf objects))))))))
     (if (and (not compile?)
              (not preprocess?))

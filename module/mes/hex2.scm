@@ -24,13 +24,12 @@
 
 (define-module (mes hex2)
   #:use-module (srfi srfi-1)
+  #:use-module (system base pmatch)
   #:use-module (mes elf-util)
   #:use-module (mes elf)
-  #:export (objects->hex2
-            objects->hex3
-            objects->elf
-            write-hex2
-            write-hex3))
+  #:export (object->hex2
+            objects->hex2
+            objects->elf))
 
 (cond-expand
  (guile-2)

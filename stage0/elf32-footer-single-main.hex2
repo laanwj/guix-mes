@@ -23,7 +23,7 @@
 ###    local_<label>     function-local
 ###    string_<index>    string #<index>
 
-### elf32-footer-exit-42.hex2: 32 bit elf footer in hex2 for `exit 42'
+### elf32-footer-single-main.hex2: 32 bit elf footer in hex2 for single main
 
 # @230
 

@@ -41,10 +41,10 @@
   '(#x83 #xec #x40))              ; sub    $0x10,%esp -- 16 local vars
 
 (define (i386:push-label label)
-  `(#x68 ,label #f #f #F))              ; push  $0x<o>
+  `(#x68 (#:address ,label)))        ; push  $0x<o>
 
 (define (i386:push-label-mem label)
-  `(#xa1 ,label #f #f #f                ; mov    0x804a000,%eax
+  `(#xa1 (#:address ,label)                ; mov    0x804a000,%eax
          #x50))                         ; push  %eax
 
 (define (i386:push-local n)
@@ -117,7 +117,7 @@
   `(#x89 #x55 ,(- 0 (* 4 n))))          ; mov    %edx,-<0xn>(%ebp)
 
 (define (i386:accu->label label)
-  `(#xa3 ,label #f #f #f))
+  `(#xa3 (#:address ,label)))
 
 (define (i386:accu-zero?)
   '(#x85 #xc0))                         ; cmpl   %eax,%eax
@@ -214,19 +214,19 @@
          #x83 #xc2 ,(- 0 (* 4 n))))     ; add    $0x<n>,%edx
 
 (define (i386:label->accu label)
-  `(#xb8 ,label #f #f #f))              ; mov    $<>,%eax
+  `(#xb8 (#:address ,label)))              ; mov    $<>,%eax
 
 (define (i386:label->base label)
-  `(#xba ,label #f #f #f))              ; mov   $<n>,%edx
+  `(#xba (#:address ,label)))              ; mov   $<n>,%edx
 
 (define (i386:label-mem->accu label)
-  `(#xa1 ,label #f #f #f))              ; mov    0x<n>,%eax
+  `(#xa1 (#:address ,label)))              ; mov    0x<n>,%eax
 
 (define (i386:label-mem->base label)
-  `(#x8b #x15 ,label #f #f #f))         ; mov    0x<n>,%edx
+  `(#x8b #x15 (#:address ,label)))         ; mov    0x<n>,%edx
 
 (define (i386:label-mem-add label v)
-  `(#x83 #x05 ,label #f #f #f ,v))      ; addl   $<v>,0x<n>
+  `(#x83 #x05 (#:address ,label) ,v))      ; addl   $<v>,0x<n>
 
 (define (i386:byte-base-mem->accu)
   '(#x01 #xd0                           ; add    %edx,%eax
@@ -297,7 +297,7 @@
 
 (define (i386:value->label label v)
   (or v (error "invalid value: value->label: " v))
-  `(#xc7 #x05 ,label #f #f #f           ; movl   $<v>,(<n>)
+  `(#xc7 #x05 (#:address ,label)     ; movl   $<v>,(<n>)
          ,@(int->bv32 v)))
 
 (define (i386:value->local n v)
@@ -310,7 +310,7 @@
   `(#x83 #x7d ,(- 0 (* 4 n)) ,v))       ; cmpl   $<v>,0x<n>(%ebp)
 
 (define (i386:call-label label n)
-  `(#xe8 ,label #f #f #f                ; call   relative $00
+  `(#xe8 (#:offset ,label)           ; call   offset $00
          #x83 #xc4 ,(* n 4)))           ; add    $00,%esp
 
 (define (i386:call-accu n)
@@ -339,28 +339,28 @@
   '(#x85 #xc0))                         ; test   %eax,%eax
 
 (define (i386:jump label)
-  `(#xe9 ,label #f #f #f))              ; jmp . + <n>
+  `(#xe9 (#:offset ,label)))         ; jmp . + <n>
 
 (define (i386:jump-z label)
-  `(#x0f #x84 ,label #f #f #f))         ; jz . + <n>
+  `(#x0f #x84 (#:offset ,label)))    ; jz . + <n>
 
 (define (i386:jump-byte-z label)
   `(#x84 #xc0                           ; test   %al,%al
-    #x74 ,label))                       ; jne <n>
+    #x74 (#:offset1 ,label)))           ; jne <n>
 
 ;; signed
 (define (i386:jump-g label)
-  `(#x0f #x8f ,label #f #f #f))         ; jg/jnle <n>
+  `(#x0f #x8f (#:offset ,label)))    ; jg/jnle <n>
 
 ;; signed
 (define (i386:jump-ge label)
-  `(#x0f #x8d ,label #f #f #f))         ; jge/jnl <n>
+  `(#x0f #x8d (#:offset ,label)))    ; jge/jnl <n>
 
 (define (i386:jump-nz label)
-  `(#x0f #x85 ,label #f #f #f))         ; jnz . + <n>
+  `(#x0f #x85 (#:offset ,label)))    ; jnz . + <n>
 
 (define (i386:jump-z label)
-  `(#x0f #x84 ,label #f #f #f))         ; jz . + <n>
+  `(#x0f #x84 (#:offset ,label)))    ; jz . + <n>
 
 (define (i386:byte-test-base)
   `(#x38 #xc2))                         ; cmp    %al,%dl

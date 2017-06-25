@@ -16,6 +16,11 @@ CLEAN+=$(OUT)/$(TARGET)
 INCLUDES+=mlibc/include mlibc $(OUT)/$(DIR)
 MESCC.mes:=scripts/mescc.mes -g
 MESLD.mes:=scripts/mescc.mes -g
+LINK.hex2:=$(HEX2)
+#ELF_HEADER:=stage0/elf32-0header.hex2
+#ELF_FOOTER:=stage0/elf-0footer.hex2
+ELF_HEADER:=stage0/elf32-header.hex2
+ELF_FOOTER:=stage0/elf32-footer-single-main.hex2
 
 $(OUT)/$(TARGET): ld:=MESLD.mes
 $(OUT)/$(TARGET): LD:=$(MESLD.mes)
@@ -27,7 +32,8 @@ $(OUT)/$(TARGET): scripts/mes
 $(OUT)/$(TARGET): O_FILES:=$(O_FILES)
 $(OUT)/$(TARGET): $(O_FILES)
 	@echo "  $(ld)	$(notdir $(O_FILES)) -> $(notdir $@)"
-	$(QUIET)$(LINK.c) $(O_FILES) $(LOADLIBES) $(LDLIBS) -o $@
+	$(QUIET)$(LINK.hex2) $(HEX2_FLAGS) -f $(ELF_HEADER) $(O_FILES:%=-f %) $(LOADLIBES:%=-f %) $(LDLIBS:%=-f %) -f $(ELF_FOOTER) > $@ || { rm -f $@; exit 1;}
+	@chmod +x $@
 
 define mescc.mes-c-compile
 $(OUT)/$(1:.c=.$(CROSS)o): CROSS:=$(CROSS)

@@ -46,8 +46,6 @@
 %ELF_program_headers>ELF_base  # e_phoff Address of program header table
 %ELF_section_headers>ELF_base  # e_shoff Address of section header table
 
-#d0 00 00 00                   # e_shoff Address of section header table
-
 00 00 00 00                    # e_flags
 
 34 00                          # e_ehsize Indicating our 52 Byte header
@@ -215,3 +213,4 @@
 00 00 00 00
 
 # @200
+:ELF_text

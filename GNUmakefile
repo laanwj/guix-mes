@@ -7,6 +7,7 @@ default: all
 
 MES_DEBUG:=1
 CFLAGS:=--std=gnu99 -O0 -g --include libc-gcc.c
+HEX2_FLAGS:=--LittleEndian --Architecture 1 --BaseAddress 0x1000000
 OUT:=out
 
 SUBDIRS:=\

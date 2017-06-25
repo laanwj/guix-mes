@@ -16,9 +16,14 @@ CLEAN+=$(OUT)/$(TARGET)
 
 INCLUDES+=mlibc/include mlibc $(OUT)/$(DIR)
 MESCC.scm:=guile/mescc.scm -g
-MESLD.scm:=guile/mescc.scm -g
+LINK.hex2:=$(HEX2)
+#ELF_HEADER:=stage0/elf32-0header.hex2
+#ELF_FOOTER:=stage0/elf-0footer.hex2
+ELF_HEADER:=stage0/elf32-header.hex2
+ELF_FOOTER:=stage0/elf32-footer-single-main.hex2
 
-$(OUT)/$(TARGET): ld:=MESLD.scm
+
+$(OUT)/$(TARGET): ld:=$(LINK.hex2)
 $(OUT)/$(TARGET): LD:=$(MESLD.scm)
 $(OUT)/$(TARGET): CC:=$(MESCC.scm)
 $(OUT)/$(TARGET): CFLAGS:=
@@ -26,7 +31,8 @@ $(OUT)/$(TARGET): LDFLAGS:=
 $(OUT)/$(TARGET): O_FILES:=$(O_FILES)
 $(OUT)/$(TARGET): $(O_FILES)
 	@echo "  $(ld)	$(notdir $(O_FILES)) -> $(notdir $@)"
-	$(QUIET)$(LINK.c) $(O_FILES) $(LOADLIBES) $(LDLIBS) -o $@
+	$(QUIET)$(LINK.hex2) $(HEX2_FLAGS) -f $(ELF_HEADER) $(O_FILES:%=-f %) $(LOADLIBES:%=-f %) $(LDLIBS:%=-f %) -f $(ELF_FOOTER) > $@ || { rm -f $@; exit 1;}
+	@chmod +x $@
 
 define mescc.scm-c-compile
 $(OUT)/$(1:.c=.$(CROSS)o): CROSS:=$(CROSS)
