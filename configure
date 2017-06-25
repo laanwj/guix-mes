@@ -216,6 +216,10 @@ Usage: ./configure [OPTION]...
          (verbose? (option-ref options 'verbose #f))
          (with-courage? (option-ref options 'with-courage #f)))
     (set! *verbose?* verbose?)
+    (check-version 'guile '(2 0))
+    (check-version HEX2 '(0 0))
+    (check-version 'nyacc '(0 78 0) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
+
     (check-version 'bash '(4 0))
     (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
           (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
@@ -227,12 +231,8 @@ Usage: ./configure [OPTION]...
       (check-header-c "limits.h" "linux-headers"))
     (if (not (check-version CC32 '(4 8) #:optional? #t))
         (set! CC32 #f))
-    (check-version 'guile '(2 0))
     (check-version 'make '(4 0))
     (check-version 'perl '(5))
-    (check-version 'nyacc '(0 78 0) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
-    (if (not (check-version HEX2 '(0) #:optional? #t))
-        (set! HEX2 #f))
 
     (when (pair? required)
       (stderr "\nMissing dependencies [~a], run\n\n" ((->string ", ") required))

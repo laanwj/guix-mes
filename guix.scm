@@ -81,7 +81,7 @@
         (_ #f)))))
 
 (define-public mes
-  (let ((commit "7fdca75d2188b28df806b34ec92627d57aafa9ae")
+  (let ((commit "ec072e8625e72b89301ad1746d839c6529188b6f")
         (revision "0")
         (triplet "i686-unknown-linux-gnu")
         (version "0.7"))
@@ -95,11 +95,12 @@
                       (commit commit)))
                 (file-name (string-append name "-" version))
                 (sha256
-                 (base32 "0fvzr1ai2rmi46zdi5b2bdjb6s8ip78mkmsk02yxl46rajmp2pb1"))))
+                 (base32 "0g9xqqpmj8319hc1931bycj88p16iw50w5rakax3jdj01gr0x6i7"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
-       `(("nyacc" ,nyacc)))
+       `(("mescc-tools" ,mescc-tools)
+         ("nyacc" ,nyacc)))
       (native-inputs
        `(("guile" ,guile-2.2)
          ,@(if (string-prefix? "x86_64-linux" (or (%current-target-system)
