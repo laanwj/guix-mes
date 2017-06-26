@@ -80,6 +80,34 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
+(define-public mescc-tools
+  (package
+    (name "mescc-tools")
+    (version "0.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/oriansj/MESCC_Tools/archive/Release_"
+                    version
+                    ".tar.gz"))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1lzi9sqv41269isn7in70q2hhh087n4v97zr5i2qzz69j2lkr3xb"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:make-flags (list (string-append "PREFIX=" (assoc-ref %outputs "out")))
+       #:test-target "test"
+       #:phases (modify-phases %standard-phases
+                  (delete 'configure))))
+    (synopsis "Tools for the full source bootstrapping process")
+    (description
+     "Mescc-tools is a collection of tools for use in a full source
+bootstrapping process.  Currently consists of the M0 macro assembler and the
+hex2 linker.")
+    (home-page "https://github.com/oriansj/MESCC_Tools")
+    (license gpl3+)))
+
 (define-public mes
   (let ((commit "ec072e8625e72b89301ad1746d839c6529188b6f")
         (revision "0")
