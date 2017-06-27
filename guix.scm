@@ -57,6 +57,7 @@
              (guix build-system gnu)
              (guix build-system trivial)
              (guix gexp)
+             (guix download)
              (guix git-download)
              (guix licenses)
              (guix packages))
