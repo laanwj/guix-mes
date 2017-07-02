@@ -31,7 +31,7 @@
   #:use-module (mes as)
   #:use-module (mes as-i386)
   #:use-module (mes elf)
-  #:use-module (mes hex2)
+  #:use-module (mes M1)
   #:use-module (nyacc lang c99 parser)
   #:use-module (nyacc lang c99 pprint)
   #:export (c99-ast->info

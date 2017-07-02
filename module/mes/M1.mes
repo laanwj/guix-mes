@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;;; hex2.mes produces stage0' hex2 object format
+;;; M1.mes produces stage0' M1 object format
 
 ;;; Code:
 
@@ -28,6 +28,7 @@
  (guile)
  (mes
   (mes-use-module (srfi srfi-1))
+  (mes-use-module (srfi srfi-26))
   (mes-use-module (mes as))
   (mes-use-module (mes elf))
   (mes-use-module (mes optargs))
@@ -41,14 +42,14 @@
 (define (stderr string . rest)
   (apply logf (cons* (current-error-port) string rest)))
 
-(define (objects->hex2 objects)
-  ((compose object->hex2 merge-objects) objects))
+(define (objects->M1 objects)
+  ((compose object->M1 merge-objects) objects))
 
 (define (object->elf o)
-  ((compose hex2->elf object->hex2) o))
+  ((compose M1->elf object->M1) o))
 
 (define (objects->elf objects)
-  ((compose hex2->elf object->hex2 merge-objects) objects))
+  ((compose M1->elf object->M1 merge-objects) objects))
 
 (define (merge-objects objects)
   (let loop ((objects (cdr objects)) (object (car objects)))
@@ -72,7 +73,13 @@
 (define (hex2:offset1 o)
   (string-append "!" o))
 
-(define (object->hex2 o)
+(define (hex2:immediate o)
+  (string-append "%0x" (dec->hex o)))
+
+(define (hex2:immediate1 o)
+  (string-append "!0x" (dec->hex o)))
+
+(define (object->M1 o)
   (let* ((functions (assoc-ref o 'functions))
          (function-names (map car functions))
          (globals (assoc-ref o 'globals))
@@ -80,9 +87,8 @@
          (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names)))
     (define (string->label o)
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
-        ;;;(if (not index) (error "no such string:" o))
        (format #f "string_~a" index)))
-    (define (text->hex2 o)
+    (define (text->M1 o)
       (pmatch o
         ;; FIXME
         ((#:address (#:string ,string)) (hex2:address (string->label `(#:string ,string))))
@@ -93,38 +99,29 @@
         ((#:address ,address) (hex2:address address))
         ((#:offset ,offset) (hex2:offset offset))
         ((#:offset1 ,offset1) (hex2:offset1 offset1))
-        (_ (cond ((char? o) (text->hex2 (char->integer o)))
+        ((#:immediate ,immediate) (hex2:immediate immediate))
+        ((#:immediate1 ,immediate1) (hex2:immediate1 immediate1))
+        (_ (cond ((char? o) (text->M1 (char->integer o)))
                  ((string? o) (format #f "~a" o))
-                 ((number? o) (string-append (if (and (>= o 0) (< o 16)) "0" "")
-                                             (number->string
-                                              (if (>= o 0) o (+ o #x100))
-                                              16)))
+                 ((number? o) (let ((o (if (< o #x80) o (- o #x100))))
+                                (string-append "!0x"
+                                               (if (and (>= o 0) (< o 16)) "0" "")
+                                               (number->string o 16))))
                  (else (format #f "~a" o))))))
     (define (write-function o)
       (let ((name (car o))
             (text (cdr o)))
-        (define (line->hex2 o)
-          (cond ((null? o))
-                ((not (pair? o))
-                 (display (text->hex2 o)))
-                ((string? (car o))
-                 (format #t ";; ~a" (car o))
-                 (display (string-join (map text->hex2 (cdr o)) " ")))
-                ((number? (car o))
-                 (display (string-join (map text->hex2 o) " ")))
-                ((eq? (car o) #:label)
-                 ;;FIXME: more support for local labels?
-                 ;;(format #t ":local_~a_~a" name (cadr o))
-                 ;;(format #t ":~a_~a" name (cadr o))
+        (define (line->M1 o)
+          (cond ((eq? (car o) #:label)
                  (format #t ":~a" (cadr o)))
                 ((eq? (car o) #:comment)
-                 (format #t "  # ~a" (cadr o)))
-                ;; ((and (pair? (car o)) (eq? (caar o) #:label))
-                ;;  (write (car o)))
-                (else (error "line->hex2 invalid line:" o)))
+                 (format #t "\t\t\t\t\t# ~a" (cadr o)))
+                ((or (string? (car o)) (symbol? (car o)))
+                 (format #t "\t~a" (string-join (map text->M1 o) " ")))
+                (else (error "line->M1 invalid line:" o)))
           (newline))
         (format #t "\n\n:~a\n" name)
-        (for-each line->hex2 text)))
+        (for-each line->M1 (apply append text))))
     (define (write-global o)
       (define (labelize o)
         (if (not (string? o)) o
@@ -141,7 +138,14 @@
              (data (cdr o))
              (data (filter-map labelize data)))
         (format #t "\n:~a\n" label)
-        (display (string-join (map text->hex2 data) " "))
+        (cond ((and (char? (car data))
+                    ;; FIXME: 0 in M1 strings
+                    (not (find (cut eq? #\nul <>) (list-head data (1- (length data)))))
+                    ;; FIXME: " in M1 strings
+                    (not (find (cut member <> '(#\" #\' #\backspace)) data))
+                    (eq? (last data)= #\nul))
+               (format #t "\"~a\"" (list->string (list-head data (1- (length data))))))
+              (else (format #t "~a" (string-join (map text->M1 data) " "))))
         (newline)))
     (display "\n:HEX2_text")
     (for-each write-function (filter cdr functions))

@@ -69,9 +69,8 @@
     (string-append without-extension ".go")))
 
 (define (scm->mes file)
-  (let* ((relative (relative-file file))
-         (without-extension (string-drop-right relative 4)))
-    (string-append without-extension ".mes")))
+  (let ((base (string-drop-right file 4)))
+    (string-append base ".mes")))
 
 (define (file-needs-compilation? file)
   (let ((go (scm->go file)))

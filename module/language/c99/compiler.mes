@@ -35,7 +35,7 @@
   (mes-use-module (nyacc lang c99 pprint))
   (mes-use-module (mes as))
   (mes-use-module (mes as-i386))
-  (mes-use-module (mes hex2))
+  (mes-use-module (mes M1))
   (mes-use-module (mes optargs))))
 
 (define (logf port string . rest)
@@ -648,7 +648,7 @@
 
         ((fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
-                                   (append-text info (wrap-as (asm->hex arg0))))
+                                   (append-text info (wrap-as (asm->m1 arg0))))
              (let* ((text-length (length text))
                     (args-info (let loop ((expressions (reverse expr-list)) (info info))
                                  (if (null? expressions) info
@@ -753,7 +753,7 @@
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info ((expr->accu info) b))
                 (info (append-text info (wrap-as (i386:accu-test))))
-                (info (append-text info (wrap-as `(#:label ,skip-b-label)))))
+                (info (append-text info (wrap-as `((#:label ,skip-b-label))))))
            info))
 
         ((and ,a ,b)
@@ -765,7 +765,7 @@
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info ((expr->accu info) b))
                 (info (append-text info (wrap-as (i386:accu-test))))
-                (info (append-text info (wrap-as `(#:label ,skip-b-label)))))
+                (info (append-text info (wrap-as `((#:label ,skip-b-label))))))
            info))
 
         ((cast ,cast ,o)
@@ -861,7 +861,7 @@
   `(,@annotation ,o))
 
 (define (make-comment o)
-  (wrap-as `(#:comment ,o)))
+  (wrap-as `((#:comment ,o))))
 
 (define (ast->comment o)
   (let ((source (with-output-to-string (lambda () (pretty-print-c99 o)))))
@@ -1003,7 +1003,7 @@
        (let ((g `(#:string ,string)))
          (or (assoc g globals)
              (string->global string))))
-      ((p-expr (fixed ,value)) (int->global (cstring->number value)))
+      ;;((p-expr (fixed ,value)) (int->global (cstring->number value)))
       (_ #f))))
 
 (define (initzer->global globals)
@@ -1012,14 +1012,14 @@
       ((initzer ,initzer) ((expr->global globals) initzer))
       (_ #f))))
 
-(define (byte->hex o)
-  (string->number (string-drop o 2) 16))
+(define (byte->hex.m1 o)
+  (string-drop o 2))
 
-(define (asm->hex o)
+(define (asm->m1 o)
   (let ((prefix ".byte "))
-    (if (not (string-prefix? prefix o)) (begin (stderr "SKIP:~s\n" o)'())
+    (if (not (string-prefix? prefix o)) (map (cut string-split <> #\space) (string-split o #\newline))
         (let ((s (string-drop o (string-length prefix))))
-          (map byte->hex (string-split s #\space))))))
+          (list (format #f "'~a'" (string-join (map byte->hex.m1 (cdr (string-split o #\space))) " ")))))))
 
 (define (clause->info info i label last?)
   (define clause-label
@@ -1043,13 +1043,13 @@
       (append (wrap-as (i386:accu-cmp-value value))
               (jump-z body-label))))
   (define (cases+jump info cases)
-    (let* ((info (append-text info (wrap-as `(#:label ,clause-label))))
+    (let* ((info (append-text info (wrap-as `((#:label ,clause-label)))))
            (next-clause-label (if last? (string-append label "break")
                                   (string-append label "clause" (number->string (1+ i)))))
            (info (append-text info (apply append cases)))
            (info (if (null? cases) info
                      (append-text info (jump next-clause-label))))
-           (info (append-text info (wrap-as `(#:label ,body-label)))))
+           (info (append-text info (wrap-as `((#:label ,body-label))))))
       info))
 
   (lambda (o)
@@ -1112,9 +1112,9 @@
               (b-label (string-append label "_b_" here))
               (info ((test-jump-label->info info b-label) a))
               (info (append-text info (wrap-as (i386:jump skip-b-label))))
-              (info (append-text info (wrap-as `(#:label ,b-label))))
+              (info (append-text info (wrap-as `((#:label ,b-label)))))
               (info ((test-jump-label->info info label) b))
-              (info (append-text info (wrap-as `(#:label ,skip-b-label)))))
+              (info (append-text info (wrap-as `((#:label ,skip-b-label))))))
          info))
 
       ((array-ref . _) ((jump i386:jump-byte-z
@@ -1307,7 +1307,7 @@
         
         ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list))))
-                                   (append-text info (wrap-as (asm->hex arg0))))
+                                   (append-text info (wrap-as (asm->m1 arg0))))
              (let* ((info (append-text info (ast->comment o)))
                     (info ((expr->accu info) `(fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))))
                (append-text info (wrap-as (i386:accu-zero?))))))
@@ -1321,7 +1321,7 @@
                 (info ((test-jump-label->info info break-label) test))
                 (info ((ast->info info) then))
                 (info (append-text info (wrap-as (i386:jump break-label))))
-                (info (append-text info (wrap-as `(#:label ,break-label)))))
+                (info (append-text info (wrap-as `((#:label ,break-label))))))
            (clone info
                   #:locals locals)))
 
@@ -1334,9 +1334,9 @@
                 (info ((test-jump-label->info info else-label) test))
                 (info ((ast->info info) then))
                 (info (append-text info (wrap-as (i386:jump break-label))))
-                (info (append-text info (wrap-as `(#:label ,else-label))))
+                (info (append-text info (wrap-as `((#:label ,else-label)))))
                 (info ((ast->info info) else))
-                (info (append-text info (wrap-as `(#:label ,break-label)))))
+                (info (append-text info (wrap-as `((#:label ,break-label))))))
            (clone info
                   #:locals locals)))
 
@@ -1350,9 +1350,9 @@
                 (info ((test-jump-label->info info else-label) test))
                 (info ((ast->info info) then))
                 (info (append-text info (wrap-as (i386:jump break-label))))
-                (info (append-text info (wrap-as `(#:label ,else-label))))
+                (info (append-text info (wrap-as `((#:label ,else-label)))))
                 (info ((ast->info info) else))
-                (info (append-text info (wrap-as `(#:label ,break-label)))))
+                (info (append-text info (wrap-as `((#:label ,break-label))))))
            info))
 
         ((switch ,expr (compd-stmt (block-item-list . ,statements)))
@@ -1366,7 +1366,7 @@
                 (info (let loop ((clauses clauses) (i 0) (info info))
                         (if (null? clauses) info
                             (loop (cdr clauses) (1+ i) ((clause->info info i label (null? (cdr clauses))) (car clauses))))))
-                (info (append-text info (wrap-as `(#:label ,break-label)))))
+                (info (append-text info (wrap-as `((#:label ,break-label))))))
            (clone info
                   #:locals locals
                   #:break (cdr (.break info)))))
@@ -1383,14 +1383,14 @@
                 (info (clone info #:break (cons break-label (.break info))))
                 (info (clone info #:continue (cons continue-label (.continue info))))
                 (info (append-text info (wrap-as (i386:jump initial-skip-label))))
-                (info (append-text info (wrap-as `(#:label ,loop-label))))
+                (info (append-text info (wrap-as `((#:label ,loop-label)))))
                 (info ((ast->info info) body))
-                (info (append-text info (wrap-as `(#:label ,continue-label))))
+                (info (append-text info (wrap-as `((#:label ,continue-label)))))
                 (info ((expr->accu info) step))
-                (info (append-text info (wrap-as `(#:label ,initial-skip-label))))
+                (info (append-text info (wrap-as `((#:label ,initial-skip-label)))))
                 (info ((test-jump-label->info info break-label) test))
                 (info (append-text info (wrap-as (i386:jump loop-label))))
-                (info (append-text info (wrap-as `(#:label ,break-label)))))
+                (info (append-text info (wrap-as `((#:label ,break-label))))))
            (clone info
                   #:locals locals
                   #:break (cdr (.break info))
@@ -1406,12 +1406,12 @@
                 (info (append-text info (wrap-as (i386:jump continue-label))))
                 (info (clone info #:break (cons break-label (.break info))))
                 (info (clone info #:continue (cons continue-label (.continue info))))
-                (info (append-text info (wrap-as `(#:label ,loop-label))))
+                (info (append-text info (wrap-as `((#:label ,loop-label)))))
                 (info ((ast->info info) body))
-                (info (append-text info (wrap-as `(#:label ,continue-label))))
+                (info (append-text info (wrap-as `((#:label ,continue-label)))))
                 (info ((test-jump-label->info info break-label) test))
                 (info (append-text info (wrap-as (i386:jump loop-label))))
-                (info (append-text info (wrap-as `(#:label ,break-label)))))
+                (info (append-text info (wrap-as `((#:label ,break-label))))))
            (clone info
                   #:locals locals
                   #:break (cdr (.break info))
@@ -1426,19 +1426,19 @@
                 (continue-label (string-append label "continue"))
                 (info (clone info #:break (cons break-label (.break info))))
                 (info (clone info #:continue (cons continue-label (.continue info))))
-                (info (append-text info (wrap-as `(#:label ,loop-label))))
+                (info (append-text info (wrap-as `((#:label ,loop-label)))))
                 (info ((ast->info info) body))
-                (info (append-text info (wrap-as `(#:label ,continue-label))))
+                (info (append-text info (wrap-as `((#:label ,continue-label)))))
                 (info ((test-jump-label->info info break-label) test))
                 (info (append-text info (wrap-as (i386:jump loop-label))))
-                (info (append-text info (wrap-as `(#:label ,break-label)))))
+                (info (append-text info (wrap-as `((#:label ,break-label))))))
            (clone info
                   #:locals locals
                   #:break (cdr (.break info))
                   #:continue (cdr (.continue info)))))
 
         ((labeled-stmt (ident ,label) ,statement)
-         (let ((info (append-text info `((#:label ,(string-append (.function info) "_label_" label))))))
+         (let ((info (append-text info `(((#:label ,(string-append (.function info) "_label_" label)))))))
            ((ast->info info) statement)))
 
         ((goto (ident ,label))
@@ -1825,7 +1825,7 @@
                (let* (;;(global (make-global name type 2 (string->list (make-string size #\nul))))
                       (global (make-global name type 2 (append-map initzer->data initzers)))
                       (global-names (map car globals))
-                      (entries (filter (lambda (g) (not (member (car g) global-names))) entries))
+                      (entries (filter (lambda (g) (and g (not (member (car g) global-names)))) entries))
                       (globals (append globals entries (list global))))
                  (clone info #:globals globals)))))
 
@@ -1840,7 +1840,7 @@
            (if (.function info)
                (let* ((initzer-globals (filter-map (initzer->global globals) initzers))
                       (global-names (map car globals))
-                      (initzer-globals (filter (lambda (g) (not (member (car g) global-names))) initzer-globals))
+                      (initzer-globals (filter (lambda (g) (and g (not (member (car g) global-names)))) initzer-globals))
                       (globals (append globals initzer-globals))
                       (locals (let loop ((fields (cdr fields)) (locals locals))
                                 (if (null? fields) locals
@@ -1862,7 +1862,7 @@
                                        (wrap-as (i386:accu->base-address+n offset)))))))))
                (let* ((initzer-globals (filter-map (initzer->global globals) initzers))
                       (global-names (map car globals))
-                      (initzer-globals (filter (lambda (g) (not (member (car g) global-names))) initzer-globals))
+                      (initzer-globals (filter (lambda (g) (and g (not (member (car g) global-names)))) initzer-globals))
                       (globals (append globals initzer-globals))
                       (global (make-global name type 2 (append-map initzer->data initzers)))
                       (globals (append globals (list global))))
@@ -2129,9 +2129,6 @@
       (if (null? elements) info
           (loop (cdr elements) ((ast->info info) (car elements)))))))
 
-(define (object->list object)
-  (apply append (filter (lambda (x) (and (pair? x) (not (member (car x) '(#:comment #:label))))) object)))
-
 (define* (c99-input->info #:key (defines '()) (includes '()))
   (lambda ()
     (let* ((info (make <info> #:types i386:type-alist))
@@ -2153,4 +2150,4 @@
   ((compose object->elf info->object (c99-input->info #:defines defines #:includes includes))))
 
 (define* (c99-input->object #:key (defines '()) (includes '()))
-  ((compose object->hex2 info->object (c99-input->info #:defines defines #:includes includes))))
+  ((compose object->M1 info->object (c99-input->info #:defines defines #:includes includes))))

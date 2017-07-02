@@ -23,7 +23,7 @@
 ;;; Code:
 
 (define-module (mes elf)
-  #:export (hex2->elf))
+  #:export (M1->elf))
 
 (cond-expand
  (guile-2)

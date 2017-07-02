@@ -64,7 +64,7 @@ SCM tmp;
 SCM tmp_num;
 
 int ARENA_SIZE = 200;
-#define TYPE(x) (g_cells[x].type)
+#define TYPE(x) g_cells[x].type
 #define CAR(x) g_cells[x].car
 #define CDR(x) g_cells[x].cdr
 #define VALUE(x) g_cells[x].cdr
@@ -972,8 +972,8 @@ main (int argc, char *argv[])
   char *p = "t.c\n";
   puts ("t.c\n");
 
-  puts ("t: argv[0] == \"out/t....\"\n");
-  if (strncmp (argv[0], "out/t", 5)) return 1;
+  puts ("t: argv[0] == \"scaffold/t....\"\n");
+  if (strncmp (argv[0], "scaffold/t", 5)) return 1;
 
   puts ("t: *argv\"\n");
   puts (*argv);

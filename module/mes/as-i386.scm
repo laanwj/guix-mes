@@ -34,7 +34,6 @@
             i386:accu->base-address+n
             i386:accu->label
             i386:accu->local
-            i386:accu-non-zero?
             i386:accu-test
             i386:accu-zero?
             i386:accu+accu

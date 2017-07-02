@@ -18,66 +18,34 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int g_stdin = 0;
-char **g_environment;
-int _env ();
 int exit ();
 int main(int,char*[]);
 
 int
 _start ()
 {
-#if 0
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x08"); // add    $0x8,%eax
-  asm (".byte 0x50");           // push   %eax
-
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
-  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
-  asm (".byte 0x50");           // push   %eax
-
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
-  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
-  asm (".byte 0x83 0xc0 0x03"); // add    $0x3,%eax
-  asm (".byte 0xc1 0xe0 0x02"); // shl    $0x2,%eax
-  asm (".byte 0x01 0xe8");      // add    %ebp,%eax
-  asm (".byte 0x50");           // push   %eax
-
-  g_environment = _env ();
-  asm (".byte 0x58");
   int r = main ();
   exit (r);
-#else
-  int r = main ();
-  exit (r);
-#endif
-}
-
-char **
-_env (char **e)
-{
-  return e;
 }
 
 void
 exit ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                    // mov    0x8(%ebp),%ebx
-  asm (".byte 0xb8 0x01 0x00 0x00 0x00");          // mov    $0x1,%eax
-  asm (".byte 0xcd 0x80");                         // int    $0x80
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+
+  asm ("mov____$i32,%eax SYS_exit");              // mov    $0x1,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 void
 write ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                   // mov    0x8(%ebp),%ebx
-  asm (".byte 0x8b 0x4d 0x0c");                   // mov    0xc(%ebp),%ecx
-  asm (".byte 0x8b 0x55 0x10");                   // mov    0x10(%ebp),%edx
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+  asm ("mov____0x8(%ebp),%ecx !12");              // mov    0x8(%ebp),%ecx
+  asm ("mov____0x8(%ebp),%edx !16");              // mov    0x8(%ebp),%edx
 
-  asm (".byte 0xb8 0x04 0x00 0x00 0x00");         // mov    $0x4,%eax
-  asm (".byte 0xcd 0x80");                        // int    $0x80
+  asm ("mov____$i32,%eax SYS_write");             // mov    $0x4,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 int

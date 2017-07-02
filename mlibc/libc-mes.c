@@ -27,25 +27,27 @@ int main(int,char*[]);
 int
 _start ()
 {
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x08"); // add    $0x8,%eax
-  asm (".byte 0x50");           // push   %eax
+  asm ("mov____%ebp,%eax");      // mov    %ebp,%eax
+  asm ("add____$i8,%eax !8");    // add    $0x8,%eax
+  asm ("push___%eax");           // push   %eax
 
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
-  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
-  asm (".byte 0x50");           // push   %eax
+  asm ("mov____%ebp,%eax");      // mov    %ebp,%eax
+  asm ("add____$i8,%eax !4");    // add    $0x4,%eax
+  asm ("movzbl_(%eax),%eax");    // movzbl (%eax),%eax
+  asm ("push___%eax");           // push   %eax
 
-  asm (".byte 0x89 0xe8");      // mov    %ebp,%eax
-  asm (".byte 0x83 0xc0 0x04"); // add    $0x4,%eax
-  asm (".byte 0x0f 0xb6 0x00"); // movzbl (%eax),%eax
-  asm (".byte 0x83 0xc0 0x03"); // add    $0x3,%eax
-  asm (".byte 0xc1 0xe0 0x02"); // shl    $0x2,%eax
-  asm (".byte 0x01 0xe8");      // add    %ebp,%eax
-  asm (".byte 0x50");           // push   %eax
+  asm ("mov____%ebp,%eax");      // mov    %ebp,%eax
+  asm ("add____$i8,%eax !4");    // add    $0x4,%eax
+
+  asm ("movzbl_(%eax),%eax");    // movzbl (%eax),%eax
+  asm ("add____$i8,%eax !3");    // add    $0x3,%eax
+
+  asm ("shl____$i8,%eax !0x02"); // shl    $0x2,%eax
+  asm ("add____%ebp,%eax");      // add    %ebp,%eax
+  asm ("push___%eax");           // push   %eax
 
   g_environment = _env ();
-  asm (".byte 0x58");
+  asm ("pop____%eax");           // pop   %eax
   int r = main ();
   exit (r);
 }
@@ -59,68 +61,71 @@ _env (char **e)
 void
 exit ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                    // mov    0x8(%ebp),%ebx
-  asm (".byte 0xb8 0x01 0x00 0x00 0x00");          // mov    $0x1,%eax
-  asm (".byte 0xcd 0x80");                         // int    $0x80
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+
+  asm ("mov____$i32,%eax SYS_exit");              // mov    $0x1,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 void
 read ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                    // mov    0x8(%ebp),%ebx
-  asm (".byte 0x8b 0x4d 0x0c");                    // mov    0xc(%ebp),%ecx
-  asm (".byte 0x8b 0x55 0x10");                    // mov    0x10(%ebp),%edx
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+  asm ("mov____0x8(%ebp),%ecx !12");              // mov    0x8(%ebp),%ecx
+  asm ("mov____0x8(%ebp),%edx !16");              // mov    0x8(%ebp),%edx
 
-  asm (".byte 0xb8 0x03 0x00 0x00 0x00");          // mov    $0x3,%eax
-  asm (".byte 0xcd 0x80");                         // int    $0x80
+  asm ("mov____$i32,%eax SYS_read");              // mov    $0x3,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 void
 write ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                   // mov    0x8(%ebp),%ebx
-  asm (".byte 0x8b 0x4d 0x0c");                   // mov    0xc(%ebp),%ecx
-  asm (".byte 0x8b 0x55 0x10");                   // mov    0x10(%ebp),%edx
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+  asm ("mov____0x8(%ebp),%ecx !12");              // mov    0x8(%ebp),%ecx
+  asm ("mov____0x8(%ebp),%edx !16");              // mov    0x8(%ebp),%edx
 
-  asm (".byte 0xb8 0x04 0x00 0x00 0x00");         // mov    $0x4,%eax
-  asm (".byte 0xcd 0x80");                        // int    $0x80
+  asm ("mov____$i32,%eax SYS_write");             // mov    $0x4,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 void
 open ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                    // mov    0x8(%ebp),%ebx
-  asm (".byte 0x8b 0x4d 0x0c");                    // mov    0xc(%ebp),%ecx
-  asm (".byte 0x8b 0x55 0x10");                    // mov    0x10(%ebp),%edx
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+  asm ("mov____0x8(%ebp),%ecx !12");              // mov    0x8(%ebp),%ecx
+  asm ("mov____0x8(%ebp),%edx !16");              // mov    0x8(%ebp),%edx
 
-  asm (".byte 0xb8 0x05 0x00 0x00 0x00");          // mov    $0x5,%eax
-  asm (".byte 0xcd 0x80");                         // int    $0x80
+  asm ("mov____$i32,%eax SYS_open");              // mov    $0x5,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 void
 access ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                    // mov    0x8(%ebp),%ebx
-  asm (".byte 0x8b 0x4d 0x0c");                    // mov    0xc(%ebp),%ecx
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+  asm ("mov____0x8(%ebp),%ecx !12");              // mov    0x8(%ebp),%ecx
 
-  asm (".byte 0xb8 0x21 0x00 0x00 0x00");          // mov    $0x21,%eax
-  asm (".byte 0xcd 0x80");                         // int    $0x80
+  asm ("mov____$i32,%eax SYS_access");            // mov    $0x21,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 void
 brk ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                    // mov    0x8(%ebp),%ebx
-  asm (".byte 0xb8 0x2d 0x00 0x00 0x00");          // mov    $0x2d,%eax
-  asm (".byte 0xcd 0x80");                         // int    $0x80
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+
+  asm ("mov____$i32,%eax SYS_brk");               // mov    $0x2d,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 void
 fsync ()
 {
-  asm (".byte 0x8b 0x5d 0x08");                    // mov    0x8(%ebp),%ebx
-  asm (".byte 0xb8 0x76 0x00 0x00 0x00");          // mov    $0x76,%eax
-  asm (".byte 0xcd 0x80");                         // int    $0x80
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+
+  asm ("mov____$i32,%eax SYS_fsync");             // mov    $0x7c,%eax
+  asm ("int____$0x80");                           // int    $0x80
 }
 
 int
@@ -183,6 +188,7 @@ assert_fail (char* s)
 
 int ungetc_char = -1;
 char ungetc_buf[2];
+
 int
 getchar ()
 {
@@ -230,6 +236,7 @@ strcmp (char const* a, char const* b)
     }
   return *a - *b;
 }
+
 
 char *
 strcpy (char *dest, char const *src)
@@ -342,6 +349,7 @@ getenv (char const* s)
   return 0;
 }
 
+
 #if 0
 
 // !__MESC__
@@ -349,17 +357,17 @@ getenv (char const* s)
 // works fine with Guile, but let's keep a single input source
 
 #define pop_va_arg \
-  asm (".byte 0x8b 0x45 0xfc"); /* mov   -<0x4>(%ebp),%eax :va_arg */ \
-  asm (".byte 0xc1 0xe0 0x02"); /* shl   $0x2,%eax */ \
-  asm (".byte 0x01 0xe8");      /* add   %ebp,%eax */ \
-  asm (".byte 0x83 0xc0 0x0c"); /* add   $0xc,%eax */ \
-  asm (".byte 0x8b 0x00");      /* mov   (%eax),%eax */ \
-  asm (".byte 0x89 0x45 0xf8"); /* mov   %eax,-0x8(%ebp) :va */ \
-  asm (".byte 0x50")            /* push   %eax */
+  asm ("mov____0x8(%ebp),%eax !-4");  /* mov   -<0x4>(%ebp),%eax :va_arg */ \
+  asm ("shl____$i8,%eax !2");         /* shl   $0x2,%eax */ \
+  asm ("add____%ebp,%eax");           /* add   %ebp,%eax */ \
+  asm ("add____$i8,%eax !12");        /* add   $0xc,%eax */ \
+  asm ("mov____(%eax),%eax");         /* mov   (%eax),%eax */ \
+  asm ("mov____%eax,0x8(%ebp) !-8");  /* mov   %eax,-0x8(%ebp) :va */ \
+  asm ("push___%eax");                /* push   %eax */
 
 #else // __MESC__
 
-#define pop_va_arg asm (".byte 0x8b 0x45 0xfc 0xc1 0xe0 0x02 0x01 0xe8 0x83 0xc0 0x0c 0x8b 0x00 0x89 0x45 0xf8 0x50")
+#define pop_va_arg asm ("mov____0x8(%ebp),%eax !-4\nshl____$i8,%eax !2\nadd____%ebp,%eax add____$i8,%eax !12\nmov____(%eax),%eax\nmov____%eax,0x8(%ebp) !-8\npush___%eax")
 
 #endif
 
@@ -388,3 +396,4 @@ printf (char const* format, int va_args)
       }
   return 0;
 }
+

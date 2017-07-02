@@ -28,5 +28,5 @@
  (guile)
  (mes))
 
-(define (hex2->elf objects)
-  (error "->ELF support dropped, use hex2"))
+(define (M1->elf objects)
+  (error "->ELF support dropped, use M1"))

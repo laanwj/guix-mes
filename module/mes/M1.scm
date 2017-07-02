@@ -22,13 +22,14 @@
 
 ;;; Code:
 
-(define-module (mes hex2)
+(define-module (mes M1)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (system base pmatch)
   #:use-module (mes as)
   #:use-module (mes elf)
-  #:export (object->hex2
-            objects->hex2
+  #:export (object->M1
+            objects->M1
             object->elf
             objects->elf))
 
@@ -38,4 +39,4 @@
   (use-modules (ice-9 syncase)))
  (mes))
 
-(include-from-path "mes/hex2.mes")
+(include-from-path "mes/M1.mes")

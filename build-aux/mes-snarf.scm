@@ -155,7 +155,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
          (functions (filter (negate internal?) functions))
          (symbols (snarf-symbols string))
          (base-name (basename file-name ".c"))
-         (dir (or (getenv "OUT") "out"))
+         (dir (or (getenv "OUT") (dirname file-name)))
          (base-name (string-append dir "/" base-name))
          (base-name (if %gcc? base-name
                         (string-append base-name ".mes")))

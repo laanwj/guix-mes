@@ -214,7 +214,8 @@ Usage: ./configure [OPTION]...
          (prefix (option-ref options 'prefix PREFIX))
          (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
          (verbose? (option-ref options 'verbose #f))
-         (with-courage? (option-ref options 'with-courage #f)))
+         (with-courage? (option-ref options 'with-courage #f))
+         (make? #f))
     (set! *verbose?* verbose?)
     (check-version 'guile '(2 0))
     (check-version HEX2 '(0 0))
@@ -231,7 +232,7 @@ Usage: ./configure [OPTION]...
       (check-header-c "limits.h" "linux-headers"))
     (if (not (check-version CC32 '(4 8) #:optional? #t))
         (set! CC32 #f))
-    (check-version 'make '(4 0))
+    (set! make? (check-version 'make '(4 0) #:optional? #t))
     (check-version 'perl '(5))
 
     (when (pair? required)
@@ -257,6 +258,9 @@ Usage: ./configure [OPTION]...
         (stdout "VERSION:=~a\n" VERSION)
         (stdout "PREFIX:=~a\n" (gulp-pipe (string-append "echo " prefix)))
         (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
-    (stdout "\nRun:
-  make            to build mes
-  make help       for help on other targets\n")))
+    (format (current-output-port)
+            "\nRun:
+  ~a            to build mes
+  ~a help       for help on other targets\n"
+            (if make? "make" "./make.scm")
+            (if make? "make" "./make.scm"))))

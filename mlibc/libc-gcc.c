@@ -34,9 +34,9 @@ void
 exit (int code)
 {
   asm (
-       "movl %0,%%ebx\n\t"
-       "movl $1,%%eax\n\t"
-       "int  $0x80"
+       "mov    %0,%%ebx\n\t"
+       "mov    $1,%%eax\n\t"
+       "int    $0x80"
        : // no outputs "=" (r)
        : "" (code)
        );
@@ -50,14 +50,14 @@ read (int fd, void* buf, size_t n)
   int r;
   //syscall (SYS_write, fd, s, n));
   asm (
-       "movl %1,%%ebx\n\t"
-       "movl %2,%%ecx\n\t"
-       "movl %3,%%edx\n\t"
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    %3,%%edx\n\t"
 
        "movl $0x3,%%eax\n\t"
        "int  $0x80\n\t"
 
-       "mov %%eax,%0\n\t"
+       "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (fd), "" (buf), "" (n)
        : "eax", "ebx", "ecx", "edx"
@@ -71,13 +71,13 @@ write (int fd, char const* s, int n)
   int r;
   //syscall (SYS_write, fd, s, n));
   asm (
-       "mov %1,%%ebx\n\t"
-       "mov %2,%%ecx\n\t"
-       "mov %3,%%edx\n\t"
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    %3,%%edx\n\t"
 
-       "mov $0x4, %%eax\n\t"
-       "int $0x80\n\t"
-       "mov %%eax,%0\n\t"
+       "mov    $0x4, %%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (fd), "" (s), "" (n)
        : "eax", "ebx", "ecx", "edx"
@@ -90,22 +90,22 @@ open (char const *s, int flags, ...)
 {
   int mode;
   asm (
-       "mov %%ebp,%%eax\n\t"
-       "add $0x10,%%eax\n\t"
-       "mov (%%eax),%%eax\n\t"
-       "mov %%eax,%0\n\t"
+       "mov    %%ebp,%%eax\n\t"
+       "add    $0x10,%%eax\n\t"
+       "mov    (%%eax),%%eax\n\t"
+       "mov    %%eax,%0\n\t"
        : "=mode" (mode)
        : //no inputs ""
        );
   int r;
   //syscall (SYS_open, mode));
   asm (
-       "mov %1,%%ebx\n\t"
-       "mov %2,%%ecx\n\t"
-       "mov %3,%%edx\n\t"
-       "mov $0x5,%%eax\n\t"
-       "int $0x80\n\t"
-       "mov %%eax,%0\n\t"
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    %3,%%edx\n\t"
+       "mov    $0x5,%%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (s), "" (flags), "" (mode)
        : "eax", "ebx", "ecx", "edx"
@@ -119,11 +119,11 @@ access (char const *s, int mode)
   int r;
   //syscall (SYS_access, mode));
   asm (
-       "mov %1,%%ebx\n\t"
-       "mov %2,%%ecx\n\t"
-       "mov $0x21,%%eax\n\t"
-       "int $0x80\n\t"
-       "mov %%eax,%0\n\t"
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    $0x21,%%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (s), "" (mode)
        : "eax", "ebx", "ecx"
@@ -136,12 +136,12 @@ brk (void *p)
 {
   void *r;
   asm (
-       "mov %1,%%ebx\n\t"
+       "mov    %1,%%ebx\n\t"
 
-       "mov $0x2d,%%eax\n\t"
-       "int $0x80\n\t"
+       "mov    $0x2d,%%eax\n\t"
+       "int    $0x80\n\t"
 
-       "mov %%eax,%0\n\t"
+       "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (p)
        : "eax", "ebx"
@@ -155,11 +155,11 @@ fsync (int fd)
   int r;
   //syscall (SYS_fsync, fd));
   asm (
-       "mov %1,%%ebx\n\t"
+       "mov    %1,%%ebx\n\t"
 
-       "mov $0x76, %%eax\n\t"
-       "int $0x80\n\t"
-       "mov %%eax,%0\n\t"
+       "mov    $0x76, %%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (fd)
        : "eax", "ebx"
