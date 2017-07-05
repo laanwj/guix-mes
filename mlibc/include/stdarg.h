@@ -22,7 +22,15 @@
 
 #if __GNUC__ && POSIX
 #include_next <stdarg.h>
-#endif // (__GNUC__ && POSIX)
+#else // ! (__GNUC__ && POSIX)
+typedef int va_list;
+#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 4))
+#define va_arg(ap, type) (((type*)((ap) = ((ap) + sizeof(type))))[-1])
+#define va_end(ap) (void)((ap) = 0)
+#define va_copy(dest, src) dest = src
+
+int vprintf (char const* format, va_list ap);
+
+#endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_STDARG_H
-

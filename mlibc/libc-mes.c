@@ -349,33 +349,11 @@ getenv (char const* s)
   return 0;
 }
 
-
-#if 0
-
-// !__MESC__
-// FIXME: mes+nyacc parser bug here
-// works fine with Guile, but let's keep a single input source
-
-#define pop_va_arg \
-  asm ("mov____0x8(%ebp),%eax !-4");  /* mov   -<0x4>(%ebp),%eax :va_arg */ \
-  asm ("shl____$i8,%eax !2");         /* shl   $0x2,%eax */ \
-  asm ("add____%ebp,%eax");           /* add   %ebp,%eax */ \
-  asm ("add____$i8,%eax !12");        /* add   $0xc,%eax */ \
-  asm ("mov____(%eax),%eax");         /* mov   (%eax),%eax */ \
-  asm ("mov____%eax,0x8(%ebp) !-8");  /* mov   %eax,-0x8(%ebp) :va */ \
-  asm ("push___%eax");                /* push   %eax */
-
-#else // __MESC__
-
-#define pop_va_arg asm ("mov____0x8(%ebp),%eax !-4\nshl____$i8,%eax !2\nadd____%ebp,%eax add____$i8,%eax !12\nmov____(%eax),%eax\nmov____%eax,0x8(%ebp) !-8\npush___%eax")
-
-#endif
+#include <stdarg.h>
 
 int
-printf (char const* format, int va_args)
+vprintf (char const* format, va_list ap)
 {
-  int va_arg = 0;
-  int va;
   char *p = format;
   while (*p)
     if (*p != '%')
@@ -387,13 +365,23 @@ printf (char const* format, int va_args)
         switch (c)
           {
           case '%': {putchar (*p); break;}
-          case 'c': {pop_va_arg; putchar ((char)va); va_arg++; break;}
-          case 'd': {pop_va_arg; puts (itoa (va)); va_arg++; break;}
-          case 's': {pop_va_arg; puts ((char*)va); va_arg++; break;}
+          case 'c': {char c; c = va_arg (ap, char); putchar (c); break;}
+          case 'd': {int d; d = va_arg (ap, int); puts (itoa (d)); break;}
+          case 's': {char *s; s = va_arg (ap, char *); puts (s); break;}
           default: putchar (*p);
           }
+        va_end (ap);
         p++;
       }
   return 0;
 }
 
+int
+printf (char const* format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  int r = vprintf (format, ap);
+  va_end (ap);
+  return r;
+}

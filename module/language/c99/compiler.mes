@@ -568,6 +568,10 @@
                 (size (type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
+        ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,type))) (abs-declr (pointer))))
+         (let ((size 4))
+           (append-text info (wrap-as (i386:value->accu size)))))
+
         ;; c+p expr->arg
         ;; g_cells[<expr>]
         ((array-ref ,index (p-expr (ident ,array)))
@@ -588,6 +592,11 @@
 
         ;; foo->bar[baz])
         ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,struct))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
+        ;; <expr>[baz]
+        ((array-ref ,index ,array)
          (let ((info ((expr->accu* info) o)))
            (append-text info (wrap-as (i386:mem->accu)))))
 
@@ -926,33 +935,52 @@
                                                     (i386:pop-base)
                                                     (i386:accu+base)))))))
       
+      ((array-ref ,index ,array)
+       (let* ((info ((expr->accu info) index))
+              (size 4) ;; FIXME
+              (info (append-text info (wrap-as (append (i386:accu->base)
+                                                       (if (eq? size 1) '()
+                                                           (append
+                                                            (if (<= size 4) '()
+                                                                (i386:accu+accu))
+                                                            (if (<= size 8) '()
+                                                                (i386:accu+base))
+                                                            (i386:accu-shl 2)))))))
+              (info ((expr->base info) array)))
+          (append-text info (wrap-as (i386:accu+base)))))
+
       (_ (error "expr->accu*: unsupported: " o)))))
 
 (define (ident->constant name value)
   (cons name value))
 
-(define (make-type name type size description)
-  (cons name (list type size description)))
+(define (make-type name type size pointer description)
+  (cons name (list type size pointer description)))
+
+(define type:type car)
+(define type:size cadr)
+(define type:pointer caddr)
+(define type:description cadddr)
 
 (define (enum->type name fields)
-  (make-type name 'enum 4 fields))
+  (make-type name 'enum 4 0 fields))
 
 (define (struct->type name fields)
-  (make-type name 'struct (apply + (map field:size fields)) fields))
+  (make-type name 'struct (apply + (map field:size fields)) 0 fields))
 
 (define i386:type-alist
-  '(("char" . (builtin 1 #f))
-    ("short" . (builtin 2 #f))
-    ("int" . (builtin 4 #f))
-    ("long" . (builtin 4 #f))
-    ("long long" . (builtin 8 #f))
+  '(("char" . (builtin 1 0 #f))
+    ("short" . (builtin 2 0 #f))
+    ("int" . (builtin 4 0 #f))
+    ("long" . (builtin 4 0 #f))
+    ("long long" . (builtin 8 0 #f))
     ;; FIXME sign
-    ("unsigned char" . (builtin 1 #f))
-    ("unsigned short" . (builtin 2 #f))
-    ("unsigned" . (builtin 4 #f))
-    ("unsigned int" . (builtin 4 #f))
-    ("unsigned long" . (builtin 4 #f))
-    ("unsigned long long" . (builtin 8 #f))))
+    ("unsigned char" . (builtin 1 0 #f))
+    ("unsigned short" . (builtin 2 0 #f))
+    ("unsigned" . (builtin 4 0 #f))
+    ("unsigned int" . (builtin 4 0 #f))
+    ("unsigned long" . (builtin 4 0 #f))
+    ("unsigned long long" . (builtin 8 0 #f))))
 
 (define (field:size o)
   (pmatch o
@@ -968,7 +996,7 @@
     ((struct-ref (ident ,type))
      (type->size info `("struct" ,type)))
     (_ (let ((type (get-type (.types info) o)))
-         (if type (cadr type)
+         (if type (type:size type)
              (error "type->size: unsupported: " o))))))
 
 (define (field-offset info struct field)
@@ -1214,7 +1242,7 @@
      (type->description info `("struct" ,type)))
     (_ (let ((type (get-type (.types info) o)))
          (if (not type) (stderr "TYPES=~s\n" (.types info)))
-         (if type (caddr type)
+         (if type (type:description type)
              (error "type->description: unsupported:" o))))))
 
 (define (local? o) ;; formals < 0, locals > 0
@@ -1993,6 +2021,15 @@
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-def ,field-list))) (init-declr-list (init-declr (ident ,name))))
          (let ((info ((ast->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,name) ,field-list))) (init-declr-list (init-declr (ident ,name)))))))
            (clone info #:types (cons (cons name (or (get-type types `("struct" ,name)) `(typedef ,name))) types))))
+
+        ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
+         (let* ((type (get-type types type))
+                (type (make-type name
+                                 (type:type type)
+                                 (type:size type)
+                                 (1+ (type:pointer type))
+                                 (type:description type))))
+           (clone info #:types (cons type types))))
 
         ((decl (decl-spec-list (stor-spec (typedef)) ,type) ,name)
          (format (current-error-port) "SKIP: typedef=~s\n" o)
