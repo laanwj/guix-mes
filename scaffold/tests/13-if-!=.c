@@ -18,30 +18,11 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#include "00-test.i"
 
-struct foo;
-
-typedef struct foo foo_struct;
-
-struct foo
-{
-  int bar[2];
-};
-  
 int
-main (int argc, char *argv[])
+test ()
 {
-  //struct foo f;
-  foo_struct f;
-  f.bar[0] = 0x22;
-  f.bar[1] = 0x34;
-  printf ("eentje: %d\n", f.bar[0]);
-  printf ("tweetje: %d\n", f.bar[1]);
-
-  struct foo *g = &f;
-  printf ("punter eentje: %d\n", g->bar[0]);
-  printf ("punter tweetje: %d\n", g->bar[1]);
-
-  return 0;
+  if (0 != 1) return 0;
+  return 1;
 }

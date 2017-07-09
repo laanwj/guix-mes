@@ -63,3 +63,11 @@ eputs (char const* s)
   write (2, s, i);
   return 0;
 }
+
+int
+puts (char const* s)
+{
+  int i = strlen (s);
+  write (1, s, i);
+  return 0;
+}

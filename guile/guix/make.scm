@@ -42,6 +42,9 @@
   #:export (build
             check
             clean
+            group
+            target-prefix?
+            check-target?
 
             cpp.mescc
             compile.mescc
@@ -128,7 +131,7 @@
                              (gulp-pipe* run))
                        (let ((status (if (string? result) 0
                                          (or (status:term-sig result) (status:exit-val result)))))
-                         (if output (with-output-to-file log (lambda _ (display output))))
+                         (if (not (string-null? output)) (with-output-to-file log (lambda _ (display output))))
                          (store #:add-file log)
                          (format (current-error-port) "\t[~a]\n"
                                  (if (or (and signal (= status signal))
@@ -208,10 +211,14 @@
 
 (define* (check name #:key (exit 0) (signal #f) (dependencies '()))
   (target (file-name (string-append "check-" name))
-                         (method method-check)
-                         (inputs (cons (get-target name) dependencies))
-                         (exit exit)
-                         (signal signal)))
+          (method method-check)
+          (inputs (cons (get-target name) dependencies))
+          (exit exit)
+          (signal signal)))
+
+(define* (group name #:key (dependencies '()))
+  (target (file-name name)
+          (inputs (map get-target dependencies))))
 
 (define (target->input-files o)
   (let ((inputs (target-inputs o)))
@@ -474,9 +481,15 @@
             ;;(inputs (list snarf-target))
             (method (SNARF.mes mes?)))))
 
+(define ((target-prefix? prefix) o)
+  (string-prefix? prefix (target-file-name o)))
+
+(define (check-target? o)
+  ((target-prefix? "check-") o))
+
 (define (add-target o)
   (set! %targets (append %targets (list o)))
   o)
 (define (get-target o)
-  (find (lambda (t)
-          (equal? (target-file-name t) o)) %targets))
+  (if (target? o) o
+      (find (lambda (t) (equal? (target-file-name t) o)) %targets)))

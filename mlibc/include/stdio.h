@@ -31,6 +31,7 @@ int g_stdout;
 #define STDERR 2
 
 int printf (char const* format, ...);
+int sprintf (char *str, char const* format, ...);
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE

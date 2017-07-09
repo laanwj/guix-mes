@@ -17,27 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_STDARG_H
-#define __MES_STDARG_H 1
 
-#if __GNUC__ && POSIX
-#include_next <stdarg.h>
-#else // ! (__GNUC__ && POSIX)
+#include "30-test.i"
+#include <stdio.h>
 
-#if __GNUC__
-typedef char* va_list;
-#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
-#else // !__GNUC__
-typedef int va_list;
-#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 4))
-#endif // !__GNUC__
+struct foo;
 
-#define va_arg(ap, type) (type)(((int*)((ap) = ((ap) + 4)))[-1])
-#define va_end(ap) (void)((ap) = 0)
-#define va_copy(dest, src) dest = src
+typedef struct foo foo_struct;
 
-int vprintf (char const* format, va_list ap);
+struct foo
+{
+  int bar[2];
+};
+  
+int
+test ()
+{
+  //struct foo f;
+  foo_struct f;
+  f.bar[0] = 0x22;
+  f.bar[1] = 0x34;
+  printf ("eentje: %d\n", f.bar[0]);
+  printf ("tweetje: %d\n", f.bar[1]);
 
-#endif // ! (__GNUC__ && POSIX)
+  struct foo *g = &f;
+  printf ("punter eentje: %d\n", g->bar[0]);
+  printf ("punter tweetje: %d\n", g->bar[1]);
 
-#endif // __MES_STDARG_H
+  return 0;
+}

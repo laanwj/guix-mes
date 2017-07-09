@@ -343,11 +343,13 @@ atoi (char const *s)
   return i * sign;
 }
 
+
+// FIXME: copied from libc-mes.c now
+#include <stdarg.h>
+
 int
-printf (char const* format, ...)
+vprintf (char const* format, va_list ap)
 {
-  int va_arg = 0;
-  int va;
   char const *p = format;
   while (*p)
     if (*p != '%')
@@ -359,56 +361,51 @@ printf (char const* format, ...)
         switch (c)
           {
           case '%': {putchar (*p); break;}
-          case 'c':
-            {
-            asm (
-                 "mov    -0xc(%%ebp),%%eax\n\t"
-                 "shl     $0x2,%%eax\n\t"
-                 "add     %%ebp,%%eax\n\t"
-                 "add     $0xc,%%eax\n\t"
-                 "mov     (%%eax),%%eax\n\t"
-                 //"mov     %%eax,%0\n\t"
-                 : "=va" (va)
-                 : //no inputs ""
-                 );
-            putchar ((char)va);
-            va_arg++;
-            break;
-            }
-          case 'd': {
-            asm (
-                 "mov    -0xc(%%ebp),%%eax\n\t"
-                 "shl     $0x2,%%eax\n\t"
-                 "add     %%ebp,%%eax\n\t"
-                 "add     $0xc,%%eax\n\t"
-                 "mov     (%%eax),%%eax\n\t"
-                 //"mov     %%eax,%0\n\t"
-                 : "=va" (va)
-                 : //no inputs ""
-                 );
-            puts (itoa ((int)va));
-            va_arg++;
-            break;
-          }
-          case 's': {
-            asm (
-                 "mov    -0xc(%%ebp),%%eax\n\t"
-                 "shl     $0x2,%%eax\n\t"
-                 "add     %%ebp,%%eax\n\t"
-                 "add     $0xc,%%eax\n\t"
-                 "mov     (%%eax),%%eax\n\t"
-                 //"mov     %%eax,%0\n\t"
-                 : "=va" (va)
-                 : //no inputs ""
-                 );
-            puts ((char*)va);
-            va_arg++;
-            break;
-          }
+          case 'c': {char c; c = va_arg (ap, char); putchar (c); break;}
+          case 'd': {int d; d = va_arg (ap, int); puts (itoa (d)); break;}
+          case 's': {char *s; s = va_arg (ap, char *); puts (s); break;}
           default: putchar (*p);
           }
         p++;
       }
+  va_end (ap);
+  return 0;
+}
+
+int
+printf (char const* format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  int r = vprintf (format, ap);
+  va_end (ap);
+  return r;
+}
+
+int
+sprintf (char *str, char const* format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  char const *p = format;
+  while (*p)
+    if (*p != '%')
+      *str++ = *p++;
+    else
+      {
+        p++;
+        char c = *p;
+        switch (c)
+          {
+          case '%': {*str++ = *p; break;}
+          case 'c': {char c; c = va_arg (ap, char); *str++ = c; break;}
+          case 'd': {int d; d = va_arg (ap, int); char const *s = itoa (d); while (*s) *str++ = *s++; break;}
+          case 's': {char *s; s = va_arg (ap, char *); while (*s) *str++ = *s++; break;}
+          default: *str++ = *p;
+          }
+        p++;
+      }
+  va_end (ap);
   return 0;
 }
 #endif

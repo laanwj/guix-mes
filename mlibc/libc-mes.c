@@ -354,7 +354,7 @@ getenv (char const* s)
 int
 vprintf (char const* format, va_list ap)
 {
-  char *p = format;
+  char const *p = format;
   while (*p)
     if (*p != '%')
       putchar (*p++);
@@ -368,11 +368,11 @@ vprintf (char const* format, va_list ap)
           case 'c': {char c; c = va_arg (ap, char); putchar (c); break;}
           case 'd': {int d; d = va_arg (ap, int); puts (itoa (d)); break;}
           case 's': {char *s; s = va_arg (ap, char *); puts (s); break;}
-          default: putchar (*p);
+          default: {putchar (*p); break;}
           }
-        va_end (ap);
         p++;
       }
+  va_end (ap);
   return 0;
 }
 
@@ -384,4 +384,31 @@ printf (char const* format, ...)
   int r = vprintf (format, ap);
   va_end (ap);
   return r;
+}
+
+int
+sprintf (char *str, char const* format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  char const *p = format;
+  while (*p)
+    if (*p != '%')
+      *str++ = *p++;
+    else
+      {
+        p++;
+        char c = *p;
+        switch (c)
+          {
+          case '%': {*str++ = *p; break;}
+          case 'c': {char c; c = va_arg (ap, char); *str++ = c; break;}
+          case 'd': {int d; d = va_arg (ap, int); char const *s; s = itoa (d); while (*s) *str++ = *s++; break;}
+          case 's': {char *s; s = va_arg (ap, char *); while (*s) *str++ = *s++; break;}
+          default: {*str++ = *p; break;}
+          }
+        p++;
+      }
+  va_end (ap);
+  return 0;
 }

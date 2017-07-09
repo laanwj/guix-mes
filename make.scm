@@ -32,6 +32,7 @@
 
 (use-modules (srfi srfi-1)
              (srfi srfi-26)
+             (ice-9 curried-definitions)
              (ice-9 match)
              (guix make))
 
@@ -44,6 +45,107 @@
 (add-target (bin.mescc "stage0/exit-42.c"))
 (add-target (check "stage0/exit-42.guile" #:exit 42))
 
+(define* (add-scaffold-test name #:key (exit 0) (libc libc-mes.E))
+  (add-target (bin.gcc (string-append "scaffold/tests/" name ".c") #:libc #f))
+  (add-target (check (string-append "scaffold/tests/" name ".mlibc-gcc") #:exit exit))
+
+  (add-target (bin.mescc (string-append "scaffold/tests/" name ".c") #:libc libc))
+  (add-target (check (string-append "scaffold/tests/" name "." (cond ((not libc) "0-")
+                                                                     ((eq? libc mini-libc-mes.E) "mini-")
+                                                                     (else "")) "guile") #:exit exit)))
+
+;; tests/00: exit, functions without libc
+(add-scaffold-test "00-exit-0" #:libc #f)
+(add-scaffold-test "01-return-0" #:libc #f)
+(add-scaffold-test "02-return-1" #:libc #f #:exit 1)
+(add-scaffold-test "03-call" #:libc #f)
+(add-scaffold-test "04-call-0" #:libc #f)
+(add-scaffold-test "05-call-1" #:libc #f #:exit 1)
+(add-scaffold-test "06-call-!1" #:libc #f)
+
+(add-target (group "check-scaffold-tests/0" #:dependencies (filter (target-prefix? "check-scaffold/tests/0") %targets)))
+
+;; tests/10: control without libc
+(for-each
+ (cut add-scaffold-test <> #:libc #f)
+ '("10-if-0"
+   "11-if-1"
+   "12-if-=="
+   "13-if-!="
+   "14-if-goto"
+   "15-if-!f"
+   "16-if-t"))
+
+(add-target (group "check-scaffold-tests/1" #:dependencies (filter (target-prefix? "check-scaffold/tests/1") %targets)))
+
+;; tests/20: loop without libc
+(for-each
+ (cut add-scaffold-test <> #:libc #f)
+ '("20-while"
+   "21-char[]"
+   "22-while-char[]"))
+
+(add-target (group "check-scaffold-tests/2" #:dependencies (filter (target-prefix? "check-scaffold/tests/2") %targets)))
+
+;; tests/30: call, compare: mini-libc-mes.c
+(for-each
+ (cut add-scaffold-test <> #:libc mini-libc-mes.E)
+ '("30-strlen"
+   "31-eputs"
+   "32-compare"
+   "33-and-or"
+   "34-pre-post"
+   "35-compare-char"
+   "36-compare-arithmetic"
+   "37-compare-assign"
+   "38-compare-call"))
+
+(add-target (group "check-scaffold-tests/3" #:dependencies (filter (target-prefix? "check-scaffold/tests/3") %targets)))
+
+;; tests/40: control: mini-libc-mes.c
+(for-each
+ (cut add-scaffold-test <> #:libc mini-libc-mes.E)
+ '("40-if-else"
+   "41-?"
+   "42-goto-label"
+   "43-for-do-while"
+   "44-switch"
+   "45-void-call"))
+
+(add-target (group "check-scaffold-tests/4" #:dependencies (filter (target-prefix? "check-scaffold/tests/4") %targets)))
+
+;; tests/50: libc-mes.c
+(for-each
+ add-scaffold-test
+ '("50-assert"
+   "51-strcmp"
+   "52-itoa"
+   "54-argv"))
+
+(add-target (group "check-scaffold-tests/5" #:dependencies (filter (target-prefix? "check-scaffold/tests/5") %targets)))
+
+;; tests/60: building up to scaffold/m.c, scaffold/micro-mes.c
+(for-each
+ add-scaffold-test
+ '("60-math"
+   "61-array"
+   "63-struct-cell"
+   "64-make-cell"
+   "65-read"))
+
+(add-target (group "check-scaffold-tests/6" #:dependencies (filter (target-prefix? "check-scaffold/tests/6") %targets)))
+
+;; tests/70: and beyond src/mes.c -- building up to 8cc.c, pcc.c, tcc.c, libguile/eval.c
+(for-each
+ add-scaffold-test
+ '("70-printf"
+   "71-struct-array"))
+
+(add-target (group "check-scaffold-tests/7" #:dependencies (filter (target-prefix? "check-scaffold/tests/7") %targets)))
+
+(add-target (group "check-scaffold-tests" #:dependencies (filter (target-prefix? "check-scaffold/tests") %targets)))
+
+(add-target (group "check-scaffold" #:dependencies (filter (target-prefix? "check-scaffold") %targets)))
 
 (add-target (bin.gcc "scaffold/hello.c"))
 (add-target (check "scaffold/hello.gcc" #:exit 42))
@@ -67,32 +169,11 @@
 (add-target (bin.mescc "scaffold/m.c"))
 (add-target (check "scaffold/m.guile" #:exit 255))
 
-
-(add-target (bin.gcc "scaffold/t-tcc.c"))
-(add-target (check "scaffold/t-tcc.gcc"))
-
-(add-target (bin.gcc "scaffold/t-tcc.c" #:libc #f))
-(add-target (check "scaffold/t-tcc.mlibc-gcc"))
-
-(add-target (bin.mescc "scaffold/t-tcc.c"))
-(add-target (check "scaffold/t-tcc.guile"))
-
-
 (add-target (bin.gcc "scaffold/micro-mes.c" #:libc #f))
 (add-target (check "scaffold/micro-mes.mlibc-gcc" #:exit 1))
 
 (add-target (bin.mescc "scaffold/micro-mes.c"))
 (add-target (check "scaffold/micro-mes.guile" #:exit 1))
-
-
-(add-target (bin.gcc "scaffold/t.c"))
-(add-target (check "scaffold/t.gcc"))
-
-(add-target (bin.gcc "scaffold/t.c" #:libc #f))
-(add-target (check "scaffold/t.mlibc-gcc"))
-
-(add-target (bin.mescc "scaffold/t.c"))
-(add-target (check "scaffold/t.guile"))
 
 (define snarf-bases
   '("gc" "lib" "math" "mes" "posix" "reader" "vector"))
@@ -195,22 +276,18 @@
 ;; FIXME: run tests/base.test
 (setenv "MES" "src/mes.guile")
 
-(define (check-target? o)
-  (string-prefix? "check-" (target-file-name o)))
-
 (define (main args)
   (cond ((member "clean" args) (clean))
-        ((member "help" args) (display "Usage: ./make.scm [TARGET]...
+        ((member "help" args) (format #t "Usage: ./make.scm [TARGET]...
 
 Targets:
     all
     check
     clean
-
-    stage0/exit42.mini-guile
-    scaffold/hello.guile
-    src/mes.guile
-"))
+    help~a
+"
+                                      ;;(string-join (map target-file-name %targets) "\n    " 'prefix)
+                                      (string-join (filter (negate (cut string-index <> #\/)) (map target-file-name %targets)) "\n    " 'prefix)))
         (else
          (let ((targets (match args
                           (() (filter (negate check-target?) %targets))

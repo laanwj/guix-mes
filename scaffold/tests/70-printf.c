@@ -17,27 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_STDARG_H
-#define __MES_STDARG_H 1
 
-#if __GNUC__ && POSIX
-#include_next <stdarg.h>
-#else // ! (__GNUC__ && POSIX)
+#include "30-test.i"
+#include <stdio.h>
+#include <string.h>
 
-#if __GNUC__
-typedef char* va_list;
-#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
-#else // !__GNUC__
-typedef int va_list;
-#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 4))
-#endif // !__GNUC__
+int
+test ()
+{
+  char *s = "mes";
+  char c = 'm';
+  int i = 3;
+  char buf[10];
 
-#define va_arg(ap, type) (type)(((int*)((ap) = ((ap) + 4)))[-1])
-#define va_end(ap) (void)((ap) = 0)
-#define va_copy(dest, src) dest = src
+  printf ("c=%c\n", c);
+  sprintf (buf, "c=%c\n", c);
+  if (strcmp (buf, "c=m\n")) return 1;
 
-int vprintf (char const* format, va_list ap);
+  printf ("i=%d\n", i);
+  sprintf (buf, "i=%d\n", i);
+  if (strcmp (buf, "i=3\n")) return 1;
 
-#endif // ! (__GNUC__ && POSIX)
+  printf ("s=%s\n", s);
+  sprintf (buf, "s=%s\n", s);
+  if (strcmp (buf, "s=mes\n")) return 1;
 
-#endif // __MES_STDARG_H
+  return 0;
+}
