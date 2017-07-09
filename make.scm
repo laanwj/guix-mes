@@ -145,7 +145,79 @@
 
 (add-target (group "check-scaffold-tests" #:dependencies (filter (target-prefix? "check-scaffold/tests") %targets)))
 
-(add-target (group "check-scaffold" #:dependencies (filter (target-prefix? "check-scaffold") %targets)))
+
+(define* (add-tcc-test name)
+  (add-target (bin.gcc (string-append "scaffold/tinycc/" name ".c") #:libc #f #:includes '("scaffold/tinycc")))
+  (add-target (check (string-append "scaffold/tinycc/" name ".mlibc-gcc") #:baseline (string-append "scaffold/tinycc/" name ".expect")))
+
+  (add-target (bin.mescc (string-append "scaffold/tinycc/" name ".c") #:includes '("scaffold/tinycc")))
+  (add-target (check (string-append "scaffold/tinycc/" name ".guile") #:baseline (string-append "scaffold/tinycc/" name ".expect"))))
+(map
+ add-tcc-test
+ '("00_assignment"
+   "01_comment"
+   "02_printf"
+   "03_struct"
+   "04_for"
+   "05_array"
+   "06_case"
+   "07_function"
+   "08_while"
+   "09_do_while"
+
+   "10_pointer"
+   "11_precedence"
+   "12_hashdefine"
+   "13_integer_literals"
+   "14_if"
+   "15_recursion"
+   "16_nesting"
+   "17_enum"
+   "18_include"
+   "19_pointer_arithmetic"
+
+   "20_pointer_comparison"
+   "21_char_array"
+   ;;"22_floating_point"       ; float
+   ;;"23_type_coercion"        ; float
+   ;;"24_math_library"         ; float
+   "25_quicksort"
+   ;;"27_sizeof"               ; float
+   ;;"28_strings"              ; TODO: strncpy strchr strrchr memset memcpy memcmp
+   "29_array_address"
+
+   ;;"30_hanoi"                ; fails with GCC
+   "31_args"
+   ;;"32_led"                  ; unsupported: (decl (decl-spec-list (stor-spec (static)) (type-spec (fixed-type "int"))) (init-declr-list (init-declr (array-of (ident "d") (p-expr (fixed "32"))))))
+   ;;"34_array_assignment"     ; fails with GCC
+   "33_ternary_op"
+   "35_sizeof"
+   ;;"36_array_initialisers"   ; unspported: (decl (decl-spec-list (type-spec (fixed-type "int"))) (init-declr-list (init-declr (array-of (ident "Array") (p-expr (fixed "10"))) (initzer (initzer-list (initzer (p-expr (fixed "12"))) (initzer (p-expr (fixed "34"))) (initzer (p-expr (fixed "56"))) (initzer (p-expr (fixed "78"))) (initzer (p-expr (fixed "90"))) (initzer (p-expr (fixed "123"))) (initzer (p-expr (fixed "456"))) (initzer (p-expr (fixed "789"))) (initzer (p-expr (fixed "8642"))) (initzer (p-expr (fixed "9753"))))))))
+   ;; "37_sprintf"             ; integer formatting unsupported
+   ;;"38_multiple_array_index" ; unspported: (decl (decl-spec-list (type-spec (fixed-type "int"))) (init-declr-list (init-declr (array-of (array-of (ident "a") (p-expr (fixed "4"))) (p-expr (fixed "4"))))))
+   ;;"39_typedef"              ; unsupported: (decl (decl-spec-list (stor-spec (typedef)) (type-spec (typename "MyFunStruct"))) (init-declr-list (init-declr (ptr-declr (pointer) (ident "MoreFunThanEver")))))
+
+   ;;"40_stdio"                ; f* functions
+   "41_hashif"
+   ;;"42_function_pointer"     ; f* functions
+   "43_void_param"
+   "44_scoped_declarations"
+   ;; "45_empty_for"           ; unsupported
+   ;;"46_grep"                 ; f* functions
+   "47_switch_return"
+   "48_nested_break"
+   ;;"49_bracket_evaluation"   ; float
+
+   "50_logical_second_arg"
+   ;;"51_static"               ; unsupported: (decl (decl-spec-list (stor-spec (static)) (type-spec (fixed-type "int"))) (init-declr-list (init-declr (ident "fred") (initzer (p-expr (fixed "1234"))))))
+   ;;"52_unnamed_enum"         ; unsupported: (decl (decl-spec-list (stor-spec (typedef)) (type-spec (enum-def (enum-def-list (enum-defn (ident "e")) (enum-defn (ident "f")) (enum-defn (ident "g")))))) (init-declr-list (init-declr (ident "h"))))
+   "54_goto"
+   ;;"55_lshift_type"          ; unsigned
+   ))
+
+(add-target (group "check-scaffold-tinycc" #:dependencies (filter (target-prefix? "check-scaffold/tinycc") %targets)))
+
+;;(add-target (group "check-scaffold" #:dependencies (filter (target-prefix? "check-scaffold") %targets)))
 
 (add-target (bin.gcc "scaffold/hello.c"))
 (add-target (check "scaffold/hello.gcc" #:exit 42))
@@ -170,10 +242,10 @@
 (add-target (check "scaffold/m.guile" #:exit 255))
 
 (add-target (bin.gcc "scaffold/micro-mes.c" #:libc #f))
-(add-target (check "scaffold/micro-mes.mlibc-gcc" #:exit 1))
+(add-target (check "scaffold/micro-mes.mlibc-gcc" #:exit 6)) ; arg1 arg2 arg3 arg4 arg5
 
 (add-target (bin.mescc "scaffold/micro-mes.c"))
-(add-target (check "scaffold/micro-mes.guile" #:exit 1))
+(add-target (check "scaffold/micro-mes.guile" #:exit 6)) ; arg1 arg2 arg3 arg4 arg5
 
 (define snarf-bases
   '("gc" "lib" "math" "mes" "posix" "reader" "vector"))

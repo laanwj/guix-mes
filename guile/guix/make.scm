@@ -110,7 +110,9 @@
   (hash       target-hash (default #f))            ; string
   (method     target-method (default method-file)) ; <method>
   (inputs     target-inputs (default (list)))      ; list
+
                                                    ; For check targets
+  (baseline   target-baseline (default #f))        ; string: file-name
   (exit       target-exit (default #f))            ; number
   (signal     target-signal (default #f)))         ; number
 
@@ -121,17 +123,20 @@
                    (let* ((inputs (target-inputs t))
                           (file-name (target-file-name (build (car inputs))))
                           (run file-name)
+                          (baseline (target-baseline t))
                           (exit (target-exit t))
                           (signal (target-signal t))
                           (log (string-append file-name "-check.log")))
                      (format (current-error-port) "  CHECK\t~a" (basename file-name))
                      (receive (output result)
                          ;; FIXME: quiet MES tests are not fun
-                         (if (string-prefix? "tests/" run) (values #f (system** run))
-                             (gulp-pipe* run))
+                         (if (string-prefix? "tests/" run) (values #f (system** run "arg1" "arg2" "arg3" "arg4" "arg5"))
+                             (gulp-pipe* run "arg1" "arg2" "arg3" "arg4" "arg5"))
+                       (if (file-exists? log) (delete-file log))
+                       (if (or baseline (and output (not (string-null? output)))) (with-output-to-file log (lambda _ (display output))))
+                       (if baseline (set! result (system* "diff" "-bu" baseline log)))
                        (let ((status (if (string? result) 0
                                          (or (status:term-sig result) (status:exit-val result)))))
-                         (if (not (string-null? output)) (with-output-to-file log (lambda _ (display output))))
                          (store #:add-file log)
                          (format (current-error-port) "\t[~a]\n"
                                  (if (or (and signal (= status signal))
@@ -209,10 +214,11 @@
             ((method-build method) method o))
           (store #:add o #:key hash)))))
 
-(define* (check name #:key (exit 0) (signal #f) (dependencies '()))
+(define* (check name #:key baseline (exit 0) (signal #f) (dependencies '()))
   (target (file-name (string-append "check-" name))
           (method method-check)
           (inputs (cons (get-target name) dependencies))
+          (baseline baseline)
           (exit exit)
           (signal signal)))
 
@@ -267,13 +273,14 @@
     "--include=mlibc/libc-gcc.c"
     ))
 
-(define* (CC.gcc #:key (libc #t) (cc (if libc %CC %CC32)) (c-flags (if libc %C-FLAGS %C32-FLAGS)) (defines '()))
+(define* (CC.gcc #:key (libc #t) (cc (if libc %CC %CC32)) (c-flags (if libc %C-FLAGS %C32-FLAGS)) (defines '()) (includes '()))
   (method (name "CC.gcc")
           (build (lambda (o t)
                    (let* ((input-files (map target-file-name (target-inputs t)))
                           (command `(,cc
                                      "-c"
                                      ,@(append-map (cut list "-D" <>) defines)
+                                     ,@(append-map (cut list "-I" <>) includes)
                                      ,@(if libc '() '("-nostdinc" "-fno-builtin"))
                                      ,@c-flags
                                      "-o" ,(target-file-name t)
@@ -284,7 +291,7 @@
                        (exit 1)))))
           (inputs (list (store #:add-file "mlibc/libc-gcc.c"))))) ;; FIXME: FLAGS
 
-(define* (CPP.mescc #:key (cc %MESCC) (defines '()))
+(define* (CPP.mescc #:key (cc %MESCC) (defines '()) (includes '()))
   (method (name "CPP.mescc")
           (build (lambda (o t)
                    (let ((input-files (map target-file-name (target-inputs t))))
@@ -293,6 +300,7 @@
                             `(,cc
                               "-E"
                               ,@(append-map (cut list "-D" <>) defines)
+                              ,@(append-map (cut list "-I" <>) includes)
                               "-o" ,(target-file-name t)
                               ,@input-files)))))))
 
@@ -396,19 +404,19 @@
                        (format (current-error-port) "FAILED:~s\n" command)
                        (exit 1)))))))
 
-(define* (cpp.mescc input-file-name #:key (cc %MESCC) (defines '()))
+(define* (cpp.mescc input-file-name #:key (cc %MESCC) (defines '()) (includes '()))
   (let* ((c-target (target (file-name input-file-name)))
          (base-name (base-name input-file-name ".c"))
          (suffix ".E")
          (target-file-name (string-append base-name suffix)))
     (target (file-name target-file-name)
             (inputs (list c-target))
-            (method (CPP.mescc #:cc cc #:defines defines)))))
+            (method (CPP.mescc #:cc cc #:defines defines #:includes includes)))))
 
 (define mini-libc-mes.E (cpp.mescc "mlibc/mini-libc-mes.c"))
 (define libc-mes.E (cpp.mescc "mlibc/libc-mes.c"))
 
-(define* (compile.gcc input-file-name #:key (libc #t) (cc (if libc %CC %CC32)) (defines '()))
+(define* (compile.gcc input-file-name #:key (libc #t) (cc (if libc %CC %CC32)) (defines '()) (includes '()))
   (let* ((base-name (base-name input-file-name ".c"))
          (cross (if libc "" "mlibc-"))
          (suffix (string-append "." cross "o"))
@@ -416,55 +424,55 @@
          (c-target (target (file-name input-file-name))))
     (target (file-name target-file-name)
             (inputs (list c-target))
-            (method (CC.gcc #:cc cc #:libc libc #:defines defines)))))
+            (method (CC.gcc #:cc cc #:libc libc #:defines defines #:includes includes)))))
 
-(define* (compile.mescc input-file-name #:key (cc %CC) (libc libc-mes.E) (defines '()))
+(define* (compile.mescc input-file-name #:key (cc %CC) (libc libc-mes.E) (defines '()) (includes '()))
   (let* ((base-name (base-name input-file-name ".c"))
          ;;(foo (format (current-error-port) "COMPILE[~s .c] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-M1")
                        ((eq? libc libc-mes.E) ".M1")
                        (else ".mini-M1")))
          (target-file-name (string-append base-name suffix))
-         (E-target (cpp.mescc input-file-name #:cc cc #:defines defines)))
+         (E-target (cpp.mescc input-file-name #:cc cc #:defines defines #:includes includes)))
     (target (file-name target-file-name)
             (inputs `(,@(if libc (list libc) '()) ,E-target))
             (method (CC.mescc #:cc cc)))))
 
-(define* (m1-asm input-file-name #:key (cc %MESCC) (m1 %M1) (libc libc-mes.E) (defines '()))
+(define* (m1-asm input-file-name #:key (cc %MESCC) (m1 %M1) (libc libc-mes.E) (defines '()) (includes '()))
   (let* ((base-name (base-name input-file-name ".c"))
          ;;(foo (format (current-error-port) "m1-asm[~s .m1] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-hex2")
                        ((eq? libc libc-mes.E) ".hex2")
                        (else ".mini-hex2")))
          (target-file-name (string-append base-name suffix))
-         (m1-target (compile.mescc input-file-name #:cc cc #:libc libc #:defines defines))
+         (m1-target (compile.mescc input-file-name #:cc cc #:libc libc #:defines defines #:includes includes))
          (libc.m1 (cond ((eq? libc libc-mes.E)
-                         (compile.mescc "mlibc/libc-mes.c" #:libc #f #:defines defines))
+                         (compile.mescc "mlibc/libc-mes.c" #:libc #f #:defines defines #:includes includes))
                         ((eq? libc mini-libc-mes.E)
-                         (compile.mescc "mlibc/mini-libc-mes.c" #:libc #f #:defines defines))
+                         (compile.mescc "mlibc/mini-libc-mes.c" #:libc #f #:defines defines #:includes includes))
                         (else #f))))
     (target (file-name target-file-name)
             ;;(inputs `(,@(if libc (list libc.m1) '()) ,m1-target))
             (inputs `(,m1-target))
             (method (M1.asm #:m1 m1)))))
 
-(define* (bin.mescc input-file-name #:key (cc %MESCC) (hex2 %HEX2) (m1 %M1) (libc libc-mes.E) (dependencies '()) (defines '()))
+(define* (bin.mescc input-file-name #:key (cc %MESCC) (hex2 %HEX2) (m1 %M1) (libc libc-mes.E) (dependencies '()) (defines '()) (includes '()))
   (let* ((base-name (base-name input-file-name ".c"))
          ;;(foo (format (current-error-port) "bin[~s .c] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-guile")
                        ((eq? libc libc-mes.E) ".guile")
                        (else ".mini-guile")))
          (target-file-name (string-append base-name suffix))
-         (hex2-target (m1-asm input-file-name #:m1 m1 #:cc cc #:libc libc #:defines defines)))
+         (hex2-target (m1-asm input-file-name #:m1 m1 #:cc cc #:libc libc #:defines defines #:includes includes)))
     (target (file-name target-file-name)
             (inputs (cons hex2-target dependencies))
             (method (LINK.hex2 #:hex2 hex2 #:debug? (eq? libc libc-mes.E))))))
 
-(define* (bin.gcc input-file-name #:key (libc #t) (cc (if libc %CC %CC32)) (dependencies '()) (defines '()))
+(define* (bin.gcc input-file-name #:key (libc #t) (cc (if libc %CC %CC32)) (dependencies '()) (defines '()) (includes '()))
   (let* ((base-name (base-name input-file-name ".c"))
          (suffix (if libc ".gcc" ".mlibc-gcc"))
          (target-file-name (string-append base-name suffix))
-         (o-target (compile.gcc input-file-name #:cc cc #:libc libc #:defines defines)))
+         (o-target (compile.gcc input-file-name #:cc cc #:libc libc #:defines defines #:includes includes)))
     (target (file-name target-file-name)
             (inputs (list o-target))
             (method (LINK.gcc #:cc cc #:libc libc)))))
