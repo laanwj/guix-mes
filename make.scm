@@ -533,7 +533,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "HACKING"
    "INSTALL"
    "NEWS"
-   "README"))
+   "README"
+   "doc/ANNOUNCE-0.9"))
 
 (add-target (install "doc/fosdem/fosdem.pdf" #:dir "share/doc/mes"))
 

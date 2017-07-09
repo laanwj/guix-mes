@@ -74,7 +74,7 @@
 (define (hex2:offset1 o)
   (string-append "!" o))
 
-(define hex? #f) ; We need unreleased messc-tools 0.2 wih 0xXX support for this
+(define hex? #t)
 
 (define (hex2:immediate o)
   (if hex? (string-append "%0x" (dec->hex o))

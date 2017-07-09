@@ -10,6 +10,41 @@ Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.9 since 0.8
+** Core
+*** Mes now builds better in non-Guix[SD] legacy distros/environments.  Thanks, rain1!
+** Mescc
+*** Mescc now compiles a modified tinycc into a running [mostly segfaulting] tcc.mes.
+https://gitlab.com/janneke/tinycc branch wip-mescc.
+*** Mescc now supports locals stack frame larger than 1 byte offset.
+*** Mescc now supports incomplete struct initializers {0}.
+*** Mescc now supports >>=, <<=, ^=, ~.
+*** Mescc now supports the comma operator.
+*** Mescc now supports mullti-line string initializers.
+*** Mescc now supports unions.
+*** Mescc now supports arrays in structs.
+*** Mescc now supports structs in structs.
+*** Mescc now builds and runs with Guile-2.0 (legacy distro support, Guile-2.2 recommended).
+*** Mescc has been refactored to use records.
+*** Mescc now bundles tinycc's test2 test suite, passes one more test [34/55 pass].
+*** Mescc now has an incremental test suite consisting of 56 tests.
+*** Mescc now supports stdarg variable argument lists.
+*** Mescc now has __GNUC__ unset, #f (WAS: 0).
+*** Mescc now depends on Nyacc 0.80.3.
+*** Mescc now depends on M1 from [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]] v0.2.
+*** Mescc now compiles to M1 object files.
+**** 7 new mlibc functions
+calloc, close, getcwd, lseek, sprintf, unlink, vprintf.
+**** 31 new mlibc stubs
+execvp, fclose, fdopen, fflush, fopen, fprintf, fread, free, fseek,
+ftell, fwrite, localtime, longjmp, memcpy, memmove, memmove, memset,
+qsort, remove, setjump, snprintf, sscanf, strchr, strrchr, strstr,
+strtol, strtoll, strtoul, strtoull, time, vnsprintf.
+**** 10 new header files
+alloca.h, float.h, libgen.h, locale.h, stdbool.h, stddef.h, stdint.h,
+stdnoreturn.h, sys/select.h, sys/wait.h.
+** Noteworthy bug fixes
+*** Many bugs and limitations in mescc have been fixed and removed.
 * Changes in 0.8 since 0.7
 ** Mescc
 *** Mescc now has experimental annotation support for hex2.

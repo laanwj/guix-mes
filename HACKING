@@ -10,12 +10,15 @@ development.
 ** DEVELOPMENT BUILD
 To help development we assume ./configure sets these variables for make
 
-   CC    -- gcc
-   CC32  -- i686-unknown-linux-gnu-gcc (or on x86, also gcc)
-   GUILE -- guile
-   MES   -- unset
+   CC     -- gcc
+   CC32   -- i686-unknown-linux-gnu-gcc (or on x86, also gcc)
+   GUILE  -- guile
+   HEX2   -- hex2
+   MES    -- unset
+   M1     -- M1
+   PREFIX -- ""
 
-Mes is supposed to serve as a full equivalent for GUILE, however mes is much, much
+Mes is supposed to serve as a full equivalent for Guile, however mes is much, much
 slower than guile.  That's why we usually don't use mes during development.
 
 gcc is used to verify the sanity of our C sources.
@@ -23,50 +26,46 @@ gcc is used to verify the sanity of our C sources.
 i686-unknown-linux-gnu-gcc is used to compare hex/assembly, to test
 the gcc variant of mlbic: mlibc/libc-gcc.c and steal ideas.
 
-guile is used to develop mescc, the C compiler in Scheme that during
+Guile is used to develop mescc, the C compiler in Scheme that during
 bootstrapping will be executed by mes.
 
 ** BOOTSTRAP BUILD
 In bootstrap mode, we don't have gcc (CC), we don't have pa 32 bit gcc
-(CC32), we have no guile (GUILE)...but we should have a bootstrap mes
-(MES).  FIXME.
+(CC32), we have no guile (GUILE)...but we should have hex2, M1, and
+FIXME: mes.M1.
 
 mes is built from src/*.c and some out/src/*.h files that are snarfed from
 src/*.c by build-aux/mes-snarf.scm.
 
-Also, during bootstrap we don't have make.  Running `make build-scripts'
-generates several recipies of sh build scripts in out/.
+Running ./make.scm produces a `script' file.
 
 * ROADMAP
 ** TODO 
-*** release 0.8
-  - produce ELF_sym and ELF_str tables from hex2; nicer for objdump -d, gdb
+*** release 0.10
+  - mescc: compile minimal main.c with tcc.mes https://gitlab.com/janneke/tinycc wip-mescc
 *** release 0.x, unsorted
-  - simplify [at least the bootstrap] build process.
-  - seamless connection to stage0.
-  - mescc: compile tcc.c.
   - mescc: support unsigned comparison, arithmetic.
   - mescc: support bitfields.
-  - mescc: support unions.
-  - mescc: support anonymous unions.
-  - mescc: refactor compiler.mes, esp. (decl ..) bits.
+  - mescc: support floats.
+  - mescc: some success with 8cc/pcc/libguile/eval.c.
+  - build: guile/guix/make.scm: add file-types, intermediate, hash all dependencies
+  - build: make.scm: imperative->declaritive
+  - hex2: produce ELF_sym and ELF_str tables from hex2; nicer for objdump -d, gdb (in mescc-tools?)
   - rewrite src/mes.c in stage0's stage2 LISP.
-  - and/or: rewrite src/mes.c in [annotated] assembly.
-  - and/or: rewrite src/mes.c in annotated hex2.
+  - and/or: rewrite src/mes.c M1
   - and/or: connect to GNU Epsilon's VM
   - and/or: compile Scheme to C, rewrite Mes.c into Mes.scm.
   - real module support, bonus for supporting Guile's define-module/define-public syntax
-  - get full source syntax-case up (Andre van Tonder?) OR drop
+  - get full source syntax-case up (Andre van Tonder?) OR drop it
     psyntax/syntax-case and rewrite Nyacc without syntax-case+R7RS Ellipsis
   - support regexp OR rewrite Nyacc without regexps
-  - split-off Guile C compiler as standalone Guile project, still
-    respecting no-syntax-case bootstrap requirement
-*** Compile the [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
-  - build tcc (tinycc)
+  - split-off Guile C compiler as standalone Guile project
 *** release 1.0
   - work to replace GuixSD's bootstrap binaries for x86
   - more architectures?
 ** DONE
+** 0.9: Mescc now writes M1 macro assembly files and compiles tcc.
+** 0.8: Mescc now writes object files in stage0's labeled hex2 format.
 ** 0.7: Mescc supports -E, -c, -o options, include more complete set of header files,
 enough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 ** 0.6: Work with unmodified, unbundled Nyacc; compile 33/55 tinycc's tests/test2 suite.

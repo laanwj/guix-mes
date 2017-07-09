@@ -174,7 +174,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -C $(pwd) -e 'main' -s "$0" ${1+"$@"}
                  (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
                      "i686-unknown-linux-gnu-gcc")))
 (define HEX2 (or (getenv "HEX2") "hex2"))
-(define M1 (or (getenv "M1") "M0"))
+(define M1 (or (getenv "M1") "M1"))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -220,7 +220,7 @@ Usage: ./configure [OPTION]...
     (set! *verbose?* verbose?)
     (check-version 'guile '(2 0))
     (check-version HEX2 '(0 1))
-    ;;(check-version M1 '(0 1)) ;; FIXME: 0xXX: bump to 0.2
+    (check-version M1 '(0 2))
     (check-version 'nyacc '(0 80 3) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
 
     (check-version 'bash '(4 0))
