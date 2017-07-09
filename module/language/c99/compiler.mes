@@ -665,7 +665,8 @@
                (if (not (assoc-ref locals name))
                    (begin
                      (if (and (not (assoc name (.functions info)))
-                              (not (assoc name globals)))
+                              (not (assoc name globals))
+                              (not (equal? name (.function info))))
                          (stderr "warning: undeclared function: ~a\n" name))
                      (append-text args-info (list (i386:call-label name n))))
                    (let* ((empty (clone info #:text '()))
