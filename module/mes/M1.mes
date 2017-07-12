@@ -73,11 +73,15 @@
 (define (hex2:offset1 o)
   (string-append "!" o))
 
+(define hex? #f) ; We need unreleased messc-tools 0.2 wih 0xXX support for this
+
 (define (hex2:immediate o)
-  (string-append "%0x" (dec->hex o)))
+  (if hex? (string-append "%0x" (dec->hex o))
+      (format #f "%~a" o)))
 
 (define (hex2:immediate1 o)
-  (string-append "!0x" (dec->hex o)))
+  (if hex? (string-append "!0x" (dec->hex o))
+      (format #f "!~a" o)))
 
 (define (object->M1 o)
   (let* ((functions (assoc-ref o 'functions))
@@ -104,9 +108,10 @@
         (_ (cond ((char? o) (text->M1 (char->integer o)))
                  ((string? o) (format #f "~a" o))
                  ((number? o) (let ((o (if (< o #x80) o (- o #x100))))
-                                (string-append "!0x"
-                                               (if (and (>= o 0) (< o 16)) "0" "")
-                                               (number->string o 16))))
+                                (if hex? (string-append "!0x"
+                                                        (if (and (>= o 0) (< o 16)) "0" "")
+                                                        (number->string o 16))
+                                    (string-append "!" (number->string o)))))
                  (else (format #f "~a" o))))))
     (define (write-function o)
       (let ((name (car o))

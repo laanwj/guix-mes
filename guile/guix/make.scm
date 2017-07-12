@@ -319,10 +319,10 @@
                         (store #:add-file "guile/mes/as-i386.go")
                         (store #:add-file "guile/mes/M1.go")))))
 
-(define %M1 (PATH-search-path "M1"))
+(define %M1 (PATH-search-path "M0")) ; M1 is in unreleased mescc-tools 0.2
 (define %M1-FLAGS
   '("--LittleEndian"
-    "--Architecture=1"
+    ;;"--Architecture=1"
     ;;"--BaseAddress=0x1000000"
     ))
 (define* (M1.asm #:key (m1 %M1) (m1-flags %M1-FLAGS))
