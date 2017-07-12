@@ -201,7 +201,7 @@
                                                      input-shas)))))))))
 
 (define (string-hash o)
-  (number->string (hash o (expt 2 63))))
+  (number->string (hash o (expt 2 31))))
 
 (define (file-hash o)
   (string-hash (with-input-from-file o read-string)))

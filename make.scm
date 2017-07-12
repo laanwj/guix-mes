@@ -253,6 +253,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.mescc "scaffold/micro-mes.c"))
 (add-target (check "scaffold/micro-mes.guile" #:exit 6)) ; arg1 arg2 arg3 arg4 arg5
 
+(add-target (group "check-scaffold" #:dependencies (filter (target-prefix? "check-scaffold") %targets)))
+
 (define snarf-bases
   '("gc" "lib" "math" "mes" "posix" "reader" "vector"))
 

@@ -24,6 +24,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct scm {
+  int type;
+  int car;
+  int cdr;
+};
+
 char g_arena[84];
 #if __MESC__
 struct scm *g_cells = g_arena;
