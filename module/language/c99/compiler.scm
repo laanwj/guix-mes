@@ -35,11 +35,13 @@
   #:use-module (mes as-i386)
   #:use-module (mes elf)
   #:use-module (mes M1)
+  #:use-module (language c99 info)
   #:export (c99-ast->info
             c99-input->ast
             c99-input->elf
             c99-input->info
             c99-input->object
+            clone
             info->object))
 
 (cond-expand

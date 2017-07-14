@@ -35,6 +35,7 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
 !#
 
 (define-module (mescc)
+  #:use-module (language c99 info)
   #:use-module (language c99 compiler)
   #:use-module (mes elf)
   #:use-module (mes M1)

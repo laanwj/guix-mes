@@ -32,7 +32,8 @@
   (mes-use-module (mes as))
   (mes-use-module (mes elf))
   (mes-use-module (mes optargs))
-  (mes-use-module (mes pmatch))))
+  (mes-use-module (mes pmatch))
+  (mes-use-module (language c99 info))))
 
 (define (logf port string . rest)
   (apply format (cons* port string rest))

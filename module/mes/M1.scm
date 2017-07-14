@@ -29,6 +29,7 @@
   #:use-module (mes guile)
   #:use-module (mes as)
   #:use-module (mes elf)
+  #:use-module (language c99 info)
   #:export (object->M1
             objects->M1
             object->elf

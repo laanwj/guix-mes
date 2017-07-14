@@ -14,6 +14,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
     "guix/records.scm"
     "guix/shell-utils.scm"
     "language/c99/compiler.scm"
+    "language/c99/info.scm"
     "mes/as-i386.scm"
     "mes/as.scm"
     "mes/bytevectors.scm"
@@ -371,6 +372,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    ((install-dir #:dir (string-append %module-dir)) f))
  '("module/language/c99/compiler.mes"
    "module/language/c99/compiler.scm"
+   "module/language/c99/info.mes"
+   "module/language/c99/info.scm"
    "module/language/paren.mes"
    "module/mes/M1.mes"
    "module/mes/M1.scm"
