@@ -24,19 +24,12 @@
 
 (define-module (language c99 info)
   #:use-module (ice-9 optargs)
+  #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (system base pmatch)
   #:export (<info>
-            ;; <types>
-            ;; <constants>
-            ;; <functions>
-            ;; <globals>
-            ;; <locals>
-            ;; <function>
-            ;; <text>
-            ;; <break>
-            ;; <continue>
-
             make
+            make-<info>
             info?
 
             .info
@@ -56,67 +49,18 @@
   (use-modules (ice-9 syncase)))
  (mes))
 
-;;(include-from-path "language/c99/info.mes")
-
-(define <info> '<info>)
-(define <types> '<types>)
-(define <constants> '<constants>)
-(define <functions> '<functions>)
-(define <globals> '<globals>)
-(define <locals> '<locals>)
-(define <function> '<function>)
-(define <text> '<text>)
-(define <break> '<break>)
-(define <continue> '<continue>)
+(define-immutable-record-type <info>
+  (make-<info> types constants functions globals locals function text break continue)
+  info?
+  (types .types)
+  (constants .constants)
+  (functions .functions)
+  (globals .globals)
+  (locals .locals)
+  (function .function)
+  (text .text)
+  (break .break)
+  (continue .continue))
 
 (define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (function #f) (text '()) (break '()) (continue '()))
-  (pmatch o
-    (<info> (list <info>
-                  (cons <types> types)
-                  (cons <constants> constants)
-                  (cons <functions> functions)
-                  (cons <globals> globals)
-                  (cons <locals> locals)
-                  (cons <function> function)
-                  (cons <text> text)
-                  (cons <break> break)
-                  (cons <continue> continue)))))
-
-(define (.types o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <types>))))
-
-(define (.constants o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <constants>))))
-
-(define (.functions o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <functions>))))
-
-(define (.globals o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <globals>))))
-
-(define (.locals o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <locals>))))
-
-(define (.function o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <function>))))
-
-(define (.text o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <text>))))
-
-(define (.break o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <break>))))
-
-(define (.continue o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <continue>))))
-
-(define (info? o)
-  (and (pair? o) (eq? (car o) <info>)))
+  (make-<info> types constants functions globals locals function text break continue))
