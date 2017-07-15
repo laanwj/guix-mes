@@ -109,3 +109,9 @@
 (define global:type car)
 (define global:pointer cadr)
 (define global:value caddr)
+
+(define (make-local type pointer id)
+  (list type pointer id))
+(define local:type car)
+(define local:pointer cadr)
+(define local:id caddr)

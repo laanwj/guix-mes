@@ -215,11 +215,8 @@
 (define (ident->global-entry name type pointer value)
   (make-global-entry name type pointer (if (pair? value) value (int->bv32 value))))
 
-(define (make-local name type pointer id)
-  (cons name (list type pointer id)))
-(define local:type car)
-(define local:pointer cadr)
-(define local:id caddr)
+(define (make-local-entry name type pointer id)
+  (cons name (make-local type pointer id)))
 
 (define (push-ident info)
   (lambda (o)
@@ -448,9 +445,9 @@
           (text (.text info))
           (globals (.globals info)))
       (define (add-local locals name type pointer)
-        (let* ((id (if (or (null? locals) (not (local? (cdar locals)))) 1
+        (let* ((id (if (or (null? locals) (not (local-var? (cdar locals)))) 1
                        (1+ (local:id (cdar locals)))))
-               (locals (cons (make-local name type pointer id) locals)))
+               (locals (cons (make-local-entry name type pointer id) locals)))
           locals))
       (pmatch o
         ((expr) info)
@@ -1130,7 +1127,9 @@
 (define (ident->type info o)
   (let ((type (ident->decl info o)))
     (cond ((global? type) (global:type type))
-          (else (car type)))))
+          ((local? type) (local:type type))
+          (else (stderr "ident->type ~s => ~s\n" o type)
+                (car type)))))
 
 (define (ident->pointer info o)
   (let ((local (assoc-ref (.locals info) o)))
@@ -1161,7 +1160,7 @@
          (if type (type:description type)
              (error "type->description: unsupported:" o))))))
 
-(define (local? o) ;; formals < 0, locals > 0
+(define (local-var? o) ;; formals < 0, locals > 0
   (positive? (local:id o)))
 
 (define (ptr-declr->pointer o)
@@ -1234,9 +1233,9 @@
           (types (.types info))
           (text (.text info)))
       (define (add-local locals name type pointer)
-        (let* ((id (if (or (null? locals) (not (local? (cdar locals)))) 1
+        (let* ((id (if (or (null? locals) (not (local-var? (cdar locals)))) 1
                        (1+ (local:id (cdar locals)))))
-               (locals (cons (make-local name type pointer id) locals)))
+               (locals (cons (make-local-entry name type pointer id) locals)))
           locals))
       (define (declare name)
         (if (member name functions) info
@@ -1395,7 +1394,7 @@
                (let* ((local (car (add-local locals name type -1)))
                       (count (string->number count))
                       (size (type->size info type))
-                      (local (make-local name type -1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))                      
+                      (local (make-local-entry name type -1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))                      
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
@@ -1413,7 +1412,7 @@
                (let* ((local (car (add-local locals name type -1)))
                       (count (string->number count))
                       (size (type->size info type))
-                      (local (make-local name type 1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))
+                      (local (make-local-entry name type 1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
@@ -1546,7 +1545,7 @@
              (let ((size (type->size info type)))
                (if (<= size 4) (clone info #:locals (add-local locals name type 0))
                    (let* ((local (car (add-local locals name type 1)))
-                          (local (make-local name type -1 (+ (local:id (cdr local)) -1 (quotient (+ size 3) 4))))
+                          (local (make-local-entry name type -1 (+ (local:id (cdr local)) -1 (quotient (+ size 3) 4))))
                           (locals (cons local locals)))
                      (clone info #:locals locals))))
              (clone info #:globals (append globals (list (ident->global-entry name type 0 0))))))
@@ -1909,7 +1908,7 @@
   (pmatch o
     ((param-list . ,formals)
      (let ((n (length formals)))
-       (map make-local (map .name formals) (map .type formals) (map formal:ptr formals) (iota n -2 -1))))
+       (map make-local-entry (map .name formals) (map .type formals) (map formal:ptr formals) (iota n -2 -1))))
     (_ (error "formals->locals: unsupported: " o))))
 
 (define (function->info info)

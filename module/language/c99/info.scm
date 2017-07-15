@@ -53,7 +53,13 @@
             global?
             global:type
             global:pointer
-            global:value))
+            global:value
+
+            make-local
+            local?
+            local:type
+            local:pointer
+            local:id))
 
 (cond-expand
  (guile-2)
@@ -91,3 +97,10 @@
   (type global:type)
   (pointer global:pointer)
   (value global:value))
+
+(define-immutable-record-type <local>
+  (make-local type pointer id)
+  local?
+  (type local:type)
+  (pointer local:pointer)
+  (id local:id))
