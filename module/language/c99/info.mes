@@ -102,3 +102,10 @@
 (define type:size cadr)
 (define type:pointer caddr)
 (define type:description cadddr)
+
+(define (make-global name type pointer value)
+  (cons name (list type pointer value)))
+
+(define global:type car)
+(define global:pointer cadr)
+(define global:value caddr)

@@ -30,7 +30,6 @@
   #:export (<info>
             make
             make-<info>
-            make-type
             info?
 
             .types
@@ -43,10 +42,18 @@
             .break
             .continue
 
+            make-type
+            type?
             type:type
             type:size
             type:pointer
-            type:description))
+            type:description
+
+            make-global
+            global?
+            global:type
+            global:pointer
+            global:value))
 
 (cond-expand
  (guile-2)
@@ -77,3 +84,10 @@
   (size type:size)
   (pointer type:pointer)
   (description type:description))
+
+(define-immutable-record-type <global>
+  (make-global type pointer value)
+  global?
+  (type global:type)
+  (pointer global:pointer)
+  (value global:value))

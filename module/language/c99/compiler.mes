@@ -203,21 +203,17 @@
           (wrap-as (i386:push-byte-local-de-de-ref (local:id o)))
           (error "TODO int-de-de-ref")))))
 
-(define (make-global name type pointer value)
-  (cons name (list type pointer value)))
+(define (make-global-entry key type pointer value)
+  (cons key (make-global type pointer value)))
 
-(define global:type car)
-(define global:pointer cadr)
-(define global:value caddr)
+(define (string->global-entry string)
+  (make-global-entry `(#:string ,string) "string" 0 (append (string->list string) (list #\nul))))
 
-(define (string->global string)
-  (make-global `(#:string ,string) "string" 0 (append (string->list string) (list #\nul))))
+(define (int->global-entry value)
+  (make-global-entry (number->string value) "int" 0 (int->bv32 value)))
 
-(define (int->global value)
-  (make-global (number->string value) "int" 0 (int->bv32 value)))
-
-(define (ident->global name type pointer value)
-  (make-global name type pointer (if (pair? value) value (int->bv32 value))))
+(define (ident->global-entry name type pointer value)
+  (make-global-entry name type pointer (if (pair? value) value (int->bv32 value))))
 
 (define (make-local name type pointer id)
   (cons name (list type pointer id)))
@@ -274,7 +270,7 @@
   (lambda (o)
     (let ((string `(#:string ,o)))
       (if (assoc-ref globals string) globals
-          (append globals (list (string->global o)))))))
+          (append globals (list (string->global-entry o)))))))
 
 (define (expr->arg info) ;; FIXME: get Mes curried-definitions
   (lambda (o)
@@ -1132,7 +1128,9 @@
         (assoc-ref (.functions info) o))))
 
 (define (ident->type info o)
-  (and=> (ident->decl info o) car))
+  (let ((type (ident->decl info o)))
+    (cond ((global? type) (global:type type))
+          (else (car type)))))
 
 (define (ident->pointer info o)
   (let ((local (assoc-ref (.locals info) o)))
@@ -1379,14 +1377,14 @@
          (let ((type "int")) ;; FIXME
            (if (.function info)
                (clone info #:locals (add-local locals name type 0))
-               (clone info #:globals (append globals (list (ident->global name type 0 0)))))))
+               (clone info #:globals (append globals (list (ident->global-entry name type 0 0)))))))
 
          ;; char **p;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
          (if (.function info)
              (let ((locals (add-local locals name type 2)))
                (clone info #:locals locals))
-             (let ((globals (append globals (list (ident->global name type 2 0)))))
+             (let ((globals (append globals (list (ident->global-entry name type 2 0)))))
                (clone info #:globals globals))))
 
         ;; struct foo bar[2];
@@ -1404,7 +1402,7 @@
                (let* ((globals (.globals info))
                       (count (cstring->number count))
                       (size (type->size info type))
-                      (array (make-global name type -1 (string->list (make-string (* count size) #\nul))))
+                      (array (make-global-entry name type -1 (string->list (make-string (* count size) #\nul))))
                       (globals (append globals (list array))))
                  (clone info #:globals globals)))))
 
@@ -1422,7 +1420,7 @@
                (let* ((globals (.globals info))
                       (count (cstring->number count))
                       (size (type->size info type))
-                      (array (make-global name type 1 (string->list (make-string (* count size) #\nul))))
+                      (array (make-global-entry name type 1 (string->list (make-string (* count size) #\nul))))
                       (globals (append globals (list array))))
                  (clone info #:globals globals)))))
 
@@ -1449,7 +1447,7 @@
                       (info (clone info #:locals locals)))
                  (append-text info (append ((ident->accu info) value)
                                            ((accu->ident info) name))))
-               (let ((globals (append globals (list (ident->global name type 1 `(,value #f #f #f))))))
+               (let ((globals (append globals (list (ident->global-entry name type 1 `(,value #f #f #f))))))
                  (clone info #:globals globals)))))
 
         ;; enum foo { };
@@ -1513,7 +1511,7 @@
                       (global-names (map car globals))
                       (initzer-globals (filter (lambda (g) (and g (not (member (car g) global-names)))) initzer-globals))
                       (globals (append globals initzer-globals))
-                      (global (make-global name type 2 (append-map (initzer->data info) initzers)))
+                      (global (make-global-entry name type 2 (append-map (initzer->data info) initzers)))
                       (globals (append globals (list global))))
                  (clone info #:globals globals)))))
 
@@ -1535,8 +1533,8 @@
                 (initzers (map (initzer->non-const info) initzers)))
            (if (.function info)
                (error "TODO: <type> x[] = {};" o)
-               (let* ( ;;(global (make-global name type 2 (string->list (make-string size #\nul))))
-                      (global (make-global name type 2 (append-map (initzer->data info) initzers)))
+               (let* ( ;;(global (make-global-entry name type 2 (string->list (make-string size #\nul))))
+                      (global (make-global-entry name type 2 (append-map (initzer->data info) initzers)))
                       (global-names (map car globals))
                       (entries (filter (lambda (g) (and g (not (member (car g) global-names)))) entries))
                       (globals (append globals entries (list global))))
@@ -1551,7 +1549,7 @@
                           (local (make-local name type -1 (+ (local:id (cdr local)) -1 (quotient (+ size 3) 4))))
                           (locals (cons local locals)))
                      (clone info #:locals locals))))
-             (clone info #:globals (append globals (list (ident->global name type 0 0))))))
+             (clone info #:globals (append globals (list (ident->global-entry name type 0 0))))))
 
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr ,init . ,initzer)))
          (let* ((info (type->info info type))
@@ -1574,8 +1572,8 @@
                       (info (if (null? initzer) info (append-text info ((accu->ident info) name)))))
                  info)
                (let* ((pointer (if (and (pair? type) (equal? (car type) "struct")) 2 pointer))
-                      (global (make-global name type pointer (if (null? initzer) (string->list (make-string size #\nul))
-                                                                 (append-map (initzer->data info) initzer))))
+                      (global (make-global-entry name type pointer (if (null? initzer) (string->list (make-string size #\nul))
+                                                                       (append-map (initzer->data info) initzer))))
                       (globals (append globals (list global))))
                  (clone info #:globals globals)))))
 
@@ -1853,8 +1851,8 @@
       ((p-expr (string ,string))
        (let ((g `(#:string ,string)))
          (or (assoc g globals)
-             (string->global string))))
-      ;;((p-expr (fixed ,value)) (int->global (cstring->number value)))
+             (string->global-entry string))))
+      ;;((p-expr (fixed ,value)) (int->global-entry (cstring->number value)))
       (_ #f))))
 
 (define (initzer->globals globals)
