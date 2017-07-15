@@ -30,9 +30,9 @@
   #:export (<info>
             make
             make-<info>
+            make-type
             info?
 
-            .info
             .types
             .constants
             .functions
@@ -41,7 +41,12 @@
             .function
             .text
             .break
-            .continue))
+            .continue
+
+            type:type
+            type:size
+            type:pointer
+            type:description))
 
 (cond-expand
  (guile-2)
@@ -64,3 +69,11 @@
 
 (define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (function #f) (text '()) (break '()) (continue '()))
   (make-<info> types constants functions globals locals function text break continue))
+
+(define-immutable-record-type <type>
+  (make-type type size pointer description)
+  type?
+  (type type:type)
+  (size type:size)
+  (pointer type:pointer)
+  (description type:description))

@@ -94,3 +94,11 @@
                   (cons <text> text)
                   (cons <break> break)
                   (cons <continue> continue)))))
+
+(define (make-type type size pointer description)
+  (list type size pointer description))
+
+(define type:type car)
+(define type:size cadr)
+(define type:pointer caddr)
+(define type:description cadddr)

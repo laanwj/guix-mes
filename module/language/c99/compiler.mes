@@ -893,33 +893,25 @@
 (define (ident->constant name value)
   (cons name value))
 
-(define (make-type name type size pointer description)
-  (cons name (list type size pointer description)))
+(define (enum->type-entry name fields)
+  (cons name (make-type 'enum 4 0 fields)))
 
-(define type:type car)
-(define type:size cadr)
-(define type:pointer caddr)
-(define type:description cadddr)
-
-(define (enum->type name fields)
-  (make-type name 'enum 4 0 fields))
-
-(define (struct->type name fields)
-  (make-type name 'struct (apply + (map field:size fields)) 0 fields))
+(define (struct->type-entry name fields)
+  (cons (list "struct" name) (make-type 'struct (apply + (map field:size fields)) 0 fields)))
 
 (define i386:type-alist
-  '(("char" . (builtin 1 0 #f))
-    ("short" . (builtin 2 0 #f))
-    ("int" . (builtin 4 0 #f))
-    ("long" . (builtin 4 0 #f))
-    ("long long" . (builtin 8 0 #f))
+  `(("char" . ,(make-type 'builtin 1 0 #f))
+    ("short" . ,(make-type 'builtin 2 0 #f))
+    ("int" . ,(make-type 'builtin 4 0 #f))
+    ("long" . ,(make-type 'builtin 4 0 #f))
+    ("long long" . ,(make-type 'builtin 8 0 #f))
     ;; FIXME sign
-    ("unsigned char" . (builtin 1 0 #f))
-    ("unsigned short" . (builtin 2 0 #f))
-    ("unsigned" . (builtin 4 0 #f))
-    ("unsigned int" . (builtin 4 0 #f))
-    ("unsigned long" . (builtin 4 0 #f))
-    ("unsigned long long" . (builtin 8 0 #f))))
+    ("unsigned char" . ,(make-type 'builtin 1 0 #f))
+    ("unsigned short" . ,(make-type 'builtin 2 0 #f))
+    ("unsigned" . ,(make-type 'builtin 4 0 #f))
+    ("unsigned int" . ,(make-type 'builtin 4 0 #f))
+    ("unsigned long" . ,(make-type 'builtin 4 0 #f))
+    ("unsigned long long" . ,(make-type 'builtin 8 0 #f))))
 
 (define (field:size o)
   (pmatch o
@@ -1350,12 +1342,12 @@
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
          (let* ((type (get-type types type))
-                (type (make-type name
-                                 (type:type type)
+                (type (make-type (type:type type)
                                  (type:size type)
                                  (1+ (type:pointer type))
-                                 (type:description type))))
-           (clone info #:types (cons type types))))
+                                 (type:description type)))
+                (type-entry (cons name type)))
+           (clone info #:types (cons type-entry types))))
 
 
         ;; struct foo* bar = expr;
@@ -1370,8 +1362,8 @@
 
         ;; struct
         ((decl (decl-spec-list (type-spec (struct-def (ident ,name) (field-list . ,fields)))))
-         (let ((type (struct->type (list "struct" name) (map struct-field fields))))
-           (clone info #:types (cons type types))))
+         (let ((type-entry (struct->type-entry name (map struct-field fields))))
+           (clone info #:types (cons type-entry types))))
 
         ;; ;; struct foo {} bar;
         ((decl (decl-spec-list (type-spec (struct-def (ident ,type) (field-list . ,fields))))
@@ -1462,10 +1454,10 @@
 
         ;; enum foo { };
         ((decl (decl-spec-list (type-spec (enum-def (ident ,name) (enum-def-list . ,fields)))))
-         (let ((type (enum->type name fields))
+         (let ((type-entry (enum->type-entry name fields))
                (constants (enum-def-list->constants constants fields)))
            (clone info
-                  #:types (append types (list type))
+                  #:types (cons type-entry types)
                   #:constants (append constants (.constants info)))))
 
         ;; enum {};
@@ -1477,8 +1469,8 @@
         ;; FIXME TCC/Nyacc madness here: extra parentheses around struct name?!?
         ;; struct (FOO) WTF?
         ((decl (decl-spec-list (type-spec (struct-def (ident (,name)) (field-list . ,fields)))))
-         (let ((type (struct->type (list "struct" name) (map struct-field fields))))
-           (clone info #:types (append types (list type)))))
+         (let ((type-entry (struct->type-entry name (map struct-field fields))))
+           (clone info #:types (cons type-entry types))))
 
         ((decl (decl-spec-list (type-spec (struct-def (ident (,type)) (field-list . ,fields))))
                (init-declr-list (init-declr (ident ,name))))
@@ -1875,8 +1867,8 @@
 (define (type->info info o)
   (pmatch o
     ((struct-def (ident ,name) (field-list . ,fields))
-     (let ((type (struct->type (list "struct" name) (map struct-field fields))))
-       (clone info #:types (cons type (.types info)))))
+     (let ((type-entry (struct->type-entry name (map struct-field fields))))
+       (clone info #:types (cons type-entry (.types info)))))
     (_  info)))
 
 (define (.formals o)
