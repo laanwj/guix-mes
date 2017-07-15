@@ -268,7 +268,7 @@
 
 (define mes-snarf-targets
   (list
-   (add-target (snarf "src/gc.c" #:mes? #t))
+   (add-target (snarf "src/gc.c"))
    (add-target (snarf "src/lib.c" #:mes? #t))
    (add-target (snarf "src/math.c" #:mes? #t))
    (add-target (snarf "src/mes.c" #:mes? #t))
