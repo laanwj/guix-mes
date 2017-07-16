@@ -125,7 +125,7 @@
 
 (define (.type o)
   (pmatch o
-    ((param-decl (decl-spec-list (type-spec ,type)) _) (decl->type type))
+    ((param-decl (decl-spec-list (type-spec ,type)) _) (decl->ast-type type))
     ((param-decl ,type _) type)
     (_
      (format (current-error-port) "SKIP: .type =~a\n" o))))
@@ -186,7 +186,7 @@
   (lambda (o)
     (let* ((local o)
            (ptr (local:pointer local))
-           (size (if (= ptr 1) (type->size info (local:type o))
+           (size (if (= ptr 1) (ast-type->size info (local:type o))
                      4)))
       (if (= size 1)
           (wrap-as (i386:push-byte-local-de-ref (local:id o)))
@@ -197,7 +197,7 @@
   (lambda (o)
     (let* ((local o)
            (ptr (local:pointer local))
-           (size (if (= ptr 2) (type->size info (local:type o));; URG
+           (size (if (= ptr 2) (ast-type->size info (local:type o));; URG
                      4)))
       (if (= size 1)
           (wrap-as (i386:push-byte-local-de-de-ref (local:id o)))
@@ -224,7 +224,7 @@
       (if local
           (begin
             (let* ((ptr (local:pointer local))
-                   (size (if (= ptr 1) (type->size info (local:type local))
+                   (size (if (= ptr 1) (ast-type->size info (local:type local))
                              4)))
              (if (= ptr -1) ((push-local-address (.locals info)) local)
                  ((push-local (.locals info)) local))))
@@ -311,7 +311,7 @@
       (if local
           (let* ((ptr (local:pointer local))
                  (type (ident->type info o))
-                 (size (if (= ptr 0) (type->size info type)
+                 (size (if (= ptr 0) (ast-type->size info type)
                            4)))
             (case ptr
               ((-1) (wrap-as (i386:local-ptr->accu (local:id local))))
@@ -322,7 +322,7 @@
           (if global
               (let* ((ptr (ident->pointer info o))
                      (type (ident->type info o))
-                     (size (if (= ptr 1) (type->size info type)
+                     (size (if (= ptr 1) (ast-type->size info type)
                                4)))
                 (case ptr
                   ((-2) (list (i386:label->accu `(#:address ,o))))
@@ -337,7 +337,7 @@
       (if local
           (let* ((ptr (local:pointer local))
                  (type (ident->type info o))
-                 (size (if (and type (= ptr 1)) (type->size info type)
+                 (size (if (and type (= ptr 1)) (ast-type->size info type)
                            4)))
             (case ptr
               ((-1) (wrap-as (i386:local-ptr->base (local:id local))))
@@ -363,7 +363,7 @@
           (constant (assoc-ref (.constants info) o)))
       (if local (let* ((ptr (local:pointer local))
                        (type (ident->type info o))
-                       (size (if (= ptr 1) (type->size info type)
+                       (size (if (= ptr 1) (ast-type->size info type)
                                  4)))
             (wrap-as (i386:local-ptr->accu (local:id local))))
           (if global (list (i386:label->accu `(#:address ,o)))
@@ -377,7 +377,7 @@
       (if local
           (let* ((ptr (local:pointer local))
                  (type (ident->type info o))
-                 (size (if (= ptr 1) (type->size info type)
+                 (size (if (= ptr 1) (ast-type->size info type)
                            4)))
             (wrap-as (i386:local-ptr->base (local:id local))))
           (if global (list (i386:label->base `(#:address ,o)))
@@ -405,7 +405,7 @@
       (if local
           (let* ((ptr (local:pointer local))
                  (type (ident->type info o))
-                 (size (if (= ptr 1) (type->size info type)
+                 (size (if (= ptr 1) (ast-type->size info type)
                            4)))
             (wrap-as (append (i386:local->accu (local:id local))
                              (if (= size 1) (i386:byte-base->accu-address)
@@ -490,12 +490,12 @@
 
         ((sizeof-expr (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
-                (size (type->size info type)))
+                (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,name)))))
          (let* ((type name)
-                (size (type->size info type)))
+                (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident (,name)))))))
@@ -505,12 +505,12 @@
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
          (let* ((type (list "struct" name))
-                (size (type->size info type)))
+                (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
          (let* ((type (list "struct" name))
-                (size (type->size info type)))
+                (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,type))) (abs-declr (pointer))))
@@ -522,7 +522,7 @@
         ((array-ref ,index (p-expr (ident ,array)))
          (let* ((type (ident->type info array))
                 (ptr (ident->pointer info array))
-                (size (if (or (= ptr 1) (= ptr -1)) (type->size info type)
+                (size (if (or (= ptr 1) (= ptr -1)) (ast-type->size info type)
                           4))
                 (info ((expr->accu* info) o)))
            (append-text info (wrap-as (append (case size
@@ -570,7 +570,7 @@
         ((de-ref (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
                 (ptr (ident->pointer info name))
-                (size (if (= ptr 1) (type->size info type)
+                (size (if (= ptr 1) (ast-type->size info type)
                           4)))
            (append-text info (append (if (or #t (assoc-ref locals name)) ((ident->accu info) name)
                                          ((ident-address->accu info) name))
@@ -581,7 +581,7 @@
          (let* ((info ((expr->accu info) `(de-ref (p-expr (ident ,name)))))
                 (type (ident->type info name))
                 (ptr (ident->pointer info name))
-                (size (if (= ptr 1) (type->size info type)
+                (size (if (= ptr 1) (ast-type->size info type)
                           4)))
            (append-text info ((ident-add info) name size))))
 
@@ -749,7 +749,7 @@
              ((de-ref (p-expr (ident ,name)))
               (let* ((type (ident->type info name))
                      (ptr (ident->pointer info name))
-                     (size (if (= ptr 1) (type->size info type)
+                     (size (if (= ptr 1) (ast-type->size info type)
                           4)))
                 (append-text info (append (wrap-as (i386:accu->base))
                                           ((base->ident-address info) name)))))
@@ -765,7 +765,7 @@
                 (append-text info (wrap-as (i386:base->accu-address)))))
              ((array-ref ,index (p-expr (ident ,array)))
               (let* ((type (ident->type info array))
-                     (size (type->size info type))
+                     (size (ast-type->size info type))
                      (info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))
                      (info (append-text info (wrap-as (i386:pop-base)))))
@@ -816,7 +816,7 @@
        (let* ((info ((expr->accu info) index))
               (type (ident->type info array))
               (ptr (ident->pointer info array))
-              (size (if (or (= ptr 1) (= ptr -1)) (type->size info type)
+              (size (if (or (= ptr 1) (= ptr -1)) (ast-type->size info type)
                         4)))
          (append-text info (append (wrap-as (append (i386:accu->base)
                                                     (if (eq? size 1) '()
@@ -892,12 +892,16 @@
 (define (struct->type-entry name fields)
   (cons (list "struct" name) (make-type 'struct (apply + (map field:size fields)) 0 fields)))
 
+(define (union->type-entry name fields)
+  (cons (list "struct" name) (make-type 'union (apply + (map field:size fields)) 0 fields)))
+
 (define i386:type-alist
   `(("char" . ,(make-type 'builtin 1 0 #f))
     ("short" . ,(make-type 'builtin 2 0 #f))
     ("int" . ,(make-type 'builtin 4 0 #f))
     ("long" . ,(make-type 'builtin 4 0 #f))
     ("long long" . ,(make-type 'builtin 8 0 #f))
+    ("void" . ,(make-type 'builtin 4 0 #f))
     ;; FIXME sign
     ("unsigned char" . ,(make-type 'builtin 1 0 #f))
     ("unsigned short" . ,(make-type 'builtin 2 0 #f))
@@ -911,27 +915,45 @@
     ((,name ,type ,size ,pointer) size)
     (_ 4)))
 
-(define (type->size info o)
+(define (get-type types o)
+  (let ((t (assoc-ref types o)))
+    (pmatch t
+      ((typedef ,next) (get-type types next))
+      (_ t))))
+
+(define (ast-type->type info o)
   (pmatch o
     ((decl-spec-list (type-spec (fixed-type ,type)))
-     (type->size info type))
+     (ast-type->type info type))
     ((decl-spec-list (type-qual ,qual) (type-spec (fixed-type ,type)))
-     (type->type info type))
+     (ast-type->type info type))
     ((struct-ref (ident (,type)))
-     (type->type info `("struct" ,type)))
+     (ast-type->type info `("struct" ,type)))
     ((struct-ref (ident ,type))
-     (type->size info `("struct" ,type)))
-    (void 4)
-    ((void) 4)
+     (ast-type->type info `("struct" ,type)))
+    ((union-ref (ident ,type))
+     (ast-type->type info `("struct" ,type)))
+    ((void) (ast-type->type info "void"))
     (_ (let ((type (get-type (.types info) o)))
-         (if type (type:size type)
-             (error "type->size: unsupported: " o))))))
+         (if type type
+             (begin
+               (stderr "types: ~s\n" (.types info))
+               (error "ast-type->type: unsupported: " o)))))))
+
+(define (ast-type->description info o)
+  (let ((type (ast-type->type info o)))
+    (type:description type)))
+
+(define (ast-type->size info o)
+  (let ((type (ast-type->type info o)))
+    (type:size type)))
 
 (define (field-offset info struct field)
-  (let* ((fields (type->description info struct))
-         (prefix (and=> (member field (reverse fields) (lambda (a b) (equal? a (car b)))) cdr
-)))
-    (apply + (map field:size prefix))))
+  (let ((xtype (ast-type->type info struct)))
+    (if (eq? (type:type xtype) 'union) 0
+        (let* ((fields (type:description xtype))
+               (prefix (and=> (member field (reverse fields) (lambda (a b) (equal? a (car b)))) cdr)))
+          (apply + (map field:size prefix))))))
 
 (define (ast->type o)
   (pmatch o
@@ -946,7 +968,7 @@
     (_ (stderr "SKIP: type=~s\n" o)
        "int")))
 
-(define (decl->type o)
+(define (decl->ast-type o)
   (pmatch o
     ((fixed-type ,type) type)
     ((struct-ref (ident (,name))) (list "struct" name))
@@ -956,7 +978,7 @@
      (list "struct" name)) ;; FIXME
     ((typename ,name) name)
     (,name name)
-    (_ (error "decl->type: unsupported: " o))))
+    (_ (error "decl->ast-type: unsupported: " o))))
 
 (define (byte->hex.m1 o)
   (string-drop o 2))
@@ -1125,7 +1147,7 @@
        (list name type 4))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
-       (let ((size (type->size info `("struct" ,type))))
+       (let ((size (ast-type->size info `("struct" ,type))))
          (list name type size 0)))
 
       (_ (error "struct-field: unsupported: " o)))
@@ -1157,23 +1179,6 @@
     ((array-ref ,index (p-expr (ident ,array)))
      (ident->type info array))
     (_ (error "p-expr->type: unsupported: " o))))
-
-(define (get-type types o)
-  (let ((t (assoc-ref types o)))
-    (pmatch t
-      ((typedef ,next) (get-type types next))
-      (_ t))))
-
-(define (type->description info o)
-  (pmatch o
-    ((decl-spec-list (type-spec (fixed-type ,type)))
-     (type->description info type))
-    ((struct-ref (ident ,type))
-     (type->description info `("struct" ,type)))
-    (_ (let ((type (get-type (.types info) o)))
-         (if (not type) (stderr "TYPES=~s\n" (.types info)))
-         (if type (type:description type)
-             (error "type->description: unsupported:" o))))))
 
 (define (local-var? o) ;; formals < 0, locals > 0
   (positive? (local:id o)))
@@ -1268,6 +1273,13 @@
         ((decl (decl-spec-list (type-spec (struct-def (ident (,type)) ,field-list))))
          ((decl->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,type) ,field-list))))))
 
+        ((decl (decl-spec-list (stor-spec ,spec) (type-spec (union-ref (ident (,type))))) ,init)
+         ((decl->info info) `(decl (decl-spec-list (stor-spec ,spec) (type-spec (union-ref (ident ,type)))) ,init)))
+        ((decl (decl-spec-list (type-spec (union-def (ident (,type)) ,field-list))))
+         ((decl->info info) `(decl (decl-spec-list (type-spec (union-def (ident ,type) ,field-list))))))
+
+        ((decl (decl-spec-list (type-spec (union-ref (ident (,type))))) (init-declr-list (init-declr (ident ,name) ,initzer)))
+         ((decl->info info) `(decl (decl-spec-list (type-spec (union-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name) ,initzer)))))
 
 
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
@@ -1312,28 +1324,23 @@
         ((decl (decl-spec-list (stor-spec (extern)) ,type) (init-declr-list (init-declr (ident ,name))))
          info)
 
-        ;; ST_DATA struct TCCState *tcc_state;
-        ((decl (decl-spec-list (stor-spec (extern)) (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
+        ((decl (decl-spec-list (stor-spec (static)) ,type) (init-declr-list (init-declr (ident ,name))))
+         ((decl->info info) `(decl (decl-spec-list ,type) (init-declr-list (init-declr (ident ,name)))))
          info)
+
+        ;; extern foo *bar;
+        ((decl (decl-spec-list (stor-spec (extern)) ,type) (init-declr-list (init-declr (ptr-declr ,pointer (ident ,name)))))
+         info)
+
+        ((decl (decl-spec-list (stor-spec (static)) ,type) (init-declr-list (init-declr (ptr-declr ,pointer (ident ,name)))))
+         ((decl->info info) `(decl (decl-spec-list ,type) (init-declr-list (init-declr (ptr-declr ,pointer (ident ,name)))))))
 
         ;; ST_DATA int ch, tok; -- TCC, why oh why so difficult?
         ((decl (decl-spec-list (stor-spec (extern)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name)) . ,rest))
          info)
 
-        ;; ST_DATA const int *macro_ptr;
-        ((decl (decl-spec-list (stor-spec (extern)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
-         info)
-
-        ;; ST_DATA TokenSym **table_ident;
-        ((decl (decl-spec-list (stor-spec (extern)) (type-spec (typename ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-         info)
-
         ;; ST_DATA Section *text_section, *data_section, *bss_section; /* predefined sections */
         ((decl (decl-spec-list (stor-spec (extern)) (type-spec (typename ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name))) . ,rest))
-         info)
-
-        ;; ST_DATA void **sym_pools;
-        ((decl (decl-spec-list (stor-spec (extern)) (type-spec (void))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
          info)
 
         ;; ST_DATA CType char_pointer_type, func_old_type, int_type, size_type;
@@ -1343,10 +1350,6 @@
         ;; ST_DATA SValue __vstack[1+/*to make bcheck happy*/ VSTACK_SIZE], *vtop;
         ;; Yay, let's hear it for the T-for Tiny in TCC!?
         ((decl (decl-spec-list (stor-spec (extern)) (type-spec (typename ,type))) (init-declr-list (init-declr (array-of (ident ,name) (add (p-expr (fixed ,a)) (p-expr (fixed ,b))))) (init-declr (ptr-declr (pointer) (ident ,name2)))))
-         info)
-
-        ;; ST_DATA char *funcname;
-        ((decl (decl-spec-list (stor-spec (extern)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
          info)
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))
@@ -1361,11 +1364,18 @@
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-def ,field-list))) (init-declr-list (init-declr (ident ,name))))
          ((decl->info info) `(decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-def (ident ,name) ,field-list))) (init-declr-list (init-declr (ident ,name))))))
 
+        ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (union-def ,field-list))) (init-declr-list (init-declr (ident ,name))))
+         ((decl->info info) `(decl (decl-spec-list (stor-spec (typedef)) (type-spec (union-def (ident ,name) ,field-list))) (init-declr-list (init-declr (ident ,name))))))
+
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-def (ident ,type) ,field-list))) (init-declr-list (init-declr (ident ,name))))
          (let* ((info ((decl->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,type) ,field-list))))))
                 (types (.types info)))
            (clone info #:types (cons (cons name (or (get-type types `("struct" ,type)) `(typedef ,type))) types))))
 
+        ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (union-def (ident ,type) ,field-list))) (init-declr-list (init-declr (ident ,name))))
+         (let* ((info ((decl->info info) `(decl (decl-spec-list (type-spec (union-def (ident ,type) ,field-list))))))
+                (types (.types info)))
+           (clone info #:types (cons (cons name (or (get-type types `("struct" ,type)) `(typedef ,type))) types))))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
          (let* ((type (get-type types type))
@@ -1398,7 +1408,7 @@
 
          ;; char **p = *x;
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)) (initzer (de-ref (p-expr (ident ,value)))))))
-         (let ((type (decl->type type))
+         (let ((type (decl->ast-type type))
                (info (append-text info (ast->comment o))))
            (if (.function info)
                (let* ((locals (add-local locals name type 2))
@@ -1415,14 +1425,14 @@
            (if (.function info)
                (let* ((local (car (add-local locals name type -1)))
                       (count (string->number count))
-                      (size (type->size info type))
+                      (size (ast-type->size info type))
                       (local (make-local-entry name type -1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))                      
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
                (let* ((globals (.globals info))
                       (count (cstring->number count))
-                      (size (type->size info type))
+                      (size (ast-type->size info type))
                       (array (make-global-entry name type -1 (string->list (make-string (* count size) #\nul))))
                       (globals (append globals (list array))))
                  (clone info #:globals globals)))))
@@ -1432,7 +1442,7 @@
              (error  "TODO: " o)
              (let* ((globals (.globals info))
                     ;; (count (cstring->number count))
-                    ;; (size (type->size info type))
+                    ;; (size (ast-type->size info type))
                     (array (make-global-entry array type -1 (string->list string)))
                     (globals (append globals (list array))))
                (clone info #:globals globals))))
@@ -1455,7 +1465,7 @@
         ;; char *p = g_cells;
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)) (initzer (p-expr (ident ,value))))))
          (let ((info (append-text info (ast->comment o)))
-               (type (decl->type type)))
+               (type (decl->ast-type type)))
            (if (.function info)
                (let* ((locals (add-local locals name type  1))
                       (info (clone info #:locals locals)))
@@ -1482,18 +1492,29 @@
          (let ((type-entry (struct->type-entry name (map (struct-field info) fields))))
            (clone info #:types (cons type-entry types))))
 
+        ((decl (decl-spec-list (type-spec (union-def (ident ,name) (field-list . ,fields)))))
+         (let ((type-entry (union->type-entry name (map (struct-field info) fields))))
+           (clone info #:types (cons type-entry types))))
+
         ((decl (decl-spec-list (type-spec (struct-def (ident ,type) (field-list . ,fields))))
                (init-declr-list (init-declr (ident ,name))))
          (let ((info ((decl->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,type) (field-list . ,fields))))))))
            ((decl->info info) `(decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name)))))))
 
+        ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (union-def (ident ,type) ,fields))) (init-declr-list (init-declr (ident ,name))))
+         (let ((info ((decl->info info) `(decl (decl-spec-list (type-spec (union-def (ident ,type) ,fields)))))))
+           ((decl->info info) `(decl (decl-spec-list (type-spec (union-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name)))))))
+
         ;; struct f = {...};
         ;; LOCALS!
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ident ,name) (initzer (initzer-list . ,initzers)))))
          (let* ((info (append-text info (ast->comment o)))
-                (type (decl->type type))
-                (fields (type->description info type))
-                (size (type->size info type))
+                (type (decl->ast-type type))
+                (fields (ast-type->description info type))
+                (xtype (ast-type->type info type))
+                (fields (if (not (eq? (type:type xtype) 'union)) fields
+                            (list-head fields 1)))
+                (size (ast-type->size info type))
                 (initzers (map (initzer->non-const info) initzers)))
            (if (.function info)
                (let* ((initzer-globals (filter identity (append-map (initzer->globals globals) initzers)))
@@ -1529,7 +1550,7 @@
         ;; DECL
         ;; char *bla[] = {"a", "b"};
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name))) (initzer (initzer-list . ,initzers)))))
-         (let* ((type (decl->type type))
+         (let* ((type (decl->ast-type type))
                 (entries (filter identity (append-map (initzer->globals globals) initzers)))
                 (entry-size 4)
                 (size (* (length entries) entry-size))
@@ -1544,7 +1565,7 @@
 
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr ,init . ,initzer)))
          (let* ((info (type->info info type))
-                (type (decl->type type))
+                (type (decl->ast-type type))
                 (name (init-declr->name init))
                 (pointer (init-declr->pointer init))
                 (initzer-globals (if (null? initzer) '()
@@ -1556,7 +1577,7 @@
                 (globals (append globals initzer-globals))
                 (info (clone info #:globals globals))
                 (pointer (if (and (pair? type) (equal? (car type) "struct")) -1 pointer))
-                (size (if (zero? pointer) (type->size info type)
+                (size (if (zero? pointer) (ast-type->size info type)
                           4)))
            (if (.function info)
                (let* ((locals (if (or (not (= pointer 0)) (<= size 4)) (add-local locals name type pointer)
