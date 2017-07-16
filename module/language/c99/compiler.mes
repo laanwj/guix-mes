@@ -567,6 +567,15 @@
                                      (wrap-as (i386:mem->accu))
                                      (wrap-as (i386:mem+n->accu offset))))))
 
+        ((i-sel (ident ,field) (de-ref (p-expr (ident ,array))))
+         (let* ((type (ident->type info array))
+                (offset (field-offset info type field))
+                (text (.text info)))
+           (append-text info (append ((ident-address->accu info) array)
+                                     (wrap-as (i386:mem->accu))
+                                     (wrap-as (i386:mem->accu))
+                                     (wrap-as (i386:mem+n->accu offset))))))
+
         ((de-ref (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
                 (ptr (ident->pointer info name))
@@ -781,6 +790,13 @@
                                                (wrap-as (append (i386:accu+n 4)
                                                                 (i386:base+n 4)
                                                                 (i386:base-address->accu-address)))))))))))
+
+             ((i-sel (ident ,field) ,array)
+              (let* ((info (append-text info (wrap-as (i386:push-accu))))
+                     (info ((expr->accu* info) a))
+                     (info (append-text info (wrap-as (i386:pop-base)))))
+                (append-text info (wrap-as (i386:base->accu-address)))))
+
              (_ (error "expr->accu: unsupported assign: " a)))))
 
         (_ (error "expr->accu: unsupported: " o))))))
@@ -880,6 +896,23 @@
                                                             (i386:accu-shl 2)))))))
               (info ((expr->base info) array)))
           (append-text info (wrap-as (i386:accu+base)))))
+
+      ((i-sel (ident ,field) (p-expr (ident ,array)))
+       (let* ((type (ident->type info array))
+              (offset (field-offset info type field))
+              (text (.text info)))
+         (append-text info (append ((ident-address->accu info) array)
+                                   (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:accu+value offset))))))
+
+      ((i-sel (ident ,field) (de-ref (p-expr (ident ,array))))
+       (let* ((type (ident->type info array))
+              (offset (field-offset info type field))
+              (text (.text info)))
+         (append-text info (append ((ident-address->accu info) array)
+                                   (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:accu+value offset))))))
 
       (_ (error "expr->accu*: unsupported: " o)))))
 
