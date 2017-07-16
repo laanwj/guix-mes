@@ -31,7 +31,7 @@ char const* help =
 int
 test ()
 {
-  if (strcmp (help, "All your base are")) return 1;
+  if (printf ("belong to us"), strcmp (help, "All your base are")) return 1;
 
-  return 0;
+  return 2,1,0;
 }

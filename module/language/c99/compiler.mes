@@ -449,6 +449,13 @@
           locals))
       (pmatch o
         ((expr) info)
+
+        ((comma-expr) info)
+
+        ((comma-expr ,a . ,rest)
+         (let ((info ((expr->accu info) a)))
+           ((expr->accu info) `(comma-expr ,@rest))))
+
         ((p-expr (string ,string))
          (let* ((globals ((globals:add-string globals) string))
                 (info (clone info #:globals globals)))
