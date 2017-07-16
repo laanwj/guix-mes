@@ -152,7 +152,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
  '("70-printf"
    "71-struct-array"
    "72-typedef-struct-def"
-   "73-union"))
+   "73-union"
+   "74-multi-line-string"))
 
 (add-target (group "check-scaffold-tests/7" #:dependencies (filter (target-prefix? "check-scaffold/tests/7") %targets)))
 
