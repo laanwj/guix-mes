@@ -54,5 +54,7 @@ test ()
   (*pp)->i = 3;
   printf ("(*pp)->i=%d\n", b.i);
 
+  printf ("sizeof i:%d\n", sizeof (p->i));
+
   return 0;
 }

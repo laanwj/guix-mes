@@ -511,6 +511,11 @@
                 (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
+        ((sizeof-expr (i-sel (ident ,field) (p-expr (ident ,array))))
+         (let* ((type (ident->type info array))
+                (size (field-size info type field)))
+           (append-text info (wrap-as (i386:value->accu size)))))
+
         ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,name)))))
          (let* ((type name)
                 (size (ast-type->size info type)))
@@ -1039,6 +1044,13 @@
         (let* ((fields (type:description xtype))
                (prefix (and=> (member field (reverse fields) (lambda (a b) (equal? a (car b)))) cdr)))
           (apply + (map field:size prefix))))))
+
+(define (field-size info struct field)
+  (let ((xtype (ast-type->type info struct)))
+    (if (eq? (type:type xtype) 'union) 0
+        (let* ((fields (type:description xtype))
+               (field (and=> (member field fields (lambda (a b) (equal? a (car b)))) car)))
+          (field:size field)))))
 
 (define (ast->type o)
   (pmatch o
