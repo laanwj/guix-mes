@@ -30,7 +30,12 @@
 
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
-typedef long size_t;
+typedef unsigned long size_t;
+#endif
+
+#ifndef __MES_SSIZE_T
+#define __MES_SSIZE_T
+typedef long ssize_t;
 #endif
 
 int access (char const *s, int mode);
