@@ -526,9 +526,8 @@
                 (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
-        ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,name))))))
-         (let* ((type (list "struct" name))
-                (size (ast-type->size info type)))
+        ((sizeof-type (type-name (decl-spec-list (type-spec (typename ,type)))))
+         (let ((size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,type))) (abs-declr (pointer))))
