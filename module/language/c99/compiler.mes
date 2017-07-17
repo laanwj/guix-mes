@@ -424,6 +424,17 @@
       (if local (wrap-as (i386:local-add (local:id local) n))
           (list (i386:label-mem-add `(#:address ,o) n))))))
 
+(define (expr-add info)
+  (lambda (o n)
+    (let* ((info ((expr->accu* info) o))
+           (info (append-text info (wrap-as (i386:accu-mem-add n)))))
+      info)))
+
+(define (expr->pointer info o)
+  (pmatch o
+    ((p-expr (ident ,name)) (ident->pointer info name))  ;; FIXME
+    (_ 0)))
+
 (define (ident-address-add info)
   (lambda (o n)
     (let ((local (assoc-ref (.locals info) o)))
@@ -647,19 +658,48 @@
                                      ((ident-add info) name size)))))
 
         ((post-dec (p-expr (ident ,name)))
-         (or (assoc-ref locals name) (begin (stderr "i-- ~a\n" name) (error "undefined identifier: " name)))
          (append-text info (append ((ident->accu info) name)
                                    ((ident-add info) name -1))))
 
         ((pre-inc (p-expr (ident ,name)))
-         (or (assoc-ref locals name) (begin (stderr "++i ~a\n" name) (error "undefined identifier: " name)))
          (append-text info (append ((ident-add info) name 1)
                                    ((ident->accu info) name))))
 
         ((pre-dec (p-expr (ident ,name)))
-         (or (assoc-ref locals name) (begin (stderr "--i ~a\n" name) (error "undefined identifier: " name)))
          (append-text info (append ((ident-add info) name -1)
                                    ((ident->accu info) name))))
+
+        ((post-inc ,expr)
+         (let* ((info (append ((expr->accu info) expr)))
+                (info (append-text info (wrap-as (i386:push-accu))))
+                (ptr (expr->pointer info expr))
+                (size (if (> ptr 0) 4 1))
+                (info ((expr-add info) expr size))
+                (info (append-text info (wrap-as (i386:pop-accu)))))
+           info))
+
+        ((post-dec ,expr)
+         (let* ((info (append ((expr->accu info) expr)))
+                (info (append-text info (wrap-as (i386:push-accu))))
+                (ptr (expr->pointer info expr))
+                (size (if (> ptr 0) 4 1))
+                (info ((expr-add info) expr (- size)))
+                (info (append-text info (wrap-as (i386:pop-accu)))))
+           info))
+
+        ((pre-inc ,expr)
+         (let* ((ptr (expr->pointer info expr))
+                (size (if (> ptr 0) 4 1))
+                (info ((expr-add info) expr size))
+                (info (append ((expr->accu info) expr))))
+           info))
+
+        ((pre-dec ,expr)
+         (let* ((ptr (expr->pointer info expr))
+                (size (if (> ptr 0) 4 1))
+                (info ((expr-add info) expr (- size)))
+                (info (append ((expr->accu info) expr))))
+           info))
 
         ((add ,a ,b) ((binop->accu info) a b (i386:accu+base)))
         ((sub ,a ,b) ((binop->accu info) a b (i386:accu-base)))
@@ -732,12 +772,18 @@
          ((expr->accu info) o))
 
         ((assn-expr (de-ref (post-inc (p-expr (ident ,name)))) (op ,op) ,b)
-         (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
-           (append-text info ((ident-add info) name 1)))) ;; FIXME: size
+         (let* ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b)))
+                (type (ident->type info name))
+                (ptr (ident->pointer info name))
+                (size (if (> ptr 1) 4 1)))
+           (append-text info ((ident-add info) name size)))) ;; FIXME: size
 
         ((assn-expr (de-ref (post-dec (p-expr (ident ,name)))) (op ,op) ,b)
-         (let ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b))))
-           (append-text info ((ident-add info) name -1)))) ;; FIXME: size
+         (let* ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b)))
+                (type (ident->type info name))
+                (ptr (ident->pointer info name))
+                (size (if (> ptr 1) 4 1)))
+           (append-text info ((ident-add info) name (- size))))) ;; FIXME: size
 
         ((assn-expr ,a (op ,op) ,b)
          (let* ((info (append-text info (ast->comment o)))

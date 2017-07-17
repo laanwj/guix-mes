@@ -43,6 +43,13 @@ test ()
   p->i = 2;
   printf ("p->i=%d\n", b.i);
 
+  p->i++;
+  printf ("p->i=%d\n", b.i);
+
+  p->i--;
+  printf ("p->i=%d\n", b.i);
+
+
   bar** pp = &p;
   (*pp)->i = 3;
   printf ("(*pp)->i=%d\n", b.i);
