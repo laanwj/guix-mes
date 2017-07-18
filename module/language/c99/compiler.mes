@@ -1290,7 +1290,9 @@
   (pmatch o
     ((ident ,name) name)
     ((ptr-declr ,pointer (ident ,name)) name)
+    ((array-of (ident ,name)) name)
     ((array-of (ident ,name) ,index) name)
+    ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) name)
     (_ (error "init-declr->name unsupported: " o))))
 
 (define (init-declr->pointer o)
@@ -1298,6 +1300,8 @@
     ((ident ,name) 0)
     ((ptr-declr ,pointer (ident ,name)) (ptr-declr->pointer pointer))
     ((array-of (ident ,name) ,index) 1)
+    ((array-of (ident ,name)) 1)
+    ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) -2)
     (_ (error "init-declr->pointer unsupported: " o))))
 
 (define (statements->clauses statements)
@@ -1646,7 +1650,7 @@
 
         ;; DECL
         ;; char *bla[] = {"a", "b"};
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name))) (initzer (initzer-list . ,initzers)))))
+        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name))) (initzer (initzer-list . ,initzers)))))
          (let* ((type (decl->ast-type type))
                 (entries (filter identity (append-map (initzer->globals globals) initzers)))
                 (entry-size 4)
@@ -1691,12 +1695,20 @@
                  (clone info #:globals globals)))))
 
         ;; int i = 0, j = 0;
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name) . ,initzer) . ,rest))
+        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ident ,name) . ,initzer) . ,rest))
          (let loop ((inits `((init-declr (ident ,name) ,@initzer) ,@rest)) (info info))
            (if (null? inits) info
                (loop (cdr inits)
                      ((decl->info info)
-                      `(decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list ,(car inits))))))))
+                      `(decl (decl-spec-list (type-spec ,type)) (init-declr-list ,(car inits))))))))
+
+        ;; int *i = 0, j ..;
+        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr ,pointer (ident ,name)) . ,initzer) . ,rest))
+         (let loop ((inits `((init-declr (ptr-declr ,pointer (ident ,name)) ,@initzer) ,@rest)) (info info))
+           (if (null? inits) info
+               (loop (cdr inits)
+                     ((decl->info info)
+                      `(decl (decl-spec-list (type-spec ,type)) (init-declr-list ,(car inits))))))))
 
         ((decl (decl-spec-list (stor-spec (typedef)) ,type) ,name)
          (format (current-error-port) "SKIP: typedef=~s\n" o)
@@ -1941,6 +1953,7 @@
        (let ((value (assoc-ref (.constants info) name)))
          (int->bv32 (or value 0))))
       ((initzer (p-expr (fixed ,value))) (int->bv32 (cstring->number value)))
+      ((initzer (p-expr (char ,char)))  (int->bv32 (char->integer (string-ref char 0))))
       ((initzer (neg (p-expr (fixed ,value)))) (int->bv32 (- (cstring->number value))))
       ((initzer (ref-to (p-expr (ident ,name)))) `(,name #f #f #f))
       ((initzer (p-expr (string ,string))) `((#:string ,string) #f #f #f))

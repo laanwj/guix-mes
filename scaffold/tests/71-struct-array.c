@@ -23,6 +23,8 @@
 
 struct foo;
 
+struct foo* krak;
+
 typedef struct foo foo_struct;
 
 struct foo
@@ -30,6 +32,18 @@ struct foo
   int bar[2];
 };
   
+int a, b;
+int i, *j;
+int *k = 0, l;
+
+typedef struct baz
+{
+  int bar;
+  //struct baz *f, *g;
+  struct baz *f;
+  struct baz *g;
+} baz;
+
 int
 test ()
 {
