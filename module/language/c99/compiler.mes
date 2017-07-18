@@ -492,21 +492,23 @@
         ((initzer ,initzer)
          ((expr->accu info) initzer))
 
+        ;; offsetoff
+        ((ref-to (i-sel (ident ,field) (cast (type-name (decl-spec-list ,struct) (abs-declr (pointer))) (p-expr (fixed ,base)))))
+         (let* ((type (decl->ast-type struct))
+                (offset (field-offset info type field))
+                (base (cstring->number base)))
+           (append-text info (wrap-as (i386:value->accu (+ base offset))))))
+
         ;; &foo
         ((ref-to (p-expr (ident ,name)))
          (append-text info ((ident-address->accu info) name)))
 
-        ;; &f.field
-        ((ref-to (d-sel (ident ,field) (p-expr (ident ,array))))
-         (let* ((type (ident->type info array))
-                (offset (field-offset info type field))
-                (text (.text info)))
-           (append-text info (append ((ident->accu info) array)
-                                     (wrap-as (i386:accu+n offset))))))
+        ;; &*foo
+        ((ref-to (de-ref ,expr))
+         ((expr->accu info) expr))
 
-        ;; &a[x];
-        ((ref-to (array-ref ,index (p-expr (ident ,array))))
-         ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array)))))
+        ((ref-to ,expr)
+         ((expr->accu* info) expr))
 
         ((sizeof-expr (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
@@ -537,7 +539,7 @@
          (let ((size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
-        ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,type))) (abs-declr (pointer))))
+        ((sizeof-type (type-name (decl-spec-list ,type) (abs-declr (pointer))))
          (let ((size 4))
            (append-text info (wrap-as (i386:value->accu size)))))
 
@@ -569,12 +571,36 @@
          (let ((info ((expr->accu* info) o)))
            (append-text info (wrap-as (i386:mem->accu)))))
 
+        ;; bar.f.i
+        ((d-sel (ident ,field1) (d-sel (ident ,field0) (p-expr (ident ,struct0))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
+        ;; bar.poo->i
+        ((i-sel (ident ,field1) (d-sel (ident ,field0) (p-expr (ident ,struct0))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
+        ;; bar->foo.i
+        ((d-sel (ident ,field1) (i-sel (ident ,field0) (p-expr (ident ,struct0))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
+        ;;(i-sel (ident "i") (i-sel (ident "p") (p-expr (ident "p"))))
+        ((i-sel (ident ,field1) (i-sel (ident ,field0) (p-expr (ident ,struct0))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
+        ;; (*pp)->bar.foo
+        ((d-sel (ident ,field1) (i-sel (ident ,field0) (de-ref (p-expr (ident ,struct0)))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
         ;; f.field
-        ((d-sel (ident ,field) (p-expr (ident ,array)))
-         (let* ((type (ident->type info array))
-                (offset (field-offset info type field))
-                (text (.text info)))
-           (append-text info (append ((ident->accu info) array)
+        ((d-sel (ident ,field) (p-expr (ident ,struct)))
+         (let* ((type (ident->type info struct))
+                (offset (field-offset info type field)))
+           (append-text info (append ((ident->accu info) struct)
                                      (wrap-as (i386:mem+n->accu offset))))))
 
         ((d-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
@@ -585,20 +611,23 @@
 
         ((i-sel (ident ,field) (p-expr (ident ,array)))
          (let* ((type (ident->type info array))
-                (offset (field-offset info type field))
-                (text (.text info)))
+                (offset (field-offset info type field)))
            (append-text info (append ((ident-address->accu info) array)
                                      (wrap-as (i386:mem->accu))
                                      (wrap-as (i386:mem+n->accu offset))))))
 
         ((i-sel (ident ,field) (de-ref (p-expr (ident ,array))))
          (let* ((type (ident->type info array))
-                (offset (field-offset info type field))
-                (text (.text info)))
+                (offset (field-offset info type field)))
            (append-text info (append ((ident-address->accu info) array)
                                      (wrap-as (i386:mem->accu))
                                      (wrap-as (i386:mem->accu))
                                      (wrap-as (i386:mem+n->accu offset))))))
+
+        ;;foo[index]->bar
+        ((i-sel (ident ,field) (array-ref ,index ,array))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
 
         ((de-ref (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
@@ -804,12 +833,13 @@
                                                     ((equal? op "/=") (wrap-as (i386:accu/base)))
                                                     ((equal? op "%=") (wrap-as (i386:accu%base)))
                                                     ((equal? op "|=") (wrap-as (i386:accu-or-base)))
+                                                    ((equal? op "&=") (wrap-as (i386:accu-and-base)))
                                                     (else (error "mescc: op ~a not supported: ~a\n" op o))))))))
            (pmatch a
              ((p-expr (ident ,name)) (append-text info ((accu->ident info) name)))
              ((d-sel (ident ,field) ,p-expr)
               (let* ((type (p-expr->type info p-expr))
-                     (offset (field-offset info type field))
+                     (offset (field-offset info (if (pair? type) type `("struct" ,type)) field))
                      (info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))
                      (info (append-text info (wrap-as (i386:pop-base)))))
@@ -821,6 +851,9 @@
                           4)))
                 (append-text info (append (wrap-as (i386:accu->base))
                                           ((base->ident-address info) name)))))
+             ((de-ref ,expr)
+              (let ((info ((expr->base info) expr)))
+                (append-text info (wrap-as (i386:mem->base))))) ;; FIXME: size
              ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
               (let* ((info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))
@@ -904,6 +937,65 @@
                                    ((ident->base info) array)
                                    (wrap-as (i386:accu+base))))))
 
+      ;; bar.foo.i
+      ((d-sel (ident ,field1) (d-sel (ident ,field0) (p-expr (ident ,struct0))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info `("struct" ,type0) field0))
+              (offset (+ (field-offset info `("struct" ,type0) field0)
+                         (field-offset info `("struct" ,type1) field1))))
+         (append-text info (append ((ident->accu info) struct0)
+                                   (wrap-as (i386:accu+value offset))))))
+
+      ;; bar.poo->i
+      ((i-sel (ident ,field1) (d-sel (ident ,field0) (p-expr (ident ,struct0))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info `("struct" ,type0) field0))
+              (offset0 (field-offset info `("struct" ,type0) field0))
+              (offset1 (field-offset info `("struct" ,type1) field1)))
+         (append-text info (append ((ident->accu info) struct0)
+                                   (wrap-as (i386:accu+value offset0))
+                                   (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:accu+value offset1))))))
+
+      ;; bar->foo.i
+      ((d-sel (ident ,field1) (i-sel (ident ,field0) (p-expr (ident ,struct0))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info `("struct" ,type0) field0))
+              (offset (+ (field-offset info `("struct" ,type0) field0)
+                         (field-offset info `("struct" ,type1) field1))))
+         (append-text info (append ((ident-address->accu info) struct0)
+                                   (wrap-as (i386:accu+value offset))))))
+
+      ;; bar->foo.i
+      ((d-sel (ident ,field1) (d-sel (ident ,field0) (p-expr (ident ,struct0))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info `("struct" ,type0) field0))
+              (offset (+ (field-offset info `("struct" ,type0) field0)
+                         (field-offset info `("struct" ,type1) field1))))
+         (append-text info (append ((ident->accu info) struct0)
+                                   (wrap-as (i386:accu+value offset))))))
+
+      ;;(i-sel (ident "i") (i-sel (ident "p") (p-expr (ident "p"))))
+      ((i-sel (ident ,field1) (i-sel (ident ,field0) (p-expr (ident ,struct0))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info `("struct" ,type0) field0))
+              (offset0 (field-offset info `("struct" ,type0) field0))
+              (offset1 (field-offset info `("struct" ,type1) field1)))
+         (append-text info (append ((ident->accu info) struct0)
+                                   (wrap-as (i386:accu+value offset0))
+                                   (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:accu+value offset1))))))
+
+      ;; (*pp)->bar.foo
+      ((d-sel (ident ,field1) (i-sel (ident ,field0) (de-ref (p-expr (ident ,struct0)))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info `("struct" ,type0) field0))
+              (offset (+ (field-offset info `("struct" ,type0) field0)
+                         (field-offset info `("struct" ,type1) field1))))
+         (append-text info (append ((ident->accu info) struct0)
+                                   (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:accu+value offset))))))
+
       ;; g_cells[<expr>].type
       ((d-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
        (let* ((type (ident->type info array))
@@ -911,33 +1003,33 @@
               (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
          (append-text info (wrap-as (i386:accu+value offset)))))
 
-      ((d-sel (ident ,field) (p-expr (ident ,name)))
-       (let* ((type (ident->type info name))
+      ((d-sel (ident ,field) (p-expr (ident ,struct)))
+       (let* ((type (ident->type info struct))
               (offset (field-offset info type field))
               (text (.text info)))
-         (append-text info (append ((ident->accu info) name)
+         (append-text info (append ((ident->accu info) struct)
                                    (wrap-as (i386:accu+value offset))))))
 
       ;; foo.bar[baz]
-      ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,name))))
-       (let* ((type (ident->type info name))
+      ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
+       (let* ((type (ident->type info struct))
               (offset (field-offset info type field))
               (info ((expr->accu info) index)))
          (append-text info (append (wrap-as (append (i386:accu-shl 2) ;; FIXME: assume size=4
                                                     (i386:push-accu)))
-                                   ((ident-address->accu info) name)
+                                   ((ident-address->accu info) struct)
                                    (wrap-as (append (i386:accu+value offset)
                                                     (i386:pop-base)
                                                     (i386:accu+base)))))))
 
       ;; foo->bar[baz]
-      ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,name))))
-       (let* ((type (ident->type info name))
+      ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,struct))))
+       (let* ((type (ident->type info struct))
               (offset (field-offset info type field))
               (info ((expr->accu info) index)))
          (append-text info (append (wrap-as (append (i386:accu-shl 2) ;; FIXME: assume size=4
                                                     (i386:push-accu)))
-                                   ((ident->accu info) name)
+                                   ((ident->accu info) struct)
                                    (wrap-as (append (i386:accu+value offset)
                                                     (i386:pop-base)
                                                     (i386:accu+base)))))))
@@ -958,18 +1050,25 @@
 
       ((i-sel (ident ,field) (p-expr (ident ,array)))
        (let* ((type (ident->type info array))
-              (offset (field-offset info type field))
-              (text (.text info)))
+              (offset (field-offset info type field)))
          (append-text info (append ((ident-address->accu info) array)
                                    (wrap-as (i386:mem->accu))
                                    (wrap-as (i386:accu+value offset))))))
 
       ((i-sel (ident ,field) (de-ref (p-expr (ident ,array))))
        (let* ((type (ident->type info array))
-              (offset (field-offset info type field))
-              (text (.text info)))
+              (offset (field-offset info type field)))
          (append-text info (append ((ident-address->accu info) array)
                                    (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:mem->accu))
+                                   (wrap-as (i386:accu+value offset))))))
+
+      ;;foo[index]->bar
+      ((i-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
+       (let* ((type (ident->type info array))
+              (offset (field-offset info type field))
+              (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
+         (append-text info (append (wrap-as (i386:mem->accu))
                                    (wrap-as (i386:mem->accu))
                                    (wrap-as (i386:accu+value offset))))))
 
@@ -1005,7 +1104,14 @@
 (define (field:size o)
   (pmatch o
     ((,name ,type ,size ,pointer) size)
+    ((,name ,type ,size) size)
     (_ 4)))
+
+(define (field:type o)
+  (pmatch o
+    ((,name ,type ,size ,pointer) type)
+    ((,name ,type ,size) type)
+    (_ (error "field:type:" o))))
 
 (define (get-type types o)
   (let ((t (assoc-ref types o)))
@@ -1026,6 +1132,7 @@
     ((union-ref (ident ,type))
      (ast-type->type info `("struct" ,type)))
     ((void) (ast-type->type info "void"))
+    ((type-spec (typename ,type)) (ast-type->type info type))
     (_ (let ((type (get-type (.types info) o)))
          (if type type
              (begin
@@ -1040,6 +1147,11 @@
   (let ((type (ast-type->type info o)))
     (type:size type)))
 
+(define (field-field info struct field)
+  (let* ((xtype (ast-type->type info struct))
+         (fields (type:description xtype)))
+    (and=> (member field fields (lambda (a b) (equal? a (car b)))) car)))
+
 (define (field-offset info struct field)
   (let ((xtype (ast-type->type info struct)))
     (if (eq? (type:type xtype) 'union) 0
@@ -1050,9 +1162,13 @@
 (define (field-size info struct field)
   (let ((xtype (ast-type->type info struct)))
     (if (eq? (type:type xtype) 'union) 0
-        (let* ((fields (type:description xtype))
-               (field (and=> (member field fields (lambda (a b) (equal? a (car b)))) car)))
+        (let ((field (field-field info struct field)))
           (field:size field)))))
+
+(define (field-type info struct field)
+  (let ((xtype (ast-type->type info struct)))
+        (let ((field (field-field info struct field)))
+          (field:type field))))
 
 (define (ast->type o)
   (pmatch o
@@ -1239,11 +1355,21 @@
        (let ((size 4)
              (count (cstring->number count)))
          (list name type (* count size) 0)))
-      ;; struct InlineFunc **inline_fns;
+
+      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
+       (list name type 4))
+
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
        (list name type 4))
-      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
+
+      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
        (list name type 4))
+
+      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
+       (list name type 4))      
+
+      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ident ,name))))
+       ((struct-field info) `(comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
        (let ((size (ast-type->size info `("struct" ,type))))
@@ -1275,8 +1401,13 @@
 (define (p-expr->type info o)
   (pmatch o
     ((p-expr (ident ,name)) (ident->type info name))
-    ((array-ref ,index (p-expr (ident ,array)))
-     (ident->type info array))
+    ((array-ref ,index (p-expr (ident ,array))) (ident->type info array))
+    ((i-sel (ident ,field) (p-expr (ident ,struct)))
+     (let ((type0 (ident->type info struct)))
+       (field-type info `("struct" ,type0) field)))
+    ((d-sel (ident ,field) (p-expr (ident ,struct)))
+     (let ((type0 (ident->type info struct)))
+       (field-type info `("struct" ,type0) field)))
     (_ (error "p-expr->type: unsupported: " o))))
 
 (define (local-var? o) ;; formals < 0, locals > 0
@@ -1990,6 +2121,11 @@
        (let loop ((values (map (initzer->value info) values)) (value 0))
          (if (null? values) (int->bv32 value)
              (loop (cdr values) (logior value (car values))))))
+      ((initzer (ref-to (i-sel (ident ,field) (cast (type-name (decl-spec-list ,struct) (abs-declr (pointer))) (p-expr (fixed ,base))))))
+       (let* ((type (decl->ast-type struct))
+              (offset (field-offset info type field))
+              (base (cstring->number base)))
+         (int->bv32 (+ base offset))))
       (() (int->bv32 0))
       (_ (error "initzer->data: unsupported: " o)))))
 

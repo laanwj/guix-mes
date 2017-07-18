@@ -29,7 +29,18 @@ typedef struct foo
 typedef struct
 {
   int i;
+  struct foo f;
+  struct foo *p;
 } bar;
+
+
+//NYACC
+//#define offsetof(type, field) ((size_t) &((type *)0)->field)
+#if __MESC__
+#define offsetof(type, field) (&((type *)0)->field)
+#else
+#define offsetof(type, field) ((size_t)&((type *)0)->field)
+#endif
 
 int
 test ()
@@ -37,8 +48,15 @@ test ()
   foo f = {1};
   printf ("f.i=%d\n", f.i);
 
-  bar b = {1};
+  bar b = {1, 2, &f};
   printf ("b.i=%d\n", b.i);
+
+  printf ("b.f.i=%d\n", b.f.i);
+  if (b.f.i != 2) return 1;
+
+  printf ("b.p->i=%d\n", b.p->i);
+  if (b.p->i != 1) return 1;
+
   bar* p = &b;
   p->i = 2;
   printf ("p->i=%d\n", b.i);
@@ -49,12 +67,24 @@ test ()
   p->i--;
   printf ("p->i=%d\n", b.i);
 
+  printf ("p->f.i=%d\n", p->f.i);
+  if (p->f.i != 2) return 1;
+
+  printf ("p->p->i=%d\n", p->p->i);
+  if (p->p->i != 1) return 1;
 
   bar** pp = &p;
   (*pp)->i = 3;
   printf ("(*pp)->i=%d\n", b.i);
 
   printf ("sizeof i:%d\n", sizeof (p->i));
+  if ((sizeof p->i) != 4) return 1;
+
+  printf ("offsetof g=%d\n", (offsetof (bar ,f)));
+  if ((offsetof (bar ,f)) != 4) return 1;
+
+  printf ("(*pp)->b.i=%d\n", (*pp)->f.i);
+  if ((*pp)->f.i != 2) return 1;
 
   return 0;
 }
