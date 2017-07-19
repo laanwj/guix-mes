@@ -144,6 +144,8 @@
                                          (begin (set! %status 1) "FAIL"))))))))))
 
 (define (hash-target o)
+  (if (find (negate identity) (target-inputs o))
+      (format (current-error-port) "invalid inputs[~s]: ~s\n" (target-file-name o) (target-inputs o)))
   (let ((inputs (target-inputs o)))
     (if (null? inputs) (or (target-hash o) (target-hash (store #:add o)))
         (let ((input-shas (map hash-target inputs)))
@@ -186,8 +188,12 @@
                                 (hash-target add))))
                    (if (not key) (error "store: no hash for:" add))
                    (store #:add add #:key key)))
-            (add-file (and (file-exists? add-file)
-                           (store #:add (target (file-name add-file)))))
+            (add-file
+             (or (and=> (find (lambda (t) (equal? (target-file-name t) add-file)) (map cdr *store*))
+                        (compose (cut store #:get <>) target-hash))
+                 (and (file-exists? add-file)
+                      (store #:add (target (file-name add-file))))
+                 (error (format #f "store add-file: no such file: ~s\n" add-file))))
             ((and get key)
              (or (assoc-ref *store* key)
                  (let ((store-file (store-file-name key))
