@@ -349,6 +349,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
   (cond ((member "all-go" args) #t)
         ((member "clean-go" args) (map delete-file (filter file-exists? %go-files)))
         ((member "clean" args) (clean))
+        ((member "list" args) (display (string-join (map target-file-name %targets) "\n" 'suffix)))
         ((member "help" args) (format #t "Usage: ./make.scm [TARGET]...
 
 Targets:
@@ -358,6 +359,7 @@ Targets:
     clean
     clean-go
     help~a
+    list
 "
                                       ;;(string-join (map target-file-name %targets) "\n    " 'prefix)
                                       (string-join (filter (negate (cut string-index <> #\/)) (map target-file-name %targets)) "\n    " 'prefix)))
