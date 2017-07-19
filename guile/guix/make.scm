@@ -247,13 +247,14 @@
   #t
   )
 
-(define (PATH-search-path name)
+(define* (PATH-search-path name #:key (default name))
   (or (search-path (string-split (getenv "PATH") #\:) name)
       (and (format (current-error-port) "warning: not found: ~a\n" name)
-           name)))
+           default)))
 
 (define %CC (PATH-search-path "gcc"))
-(define %CC32 (PATH-search-path "i686-unknown-linux-gnu-gcc"))
+(define %CC32 (or (PATH-search-path "i686-unknown-linux-gnu-gcc" #:default #f)
+                  (not (format (current-error-port) "warning: CC32 not found, skipping mlibc-gcc targets\n"))))
 (define %C-FLAGS
   '("--std=gnu99"
     "-O0"
@@ -320,12 +321,18 @@
                         (store #:add-file "guile/mes/as-i386.go")
                         (store #:add-file "guile/mes/M1.go")))))
 
-(define %M1 (PATH-search-path "M0")) ; M1 is in unreleased mescc-tools 0.2
+(define %M1 (or (PATH-search-path "M1" #:default #f)
+                (PATH-search-path "M0" #:default #f) ; M1 is in unreleased mescc-tools 0.2
+                (and (format (current-error-port) "error: no macro assembler found, please install mescc-tools\n")
+                     (exit 1))))
+(define %M0-FLAGS
+  '("--LittleEndian"))
 (define %M1-FLAGS
   '("--LittleEndian"
-    ;;"--Architecture=1"
-    ;;"--BaseAddress=0x1000000"
-    ))
+    "--Architecture=1"))
+(if (equal? (basename %M1) "M0")
+    (set! %M1-FLAGS %M0-FLAGS))
+
 (define* (M1.asm #:key (m1 %M1) (m1-flags %M1-FLAGS))
   (method (name "M1")
           (build (lambda (o t)
@@ -470,13 +477,14 @@
             (method (LINK.hex2 #:hex2 hex2 #:debug? (eq? libc libc-mes.E))))))
 
 (define* (bin.gcc input-file-name #:key (libc #t) (cc (if libc %CC %CC32)) (dependencies '()) (defines '()) (includes '()))
-  (let* ((base-name (base-name input-file-name ".c"))
-         (suffix (if libc ".gcc" ".mlibc-gcc"))
-         (target-file-name (string-append base-name suffix))
-         (o-target (compile.gcc input-file-name #:cc cc #:libc libc #:defines defines #:includes includes #:dependencies dependencies)))
-    (target (file-name target-file-name)
-            (inputs (list o-target))
-            (method (LINK.gcc #:cc cc #:libc libc)))))
+  (and cc
+       (let* ((base-name (base-name input-file-name ".c"))
+          (suffix (if libc ".gcc" ".mlibc-gcc"))
+          (target-file-name (string-append base-name suffix))
+          (o-target (compile.gcc input-file-name #:cc cc #:libc libc #:defines defines #:includes includes #:dependencies dependencies)))
+     (target (file-name target-file-name)
+             (inputs (list o-target))
+             (method (LINK.gcc #:cc cc #:libc libc))))))
 
 (define* (snarf input-file-name #:key (dependencies '()) (mes? #t))
   (let* ((base-name (base-name input-file-name ".c"))
@@ -494,10 +502,10 @@
   (string-prefix? prefix (target-file-name o)))
 
 (define (check-target? o)
-  ((target-prefix? "check-") o))
+  (and o ((target-prefix? "check-") o)))
 
 (define (add-target o)
-  (set! %targets (append %targets (list o)))
+  (and o (set! %targets (append %targets (list o))))
   o)
 (define (get-target o)
   (if (target? o) o

@@ -1,37 +1,35 @@
-#! /usr/bin/env guile
+#! /bin/sh
+# -*- scheme -*-
+#exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
+exec ${GUILE-guile} -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
 !#
 
-(set! %load-path (cons "guile" %load-path))
-(set! %load-path (cons "../guix" %load-path))
-(set! %load-compiled-path (cons "guile" %load-compiled-path))
-(set! %load-compiled-path (cons "../guix" %load-compiled-path))
-
-(use-modules (guix shell-utils))
+(use-modules (srfi srfi-26))
 
 ;; FIXME: .go dependencies
 ;; workaround: always update .go before calculating hashes
 ;;(use-modules ((mes make) #:select (sytem**)))
-(let* ((scm-files '("guix/make.scm"
-                    "guix/records.scm"
-                    "guix/shell-utils.scm"
-                    "language/c99/compiler.scm"
-                    "mes/as-i386.scm"
-                    "mes/as.scm"
-                    "mes/elf.scm"
-                    "mes/M1.scm")))
+(define %go-files '())
+(let* ((scm-files '("guile/guix/make.scm"
+                    "guile/guix/records.scm"
+                    "guile/guix/shell-utils.scm"
+                    "guile/language/c99/compiler.scm"
+                    "guile/mes/as-i386.scm"
+                    "guile/mes/as.scm"
+                    "guile/mes/elf.scm"
+                    "guile/mes/M1.scm")))
+  (set! %go-files (map (compose (cut string-append <> ".go") (cut string-drop-right <> 4)) scm-files))
   (setenv "srcdir" "guile")
   (setenv "host" %host-type)
-  (with-directory-excursion "guile"
-    (apply system* `("guile"
-                     "--no-auto-compile"
-                     "-L" "."
-                     "-C" "."
-                     "-s"
-                     "../build-aux/compile-all.scm"
-                     ,@scm-files))))
+  (apply system* `("guile"
+                   "--no-auto-compile"
+                   "-L" "." "-L" "guile"
+                   "-C" "." "-C" "guile"
+                   "-s"
+                   "build-aux/compile-all.scm"
+                   ,@scm-files)))
 
 (use-modules (srfi srfi-1)
-             (srfi srfi-26)
              (ice-9 curried-definitions)
              (ice-9 match)
              (guix make))
@@ -349,13 +347,17 @@
 (setenv "MES" "src/mes.guile")
 
 (define (main args)
-  (cond ((member "clean" args) (clean))
+  (cond ((member "all-go" args) #t)
+        ((member "clean-go" args) (map delete-file (filter file-exists? %go-files)))
+        ((member "clean" args) (clean))
         ((member "help" args) (format #t "Usage: ./make.scm [TARGET]...
 
 Targets:
     all
+    all-go
     check
     clean
+    clean-go
     help~a
 "
                                       ;;(string-join (map target-file-name %targets) "\n    " 'prefix)

@@ -219,8 +219,9 @@ Usage: ./configure [OPTION]...
          (make? #f))
     (set! *verbose?* verbose?)
     (check-version 'guile '(2 0))
-    (check-version HEX2 '(0 0))
-    (check-version 'nyacc '(0 78 0) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
+    (check-version HEX2 '(0 1))
+    ;;(check-version M1 '(0 1)) ;; FIXME: 0xXX: bump to 0.2
+    (check-version 'nyacc '(0 80 3) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
 
     (check-version 'bash '(4 0))
     (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
@@ -250,6 +251,8 @@ Usage: ./configure [OPTION]...
         (stdout "ARCH:=~a\n" ARCH)
         (stdout "CC:=~a\n" (or CC ""))
         (stdout "CC32:=~a\n" (or CC32 ""))
+        (stdout "HEX2:=~a\n" (or HEX2 ""))
+        (stdout "M1:=~a\n" (or M1 ""))
         (stdout "GUILE:=~a\n" GUILE)
         (stdout "GUILE_FOR_BUILD:=~a\n" GUILE)
         (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
