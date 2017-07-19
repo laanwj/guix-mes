@@ -2,22 +2,32 @@
 *.go
 *~
 .#*
+*.0-M1
+*.0-guile
+*.0-hex2
 *.E
-*.log
+*.M1
 *.gcc
 *.guile
-*.0-guile
+*.hex2
+*.hex2-o
+*.log
+*.log
+*.mini-M1
 *.mini-guile
+*.mini-hex2
 *.mlibc-gcc
 *.mlibc-o
-*.hex2-o
-#*.M1
+!/stage0/*
+!/stage0/*.c
+/stage0/exit-42.*
 
 /src/*.h
 /src/*.i
 
 *.o
 /.config.make
+/.store
 /.tarball-version
 /ChangeLog
 /a.out

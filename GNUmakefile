@@ -1,5 +1,5 @@
 GUILE:=guile
-GUILE_FLAGS:=--no-auto-compile -L guile -C guile
+GUILE_FLAGS:=--no-auto-compile -L . -L guile -C . -C guile
 
 include .config.make
 
