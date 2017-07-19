@@ -3,30 +3,33 @@
 exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
 !#
 
-(use-modules (srfi srfi-26))
+(use-modules (srfi srfi-26)
+             (guix shell-utils))
 
 ;; FIXME: .go dependencies
 ;; workaround: always update .go before calculating hashes
 ;;(use-modules ((mes make) #:select (sytem**)))
-(define %go-files '())
-(let* ((scm-files '("guile/guix/make.scm"
-                    "guile/guix/records.scm"
-                    "guile/guix/shell-utils.scm"
-                    "guile/language/c99/compiler.scm"
-                    "guile/mes/as-i386.scm"
-                    "guile/mes/as.scm"
-                    "guile/mes/elf.scm"
-                    "guile/mes/M1.scm")))
-  (set! %go-files (map (compose (cut string-append <> ".go") (cut string-drop-right <> 4)) scm-files))
-  (setenv "srcdir" "guile")
-  (setenv "host" %host-type)
+(define %scm-files
+  '("guix/make.scm"
+    "guix/records.scm"
+    "guix/shell-utils.scm"
+    "language/c99/compiler.scm"
+    "mes/as-i386.scm"
+    "mes/as.scm"
+    "mes/bytevectors.scm"
+    "mes/elf.scm"
+    "mes/M1.scm"))
+(define %go-files (map (compose (cut string-append <> ".go") (cut string-drop-right <> 4)) %scm-files))
+(setenv "srcdir" ".")
+(setenv "host" %host-type)
+(with-directory-excursion "guile"
   (apply system* `("guile"
                    "--no-auto-compile"
                    "-L" "."
                    "-C" "."
                    "-s"
-                   "build-aux/compile-all.scm"
-                   ,@scm-files)))
+                   "../build-aux/compile-all.scm"
+                   ,@%scm-files)))
 
 (use-modules (srfi srfi-1)
              (ice-9 curried-definitions)
@@ -36,8 +39,14 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.mescc "stage0/exit-42.c" #:libc #f))
 (add-target (check "stage0/exit-42.0-guile" #:signal 11))  ; FIXME: segfault
 
+(add-target (cpp.mescc "mlibc/mini-libc-mes.c"))
+(add-target (compile.mescc "mlibc/mini-libc-mes.c"))
+
 (add-target (bin.mescc "stage0/exit-42.c" #:libc mini-libc-mes.E))
 (add-target (check "stage0/exit-42.mini-guile" #:exit 42))
+
+(add-target (cpp.mescc "mlibc/libc-mes.c"))
+(add-target (compile.mescc "mlibc/libc-mes.c"))
 
 (add-target (bin.mescc "stage0/exit-42.c"))
 (add-target (check "stage0/exit-42.guile" #:exit 42))
@@ -273,33 +282,28 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    (add-target (snarf "src/reader.c" #:mes? #t))
    (add-target (snarf "src/vector.c" #:mes? #t))))
 
-(define VERSION "0.8")
-(define PREFIX (or (getenv "PREFIX") "/usr/local"))
-(define DATADIR (or (getenv "DATADIR") (string-append PREFIX " /share")))
-(define MODULEDIR (or (getenv "MODULEDIR") (string-append DATADIR "/module/")))
-
 (add-target (bin.gcc "src/mes.c" #:dependencies gcc-snarf-targets
                      #:defines `("FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
                                  "POSIX=1"
-                                 ,(string-append "VERSION=\"" VERSION "\"")
-                                 ,(string-append "MODULEDIR=\"" MODULEDIR "\"")
-                                 ,(string-append "PREFIX=\"" PREFIX "\""))))
+                                 ,(string-append "VERSION=\"" %version "\"")
+                                 ,(string-append "MODULEDIR=\"" (string-append %moduledir "/") "\"")
+                                 ,(string-append "PREFIX=\"" %prefix "\""))))
 
 (add-target (bin.gcc "src/mes.c" #:libc #f
                      #:dependencies mes-snarf-targets
                      #:defines `("FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
-                                 ,(string-append "VERSION=\"" VERSION "\"")
-                                 ,(string-append "MODULEDIR=\"" MODULEDIR "\"")
-                                 ,(string-append "PREFIX=\"" PREFIX "\""))))
+                                 ,(string-append "VERSION=\"" %version "\"")
+                                 ,(string-append "MODULEDIR=\"" (string-append %moduledir "/") "\"")
+                                 ,(string-append "PREFIX=\"" %prefix "\""))))
 
 (add-target (bin.mescc "src/mes.c" #:dependencies mes-snarf-targets
                        #:defines `("FIXED_PRIMITIVES=1"
                                    "MES_FULL=1"
-                                 ,(string-append "VERSION=\"" VERSION "\"")
-                                 ,(string-append "MODULEDIR=\"" MODULEDIR "\"")
-                                 ,(string-append "PREFIX=\"" PREFIX "\""))))
+                                 ,(string-append "VERSION=\"" %version "\"")
+                                 ,(string-append "MODULEDIR=\"" (string-append %moduledir "/") "\"")
+                                 ,(string-append "PREFIX=\"" %prefix "\""))))
 
 (define mes-tests
   '("tests/read.test"
@@ -345,6 +349,173 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 ;; FIXME: run tests/base.test
 (setenv "MES" "src/mes.guile")
 
+(add-target (install "guile/mescc.scm" #:dir "bin" #:substitutes #t))
+(add-target (install "scripts/mescc.mes" #:dir "bin" #:substitutes #t))
+(add-target (install "scripts/repl.mes" #:dir "bin" #:substitutes #t))
+(define bootstrap? #f)
+(if bootstrap?
+    (add-target (install "src/mes.mes" #:dir "bin" #:installed-name "mes"))
+    (add-target (install "src/mes.guile" #:dir "bin" #:installed-name "mes")))
+
+(define* ((install-dir #:key dir) name)
+  (add-target (install name  #:dir (string-append dir "/" (dirname name)))))
+
+(add-target (install "module/mes/base-0.mes" #:dir (string-append %moduledir "/mes") #:substitutes #t))
+(add-target (install "module/language/c99/compiler.mes" #:dir (string-append %moduledir "/language/c99") #:substitutes #t))
+
+(define %module-dir "share/mes")
+(for-each
+ (lambda (f)
+   ((install-dir #:dir (string-append %module-dir)) f))
+ '("module/language/c99/compiler.mes"
+   "module/language/c99/compiler.scm"
+   "module/language/paren.mes"
+   "module/mes/M1.mes"
+   "module/mes/M1.scm"
+   "module/mes/as-i386.mes"
+   "module/mes/as-i386.scm"
+   "module/mes/as.mes"
+   "module/mes/as.scm"
+   ;;"module/mes/base-0.mes"
+   "module/mes/base.mes"
+   "module/mes/bytevectors.mes"
+   "module/mes/bytevectors.scm"
+   "module/mes/catch.mes"
+   "module/mes/display.mes"
+   "module/mes/elf.mes"
+   "module/mes/elf.scm"
+   "module/mes/fluids.mes"
+   "module/mes/getopt-long.mes"
+   "module/mes/getopt-long.scm"
+   "module/mes/guile.mes"
+   "module/mes/lalr.mes"
+   "module/mes/lalr.scm"
+   "module/mes/let.mes"
+   "module/mes/match.mes"
+   "module/mes/match.scm"
+   "module/mes/optargs.mes"
+   "module/mes/optargs.scm"
+   "module/mes/peg.mes"
+   "module/mes/peg/cache.scm"
+   "module/mes/peg/codegen.scm"
+   "module/mes/peg/simplify-tree.scm"
+   "module/mes/peg/string-peg.scm"
+   "module/mes/peg/using-parsers.scm"
+   "module/mes/pmatch.mes"
+   "module/mes/pmatch.scm"
+   "module/mes/posix.mes"
+   "module/mes/pretty-print.mes"
+   "module/mes/pretty-print.scm"
+   "module/mes/psyntax-0.mes"
+   "module/mes/psyntax-1.mes"
+   "module/mes/psyntax.mes"
+   "module/mes/psyntax.pp"
+   "module/mes/psyntax.ss"
+   "module/mes/quasiquote.mes"
+   "module/mes/quasisyntax.mes"
+   "module/mes/quasisyntax.scm"
+   "module/mes/read-0.mes"
+   "module/mes/record-0.mes"
+   "module/mes/record.mes"
+   "module/mes/repl.mes"
+   "module/mes/scm.mes"
+   "module/mes/syntax.mes"
+   "module/mes/syntax.scm"
+   "module/mes/test.mes"
+   "module/mes/tiny-0.mes"
+   "module/mes/type-0.mes"
+   "module/nyacc/lalr.mes"
+   "module/nyacc/lang/c99/cpp.mes"
+   "module/nyacc/lang/c99/parser.mes"
+   "module/nyacc/lang/calc/parser.mes"
+   "module/nyacc/lang/util.mes"
+   "module/nyacc/lex.mes"
+   "module/nyacc/parse.mes"
+   "module/nyacc/util.mes"
+   "module/rnrs/arithmetic/bitwise.mes"
+   "module/srfi/srfi-0.mes"
+   "module/srfi/srfi-1.mes"
+   "module/srfi/srfi-1.scm"
+   "module/srfi/srfi-13.mes"
+   "module/srfi/srfi-14.mes"
+   "module/srfi/srfi-16.mes"
+   "module/srfi/srfi-16.scm"
+   "module/srfi/srfi-26.mes"
+   "module/srfi/srfi-26.scm"
+   "module/srfi/srfi-43.mes"
+   "module/srfi/srfi-9-psyntax.mes"
+   "module/srfi/srfi-9.mes"
+   "module/srfi/srfi-9.scm"
+   "module/sxml/xpath.mes"
+   "module/sxml/xpath.scm"))
+
+(define* ((install-guile-dir #:key dir) name)
+  (add-target (install (string-append "guile/" name) #:dir (string-append dir "/" (dirname name)))))
+
+(for-each
+ (lambda (f)
+   ((install-guile-dir #:dir (string-append %guiledir)) f))
+ %scm-files)
+
+(for-each
+ (lambda (f)
+   ((install-guile-dir #:dir (string-append %godir)) f))
+ %go-files)
+
+(add-target (install "mlibc/libc-mes.E" #:dir "lib"))
+(add-target (install "mlibc/libc-mes.M1" #:dir "lib"))
+(add-target (install "mlibc/mini-libc-mes.E" #:dir "lib"))
+(add-target (install "mlibc/mini-libc-mes.M1" #:dir "lib"))
+
+(for-each
+ (lambda (f)
+   ((install-dir #:dir "share/") f))
+ '("mlibc/include/alloca.h"
+   "mlibc/include/assert.h"
+   "mlibc/include/ctype.h"
+   "mlibc/include/dlfcn.h"
+   "mlibc/include/errno.h"
+   "mlibc/include/fcntl.h"
+   "mlibc/include/features.h"
+   "mlibc/include/inttypes.h"
+   "mlibc/include/libgen.h"
+   "mlibc/include/limits.h"
+   "mlibc/include/locale.h"
+   "mlibc/include/math.h"
+   "mlibc/include/mlibc.h"
+   "mlibc/include/setjmp.h"
+   "mlibc/include/signal.h"
+   "mlibc/include/stdarg.h"
+   "mlibc/include/stdbool.h"
+   "mlibc/include/stdint.h"
+   "mlibc/include/stdio.h"
+   "mlibc/include/stdlib.h"
+   "mlibc/include/stdnoreturn.h"
+   "mlibc/include/string.h"
+   "mlibc/include/strings.h"
+   "mlibc/include/sys/cdefs.h"
+   "mlibc/include/sys/mman.h"
+   "mlibc/include/sys/stat.h"
+   "mlibc/include/sys/time.h"
+   "mlibc/include/sys/timeb.h"
+   "mlibc/include/sys/types.h"
+   "mlibc/include/sys/ucontext.h"
+   "mlibc/include/sys/wait.h"
+   "mlibc/include/time.h"
+   "mlibc/include/unistd.h"))
+
+(for-each
+ (compose add-target (cut install <> #:dir "share/doc/mes"))
+ '("AUTHORS"
+   ;;"ChangeLog"
+   "COPYING"
+   "HACKING"
+   "INSTALL"
+   "NEWS"
+   "README"))
+
+(add-target (install "doc/fosdem/fosdem.pdf" #:dir "share/doc/mes"))
+
 (define (main args)
   (cond ((member "all-go" args) #t)
         ((member "clean-go" args) (map delete-file (filter file-exists? %go-files)))
@@ -359,15 +530,18 @@ Targets:
     clean
     clean-go
     help~a
+    install
     list
 "
-                                      ;;(string-join (map target-file-name %targets) "\n    " 'prefix)
                                       (string-join (filter (negate (cut string-index <> #\/)) (map target-file-name %targets)) "\n    " 'prefix)))
         (else
          (let ((targets (match args
                           (() (filter (negate check-target?) %targets))
-                          ((? (cut member "all" <>)) (filter (negate check-target?) %targets))
+                          ((? (cut member "all" <>)) (filter (conjoin (negate install-target?)
+                                                                      (negate check-target?))
+                                                             %targets))
                           ((? (cut member "check" <>)) (filter check-target? %targets))
+                          ((? (cut member "install" <>)) (filter install-target? %targets))
                           (_ (filter-map (cut get-target <>) args)))))
            (for-each build targets)
            ;;((@@ (mes make) store) #:print 0)

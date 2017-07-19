@@ -43,8 +43,10 @@
             check
             clean
             group
+            install
             target-prefix?
             check-target?
+            install-target?
 
             cpp.mescc
             compile.mescc
@@ -59,12 +61,21 @@
             add-target
             get-target
 
+            conjoin
             system**
             target-file-name
 
             target
             %targets
-            %status))
+            %status
+
+            %version
+            %prefix
+            %datadir
+            %docdir
+            %moduledir
+            %guiledir
+            %godir))
 
 (define %status 0)
 (define %targets '())
@@ -75,9 +86,15 @@
 (define (base-name file-name suffix)
   (string-drop-right file-name (string-length suffix)))
 
+(define (conjoin . predicates)
+  (lambda (. arguments)
+    (every (cut apply <> arguments) predicates)))
+
 (define (system** . command)
   (format %command-log "~a\n" (string-join command " "))
-  (apply system* command))
+  (unless (zero? (apply system* command))
+    (format (current-error-port) "FAILED:~s\n" command)
+    (exit 1)))
 
 (define (gulp-pipe* . command)
   (let* ((port (apply open-pipe* (cons OPEN_READ command)))
@@ -130,18 +147,45 @@
                      (format (current-error-port) "  CHECK\t~a" (basename file-name))
                      (receive (output result)
                          ;; FIXME: quiet MES tests are not fun
-                         (if (string-prefix? "tests/" run) (values #f (system** run "arg1" "arg2" "arg3" "arg4" "arg5"))
+                         (if (string-prefix? "tests/" run) (values #f (system* run "arg1" "arg2" "arg3" "arg4" "arg5"))
                              (gulp-pipe* run "arg1" "arg2" "arg3" "arg4" "arg5"))
                        (if (file-exists? log) (delete-file log))
                        (if (or baseline (and output (not (string-null? output)))) (with-output-to-file log (lambda _ (display output))))
                        (if baseline (set! result (system* "diff" "-bu" baseline log)))
                        (let ((status (if (string? result) 0
                                          (or (status:term-sig result) (status:exit-val result)))))
-                         (store #:add-file log)
+                         (if (file-exists? log) (store #:add-file log))
                          (format (current-error-port) "\t[~a]\n"
                                  (if (or (and signal (= status signal))
                                          (and exit (= status exit))) "OK"
                                          (begin (set! %status 1) "FAIL"))))))))))
+
+(define %version (or (getenv "VERSION") "git"))
+(define %prefix (or (getenv "PREFIX") ""))
+(define %datadir "share/mes")
+(define %docdir "share/doc/mes")
+(define %moduledir (string-append %datadir "/module"))
+(define %guiledir (string-append "share/guile/site/" (effective-version)))
+(define %godir (string-append "lib/guile/" (effective-version) "/site-ccache"))
+
+(define* (method-cp #:key substitutes)
+  (method (name "INSTALL")
+          (build (lambda (o t)
+                   (let ((file-name (target-file-name t)))
+                     (mkdir-p (dirname file-name))
+                     (format (current-error-port) "  INSTALL\t~a\n" file-name)
+                     (copy-file ((compose target-file-name car target-inputs) t) file-name)
+                     (if substitutes
+                         (begin
+                           (substitute* file-name
+                             (("module/") (string-append %prefix "/" %moduledir "/"))
+                             (("@DATADIR@") (string-append %prefix "/" %datadir "/"))
+                             (("@DOCDIR@") (string-append %prefix "/" %docdir "/"))
+                             (("@GODIR@") (string-append %prefix "/" %godir "/"))
+                             (("@GUILEDIR@") (string-append %prefix "/" %guiledir "/"))
+                             (("@MODULEDIR@") (string-append %prefix "/" %moduledir "/"))
+                             (("@PREFIX@") (string-append %prefix "/"))
+                             (("@VERSION@") %version)))))))))
 
 (define (hash-target o)
   (if (find (negate identity) (target-inputs o))
@@ -228,6 +272,12 @@
           (exit exit)
           (signal signal)))
 
+(define* (install name #:key (dir (dirname name)) (installed-name (basename name)) (prefix %prefix) substitutes (dependencies '()))
+  (target (file-name (string-append prefix "/" dir "/" installed-name))
+          (method (method-cp #:substitutes substitutes))
+          (inputs (cons (or (get-target name)
+                            (store #:add-file name)) dependencies))))
+
 (define* (group name #:key (dependencies '()))
   (target (file-name name)
           (inputs (map get-target dependencies))))
@@ -293,9 +343,7 @@
                                      "-o" ,(target-file-name t)
                                      ,@(filter (cut string-suffix? ".c" <>) input-files))))
                      (format (current-error-port) "  ~a\t ~a -> ~a\n" (method-name o) (string-join input-files) (target-file-name t))
-                     (unless (zero? (apply system** command))
-                       (format (current-error-port) "FAILED:~s\n" command)
-                       (exit 1)))))
+                     (apply system** command))))
           (inputs (list (store #:add-file "mlibc/libc-gcc.c"))))) ;; FIXME: FLAGS
 
 (define* (CPP.mescc #:key (cc %MESCC) (defines '()) (includes '()))
@@ -325,6 +373,7 @@
                         (store #:add-file "guile/language/c99/info.go")
                         (store #:add-file "guile/mes/as.go")
                         (store #:add-file "guile/mes/as-i386.go")
+                        (store #:add-file "guile/mes/bytevectors.go")
                         (store #:add-file "guile/mes/M1.go")))))
 
 (define %M1 (or (PATH-search-path "M1" #:default #f)
@@ -401,9 +450,7 @@
                                      ,(target-file-name t)
                                      ,@input-files)))
                      (format #t "  ~a\t ~a -> ~a\n" (method-name o) (string-join input-files) (target-file-name t))
-                     (unless (zero? (apply system** command))
-                       (format (current-error-port) "FAILED:~s\n" command)
-                       (exit 1)))))))
+                     (apply system** command))))))
 
 (define SNARF "build-aux/mes-snarf.scm")
 (define (SNARF.mes mes?)
@@ -414,9 +461,7 @@
                                      ,@(if mes? '("--mes") '())
                                      ,@input-files)))
                      (format #t "  ~a\t ~a -> ~a\n" (method-name o) (string-join input-files) (target-file-name t))
-                     (unless (zero? (apply system** command))
-                       (format (current-error-port) "FAILED:~s\n" command)
-                       (exit 1)))))))
+                     (apply system** command))))))
 
 (define* (cpp.mescc input-file-name #:key (cc %MESCC) (defines '()) (includes '()) (dependencies '()))
   (let* ((c-target (target (file-name input-file-name)))
@@ -440,7 +485,7 @@
             (inputs (cons c-target dependencies))
             (method (CC.gcc #:cc cc #:libc libc #:defines defines #:includes includes)))))
 
-(define* (compile.mescc input-file-name #:key (cc %CC) (libc libc-mes.E) (defines '()) (includes '()) (dependencies '()))
+(define* (compile.mescc input-file-name #:key (cc %MESCC) (libc libc-mes.E) (defines '()) (includes '()) (dependencies '()))
   (let* ((base-name (base-name input-file-name ".c"))
          ;;(foo (format (current-error-port) "COMPILE[~s .c] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-M1")
@@ -509,6 +554,9 @@
 
 (define (check-target? o)
   (and o ((target-prefix? "check-") o)))
+
+(define (install-target? o)
+  (and o ((target-prefix? (or (getenv "PREFIX") "/")) o)))
 
 (define (add-target o)
   (and o (set! %targets (append %targets (list o))))
