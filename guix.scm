@@ -113,7 +113,7 @@ hex2 linker.")
   (let ((commit "ec072e8625e72b89301ad1746d839c6529188b6f")
         (revision "0")
         (triplet "i686-unknown-linux-gnu")
-        (version "0.7"))
+        (version "0.8"))
     (package
       (name "mes")
       (version (string-append version "-" revision "." (string-take commit 7)))
@@ -149,7 +149,8 @@ hex2 linker.")
                  (lambda ()
                    (display "Please run
     build-aux/gitlog-to-changelog --srcdir=<git-checkout> > ChangeLog\n")))
-               #t)))))
+               #t))
+           (delete  'strip))))
       (synopsis "Maxwell Equations of Software")
       (description
        "Mes aims to create full source bootstrapping for GuixSD.  It
@@ -159,7 +160,7 @@ prototype in C and a Nyacc-based C compiler in [Guile] Scheme.")
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.7")
+ (let ((version "0.8")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
