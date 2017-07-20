@@ -210,8 +210,13 @@
   (string-append %store-dir "/" (if (string? o) o
                                     (target-hash o))))
 
+(define (link-or-cp existing-file new-file)
+  (catch #t
+    (lambda _ (link existing-file new-file))
+    (lambda _ (copy-file existing-file new-file))))
+
 (define (assert-link existing-file new-file)
-  (if (not (file-exists? new-file)) (link existing-file new-file)))
+  (if (not (file-exists? new-file)) (link-or-cp existing-file new-file)))
 
 (define store
   (let ((*store* '()))
@@ -244,7 +249,7 @@
                        (file-name (target-file-name get)))
                    (and (file-exists? store-file)
                         (if (file-exists? file-name) (delete-file file-name))
-                        (link store-file file-name)
+                        (link-or-cp store-file file-name)
                         (store #:add get #:key key)))))
             (get (assoc-ref *store* get))
             (delete (and (assoc-ref *store* delete)
