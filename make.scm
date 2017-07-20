@@ -61,6 +61,9 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
                                                                      ((eq? libc mini-libc-mes.E) "mini-")
                                                                      (else "")) "guile") #:exit exit)))
 
+
+(add-scaffold-test "t" #:libc mini-libc-mes.E)
+
 ;; tests/00: exit, functions without libc
 (add-scaffold-test "00-exit-0" #:libc #f)
 (add-scaffold-test "01-return-0" #:libc #f)
@@ -90,7 +93,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
  (cut add-scaffold-test <> #:libc #f)
  '("20-while"
    "21-char[]"
-   "22-while-char[]"))
+   "22-while-char[]"
+   "23-pointer"))
 
 (add-target (group "check-scaffold-tests/2" #:dependencies (filter (target-prefix? "check-scaffold/tests/2") %targets)))
 

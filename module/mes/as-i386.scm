@@ -35,6 +35,7 @@
             i386:accu->base-address+n
             i386:accu->label
             i386:accu->local
+            i386:accu-mem-add
             i386:accu-test
             i386:accu-zero?
             i386:accu+accu
@@ -94,9 +95,10 @@
             i386:local-ptr->base
             i386:local-address->base
             i386:local-test
-            i386:accu-mem-add
             i386:mem->accu
+            i386:mem->base
             i386:mem+n->accu
+            i386:nop
             i386:pop-accu
             i386:push-accu
             i386:pop-base

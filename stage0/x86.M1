@@ -47,6 +47,7 @@ DEFINE lahf 9f
 DEFINE lea____0x8(%ebp),%eax 8d45
 DEFINE lea____0x8(%ebp),%edx 8d55
 DEFINE leave c9
+DEFINE nop 90
 DEFINE mov____$i32,%eax b8
 DEFINE mov____$i32,%ebx bb
 DEFINE mov____$i32,%ecx b9
@@ -74,6 +75,7 @@ DEFINE mov____%edx,%ecx 89d1
 DEFINE mov____%edx,0x8(%ebp) 8955
 DEFINE mov____%esp,%ebp 89e5
 DEFINE mov____(%eax),%eax 8b00
+DEFINE mov____(%edx),%edx 8b12
 DEFINE mov____(%edx),%ecx 8b0a
 DEFINE mov____0x32,%eax a1
 DEFINE mov____0x32,%edx 8b15
@@ -85,6 +87,7 @@ DEFINE mov____0x8(%ebp),%edx 8b55
 DEFINE movzbl_%al,%eax 0fb6c0
 DEFINE movzbl_(%eax),%eax 0fb600
 DEFINE movzbl_(%eax),%edx 0fb610
+DEFINE movzbl_(%edx),%edx 0fb612
 DEFINE movzbl_0x8(%ebp),%eax 0fb645
 DEFINE movzbl_0x8(%ebp),%edx 0fb655
 DEFINE mul____%edx f7e2

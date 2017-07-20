@@ -30,6 +30,9 @@
  (mes
   (mes-use-module (mes as))))
 
+(define (i386:nop)
+  '(("nop")))                           ; nop
+
 (define (i386:function-preamble)
   '(("push___%ebp")                       ; push %ebp
     ("mov____%esp,%ebp")))                ; mov  %esp,%ebp;
@@ -229,7 +232,7 @@
   '(("movzbl_(%eax),%eax")))            ; movzbl (%eax),%eax
 
 (define (i386:byte-mem->base)
-  '(("movzbl_(%eax),%edx")))            ; movzbl (%eax),%edx
+  '(("movzbl_(%edx),%edx")))            ; movzbl (%edx),%edx
 
 (define (i386:base-mem->accu)
   '(("add___%edx,%eax")                 ; add    %edx,%eax
@@ -237,6 +240,9 @@
 
 (define (i386:mem->accu)
   '(("mov____(%eax),%eax")))            ; mov    (%eax),%eax
+
+(define (i386:mem->base)
+  '(("mov____(%edx),%edx")))            ; mov    (%edx),%edx
 
 (define (i386:mem+n->accu n)
   `(("mov____0x8(%eax),%eax" (#:immediate1 ,n)))) ; mov    0x<n>(%eax),%eax
