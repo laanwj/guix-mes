@@ -58,5 +58,9 @@ test ()
   printf ("punter eentje: %d\n", g->bar[0]);
   printf ("punter tweetje: %d\n", g->bar[1]);
 
+  char *strings[] = { "one\n", "two\n", "three\n", NULL };
+  char **p = strings;
+  while (*p) puts (*p++);
+
   return 0;
 }

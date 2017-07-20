@@ -71,6 +71,7 @@
                   
                   "INT_MIN=-2147483648"
                   "INT_MAX=2147483647"
+                  "NULL=0"
                   
                   "FIXED_PRIMITIVES=1"
                   
@@ -1653,15 +1654,34 @@
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name))) (initzer (initzer-list . ,initzers)))))
          (let* ((type (decl->ast-type type))
                 (entries (filter identity (append-map (initzer->globals globals) initzers)))
+                (global-names (map car globals))
+                (entries (filter (lambda (g) (and g (not (member (car g) global-names)))) entries))
+                (globals (append globals entries))
                 (entry-size 4)
                 (size (* (length entries) entry-size))
                 (initzers (map (initzer->non-const info) initzers)))
            (if (.function info)
-               (error "TODO: <type> x[] = {};" o)
+               (let* ((local (car (add-local locals name type -1)))
+                      (count (length initzers))
+                      (local (make-local-entry name type -1 (+ (local:id (cdr local)) -1 (1+ count))))
+                      (locals (cons local locals))
+                      (info (clone info #:locals locals))
+                      (info (clone info #:globals globals))
+                      (empty (clone info #:text '())))
+                 (let loop ((index 0) (initzers initzers) (info info))
+                   (if (null? initzers) info
+                       (let ((offset (* index 4))
+                             (initzer (car initzers)))
+                         (loop (1+ index) (cdr initzers)
+                               (clone info #:text
+                                      (append
+                                       (.text info)
+                                       ((ident->accu info) name)
+                                       (wrap-as (append (i386:accu->base)))
+                                       (.text ((expr->accu empty) initzer))
+                                       (wrap-as (i386:accu->base-address+n offset)))))))))
                (let* ((global (make-global-entry name type -2 (append-map (initzer->data info) initzers)))
-                      (global-names (map car globals))
-                      (entries (filter (lambda (g) (and g (not (member (car g) global-names)))) entries))
-                      (globals (append globals entries (list global))))
+                      (globals (append globals (list global))))
                  (clone info #:globals globals)))))
 
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr ,init . ,initzer)))
