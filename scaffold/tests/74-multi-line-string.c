@@ -31,7 +31,10 @@ char const* help =
 int
 test ()
 {
-  if (printf ("belong to us"), strcmp (help, "All your base are")) return 1;
+  if (printf ("belong to us\n"), strcmp (help, "All your base are")) return 1;
+
+  int i = 1 | 2 | 4;
+  if (i != 7) return 1;
 
   return 2,1,0;
 }

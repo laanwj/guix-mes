@@ -1966,6 +1966,12 @@
          `(initzer (p-expr (fixed ,(number->string value))))))
       (_ o))))
 
+(define (initzer->value info)
+  (lambda (o)
+    (pmatch o
+      ((p-expr (fixed ,value)) (cstring->number value))
+      (_ (error "initzer->value: " o)))))
+
 (define (initzer->data info)
   (lambda (o)
     (pmatch o
@@ -1979,6 +1985,10 @@
       ((initzer (p-expr (string ,string))) `((#:string ,string) #f #f #f))
       ((initzer (p-expr (string . ,strings))) `((#:string ,(string-join strings "")) #f #f #f))
       ((initzer (initzer-list . ,initzers)) (append-map (initzer->data info) initzers))
+      ((initzer (bitwise-or . ,values))
+       (let loop ((values (map (initzer->value info) values)) (value 0))
+         (if (null? values) (int->bv32 value)
+             (loop (cdr values) (logior value (car values))))))
       (() (int->bv32 0))
       (_ (error "initzer->data: unsupported: " o)))))
 
