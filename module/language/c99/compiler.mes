@@ -121,6 +121,7 @@
     ((param-decl _ (param-declr (ptr-declr (pointer) (ident ,name)))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer) (array-of (ident ,name))))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer (pointer)) (ident ,name)))) name)
+    ((param-decl _ (param-declr (ptr-declr (pointer (pointer (pointer))) (ident ,name)))) name)
     (_
      (format (current-error-port) "SKIP: .name =~a\n" o))))
 
@@ -2035,6 +2036,7 @@
     ((fctn-defn _ (ftn-declr _ ,formals) _) formals)
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr _ ,formals)) _) formals)
     ((fctn-defn _ (ptr-declr (pointer (pointer)) (ftn-declr _ ,formals)) _) formals)
+    ((fctn-defn _ (ptr-declr (pointer (pointer (pointer))) (ftn-declr _ ,formals)) _) formals)
     (_ (error ".formals: " o))))
 
 (define (formal->text n)
@@ -2064,6 +2066,8 @@
      1)
     ((param-decl (decl-spec-list . ,decl) (param-declr (ptr-declr (pointer (pointer)) (ident ,name))))
      2)
+    ((param-decl (decl-spec-list . ,decl) (param-declr (ptr-declr (pointer (pointer (pointer))) (ident ,name))))
+     3)
     (_ 0)))
 
 (define (formals->locals o)
