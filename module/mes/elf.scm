@@ -23,6 +23,7 @@
 ;;; Code:
 
 (define-module (mes elf)
+  #:use-module (mes guile)
   #:export (M1->elf))
 
 (cond-expand

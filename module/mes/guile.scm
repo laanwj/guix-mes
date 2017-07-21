@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -22,22 +22,26 @@
 
 ;;; Code:
 
-(define-module (mes M1)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:use-module (system base pmatch)
-  #:use-module (mes guile)
-  #:use-module (mes as)
-  #:use-module (mes elf)
-  #:export (object->M1
-            objects->M1
-            object->elf
-            objects->elf))
+(define-module (mes guile))
 
 (cond-expand
- (guile-2)
+ (guile-2.2)
+ (guile-2
+  (eval-when (compile load eval)
+    (define-syntax include-from-path
+      (lambda (x)
+        (syntax-case x ()
+          ((k filename)
+           (let ((fn (syntax->datum #'filename)))
+             (with-syntax ((fn (datum->syntax
+                                #'filename
+                                (canonicalize-path
+                                 (or (%search-load-path fn)
+                                     (syntax-violation 'include-from-path
+                                                       "file not found in path"
+                                                       x #'filename))))))
+               #'(include fn))))))))
+  (export include-from-path))
  (guile
   (use-modules (ice-9 syncase)))
  (mes))
-
-(include-from-path "mes/M1.mes")

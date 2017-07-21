@@ -1,7 +1,6 @@
 #! /bin/sh
 # -*- scheme -*-
-#exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
-exec ${GUILE-guile} -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
+exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
 !#
 
 (use-modules (srfi srfi-26))
@@ -23,8 +22,8 @@ exec ${GUILE-guile} -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
   (setenv "host" %host-type)
   (apply system* `("guile"
                    "--no-auto-compile"
-                   "-L" "." "-L" "guile"
-                   "-C" "." "-C" "guile"
+                   "-L" "."
+                   "-C" "."
                    "-s"
                    "build-aux/compile-all.scm"
                    ,@scm-files)))

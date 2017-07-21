@@ -25,6 +25,7 @@
 ;;; Code:
 
 (define-module (mes as-i386)
+  #:use-module (mes guile)
   #:use-module (mes as)
   #:export (
             i386:accu-not

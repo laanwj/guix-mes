@@ -23,6 +23,7 @@
 ;;; Code:
 
 (define-module (mes bytevectors)
+  #:use-module (mes guile)
   #:export (bytevector-u32-native-set!
             bytevector-u16-native-set!
             make-bytevector))

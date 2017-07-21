@@ -24,6 +24,7 @@
 
 (define-module (mes as)
   #:use-module (srfi srfi-1)
+  #:use-module (mes guile)
   #:use-module (mes bytevectors)
   #:export (dec->hex
             int->bv16
