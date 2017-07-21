@@ -122,6 +122,9 @@ test ()
   puts ("t: 1 & 3\n");
   if ((1 & 3) != 1) return 1;
 
+  puts ("t: ~0\n");
+  if (~0 != -1) return 1;
+
   puts ("t: 1 | 3\n");
   if ((1 | 2) != 3) return 1;
 

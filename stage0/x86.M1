@@ -48,6 +48,7 @@ DEFINE lea____0x8(%ebp),%eax 8d45
 DEFINE lea____0x8(%ebp),%edx 8d55
 DEFINE leave c9
 DEFINE nop 90
+DEFINE not____%eax f7d0
 DEFINE mov____$i32,%eax b8
 DEFINE mov____$i32,%ebx bb
 DEFINE mov____$i32,%ecx b9

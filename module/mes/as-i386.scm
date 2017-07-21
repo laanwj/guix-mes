@@ -28,7 +28,6 @@
   #:use-module (mes guile)
   #:use-module (mes as)
   #:export (
-            i386:accu-not
             i386:accu-cmp-value
             i386:accu->base
             i386:accu->base-address
@@ -47,6 +46,8 @@
             i386:accu-base
             i386:accu-shl
             i386:accu-and-base
+            i386:accu-negate
+            i386:accu-not
             i386:accu-or-base
             i386:accu-xor-base
             i386:accu<<base

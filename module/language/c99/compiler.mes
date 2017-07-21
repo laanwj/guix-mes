@@ -738,8 +738,11 @@
 
         ((add ,a ,b) ((binop->accu info) a b (i386:accu+base)))
         ((sub ,a ,b) ((binop->accu info) a b (i386:accu-base)))
-        ((bitwise-or ,a ,b) ((binop->accu info) a b (i386:accu-or-base)))
         ((bitwise-and ,a ,b) ((binop->accu info) a b (i386:accu-and-base)))
+        ((bitwise-not ,expr)
+         (let ((info ((ast->info info) expr)))
+           (append-text info (wrap-as (i386:accu-not)))))
+        ((bitwise-or ,a ,b) ((binop->accu info) a b (i386:accu-or-base)))
         ((bitwise-xor ,a ,b) ((binop->accu info) a b (i386:accu-xor-base)))
         ((lshift ,a ,b) ((binop->accu info) a b (i386:accu<<base)))
         ((rshift ,a ,b) ((binop->accu info) a b (i386:accu>>base)))
@@ -751,7 +754,7 @@
          (let* ((test-info ((ast->info info) expr)))
            (clone info #:text
                   (append (.text test-info)
-                          (wrap-as (i386:accu-not)))
+                          (wrap-as (i386:accu-negate)))
                   #:globals (.globals test-info))))
 
         ((neg (p-expr (fixed ,value)))
@@ -832,9 +835,10 @@
                                                     ((equal? op "*=") (wrap-as (i386:accu*base)))
                                                     ((equal? op "/=") (wrap-as (i386:accu/base)))
                                                     ((equal? op "%=") (wrap-as (i386:accu%base)))
-                                                    ((equal? op "|=") (wrap-as (i386:accu-or-base)))
                                                     ((equal? op "&=") (wrap-as (i386:accu-and-base)))
-                                                    (else (error "mescc: op ~a not supported: ~a\n" op o))))))))
+                                                    ((equal? op "|=") (wrap-as (i386:accu-or-base)))
+                                                    ((equal? op "^=") (wrap-as (i386:accu-xor-base)))
+                                                    (else (error (format #f "mescc: op ~a not supported: ~a\n" op o)))))))))
            (pmatch a
              ((p-expr (ident ,name)) (append-text info ((accu->ident info) name)))
              ((d-sel (ident ,field) ,p-expr)

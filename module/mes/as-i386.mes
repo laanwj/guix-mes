@@ -136,11 +136,14 @@
     ("mov____%edx,%ecx")                ; mov    %edx,%ecx
     ("shr____%cl,%eax")))               ; shr    %cl,%eax
 
-(define (i386:accu-or-base)
-  '(("or_____%edx,%eax")))              ; or    %edx,%eax
-
 (define (i386:accu-and-base)
   '(("and____%edx,%eax")))              ; and    %edx,%eax
+
+(define (i386:accu-not)
+  '(("not____%eax")))                   ; not %eax
+
+(define (i386:accu-or-base)
+  '(("or_____%edx,%eax")))              ; or    %edx,%eax
 
 (define (i386:accu-xor-base)
   '(("xor____%edx,%eax")))              ; xor    %edx,%eax
@@ -318,7 +321,7 @@
     ("call___*%eax")                    ; call   *%eax
     ("add____$i8,%esp" (#:immediate1  ,(* n 4))))) ; add    $00,%esp
 
-(define (i386:accu-not)
+(define (i386:accu-negate)
   '(("sete___%al")                      ; sete %al
     ("movzbl_%al,%eax")))               ; movzbl %al,%eax
 
