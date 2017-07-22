@@ -28,6 +28,9 @@ char const* help =
   " base"
   " are";
 
+int global_i = 1;
+int *global_p = &global_i;
+
 int
 test ()
 {
@@ -35,6 +38,11 @@ test ()
 
   int i = 1 | 2 | 4;
   if (i != 7) return 1;
+
+  printf ("global_i=%d\n", global_i);
+  *global_p = 2;
+  printf ("global_i=%d\n", global_i);
+  if (global_i != 2) return global_i;
 
   return 2,1,0;
 }

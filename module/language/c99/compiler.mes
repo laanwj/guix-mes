@@ -412,7 +412,10 @@
             (wrap-as (append (i386:local->accu (local:id local))
                              (if (= size 1) (i386:byte-base->accu-address)
                                  (i386:byte-base->accu-address)))))
-          (error "TODO:base->ident-address-global" o)))))
+          (let ((size 4)) ;; FIXME
+            (wrap-as (append (i386:label-mem->accu `(#:address ,o))
+                             (if (= size 1) (i386:byte-base->accu-address)
+                                 (i386:base->accu-address)))))))))
 
 (define (value->ident info)
   (lambda (o value)
