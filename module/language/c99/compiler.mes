@@ -627,6 +627,11 @@
                                      (wrap-as (i386:mem->accu))
                                      (wrap-as (i386:mem+n->accu offset))))))
 
+        ;; foo[i].bar.baz
+        ((d-sel (ident ,field1) (d-sel (ident ,field0) (array-ref ,index (p-expr (ident ,array)))))
+         (let ((info ((expr->accu* info) o)))
+           (append-text info (wrap-as (i386:mem->accu)))))
+
         ;;foo[index]->bar
         ((i-sel (ident ,field) (array-ref ,index ,array))
          (let ((info ((expr->accu* info) o)))
@@ -1070,6 +1075,15 @@
                                    (wrap-as (i386:mem->accu))
                                    (wrap-as (i386:accu+value offset))))))
 
+      ;; foo[i].bar.baz
+      ((d-sel (ident ,field1) (d-sel (ident ,field0) (array-ref ,index (p-expr (ident ,array)))))
+         (let* ((type0 (ident->type info array))
+                (type1 (field-type info `("struct" ,type0) field0))
+                (offset (+ (field-offset info `("struct" ,type0) field0)
+                           (field-offset info `("struct" ,type1) field1)))
+                (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
+           (append-text info (wrap-as (i386:accu+value offset)))))
+
       ;;foo[index]->bar
       ((i-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
        (let* ((type (ident->type info array))
@@ -1444,6 +1458,9 @@
     ((d-sel (ident ,field) (p-expr (ident ,struct)))
      (let ((type0 (ident->type info struct)))
        (field-type info `("struct" ,type0) field)))
+    ((d-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
+     (let ((type0 (ident->type info array)))
+       (field-type info `("struct" ,type0) field)))
     (_ (error "p-expr->type: unsupported: " o))))
 
 (define (local-var? o) ;; formals < 0, locals > 0
@@ -1461,6 +1478,7 @@
     ((ptr-declr ,pointer (ident ,name)) name)
     ((array-of (ident ,name)) name)
     ((array-of (ident ,name) ,index) name)
+    ((ptr-declr (pointer) (array-of (ident ,name))) name)
     ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) name)
     (_ (error "init-declr->name unsupported: " o))))
 
@@ -1468,8 +1486,9 @@
   (pmatch o
     ((ident ,name) 0)
     ((ptr-declr ,pointer (ident ,name)) (ptr-declr->pointer pointer))
-    ((array-of (ident ,name) ,index) 1)
-    ((array-of (ident ,name)) 1)
+    ((array-of (ident ,name) ,index) -1)
+    ((array-of (ident ,name)) -1)
+    ((ptr-declr (pointer) (array-of (ident ,name))) -2)
     ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) -2)
     (_ (error "init-declr->pointer unsupported: " o))))
 
@@ -2168,8 +2187,8 @@
 (define (initzer->accu info)
   (lambda (o)
     (pmatch o
-      ((initzer-list . ,initzers) (append-map (expr->accu info) initzers))
-      ((initzer (initzer-list . ,initzers)) (append-map (expr->accu info) initzers))
+      ((initzer-list . ,initzers) (fold (lambda (i info) ((expr->accu info) i)) info initzers))
+      ((initzer (initzer-list . ,initzers)) (fold (lambda (i info) ((expr->accu info) i)) info initzers))
       ((initzer ,initzer) ((expr->accu info) o))
       (() (append-text info (wrap-as (i386:value->accu 0))))
       (_ (error "initzer->accu: " o)))))

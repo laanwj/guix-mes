@@ -34,6 +34,8 @@ typedef struct
 } bar;
 
 
+bar baz[2] = {1, 2, 3, 4, 5, 6};
+
 //NYACC
 //#define offsetof(type, field) ((size_t) &((type *)0)->field)
 #if __MESC__
@@ -85,6 +87,15 @@ test ()
 
   printf ("(*pp)->b.i=%d\n", (*pp)->f.i);
   if ((*pp)->f.i != 2) return 1;
+
+  if (baz[0].i != 1) return 1;
+  printf ("baz[0].f.i=%d\n", baz[0].f.i);
+  if (baz[0].f.i != 2) return 1;
+
+  printf ("baz[1].i=%d\n", baz[1].i);
+  if (baz[1].i != 4) return 1;
+  printf ("baz[1].f.i=%d\n", baz[1].f.i);
+  if (baz[1].f.i != 5) return 1;
 
   return 0;
 }
