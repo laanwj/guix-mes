@@ -1105,8 +1105,17 @@
     ("unsigned long" . ,(make-type 'builtin 4 0 #f))
     ("unsigned long long" . ,(make-type 'builtin 8 0 #f))))
 
+(define (field:name o)
+  (pmatch o
+    ((union (,name ,type ,size ,pointer) . ,rest) name)
+    ((union (,name ,type ,size) . ,rest) name)
+    ((,name ,type ,size ,pointer) name)
+    ((,name ,type ,size) name)
+    (_ (error "field:name not supported:" o))))
+
 (define (field:size o)
   (pmatch o
+    ((union . ,fields) 4) ;; FIXME
     ((,name ,type ,size ,pointer) size)
     ((,name ,type ,size) size)
     (_ 4)))
@@ -1154,14 +1163,26 @@
 (define (field-field info struct field)
   (let* ((xtype (ast-type->type info struct))
          (fields (type:description xtype)))
-    (and=> (member field fields (lambda (a b) (equal? a (car b)))) car)))
+    (let loop ((fields fields))
+      (if (null? fields) (error (format #f "no such field: ~a in ~s" field struct))
+          (let ((f (car fields)))
+            (cond ((equal? (car f) field) f)
+                  ((and (eq? (car f) 'union)
+                        (find (lambda (x) (equal? (car x) field)) (cdr f))))
+                  (else (loop (cdr fields)))))))))
 
 (define (field-offset info struct field)
   (let ((xtype (ast-type->type info struct)))
     (if (eq? (type:type xtype) 'union) 0
-        (let* ((fields (type:description xtype))
-               (prefix (and=> (member field (reverse fields) (lambda (a b) (equal? a (car b)))) cdr)))
-          (apply + (map field:size prefix))))))
+        (let ((fields (type:description xtype)))
+          (let loop ((fields fields) (offset 0))
+            (if (null? fields) (error (format #f "no such field: ~a in ~s" field struct))
+                (let ((f (car fields)))
+                  (cond ((equal? (car f) field) offset)
+                        ((and (eq? (car f) 'union)
+                              (find (lambda (x) (equal? (car x) field)) (cdr f))
+                              offset))
+                        (else (loop (cdr fields) (+ offset (field:size f))))))))))))
 
 (define (field-size info struct field)
   (let ((xtype (ast-type->type info struct)))
@@ -1383,6 +1404,9 @@
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
        (let ((size (ast-type->size info `("struct" ,type))))
          (list name type size 0)))
+
+      ((comp-decl (decl-spec-list (type-spec (union-def (field-list . ,fields)))))
+       `(union ,@(map (struct-field info) fields)))
 
       (_ (error "struct-field: unsupported: " o)))
     )
@@ -1772,7 +1796,7 @@
                       (empty (clone info #:text '())))
                  (let loop ((fields fields) (initzers initzers) (info info))
                    (if (null? fields) info
-                       (let ((offset (field-offset info type (caar fields)))
+                       (let ((offset (field-offset info type (field:name (car fields))))
                              (initzer (car initzers)))
                          (loop (cdr fields) (cdr initzers)
                                (clone info #:text
