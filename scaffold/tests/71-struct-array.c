@@ -25,7 +25,12 @@ struct foo;
 
 struct foo* krak;
 
+#if 0
+//FIXME:  TODO
 typedef struct foo foo_struct;
+#else
+typedef struct foo foo;
+#endif
 
 struct foo
 {
@@ -47,8 +52,7 @@ typedef struct baz
 int
 test ()
 {
-  //struct foo f;
-  foo_struct f;
+  foo f;
   f.bar[0] = 0x22;
   f.bar[1] = 0x34;
   printf ("eentje: %d\n", f.bar[0]);

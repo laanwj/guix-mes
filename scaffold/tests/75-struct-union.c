@@ -21,7 +21,17 @@
 #include "30-test.i"
 #include <stdio.h>
 
+union u {
+  int bar;
+  int baz;
+};
+
 struct foo
+{
+  union u u;
+};
+
+struct anon
 {
   union {
     int bar;
@@ -29,14 +39,21 @@ struct foo
   };
 };
 
+
 int
 test ()
 {
   struct foo f = {2};
-  printf ("f.bar=%d\n", f.bar);
-  if (f.bar != 2) return 1;
-  printf ("f.baz=%d\n", f.baz);
-  if (f.baz != 2) return 1;
+  printf ("f.u.bar=%d\n", f.u.bar);
+  if (f.u.bar != 2) return 1;
+  printf ("f.u.baz=%d\n", f.u.baz);
+  if (f.u.baz != 2) return 1;
+
+  struct anon a = {2};
+  printf ("a.bar=%d\n", a.bar);
+  if (a.bar != 2) return 1;
+  printf ("a.baz=%d\n", a.baz);
+  if (a.baz != 2) return 1;
   
   return 0;
 }
