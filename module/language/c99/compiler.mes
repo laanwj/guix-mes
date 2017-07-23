@@ -526,6 +526,11 @@
                 (size (field-size info type field)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
+        ((sizeof-expr (d-sel (ident ,field) (p-expr (ident ,struct))))
+         (let* ((type (ident->type info struct))
+                (size (field-size info type field)))
+           (append-text info (wrap-as (i386:value->accu size)))))
+
         ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,name)))))
          (let* ((type name)
                 (size (ast-type->size info type)))
