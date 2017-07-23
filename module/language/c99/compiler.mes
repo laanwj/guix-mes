@@ -1832,8 +1832,8 @@
                  (let loop ((fields fields) (initzers initzers) (info info))
                    (if (null? fields) info
                        (let ((offset (field-offset info type (field:name (car fields))))
-                             (initzer (car initzers)))
-                         (loop (cdr fields) (cdr initzers)
+                             (initzer (if (null? initzers) '(p-expr (fixed "0")) (car initzers))))
+                         (loop (cdr fields) (if (null? initzers) '() (cdr initzers))
                                (clone info #:text
                                       (append
                                        (.text info)

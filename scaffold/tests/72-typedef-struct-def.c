@@ -97,5 +97,11 @@ test ()
   printf ("baz[1].f.i=%d\n", baz[1].f.i);
   if (baz[1].f.i != 5) return 1;
 
+  bar one = {0};
+  printf ("one.i\n", one.i);
+  if (one.i != 0) return 1;
+  printf ("one.f.i\n", one.f.i);
+  if (one.f.i != 0) return 1;
+
   return 0;
 }
