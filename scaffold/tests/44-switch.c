@@ -52,6 +52,7 @@ swits (int c)
       break;
     default:
       x = 2;
+      x = 2;
       break;
     }
   return x;

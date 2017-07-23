@@ -1295,6 +1295,8 @@
          (loop statement (append cases (list (test->text test))) clause))
         ((default ,statement)
          (loop statement cases clause))
+        ((default . ,statements)
+         (loop `(compd-stmt (block-item-list ,@statements)) cases clause))
         ((compd-stmt (block-item-list))
          (loop '() cases clause))
         ((compd-stmt (block-item-list . ,elements))
