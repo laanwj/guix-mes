@@ -765,13 +765,10 @@
                           (wrap-as (i386:accu-negate)))
                   #:globals (.globals test-info))))
 
-        ((neg (p-expr (fixed ,value)))
-         (append-text info (value->accu (- (cstring->number value)))))
-
-        ((neg (p-expr (ident ,name)))
-         (append-text info (append ((ident->base info) name)
-                                   (wrap-as (i386:value->accu 0))
-                                   (wrap-as (i386:sub-base)))))
+        ((neg ,expr)
+         (let ((info ((expr->base info) expr)))
+          (append-text info (append (wrap-as (i386:value->accu 0))
+                                    (wrap-as (i386:sub-base))))))
 
         ((eq ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:z->accu))))
         ((ge ,a ,b) ((binop->accu info) b a (i386:sub-base)))
