@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SIGNAL_H
-#define __MES_SIGNAL_H 1
+#ifndef __MES_SYS_SELECT_H
+#define __MES_SYS_SELECT_H 1
 
 #if __GNUC__ && POSIX
-#undef __MES_SIGNAL_H
-#include_next <signal.h>
-#else //! (__GNUC__ && POSIX)
-typedef int sigset_t;
+#undef __MES_SYS_SELECT_H
+#include_next <sys/select.h>
+#else  //! (__GNUC__ && POSIX)
+typedef int fd_set;
 #endif //! (__GNUC__ && POSIX)
 
-#endif // __MES_SIGNAL_H
+#endif // __MES_SYS_SELECT_H
 

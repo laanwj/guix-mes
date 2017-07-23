@@ -24,14 +24,20 @@ char **g_environment;
 int g_stdin;
 int g_stdout;
 
-#define EOF -1
-#define NULL 0
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
-
 int printf (char const* format, ...);
 int sprintf (char *str, char const* format, ...);
+
+#ifndef STDIN
+#define STDIN 0
+#endif
+
+#ifndef STDOUT
+#define STDOUT 1
+#endif
+
+#ifndef STDERR
+#define STDERR 2
+#endif
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
@@ -60,6 +66,14 @@ int fdputc (int c, int fd);
 int fdungetc (int c, int fd);
 
 #else // ! (__GNUC__ && POSIX)
+
+#ifndef EOF
+#define EOF -1
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
 
 // Hmm
 #define stdin 0

@@ -17,15 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SIGNAL_H
-#define __MES_SIGNAL_H 1
+#ifndef __MES_FLOAT_H
+#define __MES_FLOAT_H 1
 
 #if __GNUC__ && POSIX
-#undef __MES_SIGNAL_H
-#include_next <signal.h>
-#else //! (__GNUC__ && POSIX)
-typedef int sigset_t;
-#endif //! (__GNUC__ && POSIX)
+#undef __MES_FLOAT_H
+#include_next <float.h>
+#else // ! (__GNUC__ && POSIX)
+#endif // ! (__GNUC__ && POSIX)
 
-#endif // __MES_SIGNAL_H
-
+#endif // __MES_FLOAT_H
