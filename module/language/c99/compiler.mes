@@ -846,6 +846,8 @@
                                                     ((equal? op "&=") (wrap-as (i386:accu-and-base)))
                                                     ((equal? op "|=") (wrap-as (i386:accu-or-base)))
                                                     ((equal? op "^=") (wrap-as (i386:accu-xor-base)))
+                                                    ((equal? op ">>=") (wrap-as (i386:accu>>base)))
+                                                    ((equal? op "<<=") (wrap-as (i386:accu<<base)))
                                                     (else (error (format #f "mescc: op ~a not supported: ~a\n" op o)))))))))
            (pmatch a
              ((p-expr (ident ,name)) (append-text info ((accu->ident info) name)))
