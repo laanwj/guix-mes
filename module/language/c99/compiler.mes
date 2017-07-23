@@ -518,6 +518,9 @@
                 (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
+        ((sizeof-expr (p-expr (string ,string)))
+         (append-text info (wrap-as (i386:value->accu (1+ (string-length string))))))
+
         ((sizeof-expr (i-sel (ident ,field) (p-expr (ident ,array))))
          (let* ((type (ident->type info array))
                 (size (field-size info type field)))
