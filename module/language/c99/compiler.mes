@@ -1151,6 +1151,7 @@
 
 (define (ast-type->type info o)
   (pmatch o
+    ((p-expr ,expr) (ast-type->type info (p-expr->type info o)))
     ((decl-spec-list (type-spec (fixed-type ,type)))
      (ast-type->type info type))
     ((decl-spec-list (type-qual ,qual) (type-spec (fixed-type ,type)))
@@ -1342,11 +1343,19 @@
               (info (append-text info (wrap-as `((#:label ,skip-b-label))))))
          info))
 
-      ((array-ref . _) ((jump i386:jump-byte-z
-                              (wrap-as (i386:accu-zero?))) o))
+      ((array-ref ,index ,expr) (let* ((ptr (expr->pointer info expr))
+                                       (size (if (= ptr 1) (ast-type->size info expr)
+                                                 4)))
+                                  ((jump (if (= size 1) i386:jump-byte-z
+                                             i386:jump-z)
+                                         (wrap-as (i386:accu-zero?))) o)))
 
-      ((de-ref _) ((jump i386:jump-byte-z
-                         (wrap-as (i386:accu-zero?))) o))
+      ((de-ref ,expr) (let* ((ptr (expr->pointer info expr))
+                             (size (if (= ptr 1) (ast-type->size info expr)
+                                       4)))
+                        ((jump (if (= size 1) i386:jump-byte-z
+                                   i386:jump-z)
+                               (wrap-as (i386:accu-zero?))) o)))
 
       ((assn-expr (p-expr (ident ,name)) ,op ,expr)
        ((jump i386:jump-z
@@ -1447,6 +1456,11 @@
   (let ((local (assoc-ref (.locals info) o)))
     (if local (local:pointer local)
         (or (and=> (ident->decl info o) global:pointer) 0))))
+
+(define (expr->pointer info o)
+  (pmatch o
+    ((p-expr (ident ,name)) (ident->pointer info name))
+    (_ (stderr "expr->pointer: unsupported: ~s\n" o) 0)))
 
 (define (p-expr->type info o)
   (pmatch o
