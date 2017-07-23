@@ -117,6 +117,8 @@
     ((fctn-defn _ (ftn-declr (ident ,name) _) _) name)
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) _) name)
     ((fctn-defn _ (ptr-declr (pointer (pointer)) (ftn-declr (ident ,name) _)) _) name)
+    ((ellipsis) #f)
+    ((param-decl (decl-spec-list (type-spec (void)))) #f)
     ((param-decl _ (param-declr (ident ,name))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer) (ident ,name)))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer) (array-of (ident ,name))))) name)
@@ -127,6 +129,8 @@
 
 (define (.type o)
   (pmatch o
+    ((ellipsis) #f)
+    ((param-decl (decl-spec-list (type-spec (void)))) #f)
     ((param-decl (decl-spec-list (type-spec ,type)) _) (decl->ast-type type))
     ((param-decl ,type _) type)
     (_
