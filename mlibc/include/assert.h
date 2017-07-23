@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_ASSERT_H
 #include_next <assert.h>
 #else // ! (__GNUC__ && POSIX)
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))

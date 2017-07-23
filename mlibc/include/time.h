@@ -21,6 +21,7 @@
 #define __MES_TIME_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_TIME_H
 #include_next <time.h>
 #else // ! (__GNUC__ && POSIX)
 typedef int time_t;

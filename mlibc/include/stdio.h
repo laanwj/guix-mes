@@ -37,6 +37,7 @@ int sprintf (char *str, char const* format, ...);
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_STDIO_H
 #include_next <stdio.h>
 
 int fdputs (char const* s, int fd);

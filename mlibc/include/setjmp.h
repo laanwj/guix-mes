@@ -21,6 +21,7 @@
 #define __MES_SETJMP_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_SETJMP_H
 #include_next <setjmp.h>
 #else // ! (__GNUC__ && POSIX)
 

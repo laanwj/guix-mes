@@ -21,6 +21,7 @@
 #define __MES_SYS_TIMEB_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_SYS_TIMEB_H
 #include_next <sys/timeb.h>
 #endif // (__GNUC__ && POSIX)
 

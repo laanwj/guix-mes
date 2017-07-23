@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_ERRNO_H
 #include_next <errno.h>
 #endif // ! (__GNUC__ && POSIX)
 

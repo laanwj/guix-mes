@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_ALLOCA_H 1
 #include_next <alloca.h>
 
 #else // ! (__GNUC__ && POSIX)

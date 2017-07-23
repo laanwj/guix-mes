@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_FCNTL_H
 #include_next <fcntl.h>
 
 #else // ! (__GNUC__ && POSIX)

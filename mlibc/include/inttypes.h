@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_INTTYPES_H
 #include_next <inttypes.h>
 #else // ! (__GNUC__ && POSIX)
 

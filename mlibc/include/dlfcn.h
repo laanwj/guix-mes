@@ -21,6 +21,7 @@
 #define __MES_DLFCN_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_DLFCN_H
 #include_next <dlfcn.h>
 #endif // (__GNUC__ && POSIX)
 

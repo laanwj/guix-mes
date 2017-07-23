@@ -21,6 +21,7 @@
 #define __MES_SYS_STAT_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_SYS_STAT_H
 #include_next <sys/stat.h>
 #endif // (__GNUC__ && POSIX)
 

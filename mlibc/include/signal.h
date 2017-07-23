@@ -21,6 +21,7 @@
 #define __MES_SIGNAL_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_SIGNAL_H
 #include_next <signal.h>
 #endif // (__GNUC__ && POSIX)
 

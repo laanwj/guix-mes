@@ -21,6 +21,7 @@
 #define __MES_FEATURES_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_FEATURES_H
 #include_next <features.h>
 #endif // (__GNUC__ && POSIX)
 

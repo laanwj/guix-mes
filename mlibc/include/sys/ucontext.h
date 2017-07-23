@@ -21,6 +21,7 @@
 #define __MES_SYS_UCONTEXT_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_SYS_UCONTEXT_H
 #include_next <sys/ucontext.h>
 #endif // (__GNUC__ && POSIX)
 

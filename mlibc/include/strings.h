@@ -21,6 +21,7 @@
 #define __MES_STRINGS_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_STRINGS_H
 #include_next <strings.h>
 #endif // (__GNUC__ && POSIX)
 

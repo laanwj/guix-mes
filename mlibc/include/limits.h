@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_LIMITS_H
 #include_next <limits.h>
 
 #else // ! (__GNUC__ && POSIX)

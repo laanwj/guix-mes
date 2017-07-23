@@ -21,6 +21,7 @@
 #define __MES_MATH_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_MATH_H
 #include_next <math.h>
 #endif // (__GNUC__ && POSIX)
 

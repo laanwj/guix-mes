@@ -21,6 +21,7 @@
 #define __MES_STDARG_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_STDARG_H
 #include_next <stdarg.h>
 #else // ! (__GNUC__ && POSIX)
 

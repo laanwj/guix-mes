@@ -21,6 +21,7 @@
 #define __MES_SYS_TIME_H 1
 
 #if __GNUC__ && POSIX
+#undef __MES_SYS_TIME_H
 #include_next <sys/time.h>
 #endif // (__GNUC__ && POSIX)
 

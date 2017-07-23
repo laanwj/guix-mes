@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_STDBOOL_H
 #include_next <stdbool.h>
 
 #else // ! (__GNUC__ && POSIX)

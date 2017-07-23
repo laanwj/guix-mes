@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_LOCALE_H
 #include_next <locale.h>
 
 #else // ! (__GNUC__ && POSIX)

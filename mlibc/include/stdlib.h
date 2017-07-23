@@ -24,6 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#undef __MES_STDLIB_H
 #include_next <stdlib.h>
 #else  // !(__GNUC__ && POSIX)
 
