@@ -47,3 +47,9 @@ memset (void *s, int c, size_t n)
 {
   return 0;
 }
+
+int
+memcmp (void const *s1, void const *s2, size_t n)
+{
+  return 0;
+}
