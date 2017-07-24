@@ -35,3 +35,9 @@ memcpy (void *dest, void const *src, size_t n)
 {
   return 0;
 }
+
+void *
+memmove (void *dest, void const *src, size_t n)
+{
+  return 0;
+}
