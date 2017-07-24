@@ -97,6 +97,12 @@ fprintf (FILE *stream, char const *format, ...)
   return 0;
 }
 
+size_t
+fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+  return 0;
+}
+
 void
 free (void *ptr)
 {
