@@ -35,6 +35,7 @@ typedef long size_t;
 
 int atoi (char const *s);
 void exit (int);
+void free (void *ptr);
 char* getenv (char const* s);
 void *malloc (size_t);
 void qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *));

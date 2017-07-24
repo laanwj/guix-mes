@@ -83,6 +83,11 @@ fprintf (FILE *stream, char const *format, ...)
   return 0;
 }
 
+void
+free (void *ptr)
+{
+}
+
 size_t
 fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream)
 {
