@@ -17,32 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_UNISTD_H
-#define __MES_UNISTD_H 1
 
-#if __GNUC__ && POSIX
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_UNISTD_H
-#include_next <unistd.h>
+#include <libc-mes.c>
 
-#else // ! (__GNUC__ && POSIX)
+void
+close ()
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
 
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-typedef unsigned long size_t;
-#endif
-
-#ifndef __MES_SSIZE_T
-#define __MES_SSIZE_T
-typedef long ssize_t;
-#endif
-
-int access (char const *s, int mode);
-int close (int fd);
-int read (int fd, void* buf, size_t n);
-int write (int fd, char const* s, int n);
-#endif // ! (__GNUC__ && POSIX)
-
-#endif // __MES_UNISTD_H
+  asm ("mov____$i32,%eax SYS_close");
+  asm ("int____$0x80");
+}

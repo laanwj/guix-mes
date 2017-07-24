@@ -160,6 +160,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (group "check-scaffold-tests" #:dependencies (filter (target-prefix? "check-scaffold/tests") %targets)))
 
+(add-target (cpp.mescc "mlibc/libc-mes+tcc.c"))
+(add-target (compile.mescc "mlibc/libc-mes+tcc.c"))
 
 (define* (add-tcc-test name)
   (add-target (bin.gcc (string-append "scaffold/tinycc/" name ".c") #:libc #f #:includes '("scaffold/tinycc")))
@@ -477,6 +479,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (install "mlibc/libc-mes.E" #:dir "lib"))
 (add-target (install "mlibc/libc-mes.M1" #:dir "lib"))
+(add-target (install "mlibc/libc-mes+tcc.E" #:dir "lib"))
+(add-target (install "mlibc/libc-mes+tcc.M1" #:dir "lib"))
 (add-target (install "mlibc/mini-libc-mes.E" #:dir "lib"))
 (add-target (install "mlibc/mini-libc-mes.M1" #:dir "lib"))
 
