@@ -172,6 +172,12 @@ strrchr (char const *s, int c)
   return 0;
 }
 
+char *
+strstr (char const *haystack, char const *needle)
+{
+  return 0;
+}
+
 long
 strtol (char const *nptr, char **endptr, int base)
 {

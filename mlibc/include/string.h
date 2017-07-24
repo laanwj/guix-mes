@@ -50,6 +50,7 @@ int strcmp (char const*, char const*);
 char *strcpy (char *dest, char const *src);
 int strncmp (char const*, char const*, size_t);
 char *strrchr (char const *s, int c);
+char *strstr (char const *haystack, char const *needle);
 
 #endif // ! (__GNUC__ && POSIX)
 
