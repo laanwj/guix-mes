@@ -175,3 +175,9 @@ time_t time (time_t *tloc)
 {
   return 0;
 }
+
+int
+vsnprintf (char *str, size_t size, char const *format, va_list ap)
+{
+  return 0;
+}

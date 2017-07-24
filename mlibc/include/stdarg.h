@@ -25,6 +25,11 @@
 #include_next <stdarg.h>
 #else // ! (__GNUC__ && POSIX)
 
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+typedef unsigned long size_t;
+#endif
+
 #if __GNUC__
 typedef char* va_list;
 #define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
@@ -38,6 +43,7 @@ typedef int va_list;
 #define va_copy(dest, src) dest = src
 
 int vprintf (char const* format, va_list ap);
+int vsnprintf (char *str, size_t size, char const *format, va_list ap);
 
 #endif // ! (__GNUC__ && POSIX)
 
