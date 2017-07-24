@@ -54,6 +54,11 @@ unlink (char const *file_name)
 
 
 
+FILE *
+fdopen (int fd, char const *mode)
+{
+  return 0;
+}
 
 int
 fprintf (FILE *stream, char const *format, ...)
