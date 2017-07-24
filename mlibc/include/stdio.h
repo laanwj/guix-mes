@@ -99,6 +99,7 @@ int eputs (char const* s);
 int fprintf (FILE *stream, char const *format, ...);
 int fputc (int c, int fd);
 int fputs (char const* s, int fd);
+size_t fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream);
 int getchar ();
 int printf (char const* format, ...);
 int putchar (int c);

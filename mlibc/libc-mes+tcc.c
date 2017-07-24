@@ -49,6 +49,12 @@ fprintf (FILE *stream, char const *format, ...)
   return 0;
 }
 
+size_t
+fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+  return 0;
+}
+
 struct tm *
 localtime (time_t const *timep)
 {
