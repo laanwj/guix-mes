@@ -33,11 +33,12 @@
 typedef long size_t;
 #endif
 
-char* getenv (char const* s);
 int atoi (char const *s);
-void *malloc (size_t);
-void *realloc (void *p, size_t size);
 void exit (int);
+char* getenv (char const* s);
+void *malloc (size_t);
+unsigned long strtoul (char const *nptr, char **endptr, int base);
+void *realloc (void *p, size_t size);
 
 #endif // !(__GNUC__ && POSIX)
 
