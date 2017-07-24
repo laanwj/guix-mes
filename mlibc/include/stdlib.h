@@ -37,8 +37,9 @@ int atoi (char const *s);
 void exit (int);
 char* getenv (char const* s);
 void *malloc (size_t);
-unsigned long strtoul (char const *nptr, char **endptr, int base);
+void qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *));
 void *realloc (void *p, size_t size);
+unsigned long strtoul (char const *nptr, char **endptr, int base);
 
 #endif // !(__GNUC__ && POSIX)
 

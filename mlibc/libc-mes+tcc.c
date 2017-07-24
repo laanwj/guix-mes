@@ -20,6 +20,7 @@
 
 #include <libc-mes.c>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -76,6 +77,11 @@ int
 memcmp (void const *s1, void const *s2, size_t n)
 {
   return 0;
+}
+
+void
+qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *))
+{
 }
 
 int
