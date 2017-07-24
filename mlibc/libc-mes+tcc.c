@@ -32,6 +32,16 @@ close ()
   asm ("int____$0x80");
 }
 
+char *
+getcwd (char *buf, size_t size)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+
+  asm ("mov____$i32,%eax SYS_getcwd");
+  asm ("int____$0x80");
+}
+
 int
 fprintf (FILE *stream, char const *format, ...)
 {

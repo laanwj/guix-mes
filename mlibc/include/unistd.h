@@ -41,6 +41,7 @@ typedef long ssize_t;
 
 int access (char const *s, int mode);
 int close (int fd);
+char *getcwd (char *buf, size_t size);
 int read (int fd, void* buf, size_t n);
 int write (int fd, char const* s, int n);
 #endif // ! (__GNUC__ && POSIX)
