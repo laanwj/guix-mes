@@ -898,12 +898,12 @@
                                          (if (<= size 4) (wrap-as (i386:base->accu-address))
                                           (append
                                            (wrap-as (i386:base-address->accu-address))
-                                           (wrap-as (append (i386:accu+n 4)
-                                                            (i386:base+n 4)
+                                           (wrap-as (append (i386:accu+value 4)
+                                                            (i386:base+value 4)
                                                             (i386:base-address->accu-address)))
                                            (if (<= size 8) '()
-                                               (wrap-as (append (i386:accu+n 4)
-                                                                (i386:base+n 4)
+                                               (wrap-as (append (i386:accu+value 4)
+                                                                (i386:base+value 4)
                                                                 (i386:base-address->accu-address)))))))))))
 
              ((i-sel (ident ,field) ,array)

@@ -31,11 +31,11 @@
   (mes-use-module (mes as))))
 
 (define (i386:nop)
-  '(("nop")))                           ; nop
+  '(("nop")))
 
 (define (i386:function-preamble)
-  '(("push___%ebp")                       ; push %ebp
-    ("mov____%esp,%ebp")))                ; mov  %esp,%ebp;
+  '(("push___%ebp")
+    ("mov____%esp,%ebp")))
 
 (define (i386:function-locals)
   '(("sub____%esp,$i8" (#:immediate1 #x40)))) ; sub %esp,$0x40  # 16 local vars
@@ -47,33 +47,135 @@
   `(("mov____0x32,%eax" (#:address ,label)) ; mov    0x804a000,%eax
     ("push___%eax")))                       ; push  %eax
 
+
+;;;  locals
+
 (define (i386:push-local n)
   (or n (error "invalid value: push-local: " n))
-  `(("push___0x8(%ebp)" (#:immediate1 ,(- 0 (* 4 n)))))) ; pushl  0x<n>(%ebp)
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("push___0x8(%ebp)" (#:immediate1 ,n))
+           `("push___0x32(%ebp)" (#:immediate ,n))))))
 
 (define (i386:push-local-address n)
   (or n (error "invalid value: push-local-address: " n))
-  `(("lea____0x8(%ebp),%eax" (#:immediate1 ,(- 0 (* 4 n)))) ; lea 0x<n>(%ebp),%eax
-    ("push___%eax")))                   ; push %eax
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("lea____0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("lea____0x32(%ebp),%eax" (#:immediate ,n)))
+      ("push___%eax"))))
 
 (define (i386:push-byte-local-de-ref n)
   (or n (error "invalid value: push-byte-local-de-ref: " n))
-  `(("mov____0x8(%ebp),%eax" (#:immediate1 ,(- 0 (* 4 n)))) ; mov    -0x<n>(%ebp),%eax
-    ("movzbl_(%eax),%eax")                   ; movzbl (%eax),%eax
-    ("push___%eax")))                        ; push   %eax
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
+      ("movzbl_(%eax),%eax")
+      ("push___%eax"))))
 
 (define (i386:push-byte-local-de-de-ref n)
   (or n (error "invalid value: push-byte-local-de-de-ref: " n))
-  `(("mov____0x8(%ebp),%eax" (#:immediate1 ,(- 0 (* 4 n)))) ; mov    -0x<n>(%ebp),%eax
-     ("mov____(%eax),%eax")                  ; mov    (%eax),%eax
-     ("movzbl_(%eax),%eax")                  ; movzbl (%eax),%eax
-     ("push___%eax")))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
+      ("mov____(%eax),%eax")
+      ("movzbl_(%eax),%eax")
+      ("push___%eax"))))
 
 (define (i386:push-local-de-ref n)
   (or n (error "invalid value: push-byte-local-de-ref: " n))
-  `(("mov____0x8(%ebp),%eax" (#:immediate1 ,(- 0 (* 4 n)))) ; mov    -0x<n>(%ebp),%eax
-    ("mov____(%eax),%eax")              ; mov (%eax),%eax
-    ("push___%eax")))                   ; push   %eax
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
+      ("mov____(%eax),%eax")
+      ("push___%eax"))))
+
+(define (i386:local-add n v)
+  (or n (error "invalid value: i386:local-add: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (and (< (abs n) #x80)
+                (< (abs v) #x80)) `("add____$i8,0x8(%ebp)" (#:immediate1 ,n) (#:immediate1 ,v))
+                `("add____$i32,0x32(%ebp)" (#:immediate ,n) (#:immediate ,v))))))
+
+(define (i386:accu->local n)
+  (or n (error "invalid value: accu->local: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%ebp)" (#:immediate1 ,n))
+           `("mov____%eax,0x32(%ebp)" (#:immediate ,n))))))
+
+(define (i386:base->local n)
+  (or n (error "invalid value: base->local: " n))
+  `(("mov____%edx,0x8(%ebp)" ,(- 0 (* 4 n))))) ; mov    %edx,-<0xn>(%ebp)
+
+(define (i386:base->local n)
+  (or n (error "invalid value: base->local: " n))
+  (let ((n (- 0 (* 4 n))))
+    `((if (< (abs n) #x80) `("mov____%edx,0x8(%ebp)" (#:immediate1 ,n))
+          `("mov____%edx,0x32(%ebp)" (#:immediate ,n))))))
+
+(define (i386:local->accu n)
+  (or n (error "invalid value: local->accu: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("mov____0x32(%ebp),%eax" (#:immediate ,n))))))
+
+(define (i386:local-address->accu n)
+  (or n (error "invalid value: ladd: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("lea____0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("lea____0x32(%ebp),%eax" (#:immediate ,n))))))
+
+(define (i386:local-ptr->accu n)
+  (or n (error "invalid value: local-ptr->accu: " n))
+  (let ((n (- 0 (* 4 n))))
+  `(("mov____%ebp,%eax")                ; mov    %ebp,%eax
+    ,(if (< (abs n) #x80) `("add____$i8,%eax" (#:immediate1 ,n))
+         `("add____$i32,%eax" (#:immediate ,n))))))
+
+(define (i386:byte-local->accu n)
+  (or n (error "invalid value: byte-local->accu: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("movzbl_0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("movzbl_0x32(%ebp),%eax" (#:immediate ,n))))))
+
+(define (i386:byte-local->base n)
+  (or n (error "invalid value: byte-local->base: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("movzbl_0x8(%ebp),%edx" (#:immediate1 ,n))
+           `,@(("mov_0x32(%ebp),%edx" (#:immediate ,n))
+               ("movzbl_%dl,%edx"))))))
+
+(define (i386:local->base n)
+  (or n (error "invalid value: local->base: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%edx" (#:immediate1 ,n))
+           `("mov____0x32(%ebp),%edx" (#:immediate ,n))))))
+
+(define (i386:local-address->base n) ;; DE-REF
+  (or n (error "invalid value: local-address->base: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("lea____0x8(%ebp),%edx" (#:immediate1 ,n))
+           `("lea____0x32(%ebp),%edx" (#:immediate ,n))))))
+
+(define (i386:local-ptr->base n)
+  (or n (error "invalid value: local-ptr->base: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(("mov____%ebp,%edx")                ; mov    %ebp,%edx
+      ,(if (< (abs n) #x80) `("add____$i8,%edx" (#:immediate1 ,n))
+           `("add____$i32,%edx" (#:immediate ,n))))))
+
+(define (i386:value->local n v)
+  (or n (error "invalid value: value->local: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____$i32,0x8(%ebp)" (#:immediate1 ,n) (#:immediate ,v))
+           `("mov____$i32,0x32(%ebp)" (#:immediate ,n) (#:immediate ,v))))))
+
+(define (i386:local-test n v)
+  (or n (error "invalid value: local-test: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(cond ((and (< (abs n) #x80)
+                   (< (abs v) #x80)) `("cmp____$i8,0x8(%ebp)" (#:immediate1 ,n) (#:immediate1 ,v)))
+             ((< (abs n) #x80) `("cmp____$i32,0x8(%ebp)" (#:immediate1 ,n) (#:immediate ,v)))
+             ((< (abs v) #x80) `("cmp____$i8,0x32(%ebp)" (#:immediate ,n) (#:immediate1 ,v)))
+             (else `("cmp____$i32,0x32(%ebp)" (#:immediate ,n) (#:immediate ,v)))))))
 
 (define (i386:pop-accu)
   '(("pop____%eax")))                   ; pop %eax
@@ -102,19 +204,8 @@
 
 (define (i386:accu->base-address+n n)
   (or n (error "invalid value: accu->base-address+n: " n))
-  `(("mov____%eax,0x8(%edx)" (#:immediate1 ,n)))) ; mov    %eax,$0x<n>%(edx)
-
-(define (i386:accu->local n)
-  (or n (error "invalid value: accu->local: " n))
-  `(("mov____%eax,0x8(%ebp)" (#:immediate1 ,(- 0 (* 4 n)))))) ; mov    %eax,-<0xn>(%ebp)
-
-;; (define (i386:accu->local-address n)
-;;   (or n (error "invalid value: accu->local: " n))
-;;   `(#x89 #x45 ,(- 0 (* 4 n))))          ; mov    %eax,-<0xn>(%ebp)
-
-(define (i386:base->local n)
-  (or n (error "invalid value: base->local: " n))
-  `(("mov____%edx,0x8(%ebp)" ,(- 0 (* 4 n))))) ; mov    %edx,-<0xn>(%ebp)
+  `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%edx)" (#:immediate1 ,n))
+         `("mov____%eax,0x32(%edx)" (#:immediate ,n)))))
 
 (define (i386:accu->label label)
   `(("mov____%eax,0x32" (#:address ,label)))) ; mov    %eax,0x<label>
@@ -155,8 +246,12 @@
   `(("add____%edx,%eax")))              ; add    %edx,%eax
 
 (define (i386:accu+value v)
-  (or v (error "invalid value: accu+value: " v))
-  `(("add____$i32,%eax" (#:immediate ,v)))) ; add    %eax,$
+  `(,(if (< (abs v) #x80) `("add____$i8,%eax" (#:immediate1 ,v))
+         `("add____$i32,%eax" (#:immediate ,v)))))
+
+(define (i386:base+value v)
+  `(,(if (< (abs v) #x80) `("add____$i8,%edx" (#:immediate1 ,v))
+         `("add____$i32,%edx" (#:immediate ,v)))))
 
 (define (i386:accu-base)
   `(("sub____%edx,%eax")))              ; sub    %edx,%eax
@@ -178,40 +273,6 @@
 (define (i386:base->accu)
   '(("mov____%edx,%eax")))              ; mov    %edx,%eax
 
-(define (i386:local->accu n)
-  (or n (error "invalid value: local->accu: " n))
-  `(("mov____0x8(%ebp),%eax" (#:immediate1 ,(- 0 (* 4 n)))))) ; mov    -<0xn>(%ebp),%eax
-
-(define (i386:local-address->accu n)
-  (or n (error "invalid value: ladd: " n))
-  `(("lea____0x8(%ebp),%eax" (#:immediate1 ,(- 0 (* 4 n)))))) ; lea 0x<n>(%ebp),%eax
-
-(define (i386:local-ptr->accu n)
-  (or n (error "invalid value: local-ptr->accu: " n))
-  `(("mov____%ebp,%eax")                ; mov    %ebp,%eax
-    ("add____$i8,%eax" (#:immediate1 ,(- 0 (* 4 n)))))) ; add    $0x<n>,%eax
-
-(define (i386:byte-local->accu n)
-  (or n (error "invalid value: byte-local->accu: " n))
-  `(("movzbl_0x8(%ebp),%eax" (#:immediate1 ,(- 0 (* 4 n)))))) ; movzbl 0x<n>(%ebp),%eax
-
-(define (i386:byte-local->base n)
-  (or n (error "invalid value: byte-local->base: " n))
-  `(("movzbl_0x8(%ebp),%edx" (#:immediate1 ,(- 0 (* 4 n)))))) ; movzbl 0x<n>(%ebp),%edx
-
-(define (i386:local->base n)
-  (or n (error "invalid value: local->base: " n))
-  `(("mov____0x8(%ebp),%edx" (#:immediate1 ,(- 0 (* 4 n)))))) ; mov    -<0xn>(%ebp),%edx
-
-(define (i386:local-address->base n) ;; DE-REF
-  (or n (error "invalid value: local-address->base: " n))
-  `(("lea____0x8(%ebp),%edx" (#:immediate1 ,(- 0 (* 4 n)))))) ; lea    0x<n>(%ebp),%edx
-
-(define (i386:local-ptr->base n)
-  (or n (error "invalid value: local-ptr->base: " n))
-  `(("mov____%ebp,%edx")                ; mov    %ebp,%edx
-    ("add____$i8,%edx" (#:immediate1 ,(- 0 (* 4 n)))))) ; add    $0x<n>,%edx
-
 (define (i386:label->accu label)
   `(("mov____$i32,%eax" (#:address ,label)))) ; mov    $<n>,%eax
 
@@ -225,7 +286,8 @@
   `(("mov____0x32,%edx" (#:address ,label)))) ; mov    0x<n>,%edx
 
 (define (i386:label-mem-add label v)
-  `(("add____$i8,0x32" (#:address ,label) (#:immediate1 ,v)))) ; addl   $<v>,0x<n>
+  `(,(if (< (abs v) #x80) `("add____$i8,0x32" (#:address ,label) (#:immediate1 ,v))
+         `("add____$i32,0x32" (#:address ,label) (#:immediate ,v)))))
 
 (define (i386:byte-base-mem->accu)
   '(("add____%edx,%eax")                ; add    %edx,%eax
@@ -248,12 +310,14 @@
   '(("mov____(%edx),%edx")))            ; mov    (%edx),%edx
 
 (define (i386:mem+n->accu n)
-  `(("mov____0x8(%eax),%eax" (#:immediate1 ,n)))) ; mov    0x<n>(%eax),%eax
+  `(,(if (< (abs n) #x80) `("mov____0x8(%eax),%eax" (#:immediate1 ,n))
+         `("mov____0x32(%eax),%eax" (#:immediate ,n)))))
 
-(define (i386:base-mem+n->accu n)
-  (or n (error "invalid value: base-mem+n->accu: " n))
-  `(("add___%edx,%eax")                 ; add    %edx,%eax
-    ("mov____0x8(%eax),%eax" (#:immediate1 ,n)))) ; mov    <n>(%eax),%eax
+(define (i386:base-mem+n->accu v)
+  (or v (error "invalid value: base-mem+n->accu: " v))
+  `(("add___%edx,%eax")
+    ,(if (< (abs v) #x80) `("mov____0x8(%eax),%eax" (#:immediate1 ,v))
+         `("mov____0x32(%eax),%eax" (#:immediate ,v)))))
 
 (define (i386:value->accu v)
   (or v (error "invalid value: i386:value->accu: " v))
@@ -264,7 +328,8 @@
 
 (define (i386:value->accu-address+n n v)
   (or v (error "invalid value: i386:value->accu-address+n: " v))
-  `(("mov____$i32,0x8(%eax)" (#:immediate1 ,n) (#:immediate ,v)))) ; movl   $<v>,0x<n>(%eax)
+  `(,(if (< (abs v) #x80) `("mov____$i32,0x8(%eax)" (#:immediate1 ,n) (#:immediate ,v))
+         `("mov____$i32,0x32(%eax)" (#:immediate ,n) (#:immediate ,v)))))
 
 (define (i386:base->accu-address)
   '(("mov____%edx,%(eax)")))            ; mov    %edx,(%eax)
@@ -273,43 +338,26 @@
   '(("mov____(%edx),%ecx")              ; mov    (%edx),%ecx
     ("mov____%ecx,%(eax)")))            ; mov    %ecx,(%eax)
 
-(define (i386:accu+n n)
-  `(("add____$i8,%eax" (#:immediate1 ,n)))) ; add    $0x00,%eax
-
-(define (i386:base+n n)
-  `(("add____$i8,%edx" (#:immediate1 ,n)))) ; add    $0x00,%edx
-
 (define (i386:byte-base->accu-address)
   '(("mov____%dl,(%eax)")))             ; mov    %dl,(%eax)
 
 (define (i386:byte-base->accu-address+n n)
   (or n (error "invalid value: byte-base->accu-address+n: " n))
-  `(("mov____%dl,0x8(%eax)" (#:immediate1 ,n)))) ; mov    %dl,0x<n>(%eax)
+  `(,(if (< (abs n) #x80) `("mov____%dl,0x8(%eax)" (#:immediate1 ,n))
+         `("mov____%dl,0x32(%eax)" (#:immediate ,n)))))
 
 (define (i386:value->base v)
   (or v (error "invalid value: i386:value->base: " v))
   `(("mov____$i32,%edx" (#:immediate ,v)))) ; mov    $<v>,%edx
 
-(define (i386:local-add n v)
-  (or n (error "invalid value: i386:local-add: " n))
-  `(("add____$i8,0x8(%ebp)" (#:immediate1 ,(- 0 (* 4 n))) (#:immediate1 ,v)))) ; addl   $<v>,0x<n>(%ebp)
-
 (define (i386:accu-mem-add v)
-  `(("add____$i8,0x8(%eax)" (#:immediate1 ,v)))) ; addl   $<v>,(%eax)
+  `(,(if (< (abs v) #x80) `("add____$i8,(%eax)" (#:immediate1 ,v))
+         `("add____$i32,(%eax)" (#:immediate ,v)))))
 
 (define (i386:value->label label v)
   (or v (error "invalid value: value->label: " v))
-  `(("mov____$i32,0x32" (#:address ,label) ; movl   $<v>,(<n>)
+  `(("mov____$i32,0x32" (#:address ,label)
      (#:immediate ,v))))
-
-(define (i386:value->local n v)
-  (or n (error "invalid value: value->local: " n))
-  `(("mov____$i32,0x8(%ebp)" (#:immediate1 ,(- 0 (* 4 n))) ; movl   $<v>,0x<n>(%ebp)
-     (#:immediate ,v))))
-
-(define (i386:local-test n v)
-  (or n (error "invalid value: local-test: " n))
-  `(("cmp____$i8,0x8(%ebp)" (#:immediate1 ,(- 0 (* 4 n))) (#:immediate1 ,v)))) ; cmpl   $<v>,0x<n>(%ebp)
 
 (define (i386:call-label label n)
   `((call32 (#:offset ,label))
@@ -335,7 +383,8 @@
     ("sahf")))                             ; sahf
 
 (define (i386:accu-cmp-value v)
-  `(("cmp____$i8,%eax" (#:immediate1 ,v)))) ; cmp    $<v>,%eax
+  `(,(if (< (abs v) #x80) `("cmp____$i8,%eax" (#:immediate1 ,v))
+         `("cmp____$i32,%eax" (#:immediate ,v)))))
 
 (define (i386:accu-test)
   '(("test___%eax,%eax")))              ; test   %eax,%eax
