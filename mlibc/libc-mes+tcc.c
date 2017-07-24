@@ -19,6 +19,7 @@
  */
 
 #include <libc-mes.c>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,6 +74,12 @@ fclose (FILE *stream)
 
 FILE *
 fdopen (int fd, char const *mode)
+{
+  return 0;
+}
+
+int
+fflush (FILE *stream)
 {
   return 0;
 }
