@@ -40,6 +40,7 @@ void *malloc (size_t);
 void qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *));
 void *realloc (void *p, size_t size);
 long strtol (char const *nptr, char **endptr, int base);
+long long strtoll (char const *nptr, char **endptr, int base);
 unsigned long strtoul (char const *nptr, char **endptr, int base);
 unsigned long long strtoull (char const *nptr, char **endptr, int base);
 

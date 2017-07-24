@@ -142,6 +142,12 @@ strtol (char const *nptr, char **endptr, int base)
   return 0;
 }
 
+long long int
+strtoll (char const *nptr, char **endptr, int base)
+{
+  return 0;
+}
+
 unsigned long
 strtoul (char const *nptr, char **endptr, int base)
 {
