@@ -42,7 +42,7 @@ DEFINE jg32 0f8f
 DEFINE jge32 0f8d
 DEFINE jmp32 e9
 DEFINE jne32 0f85
-DEFINE jne8 74
+DEFINE je8 74
 DEFINE lahf 9f
 DEFINE lea____0x8(%ebp),%eax 8d45
 DEFINE lea____0x8(%ebp),%edx 8d55
