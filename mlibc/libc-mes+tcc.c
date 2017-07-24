@@ -85,6 +85,12 @@ fflush (FILE *stream)
   return 0;
 }
 
+FILE *
+fopen (char const *pathname, char const *mode)
+{
+  return 0;
+}
+
 int
 fprintf (FILE *stream, char const *format, ...)
 {
