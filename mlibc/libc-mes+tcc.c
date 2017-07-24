@@ -41,3 +41,9 @@ memmove (void *dest, void const *src, size_t n)
 {
   return 0;
 }
+
+void *
+memset (void *s, int c, size_t n)
+{
+  return 0;
+}
