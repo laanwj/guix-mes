@@ -148,6 +148,12 @@ strtoul (char const *nptr, char **endptr, int base)
   return 0;
 }
 
+unsigned long long
+strtoull (char const *nptr, char **endptr, int base)
+{
+  return 0;
+}
+
 time_t time (time_t *tloc)
 {
   return 0;
