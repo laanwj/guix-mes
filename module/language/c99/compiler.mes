@@ -124,6 +124,7 @@
     ((param-decl _ (param-declr (ptr-declr (pointer) (array-of (ident ,name))))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer (pointer)) (ident ,name)))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer (pointer (pointer))) (ident ,name)))) name)
+    ((param-decl _ (param-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,params)))) name)
     (_
      (format (current-error-port) "SKIP: .name =~a\n" o))))
 
