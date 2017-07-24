@@ -39,6 +39,8 @@ typedef unsigned long size_t;
 typedef long ssize_t;
 #endif
 
+void *memcpy (void *dest, void const *src, size_t n);
+
 size_t strlen (char const*);
 int strcmp (char const*, char const*);
 int strncmp (char const*, char const*, size_t);

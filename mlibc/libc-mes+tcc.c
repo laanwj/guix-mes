@@ -19,6 +19,7 @@
  */
 
 #include <libc-mes.c>
+#include <string.h>
 
 void
 close ()
@@ -27,4 +28,10 @@ close ()
 
   asm ("mov____$i32,%eax SYS_close");
   asm ("int____$0x80");
+}
+
+void *
+memcpy (void *dest, void const *src, size_t n)
+{
+  return 0;
 }
