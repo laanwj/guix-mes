@@ -111,6 +111,7 @@ int getchar ();
 int printf (char const* format, ...);
 int putchar (int c);
 int puts (char const* s);
+int remove (char const *file_name);
 int sscanf (char const *str, const char *format, ...);
 int snprintf(char *str,  size_t size,  char const *format, ...);
 int sprintf (char *str, char const* format, ...);

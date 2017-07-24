@@ -167,6 +167,12 @@ qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void c
 }
 
 int
+remove (char const *file_name)
+{
+  return 0;
+}
+
+int
 setjmp (jmp_buf env)
 {
   return 0;
