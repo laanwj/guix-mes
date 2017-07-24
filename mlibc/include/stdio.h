@@ -24,9 +24,6 @@ char **g_environment;
 int g_stdin;
 int g_stdout;
 
-int printf (char const* format, ...);
-int sprintf (char *str, char const* format, ...);
-
 #ifndef STDIN
 #define STDIN 0
 #endif
@@ -91,15 +88,18 @@ int fdungetc (int c, int fd);
 int fdputs (char const* s, int fd);
 #endif // __MES_GNUC__
 
-int eputs (char const* s);
-int fputs (char const* s, int fd);
-int puts (char const* s);
-int putchar (int c);
-int fputc (int c, int fd);
-int getchar ();
-int ungetc (int c, int fd);
-
 typedef int FILE;
+
+int eputs (char const* s);
+int fputc (int c, int fd);
+int fputs (char const* s, int fd);
+int getchar ();
+int printf (char const* format, ...);
+int putchar (int c);
+int puts (char const* s);
+int snprintf(char *str,  size_t size,  char const *format, ...);
+int sprintf (char *str, char const* format, ...);
+int ungetc (int c, int fd);
 
 #endif // ! (__GNUC__ && POSIX)
 
