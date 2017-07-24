@@ -20,6 +20,7 @@
 
 #include <libc-mes.c>
 #include <string.h>
+#include <time.h>
 
 void
 close ()
@@ -66,3 +67,7 @@ strtoul (char const *nptr, char **endptr, int base)
   return 0;
 }
 
+time_t time (time_t *tloc)
+{
+  return 0;
+}

@@ -37,6 +37,9 @@ struct tm {
   int tm_yday;   /* Day in the year (0-365, 1 Jan = 0) */
   int tm_isdst;  /* Daylight saving time */
 };
+
+time_t time (time_t *tloc);
+
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_TIME_H
