@@ -68,6 +68,12 @@ lseek (int fd, off_t offset, int whence)
 
 
 int
+execvp (char const *file, char *const argv[])
+{
+  return 0;
+}
+
+int
 fclose (FILE *stream)
 {
   return 0;

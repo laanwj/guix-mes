@@ -46,6 +46,7 @@ typedef long ssize_t;
 
 int access (char const *s, int mode);
 int close (int fd);
+int execvp (char const *file, char *const argv[]);
 char *getcwd (char *buf, size_t size);
 off_t lseek (int fd, off_t offset, int whence);
 int read (int fd, void* buf, size_t n);
