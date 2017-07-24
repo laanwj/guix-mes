@@ -154,6 +154,12 @@ snprintf(char *str,  size_t size,  char const *format, ...)
   return 0;
 }
 
+int
+sscanf (char const *str, const char *format, ...)
+{
+  return 0;
+}
+
 char *
 strchr (char const *s, int c)
 {
