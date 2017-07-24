@@ -397,11 +397,11 @@
 
 (define (i386:jump-byte-z label)
   `(("test___%al,%al")                  ; test   %al,%al
-    ("je8  " (#:offset1 ,label))))      ; je <n>
+    ("je32  " (#:offset ,label))))      ; je <n>
 
 ;; signed
 (define (i386:jump-g label)
-  `(("jg32   " (#:offset ,label))))        ; jg/jnle <n>
+  `(("jg32  " (#:offset ,label))))        ; jg/jnle <n>
 
 ;; signed
 (define (i386:jump-ge label)
