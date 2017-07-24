@@ -102,6 +102,12 @@ free (void *ptr)
 {
 }
 
+int
+fseek (FILE *stream, long offset, int whence)
+{
+  return 0;
+}
+
 size_t
 fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream)
 {
