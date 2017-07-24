@@ -53,6 +53,11 @@ unlink (char const *file_name)
 }
 
 
+int
+fclose (FILE *stream)
+{
+  return 0;
+}
 
 FILE *
 fdopen (int fd, char const *mode)

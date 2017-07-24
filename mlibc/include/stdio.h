@@ -96,6 +96,7 @@ typedef unsigned long size_t;
 #endif
 
 int eputs (char const* s);
+int fclose (FILE *stream);
 FILE *fdopen (int fd, char const *mode);
 int fprintf (FILE *stream, char const *format, ...);
 int fputc (int c, int fd);
