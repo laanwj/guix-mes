@@ -19,6 +19,7 @@
  */
 
 #include <libc-mes.c>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,6 +108,11 @@ localtime (time_t const *timep)
   return 0;
 }
 
+void
+longjmp (jmp_buf env, int val)
+{
+}
+
 void *
 memcpy (void *dest, void const *src, size_t n)
 {
@@ -134,6 +140,12 @@ memcmp (void const *s1, void const *s2, size_t n)
 void
 qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *))
 {
+}
+
+int
+setjmp (jmp_buf env)
+{
+  return 0;
 }
 
 int

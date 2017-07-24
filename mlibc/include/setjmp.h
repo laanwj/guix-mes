@@ -26,6 +26,8 @@
 #else // ! (__GNUC__ && POSIX)
 
 typedef int jmp_buf;
+void longjmp (jmp_buf env, int val);
+int setjmp (jmp_buf env);
 
 #endif // ! (__GNUC__ && POSIX)
 
