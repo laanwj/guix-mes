@@ -31,6 +31,12 @@ close ()
   asm ("int____$0x80");
 }
 
+struct tm *
+localtime (time_t const *timep)
+{
+  return 0;
+}
+
 void *
 memcpy (void *dest, void const *src, size_t n)
 {

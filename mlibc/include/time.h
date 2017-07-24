@@ -38,6 +38,7 @@ struct tm {
   int tm_isdst;  /* Daylight saving time */
 };
 
+struct tm *localtime (time_t const *timep);
 time_t time (time_t *tloc);
 
 #endif // ! (__GNUC__ && POSIX)
