@@ -90,7 +90,13 @@ int fdputs (char const* s, int fd);
 
 typedef int FILE;
 
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+typedef unsigned long size_t;
+#endif
+
 int eputs (char const* s);
+int fprintf (FILE *stream, char const *format, ...);
 int fputc (int c, int fd);
 int fputs (char const* s, int fd);
 int getchar ();

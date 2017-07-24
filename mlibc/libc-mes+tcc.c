@@ -19,6 +19,7 @@
  */
 
 #include <libc-mes.c>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -29,6 +30,12 @@ close ()
 
   asm ("mov____$i32,%eax SYS_close");
   asm ("int____$0x80");
+}
+
+int
+fprintf (FILE *stream, char const *format, ...)
+{
+  return 0;
 }
 
 struct tm *
