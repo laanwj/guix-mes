@@ -29,6 +29,11 @@
 
 #else // ! (__GNUC__ && POSIX)
 
+#ifndef __MES_OFF_T
+#define __MES_OFF_T
+typedef unsigned long off_t;
+#endif
+
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
 typedef unsigned long size_t;
@@ -42,6 +47,7 @@ typedef long ssize_t;
 int access (char const *s, int mode);
 int close (int fd);
 char *getcwd (char *buf, size_t size);
+off_t lseek (int fd, off_t offset, int whence);
 int read (int fd, void* buf, size_t n);
 int unlink (char const *file_name);
 int write (int fd, char const* s, int n);

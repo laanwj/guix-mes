@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 void
 close ()
@@ -49,6 +50,17 @@ unlink (char const *file_name)
   asm ("mov____0x8(%ebp),%ebx !8");
 
   asm ("mov____$i32,%eax SYS_unlink");
+  asm ("int____$0x80");
+}
+
+off_t
+lseek (int fd, off_t offset, int whence)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+  asm ("mov____0x8(%ebp),%edx !16");
+
+  asm ("mov____$i32,%eax SYS_lseek");
   asm ("int____$0x80");
 }
 
