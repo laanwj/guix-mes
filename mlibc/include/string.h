@@ -47,8 +47,10 @@ int memcmp (void const *s1, void const *s2, size_t n);
 size_t strlen (char const*);
 char *strchr (char const *s, int c);
 int strcmp (char const*, char const*);
-int strncmp (char const*, char const*, size_t);
 char *strcpy (char *dest, char const *src);
+int strncmp (char const*, char const*, size_t);
+char *strrchr (char const *s, int c);
+
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_STRING_H

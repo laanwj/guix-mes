@@ -136,6 +136,12 @@ strchr (char const *s, int c)
   return 0;
 }
 
+char *
+strrchr (char const *s, int c)
+{
+  return 0;
+}
+
 long
 strtol (char const *nptr, char **endptr, int base)
 {
