@@ -44,6 +44,18 @@ getcwd (char *buf, size_t size)
 }
 
 int
+unlink (char const *file_name)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+
+  asm ("mov____$i32,%eax SYS_unlink");
+  asm ("int____$0x80");
+}
+
+
+
+
+int
 fprintf (FILE *stream, char const *format, ...)
 {
   return 0;
