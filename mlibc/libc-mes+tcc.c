@@ -74,6 +74,12 @@ snprintf(char *str,  size_t size,  char const *format, ...)
   return 0;
 }
 
+char *
+strchr (char const *s, int c)
+{
+  return 0;
+}
+
 unsigned long
 strtoul (char const *nptr, char **endptr, int base)
 {
