@@ -18,6 +18,9 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdarg.h>
+#include <stdlib.h>
+
 int g_stdin = 0;
 char **g_environment;
 int _env ();
@@ -303,28 +306,24 @@ atoi (char const *s)
   return i * sign;
 }
 
-//void *g_malloc_base = 0;
-char *g_malloc_base = 0;
+char *g_brk = 0;
 
-//void *
-int *
-malloc (int size)
+void *
+malloc (size_t size)
 {
-  //void *p = brk (0);
-  char *p = 0;
-  p = brk (0);
-  if (!g_malloc_base) g_malloc_base = p;
-  brk (p+size);
+  if (!g_brk) g_brk = brk (0);
+  char *p = g_brk;
+  if (size < 0 || brk (g_brk + size) == -1)
+      return 0;
+  g_brk += size;
   return p;
 }
 
-//void *
-int *
-//realloc (void *p, int size)
-realloc (int *p, int size)
+void *
+realloc (void *p, int size)
 {
-  brk (g_malloc_base + size);
-  return g_malloc_base;
+  brk (g_brk + size);
+  return p;
 }
 
 int
@@ -334,7 +333,6 @@ strncmp (char const* a, char const* b, int length)
   return *a - *b;
 }
 
-char **g_environment;
 char *
 getenv (char const* s)
 {
@@ -347,8 +345,6 @@ getenv (char const* s)
     }
   return 0;
 }
-
-#include <stdarg.h>
 
 int
 vprintf (char const* format, va_list ap)

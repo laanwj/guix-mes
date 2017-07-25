@@ -34,6 +34,7 @@ typedef long size_t;
 #endif
 
 int atoi (char const *s);
+void * calloc (size_t nmemb, size_t size);
 void exit (int);
 void free (void *ptr);
 char* getenv (char const* s);

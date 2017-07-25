@@ -19,6 +19,7 @@
  */
 
 #include <libc-mes.c>
+
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -248,3 +249,25 @@ vsnprintf (char *str, size_t size, char const *format, va_list ap)
 {
   return 0;
 }
+
+void *
+calloc (size_t nmemb, size_t size)
+{
+  size_t count = nmemb * size;
+  void *p = malloc (count);
+  memset (p, 0, count);
+  return p;
+}
+
+void *
+realloc (void *ptr, size_t size)
+{
+  void *new = malloc (size);
+  if (ptr && new)
+    {
+      memcpy (new, ptr, size);
+      free (ptr);
+    }
+  return new;
+}
+
