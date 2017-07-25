@@ -23,6 +23,12 @@
 char g_arena[4] = "XXX";
 char *g_chars = g_arena;
 
+struct foo {
+  int fd;
+};
+
+struct foo *file;
+
 int
 test ()
 {
@@ -45,6 +51,10 @@ test ()
 
   char **pp2 = *ppp;
   if (**pp2 != 'X') return 8;
+
+  struct foo *f = 0;
+  if (f) return 9;
+  if (file) return 10;
 
   return 0;
 }
