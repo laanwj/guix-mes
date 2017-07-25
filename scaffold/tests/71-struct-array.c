@@ -20,6 +20,7 @@
 
 #include "30-test.i"
 #include <stdio.h>
+#include <string.h>
 
 struct foo;
 
@@ -30,8 +31,11 @@ typedef struct foo foo_struct;
 struct foo
 {
   int bar[2];
+  char name[10];
 };
   
+struct foo g_foo;
+
 int a, b;
 int i, *j;
 int *k = 0, l;
@@ -50,6 +54,7 @@ test ()
   foo_struct f;
   f.bar[0] = 0x22;
   f.bar[1] = 0x34;
+
   printf ("eentje: %d\n", f.bar[0]);
   printf ("tweetje: %d\n", f.bar[1]);
 
@@ -60,6 +65,21 @@ test ()
   char *strings[] = { "one\n", "two\n", "three\n", NULL };
   char **p = strings;
   while (*p) puts (*p++);
+
+  strcpy (f.name, "hallo\n");
+  puts (f.name);
+
+  struct foo fu;
+  strcpy (fu.name, "hello\n");
+  puts (fu.name);
+
+  strcpy (g_foo.name, "hey\n");
+  puts (g_foo.name);
+
+  char buf[10];
+  struct foo* s = &buf;
+  strcpy (s->name, "hi\n");
+  puts (s->name);
 
   return 0;
 }
