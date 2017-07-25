@@ -38,7 +38,7 @@
     ("mov____%esp,%ebp")))
 
 (define (i386:function-locals)
-  '(("sub____%esp,$i8" (#:immediate1 #x40)))) ; sub %esp,$0x40  # 16 local vars
+  `(("sub____%esp,$i32" (#:immediate ,(+ (* 4 1025) (* 20 4)))))) ; sub %esp,xxx 4*1024 buf, 20 local vars
 
 (define (i386:push-label label)
   `(("push___$i32" (#:address ,label)))) ; push  $0x<label>

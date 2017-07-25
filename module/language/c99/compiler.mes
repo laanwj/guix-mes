@@ -2315,9 +2315,14 @@
       (format (current-error-port) "    :~a\n" name)
       (let loop ((statements (.statements o))
                  (info (clone info #:locals locals #:function (.name o) #:text text)))
-        (if (null? statements) (clone info
-                                      #:function #f
-                                      #:functions (append (.functions info) (list (cons name (assert-return (.text info))))))
+        (if (null? statements) (let* ((locals (.locals info))
+                                      (local (and (pair? locals) (car locals)))
+                                      (count (and=> local (compose local:id cdr)))
+                                      (stack (and count (* count 4))))
+                                 (if (and stack (getenv "MESC_DEBUG")) (stderr "        stack: ~a\n" stack))
+                                 (clone info
+                                       #:function #f
+                                       #:functions (append (.functions info) (list (cons name (assert-return (.text info)))))))
             (let* ((statement (car statements)))
               (loop (cdr statements)
                     ((ast->info info) (car statements)))))))))
