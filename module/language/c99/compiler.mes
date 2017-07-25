@@ -1530,6 +1530,7 @@
   (pmatch o
     ((pointer) 1)
     ((pointer (pointer)) 2)
+    ((pointer (pointer (pointer))) 3)
     (_ (error "ptr-declr->pointer unsupported: " o))))
 
 (define (init-declr->name o)
@@ -1746,26 +1747,6 @@
            (if (.function info)
                (clone info #:locals (add-local locals name type 0))
                (clone info #:globals (append globals (list (ident->global-entry name type 0 0)))))))
-
-         ;; char **p;
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-         (if (.function info)
-             (let ((locals (add-local locals name type 2)))
-               (clone info #:locals locals))
-             (let ((globals (append globals (list (ident->global-entry name type 2 0)))))
-               (clone info #:globals globals))))
-
-         ;; char **p = *x;
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer (pointer)) (ident ,name)) (initzer (de-ref (p-expr (ident ,value)))))))
-         (let ((type (decl->ast-type type))
-               (info (append-text info (ast->comment o))))
-           (if (.function info)
-               (let* ((locals (add-local locals name type 2))
-                      (info (clone info #:locals locals)))
-                 (append-text info (append ((ident-address->accu info) value)
-                                           (wrap-as (i386:mem->accu))
-                                           ((accu->ident info) name))))
-               (error "TODO" o))))
 
         ;; struct foo bar[2];
         ;; char arena[20000];

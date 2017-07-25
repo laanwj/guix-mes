@@ -338,7 +338,7 @@ char **g_environment;
 char *
 getenv (char const* s)
 {
-  char **p = *g_environment;
+  char **p = g_environment;
   int length = strlen (s);
   while (*p)
     {

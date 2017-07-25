@@ -28,10 +28,23 @@ test ()
 {
   if (*g_chars != 'X') return 1;
   g_arena[0] = 'A';
-  if (*g_chars != 'A') return 1;
+  if (*g_chars != 'A') return 2;
   char *x = g_arena;
-  if (*x++ != 'A') return 1;
+  if (*x++ != 'A') return 3;
   *x++ = 'C';
-  if (g_chars[1] != 'C') return 1;
+  if (g_chars[1] != 'C') return 4;
+
+  char **pp = &x;
+  if (**pp != 'X') return 5;
+
+  char *p = *pp;
+  if (*p != 'X') return 6;
+
+  char ***ppp = &pp;
+  //if (***ppp != 'X') return 7;
+
+  char **pp2 = *ppp;
+  if (**pp2 != 'X') return 8;
+
   return 0;
 }
