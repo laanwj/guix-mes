@@ -1240,7 +1240,8 @@ load_env (SCM a) ///((internal))
 {
   r0 = a;
   g_stdin = open ("module/mes/read-0.mes", O_RDONLY);
-  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "mes/read-0.mes", O_RDONLY);
+  char *read0 = MODULEDIR "mes/read-0.mes";
+  g_stdin = g_stdin >= 0 ? g_stdin : open (read0, O_RDONLY);
   if (!g_function) r0 = mes_builtins (r0);
   r2 = read_input_file_env (r0);
   g_stdin = STDIN;
@@ -1253,7 +1254,8 @@ bload_env (SCM a) ///((internal))
 #if __MESC__
   char *mo = "mes/read-0-32.mo";
   g_stdin = open ("module/mes/read-0-32.mo", O_RDONLY);
-  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "mes/read-0-32.mo", O_RDONLY);
+  char *read0 = MODULEDIR "mes/read-0-32.mo";
+  g_stdin = g_stdin >= 0 ? g_stdin : open (read0, O_RDONLY);
 #else
   char *mo ="mes/read-0.mo";
   g_stdin = open ("module/mes/read-0.mo", O_RDONLY);

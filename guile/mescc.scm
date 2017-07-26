@@ -45,16 +45,8 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
   #:use-module (srfi srfi-26)
   #:export (main))
 
-(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") "" "@PREFIX@"))
-(define %datadir (if (string-prefix? "@DATADIR" "@DATADIR@") "" "@DATADIR@"))
-(define %docdir (if (string-prefix? "@DOCDIR" "@DOCDIR@") "doc/" "@DOCDIR@"))
-(define %moduledir "module/")
-(define %version (if (string-prefix? "@VERSION" "@VERSION@") "git" "@VERSION@"))
-(module-define! (resolve-module '(language c99 compiler)) '%datadir %datadir)
-(module-define! (resolve-module '(language c99 compiler)) '%docdir %docdir)
-(module-define! (resolve-module '(language c99 compiler)) '%moduledir %moduledir)
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "PREFIX") "") "@PREFIX@"))
 (module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix)
-(module-define! (resolve-module '(language c99 compiler)) '%version %version)
 
 (define (parse-opts args)
   (let* ((option-spec

@@ -19,6 +19,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
     "mes/as.scm"
     "mes/bytevectors.scm"
     "mes/elf.scm"
+    "mes/guile.scm"
     "mes/M1.scm"))
 (define %go-files (map (compose (cut string-append <> ".go") (cut string-drop-right <> 4)) %scm-files))
 (setenv "srcdir" ".")
@@ -300,23 +301,26 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
                                  "MES_FULL=1"
                                  "POSIX=1"
                                  ,(string-append "VERSION=\"" %version "\"")
-                                 ,(string-append "MODULEDIR=\"" (string-append %moduledir "/") "\"")
-                                 ,(string-append "PREFIX=\"" %prefix "\""))))
+                                 ,(string-append "MODULEDIR=\"" (string-append %prefix (if (string-null? %prefix) "" "/") %moduledir "/") "\"")
+                                 ,(string-append "PREFIX=\"" %prefix "\""))
+                     #:includes '("src")))
 
 (add-target (bin.gcc "src/mes.c" #:libc #f
                      #:dependencies mes-snarf-targets
                      #:defines `("FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
                                  ,(string-append "VERSION=\"" %version "\"")
-                                 ,(string-append "MODULEDIR=\"" (string-append %moduledir "/") "\"")
-                                 ,(string-append "PREFIX=\"" %prefix "\""))))
+                                 ,(string-append "MODULEDIR=\"" (string-append %prefix (if (string-null? %prefix) "" "/") "/" %moduledir "/") "\"")
+                                 ,(string-append "PREFIX=\"" %prefix "\""))
+                     #:includes '("src")))
 
 (add-target (bin.mescc "src/mes.c" #:dependencies mes-snarf-targets
                        #:defines `("FIXED_PRIMITIVES=1"
                                    "MES_FULL=1"
-                                 ,(string-append "VERSION=\"" %version "\"")
-                                 ,(string-append "MODULEDIR=\"" (string-append %moduledir "/") "\"")
-                                 ,(string-append "PREFIX=\"" %prefix "\""))))
+                                   ,(string-append "VERSION=\"" %version "\"")
+                                   ,(string-append "MODULEDIR=\"" (string-append %prefix (if (string-null? %prefix) "" "/") %moduledir "/") "\"")
+                                   ,(string-append "PREFIX=\"" %prefix "\""))
+                       #:includes '("src")))
 
 (define mes-tests
   '("tests/read.test"

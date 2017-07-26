@@ -49,11 +49,7 @@ exit $r
 
 (format (current-error-port) "mescc.mes...\n")
 
-(define %datadir (if (string-prefix? "@DATADIR" "@DATADIR@") "" "@DATADIR@"))
-(define %docdir (if (string-prefix? "@DOCDIR" "@DOCDIR@") "doc/" "@DOCDIR@"))
-(define %moduledir "module/")
-(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") "" "@PREFIX@"))
-(define %version (if (string-prefix? "@VERSION" "@VERSION@") "git" "@VERSION@"))
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "PREFIX") "") "@PREFIX@"))
 
 (define (parse-opts args)
   (let* ((option-spec
