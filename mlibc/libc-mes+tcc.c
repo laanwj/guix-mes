@@ -18,6 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define FULL_MALLOC 1
 #include <libc-mes.c>
 
 #include <setjmp.h>
@@ -270,4 +271,3 @@ realloc (void *ptr, size_t size)
     }
   return new;
 }
-

@@ -319,12 +319,14 @@ malloc (size_t size)
   return p;
 }
 
+#if !FULL_MALLOC
 void *
 realloc (void *p, int size)
 {
   brk (g_brk + size);
-  return p;
+  return g_brk;
 }
+#endif
 
 int
 strncmp (char const* a, char const* b, int length)
