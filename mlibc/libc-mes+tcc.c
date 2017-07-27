@@ -160,7 +160,9 @@ memmove (void *dest, void const *src, size_t n)
 void *
 memset (void *s, int c, size_t n)
 {
-  return 0;
+  char *p = s;
+  while (n--) *p++ = c;
+  return s;
 }
 
 int
