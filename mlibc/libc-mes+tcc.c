@@ -148,7 +148,10 @@ longjmp (jmp_buf env, int val)
 void *
 memcpy (void *dest, void const *src, size_t n)
 {
-  return 0;
+  char* p = dest;
+  char* q = src;
+  while (n--) *p++ = *q++;
+  return dest;
 }
 
 void *

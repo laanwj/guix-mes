@@ -311,10 +311,11 @@ char *g_brk = 0;
 void *
 malloc (size_t size)
 {
-  if (!g_brk) g_brk = brk (0);
+  if (!g_brk)
+    g_brk = brk (0);
+  if (brk (g_brk + size) == -1)
+    return 0;
   char *p = g_brk;
-  if (size < 0 || brk (g_brk + size) == -1)
-      return 0;
   g_brk += size;
   return p;
 }
