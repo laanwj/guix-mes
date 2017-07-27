@@ -91,42 +91,49 @@ dlopen (char const *filename, int flags)
 int
 execvp (char const *file, char *const argv[])
 {
+  eputs ("execvp stub\n");
   return 0;
 }
 
 int
 fclose (FILE *stream)
 {
+  eputs ("fclose stub\n");
   return 0;
 }
 
 FILE *
 fdopen (int fd, char const *mode)
 {
+  eputs ("fdopen stub\n");
   return 0;
 }
 
 int
 fflush (FILE *stream)
 {
+  eputs ("fflush stub\n");
   return 0;
 }
 
 FILE *
 fopen (char const *pathname, char const *mode)
 {
+  eputs ("fopen stub\n");
   return 0;
 }
 
 int
 fprintf (FILE *stream, char const *format, ...)
 {
+  eputs ("fprintf stub\n");
   return 0;
 }
 
 size_t
 fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
+  eputs ("fread stub\n");
   return 0;
 }
 
@@ -138,18 +145,21 @@ free (void *ptr)
 int
 fseek (FILE *stream, long offset, int whence)
 {
+  eputs ("fseek stub\n");
   return 0;
 }
 
 long
 ftell (FILE *stream)
 {
+  eputs ("ftell stub\n");
   return 0;
 }
 
 size_t
 fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream)
 {
+  eputs ("fwrite stub\n");
   return 0;
 }
 
@@ -162,12 +172,14 @@ gettimeofday (struct timeval *tv, struct timezone *tz)
 struct tm *
 localtime (time_t const *timep)
 {
+  eputs ("localtime stub\n");
   return 0;
 }
 
 void
 longjmp (jmp_buf env, int val)
 {
+  eputs ("longjmp stub\n");
 }
 
 void *
@@ -182,6 +194,7 @@ memcpy (void *dest, void const *src, size_t n)
 void *
 memmove (void *dest, void const *src, size_t n)
 {
+  eputs ("memmove stub\n");
   return 0;
 }
 
@@ -211,17 +224,20 @@ mprotect (void *addr, size_t len, int prot)
 void
 qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *))
 {
+  eputs ("qsort stub\n");
 }
 
 int
 remove (char const *file_name)
 {
+  eputs ("remove stub\n");
   return 0;
 }
 
 int
 setjmp (jmp_buf env)
 {
+  eputs ("setjmp stub\n");
   return 0;
 }
 
@@ -240,12 +256,14 @@ sigemptyset (sigset_t *set)
 int
 snprintf(char *str,  size_t size,  char const *format, ...)
 {
+  eputs ("snprintf stub\n");
   return 0;
 }
 
 int
 sscanf (char const *str, const char *format, ...)
 {
+  eputs ("sscanf stub\n");
   return 0;
 }
 
@@ -259,42 +277,49 @@ strcat (char *dest, char const *src)
 char *
 strchr (char const *s, int c)
 {
+  eputs ("strchr stub\n");
   return 0;
 }
 
 char *
 strrchr (char const *s, int c)
 {
+  eputs ("strrchr stub\n");
   return 0;
 }
 
 char *
 strstr (char const *haystack, char const *needle)
 {
+  eputs ("strstr stub\n");
   return 0;
 }
 
 long
 strtol (char const *nptr, char **endptr, int base)
 {
+  eputs ("strtol stub\n");
   return 0;
 }
 
 long long int
 strtoll (char const *nptr, char **endptr, int base)
 {
+  eputs ("strtoll stub\n");
   return 0;
 }
 
 unsigned long
 strtoul (char const *nptr, char **endptr, int base)
 {
+  eputs ("strtoul stub\n");
   return 0;
 }
 
 unsigned long long
 strtoull (char const *nptr, char **endptr, int base)
 {
+  eputs ("strtoull stub\n");
   return 0;
 }
 
@@ -306,6 +331,7 @@ time_t time (time_t *tloc)
 int
 vsnprintf (char *str, size_t size, char const *format, va_list ap)
 {
+  eputs ("vsnprintf stub\n");
   return 0;
 }
 
