@@ -57,6 +57,7 @@
             snarf
 
             libc-mes.E
+            libc-mes+tcc.E
             mini-libc-mes.E
             add-target
             get-target
@@ -479,6 +480,7 @@
 
 (define mini-libc-mes.E (cpp.mescc "mlibc/mini-libc-mes.c"))
 (define libc-mes.E (cpp.mescc "mlibc/libc-mes.c"))
+(define libc-mes+tcc.E (cpp.mescc "mlibc/libc-mes+tcc.c"))
 
 (define* (compile.gcc input-file-name #:key (libc #t) (cc (if libc %CC %CC32)) (defines '()) (includes '()) (dependencies '()))
   (let* ((base-name (base-name input-file-name ".c"))
@@ -495,6 +497,7 @@
          ;;(foo (format (current-error-port) "COMPILE[~s .c] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-M1")
                        ((eq? libc libc-mes.E) ".M1")
+                       ((eq? libc libc-mes+tcc.E) ".tcc-M1")
                        (else ".mini-M1")))
          (target-file-name (string-append base-name suffix))
          (E-target (cpp.mescc input-file-name #:cc cc #:defines defines #:includes includes #:dependencies dependencies)))
@@ -507,6 +510,7 @@
          ;;(foo (format (current-error-port) "m1-asm[~s .m1] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-hex2")
                        ((eq? libc libc-mes.E) ".hex2")
+                       ((eq? libc libc-mes+tcc.E) ".tcc-hex2")
                        (else ".mini-hex2")))
          (target-file-name (string-append base-name suffix))
          (m1-target (compile.mescc input-file-name #:cc cc #:libc libc #:defines defines #:includes includes #:dependencies dependencies))
@@ -514,6 +518,8 @@
                          (compile.mescc "mlibc/libc-mes.c" #:libc #f #:defines defines #:includes includes))
                         ((eq? libc mini-libc-mes.E)
                          (compile.mescc "mlibc/mini-libc-mes.c" #:libc #f #:defines defines #:includes includes))
+                        ((eq? libc libc-mes+tcc.E)
+                         (compile.mescc "mlibc/libc-mes+tcc.c" #:libc #f #:defines defines #:includes includes))
                         (else #f))))
     (target (file-name target-file-name)
             ;;(inputs `(,@(if libc (list libc.m1) '()) ,m1-target))
@@ -525,6 +531,7 @@
          ;;(foo (format (current-error-port) "bin[~s .c] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-guile")
                        ((eq? libc libc-mes.E) ".guile")
+                       ((eq? libc libc-mes+tcc.E) ".tcc-guile")
                        (else ".mini-guile")))
          (target-file-name (string-append base-name suffix))
          (hex2-target (m1-asm input-file-name #:m1 m1 #:cc cc #:libc libc #:defines defines #:includes includes #:dependencies dependencies)))

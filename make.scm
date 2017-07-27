@@ -62,8 +62,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
                                                                      ((eq? libc mini-libc-mes.E) "mini-")
                                                                      (else "")) "guile") #:exit exit)))
 
-
-(add-scaffold-test "t" #:libc mini-libc-mes.E)
+;;(add-scaffold-test "t" #:libc mini-libc-mes.E)
+(add-scaffold-test "t" #:libc libc-mes+tcc.E)
 
 ;; tests/00: exit, functions without libc
 (add-scaffold-test "00-exit-0" #:libc #f)
