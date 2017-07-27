@@ -322,7 +322,7 @@ malloc (size_t size)
 
 #if !FULL_MALLOC
 void *
-realloc (void *p, int size)
+realloc (void *p, size_t size)
 {
   brk (g_brk + size);
   return g_brk;

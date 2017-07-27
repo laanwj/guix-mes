@@ -181,31 +181,28 @@ putchar (int c)
   return 0;
 }
 
-void *g_malloc_base = 0;
+char *g_brk = 0;
 
 void *
 malloc (size_t size)
 {
-  void *p = brk (0);
-  if (!g_malloc_base) g_malloc_base = p;
-  brk (p+size);
+  if (!g_brk)
+    g_brk = brk (0);
+  if (brk (g_brk + size) == -1)
+    return 0;
+  char *p = g_brk;
+  g_brk += size;
   return p;
 }
 
+#if !FULL_MALLOC
 void *
 realloc (void *p, size_t size)
 {
-  (void)p;
-  brk (g_malloc_base + size);
-  return g_malloc_base;
+  brk (g_brk + size);
+  return g_brk;
 }
-
-void
-free (void *p)
-{
-  int *n = (int*)p-1;
-  //munmap ((void*)p, *n);
-}
+#endif
 
 size_t
 strlen (char const* s)
@@ -504,6 +501,7 @@ fdungetc (int c, int fd)
 #endif // POSIX
 
 #if __GNUC__ && !POSIX
+
 void
 _start ()
 {
@@ -537,4 +535,5 @@ _start ()
        );
   exit (r);
 }
+
 #endif // __GNUC__ && !POSIX

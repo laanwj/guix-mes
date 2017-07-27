@@ -25,6 +25,184 @@
 #include_next <signal.h>
 #else //! (__GNUC__ && POSIX)
 typedef int sigset_t;
+
+typedef int stack_t;
+
+typedef int pid_t;
+typedef int uid_t;
+typedef int clock_t;
+typedef int sigval_t;
+
+#define SIGHUP		 1
+#define SIGINT		 2
+#define SIGQUIT		 3
+#define SIGILL		 4
+#define SIGTRAP		 5
+#define SIGABRT		 6
+#define SIGIOT		 6
+#define SIGBUS		 7
+#define SIGFPE		 8
+#define SIGKILL		 9
+#define SIGUSR1		10
+#define SIGSEGV		11
+#define SIGUSR2		12
+#define SIGPIPE		13
+#define SIGALRM		14
+#define SIGTERM		15
+#define SIGSTKFLT	16
+#define SIGCHLD		17
+#define SIGCONT		18
+#define SIGSTOP		19
+#define SIGTSTP		20
+#define SIGTTIN		21
+#define SIGTTOU		22
+#define SIGURG		23
+#define SIGXCPU		24
+#define SIGXFSZ		25
+#define SIGVTALRM	26
+#define SIGPROF		27
+#define SIGWINCH	28
+#define SIGIO		29
+#define SIGPOLL		SIGIO
+
+#define FPE_INTDIV	1
+#define FPE_INTOVF	2
+#define FPE_FLTDIV	3
+#define FPE_FLTOVF	4
+#define FPE_FLTUND	5
+#define FPE_FLTRES	6
+#define FPE_FLTINV	7
+#define FPE_FLTSUB	8
+
+#define SA_NOCLDSTOP	0x00000001
+#define SA_NOCLDWAIT	0x00000002
+#define SA_SIGINFO	0x00000004
+#define SA_ONSTACK	0x08000000
+#define SA_RESTART	0x10000000
+#define SA_NODEFER	0x40000000
+#define SA_RESETHAND	0x80000000
+
+#define SA_NOMASK	SA_NODEFER
+#define SA_ONESHOT	SA_RESETHAND
+
+
+typedef struct siginfo_t {
+  int si_signo;
+  int si_errno;
+  int si_code;
+  int si_trapno;
+  pid_t si_pid;
+  uid_t si_uid;
+  int si_status;
+  clock_t si_utime;
+  clock_t si_stime;
+  sigval_t si_value;
+  int si_int;
+  void *si_ptr;
+  int si_overrun;
+  int si_timerid;
+  void *si_addr;
+  long si_band;
+  int si_fd;
+  short si_addr_lsb;
+  void *si_lower;
+  void *si_upper;
+  int si_pkey;
+  void *si_call_addr;
+  int si_syscall;
+  unsigned int si_arch;
+} siginfo_t;
+
+
+// typedef void __signalfn_t(int);
+// typedef __signalfn_t *__sighandler_t;
+
+struct sigaction {
+ void (*sa_sigaction) (int, siginfo_t *, void *);
+  //__sighandler_t sa_handler;
+  unsigned long sa_flags;
+  sigset_t sa_mask;
+};
+
+
+#ifdef __i386__
+
+#define EBX 0
+#define ECX 1
+#define EDX 2
+#define ESI 3
+#define EDI 4
+#define EBP 5
+#define EAX 6
+#define DS 7
+#define ES 8
+#define FS 9
+#define GS 10
+#define ORIG_EAX 11
+#define EIP 12
+#define CS  13
+#define EFL 14
+#define UESP 15
+#define SS   16
+#define FRAME_SIZE 17
+
+/* Type for general register.  */
+typedef int greg_t;
+
+/* Number of general registers.  */
+#define NGREG	19
+
+/* Container for all general registers.  */
+typedef greg_t gregset_t[NGREG];
+
+/* Definitions taken from the kernel headers.  */
+struct _libc_fpreg
+{
+  unsigned short int significand[4];
+  unsigned short int exponent;
+};
+
+struct _libc_fpstate
+{
+  unsigned long int cw;
+  unsigned long int sw;
+  unsigned long int tag;
+  unsigned long int ipoff;
+  unsigned long int cssel;
+  unsigned long int dataoff;
+  unsigned long int datasel;
+  struct _libc_fpreg _st[8];
+  unsigned long int status;
+};
+
+/* Structure to describe FPU registers.  */
+typedef struct _libc_fpstate *fpregset_t;
+
+typedef struct
+  {
+    gregset_t gregs;
+    /* Due to Linux's history we have to use a pointer here.  The SysV/i386
+       ABI requires a struct with the values.  */
+    fpregset_t fpregs;
+    unsigned long int oldmask;
+    unsigned long int cr2;
+  } mcontext_t;
+
+/* Userlevel context.  */
+typedef struct ucontext
+  {
+    unsigned long int uc_flags;
+    struct ucontext *uc_link;
+    stack_t uc_stack;
+    mcontext_t uc_mcontext;
+    sigset_t uc_sigmask;
+    struct _libc_fpstate __fpregs_mem;
+  } ucontext_t;
+#endif // !__i386__
+
+int sigaction (int signum, struct sigaction const *act, struct sigaction *oldact);
+int sigemptyset (sigset_t *set);
+
 #endif //! (__GNUC__ && POSIX)
 
 #endif // __MES_SIGNAL_H

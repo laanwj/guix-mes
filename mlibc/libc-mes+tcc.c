@@ -18,33 +18,25 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FULL_MALLOC 1
-#include <libc-mes.c>
-
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 
-void
-close ()
+#if !__GNUC__
+#define FULL_MALLOC 1
+#include <libc-mes.c>
+
+int
+close (int fd)
 {
   asm ("mov____0x8(%ebp),%ebx !8");
 
   asm ("mov____$i32,%eax SYS_close");
-  asm ("int____$0x80");
-}
-
-char *
-getcwd (char *buf, size_t size)
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-
-  asm ("mov____$i32,%eax SYS_getcwd");
   asm ("int____$0x80");
 }
 
@@ -67,6 +59,17 @@ lseek (int fd, off_t offset, int whence)
   asm ("mov____$i32,%eax SYS_lseek");
   asm ("int____$0x80");
 }
+
+char *
+getcwd (char *buf, size_t size)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+
+  asm ("mov____$i32,%eax SYS_getcwd");
+  asm ("int____$0x80");
+}
+#endif // !__GNUC__
 
 
 int
@@ -130,6 +133,12 @@ ftell (FILE *stream)
 
 size_t
 fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+  return 0;
+}
+
+int
+gettimeofday (struct timeval *tv, struct timezone *tz)
 {
   return 0;
 }

@@ -23,7 +23,22 @@
 #if __GNUC__ && POSIX
 #undef __MES_DLFCN_H
 #include_next <dlfcn.h>
-#endif // (__GNUC__ && POSIX)
+
+#else // !(__GNUC__ && POSIX)
+
+#define RTLD_LAZY	0x00001
+#define RTLD_NOW	0x00002
+#define	RTLD_BINDING_MASK   0x3
+#define RTLD_NOLOAD	0x00004
+#define RTLD_DEEPBIND	0x00008
+#define RTLD_GLOBAL	0x00100
+#define RTLD_LOCAL	0
+#define RTLD_NODELETE	0x01000
+
+void *dlopen (char const *filename, int flags);
+int dlclose (void *handle);
+
+#endif // !(__GNUC__ && POSIX)
 
 #endif // __MES_DLFCN_H
 

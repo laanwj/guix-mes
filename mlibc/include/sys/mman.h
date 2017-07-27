@@ -23,7 +23,21 @@
 #if __GNUC__ && POSIX
 #undef __MES_SYS_MMAN_H
 #include_next <sys/mman.h>
-#endif // (__GNUC__ && POSIX)
+#else // !(__GNUC__ && POSIX)
+
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+typedef unsigned long size_t;
+#endif
+
+#define PROT_NONE 0
+#define PROT_READ 1
+#define PROT_WRITE 2
+#define PROT_EXEC 4
+
+int mprotect (void *addr, size_t len, int prot);
+
+#endif // !(__GNUC__ && POSIX)
 
 #endif // __MES_SYS_MMAN_H
 

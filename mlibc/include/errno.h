@@ -26,6 +26,8 @@
 #endif
 #undef __MES_ERRNO_H
 #include_next <errno.h>
+#else // ! (__GNUC__ && POSIX)
+extern int errno;
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_ERRNO_H
