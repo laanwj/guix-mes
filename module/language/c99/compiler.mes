@@ -657,8 +657,12 @@
            (append-text info ((ident-add info) name size))))
 
         ((de-ref ,expr)
-         (let ((info ((expr->accu info) expr)))
-           (append-text info (wrap-as (i386:byte-mem->accu))))) ;; FIXME: byte
+         (let* ((info ((expr->accu info) expr))
+                (ptr (expr->pointer info expr))
+                (size (if (= ptr 1) (expr->size info expr)
+                          4)))
+           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
+                                          (i386:mem->accu))))))
 
         ((fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
@@ -942,7 +946,9 @@
                 (append-text info (wrap-as (i386:base->accu-address)))))
              ((array-ref ,index (p-expr (ident ,array)))
               (let* ((type (ident->type info array))
-                     (size (ast-type->size info type))
+                     (ptr (ident->pointer info array))
+                     (size (if (or (= ptr 1) (= ptr -1)) (ast-type->size info type)
+                          4))
                      (info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))
                      (info (append-text info (wrap-as (i386:pop-base)))))
@@ -1586,11 +1592,17 @@
 (define (expr->pointer info o)
   (pmatch o
     ((p-expr (ident ,name)) (ident->pointer info name))
+    ((de-ref ,expr) (1- (expr->pointer info expr)))
+    ((add ,a ,b) (expr->pointer info a))
+    ((sub ,a ,b) (expr->pointer info a))
     (_ (stderr "expr->pointer: unsupported: ~s\n" o) 0)))
 
 (define (expr->size info o)
   (pmatch o
     ((p-expr (ident ,name)) (ident->size info name))
+    ((de-ref ,expr) (expr->size info expr))
+    ((add ,a ,b) (expr->size info a))
+    ((sub ,a ,b) (expr->size info a))
     (_ (stderr "expr->size: unsupported: ~s\n" o) 4)))
 
 (define (p-expr->type info o)

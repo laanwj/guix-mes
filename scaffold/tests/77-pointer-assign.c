@@ -30,11 +30,19 @@ struct foo {
 };
 
 void
-add (void *ptab)
+add0 (void *ptab)
+{
+  void **pp = *(void***)ptab;
+ bla:
+  pp[0] = 0x11223344;
+}
+
+void
+add1 (void *ptab)
 {
   void ***x = (void***)ptab;
  bla:
-  *(void***)ptab = 0x11223344;
+  *(void***)ptab = 0x22334455;
 }
 
 void
@@ -42,23 +50,29 @@ add2 (void *ptab)
 {
   void ***x = (void***)ptab;
  bla:
-  *x = 0x22334455;
+  *x = 0x33445566;
 }
 
 int
 test ()
 {
-  int i;
+  int i = 1;
   int *p = &i;
   struct foo f;
   f.bar = &p;
   eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
-  add (&f.bar);
-  eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
-  if (f.bar != 0x11223344) return 1;
-  add2 (&f.bar);
+
+  add0 (&f.bar);
+  eputs ("f.bar:"); eputs (itoa (*f.bar)); eputs ("\n");
+  if (*f.bar != 0x11223344) return 1;
+
+  add1 (&f.bar);
   eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
   if (f.bar != 0x22334455) return 2;
+
+  add2 (&f.bar);
+  eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
+  if (f.bar != 0x33445566) return 3;
 
   return 0;
 }
