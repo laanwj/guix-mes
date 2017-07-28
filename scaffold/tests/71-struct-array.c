@@ -58,6 +58,10 @@ test ()
   printf ("eentje: %d\n", f.bar[0]);
   printf ("tweetje: %d\n", f.bar[1]);
 
+  int *pf = &f;
+  if (*pf != 0x22) return 1;
+  if (*(pf + 1) != 0x34) return 2;
+
   struct foo *g = &f;
   printf ("punter eentje: %d\n", g->bar[0]);
   printf ("punter tweetje: %d\n", g->bar[1]);
