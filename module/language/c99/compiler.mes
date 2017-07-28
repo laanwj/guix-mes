@@ -924,10 +924,12 @@
                      (size (if (= ptr 1) (ast-type->size info type)
                           4)))
                 (append-text info (append (wrap-as (i386:accu->base))
-                                          ((base->ident-address info) name)))))
+                                          ((base->ident-address info) name)))))  ; FIXME: size
              ((de-ref ,expr)
-              (let ((info ((expr->base info) expr)))
-                (append-text info (wrap-as (i386:mem->base))))) ;; FIXME: size
+              (let* ((info ((expr->base info) expr))
+                     (ptr (expr->pointer info expr))
+                     (size (expr->size info expr)))
+                (append-text info (wrap-as (i386:accu->base-address)))))
              ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
               (let* ((info (append-text info (wrap-as (i386:push-accu))))
                      (info ((expr->accu* info) a))

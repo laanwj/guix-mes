@@ -156,7 +156,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "73-union"
    "74-multi-line-string"
    "75-struct-union"
-   "76-pointer-arithmetic"))
+   "76-pointer-arithmetic"
+   "77-pointer-assign"))
 
 (add-target (group "check-scaffold-tests/7" #:dependencies (filter (target-prefix? "check-scaffold/tests/7") %targets)))
 

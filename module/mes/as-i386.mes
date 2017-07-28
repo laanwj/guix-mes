@@ -332,11 +332,11 @@
          `("mov____$i32,0x32(%eax)" (#:immediate ,n) (#:immediate ,v)))))
 
 (define (i386:base->accu-address)
-  '(("mov____%edx,%(eax)")))            ; mov    %edx,(%eax)
+  '(("mov____%edx,(%eax)")))            ; mov    %edx,(%eax)
 
 (define (i386:base-address->accu-address)
   '(("mov____(%edx),%ecx")              ; mov    (%edx),%ecx
-    ("mov____%ecx,%(eax)")))            ; mov    %ecx,(%eax)
+    ("mov____%ecx,(%eax)")))            ; mov    %ecx,(%eax)
 
 (define (i386:byte-base->accu-address)
   '(("mov____%dl,(%eax)")))             ; mov    %dl,(%eax)
