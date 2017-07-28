@@ -262,12 +262,12 @@
 (define (i386:accu/base)
   '(("mov____%edx,%ebx")                ; mov    %edx,%ebx
     ("xor____%edx,%edx")                ; xor    %edx,%edx
-    ("div____%ebx")))                   ; div    %ebx
+    ("idiv___%ebx")))                   ; div    %ebx
 
 (define (i386:accu%base)
   '(("mov____%edx,%ebx")                ; mov    %edx,%ebx
     ("xor____%edx,%edx")                ; xor    %edx,%edx
-    ("div____%ebx")                     ; div    %ebx
+    ("idiv___%ebx")                     ; div    %ebx
     ("mov____%edx,%eax")))              ; mov    %edx,%eax
 
 (define (i386:base->accu)

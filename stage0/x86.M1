@@ -49,7 +49,7 @@ DEFINE cmp____$i8,0x32(%ebp) 83bd
 DEFINE cmp____$i8,0x8(%ebp) 837d
 DEFINE cmp____%al,%dl 38c2
 DEFINE cmp____%edx,%eax 39d0
-DEFINE div____%ebx f7f3
+DEFINE idiv___%ebx f7fb
 DEFINE int____$0x80 cd80
 DEFINE je32 0f84
 DEFINE jg32 0f8f
@@ -88,7 +88,7 @@ DEFINE mov____%ebp,%ecx 89e9
 DEFINE mov____%ebp,%edx 89ea
 DEFINE mov____%ecx,(%eax) 8908
 DEFINE mov____%edx,%eax 89d0
-DEFINE mov____%edx,%ebx 86d3
+DEFINE mov____%edx,%ebx 89d3
 DEFINE mov____%edx,%ecx 89d1
 DEFINE mov____%edx,(%eax) 8910
 DEFINE mov____%edx,0x32(%ebp) 8995
@@ -147,7 +147,6 @@ DEFINE sub____%esp,$i32 81ec
 DEFINE sub____%esp,$i8 83ec
 DEFINE test___%al,%al 84c0
 DEFINE test___%eax,%eax 85c0
-DEFINE xchg___%dl,%bl 86d3
 DEFINE xchg___%eax,(%esp) 870424
 DEFINE xor____$i32,%eax 35
 DEFINE xor____$i8,%ah 80f4
