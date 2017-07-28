@@ -57,6 +57,7 @@
     (parse-c99
      #:inc-dirs (append includes (cons* include "mlibc/include" "mlibc" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
      #:cpp-defs `(
+                  "__i386__=1"
                   "POSIX=0"
                   "_POSIX_SOURCE=0"
                   "__MESC__=1"
@@ -1117,14 +1118,17 @@
     ("int" . ,(make-type 'builtin 4 0 #f))
     ("long" . ,(make-type 'builtin 4 0 #f))
     ("long long" . ,(make-type 'builtin 8 0 #f))
+    ("long long int" . ,(make-type 'builtin 8 0 #f))
     ("void" . ,(make-type 'builtin 4 0 #f))
     ;; FIXME sign
     ("unsigned char" . ,(make-type 'builtin 1 0 #f))
     ("unsigned short" . ,(make-type 'builtin 2 0 #f))
+    ("unsigned short int" . ,(make-type 'builtin 2 0 #f))
     ("unsigned" . ,(make-type 'builtin 4 0 #f))
     ("unsigned int" . ,(make-type 'builtin 4 0 #f))
     ("unsigned long" . ,(make-type 'builtin 4 0 #f))
-    ("unsigned long long" . ,(make-type 'builtin 8 0 #f))))
+    ("unsigned long long" . ,(make-type 'builtin 8 0 #f))
+    ("unsigned long long int" . ,(make-type 'builtin 8 0 #f))))
 
 (define (field:name o)
   (pmatch o
@@ -1442,10 +1446,12 @@
        (list name type 4 1))
       ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
        (list name type 4 2))
+      ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
+       (list name "void" 4 2))
       ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list name '(void) 4 1))
+       (list name "void" 4 1))
       ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)))))
-       (list name '(void) 4 1))
+       (list name "void" 4 1))
       ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
        (list name type 4 1))
       ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (array-of (ident ,name) ,count)))))
@@ -1539,6 +1545,7 @@
     ((ptr-declr ,pointer (ident ,name)) name)
     ((array-of (ident ,name)) name)
     ((array-of (ident ,name) ,index) name)
+    ((ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,params)) name)
     ((ptr-declr (pointer) (array-of (ident ,name))) name)
     ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) name)
     (_ (error "init-declr->name unsupported: " o))))
@@ -1549,6 +1556,7 @@
     ((ptr-declr ,pointer (ident ,name)) (ptr-declr->pointer pointer))
     ((array-of (ident ,name) ,index) -1)
     ((array-of (ident ,name)) -1)
+    ((ftn-declr (scope (ptr-declr ,pointer (ident ,name))) (param-list . ,params)) (ptr-declr->pointer pointer))
     ((ptr-declr (pointer) (array-of (ident ,name))) -2)
     ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) -2)
     (_ (error "init-declr->pointer unsupported: " o))))

@@ -109,67 +109,6 @@ getcwd (char *buf, size_t size)
   return r;
 }
 
-int dlclose (void *handle)
-{
-  return 0;
-}
-
-void *
-dlopen (char const *filename, int flags)
-{
-  return 0;
-}
-
-int
-mprotect (void *addr, size_t len, int prot)
-{
-  return 0;
-}
-
-int
-sigaction (int signum, struct sigaction const *act, struct sigaction *oldact)
-{
-  return 0;
-}
-
-int
-sigemptyset (sigset_t *set)
-{
-  return 0;
-}
-
-char *
-strcat (char *dest, char const *src)
-{
-  return 0;
-}
-
-int
-vfprintf (FILE* f, char const* format, va_list ap)
-{
-  int fd = (int)f;
-  char const *p = format;
-  while (*p)
-    if (*p != '%')
-      putchar (*p++);
-    else
-      {
-        p++;
-        char c = *p;
-        switch (c)
-          {
-          case '%': {fputc (*p, fd); break;}
-          case 'c': {char c; c = va_arg (ap, char); fputc (c, fd); break;}
-          case 'd': {int d; d = va_arg (ap, int); fputs (itoa (d), fd); break;}
-          case 's': {char *s; s = va_arg (ap, char *); fputs (s, fd); break;}
-          default: {fputc (*p, fd); break;}
-          }
-        p++;
-      }
-  va_end (ap);
-  return 0;
-}
-
 int
 __udivdi3 (int a, int b)
 {

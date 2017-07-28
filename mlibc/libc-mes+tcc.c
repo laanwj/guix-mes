@@ -24,12 +24,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
+#include <sys/mman.h>
 #include <sys/time.h>
 #include <unistd.h>
 
 #if !__GNUC__
 #define FULL_MALLOC 1
 #include <libc-mes.c>
+
+int errno;
 
 int
 close (int fd)
@@ -71,6 +75,18 @@ getcwd (char *buf, size_t size)
 }
 #endif // !__GNUC__
 
+
+int
+dlclose (void *handle)
+{
+  return 0;
+}
+
+void *
+dlopen (char const *filename, int flags)
+{
+  return 0;
+}
 
 int
 execvp (char const *file, char *const argv[])
@@ -183,6 +199,12 @@ memcmp (void const *s1, void const *s2, size_t n)
   return 0;
 }
 
+int
+mprotect (void *addr, size_t len, int prot)
+{
+  return 0;
+}
+
 void
 qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *))
 {
@@ -201,6 +223,18 @@ setjmp (jmp_buf env)
 }
 
 int
+sigaction (int signum, struct sigaction const *act, struct sigaction *oldact)
+{
+  return 0;
+}
+
+int
+sigemptyset (sigset_t *set)
+{
+  return 0;
+}
+
+int
 snprintf(char *str,  size_t size,  char const *format, ...)
 {
   return 0;
@@ -209,6 +243,13 @@ snprintf(char *str,  size_t size,  char const *format, ...)
 int
 sscanf (char const *str, const char *format, ...)
 {
+  return 0;
+}
+
+char *
+strcat (char *dest, char const *src)
+{
+  eputs ("strcat stub\n");
   return 0;
 }
 
@@ -284,4 +325,30 @@ realloc (void *ptr, size_t size)
       free (ptr);
     }
   return new;
+}
+
+int
+vfprintf (FILE* f, char const* format, va_list ap)
+{
+  int fd = (int)f;
+  char const *p = format;
+  while (*p)
+    if (*p != '%')
+      putchar (*p++);
+    else
+      {
+        p++;
+        char c = *p;
+        switch (c)
+          {
+          case '%': {fputc (*p, fd); break;}
+          case 'c': {char c; c = va_arg (ap, char); fputc (c, fd); break;}
+          case 'd': {int d; d = va_arg (ap, int); fputs (itoa (d), fd); break;}
+          case 's': {char *s; s = va_arg (ap, char *); fputs (s, fd); break;}
+          default: {fputc (*p, fd); break;}
+          }
+        p++;
+      }
+  va_end (ap);
+  return 0;
 }

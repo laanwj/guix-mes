@@ -44,10 +44,11 @@ void *memmove (void *dest, void const *src, size_t n);
 void *memset (void *s, int c, size_t n);
 int memcmp (void const *s1, void const *s2, size_t n);
 
-size_t strlen (char const*);
+char *strcat (char *dest, char const *src);
 char *strchr (char const *s, int c);
 int strcmp (char const*, char const*);
 char *strcpy (char *dest, char const *src);
+size_t strlen (char const*);
 int strncmp (char const*, char const*, size_t);
 char *strrchr (char const *s, int c);
 char *strstr (char const *haystack, char const *needle);
