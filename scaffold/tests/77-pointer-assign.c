@@ -57,9 +57,8 @@ test ()
   eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
   if (f.bar != 0x11223344) return 1;
   add2 (&f.bar);
-  // FIXME
-  // eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
-  // if (f.bar != 0x22334455) return 2;
+  eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
+  if (f.bar != 0x22334455) return 2;
 
   return 0;
 }
