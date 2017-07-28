@@ -196,14 +196,14 @@
 (define (i386:accu->base)
   '(("mov____%eax,%edx")))              ; mov    %eax,%edx
 
-(define (i386:accu->base-address)
+(define (i386:accu->base-mem)
   '(("mov____%eax,(%edx)")))            ; mov    %eax,(%edx)
 
-(define (i386:byte-accu->base-address)
+(define (i386:byte-accu->base-mem)
   '(("mov____%al,(%edx)")))             ; mov    %al,(%edx)
 
-(define (i386:accu->base-address+n n)
-  (or n (error "invalid value: accu->base-address+n: " n))
+(define (i386:accu->base-mem+n n)
+  (or n (error "invalid value: accu->base-mem+n: " n))
   `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%edx)" (#:immediate1 ,n))
          `("mov____%eax,0x32(%edx)" (#:immediate ,n)))))
 
@@ -323,26 +323,30 @@
   (or v (error "invalid value: i386:value->accu: " v))
   `(("mov____$i32,%eax" (#:immediate ,v)))) ; mov    $<v>,%eax
 
-(define (i386:value->accu-address v)
+(define (i386:value->accu-mem v)
   `(("mov____$i32,(%eax)" (#:immediate ,v)))) ; movl   $0x<v>,(%eax)
 
-(define (i386:value->accu-address+n n v)
-  (or v (error "invalid value: i386:value->accu-address+n: " v))
+(define (i386:value->accu-mem+n n v)
+  (or v (error "invalid value: i386:value->accu-mem+n: " v))
   `(,(if (< (abs v) #x80) `("mov____$i32,0x8(%eax)" (#:immediate1 ,n) (#:immediate ,v))
          `("mov____$i32,0x32(%eax)" (#:immediate ,n) (#:immediate ,v)))))
 
-(define (i386:base->accu-address)
+(define (i386:base->accu-mem)
   '(("mov____%edx,(%eax)")))            ; mov    %edx,(%eax)
 
-(define (i386:base-address->accu-address)
+(define (i386:accu-mem->base-mem)
+  '(("mov____(%eax),%ecx")
+    ("mov____%ecx,(%edx)")))
+
+(define (i386:base-mem->accu-mem)
   '(("mov____(%edx),%ecx")              ; mov    (%edx),%ecx
     ("mov____%ecx,(%eax)")))            ; mov    %ecx,(%eax)
 
-(define (i386:byte-base->accu-address)
+(define (i386:byte-base->accu-mem)
   '(("mov____%dl,(%eax)")))             ; mov    %dl,(%eax)
 
-(define (i386:byte-base->accu-address+n n)
-  (or n (error "invalid value: byte-base->accu-address+n: " n))
+(define (i386:byte-base->accu-mem+n n)
+  (or n (error "invalid value: byte-base->accu-mem+n: " n))
   `(,(if (< (abs n) #x80) `("mov____%dl,0x8(%eax)" (#:immediate1 ,n))
          `("mov____%dl,0x32(%eax)" (#:immediate ,n)))))
 

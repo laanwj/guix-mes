@@ -22,6 +22,7 @@
 
 struct baz {
   int i;
+  int j;
 };
 
 struct foo {
@@ -86,6 +87,14 @@ test ()
   hash_ident[0] = 10;
   *hash_ident = 0;
   memset (hash_ident, 0, 10);
+
+  struct baz b;
+  b.i = b.j = 1;
+  if (b.i != 1) return 4;
+
+  struct baz *pb = &b;
+  pb->i = pb->j = 1;
+  if (pb->i != 1) return 5;
 
   return 0;
 }

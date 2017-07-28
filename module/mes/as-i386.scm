@@ -34,14 +34,15 @@
             i386:accu+base
             i386:accu+value
             i386:accu->base
-            i386:accu->base-address
-            i386:accu->base-address+n
+            i386:accu->base-mem
+            i386:accu->base-mem+n
             i386:accu->label
             i386:accu->local
             i386:accu-and-base
             i386:accu-base
             i386:accu-cmp-value
             i386:accu-mem-add
+            i386:accu-mem->base-mem
             i386:accu-negate
             i386:accu-not
             i386:accu-or-base
@@ -55,16 +56,16 @@
             i386:accu>>base
             i386:base+value
             i386:base->accu
-            i386:base->accu-address
+            i386:base->accu-mem
             i386:base->label
             i386:base->local
-            i386:base-address->accu-address
+            i386:base-mem->accu-mem
             i386:base-mem+n->accu
             i386:base-mem->accu
             i386:base-sub
-            i386:byte-accu->base-address
-            i386:byte-base->accu-address
-            i386:byte-base->accu-address+n
+            i386:byte-accu->base-mem
+            i386:byte-base->accu-mem
+            i386:byte-base->accu-mem+n
             i386:byte-base-mem->accu
             i386:byte-base-sub
             i386:byte-local->accu
@@ -120,8 +121,8 @@
             i386:sub-base
             i386:test-base
             i386:value->accu
-            i386:value->accu-address
-            i386:value->accu-address+n
+            i386:value->accu-mem
+            i386:value->accu-mem+n
             i386:value->base
             i386:value->label
             i386:value->local
