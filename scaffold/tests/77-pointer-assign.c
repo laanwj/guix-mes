@@ -20,7 +20,6 @@
 
 #include "30-test.i"
 
-
 struct baz {
   int i;
 };
@@ -53,6 +52,16 @@ add2 (void *ptab)
   *x = 0x33445566;
 }
 
+struct foo *hash_ident[10];
+
+void *
+memset (void *s, int c, int n)
+{
+  char *p = s;
+  while (n--) *p++ = c;
+  return s;
+}
+
 int
 test ()
 {
@@ -73,6 +82,10 @@ test ()
   add2 (&f.bar);
   eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
   if (f.bar != 0x33445566) return 3;
+
+  hash_ident[0] = 10;
+  *hash_ident = 0;
+  memset (hash_ident, 0, 10);
 
   return 0;
 }
