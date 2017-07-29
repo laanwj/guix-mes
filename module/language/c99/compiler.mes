@@ -851,8 +851,8 @@
                                     (wrap-as (i386:sub-base))))))
 
         ((eq ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:z->accu))))
-        ((ge ,a ,b) ((binop->accu info) b a (i386:sub-base)))
-        ((gt ,a ,b) ((binop->accu info) b a (i386:sub-base)))
+        ((ge ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:ge?->accu))))
+        ((gt ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:g?->accu) (i386:accu-test))))
 
         ;; FIXME: set accu *and* flags
         ((ne ,a ,b) ((binop->accu info) a b (append (i386:push-accu)
@@ -864,8 +864,8 @@
                                                     (i386:pop-accu))))
 
         ((ne ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:xor-zf))))
-        ((le ,a ,b) ((binop->accu info) b a (i386:base-sub)))
-        ((lt ,a ,b) ((binop->accu info) b a (i386:base-sub)))
+        ((le ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:le?->accu))))
+        ((lt ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:l?->accu))))
 
         ((or ,a ,b)
          (let* ((info ((expr->accu info) a))
@@ -1426,8 +1426,8 @@
 
       ((le ,a ,b) ((jump i386:jump-g) o))
       ((lt ,a ,b) ((jump i386:jump-ge) o))
-      ((ge ,a ,b) ((jump i386:jump-g) o))
-      ((gt ,a ,b) ((jump i386:jump-ge) o))
+      ((ge ,a ,b) ((jump i386:jump-l) o))
+      ((gt ,a ,b) ((jump i386:jump-le) o))
 
       ((ne ,a ,b) ((jump i386:jump-nz) o))
       ((eq ,a ,b) ((jump i386:jump-nz) o))

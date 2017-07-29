@@ -210,9 +210,6 @@
 (define (i386:accu->label label)
   `(("mov____%eax,0x32" (#:address ,label)))) ; mov    %eax,0x<label>
 
-(define (i386:accu-zero?)
-  '(("test___%eax,%eax")))
-
 (define (i386:accu-shl n)
   (or n (error "invalid value: accu:shl n: " n))
   `(("shl____$i8,%eax" (#:immediate1 ,n)))) ; shl    $0x8,%eax
@@ -373,6 +370,9 @@
     ("call___*%eax")                    ; call   *%eax
     ("add____$i8,%esp" (#:immediate1  ,(* n 4))))) ; add    $00,%esp
 
+(define (i386:accu-zero?)
+  '(("test___%eax,%eax")))
+
 (define (i386:accu-negate)
   '(("sete___%al")                      ; sete %al
     ("movzbl_%al,%eax")))               ; movzbl %al,%eax
@@ -411,6 +411,14 @@
 (define (i386:jump-ge label)
   `(("jge32 " (#:offset ,label))))       ; jge/jnl <n>
 
+;; signed
+(define (i386:jump-l label)
+  `(("jl32  " (#:offset ,label))))
+
+;; signed
+(define (i386:jump-le label)
+  `(("jle32 " (#:offset ,label))))
+
 (define (i386:jump-nz label)
   `(("jne32 " (#:offset ,label))))       ; jnz . + <n>
 
@@ -431,6 +439,22 @@
 
 (define (i386:base-sub)
   `(("sub____%eax,%edx")))              ; sub    %eax,%edx
+
+(define (i386:g?->accu)
+  '(("setg___%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:ge?->accu)
+  '(("setge__%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:l?->accu)
+  '(("setl___%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:le?->accu)
+  '(("setle__%al")
+    ("movzbl_%al,%eax")))
 
 (define (i386:nz->accu)
   '(("setne__%al")                      ; setne   %al

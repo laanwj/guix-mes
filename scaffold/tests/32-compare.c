@@ -21,6 +21,10 @@
 #include "30-test.i"
 #include <stdio.h>
 
+int isid(char c) {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
 int
 test ()
 {
@@ -117,6 +121,91 @@ test ()
   if (one != 0) goto ok11;
   return 1;
  ok11:
+  ;
+
+  int m1 = -1;
+  int i;
+
+  puts ("t: i = one > 0\n");
+  i = one > 0;
+  if (!i) return 1;
+
+  puts ("t: i = one >= 1\n");
+  i = one >= 1;
+  if (!i) return 2;
+
+  puts ("t: i = one < 2\n");
+  i = one < 2;
+  if (!i) return 3;
+
+  puts ("t: i = one <= 1\n");
+  i = one <= 1;
+  if (!i) return 4;
+
+
+  puts ("t: i = 0 > one\n");
+  i = 0 > one;
+  if (i) return 5;
+
+  puts ("t: i = 0 >= one\n");
+  i = 0 >= one;
+  if (i) return 6;
+
+  puts ("t: i = 1 < one \n");
+  i = 1 < one;
+  if (i) return 7;
+
+  puts ("t: i = 2 <= one\n");
+  i = 2 <= one;
+  if (i) return 8;
+
+
+  puts ("t: i = m1 > -2\n");
+  i = m1 > -2;
+  if (!i) return 9;
+
+  puts ("t: i = m1 >= -1\n");
+  i = m1 >= -1;
+  if (!i) return 10;
+
+  puts ("t: i = m1 < 0\n");
+  i = m1 < 0;
+  if (!i) return 11;
+
+  puts ("t: i = m1 <= -1\n");
+  i = m1 <= -1;
+  if (!i) return 12;
+
+
+  puts ("t: i = -1 > m1\n");
+  i = -1 > m1;
+  if (i) return 13;
+
+  puts ("t: i = -2 >= m1\n");
+  i = -2 >= m1;
+  if (i) return 14;
+
+  puts ("t: i = -1 < m1 \n");
+  i = -1 < m1;
+  if (i) return 15;
+
+  puts ("t: i = -2 <= m1\n");
+  i = 0 <= m1;
+  if (i) return 16;
+
+
+  puts ("t: isid (0)\n");
+  if (isid (0)) return 17;
+
+  puts ("t: isid (6)\n");
+
+  if (isid (6)) return 18;
+
+  puts ("t: isid (a)\n");
+  if (isid ('a') != 1) return 19;
+
+  puts ("t: isid ( )\n");
+  if (isid (' ')) return 20;
 
   return 0;
 }

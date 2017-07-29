@@ -84,6 +84,8 @@
             i386:jump-byte-z
             i386:jump-g
             i386:jump-ge
+            i386:jump-l
+            i386:jump-le
             i386:jump-nz
             i386:jump-z
             i386:label->accu
@@ -128,6 +130,10 @@
             i386:value->local
             i386:xor-accu
             i386:xor-zf
+            i386:g?->accu
+            i386:ge?->accu
+            i386:l?->accu
+            i386:le?->accu
             i386:z->accu
             ))
 

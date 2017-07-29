@@ -52,11 +52,13 @@ DEFINE cmp____%edx,%eax 39d0
 DEFINE idiv___%ebx f7fb
 DEFINE int____$0x80 cd80
 DEFINE je32 0f84
+DEFINE je8 74
 DEFINE jg32 0f8f
 DEFINE jge32 0f8d
+DEFINE jl32 0f8c
+DEFINE jle32 0f8e
 DEFINE jmp32 e9
 DEFINE jne32 0f85
-DEFINE je8 74
 DEFINE lahf 9f
 DEFINE lea____0x32(%ebp),%eax 8d85
 DEFINE lea____0x32(%ebp),%edx 8d95
@@ -136,6 +138,10 @@ DEFINE push___0x8(%ebp) ff75
 DEFINE ret c3
 DEFINE sahf 9e
 DEFINE sete___%al 0f94c0
+DEFINE setg___%al 0f9fc0
+DEFINE setge__%al 0f9dc0
+DEFINE setl___%al 0f9cc0
+DEFINE setle__%al 0f9ec0
 DEFINE setne__%al 0f95c0
 DEFINE shl____$i8,%eax c1e0
 DEFINE shl____%cl,%eax d3e0
