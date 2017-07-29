@@ -87,12 +87,13 @@
 (define (object->M1 o)
   (let* ((functions (assoc-ref o 'functions))
          (function-names (map car functions))
+         (file-name (car (or (assoc-ref o 'file-names) function-names)))
          (globals (assoc-ref o 'globals))
          (global-names (map car globals))
          (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names)))
     (define (string->label o)
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
-       (format #f "string_~a" index)))
+       (format #f "string_~a_~a" file-name index)))
     (define (text->M1 o)
       (pmatch o
         ;; FIXME
