@@ -196,7 +196,10 @@ memset (void *s, int c, size_t n)
 int
 memcmp (void const *s1, void const *s2, size_t n)
 {
-  return 0;
+  char *a = s1;
+  char *b = s2;
+  while (*a == *b && --n) {a++;b++;}
+  return *a - *b;
 }
 
 int
