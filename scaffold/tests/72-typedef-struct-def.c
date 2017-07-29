@@ -36,6 +36,8 @@ typedef struct
 
 bar baz[2] = {1, 2, 3, 4, 5, 6};
 
+bar *list[2];
+
 //NYACC
 //#define offsetof(type, field) ((size_t) &((type *)0)->field)
 #if __MESC__
@@ -57,7 +59,7 @@ test ()
   if (b.f.i != 2) return 1;
 
   printf ("b.p->i=%d\n", b.p->i);
-  if (b.p->i != 1) return 1;
+  if (b.p->i != 1) return 2;
 
   bar* p = &b;
   p->i = 2;
@@ -70,38 +72,49 @@ test ()
   printf ("p->i=%d\n", b.i);
 
   printf ("p->f.i=%d\n", p->f.i);
-  if (p->f.i != 2) return 1;
+  if (p->f.i != 2) return 3;
 
   printf ("p->p->i=%d\n", p->p->i);
-  if (p->p->i != 1) return 1;
+  if (p->p->i != 1) return 4;
 
   bar** pp = &p;
   (*pp)->i = 3;
   printf ("(*pp)->i=%d\n", b.i);
 
   printf ("sizeof i:%d\n", sizeof (p->i));
-  if ((sizeof p->i) != 4) return 1;
+  if ((sizeof p->i) != 4) return 5;
 
   printf ("offsetof g=%d\n", (offsetof (bar ,f)));
-  if ((offsetof (bar ,f)) != 4) return 1;
+  if ((offsetof (bar ,f)) != 4) return 6;
 
   printf ("(*pp)->b.i=%d\n", (*pp)->f.i);
-  if ((*pp)->f.i != 2) return 1;
+  if ((*pp)->f.i != 2) return 7;
 
-  if (baz[0].i != 1) return 1;
+  if (baz[0].i != 1) return 8;
   printf ("baz[0].f.i=%d\n", baz[0].f.i);
-  if (baz[0].f.i != 2) return 1;
+  if (baz[0].f.i != 2) return 9;
 
   printf ("baz[1].i=%d\n", baz[1].i);
-  if (baz[1].i != 4) return 1;
+  if (baz[1].i != 4) return 10;
   printf ("baz[1].f.i=%d\n", baz[1].f.i);
-  if (baz[1].f.i != 5) return 1;
+  if (baz[1].f.i != 5) return 11;
 
   bar one = {0};
   printf ("one.i\n", one.i);
-  if (one.i != 0) return 1;
+  if (one.i != 0) return 12;
   printf ("one.f.i\n", one.f.i);
-  if (one.f.i != 0) return 1;
+  if (one.f.i != 0) return 13;
+
+  bar b0 = {2};
+  struct foo f0 = {0};
+  struct foo *pf = &f0;
+  list[0] = &b0;
+  list[0]->p = pf;
+
+  eputs ("b0.i="); eputs (itoa (b0.i)); eputs ("\n");
+  if (b0.i != 2) return 14;
+  eputs ("b0.p->i="); eputs (itoa (b0.p->i)); eputs ("\n");
+  if (b0.p->i != 0) return 15;
 
   return 0;
 }

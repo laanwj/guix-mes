@@ -1177,7 +1177,6 @@
               (offset (field-offset info type field))
               (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
          (append-text info (append (wrap-as (i386:mem->accu))
-                                   (wrap-as (i386:mem->accu))
                                    (wrap-as (i386:accu+value offset))))))
 
       (_ (error "expr->accu*: unsupported: " o)))))
