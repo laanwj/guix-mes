@@ -1055,8 +1055,9 @@
        (let* ((type0 (ident->type info struct0))
               (type1 (field-type info type0 field0))
               (offset (+ (field-offset info type0 field0)
-                         (field-offset info type1 field1))))
-         (append-text info (append ((ident-address->accu info) struct0)
+                         (field-offset info type1 field1)))
+              (ptr0 (ident->pointer info struct0)))
+         (append-text info (append ((ident->accu info) struct0)
                                    (wrap-as (i386:accu+value offset))))))
 
       ;; bar->foo.i
@@ -1628,14 +1629,17 @@
     ((p-expr (ident ,name)) (ident->type info name))
     ((array-ref ,index (p-expr (ident ,array))) (ident->type info array))
     ((i-sel (ident ,field) (p-expr (ident ,struct)))
-     (let ((type0 (ident->type info struct)))
-       (field-type info `("tag" ,type0) field)))
+     (let* ((type0 (ident->type info struct))
+            (type0 (if (pair? type0) type0 `("tag" ,type0))))
+       (field-type info type0 field)))
     ((d-sel (ident ,field) (p-expr (ident ,struct)))
-     (let ((type0 (ident->type info struct)))
-       (field-type info `("tag" ,type0) field)))
+     (let* ((type0 (ident->type info struct))
+            (type0 (if (pair? type0) type0 `("tag" ,type0))))
+       (field-type info type0 field)))
     ((d-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
-     (let ((type0 (ident->type info array)))
-       (field-type info `("tag" ,type0) field)))
+     (let* ((type0 (ident->type info array))
+            (type0 (if (pair? type0) type0 `("tag" ,type0))))
+       (field-type info type0 field)))
     (_ (error "p-expr->type: unsupported: " o))))
 
 (define (local-var? o) ;; formals < 0, locals > 0
@@ -1858,6 +1862,11 @@
          (let ((type-entry (struct->type-entry name (map (struct-field info) fields))))
            (clone info #:types (cons type-entry types))))
 
+        ;; union
+        ((decl (decl-spec-list (type-spec (union-def (ident ,name) (field-list . ,fields)))))
+         (let ((type-entry (union->type-entry name (map (struct-field info) fields))))
+           (clone info #:types (cons type-entry types))))
+
         ;; enum e i;
         ((decl (decl-spec-list (type-spec (enum-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))
          (let ((type "int")) ;; FIXME
@@ -1952,14 +1961,6 @@
          (let ((constants (enum-def-list->constants constants fields)))
            (clone info
                   #:constants (append constants (.constants info)))))
-
-        ((decl (decl-spec-list (type-spec (struct-def (ident ,name) (field-list . ,fields)))))
-         (let ((type-entry (struct->type-entry name (map (struct-field info) fields))))
-           (clone info #:types (cons type-entry types))))
-
-        ((decl (decl-spec-list (type-spec (union-def (ident ,name) (field-list . ,fields)))))
-         (let ((type-entry (union->type-entry name (map (struct-field info) fields))))
-           (clone info #:types (cons type-entry types))))
 
         ((decl (decl-spec-list (type-spec (struct-def (ident ,type) (field-list . ,fields))))
                (init-declr-list (init-declr (ident ,name))))
@@ -2062,7 +2063,7 @@
                 (info (clone info #:globals globals))
                 (struct? (and (zero? pointer)
                               (or (and (pair? type) (equal? (car type) "tag"))
-                                  (eq? (type:type (ast-type->type info xtype)) 'struct))))
+                                  (memq (type:type (ast-type->type info xtype)) '(struct union)))))
                 (pointer (if struct? -1 pointer))
                 (size (if (<= pointer 0) (ast-type->size info type)
                           4)))
