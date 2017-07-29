@@ -57,6 +57,7 @@
     (parse-c99
      #:inc-dirs (append includes (cons* include "mlibc/include" "mlibc" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
      #:cpp-defs `(
+                  "NULL=0"
                   "__i386__=1"
                   "POSIX=0"
                   "_POSIX_SOURCE=0"
@@ -1604,6 +1605,10 @@
     ((de-ref ,expr) (1- (expr->pointer info expr)))
     ((add ,a ,b) (expr->pointer info a))
     ((sub ,a ,b) (expr->pointer info a))
+    ((pre-inc ,a) (expr->pointer info a))
+    ((pre-dec ,a) (expr->pointer info a))
+    ((post-inc ,a) (expr->pointer info a))
+    ((post-dec ,a) (expr->pointer info a))
     (_ (stderr "expr->pointer: unsupported: ~s\n" o) 0)))
 
 (define (expr->size info o)
@@ -1612,6 +1617,10 @@
     ((de-ref ,expr) (expr->size info expr))
     ((add ,a ,b) (expr->size info a))
     ((sub ,a ,b) (expr->size info a))
+    ((pre-inc ,a) (expr->size info a))
+    ((pre-dec ,a) (expr->size info a))
+    ((post-inc ,a) (expr->size info a))
+    ((post-dec ,a) (expr->size info a))
     (_ (stderr "expr->size: unsupported: ~s\n" o) 4)))
 
 (define (p-expr->type info o)
