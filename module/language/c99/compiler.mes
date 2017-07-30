@@ -565,14 +565,22 @@
                                                 (else '())))))))
 
         ;; foo.bar[baz])
-        ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
-         (let ((info ((expr->accu* info) o)))
-           (append-text info (wrap-as (i386:mem->accu)))))
+        ((array-ref ,index (d-sel (ident ,field0) (p-expr (ident ,struct0))))
+         (let* ((info ((expr->accu* info) o))
+                (type0 (ident->type info struct0))
+                (type1 (field-type info type0 field0))
+                (size (ast-type->size info type1)))
+           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
+                                          (i386:mem->accu))))))
 
         ;; foo->bar[baz])
-        ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,struct))))
-         (let ((info ((expr->accu* info) o)))
-           (append-text info (wrap-as (i386:mem->accu)))))
+        ((array-ref ,index (i-sel (ident ,field0) (p-expr (ident ,struct0))))
+         (let* ((info ((expr->accu* info) o))
+                (type0 (ident->type info struct0))
+                (type1 (field-type info type0 field0))
+                (size (ast-type->size info type1)))
+           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
+                                          (i386:mem->accu))))))
 
         ;; <expr>[baz]
         ((array-ref ,index ,array)
@@ -1110,29 +1118,47 @@
                                        (wrap-as (i386:accu+value offset)))))))
 
       ;; foo.bar[baz]
-      ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
-       (let* ((type (ident->type info struct))
-              (offset (field-offset info type field))
-              (info ((expr->accu info) index)))
-         (append-text info (append (wrap-as (append (i386:accu-shl 2) ;; FIXME: assume size=4
-                                                    (i386:push-accu)))
-                                   ((ident-address->accu info) struct)
+      ((array-ref ,index (d-sel (ident ,field0) (p-expr (ident ,struct0))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info type0 field0))
+              (offset (field-offset info type0 field0))
+              (info ((expr->accu info) index))
+              (size (ast-type->size info type1)))
+         (append-text info (append (wrap-as (append (i386:accu->base)
+                                                    (if (eq? size 1) '()
+                                                        (append
+                                                         (if (<= size 4) '()
+                                                             (i386:accu+accu))
+                                                         (if (<= size 8) '()
+                                                             (i386:accu+base))
+                                                         (i386:accu-shl 2))))
+                                            (i386:push-accu))
+                                   ((ident-address->accu info) struct0)
                                    (wrap-as (append (i386:accu+value offset)
                                                     (i386:pop-base)
                                                     (i386:accu+base)))))))
 
       ;; foo->bar[baz]
-      ((array-ref ,index (i-sel (ident ,field) (p-expr (ident ,struct))))
-       (let* ((type (ident->type info struct))
-              (offset (field-offset info type field))
-              (info ((expr->accu info) index)))
-         (append-text info (append (wrap-as (append (i386:accu-shl 2) ;; FIXME: assume size=4
-                                                    (i386:push-accu)))
-                                   ((ident->accu info) struct)
+      ((array-ref ,index (i-sel (ident ,field0) (p-expr (ident ,struct0))))
+       (let* ((type0 (ident->type info struct0))
+              (type1 (field-type info type0 field0))
+              (offset (field-offset info type0 field0))
+              (info ((expr->accu info) index))
+              (size (ast-type->size info type1)))
+         (append-text info (append (wrap-as (append (i386:accu->base)
+                                                    (if (eq? size 1) '()
+                                                        (append
+                                                         (if (<= size 4) '()
+                                                             (i386:accu+accu))
+                                                         (if (<= size 8) '()
+                                                             (i386:accu+base))
+                                                         (i386:accu-shl 2))))
+                                            (i386:push-accu))
+                                   ((ident->accu info) struct0)
                                    (wrap-as (append (i386:accu+value offset)
                                                     (i386:pop-base)
                                                     (i386:accu+base)))))))
-      
+
       ((array-ref ,index ,array)
        (let* ((info ((expr->accu info) index))
               (size 4) ;; FIXME
@@ -1891,7 +1917,7 @@
                (let* ((local (car (add-local locals name type -1)))
                       (count (p-expr->number info count))
                       (size (ast-type->size info type))
-                      (local (make-local-entry name type -1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))                      
+                      (local (make-local-entry name type -1 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
@@ -1909,7 +1935,7 @@
                (let* ((local (car (add-local locals name type -1)))
                       (count (p-expr->number info count))
                       (size 4)
-                      (local (make-local-entry name type -2 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))                      
+                      (local (make-local-entry name type -2 (+ (local:id (cdr local)) -1 (quotient (+ (* count size) 3) 4))))
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
@@ -2142,7 +2168,7 @@
 
         ((decl (decl-spec-list (stor-spec (typedef)) ,type) ,name)
          (format (current-error-port) "SKIP: typedef=~s\n" o)
-         info)        
+         info)
 
         ((decl (@ ,at))
          (format (current-error-port) "SKIP: at=~s\n" o)
@@ -2183,7 +2209,7 @@
         ((expr-stmt) info)
 
         ((compd-stmt (block-item-list . ,statements)) ((ast-list->info info) statements))
-        
+
         ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list))))
                                    (append-text info (wrap-as (asm->m1 arg0))))
