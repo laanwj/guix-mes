@@ -126,8 +126,11 @@ fopen (char const *pathname, char const *mode)
 int
 fprintf (FILE *stream, char const *format, ...)
 {
-  eputs ("fprintf stub\n");
-  return 0;
+  va_list ap;
+  va_start (ap, format);
+  int r = vfprintf (stream, format, ap);
+  va_end (ap);
+  return r;
 }
 
 size_t
