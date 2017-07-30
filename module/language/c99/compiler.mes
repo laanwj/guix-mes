@@ -1503,6 +1503,10 @@
     ((sizeof-expr (i-sel (ident ,field) (p-expr (ident ,struct))))
      (let ((type (ident->type info struct)))
        (field-size info type field)))
+    ((lshift ,x ,y)
+     (ash (p-expr->number info x) (p-expr->number info y)))
+    ((rshift ,x ,y)
+     (ash (p-expr->number info x) (- (p-expr->number info y))))
     ((p-expr (ident ,name))
      (let ((value (assoc-ref (.constants info) name)))
        (or value
@@ -2353,12 +2357,8 @@
                (name (pmatch field
                        ((enum-defn (ident ,name) . _) name)))
                (i (pmatch field
-                    ((enum-defn ,name (p-expr (fixed ,value))) (cstring->number value))
                     ((enum-defn ,name) i)
-                    ((enum-defn ,name (add (p-expr (fixed ,a)) (p-expr (fixed ,b))))
-                     (+ (cstring->number a) (cstring->number b)))
-                    ((enum-defn ,name (sub (p-expr (fixed ,a)) (p-expr (fixed ,b))))
-                     (- (cstring->number a) (cstring->number b)))
+                    ((enum-defn ,name ,exp) (p-expr->number #f exp))
                     (_ (error "not supported enum field=~s\n" field)))))
           (loop (cdr fields)
                 (1+ i)
