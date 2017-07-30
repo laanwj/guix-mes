@@ -216,6 +216,14 @@ getchar ()
   return i;
 }
 
+int
+fgetc (int fd)
+{
+  char c;
+  int r = read (fd, &c, 1);
+  return c == 1 ? c : (-1);
+}
+
 //#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 int
 ungetc (int c, int fd)
