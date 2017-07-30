@@ -289,7 +289,14 @@ strchr (char const *s, int c)
 char *
 strrchr (char const *s, int c)
 {
-  eputs ("strrchr stub\n");
+  int n = strlen (s);
+  if (!n) return 0;
+  char const *p = s + n - 1;
+  while (*p || !c)
+    {
+      if (c == *p) return p;
+      *p--;
+    }
   return 0;
 }
 
