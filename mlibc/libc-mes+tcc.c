@@ -277,7 +277,12 @@ strcat (char *dest, char const *src)
 char *
 strchr (char const *s, int c)
 {
-  eputs ("strchr stub\n");
+  char const *p = s;
+  while (*p || !c)
+    {
+      if (c == *p) return p;
+      *p++;
+    }
   return 0;
 }
 
