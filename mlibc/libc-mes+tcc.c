@@ -161,8 +161,8 @@ ftell (FILE *stream)
 size_t
 fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-  eputs ("fwrite stub\n");
-  return 0;
+  int fd = (int)stream;
+  return write (fd, ptr, size * nmemb);
 }
 
 int
