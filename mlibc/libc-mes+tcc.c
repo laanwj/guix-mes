@@ -194,8 +194,13 @@ memcpy (void *dest, void const *src, size_t n)
 void *
 memmove (void *dest, void const *src, size_t n)
 {
-  eputs ("memmove stub\n");
-  return 0;
+  if (dest < src)
+    return memcpy (dest, src, n);
+  char *p = dest + n;
+  char const *q = src +n;
+  while (n--)
+    *--p = *--q;
+  return dest;
 }
 
 void *
