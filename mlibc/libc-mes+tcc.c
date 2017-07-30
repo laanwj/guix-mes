@@ -98,15 +98,14 @@ execvp (char const *file, char *const argv[])
 int
 fclose (FILE *stream)
 {
-  eputs ("fclose stub\n");
-  return 0;
+  int fd = (int)stream;
+  return close (fd);
 }
 
 FILE *
 fdopen (int fd, char const *mode)
 {
-  eputs ("fdopen stub\n");
-  return 0;
+  return (FILE*)fd;
 }
 
 int
