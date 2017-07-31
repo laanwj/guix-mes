@@ -70,14 +70,18 @@ test ()
   if (pfile->buffer[4] != '4') return 3;
 
   memcpy (pfile->buffer + 4, " ", 1);
+  eputs (file.buffer);
+  if (p[4] != ' ') return 4;
+  if (file.buffer[4] != ' ') return 5;
+  if (pfile->buffer[4] != ' ') return 6;
 
   strcpy (file.buffer, "0123456789\n");
   eputs (file.buffer);
   p[4] = 'A';
   eputs (file.buffer);
-  if (p[4] != 'A') return 4;
-  if (file.buffer[4] != 'A') return 5;
-  if (pfile->buffer[4] != 'A') return 6;
+  if (p[4] != 'A') return 7;
+  if (file.buffer[4] != 'A') return 8;
+  if (pfile->buffer[4] != 'A') return 9;
 
   return 0;
 }
