@@ -569,18 +569,25 @@
          (let* ((info ((expr->accu* info) o))
                 (type0 (ident->type info struct0))
                 (type1 (field-type info type0 field0))
+                (struct? (and (pair? type1) (equal? (car type1) "tag")))
+                (ptr (field-pointer info type0 field0))
                 (size (ast-type->size info type1)))
-           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
-                                          (i386:mem->accu))))))
+           (if (= ptr -3) info
+               (append-text info (wrap-as (append (if (and (= ptr -2) struct?) (i386:mem->accu) '())
+                                                  (if (= size 1) (i386:byte-mem->accu)
+                                                      (i386:mem->accu))))))))
 
         ;; foo->bar[baz])
         ((array-ref ,index (i-sel (ident ,field0) (p-expr (ident ,struct0))))
          (let* ((info ((expr->accu* info) o))
                 (type0 (ident->type info struct0))
                 (type1 (field-type info type0 field0))
+                (struct? (and (pair? type1) (equal? (car type1) "tag")))
+                (ptr (field-pointer info type0 field0))
                 (size (ast-type->size info type1)))
-           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
-                                          (i386:mem->accu))))))
+           (append-text info (wrap-as (append (if (and (= ptr -2) struct?) (i386:mem->accu) '())
+                                              (if (= size 1) (i386:byte-mem->accu)
+                                                  (i386:mem->accu)))))))
 
         ;; <expr>[baz]
         ((array-ref ,index ,array)
@@ -1577,10 +1584,10 @@
              (count (p-expr->number info count)))
          (list name type (* count size) -1)))
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list name `("tag" ,type) 4 2))
+       (list name `("tag" ,type) 4 -2))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list name `("tag" ,type) 4 2))
+       (list name `("tag" ,type) 4 -2))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
        (list name `("tag" ,type) 4 1))

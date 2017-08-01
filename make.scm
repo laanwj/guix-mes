@@ -161,7 +161,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "78-union-struct"
    "79-int-array"
    "7a-struct-char-array"
-   "7b-struct-int-array"))
+   "7b-struct-int-array"
+   "7c-dynarray"))
 
 (add-target (group "check-scaffold-tests/7" #:dependencies (filter (target-prefix? "check-scaffold/tests/7") %targets)))
 
