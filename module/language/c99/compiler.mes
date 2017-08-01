@@ -1283,6 +1283,8 @@
 (define (ast-type->type info o)
   (pmatch o
     ((p-expr ,expr) (ast-type->type info (p-expr->type info o)))
+    ((pre-inc ,expr) (ast-type->type info expr))
+    ((post-inc ,expr) (ast-type->type info expr))
     ((decl-spec-list ,type-spec)
      (ast-type->type info type-spec))
     ((decl-spec-list (type-qual ,qual) (type-spec (fixed-type ,type)))

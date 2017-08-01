@@ -335,8 +335,27 @@ time_t time (time_t *tloc)
 int
 vsnprintf (char *str, size_t size, char const *format, va_list ap)
 {
-  eputs ("vsnprintf stub\n");
-  return 0;
+  char const *p = format;
+  while (*p)
+    if (*p != '%')
+      *str++ = *p++;
+    else
+      {
+        p++;
+        char c = *p;
+        switch (c)
+          {
+          case '%': {*str++ = *p; break;}
+          case 'c': {char c; c = va_arg (ap, char); *str++=c; break;}
+          case 'd': {int d; d = va_arg (ap, int); strcpy (str, itoa (d)); break;}
+          case 's': {char *s; s = va_arg (ap, char *); strcpy (str, s); break;}
+          default: {*str++ = *p; break;}
+          }
+        p++;
+      }
+  va_end (ap);
+  *str = 0;
+  return strlen (str);
 }
 
 void *
