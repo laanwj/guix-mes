@@ -224,6 +224,11 @@ fgetc (int fd)
   return c == 1 ? c : (-1);
 }
 
+void
+free (void *ptr)
+{
+}
+
 //#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 int
 ungetc (int c, int fd)
@@ -328,14 +333,26 @@ malloc (size_t size)
   return p;
 }
 
-#if !FULL_MALLOC
 void *
-realloc (void *p, size_t size)
+memcpy (void *dest, void const *src, size_t n)
 {
-  brk (g_brk + size);
-  return g_brk;
+  char* p = dest;
+  char* q = src;
+  while (n--) *p++ = *q++;
+  return dest;
 }
-#endif
+
+void *
+realloc (void *ptr, size_t size)
+{
+  void *new = malloc (size);
+  if (ptr && new)
+    {
+      memcpy (new, ptr, size);
+      free (ptr);
+    }
+  return new;
+}
 
 int
 strncmp (char const* a, char const* b, int length)

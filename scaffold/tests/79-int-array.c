@@ -29,15 +29,6 @@ struct foo {
 
 struct foo f;
 
-void *
-memcpy (void *dest, void const *src, size_t n)
-{
-  char* p = dest;
-  char* q = src;
-  while (n--) *p++ = *q++;
-  return dest;
-}
-
 int bla[6] = {0,0,11223344, 55667788,0,0};
 int g_c[2] = {101, 111};
 

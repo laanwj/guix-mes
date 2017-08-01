@@ -38,26 +38,6 @@ int fill7;
 int fill8;
 int fill9;
 
-void *
-memcpy (void *dest, void const *src, int n)
-{
-  char* p = dest;
-  char* q = src;
-  while (n--) *p++ = *q++;
-  return dest;
-}
-
-#if __MESC__
-char *
-strcpy (char *dest, char const *src)
-{
-  char *p = dest;
-  while (*src) *p++ = *src++;
-  *p = 0;
-  return dest;
-}
-#endif
-
 int
 test ()
 {

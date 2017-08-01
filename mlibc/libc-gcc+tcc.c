@@ -18,7 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define FULL_MALLOC 1
 #include <libc-gcc.c>
 #include <libc-mes+tcc.c>
 

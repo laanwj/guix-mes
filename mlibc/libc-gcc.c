@@ -174,11 +174,9 @@ fputc (int c, int fd)
   return 0;
 }
 
-int
-putchar (int c)
+void
+free (void *ptr)
 {
-  write (STDOUT, (char*)&c, 1);
-  return 0;
 }
 
 char *g_brk = 0;
@@ -195,14 +193,33 @@ malloc (size_t size)
   return p;
 }
 
-#if !FULL_MALLOC
 void *
-realloc (void *p, size_t size)
+memcpy (void *dest, void const *src, size_t n)
 {
-  brk (g_brk + size);
-  return g_brk;
+  char* p = dest;
+  char* q = src;
+  while (n--) *p++ = *q++;
+  return dest;
 }
-#endif
+
+int
+putchar (int c)
+{
+  write (STDOUT, (char*)&c, 1);
+  return 0;
+}
+
+void *
+realloc (void *ptr, size_t size)
+{
+  void *new = malloc (size);
+  if (ptr && new)
+    {
+      memcpy (new, ptr, size);
+      free (ptr);
+    }
+  return new;
+}
 
 size_t
 strlen (char const* s)

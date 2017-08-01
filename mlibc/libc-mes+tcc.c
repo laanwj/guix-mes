@@ -30,7 +30,6 @@
 #include <unistd.h>
 
 #if !__GNUC__
-#define FULL_MALLOC 1
 #include <libc-mes.c>
 
 int errno;
@@ -139,11 +138,6 @@ fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
   return 0;
 }
 
-void
-free (void *ptr)
-{
-}
-
 int
 fseek (FILE *stream, long offset, int whence)
 {
@@ -182,15 +176,6 @@ void
 longjmp (jmp_buf env, int val)
 {
   eputs ("longjmp stub\n");
-}
-
-void *
-memcpy (void *dest, void const *src, size_t n)
-{
-  char* p = dest;
-  char* q = src;
-  while (n--) *p++ = *q++;
-  return dest;
 }
 
 void *
@@ -361,18 +346,6 @@ calloc (size_t nmemb, size_t size)
   void *p = malloc (count);
   memset (p, 0, count);
   return p;
-}
-
-void *
-realloc (void *ptr, size_t size)
-{
-  void *new = malloc (size);
-  if (ptr && new)
-    {
-      memcpy (new, ptr, size);
-      free (ptr);
-    }
-  return new;
 }
 
 int
