@@ -262,8 +262,10 @@ sscanf (char const *str, const char *format, ...)
 char *
 strcat (char *dest, char const *src)
 {
-  eputs ("strcat stub\n");
-  return 0;
+  char *p = strchr (dest, '\0');
+  while (*src++) *p++ = *src++;
+  *p = 0;
+  return dest;
 }
 
 char *
