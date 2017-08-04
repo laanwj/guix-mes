@@ -2431,15 +2431,12 @@
       ((p-expr (fixed ,value)) (cstring->number value))
       (_ (error "initzer->value: " o)))))
 
-(define (fix-null o)
-  (if (equal? o "\nul") (make-string 1 #\nul) o))
-
 (define (initzer->data info)
   (lambda (o)
     (pmatch o
       ((initzer (p-expr (char ,char)))  (int->bv32 (char->integer (string-ref char 0))))
       ((initzer (p-expr (string ,string))) `((#:string ,string) #f #f #f))
-      ((initzer (p-expr (string . ,strings))) `((#:string ,(string-join (map fix-null strings) "")) #f #f #f))
+      ((initzer (p-expr (string . ,strings))) `((#:string ,(string-join strings "")) #f #f #f))
       ((initzer (initzer-list . ,initzers)) (append-map (initzer->data info) initzers))
       ((initzer (ref-to (p-expr (ident ,name)))) `(,name #f #f #f))
       ((initzer (ref-to (i-sel (ident ,field) (cast (type-name (decl-spec-list ,struct) (abs-declr (pointer))) (p-expr (fixed ,base))))))
@@ -2469,7 +2466,7 @@
          (or (assoc g globals)
              (string->global-entry string))))
       ((p-expr (string . ,strings))
-       (let* ((string (string-join (map fix-null strings) ""))
+       (let* ((string (string-join strings ""))
               (g `(#:string ,string)))
          (or (assoc g globals)
              (string->global-entry string))))
