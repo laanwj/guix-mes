@@ -120,6 +120,7 @@ DEFINE movzbl_%dl,%edx 0fb6d2
 DEFINE movzbl_(%eax),%eax 0fb600
 DEFINE movzbl_(%eax),%edx 0fb610
 DEFINE movzbl_(%edx),%edx 0fb612
+DEFINE movzbl_0x32(%ebp),%eax 0fb685
 DEFINE movzbl_0x8(%ebp),%eax 0fb645
 DEFINE movzbl_0x8(%ebp),%edx 0fb655
 DEFINE mul____%edx f7e2

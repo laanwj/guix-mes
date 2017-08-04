@@ -592,8 +592,12 @@
 
         ;; <expr>[baz]
         ((array-ref ,index ,array)
-         (let ((info ((expr->accu* info) o)))
-           (append-text info (wrap-as (i386:mem->accu)))))
+         (let* ((info ((expr->accu* info) o))
+                (ptr (expr->pointer info array))
+                (size (if (= ptr 1) (expr->size info array)
+                          4)))
+           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
+                                          (i386:mem->accu))))))
 
         ;; bar.f.i
         ((d-sel (ident ,field1) (d-sel (ident ,field0) (p-expr (ident ,struct0))))
