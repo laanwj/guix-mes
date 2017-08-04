@@ -81,6 +81,30 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
+(define-public nyacc
+  (package
+    (name "nyacc")
+    (version "0.80.41")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://gitlab.com/janneke/nyacc"
+                                  "/repository/archive.tar.gz?ref=v"
+                                  version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0x0qff81s3yb30b72j94rj7pnsjafgfp8hkyscymg5438g184gwa"))))
+    (build-system gnu-build-system)
+    (native-inputs
+     `(("guile" ,guile-2.2)))
+    (synopsis "LALR(1) Parser Generator in Guile")
+    (description
+     "NYACC is an LALR(1) parser generator implemented in Guile.
+The syntax and nomenclature should be considered not stable.  It comes with
+extensive examples, including parsers for the Javascript and C99 languages.")
+    (home-page "https://savannah.nongnu.org/projects/nyacc")
+    (license (list gpl3+ lgpl3+))))
+
 (define-public mescc-tools
   (package
     (name "mescc-tools")
@@ -88,13 +112,13 @@
     (source (origin
               (method url-fetch)
               (uri (string-append
-                    "https://github.com/oriansj/MESCC_Tools/archive/Release_"
+                    "https://github.com/oriansj/mescc-tools/archive/Release_"
                     version
                     ".tar.gz"))
               (file-name (string-append name "-" version ".tar.gz"))
               (sha256
                (base32
-                "13hcz7cpp6fsq55di2kbff0bxad95cbfyzcrziynybb16px5hgz4"))))
+                "0gmyczh88xcsmrmxqksbpaqidchj5hfqxqk7apx40k9r3vav6mnz"))))
     (build-system gnu-build-system)
     (supported-systems '("i686-linux" "x86_64-linux"))
     (arguments
@@ -107,7 +131,7 @@
      "Mescc-tools is a collection of tools for use in a full source
 bootstrapping process.  Currently consists of the M1 macro assembler and the
 hex2 linker.")
-    (home-page "https://github.com/oriansj/MESCC_Tools")
+    (home-page "https://github.com/oriansj/mescc-tools")
     (license gpl3+)))
 
 (define-public mes
