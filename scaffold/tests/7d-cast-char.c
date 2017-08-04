@@ -29,5 +29,10 @@ test ()
   int i = ((unsigned char *)s)[0];
   if (i != 'i') return 2;
 
+  c = s[1];
+  if (c != 'n') return 3;
+  i = ((unsigned char *)s)[1];
+  if (i != 'n') return 3;
+
   return 0;
 }

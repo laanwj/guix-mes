@@ -1176,7 +1176,9 @@
 
       ((array-ref ,index ,array)
        (let* ((info ((expr->accu info) index))
-              (size 4) ;; FIXME
+              (ptr (expr->pointer info array))
+              (size (if (= ptr 1) (expr->size info array)
+                        4))
               (info (append-text info (wrap-as (append (i386:accu->base)
                                                        (if (eq? size 1) '()
                                                            (append
