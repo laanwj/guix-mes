@@ -641,15 +641,15 @@
                 (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
            (append-text info (wrap-as (i386:mem+n->accu offset)))))
 
-        ((i-sel (ident ,field) (p-expr (ident ,array)))
-         (let* ((type (ident->type info array))
+        ((i-sel (ident ,field) (p-expr (ident ,struct)))
+         (let* ((type (ident->type info struct))
                 (offset (field-offset info type field))
                 (ptr (field-pointer info type field)))
            (if (= ptr -1)
-               (append-text info (append ((ident-address->accu info) array)
+               (append-text info (append ((ident-address->accu info) struct)
                                          (wrap-as (i386:mem->accu))
                                          (wrap-as (i386:accu+value offset))))
-               (append-text info (append ((ident-address->accu info) array)
+               (append-text info (append ((ident-address->accu info) struct)
                                          (wrap-as (i386:mem->accu))
                                          (wrap-as (i386:mem+n->accu offset)))))))
 
@@ -668,8 +668,11 @@
 
         ;;foo[index]->bar
         ((i-sel (ident ,field) (array-ref ,index ,array))
-         (let ((info ((expr->accu* info) o)))
-           (append-text info (wrap-as (i386:mem->accu)))))
+         (let* ((info ((expr->accu* info) o))
+                (type (p-expr->type info array))
+                (ptr (field-pointer info type field)))
+           (if (< ptr 0) info
+               (append-text info (wrap-as (i386:mem->accu))))))
 
         ((de-ref (p-expr (ident ,name)))
          (let* ((type (ident->type info name))
@@ -1218,9 +1221,10 @@
       ((i-sel (ident ,field) (array-ref ,index (p-expr (ident ,array))))
        (let* ((type (ident->type info array))
               (offset (field-offset info type field))
-              (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array))))))
-         (append-text info (append (wrap-as (i386:mem->accu))
-                                   (wrap-as (i386:accu+value offset))))))
+              (info ((expr->accu* info) `(array-ref ,index (p-expr (ident ,array)))))
+              (ptr (field-pointer info type field)))
+         (append-text info (wrap-as (append (i386:mem->accu)
+                                            (i386:accu+value offset))))))
 
       (_ (error "expr->accu*: unsupported: " o)))))
 
