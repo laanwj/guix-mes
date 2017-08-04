@@ -58,6 +58,7 @@
      #:inc-dirs (append includes (cons* include "mlibc/include" "mlibc" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
      #:cpp-defs `(
                   "NULL=0"
+                  "__linux__=1"
                   "__i386__=1"
                   "POSIX=0"
                   "_POSIX_SOURCE=0"
