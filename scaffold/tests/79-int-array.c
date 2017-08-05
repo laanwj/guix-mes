@@ -20,8 +20,9 @@
 
 #include "30-test.i"
 
+#include <mlibc.h>
 #include <stdio.h>
-#include <stdint.h>
+#include <string.h>
 
 struct foo {
   int *bar;

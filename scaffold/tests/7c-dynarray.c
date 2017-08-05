@@ -81,7 +81,9 @@ test ()
   eputs ("&PATHS="); eputs (itoa (&s->paths)); eputs ("\n");
   eputs ("&FILES="); eputs (itoa (&s->files)); eputs ("\n");
 
-  struct file *fs = s->files[0];
+  struct file *fs;
+  eputs ("foo\n");
+  fs = s->files[0];
   eputs ("add s=   "); eputs (itoa (s)); eputs ("\n");
   eputs ("add fs=  "); eputs (itoa (fs)); eputs ("\n");
   eputs ("&fs->[0]="); eputs (itoa (fs->name)); eputs ("\n");
@@ -90,13 +92,46 @@ test ()
   eputs ("ps=      "); eputs (itoa (s->paths)); eputs ("\n");
   eputs ("*ps      "); eputs (*s->paths); eputs ("\n");
 
-  if (strcmp (fs->name, file_name)) return 1;
-  
+  if (strcmp (fs->name, file_name)) return 2;
+
   eputs ("&fs->[0]="); eputs (itoa (fs->name)); eputs ("\n");
   eputs ("fs->name="); eputs (fs->name); eputs ("\n");
 
   eputs ("ps=      "); eputs (itoa (s->paths)); eputs ("\n");
   eputs ("*ps      "); eputs (*s->paths); eputs ("\n");
+
+
+  file = malloc (sizeof (struct file) + strlen (file_name));
+  file_name = "hallo";
+  strcpy (file->name, file_name);
+  add (&s->files, &s->file_count, file);
+
+  struct file **pf = s->files;
+  fs = pf[0];
+  eputs ("\n");
+  eputs ("&fs0*=    "); eputs (itoa (&pf[0])); eputs ("\n");
+
+  eputs ("fs0*=     "); eputs (itoa (fs)); eputs ("\n");
+  fs = s->files[0];
+  eputs ("fs0*=     "); eputs (itoa (fs)); eputs ("\n");
+  eputs ("\n");
+
+  pf = s->files;
+  fs = pf[1];
+  eputs ("&fs1*=    "); eputs (itoa (&pf[1])); eputs ("\n");
+  eputs ("fs1*=     "); eputs (itoa (fs)); eputs ("\n");
+  fs = s->files[1];
+  eputs ("fs1*=     "); eputs (itoa (fs)); eputs ("\n");
+  eputs ("\n");
+  if (strcmp (fs->name, file_name)) return 3;
+
+  fs = g_s.files[0];
+  eputs ("gfs0*=    "); eputs (itoa (fs)); eputs ("\n");
+  fs = g_s.files[1];
+  eputs ("gfs1*=    "); eputs (itoa (fs)); eputs ("\n");
+  eputs ("\n");
+  if (strcmp (fs->name, file_name)) return 3;
+
 
   return 0;
 }

@@ -24,9 +24,11 @@
 #include <stdio.h>
 
 struct foo;
+typedef struct foo foo_struct;
 
 struct foo {
-    struct foo **foo;
+  //struct foo **foo;
+  foo_struct **foo;
 };
   
 struct foo g_foo[2];
