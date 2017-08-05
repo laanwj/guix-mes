@@ -570,7 +570,7 @@
          (let* ((info ((expr->accu* info) o))
                 (type0 (ident->type info struct0))
                 (type1 (field-type info type0 field0))
-                (struct? (and (pair? type1) (equal? (car type1) "tag")))
+                (struct? (memq (type:type (ast-type->type info type0)) '(struct union)))
                 (ptr (field-pointer info type0 field0))
                 (size (ast-type->size info type1)))
            (if (= ptr -3) info
@@ -583,7 +583,7 @@
          (let* ((info ((expr->accu* info) o))
                 (type0 (ident->type info struct0))
                 (type1 (field-type info type0 field0))
-                (struct? (and (pair? type1) (equal? (car type1) "tag")))
+                (struct? (memq (type:type (ast-type->type info type0)) '(struct union)))
                 (ptr (field-pointer info type0 field0))
                 (size (ast-type->size info type1)))
            (append-text info (wrap-as (append (if (and (= ptr -2) struct?) (i386:mem->accu) '())

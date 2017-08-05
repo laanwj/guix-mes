@@ -46,14 +46,16 @@ add (void *ptab, int *nb_ptr, void *data)
     *nb_ptr = nb;
 }
 
-struct file {
+typedef struct file {
   char name[4];
-};
+} file_struct;
 
 struct state {
+  int bla;
   char **paths;
   int path_count;
   struct file **files;
+  //file_struct **files;
   int file_count;
 };
 
