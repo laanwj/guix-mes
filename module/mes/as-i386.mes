@@ -202,10 +202,23 @@
 (define (i386:byte-accu->base-mem)
   '(("mov____%al,(%edx)")))             ; mov    %al,(%edx)
 
+(define (i386:word-accu->base-mem)
+  '(("mov____%ax,(%edx)")))             ; mov    %ax,(%edx)
+
 (define (i386:accu->base-mem+n n)
   (or n (error "invalid value: accu->base-mem+n: " n))
   `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%edx)" (#:immediate1 ,n))
          `("mov____%eax,0x32(%edx)" (#:immediate ,n)))))
+
+(define (i386:byte-accu->base-mem+n n)
+  (or n (error "invalid value: accu->base-mem+n: " n))
+  `(,(if (< (abs n) #x80) `("mov____%al,0x8(%edx)" (#:immediate1 ,n))
+         `("mov____%al,0x32(%edx)" (#:immediate ,n)))))
+
+(define (i386:word-accu->base-mem+n n)
+  (or n (error "invalid value: accu->base-mem+n: " n))
+  `(,(if (< (abs n) #x80) `("mov____%ax,0x8(%edx)" (#:immediate1 ,n))
+         `("mov____%ax,0x32(%edx)" (#:immediate ,n)))))
 
 (define (i386:accu->label label)
   `(("mov____%eax,0x32" (#:address ,label)))) ; mov    %eax,0x<label>
@@ -309,6 +322,14 @@
 (define (i386:mem+n->accu n)
   `(,(if (< (abs n) #x80) `("mov____0x8(%eax),%eax" (#:immediate1 ,n))
          `("mov____0x32(%eax),%eax" (#:immediate ,n)))))
+
+(define (i386:byte-mem+n->accu n)
+  `(,(if (< (abs n) #x80) `("movzbl_0x8(%eax),%eax" (#:immediate1 ,n))
+         `("movzbl_0x32(%eax),%eax" (#:immediate ,n)))))
+
+(define (i386:word-mem+n->accu n)
+  `(,(if (< (abs n) #x80) `("movzwl_0x8(%eax),%eax" (#:immediate1 ,n))
+         `("movzwl_xb0x32(%eax),%eax" (#:immediate ,n)))))
 
 (define (i386:base-mem+n->accu v)
   (or v (error "invalid value: base-mem+n->accu: " v))

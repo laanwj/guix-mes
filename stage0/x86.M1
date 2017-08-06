@@ -74,6 +74,10 @@ DEFINE mov____$i32,0x32 c705
 DEFINE mov____$i32,0x8(%eax) c740
 DEFINE mov____$i32,0x8(%ebp) c745
 DEFINE mov____%al,(%edx) 8802
+DEFINE mov____%al,0x8(%edx) 8842
+DEFINE mov____%ax,(%edx) 668902
+DEFINE mov____%ax,0x32(%edx) 668982
+DEFINE mov____%ax,0x8(%edx) 668942
 DEFINE mov____%dl,(%eax) 8810
 DEFINE mov____%dl,0x8(%eax) 8850
 DEFINE mov____%eax,%ebx 89c3
@@ -120,9 +124,13 @@ DEFINE movzbl_%dl,%edx 0fb6d2
 DEFINE movzbl_(%eax),%eax 0fb600
 DEFINE movzbl_(%eax),%edx 0fb610
 DEFINE movzbl_(%edx),%edx 0fb612
+DEFINE movzbl_0x32(%eax),%eax 0fb680
 DEFINE movzbl_0x32(%ebp),%eax 0fb685
+DEFINE movzbl_0x8(%eax),%eax 0fb640
 DEFINE movzbl_0x8(%ebp),%eax 0fb645
 DEFINE movzbl_0x8(%ebp),%edx 0fb655
+DEFINE movzwl_0x32(%eax),%eax 0fb780
+DEFINE movzwl_0x8(%eax),%eax 0fb740
 DEFINE mul____%edx f7e2
 DEFINE nop 90
 DEFINE not____%eax f7d0

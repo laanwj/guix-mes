@@ -35,7 +35,11 @@
             i386:accu+value
             i386:accu->base
             i386:accu->base-mem
+            i386:byte-accu->base-mem
+            i386:word-accu->base-mem
             i386:accu->base-mem+n
+            i386:byte-accu->base-mem+n
+            i386:word-accu->base-mem+n
             i386:accu->label
             i386:accu->local
             i386:accu-and-base
@@ -103,6 +107,8 @@
             i386:local-ptr->base
             i386:local-test
             i386:mem+n->accu
+            i386:byte-mem+n->accu
+            i386:word-mem+n->accu
             i386:mem->accu
             i386:mem->base
             i386:nop
