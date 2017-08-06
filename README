@@ -53,5 +53,5 @@ General Public Licence version 3 or later.  See the file COPYING.
 
 * Mescc compiler
 
-   scripts/mescc.mes doc/examples/main.c > a.out
+   scripts/mescc.mes scaffold/main.c > a.out
 
