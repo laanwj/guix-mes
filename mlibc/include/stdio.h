@@ -47,16 +47,15 @@ int fdputs (char const* s, int fd);
 
 #undef puts
 #define puts(x) fdputs(x, STDOUT)
-#define eputs(x) fdputs(x, STDERR)
 #define fputs fdputs
 
 #ifdef putc
 #undef putc
 #endif
 
-int getchar ();
-
+int eputs (char const* s);
 int fdputc (int c, int fd);
+int getchar ();
 
 #define fputc fdputc
 #define ungetc fdungetc

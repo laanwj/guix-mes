@@ -246,14 +246,6 @@ strcpy (char *dest, char const *src)
 }
 
 int
-eputs (char const* s)
-{
-  int i = strlen (s);
-  write (STDERR, s, i);
-  return 0;
-}
-
-int
 fputs (char const* s, int fd)
 {
   int i = strlen (s);
@@ -469,7 +461,11 @@ fdputs (char const* s, int fd)
   return 0;
 }
 
-#if POSIX
+int
+eputs (char const* s)
+{
+  return fdputs (s, STDERR);
+}
 
 int
 fdputc (int c, int fd)
@@ -477,6 +473,8 @@ fdputc (int c, int fd)
   write (fd, (char*)&c, 1);
   return 0;
 }
+
+#if POSIX
 
 int
 putchar (int c)
