@@ -140,6 +140,12 @@ strlen (char const* s)
 }
 
 int
+eputc (int c)
+{
+  return fputc (c, 2);
+}
+
+int
 eputs (char const* s)
 {
   int i = strlen (s);

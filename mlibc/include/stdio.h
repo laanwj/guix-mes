@@ -53,6 +53,7 @@ int fdputs (char const* s, int fd);
 #undef putc
 #endif
 
+int eputc (int c);
 int eputs (char const* s);
 int fdputc (int c, int fd);
 int getchar ();
@@ -94,6 +95,7 @@ typedef int FILE;
 typedef unsigned long size_t;
 #endif
 
+int eputc (int c);
 int eputs (char const* s);
 int fclose (FILE *stream);
 FILE *fdopen (int fd, char const *mode);

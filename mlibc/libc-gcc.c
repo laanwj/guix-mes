@@ -462,6 +462,12 @@ fdputs (char const* s, int fd)
 }
 
 int
+eputc (int c)
+{
+  return fdputc (c, STDERR);
+}
+
+int
 eputs (char const* s)
 {
   return fdputs (s, STDERR);
