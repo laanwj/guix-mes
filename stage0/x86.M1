@@ -92,8 +92,14 @@ DEFINE mov____%eax,0x8(%edx) 8942
 DEFINE mov____%ebp,%eax 89e8
 DEFINE mov____%ebp,%ecx 89e9
 DEFINE mov____%ebp,%edx 89ea
+DEFINE mov____%ebx,0x32 891d
+DEFINE mov____%ebx,0x32(%ebp) 899d
+DEFINE mov____%ebx,0x8(%ebp) 895d
+DEFINE mov____%ebx,0x8(%edx) 895a
 DEFINE mov____%ecx,(%eax) 8908
 DEFINE mov____%ecx,(%edx) 890a
+DEFINE mov____%ecx,0x32(%ebp) 898d
+DEFINE mov____%ecx,0x8(%ebp) 894d
 DEFINE mov____%edx,%eax 89d0
 DEFINE mov____%edx,%ebx 89d3
 DEFINE mov____%edx,%ecx 89d1
@@ -106,6 +112,8 @@ DEFINE mov____(%eax),%ecx 8b08
 DEFINE mov____(%edx),%ecx 8b0a
 DEFINE mov____(%edx),%edx 8b12
 DEFINE mov____0x32(%eax),%eax 8b80
+DEFINE mov____0x32(%eax),%ebx 8b98
+DEFINE mov____0x32(%eax),%ecx 8b88
 DEFINE mov____0x32(%ebp),%eax 8b85
 DEFINE mov____0x32(%ebp),%eax 8b85
 DEFINE mov____0x32(%ebp),%ebx 8b9d
@@ -115,6 +123,8 @@ DEFINE mov____0x32(%ebp),%edx 8b95
 DEFINE mov____0x32,%eax a1
 DEFINE mov____0x32,%edx 8b15
 DEFINE mov____0x8(%eax),%eax 8b40
+DEFINE mov____0x8(%eax),%ebx 8b58
+DEFINE mov____0x8(%eax),%ecx 8b48
 DEFINE mov____0x8(%ebp),%eax 8b45
 DEFINE mov____0x8(%ebp),%ebx 8b5d
 DEFINE mov____0x8(%ebp),%ecx 8b4d

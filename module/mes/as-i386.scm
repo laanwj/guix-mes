@@ -30,6 +30,8 @@
   #:export (
             i386:accu%base
             i386:accu*base
+            i386:accu*n->label
+            i386:accu*n->local
             i386:accu+accu
             i386:accu+base
             i386:accu+value
@@ -62,7 +64,6 @@
             i386:base->accu
             i386:base->accu-mem
             i386:base->label
-            i386:base->local
             i386:base-mem->accu-mem
             i386:base-mem+n->accu
             i386:base-mem->accu

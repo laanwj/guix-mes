@@ -101,15 +101,18 @@
     `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%ebp)" (#:immediate1 ,n))
            `("mov____%eax,0x32(%ebp)" (#:immediate ,n))))))
 
-(define (i386:base->local n)
-  (or n (error "invalid value: base->local: " n))
-  `(("mov____%edx,0x8(%ebp)" ,(- 0 (* 4 n))))) ; mov    %edx,-<0xn>(%ebp)
-
-(define (i386:base->local n)
-  (or n (error "invalid value: base->local: " n))
-  (let ((n (- 0 (* 4 n))))
-    `((if (< (abs n) #x80) `("mov____%edx,0x8(%ebp)" (#:immediate1 ,n))
-          `("mov____%edx,0x32(%ebp)" (#:immediate ,n))))))
+(define (i386:accu*n->local i n)
+  (or n (error "invalid value: accu->local: " n))
+  (let ((o (- 0 (* 4 i))))
+    (let loop ((i 0))
+      (if (>= i n) '()  ;; FIXME: byte, word-sized
+          (let ((o (+ o i)))
+            (append
+             (if (< (abs o) #x80) `(("mov____0x8(%eax),%ebx" (#:immediate1 ,i))
+                                    ("mov____%ebx,0x8(%ebp)" (#:immediate1 ,o)))
+                 `(("mov____0x8(%eax),%ebx" (#:immediate1 ,i))
+                   ("mov____%ebx,0x32(%ebp)" (#:immediate ,o))))
+             (loop (+ i 4))))))))
 
 (define (i386:local->accu n)
   (or n (error "invalid value: local->accu: " n))
@@ -222,6 +225,18 @@
 
 (define (i386:accu->label label)
   `(("mov____%eax,0x32" (#:address ,label)))) ; mov    %eax,0x<label>
+
+(define (i386:accu*n->label label n)
+  (append
+   '(("push___%edx"))
+   (let loop ((i 0))
+     (if (>= i n) '() ;; FIXME: byte, word-sized
+         (append
+          `(("mov____$i32,%edx" (#:address ,label))
+            ("mov____0x8(%eax),%ebx" (#:immediate1 ,i))
+            ("mov____%ebx,0x8(%edx)" (#:immediate1 ,i)))
+          (loop (+ i 4)))))
+   '(("pop____%edx"))))
 
 (define (i386:accu-shl n)
   (or n (error "invalid value: accu:shl n: " n))
