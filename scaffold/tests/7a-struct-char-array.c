@@ -19,49 +19,104 @@
  */
 
 #include "30-test.i"
+#include <stdio.h>
+#include <string.h>
 
 struct file {
-  unsigned char buffer[1];
+  char buffer[1];
 };
 
-int fill0;
-int fill1;
-int fill2;
-int fill3;
-int fill4;
+struct xfile {
+  char *buffer;
+};
 
 struct file file;
+struct xfile xfile;
 
-int fill5;
-int fill6;
-int fill7;
-int fill8;
-int fill9;
+char *buffer = "aaaaaaaaaaaa";
+char *bufzor = "bbbbbbbbbbbb";
 
 int
 test ()
 {
+  char *p;
+
   struct file *pfile = &file;
   strcpy (file.buffer, "0123456789\n");
   eputs (file.buffer);
-  char *p = pfile->buffer;
-  if (p[4] != '4') return 1;
-  if (file.buffer[4] != '4') return 2;
-  if (pfile->buffer[4] != '4') return 3;
-
-  memcpy (pfile->buffer + 4, " ", 1);
-  eputs (file.buffer);
-  if (p[4] != ' ') return 4;
-  if (file.buffer[4] != ' ') return 5;
-  if (pfile->buffer[4] != ' ') return 6;
+  p = pfile->buffer;
+  if (p[1] != '1') return 1;
+  if (file.buffer[1] != '1') return 2;
+  if (pfile->buffer[1] != '1') return 3;
 
   strcpy (file.buffer, "0123456789\n");
   eputs (file.buffer);
-  p[4] = 'A';
+  memcpy (pfile->buffer + 1, " ", 1);
   eputs (file.buffer);
-  if (p[4] != 'A') return 7;
-  if (file.buffer[4] != 'A') return 8;
-  if (pfile->buffer[4] != 'A') return 9;
+  if (p[1] != ' ') return 4;
+  if (file.buffer[1] != ' ') return 5;
+  if (pfile->buffer[1] != ' ') return 6;
 
+  strcpy (file.buffer, "0123456789\n");
+  eputs (file.buffer);
+  p[2] = ' ';
+  eputs (file.buffer);
+  if (p[2] != ' ') return 7;
+  if (file.buffer[2] != ' ') return 8;
+  if (pfile->buffer[2] != ' ') return 9;
+
+  strcpy (file.buffer, "0123456789\n");
+  eputs (file.buffer);
+  file.buffer[3] = ' ';
+  eputs (file.buffer);
+  if (p[3] != ' ') return 10;
+  if (p[4] != '4') return 11;
+
+  strcpy (file.buffer, "0123456789\n");
+  eputs (file.buffer);
+  pfile->buffer[4] = ' ';
+  eputs (file.buffer);
+  if (p[4] != ' ') return 12;
+  if (p[5] != '5') return 13;
+
+  xfile.buffer = &buffer;
+  struct xfile *pxfile = &xfile;
+  strcpy (xfile.buffer, "0123456789\n");
+  eputs (xfile.buffer);
+  p = pxfile->buffer;
+  if (p[5] != '5') return 20;
+  if (xfile.buffer[5] != '5') return 22;
+  if (pxfile->buffer[5] != '5') return 23;
+
+  strcpy (xfile.buffer, "0123456789\n");
+  eputs (xfile.buffer);
+  memcpy (pxfile->buffer + 5, " ", 1);
+  eputs (xfile.buffer);
+  if (p[5] != ' ') return 24;
+  if (xfile.buffer[5] != ' ') return 25;
+  if (pxfile->buffer[5] != ' ') return 26;
+
+  strcpy (xfile.buffer, "0123456789\n");
+  eputs (xfile.buffer);
+  p[6] = ' ';
+  eputs (xfile.buffer);
+  if (p[6] != ' ') return 27;
+  if (xfile.buffer[6] != ' ') return 28;
+  if (pxfile->buffer[6] != ' ') return 29;
+
+  strcpy (xfile.buffer, "0123456789\n");
+  eputs (xfile.buffer);
+  xfile.buffer[7] = ' ';
+  eputs (xfile.buffer);
+  if (p[7] != ' ') return 30;
+  if (p[8] != '8') return 31;
+
+  strcpy (xfile.buffer, "0123456789\n");
+  eputs (xfile.buffer);
+  pxfile->buffer[8] = ' ';
+  eputs (xfile.buffer);
+  if (p[8] != ' ') return 32;
+  if (p[9] != '9') return 33;
+  
   return 0;
 }
