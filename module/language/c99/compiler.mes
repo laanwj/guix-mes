@@ -517,8 +517,8 @@
         ((sizeof-expr (p-expr (string ,string)))
          (append-text info (wrap-as (i386:value->accu (1+ (string-length string))))))
 
-        ((sizeof-expr (i-sel (ident ,field) (p-expr (ident ,array))))
-         (let* ((type (ident->type info array))
+        ((sizeof-expr (i-sel (ident ,field) (p-expr (ident ,struct))))
+         (let* ((type (ident->type info struct))
                 (size (field-size info type field)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
@@ -550,16 +550,16 @@
          (let ((size 4))
            (append-text info (wrap-as (i386:value->accu size)))))
 
-        ;; c+p expr->arg
-        ;; g_cells[<expr>]
+        ;; foo[bar]
         ((array-ref ,index (p-expr (ident ,array)))
-         (let* ((type (ident->type info array))
+         (let* ((info ((expr->accu* info) o))
+                (type (ident->type info array))
                 (ptr (ident->pointer info array))
                 (size (if (or (= ptr 1) (= ptr -1)) (ast-type->size info type)
-                          4))
-                (info ((expr->accu* info) o)))
+                          4)))
            (append-text info (wrap-as (case size
                                         ((1) (i386:byte-mem->accu))
+                                        ((2) (i386:word-mem->accu))
                                         ((4) (i386:mem->accu))
                                         (else '()))))))
 
@@ -573,6 +573,7 @@
                           4)))
            (append-text info (wrap-as (case size
                                         ((1) (i386:byte-mem->accu))
+                                        ((2) (i386:word-mem->accu))
                                         (else (i386:mem->accu)))))))
 
         ;; foo->bar[baz])
@@ -585,6 +586,7 @@
                           4)))
            (append-text info (wrap-as (case size
                                         ((1) (i386:byte-mem->accu))
+                                        ((2) (i386:word-mem->accu))
                                         (else (i386:mem->accu)))))))
 
         ;; <expr>[baz]
@@ -593,8 +595,10 @@
                 (ptr (expr->pointer info array))
                 (size (if (= ptr 1) (expr->size info array)
                           4)))
-           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
-                                          (i386:mem->accu))))))
+           (append-text info (wrap-as (case size
+                                        ((1) (i386:byte-mem->accu))
+                                        ((2) (i386:word-mem->accu))
+                                        (else (i386:mem->accu)))))))
 
         ;; bar.f.i
         ((d-sel (ident ,field1) (d-sel (ident ,field0) (p-expr (ident ,struct0))))
@@ -688,8 +692,10 @@
                           4)))
            (append-text info (append (if (or #t (assoc-ref locals name)) ((ident->accu info) name)
                                          ((ident-address->accu info) name))
-                                     (wrap-as (if (= size 1) (i386:byte-mem->accu)
-                                                  (i386:mem->accu)))))))
+                                     (wrap-as (case size
+                                                ((1) (i386:byte-mem->accu))
+                                                ((2) (i386:word-mem->accu))
+                                                (else (i386:mem->accu))))))))
 
         ((de-ref (post-inc (p-expr (ident ,name))))
          (let* ((info ((expr->accu info) `(de-ref (p-expr (ident ,name)))))
@@ -704,8 +710,10 @@
                 (ptr (expr->pointer info expr))
                 (size (if (= ptr 1) (expr->size info expr)
                           4)))
-           (append-text info (wrap-as (if (= size 1) (i386:byte-mem->accu)
-                                          (i386:mem->accu))))))
+           (append-text info (wrap-as (case size
+                                        ((1) (i386:byte-mem->accu))
+                                        ((2) (i386:word-mem->accu))
+                                        (else (i386:mem->accu)))))))
 
         ((fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
@@ -1031,17 +1039,19 @@
                           4))
                      (info ((expr->base* info) a)))
                 (append-text info
-                             (append (if (eq? size 1) (wrap-as (i386:byte-accu->base-mem))
-                                         (if (<= size 4) (wrap-as (i386:accu->base-mem))
-                                          (append
-                                           (wrap-as (i386:accu-mem->base-mem))
-                                           (wrap-as (append (i386:accu+value 4)
-                                                            (i386:base+value 4)
-                                                            (i386:accu-mem->base-mem)))
-                                           (if (<= size 8) '()
-                                               (wrap-as (append (i386:accu+value 4)
-                                                                (i386:base+value 4)
-                                                                (i386:accu-mem->base-mem)))))))))))
+                             (append (case size
+                                       ((1) (wrap-as (i386:byte-accu->base-mem)))
+                                       ((2) (wrap-as (i386:word-accu->base-mem)))
+                                       (else (if (<= size 4) (wrap-as (i386:accu->base-mem))
+                                                 (append
+                                                  (wrap-as (i386:accu-mem->base-mem))
+                                                  (wrap-as (append (i386:accu+value 4)
+                                                                   (i386:base+value 4)
+                                                                   (i386:accu-mem->base-mem)))
+                                                  (if (<= size 8) '()
+                                                      (wrap-as (append (i386:accu+value 4)
+                                                                       (i386:base+value 4)
+                                                                       (i386:accu-mem->base-mem))))))))))))
              (_ (error "expr->accu: unsupported assign: " a)))))
 
         (_ (error "expr->accu: unsupported: " o))))))
@@ -1080,7 +1090,7 @@
 (define (expr->accu* info)
   (lambda (o)
     (pmatch o
-      ;; g_cells[<expr>]
+      ;; foo[bar]
       ((array-ref ,index (p-expr (ident ,array)))
        (let* ((info ((expr->accu info) index))
               (type (ident->type info array))
@@ -1088,13 +1098,14 @@
               (size (if (or (= ptr 1) (= ptr -1)) (ast-type->size info type)
                         4)))
          (append-text info (append (wrap-as (append (i386:accu->base)
-                                                    (if (eq? size 1) '()
-                                                        (append
-                                                         (if (<= size 4) '()
-                                                             (i386:accu+accu))
-                                                         (if (<= size 8) '()
-                                                             (i386:accu+base))
-                                                         (i386:accu-shl 2)))))
+                                                    (case size
+                                                      ((1) '())
+                                                      ((2) (i386:accu+accu))
+                                                      (else (append (if (<= size 4) '()
+                                                                        (i386:accu+accu))
+                                                                    (if (<= size 8) '()
+                                                                        (i386:accu+base))
+                                                                    (i386:accu-shl 2))))))
                                    ((ident->base info) array)
                                    (wrap-as (i386:accu+base))))))
 

@@ -69,6 +69,7 @@
             i386:base-mem->accu
             i386:base-sub
             i386:byte-accu->base-mem
+            i386:word-accu->base-mem
             i386:byte-base->accu-mem
             i386:byte-base->accu-mem+n
             i386:byte-base-mem->accu
@@ -76,6 +77,7 @@
             i386:byte-local->accu
             i386:byte-local->base
             i386:byte-mem->accu
+            i386:word-mem->accu
             i386:byte-mem->base
             i386:byte-sub-base
             i386:byte-test-base

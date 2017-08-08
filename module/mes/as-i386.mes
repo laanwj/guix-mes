@@ -321,6 +321,9 @@
 (define (i386:byte-mem->accu)
   '(("movzbl_(%eax),%eax")))            ; movzbl (%eax),%eax
 
+(define (i386:word-mem->accu)
+  '(("movzwl_(%eax),%eax")))
+
 (define (i386:byte-mem->base)
   '(("movzbl_(%edx),%edx")))            ; movzbl (%edx),%edx
 
