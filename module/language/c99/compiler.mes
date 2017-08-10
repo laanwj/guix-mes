@@ -1290,29 +1290,28 @@
 
 (define (field:name o)
   (pmatch o
+    ((struct (,name ,type ,size ,pointer) . ,rest) name)
     ((union (,name ,type ,size ,pointer) . ,rest) name)
-    ;;((union (,name ,type ,size) . ,rest) name)
     ((,name ,type ,size ,pointer) name)
-    ;;((,name ,type ,size) name)
     (_ (error "field:name not supported:" o))))
 
 (define (field:pointer o)
   (pmatch o
+    ((struct (,name ,type ,size ,pointer) . ,rest) pointer)
     ((union (,name ,type ,size ,pointer) . ,rest) pointer)
     ((,name ,type ,size ,pointer) pointer)
     (_ (error "field:name not supported:" o))))
 
 (define (field:size o)
   (pmatch o
+    ((struct . ,fields) (apply + (map field:size fields)))
     ((union . ,fields) 4) ;; FIXME
     ((,name ,type ,size ,pointer) size)
-    ;;((,name ,type ,size) size)
     (_ 4)))
 
 (define (field:type o)
   (pmatch o
     ((,name ,type ,size ,pointer) type)
-    ;;((,name ,type ,size) type)
     (_ (error "field:type:" o))))
 
 (define (get-type types o)
@@ -1375,7 +1374,7 @@
       (if (null? fields) (error (format #f "no such field: ~a in ~s" field struct))
           (let ((f (car fields)))
             (cond ((equal? (car f) field) f)
-                  ((and (eq? (car f) 'union)
+                  ((and (memq (car f) '(struct union))
                         (find (lambda (x) (equal? (car x) field)) (cdr f))))
                   (else (loop (cdr fields)))))))))
 
@@ -1388,6 +1387,13 @@
             (if (null? fields) (error (format #f "no such field: ~a in ~s" field struct))
                 (let ((f (car fields)))
                   (cond ((equal? (car f) field) offset)
+                        ((and (eq? (car f) 'struct)
+                              (find (lambda (x) (equal? (car x) field)) (cdr f))
+                              (apply + (cons offset
+                                             (map field:size
+                                                  (member field (reverse (cdr f))
+                                                          (lambda (a b)
+                                                            (equal? a (car b) field))))))))
                         ((and (eq? (car f) 'union)
                               (find (lambda (x) (equal? (car x) field)) (cdr f))
                               offset))
@@ -1655,6 +1661,9 @@
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
        (let ((size (ast-type->size info `("tag" ,type))))
          (list name `("tag" ,type) size 0)))
+
+      ((comp-decl (decl-spec-list (type-spec (struct-def (field-list . ,fields)))))
+       `(struct ,@(map (struct-field info) fields)))
 
       ((comp-decl (decl-spec-list (type-spec (union-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
        (let ((size (ast-type->size info `("tag" ,type))))
