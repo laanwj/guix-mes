@@ -697,14 +697,6 @@
                                                 ((2) (i386:word-mem->accu))
                                                 (else (i386:mem->accu))))))))
 
-        ((de-ref (post-inc (p-expr (ident ,name))))
-         (let* ((info ((expr->accu info) `(de-ref (p-expr (ident ,name)))))
-                (type (ident->type info name))
-                (ptr (ident->pointer info name))
-                (size (if (= ptr 1) (ast-type->size info type)
-                          4)))
-           (append-text info ((ident-add info) name size))))
-
         ((de-ref ,expr)
          (let* ((info ((expr->accu info) expr))
                 (ptr (expr->pointer info expr))
@@ -748,42 +740,6 @@
 
         ((cond-expr . ,cond-expr)
          ((ast->info info) `(expr-stmt ,o)))
-
-        ((post-inc (p-expr (ident ,name)))
-         (let* ((type (ident->type info name))
-                (ptr (ident->pointer info name))
-                (size (cond ((= ptr 1) (ident->size info name))
-                            ((> ptr 1) 4)
-                            (else 1))))
-           (append-text info (append ((ident->accu info) name)
-                                     ((ident-add info) name size)))))
-
-        ((post-dec (p-expr (ident ,name)))
-         (let* ((type (ident->type info name))
-                (ptr (ident->pointer info name))
-                (size (cond ((= ptr 1) (ident->size info name))
-                            ((> ptr 1) 4)
-                            (else 1))))
-           (append-text info (append ((ident->accu info) name)
-                                     ((ident-add info) name (- size))))))
-
-        ((pre-inc (p-expr (ident ,name)))
-         (let* ((type (ident->type info name))
-                (ptr (ident->pointer info name))
-                (size (cond ((= ptr 1) (ident->size info name))
-                            ((> ptr 1) 4)
-                            (else 1))))
-           (append-text info (append ((ident-add info) name size)
-                                     ((ident->accu info) name)))))
-
-        ((pre-dec (p-expr (ident ,name)))
-         (let* ((type (ident->type info name))
-                (ptr (ident->pointer info name))
-                (size (cond ((= ptr 1) (ident->size info name))
-                            ((> ptr 1) 4)
-                            (else 1))))
-           (append-text info (append ((ident-add info) name (- size))
-                                     ((ident->accu info) name)))))
 
         ((post-inc ,expr)
          (let* ((info (append ((expr->accu info) expr)))
@@ -1090,6 +1046,13 @@
 (define (expr->accu* info)
   (lambda (o)
     (pmatch o
+
+      ((p-expr (ident ,name))
+       (append-text info ((ident-address->accu info) name)))
+
+      ((de-ref ,expr)
+       ((expr->accu info) expr))
+
       ;; foo[bar]
       ((array-ref ,index (p-expr (ident ,array)))
        (let* ((info ((expr->accu info) index))

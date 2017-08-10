@@ -19,6 +19,9 @@
  */
 
 #include "30-test.i"
+#include <stdio.h>
+
+char *list[2] = {"foo\n", "bar\n"};
 
 int
 test ()
@@ -42,6 +45,14 @@ test ()
   if (ppc + 1 != 8) return 10;
   if (ppv + 1 != 8) return 11;
   if (ppi + 1 != 8) return 12;
+
+  char **p = list;
+  ++*p;
+  eputs (*p);
+  if (strcmp (*p, "oo\n")) return 1;
+  --*p;
+  eputs (*p);
+  if (strcmp (*p, "foo\n")) return 2;
 
   return 0;
 }
