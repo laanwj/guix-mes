@@ -43,6 +43,7 @@ typedef int va_list;
 #define va_copy(dest, src) dest = src
 
 int vprintf (char const* format, va_list ap);
+int vsprintf (char *str, char const *format, va_list ap);
 int vsnprintf (char *str, size_t size, char const *format, va_list ap);
 
 #endif // ! (__GNUC__ && POSIX)

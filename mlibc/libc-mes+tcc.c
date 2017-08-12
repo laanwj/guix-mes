@@ -248,8 +248,11 @@ sigemptyset (sigset_t *set)
 int
 snprintf(char *str,  size_t size,  char const *format, ...)
 {
-  eputs ("snprintf stub\n");
-  return 0;
+  va_list ap;
+  va_start (ap, format);
+  int r = vsprintf (str, format, ap);
+  va_end (ap);
+  return r;
 }
 
 int
@@ -337,27 +340,7 @@ time_t time (time_t *tloc)
 int
 vsnprintf (char *str, size_t size, char const *format, va_list ap)
 {
-  char const *p = format;
-  while (*p)
-    if (*p != '%')
-      *str++ = *p++;
-    else
-      {
-        p++;
-        char c = *p;
-        switch (c)
-          {
-          case '%': {*str++ = *p; break;}
-          case 'c': {char c; c = va_arg (ap, char); *str++=c; break;}
-          case 'd': {int d; d = va_arg (ap, int); strcpy (str, itoa (d)); break;}
-          case 's': {char *s; s = va_arg (ap, char *); strcpy (str, s); break;}
-          default: {*str++ = *p; break;}
-          }
-        p++;
-      }
-  va_end (ap);
-  *str = 0;
-  return strlen (str);
+  return vsprintf (str, format, ap);
 }
 
 void *

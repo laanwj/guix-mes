@@ -416,10 +416,8 @@ printf (char const* format, ...)
 }
 
 int
-sprintf (char *str, char const* format, ...)
+vsprintf (char *str, char const* format, va_list ap)
 {
-  va_list ap;
-  va_start (ap, format);
   char const *p = format;
   while (*p)
     if (*p != '%')
@@ -439,5 +437,16 @@ sprintf (char *str, char const* format, ...)
         p++;
       }
   va_end (ap);
-  return 0;
+  *str = 0;
+  return strlen (str);
+}
+
+int
+sprintf (char *str, char const* format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  int r = vsprintf (str, format, ap);
+  va_end (ap);
+  return r;
 }
