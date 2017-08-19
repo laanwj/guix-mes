@@ -18,8 +18,59 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if __i386__
+#define main _start
+#endif
+
 int
 main (int argc, char *argv[])
 {
+#if __MESC__
+  asm ("mov____$i32,%ebx !42");
+  asm ("mov____$i32,%eax !1");
+  asm ("int____$0x80");
+#elif __i386__
+  asm (".byte 144");
+  asm (".byte 144");
+  asm (".byte 144");
+#if 1 //MESC_TCC
+  asm (".byte 187");
+  asm (".byte 42");
+  asm (".byte 0");
+  asm (".byte 0");
+  asm (".byte 0");
+
+  asm (".byte 184");
+  asm (".byte 1");
+  asm (".byte 0");
+  asm (".byte 0");
+  asm (".byte 0");
+
+  asm (".byte 205");
+  asm (".byte 128");
+
+  asm (".byte 137");
+  asm (".byte 69");
+  asm (".byte 252");
+
+#else
+  asm ("mov    $42,%ebx");
+  asm ("mov    $1,%eax");
+  asm ("int    $128");
+#endif
+
+  asm (".byte 144");
+  asm (".byte 144");
+  asm (".byte 144");
+
+#elif __x86_64__
+  asm (".byte 144");
+  asm ("mov    $42,%rbx");
+  asm ("mov    $1,%rax");
+  asm ("int    $128");
+#else
+  #error "platform not supported"
+#endif
+  // not reached
   return 42;
 }
