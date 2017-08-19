@@ -331,24 +331,53 @@ isdigit (int c)
 }
 
 int
-atoi (char const *s)
+isxdigit (int c)
 {
+  return isdigit (c) || (c>='a') && (c<='f');
+}
+
+int
+isnumber (int c, int base)
+{
+  if (base == 2)
+    return (c>='0') && (c<='1');
+  if (base == 8)
+    return (c>='0') && (c<='7');
+  if (base == 10)
+    return isdigit (c);
+  if (base == 16)
+    return isxdigit (c);
+}
+
+int
+_atoi (char const **p, int base)
+{
+  char const *s = *p;
   int i = 0;
   int sign = 1;
+  if (!base) base = 10;
   if (*s && *s == '-')
     {
       sign = -1;
       s++;
     }
-  while (isdigit (*s))
+  while (isnumber (*s, base))
     {
-      i *= 10;
-      i += (*s - '0');
+      i *= base;
+      int m = *s > '9' ? 'a' - 10 : '0';
+      i += *s - m;
       s++;
     }
+  *p = s;
   return i * sign;
 }
 
+int
+atoi (char const *s)
+{
+  char const *p = s;
+  return _atoi (&p, 0);
+}
 
 // FIXME: copied from libc-mes.c now
 #include <stdarg.h>

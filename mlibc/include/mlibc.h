@@ -22,5 +22,8 @@
 #define __MES_MLIBC_H
 
 char const* itoa (int);
+int _atoi (char const**, int base);
+int eputc (int c);
+int eputs (char const* s);
 
-#endif //__MLIBC_H
+#endif //__MES_MLIBC_H

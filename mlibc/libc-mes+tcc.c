@@ -326,10 +326,10 @@ strtoul (char const *nptr, char **endptr, int base)
 }
 
 unsigned long long
-strtoull (char const *nptr, char **endptr, int base)
+strtoull (char const *p, char **end, int base)
 {
-  eputs ("strtoull stub\n");
-  return 0;
+  *end = p;
+  return _atoi (end, base);
 }
 
 time_t time (time_t *tloc)
