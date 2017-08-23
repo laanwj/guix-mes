@@ -169,7 +169,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "7g-struct-byte-word-field"
    "7h-struct-assign"
    "7i-struct-struct"
-   "7j-strtoull"))
+   "7j-strtoull"
+   "7k-for-each-elem"))
 
 (add-target (group "check-scaffold-tests/7" #:dependencies (filter (target-prefix? "check-scaffold/tests/7") %targets)))
 

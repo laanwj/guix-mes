@@ -431,11 +431,6 @@
            (info (append-text info (wrap-as (i386:accu-mem-add n)))))
       info)))
 
-(define (expr->pointer info o)
-  (pmatch o
-    ((p-expr (ident ,name)) (ident->pointer info name))  ;; FIXME
-    (_ 0)))
-
 (define (ident-address-add info)
   (lambda (o n)
     (let ((local (assoc-ref (.locals info) o)))
@@ -1708,6 +1703,7 @@
     ((p-expr (fixed ,value)) 0)
     ((p-expr (ident ,name)) (ident->pointer info name))
     ((de-ref ,expr) (1- (expr->pointer info expr)))
+    ((assn-expr ,lhs ,op ,rhs) (expr->pointer info lhs))
     ((add ,a ,b) (expr->pointer info a))
     ((neg ,a) (expr->pointer info a))
     ((sub ,a ,b) (expr->pointer info a))
@@ -1715,30 +1711,111 @@
     ((pre-dec ,a) (expr->pointer info a))
     ((post-inc ,a) (expr->pointer info a))
     ((post-dec ,a) (expr->pointer info a))
+    ((array-ref ,index ,array)
+     (1- (expr->pointer info array)))
+
+    ((d-sel (ident ,field) (array-ref ,index ,array))
+       (let ((type (p-expr->type info array)))
+         (field-pointer info type field)))
+
+    ((i-sel (ident ,field) (array-ref ,index ,array))
+       (let ((type (p-expr->type info array)))
+         (field-pointer info type field)))
+
     ((d-sel (ident ,field) (p-expr (ident ,struct)))
      (let ((type (ident->type info struct)))
        (field-pointer info type field)))
+
     ((i-sel (ident ,field) (p-expr (ident ,struct)))
      (let ((type (ident->type info struct)))
        (field-pointer info type field)))
-    ((cast (type-name ,type (abs-declr ,pointer)) (p-expr (ident ,name)))
+
+    ((i-sel (ident ,field1) (i-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-pointer info type1 field1)))
+
+    ((i-sel (ident ,field1) (d-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-pointer info type1 field1)))
+
+    ((d-sel (ident ,field1) (i-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            ;;(type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-pointer info type1 field1)))
+
+    ((d-sel (ident ,field1) (d-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-pointer info type1 field1)))
+
+    ((cast (type-name ,type) ,expr)     ; FIXME: add expr?
+     (let* ((type (ast-type->type info type))
+            (pointer (type:pointer type)))
+       pointer))
+    ((cast (type-name ,type (abs-declr ,pointer)) ,expr) ; FIXME: add expr?
      (let* ((type (ast-type->type info type))
             (pointer0 (type:pointer type))
-            (pointer1 (ptr-declr->pointer pointer)))
+            (pointer1 (ptr-declr->pointer pointer))
+            (pointer2 (expr->pointer info expr)))
        (+ pointer0 pointer1)))
     (_ (stderr "expr->pointer: unsupported: ~s\n" o) 0)))
 
 (define (expr->size info o)
   (pmatch o
     ((p-expr (ident ,name)) (ident->size info name))
+
+    ((array-ref ,index ,array)
+     (let ((type (p-expr->type info array)))
+       (ast-type->size info type)))
+
+    ((d-sel (ident ,field) (array-ref ,index ,array))
+       (let ((type (p-expr->type info array)))
+         (field-size info type field)))
+
+    ((i-sel (ident ,field) (array-ref ,index ,array))
+       (let ((type (p-expr->type info array)))
+         (field-size info type field)))
+
     ((d-sel (ident ,field) (p-expr (ident ,struct)))
      (let* ((type (ident->type info struct))
             (type1 (field-type info type field)))
        (ast-type->size info type1)))
+
     ((i-sel (ident ,field) (p-expr (ident ,struct)))
      (let* ((type (ident->type info struct))
             (type1 (field-type info type field)))
        (ast-type->size info type1)))
+
+    ((i-sel (ident ,field1) (i-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (ast-type->size info type1)))
+
+    ((i-sel (ident ,field1) (d-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (ast-type->size info type1)))
+
+    ((d-sel (ident ,field1) (i-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (ast-type->size info type1)))
+
+    ((d-sel (ident ,field1) (d-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (ast-type->size info type1)))
+
     ((de-ref ,expr) (expr->size info expr))
     ((add ,a ,b) (expr->size info a))
     ((sub ,a ,b) (expr->size info a))
@@ -1746,7 +1823,10 @@
     ((pre-dec ,a) (expr->size info a))
     ((post-inc ,a) (expr->size info a))
     ((post-dec ,a) (expr->size info a))
-    ((cast (type-name ,type (abs-declr ,pointer)) (p-expr (ident ,name)))
+    ((cast (type-name ,type) ,expr)  ; FIXME: ignore expr?
+     (let ((type (ast-type->type info type)))
+       (type:size type)))
+    ((cast (type-name ,type (abs-declr ,pointer)) ,expr) ; FIXME: ignore expr?
      (let ((type (ast-type->type info type)))
        (type:size type)))
     (_ (stderr "expr->size: unsupported: ~s\n" o) 4)))
@@ -1754,7 +1834,33 @@
 (define (p-expr->type info o)
   (pmatch o
     ((p-expr (ident ,name)) (ident->type info name))
+    ((array-ref ,index ,array)
+     (p-expr->type info array))
     ((array-ref ,index (p-expr (ident ,array))) (ident->type info array))
+    ((i-sel (ident ,field1) (i-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-type info type1 field1)))
+
+    ((i-sel (ident ,field1) (d-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-type info type1 field1)))
+
+    ((d-sel (ident ,field1) (i-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-type info type1 field1)))
+
+    ((d-sel (ident ,field1) (d-sel (ident ,field0) ,struct0))
+     (let* ((type0 (p-expr->type info struct0))
+            (type0 (if (pair? type0) type0 `("tag" ,type0)))
+            (type1 (field-type info type0 field0)))
+       (field-type info type1 field1)))
+
     ((i-sel (ident ,field) (p-expr (ident ,struct)))
      (let* ((type0 (ident->type info struct))
             (type0 (if (pair? type0) type0 `("tag" ,type0))))
@@ -1773,7 +1879,9 @@
     ((sub ,a ,b) (p-expr->type info a))
     ((p-expr (fixed ,value)) "int")
     ((neg ,a) (p-expr->type info a))
-    ((cast (type-name ,type (abs-declr ,pointer)) (p-expr (ident ,name)))
+    ((cast (type-name ,type) ,expr) ; FIXME: ignore expr?
+     type)
+    ((cast (type-name ,type (abs-declr ,pointer)) ,expr) ; FIXME: ignore expr?
      type)
     ((fctn-call (p-expr (ident ,name)))
      (stderr "TODO: p-expr->type: unsupported: ~s\n" o)
