@@ -23,6 +23,12 @@
 
 char *list[2] = {"foo\n", "bar\n"};
 
+struct foo {
+  int a;
+  int b;
+  int c;
+};
+
 int
 test ()
 {
@@ -49,10 +55,41 @@ test ()
   char **p = list;
   ++*p;
   eputs (*p);
-  if (strcmp (*p, "oo\n")) return 1;
+  if (strcmp (*p, "oo\n")) return 13;
   --*p;
   eputs (*p);
-  if (strcmp (*p, "foo\n")) return 2;
+  if (strcmp (*p, "foo\n")) return 14;
+
+  struct foo* pfoo = 0;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  pfoo++;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo != 12) return 15;
+
+  pfoo--;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo) return 16;
+
+  pfoo++;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo != 12) return 17;
+
+  int one = 1;
+  pfoo = pfoo - one;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo) return 18;
+
+  pfoo = pfoo + one;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo != 12) return 19;
+
+  pfoo -= one;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo) return 20;
+
+  pfoo += one;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo != 12) return 21;
 
   return 0;
 }
