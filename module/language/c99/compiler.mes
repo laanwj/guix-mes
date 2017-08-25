@@ -1736,6 +1736,7 @@
     ((pre-dec ,a) (expr->pointer info a))
     ((post-inc ,a) (expr->pointer info a))
     ((post-dec ,a) (expr->pointer info a))
+    ((ref-to ,expr) (1+ (expr->pointer info expr)))
     ((array-ref ,index ,array)
      (1- (expr->pointer info array)))
 

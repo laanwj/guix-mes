@@ -75,6 +75,7 @@ test ()
   if (pfoo != 12) return 17;
 
   int one = 1;
+  int two = 2;
   pfoo = pfoo - one;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
   if (pfoo) return 18;
@@ -90,6 +91,8 @@ test ()
   pfoo += one;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
   if (pfoo != 12) return 21;
+
+  if (&one - 1 != &two) return 22;
 
   return 0;
 }
