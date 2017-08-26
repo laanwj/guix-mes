@@ -10,11 +10,49 @@ Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.10 since 0.9
+** Core
+*** 2 new functions
+logand, lognot.
+** Mescc
+*** Mes now includes M1 sources for full source bootstrapping up to tcc.
+*** Mescc now depends on Nyacc 0.81.0.
+*** Mescc now compiles a mes-tcc that compiles a trivial C to a running a.out.
+*** Mescc now supports several (as used my tinycc) struct by value assignments.
+*** Mescc now has _start in a separate crt1.c.
+*** Mescc now supports initializer arithmetic.
+*** Mescc now supports arrays of struct of arbitrary size.
+*** Mescc now supports pointer arithmetic.
+*** Mescc now defines __i386__, __linux__.
+*** Mescc now supports --*p, ++*p.
+*** Mescc now supports int foo[bar] = {baz,...}.
+*** Mescc now supports \x00 in strings in M1.
+*** Mescc now supports complex enum expressions.  Thanks, rain1!
+*** Mescc now supports short.
+*** Mescc now supports foo.bar = foo.baz = bla.
+*** Mescc now supports foo = bar < baz and comparison permutations.
+*** Mescc now supports (anonymous) structs in unions.
+*** Mescc now writes M1 strings if possible.
+**** 2 improved mlibc functions
+malloc, realloc.
+**** 13 new mlibc functions
+fclose, fgetc, fprintf, fwrite, memcpy, memmove, memset, snprintf, strcat,
+strchr, strrchr, strtoull, vnsprintf.
+**** 15 new tinycc-support tests
+76-pointer-arithmetic.c, 77-pointer-assign.c, 78-union-struct.c,
+79-int-array.c, 7a-struct-char-array.c, 7b-struct-int-array.c,
+7c-dynarray.c, 7d-cast-char.c, 7e-struct-array-access.c,
+7f-struct-pointer-arithmetic.c, 7g-struct-byte-word-field.c,
+7h-struct-assign.c, 7i-struct-struct.c, 7j-strtoull.c,
+7k-for-each-elem.c.
+** Noteworthy bug fixes
+*** Mescc has many fixes for foo.bar[baz], foo[bar].baz with ./-> permutations.
+*** Many bugs and limitations in mescc have been fixed and removed.
 * Changes in 0.9 since 0.8
 ** Core
 *** Mes now builds better in non-Guix[SD] legacy distros/environments.  Thanks, rain1!
 ** Mescc
-*** Mescc now compiles a modified tinycc into a running [mostly segfaulting] tcc.mes.
+*** Mescc now compiles a modified tinycc into a running [mostly segfaulting] mes-tcc.
 https://gitlab.com/janneke/tinycc branch wip-mescc.
 *** Mescc now supports locals stack frame larger than 1 byte offset.
 *** Mescc now supports incomplete struct initializers {0}.
@@ -31,7 +69,7 @@ https://gitlab.com/janneke/tinycc branch wip-mescc.
 *** Mescc now supports stdarg variable argument lists.
 *** Mescc now has __GNUC__ unset, #f (WAS: 0).
 *** Mescc now depends on Nyacc 0.80.3.
-*** Mescc now depends on M1 from [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]] v0.2.
+*** Mescc now depends on M1 from [[https://github.com/oriansj/mescc-tools][mescc-tools]] v0.2.
 *** Mescc now compiles to M1 object files.
 **** 7 new mlibc functions
 calloc, close, getcwd, lseek, sprintf, unlink, vprintf.
@@ -48,7 +86,7 @@ stdnoreturn.h, sys/select.h, sys/wait.h.
 * Changes in 0.8 since 0.7
 ** Mescc
 *** Mescc now has experimental annotation support for hex2.
-*** Mescc now depends on the hex2 linker from [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]].
+*** Mescc now depends on the hex2 linker from [[https://github.com/oriansj/mescc-tools][mescc-tools]].
 Direct ELF output support has been removed.
 ELF symbol and string table creation has been removed.
 *** Mescc has been simplified by leveraging use labels in hex2 output.
@@ -139,7 +177,7 @@ open-input-string, read-string, string-delete, with-throw-handler.
 *** Evaluate arguments of OR only once.
 *** Fix assq-set!
 *** Fix ,expand in the REPL.
-    
+
 * Changes in 0.4 since 0.3
 ** Core
 *** Improved performance.
@@ -225,7 +263,7 @@ algorithm has been implemented.
 *** Make+Bash voodoo has been replaced by build-aux/mes-snarf.scm.
 *** Apply now accepts multiple list arguments.
 *** Apply of character, inernal, number, string is an error.
-*** Quasisyntax reading 
+*** Quasisyntax reading
 
 * Changes in 0.1 (since progress report #2)
 ** Core

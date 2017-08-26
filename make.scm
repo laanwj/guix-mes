@@ -636,12 +636,13 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
  (compose add-target (cut install <> #:dir "share/doc/mes"))
  '("AUTHORS"
    ;;"ChangeLog"
+   "BOOTSTRAP"
    "COPYING"
    "HACKING"
    "INSTALL"
    "NEWS"
    "README"
-   "doc/ANNOUNCE-0.9"))
+   "doc/ANNOUNCE-0.10"))
 
 (add-target (install "doc/fosdem/fosdem.pdf" #:dir "share/doc/mes"))
 

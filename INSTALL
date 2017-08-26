@@ -8,8 +8,8 @@ Building and Installing Mes
 * Prerequisites
 ** Bootstrapping
 For bootstrapping, the M1 macro assembler and hex2 linker and Nyacc
-*** [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]], 0.2 is known to work.
-*** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.80.3 is known to work.
+*** [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.2 is known to work.
+*** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.81.0 is known to work.
 For development
 ** Development
 For development, there are some more dependencies.
@@ -19,17 +19,14 @@ For development, there are some more dependencies.
     guix environment --system=i686-linux -l guix.scm #32 bit only
 
 *** Other GNU/Linux
-**** [[https://github.com/oriansj/MESCC_Tools][MESCC_Tools]], 0.2 is known to work.
-**** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.80.3 is known to work.
+**** [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.2 is known to work.
+**** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][0.80.41 {patched 0.80.4}]] is known to work. 
 **** GNU Gcc, 4.9.3 is known to work.
 The idea is to drop this requirement, of course.
 
 **** GNU Guile, version 2.0.12 or is know to work.
 Guile is not strictly necessary but it is used by the configure script
 and in development.
-
-**** GNU Make, version 4.0 is know to work.
-Not strictly necessary.
 
 **** /bin/sh, GNU Bash 4.3 is known to work.
 Let's just say for now that it gets awkward without a shell.
@@ -44,15 +41,9 @@ Let's just say for now that it gets awkward without a shell.
    ./configure
    make
 
-** For a quick build, skip running mescc on Mes
-   make MES_SKIP_MES=1
-
 * Check it
 
    make check
-
-** For a quick check, skip running mescc on Mes
-   make MES_SKIP_MES=1
 
 * Install it
 

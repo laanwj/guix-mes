@@ -41,8 +41,8 @@ Running ./make.scm produces a `script' file.
 
 * ROADMAP
 ** TODO 
-*** release 0.10
-  - mescc: compile minimal main.c with tcc.mes https://gitlab.com/janneke/tinycc wip-mescc
+*** release 0.11
+  - mescc: compile a mes-tcc that can compile gcc-4.7.
 *** release 0.x, unsorted
   - mescc: support unsigned comparison, arithmetic.
   - mescc: support bitfields.
@@ -64,6 +64,7 @@ Running ./make.scm produces a `script' file.
   - work to replace GuixSD's bootstrap binaries for x86
   - more architectures?
 ** DONE
+** 0.10: Mescc now compiles a mes-tcc that compiles a trivial C to a running a.out.
 ** 0.9: Mescc now writes M1 macro assembly files and compiles tcc.
 ** 0.8: Mescc now writes object files in stage0's labeled hex2 format.
 ** 0.7: Mescc supports -E, -c, -o options, include more complete set of header files,
