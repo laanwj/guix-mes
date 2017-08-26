@@ -35,7 +35,7 @@ typedef char* va_list;
 #define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
 #else // !__GNUC__
 typedef int va_list;
-#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 4))
+#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
 #endif // !__GNUC__
 
 #define va_arg(ap, type) (type)(((int*)((ap) = ((ap) + 4)))[-1])

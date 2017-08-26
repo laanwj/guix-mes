@@ -27,6 +27,7 @@ struct foo {
   int a;
   int b;
   int c;
+  unsigned char *d;
 };
 
 int
@@ -64,7 +65,7 @@ test ()
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
   pfoo++;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
-  if (pfoo != 12) return 15;
+  if (pfoo != 16) return 15;
 
   pfoo--;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
@@ -72,7 +73,7 @@ test ()
 
   pfoo++;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
-  if (pfoo != 12) return 17;
+  if (pfoo != 16) return 17;
 
   int one = 1;
   int two = 2;
@@ -82,7 +83,7 @@ test ()
 
   pfoo = pfoo + one;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
-  if (pfoo != 12) return 19;
+  if (pfoo != 16) return 19;
 
   pfoo -= one;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
@@ -90,9 +91,36 @@ test ()
 
   pfoo += one;
   eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
-  if (pfoo != 12) return 21;
+  if (pfoo != 16) return 21;
 
   if (&one - 1 != &two) return 22;
+
+  struct foo* sym = 32;
+  int d = 16;
+  int i = sym + 16;
+  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  if (i != 288) return 23;
+
+  i = sym + d;
+  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  if (i != 288) return 24;
+
+  i = sym - 16;
+  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  if (i != -224) return 25;
+
+  i = sym - d;
+  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  if (i != -224) return 26;
+
+  i = sym - (struct foo*)d;
+  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  if (i != 1) return 27;
+
+  pfoo = sym + 1;
+  pfoo -= sym;
+  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  if (pfoo != 1) return 28;
 
   return 0;
 }
