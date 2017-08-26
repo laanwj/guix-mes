@@ -144,7 +144,7 @@
              (data (cdr o))
              (data (filter-map labelize data))
              (len (length data))
-             (string-max (or (and=> (getenv "M1_STRING_MAX") string->number) 0)))
+             (string-max (or (and=> (getenv "M1_STRING_MAX") string->number) 80)))
         (format #t "\n:~a\n" label)
         (cond ((and (< len string-max)
                     (char? (car data))
