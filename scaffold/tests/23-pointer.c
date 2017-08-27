@@ -39,22 +39,25 @@ test ()
   if (*x++ != 'A') return 3;
   *x++ = 'C';
   if (g_chars[1] != 'C') return 4;
+  if (g_chars[2] != 'X') return 5;
+  *--x = 'X';
+  if (g_chars[1] != 'X') return 7;
 
   char **pp = &x;
-  if (**pp != 'X') return 5;
+  if (**pp != 'X') return 7;
 
   char *p = *pp;
-  if (*p != 'X') return 6;
+  if (*p != 'X') return 8;
 
   char ***ppp = &pp;
-  //if (***ppp != 'X') return 7;
+  if (***ppp != 'X') return 9;
 
   char **pp2 = *ppp;
-  if (**pp2 != 'X') return 8;
+  if (**pp2 != 'X') return 10;
 
   struct foo *f = 0;
-  if (f) return 9;
-  if (file) return 10;
+  if (f) return 11;
+  if (file) return 12;
 
   return 0;
 }

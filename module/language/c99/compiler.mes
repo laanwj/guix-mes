@@ -916,14 +916,14 @@
                 (type (ident->type info name))
                 (ptr (ident->pointer info name))
                 (size (if (> ptr 1) 4 1)))
-           (append-text info ((ident-add info) name size)))) ;; FIXME: size
+           (append-text info ((ident-add info) name size))))
 
         ((assn-expr (de-ref (post-dec (p-expr (ident ,name)))) (op ,op) ,b)
          (let* ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b)))
                 (type (ident->type info name))
                 (ptr (ident->pointer info name))
                 (size (if (> ptr 1) 4 1)))
-           (append-text info ((ident-add info) name (- size))))) ;; FIXME: size
+           (append-text info ((ident-add info) name (- size)))))
 
         ((assn-expr ,a (op ,op) ,b)
          (let* ((info (append-text info (ast->comment o)))
@@ -984,18 +984,15 @@
                                     ((1) (wrap-as (i386:byte-accu->base-mem)))
                                     ((2) (wrap-as (i386:word-accu->base-mem)))
                                     (else (wrap-as (i386:accu->base-mem)))))))
-             ((de-ref (p-expr (ident ,name)))
-              (let* ((type (ident->type info name))
-                     (ptr (ident->pointer info name))
-                     (size (if (= ptr 1) (ast-type->size info type)
-                               4)))
-                (append-text info (append (wrap-as (i386:accu->base))
-                                          ((base->ident-address info) name)))))  ; FIXME: size
              ((de-ref ,expr)
               (let* ((info ((expr->base info) expr))
                      (ptr (expr->pointer info expr))
-                     (size (expr->size info expr)))
-                (append-text info (wrap-as (i386:accu->base-mem)))))
+                     (size (if (= ptr 1) (expr->size info expr)
+                               4)))
+                (append-text info (case size
+                                    ((1) (wrap-as (i386:byte-accu->base-mem)))
+                                    ((2) (wrap-as (i386:word-accu->base-mem)))
+                                    (else (wrap-as (i386:accu->base-mem)))))))
              ((array-ref ,index (d-sel (ident ,field) (p-expr (ident ,struct))))
               (let* ((info ((expr->base* info) a))
                      (type (ident->type info struct))
