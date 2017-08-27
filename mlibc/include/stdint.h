@@ -38,6 +38,11 @@ typedef int int32_t;
 typedef unsigned long long uint64_t;
 typedef long long int64_t;
 
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+typedef unsigned long size_t;
+#endif
+
 // FIXME
 typedef int intmax_t;
 typedef unsigned uintmax_t;
