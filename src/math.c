@@ -136,6 +136,19 @@ multiply (SCM x) ///((name . "*") (arity . n))
 }
 
 SCM
+logand (SCM x) ///((arity . n))
+{
+  int n = 0;
+  while (x != cell_nil)
+    {
+      assert (TYPE (car (x)) == TNUMBER);
+      n &= VALUE (car (x));
+      x = cdr (x);
+    }
+  return MAKE_NUMBER (n);
+}
+
+SCM
 logior (SCM x) ///((arity . n))
 {
   int n = 0;
@@ -145,6 +158,14 @@ logior (SCM x) ///((arity . n))
       n |= VALUE (car (x));
       x = cdr (x);
     }
+  return MAKE_NUMBER (n);
+}
+
+SCM
+lognot (SCM x)
+{
+  assert (TYPE (x) == TNUMBER);
+  int n = ~VALUE (x);
   return MAKE_NUMBER (n);
 }
 
