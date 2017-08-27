@@ -1607,6 +1607,10 @@
      (- (p-expr->number info a)))
     ((add ,a ,b)
      (+ (p-expr->number info a) (p-expr->number info b)))
+    ((bitwise-and ,a ,b)
+     (logand (p-expr->number info a) (p-expr->number info b)))
+    ((bitwise-not ,a)
+     (lognot (p-expr->number info a)))
     ((bitwise-or ,a ,b)
      (logior (p-expr->number info a) (p-expr->number info b)))
     ((div ,a ,b)
@@ -1628,7 +1632,14 @@
      (let ((value (assoc-ref (.constants info) name)))
        (or value
            (error (format #f "p-expr->number: undeclared identifier: ~s\n" o)))))
+    ((cast ,type ,expr) (p-expr->number info expr))
+    ((cond-expr ,test ,then ,else)
+     (if (p-expr->bool info test) (p-expr->number info then) (p-expr->number info else)))
     (_  (error (format #f "p-expr->number: not supported: ~s\n" o)))))
+
+(define (p-expr->bool info o)
+  (pmatch o
+    ((eq ,a ,b) (eq? (p-expr->number info a) (p-expr->number info b)))))
 
 (define (struct-field info)
   (lambda (o)
