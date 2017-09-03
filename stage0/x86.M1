@@ -49,6 +49,7 @@ DEFINE cmp____$i8,0x32(%ebp) 83bd
 DEFINE cmp____$i8,0x8(%ebp) 837d
 DEFINE cmp____%al,%dl 38c2
 DEFINE cmp____%edx,%eax 39d0
+DEFINE hlt f4
 DEFINE idiv___%ebx f7fb
 DEFINE int____$0x80 cd80
 DEFINE je32 0f84

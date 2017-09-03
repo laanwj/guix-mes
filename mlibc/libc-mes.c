@@ -23,42 +23,36 @@
 
 int g_stdin = 0;
 char **g_environment;
-int _env ();
-int exit ();
-int main(int,char*[]);
+int main (int,char*[]);
 
 int
 _start ()
 {
-  asm ("mov____%ebp,%eax");      // mov    %ebp,%eax
-  asm ("add____$i8,%eax !8");    // add    $0x8,%eax
-  asm ("push___%eax");           // push   %eax
+  asm ("mov____%ebp,%eax");
+  asm ("add____$i8,%eax !4");
 
-  asm ("mov____%ebp,%eax");      // mov    %ebp,%eax
-  asm ("add____$i8,%eax !4");    // add    $0x4,%eax
-  asm ("movzbl_(%eax),%eax");    // movzbl (%eax),%eax
-  asm ("push___%eax");           // push   %eax
+  asm ("movzbl_(%eax),%eax");
+  asm ("add____$i8,%eax !3");
 
-  asm ("mov____%ebp,%eax");      // mov    %ebp,%eax
-  asm ("add____$i8,%eax !4");    // add    $0x4,%eax
+  asm ("shl____$i8,%eax !0x02");
+  asm ("add____%ebp,%eax");
+  asm ("mov____%eax,0x32 &g_environment");
 
-  asm ("movzbl_(%eax),%eax");    // movzbl (%eax),%eax
-  asm ("add____$i8,%eax !3");    // add    $0x3,%eax
+  asm ("mov____%ebp,%eax");
+  asm ("add____$i8,%eax !8");
+  asm ("push___%eax");
 
-  asm ("shl____$i8,%eax !0x02"); // shl    $0x2,%eax
-  asm ("add____%ebp,%eax");      // add    %ebp,%eax
-  asm ("push___%eax");           // push   %eax
+  asm ("mov____%ebp,%eax");
+  asm ("add____$i8,%eax !4");
+  asm ("movzbl_(%eax),%eax");
+  asm ("push___%eax");
 
-  g_environment = _env ();
-  asm ("pop____%eax");           // pop   %eax
-  int r = main ();
-  exit (r);
-}
+  main ();
 
-char **
-_env (char **e)
-{
-  return e;
+  asm ("mov____%eax,%ebx");
+  asm ("mov____$i32,%eax %1");
+  asm ("int____$0x80");
+  asm ("hlt");
 }
 
 void
