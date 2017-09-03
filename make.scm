@@ -326,17 +326,17 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 ;;(add-target (group "check-scaffold" #:dependencies (filter (target-prefix? "check-scaffold") %targets)))
 
-;; (add-target (bin.gcc "scaffold/main.c"))
-;; (add-target (check "scaffold/main.gcc" #:exit 42))
+(add-target (bin.gcc "scaffold/main.c"))
+(add-target (check "scaffold/main.gcc" #:exit 42))
 
-;; (add-target (bin.gcc "scaffold/main.c" #:libc #f))
-;; (add-target (check "scaffold/main.mlibc-gcc" #:exit 42))
+(add-target (bin.gcc "scaffold/main.c" #:libc #f))
+(add-target (check "scaffold/main.mlibc-gcc" #:exit 42))
 
-;; (add-target (bin.mescc "scaffold/main.c" #:libc mini-libc-mes.hex2))
-;; (add-target (check "scaffold/main.mini-guile" #:exit 42))
+(add-target (bin.mescc "scaffold/main.c" #:libc mini-libc-mes.hex2))
+(add-target (check "scaffold/main.mini-guile" #:exit 42))
 
-;; (add-target (bin.mescc "scaffold/main.c"))
-;; (add-target (check "scaffold/main.guile" #:exit 42))
+(add-target (bin.mescc "scaffold/main.c"))
+(add-target (check "scaffold/main.guile" #:exit 42))
 
 
 (add-target (bin.gcc "scaffold/hello.c"))
