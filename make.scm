@@ -135,6 +135,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (compile.gcc "mlibc/libc-gcc+tcc.c" #:libc #f))
 
 ;;(add-scaffold-test "t" #:libc mini-libc-mes.hex2)
+(add-scaffold-test "t")
 ;;(add-scaffold-test "t" #:libc libc-mes+tcc.hex2)
 
 ;; tests/00: exit, functions without libc
