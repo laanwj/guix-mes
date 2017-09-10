@@ -155,8 +155,8 @@
                (format #t "\"~a\"" (list->string (list-head data (1- (length data))))))
               (else (format #t "~a" (string-join (map text->M1 data) " "))))
         (newline)))
-    (display "\n:HEX2_text")
     (for-each write-function (filter cdr functions))
-    (display "\n\n:ELF_data\n") ;; FIXME
-    (display "\n\n:HEX2_data\n")
+    (when (assoc-ref functions "main")
+      (display "\n\n:ELF_data\n") ;; FIXME
+      (display "\n\n:HEX2_data\n"))
     (for-each write-global globals)))

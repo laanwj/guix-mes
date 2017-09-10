@@ -52,6 +52,7 @@ DEFINE cmp____%edx,%eax 39d0
 DEFINE hlt f4
 DEFINE idiv___%ebx f7fb
 DEFINE int____$0x80 cd80
+DEFINE int cd
 DEFINE je32 0f84
 DEFINE je8 74
 DEFINE jg32 0f8f
@@ -184,8 +185,6 @@ DEFINE xor____%ebx,%ebx 31db
 DEFINE xor____%ecx,%ecx 31c9
 DEFINE xor____%edx,%eax 31d0
 DEFINE xor____%edx,%edx 31d2
-
-
 
 DEFINE SYS_exit   01000000
 DEFINE SYS_read   03000000

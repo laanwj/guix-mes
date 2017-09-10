@@ -21,39 +21,10 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+char **g_environment = 0; // FIXME: todo extern
 int g_stdin = 0;
-char **g_environment;
-int main (int,char*[]);
 
-int
-_start ()
-{
-  asm ("mov____%ebp,%eax");
-  asm ("add____$i8,%eax !4");
-
-  asm ("movzbl_(%eax),%eax");
-  asm ("add____$i8,%eax !3");
-
-  asm ("shl____$i8,%eax !0x02");
-  asm ("add____%ebp,%eax");
-  asm ("mov____%eax,0x32 &g_environment");
-
-  asm ("mov____%ebp,%eax");
-  asm ("add____$i8,%eax !8");
-  asm ("push___%eax");
-
-  asm ("mov____%ebp,%eax");
-  asm ("add____$i8,%eax !4");
-  asm ("movzbl_(%eax),%eax");
-  asm ("push___%eax");
-
-  main ();
-
-  asm ("mov____%eax,%ebx");
-  asm ("mov____$i32,%eax %1");
-  asm ("int____$0x80");
-  asm ("hlt");
-}
+void _env ();
 
 void
 exit ()

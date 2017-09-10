@@ -18,34 +18,24 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int exit ();
-int main(int,char*[]);
-
-int
-_start ()
-{
-  int r = main ();
-  exit (r);
-}
-
 void
 exit ()
 {
-  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+  asm ("mov____0x8(%ebp),%ebx !8");
 
-  asm ("mov____$i32,%eax SYS_exit");              // mov    $0x1,%eax
-  asm ("int____$0x80");                           // int    $0x80
+  asm ("mov____$i32,%eax SYS_exit");
+  asm ("int____$0x80");
 }
 
 void
 write ()
 {
-  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
-  asm ("mov____0x8(%ebp),%ecx !12");              // mov    0x8(%ebp),%ecx
-  asm ("mov____0x8(%ebp),%edx !16");              // mov    0x8(%ebp),%edx
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+  asm ("mov____0x8(%ebp),%edx !16");
 
-  asm ("mov____$i32,%eax SYS_write");             // mov    $0x4,%eax
-  asm ("int____$0x80");                           // int    $0x80
+  asm ("mov____$i32,%eax SYS_write");
+  asm ("int____$0x80");
 }
 
 int

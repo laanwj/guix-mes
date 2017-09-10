@@ -38,13 +38,81 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
              (ice-9 match)
              (guix make))
 
+(define crt1.hex2 (m1.as "mlibc/crt1.c"))
+(add-target crt1.hex2)
+
+(add-target crt1.mlibc-o)
+
+(define %HEX2-FLAGS
+  '("--LittleEndian"
+    "--Architecture=1"
+    "--BaseAddress=0x1000000"))
+(define %HEX2 (PATH-search-path "hex2"))
+
+(define* (LINK.hex2 #:key (hex2 %HEX2) (hex2-flags %HEX2-FLAGS) (crt1 crt1.hex2) (libc libc-mes.hex2) debug?)
+  (method (name "LINK.hex2")
+          (build (lambda (o t)
+                   (let* ((input-files (map target-file-name (target-inputs t)))
+                          ;; FIXME: snarf inputs
+                          (input-files (filter (lambda (f) (and (string-suffix? "hex2" f)
+                                                                (not (member f (cdr input-files)))))
+                                               input-files)))
+                     (format #t "  ~a\t ~a -> ~a\n" (method-name o) (string-join input-files) (target-file-name t))
+                     (with-output-to-file (target-file-name t)
+                       (lambda _
+                         (set-port-encoding! (current-output-port) "ISO-8859-1")
+                         (display
+                          (apply assert-gulp-pipe*
+                                 `(,hex2
+                                   ,@hex2-flags
+                                   "-f"
+                                   ,(if (not debug?) "stage0/elf32-0header.hex2"
+                                        "stage0/elf32-header.hex2")
+                                   ,@(if crt1 `("-f" ,(target-file-name crt1)) '())
+                                   ,@(if libc `("-f" ,(target-file-name libc)) '())
+                                   ,@(append-map (cut list "-f" <>) input-files)
+                                   "-f"
+                                   ,(if (not debug?) "stage0/elf-0footer.hex2"
+                                        "stage0/elf32-footer-single-main.hex2"))))))
+                     (chmod (target-file-name t) #o755))))
+          (inputs `(,(store #:add-file "stage0/elf32-0header.hex2")
+                    ,@(if crt1 (target-inputs crt1) '())
+                    ,@(if libc (target-inputs libc) '())
+                    ,(store #:add-file "stage0/elf-0footer.hex2")))))
+
+(define* (bin.mescc input-file-name #:key (cc %MESCC) (hex2 %HEX2) (m1 %M1) (crt1 crt1.hex2) (libc libc-mes.hex2) (dependencies '()) (defines '()) (includes '()))
+  (let* ((base-name (base-name input-file-name ".c"))
+         ;;(foo (format (current-error-port) "bin[~s .c] base=~s\n" input-file-name base-name))
+         (suffix (cond ((not libc) ".0-guile")
+                       ((eq? libc libc-mes.hex2) ".guile")
+                       ((eq? libc libc-mes+tcc.hex2) ".tcc-guile")
+                       (else ".mini-guile")))
+         (target-file-name (string-append base-name suffix))
+         (hex2-target (m1.as input-file-name #:m1 m1 #:cc cc #:defines defines #:includes includes #:dependencies dependencies)))
+    (target (file-name target-file-name)
+            (inputs `(,hex2-target
+                      ,@(if crt1 (list crt1) '())
+                      ,@(if libc (list libc) '())))
+            (method (LINK.hex2 #:hex2 hex2 #:crt1 crt1 #:libc libc #:debug? (eq? libc libc-mes.hex2))))))
+
+;;(define mini-libc-mes.E (m1.as "mlibc/mini-libc-mes.c"))
+
+(define libc-mes.hex2 (m1.as "mlibc/libc-mes.c"))
+(add-target libc-mes.hex2)
+
+(define mini-libc-mes.hex2 (m1.as "mlibc/mini-libc-mes.c"))
+(add-target mini-libc-mes.hex2)
+
+(define libc-mes+tcc.hex2 (m1.as "mlibc/libc-mes+tcc.c"))
+(add-target libc-mes+tcc.hex2)
+
 (add-target (bin.mescc "stage0/exit-42.c" #:libc #f))
-(add-target (check "stage0/exit-42.0-guile" #:signal 11))  ; FIXME: segfault
+(add-target (check "stage0/exit-42.0-guile" #:exit 42))
 
 (add-target (cpp.mescc "mlibc/mini-libc-mes.c"))
 (add-target (compile.mescc "mlibc/mini-libc-mes.c"))
 
-(add-target (bin.mescc "stage0/exit-42.c" #:libc mini-libc-mes.E))
+(add-target (bin.mescc "stage0/exit-42.c" #:libc mini-libc-mes.hex2))
 (add-target (check "stage0/exit-42.mini-guile" #:exit 42))
 
 (add-target (cpp.mescc "mlibc/libc-mes.c"))
@@ -53,17 +121,21 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.mescc "stage0/exit-42.c"))
 (add-target (check "stage0/exit-42.guile" #:exit 42))
 
-(define* (add-scaffold-test name #:key (exit 0) (libc libc-mes.E))
-  (add-target (bin.gcc (string-append "scaffold/tests/" name ".c") #:libc #f))
+(define* (add-scaffold-test name #:key (exit 0) (libc libc-mes.hex2) (libc-gcc libc-gcc.mlibc-o))
+  (add-target (bin.gcc (string-append "scaffold/tests/" name ".c") #:libc libc-gcc))
   (add-target (check (string-append "scaffold/tests/" name ".mlibc-gcc") #:exit exit))
 
   (add-target (bin.mescc (string-append "scaffold/tests/" name ".c") #:libc libc))
   (add-target (check (string-append "scaffold/tests/" name "." (cond ((not libc) "0-")
-                                                                     ((eq? libc mini-libc-mes.E) "mini-")
+                                                                     ((eq? libc mini-libc-mes.hex2) "mini-")
                                                                      (else "")) "guile") #:exit exit)))
 
-(add-scaffold-test "t" #:libc mini-libc-mes.E)
-;;(add-scaffold-test "t" #:libc libc-mes+tcc.E)
+(add-target (compile.gcc "mlibc/crt1.c" #:libc #f))
+(add-target (compile.gcc "mlibc/libc-gcc.c" #:libc #f))
+(add-target (compile.gcc "mlibc/libc-gcc+tcc.c" #:libc #f))
+
+;;(add-scaffold-test "t" #:libc mini-libc-mes.hex2)
+;;(add-scaffold-test "t" #:libc libc-mes+tcc.hex2)
 
 ;; tests/00: exit, functions without libc
 (add-scaffold-test "00-exit-0" #:libc #f)
@@ -101,7 +173,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 ;; tests/30: call, compare: mini-libc-mes.c
 (for-each
- (cut add-scaffold-test <> #:libc mini-libc-mes.E)
+ (cut add-scaffold-test <> #:libc mini-libc-mes.hex2)
  '("30-strlen"
    "31-eputs"
    "32-compare"
@@ -116,7 +188,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 ;; tests/40: control: mini-libc-mes.c
 (for-each
- (cut add-scaffold-test <> #:libc mini-libc-mes.E)
+ (cut add-scaffold-test <> #:libc mini-libc-mes.hex2)
  '("40-if-else"
    "41-?"
    "42-goto-label"
@@ -181,7 +253,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (compile.mescc "mlibc/libc-mes+tcc.c"))
 
 (define* (add-tcc-test name)
-  (add-target (bin.gcc (string-append "scaffold/tinycc/" name ".c") #:libc #f #:includes '("scaffold/tinycc")))
+  (add-target (bin.gcc (string-append "scaffold/tinycc/" name ".c") #:libc libc-gcc.mlibc-o #:includes '("scaffold/tinycc")))
   (add-target (check (string-append "scaffold/tinycc/" name ".mlibc-gcc") #:baseline (string-append "scaffold/tinycc/" name ".expect")))
 
   (add-target (bin.mescc (string-append "scaffold/tinycc/" name ".c") #:includes '("scaffold/tinycc")))
@@ -259,7 +331,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 ;; (add-target (bin.gcc "scaffold/main.c" #:libc #f))
 ;; (add-target (check "scaffold/main.mlibc-gcc" #:exit 42))
 
-;; (add-target (bin.mescc "scaffold/main.c" #:libc mini-libc-mes.E))
+;; (add-target (bin.mescc "scaffold/main.c" #:libc mini-libc-mes.hex2))
 ;; (add-target (check "scaffold/main.mini-guile" #:exit 42))
 
 ;; (add-target (bin.mescc "scaffold/main.c"))
@@ -269,10 +341,10 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.gcc "scaffold/hello.c"))
 (add-target (check "scaffold/hello.gcc" #:exit 42))
 
-(add-target (bin.gcc "scaffold/hello.c" #:libc #f))
+(add-target (bin.gcc "scaffold/hello.c" #:libc libc-gcc.mlibc-o))
 (add-target (check "scaffold/hello.mlibc-gcc" #:exit 42))
 
-(add-target (bin.mescc "scaffold/hello.c" #:libc mini-libc-mes.E))
+(add-target (bin.mescc "scaffold/hello.c" #:libc mini-libc-mes.hex2))
 (add-target (check "scaffold/hello.mini-guile" #:exit 42))
 
 (add-target (bin.mescc "scaffold/hello.c"))
@@ -282,13 +354,13 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.gcc "scaffold/m.c"))
 (add-target (check "scaffold/m.gcc" #:exit 255))
 
-(add-target (bin.gcc "scaffold/m.c" #:libc #f))
+(add-target (bin.gcc "scaffold/m.c" #:libc libc-gcc.mlibc-o))
 (add-target (check "scaffold/m.mlibc-gcc" #:exit 255))
 
 (add-target (bin.mescc "scaffold/m.c"))
 (add-target (check "scaffold/m.guile" #:exit 255))
 
-(add-target (bin.gcc "scaffold/micro-mes.c" #:libc #f))
+(add-target (bin.gcc "scaffold/micro-mes.c" #:libc libc-gcc.mlibc-o))
 (add-target (check "scaffold/micro-mes.mlibc-gcc" #:exit 6)) ; arg1 arg2 arg3 arg4 arg5
 
 (add-target (bin.mescc "scaffold/micro-mes.c"))
@@ -334,7 +406,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
                                  ,(string-append "PREFIX=\"" %prefix "\""))
                      #:includes '("src")))
 
-(add-target (bin.gcc "src/mes.c" #:libc #f
+(add-target (bin.gcc "src/mes.c" #:libc libc-gcc.mlibc-o
                      #:dependencies mes-snarf-targets
                      #:defines `("FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
@@ -510,12 +582,17 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    ((install-guile-dir #:dir (string-append %godir)) f))
  %go-files)
 
-(add-target (install "mlibc/libc-mes.E" #:dir "lib"))
+(add-target (install "mlibc/crt1.hex2" #:dir "lib"))
 (add-target (install "mlibc/libc-mes.M1" #:dir "lib"))
-(add-target (install "mlibc/libc-mes+tcc.E" #:dir "lib"))
+(add-target (install "mlibc/libc-mes.hex2" #:dir "lib"))
 (add-target (install "mlibc/libc-mes+tcc.M1" #:dir "lib"))
-(add-target (install "mlibc/mini-libc-mes.E" #:dir "lib"))
+(add-target (install "mlibc/libc-mes+tcc.hex2" #:dir "lib"))
 (add-target (install "mlibc/mini-libc-mes.M1" #:dir "lib"))
+(add-target (install "mlibc/mini-libc-mes.hex2" #:dir "lib"))
+
+(add-target (install "mlibc/crt1.mlibc-o" #:dir "lib"))
+(add-target (install "mlibc/libc-gcc.mlibc-o" #:dir "lib"))
+(add-target (install "mlibc/libc-gcc+tcc.mlibc-o" #:dir "lib"))
 
 (for-each
  (lambda (f)
@@ -587,15 +664,17 @@ Targets:
                                       (string-join (filter (negate (cut string-index <> #\/)) (map target-file-name %targets)) "\n    " 'prefix)))
         (else
          (let ((targets (match args
-                          (() (filter (negate check-target?) %targets))
+                          (() (filter (conjoin (negate install-target?)
+                                               (negate check-target?))
+                                      %targets))
                           ((? (cut member "all" <>)) (filter (conjoin (negate install-target?)
                                                                       (negate check-target?))
                                                              %targets))
                           ((? (cut member "check" <>)) (filter check-target? %targets))
                           ((? (cut member "install" <>)) (filter install-target? %targets))
                           (_ (filter-map (cut get-target <>) args)))))
+           ;;((@@ (guix make) store) #:print 0)
            (for-each build targets)
-           ;;((@@ (mes make) store) #:print 0)
            (exit %status)))))
 
 (main (cdr (command-line)))
