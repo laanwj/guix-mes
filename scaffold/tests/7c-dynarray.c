@@ -46,9 +46,18 @@ add (void *ptab, int *nb_ptr, void *data)
     *nb_ptr = nb;
 }
 
-typedef struct file {
+typedef struct file4 {
   char name[4];
-} file_struct;
+} file4_struct;
+
+typedef struct file12 {
+  int foo;
+  int bar;
+  char name[4];
+} file12_struct;
+
+//#define file file4
+#define file file12
 
 struct state {
   int bla;
@@ -81,9 +90,10 @@ test ()
   eputs ("&PATHS="); eputs (itoa (&s->paths)); eputs ("\n");
   eputs ("&FILES="); eputs (itoa (&s->files)); eputs ("\n");
 
-  struct file *fs;
-  eputs ("foo\n");
-  fs = s->files[0];
+  // struct file *fs;
+  // eputs ("foo\n");
+  // fs = s->files[0];
+  struct file *fs = s->files[0];
   eputs ("add s=   "); eputs (itoa (s)); eputs ("\n");
   eputs ("add fs=  "); eputs (itoa (fs)); eputs ("\n");
   eputs ("&fs->[0]="); eputs (itoa (fs->name)); eputs ("\n");

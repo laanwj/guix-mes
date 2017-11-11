@@ -31,7 +31,8 @@ struct sym {
 };
 
 
-struct sym tab[3] = {"foo", 0, "bar", 1, "baz", 2};
+struct sym tab3[3] = {"foo", 0, "bar", 1, "baz", 2};
+struct sym tab[] = {"foo", 0, "bar", 1, "baz", 2};
 
 struct section section;
 
@@ -45,10 +46,11 @@ struct section section;
 int
 test ()
 {
+  struct sym* p;
+  p = tab3;
   section.data = tab;
   section.offset = 24;
 
-  struct sym* p;
   int size = sizeof (struct sym);
   eputs ("size="); eputs (itoa (size)); eputs ("\n");
   if (size != 8) return 1;
