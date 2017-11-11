@@ -9,7 +9,7 @@ Building and Installing Mes
 ** Bootstrapping
 For bootstrapping, the M1 macro assembler and hex2 linker and Nyacc
 *** [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.2 is known to work.
-*** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.81.0 is known to work.
+*** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.82.4 is known to work.
 For development
 ** Development
 For development, there are some more dependencies.
@@ -20,7 +20,7 @@ For development, there are some more dependencies.
 
 *** Other GNU/Linux
 **** [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.2 is known to work.
-**** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][0.80.41 {patched 0.80.4}]] is known to work. 
+**** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.82.4 is known to work.
 **** GNU Gcc, 4.9.3 is known to work.
 The idea is to drop this requirement, of course.
 

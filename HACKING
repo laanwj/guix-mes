@@ -41,41 +41,56 @@ Running ./make.scm produces a `script' file.
 
 * ROADMAP
 ** TODO 
-*** release 0.11
+*** release 0.12
   - mescc: compile a mes-tcc that can compile gcc-4.7.
 *** release 0.x, unsorted
+  - mescc: refactor type(/ptr?) system; expr->type and ast-type->type.
+  - mescc: refactor initializers.
+  - mescc: record and support function types, and thus foo ()->bar.
+  - mescc: refactor switch statement to support unpatched tinycc.
+  - mes/mescc: bootstrap a minimal-Guile (libguile/eval.c,ice-9/eval.scm).
+  - mescc: have mes-tcc pass all scaffold/tests, scaffold/tinycc tests.
+  - mescc: compile a mes-tcc that can compile gcc-4.7.
+  - mescc: refactor switch; support heterogeneous switch case.
+  - mescc: support sizeof any expr.
+  - mescc: support function-static.
+  - mescc: support/grok global static.
   - mescc: support unsigned comparison, arithmetic.
+  - mescc: support long long.
   - mescc: support bitfields.
   - mescc: support floats.
-  - mescc: some success with 8cc/pcc/libguile/eval.c.
+  - mescc: some success with 8cc,pcc,guile/libguile/eval.c.
   - build: guile/guix/make.scm: add file-types, intermediate, hash all dependencies
   - build: make.scm: imperative->declaritive
   - hex2: produce ELF_sym and ELF_str tables from hex2; nicer for objdump -d, gdb (in mescc-tools?)
+  - compile src/mes.c with M2-Planet.
   - rewrite src/mes.c in stage0's stage2 LISP.
   - and/or: rewrite src/mes.c M1
   - and/or: connect to GNU Epsilon's VM
   - and/or: compile Scheme to C, rewrite Mes.c into Mes.scm.
-  - real module support, bonus for supporting Guile's define-module/define-public syntax
-  - get full source syntax-case up (Andre van Tonder?) OR drop it
-    psyntax/syntax-case and rewrite Nyacc without syntax-case+R7RS Ellipsis
-  - support regexp OR rewrite Nyacc without regexps
-  - split-off Guile C compiler as standalone Guile project
+  - real module support, bonus for supporting Guile's define-module/define-public syntax.
+  - get full source syntax-case up (Andre van Tonder?) OR drop it.
+    psyntax/syntax-case and rewrite Nyacc without syntax-case+R7RS Ellipsis.
+  - support regexp OR rewrite Nyacc without regexps.
+  - split-off MesCC as as standalone Guile C compiler project.
 *** release 1.0
-  - work to replace GuixSD's bootstrap binaries for x86
+  - replace GuixSD's bootstrap binaries for x86.
+  - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
   - more architectures?
 ** DONE
-** 0.10: Mescc now compiles a mes-tcc that compiles a trivial C to a running a.out.
-** 0.9: Mescc now writes M1 macro assembly files and compiles tcc.
-** 0.8: Mescc now writes object files in stage0's labeled hex2 format.
-** 0.7: Mescc supports -E, -c, -o options, include more complete set of header files,
-enough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
-** 0.6: Work with unmodified, unbundled Nyacc; compile 33/55 tinycc's tests/test2 suite.
-** 0.5: Mutual self-hosting Scheme interpreter and C compiler: mes.c and mescc,
-        Support call-with-current-continuation, refactor catch/throw
-** 0.4: Support Nyacc, Gcc-compiled Mes compiles minimal main.c using nyacc
-** 0.3: Garbage collector
-** 0.2: Support psyntax
-** 0.1: Mes eval/apply feature complete; support syntax-rules, compile main.c using LALR, dump ELF
+*** 0.11: MesCC now compiles a mes-tcc that passes 41/69 of mescc's C tests.
+*** 0.10: Mescc now compiles a mes-tcc that compiles a trivial C to a running a.out.
+*** 0.9: Mescc now writes M1 macro assembly files and compiles tcc.
+*** 0.8: Mescc now writes object files in stage0's labeled hex2 format.
+*** 0.7: Mescc supports -E, -c, -o options, include more complete set of header files,
+eenough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
+*** 0.6: Work with unmodified, unbundled Nyacc; compile 33/55 tinycc's tests/test2 suite.
+*** 0.5: Mutual self-hosting Scheme interpreter and C compiler: mes.c and mescc,
+         Support call-with-current-continuation, refactor catch/throw
+*** 0.4: Support Nyacc, Gcc-compiled Mes compiles minimal main.c using nyacc
+*** 0.3: Garbage collector
+*** 0.2: Support psyntax
+*** 0.1: Mes eval/apply feature complete; support syntax-rules, compile main.c using LALR, dump ELF
 
 * Bugs
 ** eval_apply/gc + Nyacc bug
@@ -88,7 +103,8 @@ may [un]cover the bug.  So there is probably some eval_apply-construct
 that Nyacc uses, possiblby indirectly via with-fluid, like (call/cc,
 call-with-current-continuation), that breaks when GC triggers at the
 wrong time.
-** mescc can only compile itself, it cannot compile tcc, gcc or guile
+** mescc can only compile itself, it cannot full-functionally compile tcc, gcc or guile
+** mescc: 7n-struct-struct-array.c:  struct file f = {"first.h"};
 ** mes.mes cannot read sexps, only --dump's, mes.mes cannot --dump
 ** Bootstrap binary mes is too big and opaque to be considered source
 68kB ELF binary which can be disassembled (objdump -d mes.mes).
@@ -213,6 +229,7 @@ support all C11 language features while keeping the code as small and
 simple as possible.
 *** pcc
 *** early GCC?
+https://miyuki.github.io/2017/10/04/gcc-archaeology-1.html
 *** [[http://tack.sourceforge.net/][ack]]
 <rain1> it may be possible to compile like this:  mes |> ack |> pcc |> tcc |>
         gcc 4.7.4 |> gcc later version... up to modern

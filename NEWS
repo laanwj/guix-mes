@@ -10,12 +10,21 @@ Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.11 since 0.10
+** MesCC
+*** MesCC now compiles a mes-tcc that passes 41/69 of mescc's C tests.
+*** Messc's libc can now be compiled with tcc (syscall support: write).
+*** Messc now compiles a less-patched tcc: -214/+458 lines [WAS: -333/+747].
+*** MesCC now supports empty for.
+*** MesCC has been greatly refactored, 500/3000 lines have been removed.
+*** MesCC now supports complex [struct] by value assign foo.bar, foo->bar, foo[bar].
+*** MesCC now depends on Nyacc 0.82.4.
 * Changes in 0.10 since 0.9
 ** Core
 *** 2 new functions
 logand, lognot.
-** Mescc
 *** Mes now includes M1 sources for full source bootstrapping up to tcc.
+** Mescc
 *** Mescc now depends on Nyacc 0.81.0.
 *** Mescc now compiles a mes-tcc that compiles a trivial C to a running a.out.
 *** Mescc now supports several (as used my tinycc) struct by value assignments.
