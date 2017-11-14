@@ -176,8 +176,12 @@
     ("short" . ,(make-type 'builtin 2 0 #f))
     ("int" . ,(make-type 'builtin 4 0 #f))
     ("long" . ,(make-type 'builtin 4 0 #f))
-    ("long long" . ,(make-type 'builtin 8 0 #f))
-    ("long long int" . ,(make-type 'builtin 8 0 #f))
+    ;;("long long" . ,(make-type 'builtin 8 0 #f))
+    ;;("long long int" . ,(make-type 'builtin 8 0 #f))
+
+    ("long long" . ,(make-type 'builtin 4 0 #f))  ;; FIXME
+    ("long long int" . ,(make-type 'builtin 4 0 #f))
+
     ("void" . ,(make-type 'builtin 1 0 #f))
     ;; FIXME sign
     ("unsigned char" . ,(make-type 'builtin 1 0 #f))
@@ -186,8 +190,12 @@
     ("unsigned" . ,(make-type 'builtin 4 0 #f))
     ("unsigned int" . ,(make-type 'builtin 4 0 #f))
     ("unsigned long" . ,(make-type 'builtin 4 0 #f))
-    ("unsigned long long" . ,(make-type 'builtin 8 0 #f))
-    ("unsigned long long int" . ,(make-type 'builtin 8 0 #f))))
+
+    ;; ("unsigned long long" . ,(make-type 'builtin 8 0 #f))
+    ;; ("unsigned long long int" . ,(make-type 'builtin 8 0 #f))
+    ("unsigned long long" . ,(make-type 'builtin 4 0 #f)) ;; FIXME
+    ("unsigned long long int" . ,(make-type 'builtin 4 0 #f))
+    ))
 
 (define (field:name o)
   (pmatch o
