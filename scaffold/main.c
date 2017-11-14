@@ -19,9 +19,9 @@
  */
 
 int
-main (int argc, char *argv[])
+main ()//int argc, char *argv[])
 {
-#if 0
+#if 1
   int a = 40;
   int b = 2;
   return a + b;
