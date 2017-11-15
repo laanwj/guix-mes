@@ -19,13 +19,14 @@
  */
 
 int
-main ()//int argc, char *argv[])
+test ()
 {
-#if 1
+  return 2;
+}
+
+int
+main ()
+{
   int a = 40;
-  int b = 2;
-  return a + b;
-#else
-  return 42;
-#endif
+  return a + test ();
 }
