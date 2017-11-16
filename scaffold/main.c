@@ -25,8 +25,11 @@ test ()
 }
 
 int
-main ()
+main (int argc, char *argv[])
 {
-  int a = 40;
+  if (argc == 6) return 42;
+  int a = 39;
+  if (argc > 1) a+=argc;
+  else a++;
   return a + test ();
 }
