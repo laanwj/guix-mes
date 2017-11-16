@@ -18,8 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int g_stdin = 0;
-
 #include <stdio.h>
 #include <mlibc.h>
 
@@ -27,18 +25,28 @@ int g_stdin = 0;
 #include <stdlib.h>
 #endif
 
-#if __GNUC__ && !POSIX
+#if (__GNUC__ || __TINYC__) && !POSIX
 
 void
 exit (int code)
 {
+#if !__TINYC__
   asm (
        "mov    %0,%%ebx\n\t"
        "mov    $1,%%eax\n\t"
-       "int    $0x80"
+       "int    $0x80\n\t"
        : // no outputs "=" (r)
        : "" (code)
        );
+#else // __TINYC__
+  asm (
+       "mov    %0,%%ebx\n\t"
+       "mov    $1,%%eax\n\t"
+       "int    $128\n\t"
+       : // no outputs "=" (r)
+       : "Ir" (code)
+       );
+#endif // __TINYC__
   // not reached
   exit (0);
 }
@@ -46,6 +54,7 @@ exit (int code)
 int
 read (int fd, void* buf, size_t n)
 {
+#if !__TINYC__
   int r;
   //syscall (SYS_write, fd, s, n));
   asm (
@@ -62,31 +71,49 @@ read (int fd, void* buf, size_t n)
        : "eax", "ebx", "ecx", "edx"
        );
   return r;
+#endif
 }
 
 int
 write (int fd, char const* s, int n)
 {
   int r;
-  //syscall (SYS_write, fd, s, n));
+#if __GNUC__
   asm (
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
        "mov    %3,%%edx\n\t"
 
-       "mov    $0x4, %%eax\n\t"
+       "mov    $0x04,%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (fd), "" (s), "" (n)
        : "eax", "ebx", "ecx", "edx"
        );
+
+  //syscall (SYS_write, fd, s, n));
+#elif __TINYC__
+  asm (
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    %3,%%edx\n\t"
+
+       "mov    $4, %%eax\n\t"
+       "int    $128\n\t"
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "Ir" (fd), "Ir" (s), "Ir" (n)
+       : "eax", "ebx", "ecx"//, "edx"
+       );
+#endif
   return r;
 }
 
 int
 open (char const *s, int flags, ...)
 {
+#if !__TINYC__
   int mode;
   asm (
        "mov    %%ebp,%%eax\n\t"
@@ -110,11 +137,13 @@ open (char const *s, int flags, ...)
        : "eax", "ebx", "ecx", "edx"
        );
   return r;
+#endif
 }
 
 int
 access (char const *s, int mode)
 {
+#if !__TINYC__
   int r;
   //syscall (SYS_access, mode));
   asm (
@@ -128,11 +157,13 @@ access (char const *s, int mode)
        : "eax", "ebx", "ecx"
        );
   return r;
+#endif
 }
 
 void *
 brk (void *p)
 {
+#if !__TINYC__
   void *r;
   asm (
        "mov    %1,%%ebx\n\t"
@@ -146,11 +177,13 @@ brk (void *p)
        : "eax", "ebx"
        );
   return r;
+#endif
 }
 
 int
 fsync (int fd)
 {
+#if !__TINYC__
   int r;
   //syscall (SYS_fsync, fd));
   asm (
@@ -164,6 +197,7 @@ fsync (int fd)
        : "eax", "ebx"
        );
   return r;
+#endif
 }
 
 int

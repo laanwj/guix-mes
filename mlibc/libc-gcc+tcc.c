@@ -44,6 +44,7 @@ int errno;
 int
 close (int fd)
 {
+#if !__TINYC__
   int r;
   asm (
        "mov    %0,%%ebx\n\t"
@@ -53,11 +54,13 @@ close (int fd)
        : "" (fd)
        );
   return r;
+#endif
 }
 
 int
 unlink (char const *file_name)
 {
+#if !__TINYC__
   int r;
   asm (
        "mov    %0,%%ebx\n\t"
@@ -67,11 +70,13 @@ unlink (char const *file_name)
        : "" (file_name)
        );
   return r;
+#endif
 }
 
 off_t
 lseek (int fd, off_t offset, int whence)
 {
+#if !__TINYC__
   int r;
   asm (
        "mov    %1,%%ebx\n\t"
@@ -87,11 +92,13 @@ lseek (int fd, off_t offset, int whence)
        : "eax", "ebx", "ecx", "edx"
        );
   return r;
+#endif
 }
 
 char *
 getcwd (char *buf, size_t size)
 {
+#if !__TINYC__
   int r;
   asm (
        "mov    %1,%%ebx\n\t"
@@ -106,6 +113,7 @@ getcwd (char *buf, size_t size)
        : "eax", "ebx", "ecx"
        );
   return r;
+#endif
 }
 
 int

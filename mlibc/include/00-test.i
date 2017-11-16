@@ -28,11 +28,17 @@ main ()
   asm ("mov____%eax,%ebx");
   asm ("mov____$i32,%eax SYS_exit");
   asm ("int____$0x80");
-#else // !__MESC__
+#elif __GNUC__
   asm ("mov    %0,%%ebx"
        : // no outputs
        : "" (r));
   asm ("mov    $1,%eax");
   asm ("int    $0x80");
-#endif
+#elif __TINYC__
+  asm ("mov    %0,%%ebx"
+       : // no outputs
+       : "Ir" (r));
+  asm ("mov    $1,%eax");
+  asm ("int    $0x80");
+#endif // __GNUC__
 }

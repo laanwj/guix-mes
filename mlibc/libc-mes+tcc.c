@@ -29,7 +29,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#if !__GNUC__
+#if !__GNUC__ && !__TINYC__
 #include <libc-mes.c>
 
 int errno;
