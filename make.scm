@@ -310,7 +310,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    ;;"42_function_pointer"     ; f* functions
    "43_void_param"
    "44_scoped_declarations"
-   ;; "45_empty_for"           ; unsupported
+   "45_empty_for"           ; unsupported
    ;;"46_grep"                 ; f* functions
    "47_switch_return"
    "48_nested_break"

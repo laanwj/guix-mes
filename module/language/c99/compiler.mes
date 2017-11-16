@@ -1363,6 +1363,7 @@
                                   jump-text)))))
   (lambda (o)
     (pmatch o
+      ((expr) info)
       ;; unsigned
       ;; ((le ,a ,b) ((jump i386:jump-ncz) o)) ; ja
       ;; ((lt ,a ,b) ((jump i386:jump-nc) o))  ; jae
