@@ -873,7 +873,7 @@
                 (info (clone info #:globals globals)))
            (append-text info (list (i386:label->accu `(#:string ,string))))))
 
-        ;;; FIXME: FROM INFO ...only zero?!
+        ;; FIXME: FROM INFO ...only zero?!
         ((p-expr (fixed ,value))
          (let ((value (cstring->number value)))
            (append-text info (wrap-as (i386:value->accu value)))))
@@ -964,11 +964,12 @@
 
         ((d-sel ,field ,struct)
          (let* ((info ((expr->accu* info) o))
+                (info (append-text info (ast->comment o)))
                 (ptr (expr->pointer info o))
                 (size (if (= ptr 0) (expr->type-size info o)
                           4)))
-           (if (= ptr -1) info
-                  (append-text info (wrap-as (case size
+           (if (or (= -2 ptr) (= -1 ptr)) info
+               (append-text info (wrap-as (case size
                                             ((1) (i386:byte-mem->accu))
                                             ((2) (i386:word-mem->accu))
                                             ((4) (i386:mem->accu))
@@ -976,11 +977,12 @@
 
         ((i-sel ,field ,struct)
          (let* ((info ((expr->accu* info) o))
+                (info (append-text info (ast->comment o)))
                 (ptr (expr->pointer info o))
                 (size (if (= ptr 0) (expr->type-size info o)
                           4)))
-           (if (= ptr -1) info
-                  (append-text info (wrap-as (case size
+           (if (or (= -2 ptr) (= ptr -1)) info
+               (append-text info (wrap-as (case size
                                             ((1) (i386:byte-mem->accu))
                                             ((2) (i386:word-mem->accu))
                                             ((4) (i386:mem->accu))
@@ -1070,10 +1072,13 @@
                 (info (append ((expr->accu info) expr))))
            info))
 
+
+
         ((add ,a (p-expr (fixed ,value)))
-         (let* ((ptr (expr->pointer info a))
+         ;;(stderr "add ~s\n"(with-output-to-string (lambda () (pretty-print-c99 o))))
+         (let* ((ptr (pke "ptr" (expr->pointer info a)))
                 (type0 (expr->type info a))
-                (struct? (memq (type:type (ast-type->type info type0)) '(struct union)))
+                (struct? (pke "struct" (memq (type:type (ast-type->type info type0)) '(struct union))))
                 (size (cond ((= ptr 1) (expr->type-size info a))
                             ((> ptr 1) 4)
                             ((and struct? (= ptr -2)) 4)
@@ -1081,7 +1086,8 @@
                             (else 1)))
                 (info ((expr->accu info) a))
                 (value (cstring->number value))
-                (value (* size value)))
+                (value (pke "VALUE" (* size value))))
+           (pke "size" size)
            (append-text info (wrap-as (i386:accu+value value)))))
 
         ((add ,a ,b)
@@ -1117,19 +1123,22 @@
            (append-text info (wrap-as (i386:accu+value (- value))))))
 
         ((sub ,a ,b)
-         (let* ((ptr (expr->pointer info a))
-                (ptr-b (expr->pointer info b))
+         ;;(stderr "sub ~s\n"(with-output-to-string (lambda () (pretty-print-c99 o))))
+         (let* ((ptr (pke "ptr" (expr->pointer info a)))
+                (ptr-b (pke "ptr-b" (expr->pointer info b)))
                 (type0 (expr->type info a))
-                (struct? (memq (type:type (ast-type->type info type0)) '(struct union)))
-                (size (cond ((= ptr 1) (expr->type-size info a))
-                            ((> ptr 1) 4)
-                            ((and struct? (= ptr -2)) 4)
-                            ((and struct? (= ptr 2)) 4)
-                            (else 1))))
-           (if (or (= size 1) (= ptr-b 1)) (let ((info ((binop->accu info) a b (i386:accu-base))))
-                                             (if (not (= ptr-b 1)) info
-                                                 (append-text info (wrap-as (append (i386:value->base size)
-                                                                                    (i386:accu/base))))))
+                (struct? (pke "struct?" (memq (type:type (ast-type->type info type0)) '(struct union))))
+                (size  (cond ((= ptr 1) (expr->type-size info a))
+                             ((> ptr 1) 4)
+                             ((and struct? (= ptr -2)) 4)
+                             ((and struct? (= ptr 2)) 4)
+                             (else 1))))
+           (pke "size" size)
+           (if (or (= size 1) (or (= ptr-b -2) (= ptr-b 1)))
+               (let ((info ((binop->accu info) a b (i386:accu-base))))
+                 (if (and (not (= ptr-b -2)) (not (= ptr-b 1))) info
+                     (append-text info (wrap-as (append (i386:value->base size)
+                                                        (i386:accu/base))))))
                (let* ((info ((expr->accu info) b))
                       (info (append-text info (wrap-as (append (i386:value->base size)
                                                                (i386:accu*base)
@@ -1158,8 +1167,8 @@
 
         ((neg ,expr)
          (let ((info ((expr->base info) expr)))
-          (append-text info (append (wrap-as (i386:value->accu 0))
-                                    (wrap-as (i386:sub-base))))))
+           (append-text info (append (wrap-as (i386:value->accu 0))
+                                     (wrap-as (i386:sub-base))))))
 
         ((eq ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:z->accu))))
         ((ge ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:ge?->accu))))
@@ -1225,9 +1234,9 @@
                 (ptr-b (expr->pointer info b))
                 (size-a (expr->size info a))
                 (size-b (expr->size info b))
-                ;;(foo (stderr "assign ~s\n"(with-output-to-string (lambda () (pretty-print-c99 o)))))
-                ;;(foo (stderr "  size-a: ~a, ptr=~a\n" size-a ptr-a))
-                ;;(foo (stderr "  size-b: ~a, ptr=~a\n" size-b ptr-b))
+                ;; (foo (stderr "assign ~s\n"(with-output-to-string (lambda () (pretty-print-c99 o)))))
+                ;; (foo (stderr "  size-a: ~a, ptr=~a\n" size-a ptr-a))
+                ;; (foo (stderr "  size-b: ~a, ptr=~a\n" size-b ptr-b))
                 (info ((expr->accu info) b))
                 (info (if (equal? op "=") info
                           (let* ((ptr (expr->pointer info a))
@@ -1246,16 +1255,16 @@
                                  (info ((expr->accu info) a))
                                  (info (append-text info (wrap-as (i386:pop-base))))
                                  (info (append-text info (cond ((equal? op "+=") (wrap-as (i386:accu+base)))
-                                                     ((equal? op "-=") (wrap-as (i386:accu-base)))
-                                                     ((equal? op "*=") (wrap-as (i386:accu*base)))
-                                                     ((equal? op "/=") (wrap-as (i386:accu/base)))
-                                                     ((equal? op "%=") (wrap-as (i386:accu%base)))
-                                                     ((equal? op "&=") (wrap-as (i386:accu-and-base)))
-                                                     ((equal? op "|=") (wrap-as (i386:accu-or-base)))
-                                                     ((equal? op "^=") (wrap-as (i386:accu-xor-base)))
-                                                     ((equal? op ">>=") (wrap-as (i386:accu>>base)))
-                                                     ((equal? op "<<=") (wrap-as (i386:accu<<base)))
-                                                     (else (error (format #f "mescc: op ~a not supported: ~a\n" op o)))))))
+                                                               ((equal? op "-=") (wrap-as (i386:accu-base)))
+                                                               ((equal? op "*=") (wrap-as (i386:accu*base)))
+                                                               ((equal? op "/=") (wrap-as (i386:accu/base)))
+                                                               ((equal? op "%=") (wrap-as (i386:accu%base)))
+                                                               ((equal? op "&=") (wrap-as (i386:accu-and-base)))
+                                                               ((equal? op "|=") (wrap-as (i386:accu-or-base)))
+                                                               ((equal? op "^=") (wrap-as (i386:accu-xor-base)))
+                                                               ((equal? op ">>=") (wrap-as (i386:accu>>base)))
+                                                               ((equal? op "<<=") (wrap-as (i386:accu<<base)))
+                                                               (else (error (format #f "mescc: op ~a not supported: ~a\n" op o)))))))
                             (cond ((not (and (= ptr 1) (= ptr-b 1))) info)
                                   ((equal? op "-=") (append-text info (wrap-as (append (i386:value->base size)
                                                                                        (i386:accu/base)))))
@@ -1449,6 +1458,9 @@
      (- (expr->number info a) (expr->number info b)))
     ((sizeof-type (type-name (decl-spec-list (type-spec ,type))))
      (ast-type->size info type))
+    ((sizeof-expr (d-sel (ident ,field) (p-expr (ident ,struct))))
+     (let ((type (ident->type info struct)))
+       (field-size info type field)))
     ((sizeof-expr (i-sel (ident ,field) (p-expr (ident ,struct))))
      (let ((type (ident->type info struct)))
        (field-size info type field)))
@@ -1500,7 +1512,8 @@
       ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (array-of (ident ,name) ,count)))))
        (let ((size 4)
              (count (expr->number info count)))
-         (list name type (* count size) -1)))
+         (list name type (* count size) -2)))
+
       ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (array-of (ident ,name) ,count))))
        (let ((size (ast-type->size info type))
              (count (expr->number info count)))

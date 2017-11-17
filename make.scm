@@ -245,7 +245,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "7j-strtoull"
    "7k-for-each-elem"
    "7l-struct-any-size-array"
-   "7m-struct-char-array-assign"))
+   "7m-struct-char-array-assign"
+   "7n-struct-struct-array"))
 
 (add-target (group "check-scaffold-tests/7" #:dependencies (filter (target-prefix? "check-scaffold/tests/7") %targets)))
 
