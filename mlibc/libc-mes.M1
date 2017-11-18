@@ -104,7 +104,10 @@
 :strlen_4_continue
 	mov____0x8(%ebp),%eax !0x-4
 	mov____%eax,%edx
-	mov____0x8(%ebp),%edx !0x8
+	push___%eax
+	mov____0x8(%ebp),%eax !0x8
+	mov____%eax,%edx
+	pop____%eax
 	add____%edx,%eax
 	movzbl_(%eax),%eax
 	test___%eax,%eax
@@ -334,7 +337,10 @@
 					# i = ungetc_buf[ungetc_char]
 	mov____0x32,%eax &ungetc_char
 	mov____%eax,%edx
-	mov____$i32,%edx &ungetc_buf
+	push___%eax
+	mov____$i32,%eax &ungetc_buf
+	mov____%eax,%edx
+	pop____%eax
 	add____%edx,%eax
 	movzbl_(%eax),%eax
 	mov____%eax,0x8(%ebp) !0x-8
@@ -355,7 +361,7 @@
 	setl___%al
 	movzbl_%al,%eax
 					# jmp test LABEL
-	jge32  %getchar_58_break
+	jge32  %getchar_60_break
 					# i += 256
 	mov____$i32,%eax %0x100
 	push___%eax
@@ -364,8 +370,8 @@
 	add____%edx,%eax
 	mov____%eax,0x8(%ebp) !0x-8
 	test___%eax,%eax
-	jmp32  %getchar_58_break
-:getchar_58_break
+	jmp32  %getchar_60_break
+:getchar_60_break
 	mov____0x8(%ebp),%eax !0x-8
 	leave
 	ret
@@ -435,7 +441,10 @@
 	push___%eax
 	mov____0x32,%eax &ungetc_char
 	mov____%eax,%edx
-	mov____$i32,%edx &ungetc_buf
+	push___%eax
+	mov____$i32,%eax &ungetc_buf
+	mov____%eax,%edx
+	pop____%eax
 	add____%edx,%eax
 	mov____%eax,%edx
 	pop____%eax
@@ -593,19 +602,19 @@
 	setl___%al
 	movzbl_%al,%eax
 					# jmp test LABEL
-	jge32  %itoa_23_break
+	jge32  %itoa_24_break
 					# sign = 1
 	mov____$i32,%eax %0x1
 	mov____%eax,0x8(%ebp) !0x-8
 	test___%eax,%eax
-	jmp32  %itoa_23_break
-:itoa_23_break
+	jmp32  %itoa_24_break
+:itoa_24_break
 					# if (sign) ...
 	mov____0x8(%ebp),%eax !0x-8
 	test___%eax,%eax
 					# jmp test LABEL
 	test___%eax,%eax
-	je32   %itoa_37_break
+	je32   %itoa_38_break
 					# x = -x
 	push___%eax
 	mov____0x8(%ebp),%eax !0x8
@@ -615,10 +624,10 @@
 	sub____%edx,%eax
 	mov____%eax,0x8(%ebp) !0x8
 	test___%eax,%eax
-	jmp32  %itoa_37_break
-:itoa_37_break
+	jmp32  %itoa_38_break
+:itoa_38_break
 					# do xwhile (...); 
-:itoa_53_loop
+:itoa_54_loop
 					# *p = '0' + x%10
 	mov____$i32,%eax %0x30
 	push___%eax
@@ -652,20 +661,20 @@
 	idiv___%ebx
 	mov____%eax,0x8(%ebp) !0x8
 	test___%eax,%eax
-:itoa_53_continue
+:itoa_54_continue
 	mov____0x8(%ebp),%eax !0x8
 	test___%eax,%eax
 					# jmp test LABEL
 	test___%eax,%eax
-	je32   %itoa_53_break
-	jmp32  %itoa_53_loop
-:itoa_53_break
+	je32   %itoa_54_break
+	jmp32  %itoa_54_loop
+:itoa_54_break
 					# if (sign && *(p + 1) != '0') ...
 	mov____0x8(%ebp),%eax !0x-8
 	test___%eax,%eax
 					# jmp test LABEL
 	test___%eax,%eax
-	je32   %itoa_87_break
+	je32   %itoa_89_break
 	mov____0x8(%ebp),%eax !0x-4
 	add____$i8,%eax !0x1
 	movzbl_(%eax),%eax
@@ -684,7 +693,7 @@
 	sahf
 	pop____%eax
 					# jmp test LABEL
-	jne32  %itoa_87_break
+	jne32  %itoa_89_break
 					# *p = '-'
 	mov____$i32,%eax %0x2d
 	push___%eax
@@ -694,8 +703,8 @@
 	mov____%al,(%edx)
 	add____$i8,0x8(%ebp) !0x-4 !0x-1
 	test___%eax,%eax
-	jmp32  %itoa_87_break
-:itoa_87_break
+	jmp32  %itoa_89_break
+:itoa_89_break
 	mov____0x8(%ebp),%eax !0x-4
 	add____$i8,%eax !0x1
 	leave
@@ -1644,11 +1653,11 @@
 	mov____%eax,0x8(%ebp) !0x-8
 					# switch (c) {   ...} 
 	movzbl_0x8(%ebp),%eax !0x-8
-:vsprintf_41_clause0
+:vsprintf_42_clause0
 	cmp____$i8,%eax !0x25
-	je32   %vsprintf_41_body0
-	jmp32  %vsprintf_41_clause1
-:vsprintf_41_body0
+	je32   %vsprintf_42_body0
+	jmp32  %vsprintf_42_clause1
+:vsprintf_42_body0
 					# *str = *p
 	mov____0x8(%ebp),%eax !0x-4
 	movzbl_(%eax),%eax
@@ -1659,13 +1668,13 @@
 	mov____%al,(%edx)
 	add____$i8,0x8(%ebp) !0x8 !0x1
 	test___%eax,%eax
-	jmp32  %vsprintf_41_break
-	jmp32  %vsprintf_41_body1
-:vsprintf_41_clause1
+	jmp32  %vsprintf_42_break
+	jmp32  %vsprintf_42_body1
+:vsprintf_42_clause1
 	cmp____$i8,%eax !0x63
-	je32   %vsprintf_41_body1
-	jmp32  %vsprintf_41_clause2
-:vsprintf_41_body1
+	je32   %vsprintf_42_body1
+	jmp32  %vsprintf_42_clause2
+:vsprintf_42_body1
 					# char c; 
 					# c = (char)(int*)(ap = ap + 4)[-1]
 	push___%eax
@@ -1695,13 +1704,13 @@
 	mov____%al,(%edx)
 	add____$i8,0x8(%ebp) !0x8 !0x1
 	test___%eax,%eax
-	jmp32  %vsprintf_41_break
-	jmp32  %vsprintf_41_body2
-:vsprintf_41_clause2
+	jmp32  %vsprintf_42_break
+	jmp32  %vsprintf_42_body2
+:vsprintf_42_clause2
 	cmp____$i8,%eax !0x64
-	je32   %vsprintf_41_body2
-	jmp32  %vsprintf_41_clause3
-:vsprintf_41_body2
+	je32   %vsprintf_42_body2
+	jmp32  %vsprintf_42_clause3
+:vsprintf_42_body2
 					# int d; 
 					# d = (int)(int*)(ap = ap + 4)[-1]
 	push___%eax
@@ -1730,8 +1739,8 @@
 	mov____%eax,0x8(%ebp) !0x-14
 	test___%eax,%eax
 					# while (*s) ...
-	jmp32  %vsprintf_121_continue
-:vsprintf_121_loop
+	jmp32  %vsprintf_124_continue
+:vsprintf_124_loop
 					# *str = *s++
 	mov____0x8(%ebp),%eax !0x-14
 	push___%eax
@@ -1747,23 +1756,23 @@
 	mov____%al,(%edx)
 	add____$i8,0x8(%ebp) !0x8 !0x1
 	test___%eax,%eax
-:vsprintf_121_continue
+:vsprintf_124_continue
 	mov____0x8(%ebp),%eax !0x-14
 	movzbl_(%eax),%eax
 	test___%eax,%eax
 					# jmp test LABEL
 	test___%eax,%eax
 	test___%al,%al
-	je32   %vsprintf_121_break
-	jmp32  %vsprintf_121_loop
-:vsprintf_121_break
-	jmp32  %vsprintf_41_break
-	jmp32  %vsprintf_41_body3
-:vsprintf_41_clause3
+	je32   %vsprintf_124_break
+	jmp32  %vsprintf_124_loop
+:vsprintf_124_break
+	jmp32  %vsprintf_42_break
+	jmp32  %vsprintf_42_body3
+:vsprintf_42_clause3
 	cmp____$i8,%eax !0x73
-	je32   %vsprintf_41_body3
-	jmp32  %vsprintf_41_clause4
-:vsprintf_41_body3
+	je32   %vsprintf_42_body3
+	jmp32  %vsprintf_42_clause4
+:vsprintf_42_body3
 					# char *s; 
 					# s = (char*)(int*)(ap = ap + 4)[-1]
 	push___%eax
@@ -1785,8 +1794,8 @@
 	mov____%eax,0x8(%ebp) !0x-18
 	test___%eax,%eax
 					# while (*s) ...
-	jmp32  %vsprintf_171_continue
-:vsprintf_171_loop
+	jmp32  %vsprintf_175_continue
+:vsprintf_175_loop
 					# *str = *s++
 	mov____0x8(%ebp),%eax !0x-18
 	push___%eax
@@ -1802,20 +1811,20 @@
 	mov____%al,(%edx)
 	add____$i8,0x8(%ebp) !0x8 !0x1
 	test___%eax,%eax
-:vsprintf_171_continue
+:vsprintf_175_continue
 	mov____0x8(%ebp),%eax !0x-18
 	movzbl_(%eax),%eax
 	test___%eax,%eax
 					# jmp test LABEL
 	test___%eax,%eax
 	test___%al,%al
-	je32   %vsprintf_171_break
-	jmp32  %vsprintf_171_loop
-:vsprintf_171_break
-	jmp32  %vsprintf_41_break
-	jmp32  %vsprintf_41_body4
-:vsprintf_41_clause4
-:vsprintf_41_body4
+	je32   %vsprintf_175_break
+	jmp32  %vsprintf_175_loop
+:vsprintf_175_break
+	jmp32  %vsprintf_42_break
+	jmp32  %vsprintf_42_body4
+:vsprintf_42_clause4
+:vsprintf_42_body4
 					# *str = *p
 	mov____0x8(%ebp),%eax !0x-4
 	movzbl_(%eax),%eax
@@ -1826,8 +1835,8 @@
 	mov____%al,(%edx)
 	add____$i8,0x8(%ebp) !0x8 !0x1
 	test___%eax,%eax
-	jmp32  %vsprintf_41_break
-:vsprintf_41_break
+	jmp32  %vsprintf_42_break
+:vsprintf_42_break
 	mov____0x8(%ebp),%eax !0x-4
 	push___%eax
 	mov____%ebp,%eax
