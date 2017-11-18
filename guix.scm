@@ -134,10 +134,10 @@ hex2 linker.")
     (license gpl3+)))
 
 (define-public mes
-  (let ((commit "ef69b7a28ab11581950afebc1ba3ad1844f20316")
+  (let ((commit "296564978676e8024e7378411be2ee04d3dc8c94")
         (revision "0")
         (triplet "i686-unknown-linux-gnu")
-        (version "0.10"))
+        (version "0.11"))
     (package
       (name "mes")
       (version (string-append version "-" revision "." (string-take commit 7)))
@@ -148,7 +148,7 @@ hex2 linker.")
                       (commit commit)))
                 (file-name (string-append name "-" version))
                 (sha256
-                 (base32 "1b28qygi7m04xq74i32n38yysa9ky3azz3jkazwmfbd00f2srr46"))))
+                 (base32 "10yzkvw0mr8zyihkwls80wkramlx50a0xzlyxr9fyl66q1gmsjv8"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
@@ -167,6 +167,10 @@ hex2 linker.")
       (arguments
        `(#:phases
          (modify-phases %standard-phases
+           (add-before 'build 'make-git-source-writable
+           (lambda* (#:key outputs #:allow-other-keys)
+             (for-each make-file-writable
+                       (find-files "." ".*\\.M1"))))
            (add-before 'install 'generate-changelog
              (lambda _
                (with-output-to-file "ChangeLog"
@@ -185,7 +189,7 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.10")
+ (let ((version "0.11")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
