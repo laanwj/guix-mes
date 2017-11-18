@@ -330,9 +330,12 @@
       (and (format (current-error-port) "warning: not found: ~a\n" name)
            default)))
 
-(define %CC (PATH-search-path "gcc"))
-(define %CC32 (or (PATH-search-path "i686-unknown-linux-gnu-gcc" #:default #f)
-                  (not (format (current-error-port) "warning: CC32 not found, skipping mlibc-gcc targets\n"))))
+(define %CC (or (getenv "CC") (PATH-search-path "gcc")))
+(define %CC32 (or (getenv "CC32")
+                  (PATH-search-path "i686-unknown-linux-gnu-gcc" #:default #f)
+                  (and (format (current-error-port) "warning: CC32 not found, trying gcc -m32")
+                       %CC)))
+
 (define %C-FLAGS
   '("--std=gnu99"
     "-O0"
@@ -348,6 +351,7 @@
   '("--std=gnu99"
     "-O0"
     "-g"
+    "-m32"
     "-I" "src"
     "-I" "mlibc"
     "-I" "mlibc/include"))
@@ -430,7 +434,7 @@
                          (newline))))))
           (inputs (list (store #:add-file "stage0/x86.M1")))))
 
-(define* (LINK.gcc #:key (cc %CC) (c-flags %C-FLAGS) (libc #t) (crt1 #f))
+(define* (LINK.gcc #:key (cc %CC) (libc #t) (c-flags (if (eq? libc #t) %C-FLAGS %C32-FLAGS)) (crt1 #f))
   (method (name "LINK.gcc")
           (build (lambda (o t)
                    (let* ((input-files (map target-file-name (target-inputs t)))
