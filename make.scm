@@ -146,6 +146,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-scaffold-test "04-call-0" #:libc #f)
 (add-scaffold-test "05-call-1" #:libc #f #:exit 1)
 (add-scaffold-test "06-call-!1" #:libc #f)
+(add-scaffold-test "07-include" #:libc #f #:exit 42)
 
 (add-target (group "check-scaffold-tests/0" #:dependencies (filter (target-prefix? "check-scaffold/tests/0") %targets)))
 
