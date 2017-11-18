@@ -121,11 +121,11 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.mescc "stage0/exit-42.c"))
 (add-target (check "stage0/exit-42.guile" #:exit 42))
 
-(define* (add-scaffold-test name #:key (exit 0) (libc libc-mes.hex2) (libc-gcc libc-gcc.mlibc-o))
-  (add-target (bin.gcc (string-append "scaffold/tests/" name ".c") #:libc libc-gcc))
+(define* (add-scaffold-test name #:key (exit 0) (libc libc-mes.hex2) (libc-gcc libc-gcc.mlibc-o) (includes '()))
+  (add-target (bin.gcc (string-append "scaffold/tests/" name ".c") #:libc libc-gcc #:includes includes))
   (add-target (check (string-append "scaffold/tests/" name ".mlibc-gcc") #:exit exit))
 
-  (add-target (bin.mescc (string-append "scaffold/tests/" name ".c") #:libc libc))
+  (add-target (bin.mescc (string-append "scaffold/tests/" name ".c") #:libc libc #:includes includes))
   (add-target (check (string-append "scaffold/tests/" name "." (cond ((not libc) "0-")
                                                                      ((eq? libc mini-libc-mes.hex2) "mini-")
                                                                      (else "")) "guile") #:exit exit)))
@@ -146,7 +146,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-scaffold-test "04-call-0" #:libc #f)
 (add-scaffold-test "05-call-1" #:libc #f #:exit 1)
 (add-scaffold-test "06-call-!1" #:libc #f)
-(add-scaffold-test "07-include" #:libc #f #:exit 42)
+(add-scaffold-test "07-include" #:libc #f #:includes '("scaffold/tests") #:exit 42)
 
 (add-target (group "check-scaffold-tests/0" #:dependencies (filter (target-prefix? "check-scaffold/tests/0") %targets)))
 
