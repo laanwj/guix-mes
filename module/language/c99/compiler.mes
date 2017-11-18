@@ -240,10 +240,6 @@
      (ast-type->type info type))
     ((array-ref ,index (p-expr (ident ,array)))
      (ast-type->type info `(p-expr (ident ,array))))
-    ((struct-ref (ident (,type)))
-     (or (get-type (.types info) type)
-         (let ((struct (if (pair? type) type `("tag" ,type))))
-           (ast-type->type info struct))))
     ((struct-ref (ident ,type))
      (or (get-type (.types info) type)
          (let ((struct (if (pair? type) type `("tag" ,type))))
@@ -336,8 +332,6 @@
      type)
     ((typename ,type)
      type)
-    ((struct-ref (ident (,type)))
-     `("tag" ,type))
     ((struct-ref (ident ,type))
      `("tag" ,type))
     (_ (stderr "SKIP: type=~s\n" o)
@@ -932,11 +926,6 @@
                 (size (ast-type->size info type)))
            (append-text info (wrap-as (i386:value->accu size)))))
 
-        ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident (,type)))))))
-         (let* ((type `("tag" ,type))
-                (size (ast-type->size info type)))
-           (append-text info (wrap-as (i386:value->accu size)))))
-
         ((sizeof-type (type-name (decl-spec-list (type-spec (struct-ref (ident ,type))))))
          (let* ((type `("tag" ,type))
                 (size (ast-type->size info type)))
@@ -1519,20 +1508,11 @@
              (count (expr->number info count)))
          (list name type (* count size) -1)))
 
-      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list name `("tag" ,type) 4 2))
-
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
        (list name `("tag" ,type) 4 2))
 
-      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list name `("tag" ,type) 4 1))
-
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
        (list name `("tag" ,type) 4 1))
-
-      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (comp-declr-list (comp-declr (ident ,name))))
-       ((struct-field info) `(comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
        (let ((size (ast-type->size info `("tag" ,type))))
@@ -1649,23 +1629,6 @@
       (pmatch o
 
         ;; FIXME: Nyacc sometimes produces extra parens: (ident (<struct-name>))
-        ((decl (decl-spec-list (stor-spec ,spec) (type-spec (struct-ref (ident (,type))))) ,init)
-         ((decl->info info) `(decl (decl-spec-list (stor-spec ,spec) (type-spec (struct-ref (ident ,type)))) ,init)))
-        ((decl (decl-spec-list (type-spec (struct-ref (ident (,type))))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
-         ((decl->info info) `(decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))))
-
-        ((decl (decl-spec-list (type-spec (struct-def (ident (,type)) ,field-list))))
-         ((decl->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,type) ,field-list))))))
-
-        ((decl (decl-spec-list (stor-spec ,spec) (type-spec (union-ref (ident (,type))))) ,init)
-         ((decl->info info) `(decl (decl-spec-list (stor-spec ,spec) (type-spec (union-ref (ident ,type)))) ,init)))
-        ((decl (decl-spec-list (type-spec (union-def (ident (,type)) ,field-list))))
-         ((decl->info info) `(decl (decl-spec-list (type-spec (union-def (ident ,type) ,field-list))))))
-
-        ((decl (decl-spec-list (type-spec (union-ref (ident (,type))))) (init-declr-list (init-declr (ident ,name) ,initzer)))
-         ((decl->info info) `(decl (decl-spec-list (type-spec (union-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name) ,initzer)))))
-
-
         ((decl (decl-spec-list (type-spec (typename ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
          (declare name))
 
