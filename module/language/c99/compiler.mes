@@ -119,7 +119,6 @@
     ((ellipsis) #f)
     ((param-decl (decl-spec-list (type-spec (void)))) #f)
     ((param-decl _ (param-declr (ident ,name))) name)
-    ((param-decl _ (param-declr (array-of (ident ,name)))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer) (ident ,name)))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer) (array-of (ident ,name))))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer (pointer)) (ident ,name)))) name)
