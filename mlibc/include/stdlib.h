@@ -46,6 +46,9 @@ long long strtoll (char const *nptr, char **endptr, int base);
 unsigned long strtoul (char const *nptr, char **endptr, int base);
 unsigned long long strtoull (char const *nptr, char **endptr, int base);
 
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
+
 #endif // !(__GNUC__ && POSIX)
 
 #endif // __MES_STDLIB_H
