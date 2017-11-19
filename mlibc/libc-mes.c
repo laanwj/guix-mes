@@ -191,8 +191,11 @@ int
 fgetc (int fd)
 {
   char c;
+  int i;
   int r = read (fd, &c, 1);
-  return c == 1 ? c : (-1);
+  if (r < 1) return -1;
+  i = c;
+  return i;
 }
 
 void
