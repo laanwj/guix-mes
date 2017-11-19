@@ -90,9 +90,17 @@
 (define (ast-strip-const o)
   (pmatch o
     ((type-qual ,qual) (if (equal? qual "const") #f o))
+    ((pointer (type-qual-list (type-qual ,qual)) . ,rest)
+     (if (equal? qual "const") `(pointer ,@rest) o))
+    ((decl-spec-list (type-qual ,qual))
+     (if (equal? qual "const") #f
+         `(decl-spec-list (type-qual ,qual))))
     ((decl-spec-list (type-qual ,qual) . ,rest)
      (if (equal? qual "const") `(decl-spec-list ,@rest)
          `(decl-spec-list (type-qual ,qual) ,@(map ast-strip-const rest))))
+    ((decl-spec-list (type-qual-list (type-qual ,qual)) . ,rest)
+     (if (equal? qual "const") `(decl-spec-list ,@rest)
+         `(decl-spec-list (type-qual-list (type-qual ,qual)) ,@(map ast-strip-const rest))))
     ((,h . ,t) (if (list? o) (filter-map ast-strip-const o)
                    (cons (ast-strip-const h) (ast-strip-const t))))
     (_  o)))
@@ -115,6 +123,8 @@
     ((param-decl _ (param-declr (ptr-declr (pointer) (array-of (ident ,name))))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer (pointer)) (ident ,name)))) name)
     ((param-decl _ (param-declr (ptr-declr (pointer (pointer (pointer))) (ident ,name)))) name)
+    ((param-decl _ (param-declr (ptr-declr (pointer (decl-spec-list) (pointer)) (ident ,name)))) name)
+    ((param-decl _ (param-declr (ptr-declr (pointer (decl-spec-list)) (array-of (ident ,name))))) name)
     ((param-decl _ (param-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,params)))) name)
     (_
      (format (current-error-port) "SKIP: .name =~a\n" o))))
