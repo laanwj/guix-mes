@@ -309,7 +309,12 @@ long
 strtol (char const *nptr, char **endptr, int base)
 {
   eputs ("strtol stub\n");
-  return 0;
+  if (!strncmp (nptr, "0x", 2))
+    {
+      char const *p = nptr + 2;
+      return _atoi (&p, 16);
+    }
+  return _atoi (&nptr, base);
 }
 
 long long int
