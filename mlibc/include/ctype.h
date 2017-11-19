@@ -28,6 +28,7 @@
 #include_next <ctype.h>
 
 #else // ! (__GNUC__ && POSIX)
+#include <endian.h>
 int isdigit (int);
 int isxdigit (int);
 #endif // ! (__GNUC__ && POSIX)

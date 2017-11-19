@@ -17,15 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SYS_TYPES_H
-#define __MES_SYS_TYPES_H 1
+#ifndef __MES_ENDIAN_H
+#define __MES_ENDIAN_H 1
 
 #if __GNUC__ && POSIX
-#undef __MES_SYS_TYPES_H
-#include_next <sys/types.h>
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#undef __MES_ENDIAN_H
+#include_next <endian.h>
+
 #else // ! (__GNUC__ && POSIX)
-#include <endian.h>
+#define	__LITTLE_ENDIAN 1234
+#define	__BIG_ENDIAN 4321
+#define __BYTE_ORDER __LITTLE_ENDIAN
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __MES_SYS_TYPES_H
-
+#endif // __MES_ENDIAN_H
