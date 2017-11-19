@@ -20,6 +20,7 @@
 
 #include <libc-gcc.c>
 #include <libc-mes+tcc.c>
+#include <getopt.c>
 
 int errno;
 

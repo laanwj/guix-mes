@@ -31,6 +31,7 @@
 
 #if !__GNUC__ && !__TINYC__
 #include <libc-mes.c>
+#include <getopt.c>
 
 int errno;
 
