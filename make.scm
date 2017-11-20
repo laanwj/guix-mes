@@ -551,6 +551,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/nyacc/lalr.mes"
    "module/nyacc/lang/c99/cpp.mes"
    "module/nyacc/lang/c99/parser.mes"
+   "module/nyacc/lang/c99/pprint.mes"
    "module/nyacc/lang/calc/parser.mes"
    "module/nyacc/lang/util.mes"
    "module/nyacc/lex.mes"
