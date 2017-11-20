@@ -85,3 +85,5 @@
       (if (null? lst) #f
           (if (pred (car lst)) i
               (loop (cdr lst) (1- i)))))))
+
+(define reverse-list->string (compose list->string reverse))
