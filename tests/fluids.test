@@ -50,20 +50,19 @@ exit $?
 ;;     0 (with-fluids* (list a b) '(0 1)
 ;;                     (lambda () (fluid-ref a))))
 
-;; (pass-if-equal "with-fluids"
-;;     0 (with-fluids ((a 1)
-;;                     (a 2)
-;;                     (a 3))
-;;         (begin (fluid-set! a 0))
-;;         (begin (fluid-ref a))))
+(pass-if-equal "with-fluids"
+    0 (with-fluids ((a 1)
+                    (a 2)
+                    (a 3))
+        (fluid-set! a 0)
+        (fluid-ref a)))
 
-;; (pass-if-equal "with-fluids"
-;;     #f (begin
-;;          (with-fluids ((a 1)
-;;                        (a 2)
-;;                        (a 3))
-;;            (begin (fluid-set! a 0))
-;;            (begin (display "X:") (display (fluid-ref a)) (newline)))
-;;          (fluid-ref a)))
+(pass-if-equal "with-fluids" ; FIXME: fails with Mes
+    #f (begin
+         (with-fluids ((a 1)
+                       (b 2))
+           (fluid-set! a 0)
+           (display "X:") (display (fluid-ref a)) (newline))
+         (fluid-ref a)))
 
-(result 'report)
+(result 'report (if mes? 1 0))
