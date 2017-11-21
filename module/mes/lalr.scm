@@ -1,7 +1,7 @@
 ;;;
 ;;;; An Efficient and Portable LALR(1) Parser Generator for Scheme
 ;;;
-;; Copyright 2014  Jan Nieuwenhuizen <janneke@gnu.org>
+;; Copyright 2014  Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;; Copyright 1993, 2010 Dominique Boucher
 ;;
 ;; This program is free software: you can redistribute it and/or

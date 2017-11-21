@@ -21,7 +21,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -C $(pwd) -e 'main' -s "$0" ${1+"$@"}
 !#
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; configure: This file is part of Mes.
 ;;;

@@ -2,7 +2,7 @@
 #+TITLE: Mes NEWS – history of user-visible changes
 #+STARTUP: content hidestars
 
-Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -10,9 +10,40 @@ Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.12 since 0.11
+** Core
+*** Mes can now run Nyacc (0.80.42) to compile itself in ~4min (~3000 LOC).
+*** Mes now recursively expands global variables per top level statement.
+*** Mes now recursively expands macros per top level statement.
+*** Mes now boots from MES_BOOT (default: module/mes/boot-0.scm).
+*** Mes now has a full Scheme reader in C again.
+This gives a 10x-20x performance improvement and increases the
+bootstrap footprint by 160 LOC.
+*** Mes reader now supports older abbreviated character forms
+#\bel, #\bs, #\ht and #\vt.
+*** 3 new functions
+equal2?, memq, core:write.
+** Language
+*** Mes now has an incremental Scheme semantics test suite with 71 small tests.
+*** Variable names can now have ticks.
+*** Mes now evaluates expresions of COND only once.
+*** srfi-9 records have been reimplemented.
+*** #\page is now whitespace.
+*** #<eof> is no longer a character.
+*** 2 new macros
+define-macro*, with-fluids.
+*** 9 new functions
+dirname, last, reverse-list->string, setenv, string-drop-right,
+string-fold, string-fold-right, string-null?, write.
+** MesCC
+**** 9 new functions
+chmod, getopt_long, ferror, itoab, longjmp, qsort, setenv, setjmp, strtol.
+**** 2 new header files
+endian.h, sys/signal.h.
+
 * Changes in 0.11 since 0.10
 ** MesCC
-*** MesCC now compiles a mes-tcc that passes 41/69 of mescc's C tests.
+*** MesCC now compiles a mes-tcc that fails 41/69 of mescc's C tests.
 *** Messc's libc can now be compiled with tcc (syscall support: write).
 *** Messc now compiles a less-patched tcc: -214/+458 lines [WAS: -333/+747].
 *** MesCC now supports empty for.

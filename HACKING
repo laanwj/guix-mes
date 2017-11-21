@@ -41,14 +41,18 @@ Running ./make.scm produces a `script' file.
 
 * ROADMAP
 ** TODO 
-*** release 0.12
-  - mescc: compile a mes-tcc that can compile gcc-4.7.
 *** release 0.x, unsorted
+  - mes+mescc: compile a mes-tcc that can compile gcc-4.7.
+  - mes: prepare src/mes.c for M2-Planet transpiler.
+  - mes: use more efficient scheme continuation stack (wip-array?)
+  - mes: drop SCM stack in C / implement call/cc a la guile-1.8 setjmp?
   - mescc: refactor type(/ptr?) system; expr->type and ast-type->type.
   - mescc: refactor initializers.
-  - mescc: record and support function types, and thus foo ()->bar.
+  - mescc: record and support function types, and thus foo ()->bar, *foo ().
   - mescc: refactor switch statement to support unpatched tinycc.
-  - mes/mescc: bootstrap a minimal-Guile (libguile/eval.c,ice-9/eval.scm).
+  - mes/mescc: bootstrap a minimal-Guile
+    + libguile/{eval,init,list,strings,values,..}.c
+    + ice-9/eval.scm
   - mescc: have mes-tcc pass all scaffold/tests, scaffold/tinycc tests.
   - mescc: compile a mes-tcc that can compile gcc-4.7.
   - mescc: refactor switch; support heterogeneous switch case.
@@ -62,23 +66,18 @@ Running ./make.scm produces a `script' file.
   - mescc: some success with 8cc,pcc,guile/libguile/eval.c.
   - build: guile/guix/make.scm: add file-types, intermediate, hash all dependencies
   - build: make.scm: imperative->declaritive
-  - hex2: produce ELF_sym and ELF_str tables from hex2; nicer for objdump -d, gdb (in mescc-tools?)
-  - compile src/mes.c with M2-Planet.
-  - rewrite src/mes.c in stage0's stage2 LISP.
-  - and/or: rewrite src/mes.c M1
-  - and/or: connect to GNU Epsilon's VM
-  - and/or: compile Scheme to C, rewrite Mes.c into Mes.scm.
-  - real module support, bonus for supporting Guile's define-module/define-public syntax.
+  - mes: real module support, bonus for supporting Guile's define-module/define-public syntax.
   - get full source syntax-case up (Andre van Tonder?) OR drop it.
+    https://srfi.schemers.org/srfi-72/srfi-72.html
     psyntax/syntax-case and rewrite Nyacc without syntax-case+R7RS Ellipsis.
-  - support regexp OR rewrite Nyacc without regexps.
-  - split-off MesCC as as standalone Guile C compiler project.
+  - mescc: split-off MesCC as as standalone Guile C compiler project.
 *** release 1.0
   - replace GuixSD's bootstrap binaries for x86.
   - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
   - more architectures?
 ** DONE
-*** 0.11: MesCC now compiles a mes-tcc that passes 41/69 of mescc's C tests.
+*** 0.12: Mes+MesCC now compiles mes.c (~3000LOC) in ~4min.
+*** 0.11: MesCC now compiles a mes-tcc that passes 26/69 of mescc's C tests.
 *** 0.10: Mescc now compiles a mes-tcc that compiles a trivial C to a running a.out.
 *** 0.9: Mescc now writes M1 macro assembly files and compiles tcc.
 *** 0.8: Mescc now writes object files in stage0's labeled hex2 format.
@@ -93,48 +92,13 @@ eenough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 *** 0.1: Mes eval/apply feature complete; support syntax-rules, compile main.c using LALR, dump ELF
 
 * Bugs
-** eval_apply/gc + Nyacc bug
-scripts/messc.mes intermittently exposes a bug in eval_apply/gc when
-Nyacc parses mes.c-sized source.  Running 
-
-    MES_MAX_ARENA=<another-size> scripts/mescc.mes
-
-may [un]cover the bug.  So there is probably some eval_apply-construct
-that Nyacc uses, possiblby indirectly via with-fluid, like (call/cc,
-call-with-current-continuation), that breaks when GC triggers at the
-wrong time.
-** mescc can only compile itself, it cannot full-functionally compile tcc, gcc or guile
+** mes: remove pmatch-car/pmatch-cdr hack.
+** mes+mescc: parse tcc.c->tcc.E works, compile tcc.E -> tcc.M1 segfaults.
+  time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH ../mes/scripts/mescc.mes -E -o tcc.E -I . -I ../mes/lib -I ../mes/include -D 'CONFIG_TCCDIR="usr/lib/tcc"' -D 'CONFIG_TCC_CRTPREFIX="usr/lib:{B}/lib:."' -D 'CONFIG_TCC_ELFINTERP="/gnu/store/70jxsnpffkl7fdb7qv398n8yi1a3w5nx-glibc-2.26.105-g0890d5379c/lib/ld-linux.so.2"' -D 'CONFIG_TCC_LIBPATHS="/home/janneke/src/tinycc/usr/lib:{B}/lib:."' -D 'CONFIG_TCC_SYSINCLUDEPATHS="../mes/include:usr/include:{B}/include"' -D CONFIG_USE_LIBGCC=1 -D 'TCC_LIBGCC="/home/janneke/src/tinycc/usr/lib/libc+tcc-gcc.mlibc-o"' -D CONFIG_TCC_STATIC=1 -D ONE_SOURCE=yes -D TCC_TARGET_I386=1 -D BOOTSTRAP=1 tcc.c
+  time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH MES_ARENA=200000000 ../mes/scripts/mescc.mes -c -o tcc.M1 tcc.E
+** mes: with-fluids: tests/fluids.test test 7 fails with Mes.
 ** mescc: 7n-struct-struct-array.c:  struct file f = {"first.h"};
-** mes.mes cannot read sexps, only --dump's, mes.mes cannot --dump
-** Bootstrap binary mes is too big and opaque to be considered source
-68kB ELF binary which can be disassembled (objdump -d mes.mes).
-** Psyntax is too big and opaque to be considered source
-And needs a patched Guile-1.8 to [re]generate.
 ** test/match.test ("nyacc-simple"): hygiene problem in match
-** Performance
-*** mes is slow
-*** The Scheme reader is very slow.
-*** mescc is slow
-**** compiling mes.c takes mescc.mes 2h30'
-mescc.scm which runs on Guile takes 30"
-** Fluids are a hack for Nyacc.
-*** Translate C-prototype mes.c into annotated hex?
-One idea is to use OriansJ's amazing self-hosting [[https://github.com/oriansj/stage0][stage0]] hex assembler
-and minimal bootstrap binaries and rewrite the mes.c core to directly
-bootstrap into Scheme.
-
-*** Rewrite mes.c in Schemy/Sexp-C and generate annotated hex?
-Another idea (thanks Rutger!) is to rewrite the mes.c core in a s-exp
-C/Assembly variant and thave mescc produce the simple, annotated
-bootstrap binary.
-
-*** Compile the [[https://en.wikipedia.org/wiki/Tiny_C_Compiler][Tiny C Compiler]]
-
-** Build tools do not run on mes
-*** configure needs Bash, Guile
-*** GNUmakefile needs Bash, Guile
-*** build-aux/mes-snarf.scm needs Guile
-*** build-aux/git-changelog needs Perl
 * OLD: Booting from LISP-1.5 into Mes
 
 Mes started out experimenting with booting from a hex-coded minimal
@@ -164,7 +128,7 @@ while Guile is used for bootstrapping.
 info registers
 p/x $eax
 p/x $edx
-set disassemble-next-line
+set disassemble-next-line on
 gdb-display-disassembly-buffer
 b *0x804a79d
 ** Create memory dump with 32 bit Gcc compiled Mes

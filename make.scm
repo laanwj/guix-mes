@@ -4,7 +4,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 !#
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;

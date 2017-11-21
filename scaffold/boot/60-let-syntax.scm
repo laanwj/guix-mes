@@ -1,5 +1,5 @@
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -189,7 +189,7 @@
 
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright (c) 1993-2004 by Richard Kelsey and Jonathan Rees.
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;

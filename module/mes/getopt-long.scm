@@ -1,5 +1,5 @@
 ;;; Copyright (C) 1998, 2001, 2006 Free Software Foundation, Inc.
-;;; Copyright (C) 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright (C) 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;; This library is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Lesser General Public
@@ -16,8 +16,8 @@
 ;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 ;;; Author: Russ McManus (rewritten by Thien-Thi Nguyen)
-;;;                      (regexps removed by Jan Nieuwenhuizen)
-;;;                      (srfi-9 backport by Jan Nieuwenhuizen)
+;;;                      (regexps removed by Jan (janneke) Nieuwenhuizen)
+;;;                      (srfi-9 backport by Jan (janneke) Nieuwenhuizen)
 
 ;;; Commentary:
 

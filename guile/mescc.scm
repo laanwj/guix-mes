@@ -10,7 +10,7 @@ exec ${GUILE-guile} -L $GUILEDIR -e '(mescc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;

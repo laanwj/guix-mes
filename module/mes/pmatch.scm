@@ -3,7 +3,7 @@
 ;;; Copyright (C) 2009, 2010, 2012 Free Software Foundation, Inc
 ;;; Copyright (C) 2005,2006,2007 Oleg Kiselyov
 ;;; Copyright (C) 2007 Daniel P. Friedman
-;;; Copyright (C) 2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright (C) 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Lesser General Public

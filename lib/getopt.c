@@ -1,6 +1,6 @@
 /* Getopt for GNU.
    Copyright (C) 1987, 88, 89, 90, 91, 1992 Free Software Foundation, Inc.
-   Copyright (C) 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+   Copyright (C) 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

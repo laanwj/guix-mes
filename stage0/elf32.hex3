@@ -1,6 +1,6 @@
 ;;; -*-scheme-*-
 ;;; Copyright (C) 2016 Jeremiah Orians
-;;; Copyright (C) 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright (C) 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; This file is part of stage0.
 ;;;
 ;;; stage0 is free software: you an redistribute it and/or modify

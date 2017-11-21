@@ -6,8 +6,8 @@ Mes -- Maxwell Equations of Software
 
 It currently consists of a mutual self-hosting [close to Guile-]
 Scheme interpreter prototype in C and a Nyacc-based C compiler in
-[Guile] Scheme.  This C prototype will be rewritten in [[https://github.com/oriansj/stage0][stage0]] M1
-assembly (or possibly stage2 slow-LISP, or ...).
+[Guile] Scheme.  This C prototype will be simplified to be transpiled
+by [[https://github.com/oriansj/m2-planet][M2-Planet]].
 
 The Scheme interpreter prototype (mes.c) has a Garbage Collector, a
 library of loadable Scheme modules-- notably Dominique Boucher's [[https://github.com/schemeway/lalr-scm][LALR]],
@@ -25,7 +25,7 @@ Jeremiah Orians's stage0 ~300 byte self-hosting hex assembler.
 [0] https://gitlab.com/janneke/mes
 [1] https://www.gnu.org/software/guix
 [2] http://bootstrappable.org
-[3] https://github.com/oriansj/stage0
+[3] https://github.com/oriansj/m2-planet
 [4] https://github.com/schemeway/lalr-scm
 [5] https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html
 [6] https://www.nongnu.org/nyacc
@@ -33,6 +33,7 @@ Jeremiah Orians's stage0 ~300 byte self-hosting hex assembler.
 [8] https://gitlab.com/janneke/tinycc
 [9] https://lists.gnu.org/archive/html/tinycc-devel/2017-05/msg00103.html
 [10] http://www.softwarepreservation.org/projects/LISP/book/LISP%25201.5%2520Programmers%2520Manual.pdf
+[11] https://github.com/oriansj/stage0
 
 Mes is free software, it is distributed under the terms of the GNU
 General Public Licence version 3 or later.  See the file COPYING.
