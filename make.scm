@@ -454,6 +454,10 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
     ;;"tests/peg.test"
     ))
 
+(define (add-guile-test o)
+  (add-target (target (file-name o)))
+  (add-target (check o)))
+
 (define (add-mes.gcc-test o)
   (add-target (target (file-name o)))
   (add-target (check o #:dependencies (list (get-target "src/mes.mlibc-gcc")))))
@@ -461,6 +465,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (define (add-mes.guile-test o)
   (add-target (target (file-name o)))
   (add-target (check o #:dependencies (list (get-target "src/mes.guile")))))
+
+(for-each add-guile-test (map (cut string-append <> "-guile") mes-tests))
 
 ;; takes long, and should always pass if...
 ;;(for-each add-mes.gcc-test mes-tests)

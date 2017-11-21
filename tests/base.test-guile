@@ -1,0 +1,4 @@
+#! /bin/sh
+test=$(dirname $0)/$(basename $0 -guile)
+GUILE=${GUILE-guile}
+cat guile/mes-0.scm module/mes/test.mes $test | exec $GUILE -s /dev/stdin
