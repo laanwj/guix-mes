@@ -343,9 +343,9 @@
     "-D"
     "POSIX=1"
     "-I" "src"
-    "-I" "mlibc"
-    "-I" "mlibc/include"
-    "--include=mlibc/libc-gcc.c"))
+    "-I" "lib"
+    "-I" "include"
+    "--include=lib/libc-gcc.c"))
 
 (define %C32-FLAGS
   '("--std=gnu99"
@@ -353,8 +353,8 @@
     "-g"
     "-m32"
     "-I" "src"
-    "-I" "mlibc"
-    "-I" "mlibc/include"))
+    "-I" "lib"
+    "-I" "include"))
 
 (define* (CC.gcc #:key (libc #t) (cc (if (eq? libc #t) %CC %CC32)) (c-flags (if (eq? libc #t) %C-FLAGS %C32-FLAGS)) (defines '()) (includes '()))
   (method (name "CC.gcc")
@@ -538,6 +538,6 @@
   (if (target? o) o
       (find (lambda (t) (equal? (target-file-name t) o)) %targets)))
 
-(define crt1.mlibc-o (compile.gcc "mlibc/crt1.c" #:libc #f))
-(define libc-gcc.mlibc-o (compile.gcc "mlibc/libc-gcc.c" #:libc #f))
-(define libc-gcc+tcc.mlibc-o (compile.gcc "mlibc/libc-gcc+tcc.c" #:libc #f))
+(define crt1.mlibc-o (compile.gcc "lib/crt1.c" #:libc #f))
+(define libc-gcc.mlibc-o (compile.gcc "lib/libc-gcc.c" #:libc #f))
+(define libc-gcc+tcc.mlibc-o (compile.gcc "lib/libc-gcc+tcc.c" #:libc #f))

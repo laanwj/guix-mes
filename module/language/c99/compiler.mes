@@ -63,9 +63,9 @@
 (define mes? (pair? (current-module)))
 
 (define* (c99-input->full-ast #:key (defines '()) (includes '()))
-  (let ((include (if (equal? %prefix "") "mlibc/include" (string-append %prefix "/share/mlibc/include"))))
+  (let ((include (if (equal? %prefix "") "include" (string-append %prefix "/share/include"))))
     (parse-c99
-     #:inc-dirs (append includes (cons* include "mlibc/include" "mlibc" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
+     #:inc-dirs (append includes (cons* include "include" "lib" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
      #:cpp-defs `(
                   "NULL=0"
                   "__linux__=1"

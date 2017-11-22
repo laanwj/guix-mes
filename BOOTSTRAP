@@ -68,10 +68,10 @@ Do:
 *** Remember that mes.M1 is compiled by mescc from prototyped src/mes.c in C.
 *** stage0/mescc-tools: TODO
 *** Mes
-   M1 -f stage0/x86.M1 -f mlibc/crt1.M1 --LittleEndian --Architecture=1 > mlibc/crt1.hex2
-   M1 -f stage0/x86.M1 -f mlibc/mini-libc-mes.M1 --LittleEndian --Architecture=1  > mlibc/libc-mes.hex2
+   M1 -f stage0/x86.M1 -f lib/crt1.M1 --LittleEndian --Architecture=1 > lib/crt1.hex2
+   M1 -f stage0/x86.M1 -f lib/mini-libc-mes.M1 --LittleEndian --Architecture=1  > lib/libc-mes.hex2
    M1 -f stage0/x86.M1 -f src/mes.M1 --LittleEndian --Architecture=1 > src/mes.hex2
-   hex2 --LittleEndian --Architecture=1 --BaseAddress=0x1000000 -f stage0/elf32-header.hex2 -f mlibc/crt1.hex2 -f mlibc/libc-mes.hex2 -f src/mes.hex2 -f stage0/elf32-footer-single-main.hex2 > src/mes-mes
+   hex2 --LittleEndian --Architecture=1 --BaseAddress=0x1000000 -f stage0/elf32-header.hex2 -f lib/crt1.hex2 -f lib/libc-mes.hex2 -f src/mes.hex2 -f stage0/elf32-footer-single-main.hex2 > src/mes-mes
    exec_enable src/mes-mes
 *** Tinycc
    ./build.sh

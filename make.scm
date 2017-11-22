@@ -38,7 +38,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
              (ice-9 match)
              (guix make))
 
-(define crt1.hex2 (m1.as "mlibc/crt1.c"))
+(define crt1.hex2 (m1.as "lib/crt1.c"))
 (add-target crt1.hex2)
 
 (add-target crt1.mlibc-o)
@@ -95,28 +95,28 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
                       ,@(if libc (list libc) '())))
             (method (LINK.hex2 #:hex2 hex2 #:crt1 crt1 #:libc libc #:debug? (eq? libc libc-mes.hex2))))))
 
-;;(define mini-libc-mes.E (m1.as "mlibc/mini-libc-mes.c"))
+;;(define mini-libc-mes.E (m1.as "lib/mini-libc-mes.c"))
 
-(define libc-mes.hex2 (m1.as "mlibc/libc-mes.c"))
+(define libc-mes.hex2 (m1.as "lib/libc-mes.c"))
 (add-target libc-mes.hex2)
 
-(define mini-libc-mes.hex2 (m1.as "mlibc/mini-libc-mes.c"))
+(define mini-libc-mes.hex2 (m1.as "lib/mini-libc-mes.c"))
 (add-target mini-libc-mes.hex2)
 
-(define libc-mes+tcc.hex2 (m1.as "mlibc/libc-mes+tcc.c"))
+(define libc-mes+tcc.hex2 (m1.as "lib/libc-mes+tcc.c"))
 (add-target libc-mes+tcc.hex2)
 
 (add-target (bin.mescc "stage0/exit-42.c" #:libc #f))
 (add-target (check "stage0/exit-42.0-guile" #:exit 42))
 
-(add-target (cpp.mescc "mlibc/mini-libc-mes.c"))
-(add-target (compile.mescc "mlibc/mini-libc-mes.c"))
+(add-target (cpp.mescc "lib/mini-libc-mes.c"))
+(add-target (compile.mescc "lib/mini-libc-mes.c"))
 
 (add-target (bin.mescc "stage0/exit-42.c" #:libc mini-libc-mes.hex2))
 (add-target (check "stage0/exit-42.mini-guile" #:exit 42))
 
-(add-target (cpp.mescc "mlibc/libc-mes.c"))
-(add-target (compile.mescc "mlibc/libc-mes.c"))
+(add-target (cpp.mescc "lib/libc-mes.c"))
+(add-target (compile.mescc "lib/libc-mes.c"))
 
 (add-target (bin.mescc "stage0/exit-42.c"))
 (add-target (check "stage0/exit-42.guile" #:exit 42))
@@ -130,9 +130,9 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
                                                                      ((eq? libc mini-libc-mes.hex2) "mini-")
                                                                      (else "")) "guile") #:exit exit)))
 
-(add-target (compile.gcc "mlibc/crt1.c" #:libc #f))
-(add-target (compile.gcc "mlibc/libc-gcc.c" #:libc #f))
-(add-target (compile.gcc "mlibc/libc-gcc+tcc.c" #:libc #f))
+(add-target (compile.gcc "lib/crt1.c" #:libc #f))
+(add-target (compile.gcc "lib/libc-gcc.c" #:libc #f))
+(add-target (compile.gcc "lib/libc-gcc+tcc.c" #:libc #f))
 
 ;;(add-scaffold-test "t" #:libc mini-libc-mes.hex2)
 (add-scaffold-test "t")
@@ -253,8 +253,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (group "check-scaffold-tests" #:dependencies (filter (target-prefix? "check-scaffold/tests") %targets)))
 
-(add-target (cpp.mescc "mlibc/libc-mes+tcc.c"))
-(add-target (compile.mescc "mlibc/libc-mes+tcc.c"))
+(add-target (cpp.mescc "lib/libc-mes+tcc.c"))
+(add-target (compile.mescc "lib/libc-mes+tcc.c"))
 
 (define* (add-tcc-test name)
   (add-target (bin.gcc (string-append "scaffold/tinycc/" name ".c") #:libc libc-gcc.mlibc-o #:includes '("scaffold/tinycc")))
@@ -593,54 +593,54 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    ((install-guile-dir #:dir (string-append %godir)) f))
  %go-files)
 
-(add-target (install "mlibc/crt1.hex2" #:dir "lib"))
-(add-target (install "mlibc/libc-mes.M1" #:dir "lib"))
-(add-target (install "mlibc/libc-mes.hex2" #:dir "lib"))
-(add-target (install "mlibc/libc-mes+tcc.M1" #:dir "lib"))
-(add-target (install "mlibc/libc-mes+tcc.hex2" #:dir "lib"))
-(add-target (install "mlibc/mini-libc-mes.M1" #:dir "lib"))
-(add-target (install "mlibc/mini-libc-mes.hex2" #:dir "lib"))
+(add-target (install "lib/crt1.hex2" #:dir "lib"))
+(add-target (install "lib/libc-mes.M1" #:dir "lib"))
+(add-target (install "lib/libc-mes.hex2" #:dir "lib"))
+(add-target (install "lib/libc-mes+tcc.M1" #:dir "lib"))
+(add-target (install "lib/libc-mes+tcc.hex2" #:dir "lib"))
+(add-target (install "lib/mini-libc-mes.M1" #:dir "lib"))
+(add-target (install "lib/mini-libc-mes.hex2" #:dir "lib"))
 
-(add-target (install "mlibc/crt1.mlibc-o" #:dir "lib"))
-(add-target (install "mlibc/libc-gcc.mlibc-o" #:dir "lib"))
-(add-target (install "mlibc/libc-gcc+tcc.mlibc-o" #:dir "lib"))
+(add-target (install "lib/crt1.mlibc-o" #:dir "lib"))
+(add-target (install "lib/libc-gcc.mlibc-o" #:dir "lib"))
+(add-target (install "lib/libc-gcc+tcc.mlibc-o" #:dir "lib"))
 
 (for-each
  (lambda (f)
    ((install-dir #:dir "share/") f))
- '("mlibc/include/alloca.h"
-   "mlibc/include/assert.h"
-   "mlibc/include/ctype.h"
-   "mlibc/include/dlfcn.h"
-   "mlibc/include/errno.h"
-   "mlibc/include/fcntl.h"
-   "mlibc/include/features.h"
-   "mlibc/include/inttypes.h"
-   "mlibc/include/libgen.h"
-   "mlibc/include/limits.h"
-   "mlibc/include/locale.h"
-   "mlibc/include/math.h"
-   "mlibc/include/mlibc.h"
-   "mlibc/include/setjmp.h"
-   "mlibc/include/signal.h"
-   "mlibc/include/stdarg.h"
-   "mlibc/include/stdbool.h"
-   "mlibc/include/stdint.h"
-   "mlibc/include/stdio.h"
-   "mlibc/include/stdlib.h"
-   "mlibc/include/stdnoreturn.h"
-   "mlibc/include/string.h"
-   "mlibc/include/strings.h"
-   "mlibc/include/sys/cdefs.h"
-   "mlibc/include/sys/mman.h"
-   "mlibc/include/sys/stat.h"
-   "mlibc/include/sys/time.h"
-   "mlibc/include/sys/timeb.h"
-   "mlibc/include/sys/types.h"
-   "mlibc/include/sys/ucontext.h"
-   "mlibc/include/sys/wait.h"
-   "mlibc/include/time.h"
-   "mlibc/include/unistd.h"))
+ '("include/alloca.h"
+   "include/assert.h"
+   "include/ctype.h"
+   "include/dlfcn.h"
+   "include/errno.h"
+   "include/fcntl.h"
+   "include/features.h"
+   "include/inttypes.h"
+   "include/libgen.h"
+   "include/limits.h"
+   "include/locale.h"
+   "include/math.h"
+   "include/mlibc.h"
+   "include/setjmp.h"
+   "include/signal.h"
+   "include/stdarg.h"
+   "include/stdbool.h"
+   "include/stdint.h"
+   "include/stdio.h"
+   "include/stdlib.h"
+   "include/stdnoreturn.h"
+   "include/string.h"
+   "include/strings.h"
+   "include/sys/cdefs.h"
+   "include/sys/mman.h"
+   "include/sys/stat.h"
+   "include/sys/time.h"
+   "include/sys/timeb.h"
+   "include/sys/types.h"
+   "include/sys/ucontext.h"
+   "include/sys/wait.h"
+   "include/time.h"
+   "include/unistd.h"))
 
 (for-each
  (compose add-target (cut install <> #:dir "share/doc/mes"))

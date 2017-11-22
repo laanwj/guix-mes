@@ -24,7 +24,7 @@ slower than guile.  That's why we usually don't use mes during development.
 gcc is used to verify the sanity of our C sources.
 
 i686-unknown-linux-gnu-gcc is used to compare hex/assembly, to test
-the gcc variant of mlbic: mlibc/libc-gcc.c and steal ideas.
+the gcc variant of mes libc: lib/libc-gcc.c and steal ideas.
 
 Guile is used to develop mescc, the C compiler in Scheme that during
 bootstrapping will be executed by mes.
