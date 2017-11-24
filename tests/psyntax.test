@@ -27,10 +27,15 @@ exit $?
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (cond-expand
- (guile-2
+ (guile-2.2
   (define sc-expand identity)
   (define syntax-object->datum syntax->datum)
   (define datum->syntax-object datum->syntax))
+ (guile-2
+  (define sc-expand identity)
+  (define syntax-object->datum syntax->datum)
+  (define datum->syntax-object datum->syntax)
+  (define-macro (with-ellipsis . stuff) #t))
  (guile
   (use-modules (ice-9 syncase))
   (define sc-expand identity))
@@ -206,4 +211,6 @@ exit $?
      '(a 1 2 3)
      (quote-a 1 2 3)))
 
-(result 'report)
+(result 'report (if (and guile?
+                         (equal? (effective-version) "2.0")) 1
+                         0))
