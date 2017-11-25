@@ -109,6 +109,14 @@ fdopen (int fd, char const *mode)
 }
 
 int
+ferror (FILE *stream)
+{
+  int fd = (int)stream;
+  if (fd == -1) return -1;
+  return 0;
+}
+
+int
 fflush (FILE *stream)
 {
   eputs ("fflush stub\n");
