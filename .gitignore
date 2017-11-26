@@ -18,6 +18,7 @@
 *.mini-hex2
 *.mlibc-gcc
 *.mlibc-o
+*.tcc-guile
 !/stage0/*
 !/stage0/*.c
 /stage0/exit-42.*
@@ -48,3 +49,4 @@
 /doc/fosdem/fosdem.tex
 /doc/fosdem/fosdem.toc
 /doc/fosdem/fosdem.*vrb
+

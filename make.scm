@@ -128,6 +128,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
   (add-target (bin.mescc (string-append "scaffold/tests/" name ".c") #:libc libc #:includes includes))
   (add-target (check (string-append "scaffold/tests/" name "." (cond ((not libc) "0-")
                                                                      ((eq? libc mini-libc-mes.hex2) "mini-")
+                                                                     ((eq? libc libc-mes+tcc.hex2) "tcc-")
                                                                      (else "")) "guile") #:exit exit)))
 
 (add-target (compile.gcc "lib/crt1.c" #:libc #f))
@@ -250,6 +251,15 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "7n-struct-struct-array"))
 
 (add-target (group "check-scaffold-tests/7" #:dependencies (filter (target-prefix? "check-scaffold/tests/7") %targets)))
+
+(add-target (group "check-scaffold-tests" #:dependencies (filter (target-prefix? "check-scaffold/tests") %targets)))
+
+;; tests/80: and beyond tinycc; building GNU GCC and dependencies
+(for-each
+ (cut add-scaffold-test <> #:libc libc-mes+tcc.hex2 #:libc-gcc libc-gcc+tcc.mlibc-o)
+ '("80-setjmp"))
+
+(add-target (group "check-scaffold-tests/8" #:dependencies (filter (target-prefix? "check-scaffold/tests/8") %targets)))
 
 (add-target (group "check-scaffold-tests" #:dependencies (filter (target-prefix? "check-scaffold/tests") %targets)))
 

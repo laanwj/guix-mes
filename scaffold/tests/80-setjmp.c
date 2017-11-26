@@ -17,32 +17,42 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SETJMP_H
-#define __MES_SETJMP_H 1
 
-#if __GNUC__ && POSIX
-#undef __MES_SETJMP_H
-#include_next <setjmp.h>
-#else // ! (__GNUC__ && POSIX)
+#include "30-test.i"
 
-typedef struct
+#include <stdlib.h>
+#include <stdio.h>
+#include <setjmp.h>
+
+int foo;
+
+void
+second()
 {
-  int __bp;
-  int __pc;
-  int __sp;
-} __jmp_buf;
-typedef __jmp_buf jmp_buf[1];
+  if (foo++) exit (1);
+  printf ("second\n");      // prints
+  longjmp (buf,1);          // jumps back to where setjmp was called - making setjmp now return 1
+  exit (1);
+}
 
-#if __MESC__
-__jmp_buf buf[1];
-#else
-jmp_buf buf;
-#endif
+void
+first ()
+{
+  second ();
+  printf ("first\n");       // does not print
+  exit (2);
+}
 
-void longjmp (jmp_buf env, int val);
-int setjmp (jmp_buf env);
+int
+test ()
+{
+  if (!setjmp (buf))
+    first ();               // when executed, setjmp returned 0
+  else                      // when longjmp jumps back, setjmp returns 1
+    {
+      printf ("main\n");    // prints
+      return 0;
+    }
 
-#endif // ! (__GNUC__ && POSIX)
-
-#endif // __MES_SETJMP_H
-
+  return 3;
+}

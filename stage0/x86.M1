@@ -51,8 +51,8 @@ DEFINE cmp____%al,%dl 38c2
 DEFINE cmp____%edx,%eax 39d0
 DEFINE hlt f4
 DEFINE idiv___%ebx f7fb
-DEFINE int____$0x80 cd80
 DEFINE int cd
+DEFINE int____$0x80 cd80
 DEFINE je32 0f84
 DEFINE je8 74
 DEFINE jg32 0f8f
@@ -60,6 +60,7 @@ DEFINE jge32 0f8d
 DEFINE jl32 0f8c
 DEFINE jle32 0f8e
 DEFINE jmp32 e9
+DEFINE jmp____*%ebx ffe3
 DEFINE jne32 0f85
 DEFINE lahf 9f
 DEFINE lea____0x32(%ebp),%eax 8d85
@@ -128,9 +129,11 @@ DEFINE mov____0x8(%eax),%eax 8b40
 DEFINE mov____0x8(%eax),%ebx 8b58
 DEFINE mov____0x8(%eax),%ecx 8b48
 DEFINE mov____0x8(%ebp),%eax 8b45
+DEFINE mov____0x8(%ebp),%ebp 8b6d
 DEFINE mov____0x8(%ebp),%ebx 8b5d
 DEFINE mov____0x8(%ebp),%ecx 8b4d
 DEFINE mov____0x8(%ebp),%edx 8b55
+DEFINE mov____0x8(%ebp),%esp 8b65
 DEFINE movzbl_%al,%eax 0fb6c0
 DEFINE movzbl_%dl,%edx 0fb6d2
 DEFINE movzbl_(%eax),%eax 0fb600
