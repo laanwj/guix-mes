@@ -69,6 +69,16 @@ open ()
 }
 
 void
+chmod ()
+{
+  asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx
+  asm ("mov____0x8(%ebp),%ecx !12");              // mov    0x8(%ebp),%ecx
+
+  asm ("mov____$i32,%eax SYS_chmod");             // mov    $0x0f,%eax
+  asm ("int____$0x80");                           // int    $0x80
+}
+
+void
 access ()
 {
   asm ("mov____0x8(%ebp),%ebx !8");               // mov    0x8(%ebp),%ebx

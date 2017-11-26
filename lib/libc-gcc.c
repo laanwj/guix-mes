@@ -141,6 +141,26 @@ open (char const *s, int flags, ...)
 }
 
 int
+chmod (char const *s, int mode)
+{
+#if !__TINYC__
+  int r;
+  //syscall (SYS_chmod, mode));
+  asm (
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    $0x0f,%%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (s), "" (mode)
+       : "eax", "ebx", "ecx"
+       );
+  return r;
+#endif
+}
+
+int
 access (char const *s, int mode)
 {
 #if !__TINYC__
