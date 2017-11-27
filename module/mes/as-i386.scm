@@ -44,6 +44,9 @@
             i386:word-accu->base-mem+n
             i386:accu->label
             i386:accu->local
+            i386:accu->local+n
+            i386:byte-accu->local+n
+            i386:word-accu->local+n
             i386:accu-and-base
             i386:accu-base
             i386:accu-cmp-value

@@ -218,7 +218,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "61-array"
    "63-struct-cell"
    "64-make-cell"
-   "65-read"))
+   "65-read"
+   "66-local-char-array"))
 
 (add-target (group "check-scaffold-tests/6" #:dependencies (filter (target-prefix? "check-scaffold/tests/6") %targets)))
 

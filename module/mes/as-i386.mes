@@ -101,6 +101,21 @@
     `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%ebp)" (#:immediate1 ,n))
            `("mov____%eax,0x32(%ebp)" (#:immediate ,n))))))
 
+(define (i386:accu->local+n id n)
+  (let ((n (+ (- 0 (* 4 id)) n)))
+    `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%ebp)" (#:immediate1 ,n))
+           `("mov____%eax,0x32(%ebp)" (#:immediate ,n))))))
+
+(define (i386:byte-accu->local+n id n)
+  (let ((n (+ (- 0 (* 4 id)) n)))
+    `(,(if (< (abs n) #x80) `("mov____%al,0x8(%ebp)" (#:immediate1 ,n))
+           `("mov____%al,0x32(%ebp)" (#:immediate ,n))))))
+
+(define (i386:word-accu->local+n id n)
+  (let ((n (+ (- 0 (* 4 id)) n)))
+    `(,(if (< (abs n) #x80) `("mov____%ax,0x8(%ebp)" (#:immediate1 ,n))
+           `("mov____%ax,0x32(%ebp)" (#:immediate ,n))))))
+
 (define (i386:accu*n->local i n)
   (or n (error "invalid value: accu->local: " n))
   (let ((o (- 0 (* 4 i))))
