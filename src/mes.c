@@ -24,8 +24,13 @@
 #include <string.h>
 #include <mlibc.h>
 
+#if MES_C_READER
+int ARENA_SIZE = 10000000;
+#else
 int ARENA_SIZE = 100000;
+#endif
 int MAX_ARENA_SIZE = 20000000;
+
 //int GC_SAFETY_DIV = 400;
 //int GC_SAFETY = ARENA_SIZE / 400;
 int GC_SAFETY = 250;
@@ -126,6 +131,19 @@ struct scm scm_symbol_lambda = {TSYMBOL, "lambda",0};
 struct scm scm_symbol_begin = {TSYMBOL, "begin",0};
 struct scm scm_symbol_if = {TSYMBOL, "if",0};
 struct scm scm_symbol_quote = {TSYMBOL, "quote",0};
+
+#if 1
+//MES_C_READER
+//Only for MES_C_READER; snarfing makes these always needed for linking
+struct scm scm_symbol_quasiquote = {TSYMBOL, "quasiquote", 0};
+struct scm scm_symbol_unquote = {TSYMBOL, "unquote", 0};
+struct scm scm_symbol_unquote_splicing = {TSYMBOL, "unquote-splicing", 0};
+struct scm scm_symbol_syntax = {TSYMBOL, "syntax",0};
+struct scm scm_symbol_quasisyntax = {TSYMBOL, "quasisyntax", 0};
+struct scm scm_symbol_unsyntax = {TSYMBOL, "unsyntax", 0};
+struct scm scm_symbol_unsyntax_splicing = {TSYMBOL, "unsyntax-splicing", 0};
+#endif // MES_C_READER
+
 struct scm scm_symbol_set_x = {TSYMBOL, "set!",0};
 
 struct scm scm_symbol_sc_expand = {TSYMBOL, "sc-expand",0};
@@ -165,7 +183,7 @@ struct scm scm_vm_apply = {TSPECIAL, "core:apply",0};
 struct scm scm_vm_apply2 = {TSPECIAL, "*vm-apply2*",0};
 struct scm scm_vm_eval = {TSPECIAL, "core:eval",0};
 
-//FIXED_PRIMITIVES
+//MES_FIXED_PRIMITIVES
 struct scm scm_vm_eval_car = {TSPECIAL, "*vm-eval-car*",0};
 struct scm scm_vm_eval_cdr = {TSPECIAL, "*vm-eval-cdr*",0};
 struct scm scm_vm_eval_cons = {TSPECIAL, "*vm-eval-cons*",0};
@@ -187,6 +205,7 @@ struct scm scm_vm_return = {TSPECIAL, "*vm-return*",0};
 
 struct scm scm_symbol_gnuc = {TSYMBOL, "%gnuc",0};
 struct scm scm_symbol_mesc = {TSYMBOL, "%mesc",0};
+struct scm scm_symbol_c_reader = {TSYMBOL, "%c-reader",0};
 
 struct scm scm_test = {TSYMBOL, "test",0};
 
@@ -271,6 +290,9 @@ int g_function = 0;
 #define MAKE_NUMBER(n) make_cell_ (tmp_num_ (TNUMBER), 0, tmp_num2_ (n))
 #define MAKE_REF(n) make_cell_ (tmp_num_ (TREF), n, 0)
 #define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
+#if MES_C_READER
+#define MAKE_KEYWORD(x) make_cell_ (tmp_num_ (TKEYWORD), x, 0)
+#endif
 
 #define CAAR(x) CAR (CAR (x))
 #define CADR(x) CAR (CDR (x))
@@ -717,7 +739,7 @@ eval_apply ()
     case cell_vm_apply: goto apply;
     case cell_vm_apply2: goto apply2;
     case cell_vm_eval: goto eval;
-#if FIXED_PRIMITIVES
+#if MES_FIXED_PRIMITIVES
     case cell_vm_eval_car: goto eval_car;
     case cell_vm_eval_cdr: goto eval_cdr;
     case cell_vm_eval_cons: goto eval_cons;
@@ -851,7 +873,7 @@ eval_apply ()
       {
         switch (CAR (r1))
           {
-#if FIXED_PRIMITIVES
+#if MES_FIXED_PRIMITIVES
           case cell_symbol_car:
             {
               push_cc (CADR (r1), r1, r0, cell_vm_eval_car); goto eval;
@@ -879,7 +901,7 @@ eval_apply ()
             eval_null_p:
               x = r1; gc_pop_frame (); r1 = null_p (x); goto eval_apply;
             }
-#endif // FIXED_PRIMITIVES
+#endif // MES_FIXED_PRIMITIVES
           case cell_symbol_quote:
             {
               x = r1; gc_pop_frame (); r1 = CADR (x); goto eval_apply;
@@ -1159,6 +1181,12 @@ mes_symbols () ///((internal))
 #else
   a = acons (cell_symbol_gnuc, cell_f, a);
   a = acons (cell_symbol_mesc, cell_t, a);
+#endif
+
+#if MES_C_READER
+  a = acons (cell_symbol_c_reader, cell_t, a);
+#else
+  a = acons (cell_symbol_c_reader, cell_f, a);
 #endif
 
   a = acons (cell_closure, a, a);

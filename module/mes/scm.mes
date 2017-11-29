@@ -86,15 +86,17 @@
   (or (and (number? x) (= x -1))
       (and (char? x) (eof-object? (char->integer x)))))
 
-(define (peek-char)
-  (integer->char (peek-byte)))
+(if (not (defined? 'peek-char))
+    (define (peek-char)
+      (integer->char (peek-byte))))
 
-(define (read-char)
-  (integer->char (read-byte)))
+(if (not (defined? 'read-char))
+    (define (read-char)
+      (integer->char (read-byte))))
 
-(define (unread-char c)
-  (unread-byte (char->integer c))
-  c)
+(if (not (defined? 'unread-char))
+    (define (unread-char c)
+      (unread-byte (char->integer c))))
 
 (define (assq-set! alist key val)
   (let ((entry (assq key alist)))

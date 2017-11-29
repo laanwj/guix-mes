@@ -34,9 +34,6 @@
 (define (primitive-eval e) (core:eval e (current-module)))
 (define eval core:eval)
 
-(define-macro (defined? x)
-  (list 'assq x '(cdr (cdr (current-module)))))
-
 (if (defined? 'current-input-port) #t
     (define (current-input-port) 0))
 
