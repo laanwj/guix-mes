@@ -419,7 +419,7 @@ vfprintf (FILE* f, char const* format, va_list ap)
   char const *p = format;
   while (*p)
     if (*p != '%')
-      putchar (*p++);
+      fputc (*p++, fd);
     else
       {
         p++;
