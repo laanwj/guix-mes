@@ -93,7 +93,7 @@
          (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names)))
     (define (string->label o)
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
-       (format #f "string_~a_~a" file-name index)))
+       (format #f "_string_~a_~a" file-name index)))
     (define (text->M1 o)
       (pmatch o
         ;; FIXME
@@ -135,7 +135,7 @@
             (let* ((label o)
                    (function? (member label function-names))
                    (string-label (string->label label))
-                   (string? (not (equal? string-label "string_#f")))
+                   (string? (not (equal? string-label "_string_#f")))
                    (global? (member label global-names)))
               (if (or global? string?) (format #f "&~a" label)
                   (begin (if (not function?) (stderr "warning: unresolved label: ~s\n" label))
