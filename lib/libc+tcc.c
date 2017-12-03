@@ -29,53 +29,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#if !__GNUC__ && !__TINYC__
-#include <libc-mes.c>
-#include <getopt.c>
-
-int errno;
-
-int
-close (int fd)
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-
-  asm ("mov____$i32,%eax SYS_close");
-  asm ("int____$0x80");
-}
-
-int
-unlink (char const *file_name)
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-
-  asm ("mov____$i32,%eax SYS_unlink");
-  asm ("int____$0x80");
-}
-
-off_t
-lseek (int fd, off_t offset, int whence)
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_lseek");
-  asm ("int____$0x80");
-}
-
-char *
-getcwd (char *buf, size_t size)
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-
-  asm ("mov____$i32,%eax SYS_getcwd");
-  asm ("int____$0x80");
-}
-#endif // !__GNUC__
-
-
 int
 dlclose (void *handle)
 {
@@ -181,32 +134,6 @@ localtime (time_t const *timep)
   return 0;
 }
 
-void
-longjmp (jmp_buf env, int val)
-{
-  val = val == 0 ? 1 : val;
-#if __MESC__
-  asm ("mov____0x8(%ebp),%eax !0x0c"); // val
-  asm ("mov____0x8(%ebp),%ebp !0x08"); // env*
-
-  asm ("mov____0x8(%ebp),%ebx !0x4");  // env.__pc
-  asm ("mov____0x8(%ebp),%esp !0x8");  // env.__sp
-  asm ("mov____0x8(%ebp),%ebp !0x0");  // env.__bp
-  asm ("jmp____*%ebx");
-#else
-  asm ("mov    0xc(%ebp),%eax\n\t"     // val
-       "mov    0x8(%ebp),%ebp\n\t"     // env*
-
-       "mov    0x4(%ebp),%ebx\n\t"     // env->__pc
-       "mov    0x8(%ebp),%esp\n\t"     // env->__sp
-       "mov    0x0(%ebp),%ebp\n\t"     // env->__bp
-       "jmp    *%ebx\n\t"              // jmp *PC
-       );
-#endif
-  // not reached
-  exit (42);
-}
-
 void *
 memmove (void *dest, void const *src, size_t n)
 {
@@ -252,39 +179,6 @@ int
 remove (char const *file_name)
 {
   eputs ("remove stub\n");
-  return 0;
-}
-
-#if 0
-int
-setjmp_debug (jmp_buf env, int val)
-{
-  int i;
-#if 1
-  i = env->__bp;
-  i = env->__pc;
-  i = env->__sp;
-#else
-  i = env[0].__bp;
-  i = env[0].__pc;
-  i = env[0].__sp;
-#endif
-  return val == 0 ? 1 : val;
-}
-#endif
-
-#if __MESC__
-int
-setjmp (__jmp_buf *env)
-#else
-int
-setjmp (jmp_buf env)
-#endif
-{
-  int *p = (int*)&env;
-  env[0].__bp = p[-2];
-  env[0].__pc = p[-1];
-  env[0].__sp = (int)&env;
   return 0;
 }
 
@@ -362,13 +256,12 @@ strstr (char const *haystack, char const *needle)
 long
 strtol (char const *nptr, char **endptr, int base)
 {
-  eputs ("strtol stub\n");
   if (!strncmp (nptr, "0x", 2))
     {
       char const *p = nptr + 2;
-      return _atoi (&p, 16);
+      return abtoi (&p, 16);
     }
-  return _atoi (&nptr, base);
+  return abtoi (&nptr, base);
 }
 
 long long int
@@ -386,10 +279,10 @@ strtoul (char const *nptr, char **endptr, int base)
 }
 
 unsigned long long
-strtoull (char const *p, char **end, int base)
+strtoull (char const *p, char **endptr, int base)
 {
-  *end = p;
-  return _atoi (end, base);
+  *endptr = p;
+  return abtoi (endptr, base);
 }
 
 time_t time (time_t *tloc)

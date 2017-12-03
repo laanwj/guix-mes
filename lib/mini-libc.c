@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -18,33 +18,26 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
-#include <mlibc.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-unsigned long long
-strtoull (char const *p, char **end, int base)
+size_t
+strlen (char const* s)
 {
-  *end = p;
-  return abtoi (end, base);
+  int i = 0;
+  while (s[i]) i++;
+  return i;
 }
 
 int
-test ()
+eputs (char const* s)
 {
-  char *p = "42foo\n";
-  int n = abtoi (&p, 0);
-  if (n != 42) return 1;
-  eputs (p);
-  if (strcmp (p, "foo\n")) return 2;
+  int i = strlen (s);
+  write (2, s, i);
+  return 0;
+}
 
-  p = "2azar\n";
-  n = strtoull (p, (char**)&p, 16);  
-  if (n != 42) return 3;
-  eputs (p);
-  if (strcmp (p, "zar\n")) return 4;
-  
+int
+puts (char const* s)
+{
+  int i = strlen (s);
+  write (1, s, i);
   return 0;
 }

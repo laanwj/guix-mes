@@ -18,10 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !__MESC__
-#define fputs fdputs
-#endif
-
 int g_depth;
 SCM fdisplay_ (SCM, int);
 

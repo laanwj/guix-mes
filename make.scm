@@ -85,7 +85,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
          ;;(foo (format (current-error-port) "bin[~s .c] base=~s\n" input-file-name base-name))
          (suffix (cond ((not libc) ".0-guile")
                        ((eq? libc libc-mes.hex2) ".guile")
-                       ((eq? libc libc-mes+tcc.hex2) ".tcc-guile")
+                       ((eq? libc libc+tcc-mes.hex2) ".tcc-guile")
                        (else ".mini-guile")))
          (target-file-name (string-append base-name suffix))
          (hex2-target (m1.as input-file-name #:m1 m1 #:cc cc #:defines defines #:includes includes #:dependencies dependencies)))
@@ -103,8 +103,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (define mini-libc-mes.hex2 (m1.as "lib/mini-libc-mes.c"))
 (add-target mini-libc-mes.hex2)
 
-(define libc-mes+tcc.hex2 (m1.as "lib/libc-mes+tcc.c"))
-(add-target libc-mes+tcc.hex2)
+(define libc+tcc-mes.hex2 (m1.as "lib/libc+tcc-mes.c"))
+(add-target libc+tcc-mes.hex2)
 
 (add-target (bin.mescc "stage0/exit-42.c" #:libc #f))
 (add-target (check "stage0/exit-42.0-guile" #:exit 42))
@@ -128,16 +128,17 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
   (add-target (bin.mescc (string-append "scaffold/tests/" name ".c") #:libc libc #:includes includes))
   (add-target (check (string-append "scaffold/tests/" name "." (cond ((not libc) "0-")
                                                                      ((eq? libc mini-libc-mes.hex2) "mini-")
-                                                                     ((eq? libc libc-mes+tcc.hex2) "tcc-")
+                                                                     ((eq? libc libc+tcc-mes.hex2) "tcc-")
                                                                      (else "")) "guile") #:exit exit)))
 
 (add-target (compile.gcc "lib/crt1.c" #:libc #f))
 (add-target (compile.gcc "lib/libc-gcc.c" #:libc #f))
-(add-target (compile.gcc "lib/libc-gcc+tcc.c" #:libc #f))
+(add-target (compile.gcc "lib/libc+tcc-gcc.c" #:libc #f))
+;;(add-target (compile.gcc "lib/libc+tcc-mes.c" #:libc #f))
 
 ;;(add-scaffold-test "t" #:libc mini-libc-mes.hex2)
 (add-scaffold-test "t")
-;;(add-scaffold-test "t" #:libc libc-mes+tcc.hex2)
+;;(add-scaffold-test "t" #:libc libc+tcc-mes.hex2)
 
 ;; tests/00: exit, functions without libc
 (add-scaffold-test "00-exit-0" #:libc #f)
@@ -257,15 +258,15 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 ;; tests/80: and beyond tinycc; building GNU GCC and dependencies
 (for-each
- (cut add-scaffold-test <> #:libc libc-mes+tcc.hex2 #:libc-gcc libc-gcc+tcc.mlibc-o)
+ (cut add-scaffold-test <> #:libc libc+tcc-mes.hex2 #:libc-gcc libc+tcc-gcc.mlibc-o)
  '("80-setjmp"))
 
 (add-target (group "check-scaffold-tests/8" #:dependencies (filter (target-prefix? "check-scaffold/tests/8") %targets)))
 
 (add-target (group "check-scaffold-tests" #:dependencies (filter (target-prefix? "check-scaffold/tests") %targets)))
 
-(add-target (cpp.mescc "lib/libc-mes+tcc.c"))
-(add-target (compile.mescc "lib/libc-mes+tcc.c"))
+(add-target (cpp.mescc "lib/libc+tcc-mes.c"))
+(add-target (compile.mescc "lib/libc+tcc-mes.c"))
 
 (define* (add-tcc-test name)
   (add-target (bin.gcc (string-append "scaffold/tinycc/" name ".c") #:libc libc-gcc.mlibc-o #:includes '("scaffold/tinycc")))
@@ -610,14 +611,14 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (install "lib/crt1.hex2" #:dir "lib"))
 (add-target (install "lib/libc-mes.M1" #:dir "lib"))
 (add-target (install "lib/libc-mes.hex2" #:dir "lib"))
-(add-target (install "lib/libc-mes+tcc.M1" #:dir "lib"))
-(add-target (install "lib/libc-mes+tcc.hex2" #:dir "lib"))
+(add-target (install "lib/libc+tcc-mes.M1" #:dir "lib"))
+(add-target (install "lib/libc+tcc-mes.hex2" #:dir "lib"))
 (add-target (install "lib/mini-libc-mes.M1" #:dir "lib"))
 (add-target (install "lib/mini-libc-mes.hex2" #:dir "lib"))
 
 (add-target (install "lib/crt1.mlibc-o" #:dir "lib"))
 (add-target (install "lib/libc-gcc.mlibc-o" #:dir "lib"))
-(add-target (install "lib/libc-gcc+tcc.mlibc-o" #:dir "lib"))
+(add-target (install "lib/libc+tcc-gcc.mlibc-o" #:dir "lib"))
 
 (for-each
  (lambda (f)

@@ -61,7 +61,7 @@
 
             crt1.mlibc-o
             libc-gcc.mlibc-o
-            libc-gcc+tcc.mlibc-o
+            libc+tcc-gcc.mlibc-o
 
             add-target
             get-target
@@ -540,4 +540,4 @@
 
 (define crt1.mlibc-o (compile.gcc "lib/crt1.c" #:libc #f))
 (define libc-gcc.mlibc-o (compile.gcc "lib/libc-gcc.c" #:libc #f))
-(define libc-gcc+tcc.mlibc-o (compile.gcc "lib/libc-gcc+tcc.c" #:libc #f))
+(define libc+tcc-gcc.mlibc-o (compile.gcc "lib/libc+tcc-gcc.c" #:libc #f))

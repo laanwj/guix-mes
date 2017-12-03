@@ -18,46 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void
-exit ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
+#include <mini-linux-mes.c>
 
-  asm ("mov____$i32,%eax SYS_exit");
-  asm ("int____$0x80");
-}
-
-void
-write ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_write");
-  asm ("int____$0x80");
-}
-
-int
-strlen (char const* s)
-{
-  int i = 0;
-  while (s[i]) i++;
-  return i;
-}
-
-int
-eputs (char const* s)
-{
-  int i = strlen (s);
-  write (2, s, i);
-  return 0;
-}
-
-int
-puts (char const* s)
-{
-  int i = strlen (s);
-  write (1, s, i);
-  return 0;
-}
+typedef unsigned long size_t;
+#include <mini-libc.c>

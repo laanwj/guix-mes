@@ -46,7 +46,6 @@ int g_stdout;
 int fdputs (char const* s, int fd);
 
 #undef puts
-#define puts(x) fdputs(x, STDOUT)
 #define fputs fdputs
 
 #ifdef putc
@@ -88,6 +87,9 @@ int fdungetc (int c, int fd);
 int fdputs (char const* s, int fd);
 #endif // __MES_GNUC__
 
+#define fputs fdputs
+#define fputc fdputc
+
 typedef int FILE;
 
 #ifndef __MES_SIZE_T
@@ -104,8 +106,6 @@ FILE *fopen (char const *pathname, char const *mode);
 int ferror (FILE *stream);
 int fprintf (FILE *stream, char const *format, ...);
 int fdputc (int c, int fd);
-int fputc (int c, int fd);
-int fputs (char const* s, int fd);
 size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
 int fseek (FILE *stream, long offset, int whence);
 long ftell (FILE *stream);

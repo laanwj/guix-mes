@@ -18,33 +18,43 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
-#include <mlibc.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+int errno;
 
-unsigned long long
-strtoull (char const *p, char **end, int base)
+int
+close (int fd)
 {
-  *end = p;
-  return abtoi (end, base);
+  asm ("mov____0x8(%ebp),%ebx !8");
+
+  asm ("mov____$i32,%eax SYS_close");
+  asm ("int____$0x80");
 }
 
 int
-test ()
+unlink (char const *file_name)
 {
-  char *p = "42foo\n";
-  int n = abtoi (&p, 0);
-  if (n != 42) return 1;
-  eputs (p);
-  if (strcmp (p, "foo\n")) return 2;
+  asm ("mov____0x8(%ebp),%ebx !8");
 
-  p = "2azar\n";
-  n = strtoull (p, (char**)&p, 16);  
-  if (n != 42) return 3;
-  eputs (p);
-  if (strcmp (p, "zar\n")) return 4;
-  
-  return 0;
+  asm ("mov____$i32,%eax SYS_unlink");
+  asm ("int____$0x80");
+}
+
+off_t
+lseek (int fd, off_t offset, int whence)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+  asm ("mov____0x8(%ebp),%edx !16");
+
+  asm ("mov____$i32,%eax SYS_lseek");
+  asm ("int____$0x80");
+}
+
+char *
+getcwd (char *buf, size_t size)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+
+  asm ("mov____$i32,%eax SYS_getcwd");
+  asm ("int____$0x80");
 }

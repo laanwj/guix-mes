@@ -18,18 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libc-gcc.c>
-#include <libc-mes+tcc.c>
-#include <getopt.c>
-
-int errno;
-
-#include <unistd.h>
-#include <stdarg.h>
-#include <signal.h>
-#include <sys/mman.h>
-#include <sys/time.h>
-
 #define SYS_exit   "0x01"
 #define SYS_read   "0x03"
 #define SYS_write  "0x04"
@@ -115,16 +103,4 @@ getcwd (char *buf, size_t size)
        );
   return r;
 #endif
-}
-
-int
-__udivdi3 (int a, int b)
-{
-  return a / b;
-}
-
-int
-__umoddi3 (int a, int b)
-{
-  return a % b;
 }

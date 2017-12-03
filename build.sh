@@ -56,8 +56,8 @@ $HEX2 --LittleEndian --Architecture=1 --BaseAddress=0x1000000\
 
 $M1 --LittleEndian --Architecture=1 -f\
     stage0/x86.M1\
-    -f $MES_SEED/libc-mes+tcc.M1\
-    -o libc-mes+tcc.hex2
+    -f $MES_SEED/libc+tcc-mes.M1\
+    -o libc+tcc-mes.hex2
 
 # TODO: after building from seed, build from src/mes.c
 # build-aux/mes-snarf.scm --mes src/gc.c
