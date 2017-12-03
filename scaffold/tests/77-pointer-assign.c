@@ -18,6 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+
 #include "30-test.i"
 
 struct baz {
@@ -55,13 +57,15 @@ add2 (void *ptab)
 
 struct foo *hash_ident[10];
 
+#if !defined (__TINYC__)
 void *
-memset (void *s, int c, int n)
+memset (void *s, int c, size_t n)
 {
   char *p = s;
   while (n--) *p++ = c;
   return s;
 }
+#endif
 
 int
 test ()

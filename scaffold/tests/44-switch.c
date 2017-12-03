@@ -46,6 +46,10 @@ swits (int c)
         c = 34;
         break;
       }
+    case 5:
+    case 4:
+    case 3:
+    case 2:
     case -1:
     case 1:
       x = 1;

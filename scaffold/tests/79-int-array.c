@@ -61,9 +61,9 @@ test ()
   memcpy (&b[4], c, 2 * sizeof (int));
   eputs ("b[4]:"); eputs (itoa (b[4])); eputs ("\n");
 
-  if (b[4] != 201) return 5;
+  if (b[4] != 201) return 7;
   eputs ("b[5]:"); eputs (itoa (b[5])); eputs ("\n");
-  if (b[5] != 211) return 6;
+  if (b[5] != 211) return 8;
 
   return 0;
 }

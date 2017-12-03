@@ -24,12 +24,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if !defined ( __TINYC__)
 unsigned long long
 strtoull (char const *p, char **end, int base)
 {
   *end = p;
   return abtoi (end, base);
 }
+#endif
 
 int
 test ()
