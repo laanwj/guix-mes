@@ -536,6 +536,34 @@ itoa (int x)
   return p+1;
 }
 
+char const*
+itoab (int x, int base)
+{
+  //static char itoa_buf[10];
+  //char *p = buf+9;
+  char *p = itoa_buf;
+  p += 9;
+  *p-- = 0;
+
+  //int sign = x < 0; // FIXME
+  int sign = 0;
+  if (x < 0) sign = 1;
+  if (sign)
+    x = -x;
+
+  do
+     {
+       int i = x % base;
+       *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
+       x = x / base;
+     } while (x);
+
+  if (sign && *(p + 1) != '0')
+    *p-- = '-';
+
+  return p+1;
+}
+
 #if POSIX
 #define _GNU_SOURCE
 #include <assert.h>
