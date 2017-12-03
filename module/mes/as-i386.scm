@@ -47,6 +47,7 @@
             i386:accu->local+n
             i386:byte-accu->local+n
             i386:word-accu->local+n
+            i386:accu->local+n
             i386:accu-and-base
             i386:accu-base
             i386:accu-cmp-value
@@ -78,6 +79,7 @@
             i386:byte-base-mem->accu
             i386:byte-base-sub
             i386:byte-local->accu
+            i386:word-local->accu
             i386:byte-local->base
             i386:byte-mem->accu
             i386:word-mem->accu
@@ -125,6 +127,7 @@
             i386:push-base
             i386:push-byte-local-de-de-ref
             i386:push-byte-local-de-ref
+            i386:push-word-local-de-ref
             i386:push-label
             i386:push-label-mem
             i386:push-local

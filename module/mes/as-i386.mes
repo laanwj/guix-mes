@@ -71,6 +71,14 @@
       ("movzbl_(%eax),%eax")
       ("push___%eax"))))
 
+(define (i386:push-word-local-de-ref n)
+  (or n (error "invalid value: push-word-local-de-ref: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
+      ("movzwl_(%eax),%eax")
+      ("push___%eax"))))
+
 (define (i386:push-byte-local-de-de-ref n)
   (or n (error "invalid value: push-byte-local-de-de-ref: " n))
   (let ((n (- 0 (* 4 n))))
@@ -153,6 +161,12 @@
   (let ((n (- 0 (* 4 n))))
     `(,(if (< (abs n) #x80) `("movzbl_0x8(%ebp),%eax" (#:immediate1 ,n))
            `("movzbl_0x32(%ebp),%eax" (#:immediate ,n))))))
+
+(define (i386:word-local->accu n)
+  (or n (error "invalid value: word-local->accu: " n))
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `("movzwl_0x8(%ebp),%eax" (#:immediate1 ,n))
+           `("movzwl_0x32(%ebp),%eax" (#:immediate ,n))))))
 
 (define (i386:byte-local->base n)
   (or n (error "invalid value: byte-local->base: " n))

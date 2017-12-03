@@ -150,7 +150,9 @@ DEFINE movzbl_0x8(%ebp),%eax 0fb645
 DEFINE movzbl_0x8(%ebp),%edx 0fb655
 DEFINE movzwl_(%eax),%eax 0fb700
 DEFINE movzwl_0x32(%eax),%eax 0fb780
+DEFINE movzwl_0x32(%ebp),%eax 0fb785
 DEFINE movzwl_0x8(%eax),%eax 0fb740
+DEFINE movzwl_0x8(%ebp),%eax 0fb745
 DEFINE mul____%edx f7e2
 DEFINE nop 90
 DEFINE not____%eax f7d0

@@ -564,9 +564,11 @@
            (ptr (local:pointer local))
            (size (if (= ptr 1) (ast-type->size info (local:type o))
                      4)))
-      (if (= size 1)
-          (wrap-as (i386:push-byte-local-de-ref (local:id o)))
-          (wrap-as (i386:push-local-de-ref (local:id o)))))))
+      (case size
+        ((1) (wrap-as (i386:push-byte-local-de-ref (local:id o))))
+        ((2) (wrap-as (i386:push-word-local-de-ref (local:id o))))
+        ((4) (wrap-as (i386:push-local-de-ref (local:id o))))
+        (else (error (format #f "TODO: push size >4: ~a\n" size)))))))
 
 (define (push-local-de-de-ref info)
   (lambda (o)
@@ -686,8 +688,10 @@
                  (size (if (= ptr 0) (ast-type->size info type)
                            4)))
             (cond ((< ptr 0) (wrap-as (i386:local-ptr->accu (local:id local))))
-                  (else (wrap-as (if (= size 1) (i386:byte-local->accu (local:id local))
-                                     (i386:local->accu (local:id local)))))))
+                  (else (wrap-as (case size
+                                   ((1) (i386:byte-local->accu (local:id local)))
+                                   ((2) (i386:word-local->accu (local:id local)))
+                                   (else (i386:local->accu (local:id local))))))))
           (if global
               (let* ((ptr (ident->pointer info o)))
                 (cond ((< ptr 0) (list (i386:label->accu `(#:address ,o))))
