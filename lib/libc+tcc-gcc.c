@@ -80,14 +80,18 @@ setjmp (jmp_buf env)
   return 0;
 }
 
-int
-__udivdi3 (int a, int b)
+unsigned long long
+__udivdi3 (unsigned long long a, unsigned long long b)
 {
-  return a / b;
+  int ai = a;
+  int bi = b;
+  return ai / bi;
 }
 
-int
-__umoddi3 (int a, int b)
+unsigned long long
+__umoddi3 (unsigned long long a, unsigned long long b)
 {
-  return a % b;
+  int ai = a;
+  int bi = b;
+  return ai % bi;
 }
