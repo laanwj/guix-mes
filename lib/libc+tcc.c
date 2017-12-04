@@ -170,9 +170,41 @@ mprotect (void *addr, size_t len, int prot)
 }
 
 void
-qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *))
+qswap (void *a, void *b, size_t size)
 {
-  eputs ("qsort stub\n");
+  char *buf[8];
+  memcpy (buf, a, size);
+  memcpy (a, b, size);
+  memcpy (b, buf, size);
+}
+
+size_t
+qpart (void *base, size_t count, size_t size, int (*compare)(void const *, void const *))
+{
+  void* p = base + count*size;
+  size_t i = 0;
+  for (size_t j = 0; j < count; j++)
+    {
+      if (compare (base+j*size, p) < 0)
+        {
+          qswap (base+i*size, base+j*size, size);
+          i++;
+        }
+    }
+  if (compare (base+count*size, base+i*size) < 0)
+    qswap (base+i*size, base+count*size, size);
+  return i;
+}
+
+void
+qsort (void *base, size_t count, size_t size, int (*compare)(void const *, void const *))
+{
+  if (count > 1)
+    {
+      int p = qpart (base, count-1, size, compare);
+      qsort (base, p, size, compare);
+      qsort (base+p*size, count-p, size, compare);
+    }
 }
 
 int

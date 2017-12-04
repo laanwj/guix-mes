@@ -259,7 +259,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 ;; tests/80: and beyond tinycc; building GNU GCC and dependencies
 (for-each
  (cut add-scaffold-test <> #:libc libc+tcc-mes.hex2 #:libc-gcc libc+tcc-gcc.mlibc-o)
- '("80-setjmp"))
+ '("80-setjmp"
+   "81-qsort"))
 
 (add-target (group "check-scaffold-tests/8" #:dependencies (filter (target-prefix? "check-scaffold/tests/8") %targets)))
 
