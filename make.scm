@@ -260,7 +260,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (for-each
  (cut add-scaffold-test <> #:libc libc+tcc-mes.hex2 #:libc-gcc libc+tcc-gcc.mlibc-o)
  '("80-setjmp"
-   "81-qsort"))
+   "81-qsort"
+   "82-define"))
 
 (add-target (group "check-scaffold-tests/8" #:dependencies (filter (target-prefix? "check-scaffold/tests/8") %targets)))
 

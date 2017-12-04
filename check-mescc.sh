@@ -76,10 +76,13 @@ t
 7l-struct-any-size-array
 7m-struct-char-array-assign
 7n-struct-struct-array
+80-setjmp
+81-qsort
+82-define
 "
 
 if [ ! -x ./i686-unknown-linux-gnu-tcc ]; then
-    tests=$(echo "$tests" | grep -Ev "02-return-1|05-call-1")
+    tests=$(echo "$tests" | grep -Ev "02-return-1|05-call-1|80-setjmp|81-qsort")
 fi
 
 set +e
