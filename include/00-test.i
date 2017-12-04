@@ -39,6 +39,6 @@ main ()
        : // no outputs
        : "Ir" (r));
   asm ("mov    $1,%eax");
-  asm ("int    $0x80");
+  asm ("int    $128");
 #endif // __GNUC__
 }
