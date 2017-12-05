@@ -27,6 +27,7 @@
 
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
+#undef size_t
 typedef unsigned long size_t;
 #endif
 

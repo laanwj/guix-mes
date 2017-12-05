@@ -25,6 +25,13 @@
 #include_next <sys/types.h>
 #else // ! (__GNUC__ && POSIX)
 #include <endian.h>
+
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+#undef size_t
+typedef unsigned long size_t;
+#endif
+
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_SYS_TYPES_H

@@ -25,5 +25,21 @@
 #include_next <sys/stat.h>
 #endif // (__GNUC__ && POSIX)
 
+struct stat {
+  int st_dev;
+  int st_ino;
+  int st_mode;
+  int st_nlink;
+  int st_uid;
+  int st_gid;
+  int st_rdev;
+  int st_size;
+  int st_blksize;
+  int st_blocks;
+  int st_atime;
+  int st_mtime;
+  int st_ctime;
+};
+
 #endif // __MES_SYS_STAT_H
 

@@ -28,6 +28,7 @@
 #include_next <errno.h>
 #else // ! (__GNUC__ && POSIX)
 int errno;
+#define	ERANGE		34	/* Math result not representable */
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_ERRNO_H
