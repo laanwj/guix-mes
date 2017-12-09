@@ -22,7 +22,14 @@
 
 ;;; Code:
 
-(define-module (mes guile))
+(define-module (mes guile)
+  #:export (core:display core:display-error))
+
+(cond-expand
+ (guile
+  (define core:display display)
+  (define (core:display-error o) (display o (current-error-port))))
+ (mes))
 
 (cond-expand
  (guile-2.2)

@@ -28,7 +28,9 @@
 
 (define-macro (include-from-path file)
   (let loop ((path (cons %moduledir (string-split (or (getenv "GUILE_LOAD_PATH") "") #\:))))
-    (if (getenv "MES_DEBUG") (format (current-error-port) "include-from-path: ~s [PATH:~s]\n" file path))
+    (if (getenv "MES_DEBUG") 
+        ;;(format (current-error-port) "include-from-path: ~s [PATH:~s]\n" file path)
+        (core:display-error (string-append "include-from-path: " file " [PATH:" (string-join path ":") "]\n")))
     (if (null? path) (error "include-from-path: not found: " file)
         (let ((file (string-append (car path) "/" file)))
           (if (access? file R_OK) `(load ,file)
@@ -36,11 +38,16 @@
 
 (mes-use-module (srfi srfi-16))
 
-(define (drain-input port)
-  (list->string
-   (let loop ((c (read-char)))
-     (if (eq? c #\*eof*) '()
-         (cons c (loop (read-char)))))))
+(define (read-string)
+  (define (read-string c)
+    (if (eq? c #\*eof*) '()
+        (cons c (read-string (read-char)))))
+  (let ((string (list->string (read-string (read-char)))))
+    (if (getenv "MES_DEBUG")
+        (core:display-error (string-append "drained: `" string "'\n")))
+    string))
+
+(define (drain-input port) (read-string))
 
 (define (make-string n . fill)
   (list->string (apply make-list n fill)))
@@ -57,6 +64,8 @@
   (define save-peek-char peek-char)
   (define save-read-char read-char)
   (define save-unread-char unread-char)
+  (if (getenv "MES_DEBUG")
+      (core:display-error (string-append "with-input-from-string: `" string "'\n")))
   (let ((tell 0)
         (end (string-length string)))
     (set! peek-char
@@ -106,6 +115,8 @@
   (let ((save-set-current-input-port #f)
         (string-port #f))
     (lambda (string)
+      (if (getenv "MES_DEBUG")
+          (core:display-error (string-append "open-input-string: `" string "'\n")))
       (set! save-set-current-input-port set-current-input-port)
       (set! string-port (cons '*string-port* (gensym)))
       (set! set-current-input-port
@@ -136,9 +147,3 @@
                               (set! set-current-input-port save-set-current-input-port)
                               string-port)))))))
       string-port)))
-
-(define (read-string)
-  (define (read-string c p s)
-    (if (eq? c #\*eof*) s
-        (read-string (read-char) (peek-char) (cons c s))))
-  (list->string (reverse (read-string (read-char) (peek-char) (list)))))

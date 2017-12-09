@@ -108,7 +108,7 @@ SCM
 display_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", STDOUT);
+  return display_helper (x, 0, "", g_stdout);
 }
 
 SCM
