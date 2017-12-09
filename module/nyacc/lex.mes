@@ -25,7 +25,7 @@
 (mes-use-module (mes guile))
 (mes-use-module (mes optargs))
 (mes-use-module (mes pretty-print))
-(mes-use-module (mes psyntax))
+(mes-use-module (mes syntax))
 (mes-use-module (srfi srfi-1))
 (mes-use-module (srfi srfi-14))
 (include-from-path "nyacc/lex.scm")

@@ -27,7 +27,7 @@
 (mes-use-module (mes fluids))
 (mes-use-module (mes pretty-print))
 (mes-use-module (mes optargs))
-(mes-use-module (srfi srfi-9-psyntax))
+(mes-use-module (srfi srfi-9))
 (mes-use-module (sxml xpath))
 
 (mes-use-module (nyacc lex))
