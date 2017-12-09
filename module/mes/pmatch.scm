@@ -77,6 +77,7 @@
     ((_ v (x . y) kt kf)
      (if (pair? v)
          (let ((vx (car v)) (vy (cdr v)))
-           (ppat vx x (ppat vy y kt kf) kf))
+           ;;(ppat vx x (ppat vy y kt kf) kf) ;; FIXME: broken with syntax.scm
+           (ppat (car v) x (ppat (cdr v) y kt kf) kf))
          kf))
     ((_ v lit kt kf) (if (eq? v (quote lit)) kt kf))))

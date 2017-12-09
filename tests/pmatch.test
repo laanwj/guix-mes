@@ -41,26 +41,33 @@ exit $?
                  (pmatch o
                    (_ o))))
 
-(pass-if-equal "pmatch" "main"
-               (let ((ast '(fctn-defn
-                            (decl-spec-list (type-spec (fixed-type "int")))
-                            (ftn-declr
-                             (ident "main")
-                             (param-list
-                              (param-decl
-                               (decl-spec-list (type-spec (fixed-type "int")))
-                               (param-declr (ident "argc")))
-                              (param-decl
-                               (decl-spec-list (type-spec (fixed-type "char")))
-                               (param-declr
-                                (ptr-declr (pointer) (array-of (ident "argv")))))))
-                            (compd-stmt
-                             (block-item-list
-                              (if (gt (p-expr (ident "argc")) (p-expr (fixed "1")))
-                                  (return (p-expr (ident "argc"))))
-                              (return (p-expr (fixed "42"))))))))
-                 (pmatch ast
-                   ((fctn-defn _ (ftn-declr (ident ,name) _) _) name)
-                   (_ 'bla))))
+(pass-if-equal "pmatch nyacc minimal" "main"
+  (let* ((ast '(("main") PARAM-LIST))
+         (mets (pmatch ast
+                 (((,name) _) name))))
+    ;;(format (current-error-port) "mets: ~s\n" mets)
+    mets))
+
+(pass-if-equal "pmatch nyacc" "main"
+  (let ((ast '(fctn-defn
+               (decl-spec-list (type-spec (fixed-type "int")))
+               (ftn-declr
+                (ident "main")
+                (param-list
+                 (param-decl
+                  (decl-spec-list (type-spec (fixed-type "int")))
+                  (param-declr (ident "argc")))
+                 (param-decl
+                  (decl-spec-list (type-spec (fixed-type "char")))
+                  (param-declr
+                   (ptr-declr (pointer) (array-of (ident "argv")))))))
+               (compd-stmt
+                (block-item-list
+                 (if (gt (p-expr (ident "argc")) (p-expr (fixed "1")))
+                     (return (p-expr (ident "argc"))))
+                 (return (p-expr (fixed "42"))))))))
+    (pmatch ast
+      ((fctn-defn _ (ftn-declr (ident ,name) _) _) name)
+      (_ 'bla))))
 
 (result 'report)
