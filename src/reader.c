@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -206,18 +206,34 @@ read_character ()
       else if (!strcmp (buf, "alarm")) c = '\a';
       else if (!strcmp (buf, "backspace")) c = '\b';
       else if (!strcmp (buf, "tab")) c = '\t';
+      else if (!strcmp (buf, "linefeed")) c = '\n';
       else if (!strcmp (buf, "newline")) c = '\n';
       else if (!strcmp (buf, "vtab")) c = '\v';
       else if (!strcmp (buf, "page")) c = '\f';
 #if __MESC__
       //Nyacc bug
       else if (!strcmp (buf, "return")) c = 13;
-      else if (!strcmp (buf, "cr")) c = 13;
+      else if (!strcmp (buf, "esc")) c = 27;
 #else
       else if (!strcmp (buf, "return")) c = '\r';
-      else if (!strcmp (buf, "cr")) c = '\r';
+      //Nyacc crash else if (!strcmp (buf, "esc")) c = '\e';
 #endif
       else if (!strcmp (buf, "space")) c = ' ';
+
+#if 1 // Nyacc uses old abbrevs
+      else if (!strcmp (buf, "bel")) c = '\a';
+      else if (!strcmp (buf, "bs")) c = '\b';
+      else if (!strcmp (buf, "ht")) c = '\t';
+      else if (!strcmp (buf, "vt")) c = '\v';
+
+#if __MESC__
+      //Nyacc bug
+      else if (!strcmp (buf, "cr")) c = 13;
+#else
+      else if (!strcmp (buf, "cr")) c = '\r';
+#endif
+#endif // Nyacc uses old abbrevs
+
       else
         {
           eputs ("char not supported: ");
