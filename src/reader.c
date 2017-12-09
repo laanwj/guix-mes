@@ -285,6 +285,7 @@ read_string ()
     if (c == '\\' && peekchar () == '\\') p = append_char (p, getchar ());
     else if (c == '\\' && peekchar () == '"') p = append_char (p, getchar ());
     else if (c == '\\' && peekchar () == 'n') {getchar (); p = append_char (p, '\n');}
+    else if (c == '\\' && peekchar () == 't') {getchar (); p = append_char (p, '\t');}
 #if !__MESC__
     else if (c == EOF) assert (!"EOF in string");
 #endif
