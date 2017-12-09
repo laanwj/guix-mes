@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -27,33 +27,33 @@
 
 (mes-use-module (mes base))
 
+(define (quasiquote-expand x)
+  (cond ((vector? x) (list 'list->vector (quasiquote-expand (vector->list x))))
+        ((not (pair? x)) (cons 'quote (cons x '())))
+        ((eq? (car x) 'quasiquote) (quasiquote-expand (quasiquote-expand
+                                             (if (null? (cddr x)) (cadr x)
+                                                 (cons 'list (cdr x))))))
+        ((eq? (car x) 'unquote) (if (null? (cddr x)) (cadr x)
+                                    (cons 'list (cdr x))))
+        ((and (pair? (car x)) (eq? (caar x) 'unquote-splicing))
+         ((lambda (d)
+            (if (null? (cddar x)) (list 'append (cadar x) d)
+                (list 'quote (append (cdar x) d))))
+          (quasiquote-expand (cdr x))))
+        (else ((lambda (a d)
+                 (if (pair? d)
+                     (if (eq? (car d) 'quote)
+                         (if (and (pair? a) (eq? (car a) 'quote))
+                             (list 'quote (cons (cadr a) (cadr d)))
+                             (if (null? (cadr d))
+                                 (list 'list a)
+                                 (list 'cons* a d)))
+                         (if (memq (car d) '(list cons*))
+                             (cons (car d) (cons a (cdr d)))
+                             (list 'cons* a d)))
+                     (list 'cons* a d)))
+               (quasiquote-expand (car x))
+               (quasiquote-expand (cdr x))))))
+
 (define-macro (quasiquote x)
-  (define (loop x)
-    (cond ((vector? x) (list 'list->vector (loop (vector->list x))))
-          ((not (pair? x)) (cons 'quote (cons x '())))
-          ;;((eq? (car x) 'quasiquote) (loop (loop (cadr x))))
-          ((eq? (car x) 'quasiquote) (loop (loop
-                                            (if (null? (cddr x)) (cadr x)
-                                                (cons 'list (cdr x))))))
-          ((eq? (car x) 'unquote) (if (null? (cddr x)) (cadr x)
-                                      (cons 'list (cdr x))))
-          ((and (pair? (car x)) (eq? (caar x) 'unquote-splicing))
-           ((lambda (d)
-              (if (null? (cddar x)) (list 'append (cadar x) d)
-                  (list 'quote (append (cdar x) d))))
-            (loop (cdr x))))
-          (else ((lambda (a d)
-                   (if (pair? d)
-                       (if (eq? (car d) 'quote)
-                           (if (and (pair? a) (eq? (car a) 'quote))
-                               (list 'quote (cons (cadr a) (cadr d)))
-                               (if (null? (cadr d))
-                                   (list 'list a)
-                                   (list 'cons* a d)))
-                           (if (memq (car d) '(list cons*))
-                               (cons (car d) (cons a (cdr d)))
-                               (list 'cons* a d)))
-                       (list 'cons* a d)))
-                 (loop (car x))
-                 (loop (cdr x))))))
-  (loop x))
+  (quasiquote-expand x))

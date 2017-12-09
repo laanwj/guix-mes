@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -21,6 +21,22 @@
 ;;; Commentary:
 
 ;;; Code:
+
+(define (env:define a+ a)
+  (set-cdr! a+ (cdr a))
+  (set-cdr! a a+)
+  (set-cdr! (assq (quote *closure*) a) a+)
+  (car a+))
+
+(define-macro (define ARGS . BODY)
+  (cons* (quote env:define)
+         (cons* (quote cons)
+                (cons* (quote sexp:define)
+                       (list (quote quote)
+                             (cons (quote DEFINE) (cons ARGS BODY)))
+                       (quote ((current-module))))
+                (quote ((list))))
+         (quote ((current-module)))))
 
 (mes-use-module (mes psyntax-0))
 (include-from-path "mes/psyntax.pp")

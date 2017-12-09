@@ -131,10 +131,12 @@ struct scm scm_symbol_lambda = {TSYMBOL, "lambda",0};
 struct scm scm_symbol_begin = {TSYMBOL, "begin",0};
 struct scm scm_symbol_if = {TSYMBOL, "if",0};
 struct scm scm_symbol_quote = {TSYMBOL, "quote",0};
+#if 1 //MES_C_DEFINE // snarfing makes these always needed for linking
+struct scm scm_symbol_define = {TSYMBOL, "define",0};
+struct scm scm_symbol_define_macro = {TSYMBOL, "define-macro",0};
+#endif
 
-#if 1
-//MES_C_READER
-//Only for MES_C_READER; snarfing makes these always needed for linking
+#if 1 //MES_C_READER // snarfing makes these always needed for linking
 struct scm scm_symbol_quasiquote = {TSYMBOL, "quasiquote", 0};
 struct scm scm_symbol_unquote = {TSYMBOL, "unquote", 0};
 struct scm scm_symbol_unquote_splicing = {TSYMBOL, "unquote-splicing", 0};
@@ -188,6 +190,9 @@ struct scm scm_vm_eval_car = {TSPECIAL, "*vm-eval-car*",0};
 struct scm scm_vm_eval_cdr = {TSPECIAL, "*vm-eval-cdr*",0};
 struct scm scm_vm_eval_cons = {TSPECIAL, "*vm-eval-cons*",0};
 struct scm scm_vm_eval_null_p = {TSPECIAL, "*vm-eval-null-p*",0};
+#if 1 //MES_C_DEFINE // snarfing makes these always needed for linking
+struct scm scm_vm_eval_define = {TSPECIAL, "*vm-eval-define*",0};
+#endif
 
 struct scm scm_vm_eval_set_x = {TSPECIAL, "*vm-eval-set!*",0};
 struct scm scm_vm_eval_macro = {TSPECIAL, "*vm-eval-macro*",0};
@@ -206,6 +211,7 @@ struct scm scm_vm_return = {TSPECIAL, "*vm-return*",0};
 struct scm scm_symbol_gnuc = {TSYMBOL, "%gnuc",0};
 struct scm scm_symbol_mesc = {TSYMBOL, "%mesc",0};
 struct scm scm_symbol_c_reader = {TSYMBOL, "%c-reader",0};
+struct scm scm_symbol_c_define = {TSYMBOL, "%c-define",0};
 
 struct scm scm_test = {TSYMBOL, "test",0};
 
@@ -292,6 +298,9 @@ int g_function = 0;
 #define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
 #if MES_C_READER
 #define MAKE_KEYWORD(x) make_cell_ (tmp_num_ (TKEYWORD), x, 0)
+#endif
+#if MES_C_DEFINE
+#define MAKE_MACRO(name, x) make_cell_ (tmp_num_ (TMACRO), STRING (name), x)
 #endif
 
 #define CAAR(x) CAR (CAR (x))
@@ -745,6 +754,9 @@ eval_apply ()
     case cell_vm_eval_cons: goto eval_cons;
     case cell_vm_eval_null_p: goto eval_null_p;
 #endif
+#if MES_C_DEFINE
+    case cell_vm_eval_define: goto eval_define;
+#endif
     case cell_vm_eval_set_x: goto eval_set_x;
     case cell_vm_eval_macro: goto eval_macro;
     case cell_vm_eval_check_func: goto eval_check_func;
@@ -940,6 +952,42 @@ eval_apply ()
                   }
                 goto eval;
               }
+#if MES_C_DEFINE
+            if (TYPE (r1) == TPAIR
+                && (CAR (r1) == cell_symbol_define
+                    || CAR (r1) == cell_symbol_define_macro))
+              {
+                r2 = CADR (r1);
+                if (TYPE (r2) != TPAIR)
+                  {
+                    push_cc (CAR (CDDR (r1)), r2, cons (cons (CADR (r1), CADR (r1)), r0), cell_vm_eval_define);
+                    goto eval;
+                  }
+                else
+                  {
+                    r2 = CAR (r2);
+                    SCM p = pairlis (CADR (r1), CADR (r1), r0);
+                    SCM args = CDR (CADR (r1));
+                    SCM body = CDDR (r1);
+                    r1 = cons (cell_symbol_lambda, cons (args, body));
+                    push_cc (r1, r2, p, cell_vm_eval_define);
+                    goto eval;
+                  }
+              eval_define:
+                if (CAAR (CAAR (g_stack)) == cell_symbol_define_macro
+                    || CAR (CAAR (g_stack)) == cell_symbol_define_macro)
+                  r1 = MAKE_MACRO (r2, r1);
+                SCM entry = cons (r2, r1);
+                SCM aa = cons (entry, cell_nil);
+                set_cdr_x (aa, cdr (r0));
+                set_cdr_x (r0, aa);
+                SCM cl = assq (cell_closure, r0);
+                set_cdr_x (cl, aa);
+                r1 = entry;
+                goto vm_return;
+              }
+#endif // MES_C_DEFINE
+
             push_cc (CAR (r1), r1, r0, cell_vm_eval_check_func); goto eval;
             eval_check_func:
             push_cc (CDR (r2), r2, r0, cell_vm_eval2); goto evlis;
@@ -1189,6 +1237,11 @@ mes_symbols () ///((internal))
   a = acons (cell_symbol_c_reader, cell_f, a);
 #endif
 
+#if MES_C_DEFINE
+  a = acons (cell_symbol_c_define, cell_t, a);
+#else
+  a = acons (cell_symbol_c_define, cell_f, a);
+#endif
   a = acons (cell_closure, a, a);
 
   return a;

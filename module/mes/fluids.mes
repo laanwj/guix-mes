@@ -24,6 +24,14 @@
 
 (mes-use-module (mes scm))
 
+
+(define (sexp:define e a)
+  (if (atom? (car (cdr e))) (cons (car (cdr e))
+                                  (core:eval (car (cdr (cdr e))) a))
+      (cons (car (car (cdr e)))
+            (core:eval (cons (quote lambda)
+                             (cons (cdr (car (cdr e))) (cdr (cdr e)))) a))))
+
 (define (f:env:define a+ a)
   (set-cdr! a+ (cdr a))
   (set-cdr! a a+)

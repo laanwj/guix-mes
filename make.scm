@@ -417,6 +417,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (bin.gcc "src/mes.c" #:dependencies gcc-snarf-targets
                      #:defines `("MES_C_READER=1"
+                                 "MES_C_DEFINE=1"
                                  "MES_FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
                                  "POSIX=1"
@@ -428,6 +429,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.gcc "src/mes.c" #:libc libc-gcc.mlibc-o
                      #:dependencies mes-snarf-targets
                      #:defines `("MES_C_READER=1"
+                                 "MES_C_DEFINE=1"
                                  "MES_FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
                                  ,(string-append "VERSION=\"" %version "\"")
@@ -437,6 +439,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (bin.mescc "src/mes.c" #:dependencies mes-snarf-targets
                        #:defines `("MES_C_READER=1"
+                                   "MES_C_DEFINE=1"
                                    "MES_FIXED_PRIMITIVES=1"
                                    "MES_FULL=1"
                                    ,(string-append "VERSION=\"" %version "\"")
