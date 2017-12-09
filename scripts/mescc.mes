@@ -1,12 +1,21 @@
 #! /bin/sh
 # -*-scheme-*-
 MES=${MES-$(dirname $0)/mes}
-moduledir=module/
-echo '()' | cat $moduledir/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS -- "$@"
+PREFIX=${PREFIX-@PREFIX@}
+MES_PREFIX=${MES_PREFIX-$PREFIX}
+if [ "$MES_PREFIX" = @PREFIX""@ ]
+then
+    MES_PREFIX=$(cd $(dirname $0)/.. && pwd)
+    export MES_PREFIX
+    MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
+    export MES_MODULEDIR
+else
+    MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/share/mes/"module"}
+    export MES_MODULEDIR
+fi
+echo '()' | cat $MES_MODULEDIR/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS -- "$@"
 #paredit:||
-r=$?
-([ -f a.out ] && chmod +x a.out)
-exit $r
+exit $?
 !#
 
 ;;; Mes --- Maxwell Equations of Software
@@ -49,7 +58,7 @@ exit $r
 
 (format (current-error-port) "mescc.mes...\n")
 
-(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "PREFIX") "") "@PREFIX@"))
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "MES_PREFIX") "") "@PREFIX@"))
 
 (define (parse-opts args)
   (let* ((option-spec

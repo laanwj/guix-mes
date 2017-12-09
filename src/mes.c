@@ -1267,9 +1267,48 @@ SCM
 load_env (SCM a) ///((internal))
 {
   r0 = a;
-  g_stdin = open ("module/mes/read-0.mes", O_RDONLY);
-  char *read0 = MODULEDIR "mes/read-0.mes";
-  g_stdin = g_stdin >= 0 ? g_stdin : open (read0, O_RDONLY);
+  g_stdin = -1;
+  if (getenv ("MES_PREFIX"))
+    {
+      char buf[128];
+      strcpy (buf, getenv ("MES_PREFIX"));
+      strcpy (buf + strlen (buf), "/module");
+      strcpy (buf + strlen (buf), "/mes/read-0.mes");
+      if (getenv ("MES_DEBUG"))
+        {
+          eputs ("MES_PREFIX reading read-0:");
+          eputs (buf);
+          eputs ("\n");
+        }
+      g_stdin = open (buf, O_RDONLY);
+    }
+  if (g_stdin < 0)
+    {
+      char *read0 = MODULEDIR "mes/read-0.mes";
+      if (getenv ("MES_DEBUG"))
+        {
+          eputs ("MODULEDIR reading read-0:");
+          eputs (read0);
+          eputs ("\n");
+        }
+      g_stdin = open (read0, O_RDONLY);
+    }
+  if (g_stdin < 0)
+    {
+      if (getenv ("MES_DEBUG"))
+        {
+          eputs (". reading read-0:");
+          eputs ("module/mes/read-0.mes");
+          eputs ("\n");
+        }
+      g_stdin = open ("module/mes/read-0.mes", O_RDONLY);
+    }
+  if (g_stdin < 0)
+    {
+      eputs ("boot failed, read-0.mes not found\n");
+      exit (1);
+    }
+
   if (!g_function) r0 = mes_builtins (r0);
   r2 = read_input_file_env (r0);
   g_stdin = STDIN;

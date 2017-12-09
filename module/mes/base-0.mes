@@ -109,7 +109,19 @@
       (if (null? (cdr rest)) (car rest)
           (append2 (car rest) (apply append (cdr rest))))))
 
-(include "module/mes/type-0.mes")
+(define (string->list s)
+  (core:car s))
+
+(define %prefix (getenv "MES_PREFIX"))
+(define %moduledir
+  (if (not %prefix) "module/"
+      (list->string
+       (append (string->list %prefix)
+               (string->list "/module") ; `module/' gets replaced upon install
+               (string->list "/")))))
+
+(include (list->string
+          (append (string->list %moduledir) (string->list "/mes/type-0.mes"))))
 
 (define (symbol->string s)
   (apply string (symbol->list s)))
@@ -117,8 +129,8 @@
 (define (string-append . rest)
   (apply string (apply append (map1 string->list rest))))
 
-(define %moduledir "module/")
-(define %version (if (eq? (car (string->list "@VERSION@")) #\@) "git" "@VERSION@"))
+(define %version (if (eq? (car (string->list "@VERSION@")) #\@) "git"
+                     "@VERSION@"))
 (define (effective-version) %version)
 
 (if (getenv "MES_DEBUG")

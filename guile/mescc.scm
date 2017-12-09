@@ -45,7 +45,7 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
   #:use-module (srfi srfi-26)
   #:export (main))
 
-(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "PREFIX") "") "@PREFIX@"))
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "MES_PREFIX") "") "@PREFIX@"))
 (module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix)
 
 (define (parse-opts args)
