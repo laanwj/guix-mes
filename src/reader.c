@@ -334,7 +334,7 @@ dump ()
       eputs ("\n");
     }
 
-  for (int i=0; i<g_free * sizeof(struct scm); i++)
+  for (int i=0; i<g_free * sizeof (struct scm); i++)
     putchar (*p++);
   return 0;
 }

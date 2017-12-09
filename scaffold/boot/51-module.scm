@@ -111,4 +111,4 @@
 (core:display-error module->file) (core:display-error "\n")
 (define %moduledir (string-append (getcwd) "/"))
 (mes-use-module (scaffold boot data module))
-(mes-use-module (scaffold boot data module))
+;; (mes-use-module (scaffold boot data module))

@@ -1223,8 +1223,8 @@
                 (info (append-text info (wrap-as `((#:label ,skip-b-label))))))
            info))
 
-        ((cast ,cast ,o)
-         ((expr->accu info) o))
+        ((cast ,type ,expr)
+         ((expr->accu info) expr))
 
         ((assn-expr (de-ref (post-inc (p-expr (ident ,name)))) (op ,op) ,b)
          (let* ((info ((expr->accu info) `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b)))

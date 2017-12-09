@@ -38,8 +38,9 @@
 (define <cell:string> 10)
 (define <cell:symbol> 11)
 (define <cell:values> 12)
-(define <cell:vector> 13)
-(define <cell:broken-heart> 14)
+(define <cell:variable> 13)
+(define <cell:vector> 14)
+(define <cell:broken-heart> 15)
 
 (define cell:type-alist
   (list (cons <cell:char> (quote <cell:char>))
@@ -55,6 +56,7 @@
         (cons <cell:string> (quote <cell:string>))
         (cons <cell:symbol> (quote <cell:symbol>))
         (cons <cell:values> (quote <cell:values>))
+        (cons <cell:variable> (quote <cell:variable>))
         (cons <cell:vector> (quote <cell:vector>))
         (cons <cell:broken-heart> (quote <cell:broken-heart>))))
 
@@ -104,9 +106,14 @@
 (define (symbol? x)
   (eq? (core:type x) <cell:symbol>))
 
-;; Hmm?
 (define (values? x)
   (eq? (core:type x) <cell:values>))
+
+(define (variable? x)
+  (eq? (core:type x) <cell:variable>))
+
+(define (variable-global? x)
+  (core:cdr x))
 
 (define (vector? x)
   (eq? (core:type x) <cell:vector>))

@@ -102,7 +102,8 @@ gc_loop (SCM scan) ///((internal))
           || scan == 1 // null
           || NTYPE (scan) == TSPECIAL
           || NTYPE (scan) == TSTRING
-          || NTYPE (scan) == TSYMBOL)
+          || NTYPE (scan) == TSYMBOL
+          || NTYPE (scan) == TVARIABLE)
         {
           SCM car = gc_copy (g_news[scan].car);
           gc_relocate_car (scan, car);
@@ -111,7 +112,8 @@ gc_loop (SCM scan) ///((internal))
            || NTYPE (scan) == TCONTINUATION
            || NTYPE (scan) == TMACRO
            || NTYPE (scan) == TPAIR
-           || NTYPE (scan) == TVALUES)
+           || NTYPE (scan) == TVALUES
+           || NTYPE (scan) == TVARIABLE)
           && g_news[scan].cdr) // allow for 0 terminated list of symbols
         {
           SCM cdr = gc_copy (g_news[scan].cdr);
@@ -133,7 +135,8 @@ gc_check ()
 SCM
 gc ()
 {
-  if (g_debug == 1) eputs (".");
+  if (g_debug == 1)
+    eputs (".");
   if (g_debug > 1)
     {
       eputs (";;; gc[");
@@ -143,11 +146,13 @@ gc ()
       eputs ("]...");
     }
   g_free = 1;
-  if (g_cells < g_news && ARENA_SIZE < MAX_ARENA_SIZE) gc_up_arena ();
+  if (g_cells < g_news && ARENA_SIZE < MAX_ARENA_SIZE)
+    gc_up_arena ();
   for (int i=g_free; i<g_symbol_max; i++)
     gc_copy (i);
   make_tmps (g_news);
   g_symbols = gc_copy (g_symbols);
+  g_macros = gc_copy (g_macros);
   SCM new = gc_copy (g_stack);
   if (g_debug > 1)
     {

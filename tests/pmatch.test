@@ -28,7 +28,11 @@ exit $?
 
 (cond-expand
  (guile
-  (use-modules (system base pmatch)))
+  (use-modules (system base pmatch))
+  ;;(include-from-path "mes/pmatch.scm")
+  ;;(include-from-path "mes-0.scm")
+  ;;(include-from-path "mes/test.mes")
+  )
  (mes
   (mes-use-module (mes test))
   (mes-use-module (mes pmatch))))

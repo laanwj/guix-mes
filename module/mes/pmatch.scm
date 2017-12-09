@@ -3,6 +3,7 @@
 ;;; Copyright (C) 2009, 2010, 2012 Free Software Foundation, Inc
 ;;; Copyright (C) 2005,2006,2007 Oleg Kiselyov
 ;;; Copyright (C) 2007 Daniel P. Friedman
+;;; Copyright (C) 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Lesser General Public
@@ -51,20 +52,17 @@
 (define-module (system base pmatch)
   #:export-syntax (pmatch))
 
-(define-syntax-rule (pmatch e cs ...)
-  (let ((v e)) (pmatch1 v cs ...)))
-
-(define-syntax pmatch1
+(define-syntax pmatch
   (syntax-rules (else guard)
     ((_ v) (if #f #f))
     ((_ v (else e0 e ...)) (let () e0 e ...))
     ((_ v (pat (guard g ...) e0 e ...) cs ...)
-     (let ((fk (lambda () (pmatch1 v cs ...))))
+     (let ((fk (lambda () (pmatch v cs ...))))
        (ppat v pat
              (if (and g ...) (let () e0 e ...) (fk))
              (fk))))
     ((_ v (pat e0 e ...) cs ...)
-     (let ((fk (lambda () (pmatch1 v cs ...))))
+     (let ((fk (lambda () (pmatch v cs ...))))
        (ppat v pat (let () e0 e ...) (fk))))))
 
 (define-syntax ppat
@@ -76,8 +74,6 @@
     ((_ v (unquote var) kt kf) (let ((var v)) kt))
     ((_ v (x . y) kt kf)
      (if (pair? v)
-         (let ((vx (car v)) (vy (cdr v)))
-           ;;(ppat vx x (ppat vy y kt kf) kf) ;; FIXME: broken with syntax.scm
-           (ppat (car v) x (ppat (cdr v) y kt kf) kf))
+         (ppat (pmatch-car v) x (ppat (pmatch-cdr v) y kt kf) kf)
          kf))
     ((_ v lit kt kf) (if (eq? v (quote lit)) kt kf))))

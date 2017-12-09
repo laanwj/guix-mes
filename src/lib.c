@@ -56,7 +56,7 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     case TCLOSURE:
       {
         fputs ("#<closure ", fd);
-        display_helper (CDR (x), cont, "", fd, 0);
+        //display_helper (CDR (x), cont, "", fd, 0);
         fputs (">", fd);
         break;
       }
@@ -81,6 +81,15 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         fputs (">", fd);
         break;
       }
+    case TVARIABLE:
+      {
+        fputs ("#<variable ", fd);
+        if (VARIABLE_GLOBAL_P (x) == cell_t)
+          fputs ("*global* ", fd);
+        display_helper (CAR (VARIABLE (x)), cont, "", fd, 0);
+        fputs (">", fd);
+        break;
+      }
     case TNUMBER:
       {
         fputs (itoa (VALUE (x)), fd);
@@ -89,6 +98,12 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     case TPAIR:
       {
         if (!cont) fputs ("(", fd);
+        if (CAR (x) == cell_closure)
+          fputs ("*closure* ", fd);
+        else
+        if (CAAR (x) == cell_closure)
+          fputs ("(*closure* ...) ", fd);
+        else
         if (CAR (x) == cell_circular)
           {
             fputs ("(*circ* . ", fd);
@@ -97,8 +112,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
             while (x != cell_nil && i++ < 10)
               {
                 g_depth = 1;
-                //display_helper (CAAR (x), 0, "", fd, write_p); fputs (" ", fd);
-                fdisplay_ (CAAR (x), fd, write_p); fputs (" ", fd);
+                display_helper (CAAR (x), 0, "", fd, write_p); fputs (" ", fd);
+                //fdisplay_ (CAAR (x), fd, write_p); fputs (" ", fd);
                 x = CDR (x);
               }
             fputs (" ...)", fd);

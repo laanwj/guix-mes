@@ -27,5 +27,6 @@
 
 (define datum->syntax datum->syntax-object)
 (define syntax->datum syntax-object->datum)
+(define-macro (portable-macro-expand) #t)
 (set! macro-expand sc-expand)
 

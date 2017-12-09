@@ -35,12 +35,16 @@
             core:write-error
             core:write-port
             core:type
+            pmatch-car
+            pmatch-cdr
             )
   ;;#:re-export (open-input-file open-input-string with-input-from-string)
   )
 
 (cond-expand
  (guile
+  (define pmatch-car car)
+  (define pmatch-cdr cdr)
   (define core:exit exit)
   (define core:display display)
   (define core:display-port display)

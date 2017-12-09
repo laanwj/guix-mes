@@ -75,7 +75,9 @@
   (if (null? lst) (list)
       (cons (f (car lst)) (map1 f (cdr lst)))))
 
-(define map map1)
+(define (map f lst)
+  (if (null? lst) (list)
+      (cons (f (car lst)) (map f (cdr lst)))))
 
 (define (cons* . rest)
   (if (null? (cdr rest)) (car rest)
@@ -104,6 +106,7 @@
                       (list (quote if) (quote r) (quote r)
                             (cons (quote or) (cdr x))))
                 (car x)))))
+
 (define-macro (module-define! module name value)
   ;;(list 'define name value)
   #t)
