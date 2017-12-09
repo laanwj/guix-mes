@@ -87,3 +87,6 @@
               (loop (cdr lst) (1- i)))))))
 
 (define reverse-list->string (compose list->string reverse))
+
+(define substring/copy substring)
+(define substring/shared substring)
