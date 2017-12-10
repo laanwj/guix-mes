@@ -109,7 +109,8 @@
   (define <cell:string> 10)
 
   (define (newline . rest) (core:display (list->string (list (integer->char 10)))))
-  (define (display x . rest) core:display)
+  (define (display x . rest) (if (null? rest) (core:display x)
+                                 (core:display x (car rest))))
   
   (define (list->symbol lst) (core:lookup-symbol lst))
 
