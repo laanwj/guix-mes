@@ -565,8 +565,6 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/mes/quasisyntax.mes"
    "module/mes/quasisyntax.scm"
    "module/mes/read-0.mes"
-   "module/mes/record-0.mes"
-   "module/mes/record.mes"
    "module/mes/repl.mes"
    "module/mes/scm.mes"
    "module/mes/syntax.mes"
@@ -594,9 +592,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/srfi/srfi-26.mes"
    "module/srfi/srfi-26.scm"
    "module/srfi/srfi-43.mes"
-   "module/srfi/srfi-9-psyntax.mes"
    "module/srfi/srfi-9.mes"
-   "module/srfi/srfi-9.scm"
    "module/sxml/xpath.mes"
    "module/sxml/xpath.scm"))
 

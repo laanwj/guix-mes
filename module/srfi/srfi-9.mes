@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -22,8 +22,116 @@
 
 ;;; srfi-9.mes - records.
 
-(mes-use-module (mes scm))
-(mes-use-module (mes syntax))
-(mes-use-module (mes record-0))
-(mes-use-module (mes record))
-(include-from-path "srfi/srfi-9.scm")
+(define (lst-index lst o)
+  (let loop ((lst lst) (i 0))
+    (and (pair? lst)
+         (if (equal? o (car lst)) i
+             (loop (cdr lst) (1+ i))))))
+
+(define (make-record-type type fields)
+  (list->vector (list '*record-type* type fields (length fields))))
+
+(define (record-type o)
+  (vector-ref o 0))
+
+(define (record-type? o)
+  (eq? (record-type o) '*record-type*))
+
+(define (record-constructor type params)
+  (let ((fields (record-fields type)))
+    (lambda (. o)
+      (if (not (= (length o) (length params))) (error "wrong number of arguments for record-constructor")
+          (let ((rest (make-list (- (length fields) (length params)))))
+            (list->vector (cons type (append o rest))))))))
+
+(define (record-fields o)
+  (vector-ref o 2))
+
+(define (record-field-index type field)
+  (1+ (or (lst-index (record-fields type) field)
+          (error "no such field" type field))))
+
+(define (record-getter type field)
+  (let ((i (record-field-index type field)))
+    (lambda (o)
+      (if (not (eq? (record-type o) type)) (error "record getter: record expected" type o)
+          (vector-ref o i)))))
+
+(define (record-setter type field)
+  (let ((i (record-field-index type field)))
+    (lambda (o v)
+      (if (not (eq? (record-type o) type)) (error "record setter: record expected" type o)
+          (vector-set! o i v)))))
+
+(define (record-predicate type)
+  (lambda (o)
+    (and (vector? o)
+         (eq? (record-type o) type))))
+
+(define-macro (define-record-accessors type . fields)
+  `(begin
+     ,@(map (lambda (field)
+              `(define-record-accessor ,type ,field))
+            fields)))
+
+(define-macro (define-record-accessor type field)
+  `(begin
+     (define ,(cadr field) ,(record-getter type (car field)))
+     (if ,(pair? (cddr field))
+         (define ,(if (pair? (cddr field)) (caddr field)) ,(record-setter type (car field))))))
+
+(define-macro (define-record-type type constructor+params predicate . fields)
+  (let ((record (make-record-type type (map car fields))))
+   `(begin
+      (define ,type ,record)
+      (define ,(car constructor+params) ,(record-constructor record (cdr constructor+params)))
+      (define ,predicate ,(record-predicate record))
+      (define-record-accessors ,record ,@fields))))
+
+;; (define-record-type cpi
+;;   (make-cpi-1)
+;;   cpi?
+;;   (debug cpi-debug set-cpi-debug!)	; debug #t #f
+;;   (defines cpi-defs set-cpi-defs!)	; #defines
+;;   (incdirs cpi-incs set-cpi-incs!)	; #includes
+;;   (inc-tynd cpi-itynd set-cpi-itynd!)	; a-l of incfile => typenames
+;;   (inc-defd cpi-idefd set-cpi-idefd!)	; a-l of incfile => defines
+;;   (ptl cpi-ptl set-cpi-ptl!)		; parent typename list
+;;   (ctl cpi-ctl set-cpi-ctl!)		; current typename list
+;;   (blev cpi-blev set-cpi-blev!)		; curr brace/block level
+;;   )
+
+;; (display cpi)
+;; (newline)
+;; (display make-cpi-1)
+;; (newline)
+;; (define cpi (make-cpi-1))
+;; (set-cpi-debug! cpi #t)
+;; (set-cpi-blev! cpi #t)
+
+
+;; (define-record-type <employee> (make-employee name age salary) employee? (name employe-name) (age  employee-age set-employee-age!) (salary employee-salary))
+
+;; (display <employee>)
+;; (newline)
+;; (display make-employee)
+;; (newline)
+;; (display "employee-age ")
+;; (display employee-age)
+;; (newline)
+
+;; (display "set-employee-age! ")
+;; (display set-employee-age!)
+;; (newline)
+
+;; (define janneke (make-employee "janneke" 49 42))
+;; (display janneke)
+;; (newline)
+
+;; (display (employee-age janneke))
+;; (newline)
+
+;; (display (set-employee-age! janneke 33))
+;; (newline)
+;; (display (employee-age janneke))
+;; (newline)
