@@ -38,6 +38,13 @@ display_helper (SCM x, int cont, char* sep, int fd)
         fputc (VALUE (x), fd);
         break;
       }
+    case TCLOSURE:
+      {
+        fputs ("#<closure ", fd);
+        display_helper (CDR (x), cont, "", fd);
+        fputs (">", fd);
+        break;
+      }
     case TFUNCTION:
       {
         fputs ("#<procedure ", fd);
@@ -55,7 +62,7 @@ display_helper (SCM x, int cont, char* sep, int fd)
     case TMACRO:
       {
         fputs ("#<macro ", fd);
-        display_helper (cdr (x), cont, "", fd);
+        display_helper (CDR (x), cont, "", fd);
         fputs (">", fd);
         break;
       }
@@ -67,14 +74,19 @@ display_helper (SCM x, int cont, char* sep, int fd)
     case TPAIR:
       {
         if (!cont) fputs ("(", fd);
-        if (x && x != cell_nil) fdisplay_ (CAR (x), fd);
-        if (CDR (x) && TYPE (CDR (x)) == TPAIR)
-          display_helper (CDR (x), 1, " ", fd);
-        else if (CDR (x) && CDR (x) != cell_nil)
+        if (CAR (x) == cell_circular)
+          fputs ("*circ* . #-1#", fd);
+        else
           {
-            if (TYPE (CDR (x)) != TPAIR)
-              fputs (" . ", fd);
-            fdisplay_ (CDR (x), fd);
+            if (x && x != cell_nil) fdisplay_ (CAR (x), fd);
+            if (CDR (x) && TYPE (CDR (x)) == TPAIR)
+              display_helper (CDR (x), 1, " ", fd);
+            else if (CDR (x) && CDR (x) != cell_nil)
+              {
+                if (TYPE (CDR (x)) != TPAIR)
+                  fputs (" . ", fd);
+                fdisplay_ (CDR (x), fd);
+              }
           }
         if (!cont) fputs (")", fd);
         break;
