@@ -43,6 +43,11 @@ read_line_comment (int c)
   return read_line_comment (getchar ());
 }
 
+#if MES_C_READER
+SCM read_block_comment (int s, int c);
+SCM read_hash (int c, SCM w, SCM a);
+#endif
+
 SCM
 read_word_ (int c, SCM w, SCM a)
 {
