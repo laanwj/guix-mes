@@ -641,9 +641,24 @@ call (SCM fn, SCM x)
 SCM
 assq (SCM x, SCM a)
 {
-  //FIXME: move into fast-non eq_p-ing assq core:assq?
-  //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
-  while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
+  switch (TYPE (x))
+    {
+    case TCHAR:
+    case TNUMBER:
+      {
+        SCM v = VALUE (x);
+        while (a != cell_nil && v != VALUE (CAAR (a))) a = CDR (a); break;
+      }
+    case TKEYWORD:
+      {
+        SCM v = STRING (x);
+        while (a != cell_nil && v != STRING (CAAR (a))) a = CDR (a); break;
+      }
+    // case TSYMBOL:
+    // case TSPECIAL:
+    default:
+      while (a != cell_nil && x != CAAR (a)) a = CDR (a); break;
+    }
   return a != cell_nil ? CAR (a) : cell_f;
 }
 
