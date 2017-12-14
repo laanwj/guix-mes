@@ -34,6 +34,7 @@
 
 int ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
 int MAX_ARENA_SIZE = 300000000;
+long STACK_SIZE = 20000;
 int JAM_SIZE = 20000;
 int GC_SAFETY = 2000;
 
@@ -48,6 +49,7 @@ SCM g_symbols = 0;
 SCM g_macros = 0;
 SCM g_ports = 0;
 SCM g_stack = 0;
+SCM *g_stack_array = 0;
 // a/env
 SCM r0 = 0;
 // param 1

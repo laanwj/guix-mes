@@ -26,11 +26,12 @@
 
 //#define MES_MINI 1
 #if POSIX
-long ARENA_SIZE = 100000000; // 64b: 4GiB
+long ARENA_SIZE = 100000000;
 #else
 long ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
 #endif
 long MAX_ARENA_SIZE = 100000000;
+long STACK_SIZE = 20000;
 
 long JAM_SIZE = 20000;
 long GC_SAFETY = 2000;
@@ -44,6 +45,7 @@ long g_free = 0;
 SCM g_continuations = 0;
 SCM g_symbols = 0;
 SCM g_stack = 0;
+SCM *g_stack_array = 0;
 // a/env
 SCM r0 = 0;
 // param 1
@@ -667,9 +669,33 @@ check_apply (SCM f, SCM e) ///((internal))
 SCM
 gc_push_frame () ///((internal))
 {
-  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cons (m0, cell_nil)))));
-  g_stack = cons (frame, g_stack);
+  if (g_stack < 5)
+    assert (!"STACK FULL");
+  g_stack_array[--g_stack] = m0;
+  g_stack_array[--g_stack] = r0;
+  g_stack_array[--g_stack] = r1;
+  g_stack_array[--g_stack] = r2;
+  g_stack_array[--g_stack] = r3;
   return g_stack;
+}
+
+SCM
+gc_peek_frame () ///((internal))
+{
+  r3 = g_stack_array[g_stack];
+  r2 = g_stack_array[g_stack+1];
+  r1 = g_stack_array[g_stack+2];
+  r0 = g_stack_array[g_stack+3];
+  m0 = g_stack_array[g_stack+4];
+  return m0;
+}
+
+SCM
+gc_pop_frame () ///((internal))
+{
+  gc_peek_frame ();
+  g_stack += 5;
+  return m0;
 }
 
 SCM
@@ -920,26 +946,6 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   return cell_unspecified;
 }
 
-SCM
-gc_peek_frame () ///((internal))
-{
-  SCM frame = CAR (g_stack);
-  r1 = CAR (frame);
-  r2 = CADR (frame);
-  r3 = CAR (CDDR (frame));
-  r0 = CADR (CDDR (frame));
-  m0 = CAR (CDDR (CDDR (frame)));
-  return frame;
-}
-
-SCM
-gc_pop_frame () ///((internal))
-{
-  SCM frame = gc_peek_frame (g_stack);
-  g_stack = CDR (g_stack);
-  return frame;
-}
-
 char const* string_to_cstring (SCM s);
 
 SCM
@@ -1036,6 +1042,8 @@ expand_variable (SCM x, SCM formals) ///((internal))
 
 SCM struct_ref_ (SCM x, long i);
 SCM vector_ref_ (SCM x, long i);
+SCM make_vector__ (long k);
+SCM vector_set_x_ (SCM x, long i, SCM e);
 
 SCM
 eval_apply ()
@@ -1053,6 +1061,7 @@ eval_apply ()
   SCM p;
   SCM program;
   SCM sc_expand;
+  SCM v;
   SCM x;
   int global_p;
   int macro_p;
@@ -1135,8 +1144,14 @@ eval_apply ()
     }
   else if (t == TCONTINUATION)
     {
+      v = CONTINUATION (CAR (r1));
+      if (LENGTH (v))
+        {
+          for (t=0; t < LENGTH (v); t++)
+            g_stack_array[STACK_SIZE-LENGTH (v)+t] = vector_ref_ (v, t);
+          g_stack = STACK_SIZE-LENGTH (v);
+        }
       x = r1;
-      g_stack = CONTINUATION (CAR (r1));
       gc_pop_frame ();
       r1 = CADR (x);
       goto eval_apply;
@@ -1581,11 +1596,18 @@ eval_apply ()
  call_with_current_continuation:
   gc_push_frame ();
   x = MAKE_CONTINUATION (g_continuations++);
+  v = make_vector__ (STACK_SIZE-g_stack);
+  for (t=g_stack; t < STACK_SIZE; t++)
+    vector_set_x_ (v, t-g_stack, g_stack_array[t]);
+  CONTINUATION (x) = v;
   gc_pop_frame ();
   push_cc (cons (CAR (r1), cons (x, cell_nil)), x, r0, cell_vm_call_with_current_continuation2);
   goto apply;
  call_with_current_continuation2:
-  CONTINUATION (r2) = g_stack;
+  v = make_vector__ (STACK_SIZE-g_stack);
+  for (t=g_stack; t < STACK_SIZE; t++)
+    vector_set_x_ (v, t-g_stack, g_stack_array[t]);
+  CONTINUATION (r2) = v;
   goto vm_return;
 
  call_with_values:
@@ -1615,12 +1637,13 @@ apply (SCM f, SCM x, SCM a) ///((internal))
 SCM
 mes_g_stack (SCM a) ///((internal))
 {
-  //r0 = a;
+  //g_stack = g_free + ARENA_SIZE;
+  g_stack = STACK_SIZE;
+  r0 = a;
   r1 = MAKE_CHAR (0);
   r2 = MAKE_CHAR (0);
   r3 = MAKE_CHAR (0);
-  g_stack = cons (cell_nil, cell_nil);
-  return a;
+  return r0;
 }
 
 // Environment setup
@@ -1637,7 +1660,11 @@ SCM g_symbol_max;
 SCM
 gc_init_cells () ///((internal))
 {
-  g_cells = (struct scm *)malloc ((ARENA_SIZE+JAM_SIZE)*sizeof (struct scm));
+  long arena_bytes = (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm);
+  void *p = malloc (arena_bytes+STACK_SIZE*sizeof (SCM));
+  g_cells = (struct scm *)p;
+  g_stack_array = (SCM*)(p + arena_bytes);
+
   TYPE (0) = TVECTOR;
   LENGTH (0) = 1000;
   VECTOR (0) = 0;
@@ -2470,6 +2497,8 @@ main (int argc, char *argv[])
   GC_SAFETY = ARENA_SIZE / 100;
   if (p = getenv ("MES_SAFETY"))
     GC_SAFETY = atoi (p);
+  if (p = getenv ("MES_STACK"))
+    STACK_SIZE = atoi (p);
   g_stdin = STDIN;
   g_stdout = STDOUT;
 

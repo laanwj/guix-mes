@@ -23,6 +23,7 @@
 SCM
 gc_up_arena () ///((internal))
 {
+  long old_arena_bytes = (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm);
   if (ARENA_SIZE >> 1 < MAX_ARENA_SIZE >> 2)
     {
       ARENA_SIZE <<= 1;
@@ -31,7 +32,8 @@ gc_up_arena () ///((internal))
     }
   else
     ARENA_SIZE = MAX_ARENA_SIZE -JAM_SIZE;
-  void *p = realloc (g_cells-1, (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm));
+  long arena_bytes = (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm);
+  void *p = realloc (g_cells-1, arena_bytes+STACK_SIZE*sizeof (SCM));
   if (!p)
     {
       eputs ("realloc failed, g_free=");
@@ -43,12 +45,13 @@ gc_up_arena () ///((internal))
       exit (1);
     }
   g_cells = (struct scm*)p;
+  memcpy (p + arena_bytes, p + old_arena_bytes, STACK_SIZE*sizeof (SCM));
   g_cells++;
 
   return 0;
 }
 
-SCM
+void
 gc_flip () ///((internal))
 {
   if (g_debug > 2)
@@ -60,7 +63,6 @@ gc_flip () ///((internal))
   if (g_free > JAM_SIZE)
     JAM_SIZE = g_free + g_free / 2;
   memcpy (g_cells-1, g_news-1, (g_free+2)*sizeof (struct scm));
-  return g_stack;
 }
 
 SCM
@@ -96,7 +98,7 @@ gc_relocate_cdr (SCM new, SCM cdr) ///((internal))
   return cell_unspecified;
 }
 
-SCM
+void
 gc_loop (SCM scan) ///((internal))
 {
   SCM car;
@@ -132,7 +134,7 @@ gc_loop (SCM scan) ///((internal))
         }
       scan++;
     }
-  return gc_flip ();
+  gc_flip ();
 }
 
 SCM
@@ -200,14 +202,8 @@ gc_ () ///((internal))
   g_symbols = gc_copy (g_symbols);
   g_macros = gc_copy (g_macros);
   g_ports = gc_copy (g_ports);
-  SCM new = gc_copy (g_stack);
-  if (g_debug > 3)
-    {
-      eputs ("new=");
-      eputs (itoa (new));
-      eputs ("\n");
-    }
-  g_stack = new;
+  for (long i=g_stack; i<STACK_SIZE; i++)
+    g_stack_array[i]= gc_copy (g_stack_array[i]);
   gc_loop (1);
 }
 
