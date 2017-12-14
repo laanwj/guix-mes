@@ -30,6 +30,9 @@ int ARENA_SIZE = 10000000;
 int ARENA_SIZE = 100000;
 #endif
 int MAX_ARENA_SIZE = 20000000;
+#if MES_ARRAY_STACK
+int STACK_SIZE = 10000;
+#endif
 
 //int GC_SAFETY_DIV = 400;
 //int GC_SAFETY = ARENA_SIZE / 400;
@@ -44,6 +47,7 @@ int g_free = 0;
 SCM g_continuations = 0;
 SCM g_symbols = 0;
 SCM g_stack = 0;
+SCM *g_stack_array = 0;
 // a/env
 SCM r0 = 0;
 // param 1
@@ -584,9 +588,52 @@ check_apply (SCM f, SCM e) ///((internal))
 SCM
 gc_push_frame () ///((internal))
 {
+#if !MES_ARRAY_STACK
   SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
   g_stack = cons (frame, g_stack);
   return g_stack;
+#else
+  if (g_stack < 4)
+    assert (!"STACK FULL");
+  g_stack_array[--g_stack] = r0;
+  g_stack_array[--g_stack] = r1;
+  g_stack_array[--g_stack] = r2;
+  g_stack_array[--g_stack] = r3;
+  return g_stack;
+#endif
+}
+
+SCM
+gc_peek_frame () ///((internal))
+{
+#if !MES_ARRAY_STACK
+  SCM frame = CAR (g_stack);
+  r1 = CAR (frame);
+  r2 = CADR (frame);
+  r3 = CAR (CDDR (frame));
+  r0 = CADR (CDDR (frame));
+  return frame;
+#else
+  r3 = g_stack_array[g_stack];
+  r2 = g_stack_array[g_stack+1];
+  r1 = g_stack_array[g_stack+2];
+  r0 = g_stack_array[g_stack+3];
+  return r0;
+#endif
+}
+
+SCM
+gc_pop_frame () ///((internal))
+{
+#if !MES_ARRAY_STACK
+  SCM frame = gc_peek_frame ();
+  g_stack = CDR (g_stack);
+  return frame;
+#else
+  gc_peek_frame ();
+  g_stack += 4;
+  return r0;
+#endif
 }
 
 SCM
@@ -729,25 +776,6 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   r0 = a;
   r3 = x;
   return cell_unspecified;
-}
-
-SCM
-gc_peek_frame () ///((internal))
-{
-  SCM frame = CAR (g_stack);
-  r1 = CAR (frame);
-  r2 = CADR (frame);
-  r3 = CAR (CDDR (frame));
-  r0 = CADR (CDDR (frame));
-  return frame;
-}
-
-SCM
-gc_pop_frame () ///((internal))
-{
-  SCM frame = gc_peek_frame (g_stack);
-  g_stack = CDR (g_stack);
-  return frame;
 }
 
 SCM
@@ -1129,12 +1157,22 @@ apply (SCM f, SCM x, SCM a) ///((internal))
 SCM
 mes_g_stack (SCM a) ///((internal))
 {
+#if !MES_ARRAY_STACK
   r0 = a;
   r1 = MAKE_CHAR (0);
   r2 = MAKE_CHAR (0);
   r3 = MAKE_CHAR (0);
   g_stack = cons (cell_nil, cell_nil);
   return r0;
+#else
+  //g_stack = g_free + ARENA_SIZE;
+  g_stack = STACK_SIZE;
+  r0 = a;
+  r1 = MAKE_CHAR (0);
+  r2 = MAKE_CHAR (0);
+  r3 = MAKE_CHAR (0);
+  return r0;
+#endif
 }
 
 // Environment setup
@@ -1162,6 +1200,9 @@ SCM
 gc_init_cells () ///((internal))
 {
   g_cells = (struct scm *)malloc (2*ARENA_SIZE*sizeof (struct scm));
+#if MES_ARRAY_STACK
+  g_stack_array = (SCM *)malloc (STACK_SIZE);
+#endif
 
   TYPE (0) = TVECTOR;
   LENGTH (0) = 1000;
@@ -1466,6 +1507,7 @@ main (int argc, char *argv[])
   if (g_debug) {eputs (";;; MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
   if (p = getenv ("MES_MAX_ARENA")) MAX_ARENA_SIZE = atoi (p);
   if (p = getenv ("MES_ARENA")) ARENA_SIZE = atoi (p);
+  if (p = getenv ("MES_STACK")) STACK_SIZE = atoi (p);
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);puts ("\n");return 0;};
   g_stdin = STDIN;
@@ -1491,7 +1533,7 @@ main (int argc, char *argv[])
   r1 = eval_apply ();
   display_error_ (r1);
   eputs ("\n");
-  gc (g_stack);
+  gc ();
   if (g_debug)
     {
       eputs ("\nstats: [");
