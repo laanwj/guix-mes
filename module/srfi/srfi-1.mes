@@ -100,4 +100,6 @@
                       (cadr rest))))
         (srfi-1:iota n start step))))
 
+(define last (compose car last-pair))
+
 (include-from-path "srfi/srfi-1.scm")
