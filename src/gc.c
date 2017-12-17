@@ -125,15 +125,8 @@ gc_loop (SCM scan) ///((internal))
 SCM
 gc_check ()
 {
-#if !MES_ARRAY_STACK
   if (g_free + GC_SAFETY > ARENA_SIZE)
     gc_pop_frame (gc (gc_push_frame ()));
-#else
-#endif
-  if (g_free + GC_SAFETY > ARENA_SIZE)
-    {
-      gc ();
-    }
   return cell_unspecified;
 }
 
@@ -155,8 +148,6 @@ gc ()
     gc_copy (i);
   make_tmps (g_news);
   g_symbols = gc_copy (g_symbols);
-
-#if !MES_ARRAY_STACK
   SCM new = gc_copy (g_stack);
   if (g_debug > 1)
     {
@@ -165,8 +156,5 @@ gc ()
       eputs ("\n");
     }
   g_stack = new;
-#else
-#endif
-
   return gc_loop (1);
 }

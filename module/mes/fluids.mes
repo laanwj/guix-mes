@@ -58,10 +58,6 @@
                                    (set! v (car rest))))) ',module)
            ',fluid))))
 
-(define-macro (make-fluid . default)
-  (core:display "FIXME: disabled fluids\n")
-  (lambda (x) x))
-
 (define (fluid-ref fluid)
   (fluid))
 
