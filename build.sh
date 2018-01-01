@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Mes --- Maxwell Equations of Software
-# Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of Mes.
 #
@@ -58,6 +58,10 @@ $M1 --LittleEndian --Architecture=1 -f\
     stage0/x86.M1\
     -f $MES_SEED/libc+tcc-mes.M1\
     -o libc+tcc-mes.hex2
+
+cp crt1.hex2 lib
+cp libc-mes.hex2 lib
+cp libc+tcc-mes.hex2 lib
 
 # TODO: after building from seed, build from src/mes.c
 # build-aux/mes-snarf.scm --mes src/gc.c

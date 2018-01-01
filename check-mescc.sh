@@ -1,11 +1,46 @@
 #! /bin/sh
 
+# Mes --- Maxwell Equations of Software
+# Copyright © 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
+#
+# This file is part of Mes.
+#
+# Mes is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or (at
+# your option) any later version.
+#
+# Mes is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+export MES=${MES-src/mes.gcc}
+export MESCC=${MESCC-scripts/mescc.mes}
+#export MES_ARENA=${MES_ARENA-200000000} > 12GB mem
+
 GUILE=${GUILE-guile}
 MES=${MES-./mes}
 M1=${M1-M1}
 HEX2=${HEX2-hex2}
 MESCC=${MESCC-guile/mescc.scm}
 MES_PREFIX=${MES_PREFIX-.}
+
+# $MESCC -E -o lib/crt1.E lib/crt1.c
+# $MESCC -c -o lib/crt1.M1 lib/crt1.E
+# $M1 --LittleEndian --Architecture=1 \
+#     -f stage0/x86.M1\
+#     -f lib/crt1.M1\
+#     > lib/crt1.hex2
+# $MESCC -E -o lib/libc-mes.E lib/libc-mes.c
+# $MESCC -c -o lib/libc-mes.M1 lib/libc-mes.E
+# $M1 --LittleEndian --Architecture=1\
+#     -f stage0/x86.M1\
+#     -f lib/libc-mes.M1\
+#     > lib/libc-mes.hex2
 
 tests="
 t
