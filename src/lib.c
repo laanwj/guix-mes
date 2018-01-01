@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -128,6 +128,13 @@ display_error_ (SCM x)
 {
   g_depth = 5;
   return display_helper (x, 0, "", STDERR);
+}
+
+SCM
+display_port_ (SCM x, SCM p)
+{
+  assert (TYPE (p) == TNUMBER);
+  return fdisplay_ (x, VALUE (p));
 }
 
 SCM

@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -951,8 +951,8 @@ eval_apply ()
             }
           case cell_vm_macro_expand:
             {
-              push_cc (CADR (r1), r1, r0, cell_vm_return);
-              goto macro_expand;
+              push_cc (CADR (r1), r1, r0, cell_vm_macro_expand);
+              goto eval;
             }
           default: {
             push_cc (r1, r1, r0, cell_vm_eval_macro);

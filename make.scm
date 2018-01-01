@@ -3,6 +3,24 @@
 exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$@"}
 !#
 
+;;; Mes --- Maxwell Equations of Software
+;;; Copyright © 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of Mes.
+;;;
+;;; Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
 (use-modules (srfi srfi-26)
              (guix shell-utils))
 
@@ -464,13 +482,14 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
     "tests/optargs.test"
     "tests/fluids.test"
     "tests/catch.test"
-    "tests/psyntax.test"
+    "tests/record.test"
+    "tests/syntax.test"
     "tests/pmatch.test"
     "tests/let-syntax.test"
     "tests/guile.test"
-    "tests/record.test"
-    ;;sloooowwww
-    ;;"tests/match.test"
+    "tests/psyntax.test"
+    "tests/match.test"
+    ;;sloooowwww/broken?
     ;;"tests/peg.test"
     ))
 
@@ -493,6 +512,8 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 ;; ...mes.guile passes :-)
 (for-each add-mes.guile-test mes-tests)
+
+(add-target (group "check-tests" #:dependencies (filter (target-prefix? "check-tests/") %targets)))
 
 ;; FIXME: run tests/base.test
 (setenv "MES" "src/mes.guile")
@@ -543,6 +564,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/mes/let.mes"
    "module/mes/match.mes"
    "module/mes/match.scm"
+   "module/mes/module.mes"
    "module/mes/optargs.mes"
    "module/mes/optargs.scm"
    "module/mes/peg.mes"

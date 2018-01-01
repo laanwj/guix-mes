@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -28,6 +28,10 @@
 (mes-use-module (mes base))
 (mes-use-module (mes quasiquote))
 
+(define-macro (simple-let bindings . rest)
+  (cons (cons 'lambda (cons (map1 car bindings) rest))
+        (map1 cadr bindings)))
+
 (define-macro (xsimple-let bindings rest)
   `(,`(lambda ,(map car bindings) ,@rest)
     ,@(map cadr bindings)))
@@ -37,11 +41,10 @@
      (set! ,name (lambda ,(map car bindings) ,@rest))
      (,name ,@(map cadr bindings))))
 
-;; IF
 (define-macro (let bindings-or-name . rest)
-  `(if ,(symbol? bindings-or-name) ;; IF
-       (xnamed-let ,bindings-or-name ,(car rest) ,(cdr rest))
-       (xsimple-let ,bindings-or-name ,rest)))
+  (if (symbol? bindings-or-name)
+      `(xnamed-let ,bindings-or-name ,(car rest) ,(cdr rest))
+      `(xsimple-let ,bindings-or-name ,rest)))
 
 (define (expand-let* bindings body)
   (if (null? bindings)

@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -111,7 +111,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 (define (repl)
   (let ((count 0)
         (print-sexp? #t))
-    
+
     (define (expand a)
       (lambda ()
         (let ((sexp (read)))
@@ -120,16 +120,16 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
                 (display sexp)
                 (display "]")
                 (newline))
-          (display (eval (list core:macro-expand sexp) a))
-          (newline))))
+          (core:macro-expand sexp))))
 
-    (define (help . x) (display help-commands))
+    (define (help . x) (display help-commands) *unspecified*)
     (define (show . x)
       (define topic-alist `((#\newline . ,show-commands)
                             (#\c . ,copying)
                             (#\w . ,warranty)))
       (let ((topic (read-char)))
-        (display (assoc-ref topic-alist topic))))
+        (display (assoc-ref topic-alist topic))
+        *unspecified*))
     (define (use a)
       (lambda ()
         (let ((module (read)))
@@ -155,22 +155,26 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
                 (display sexp)
                 (display "]")
                 (newline))
-              (cond ((and (pair? sexp) (eq? (car sexp) (string->symbol "unquote")))
-                     (let ((r (meta (cadr sexp) a)))
-                       (if (pair? r) (loop (append r a))
-                           (loop a))))
-                    ((and (pair? sexp) (eq? (car sexp) 'mes-use-module))
-                     (loop (mes-load-module-env (cadr sexp) a)))
-                    (else
-                     (let ((e (eval sexp a)))
-                       (if (eq? e *unspecified*) (loop a)
+              (if (and (pair? sexp) (eq? (car sexp) 'mes-use-module))
+                  (loop (mes-load-module-env (cadr sexp) a))
+                  (let ((e (if (and (pair? sexp) (eq? (car sexp) (string->symbol "unquote")))
+                               (meta (cadr sexp) a)
+                               (eval sexp a))))
+                    (if (eq? e *unspecified*) (loop a)
                            (let ((id (string->symbol (string-append "$" (number->string count)))))
                              (set! count (+ count 1))
                              (display id)
                              (display " = ")
                              (display e)
                              (newline)
-                             (loop (acons id e a))))))))))
+                             (loop (acons id e a)))))))))
         (lambda (key . args)
-          (format (current-error-port) "exception: ~a ~a\n" key args)
+          (if (defined? 'with-output-to-string)
+              (simple-format (current-error-port) "exception:~a:~a\n" key args)
+              (begin
+                (display "exception:" (current-error-port))
+                (display key (current-error-port))
+                (display ":" (current-error-port))
+                (display args (current-error-port))
+                (newline (current-error-port))))
           (loop a))))))
