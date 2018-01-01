@@ -31,8 +31,6 @@ int ARENA_SIZE = 100000;
 #endif
 int MAX_ARENA_SIZE = 20000000;
 
-//int GC_SAFETY_DIV = 400;
-//int GC_SAFETY = ARENA_SIZE / 400;
 int GC_SAFETY = 250;
 
 char *g_arena = 0;
@@ -1466,6 +1464,7 @@ main (int argc, char *argv[])
   if (g_debug) {eputs (";;; MODULEDIR=");eputs (MODULEDIR);eputs ("\n");}
   if (p = getenv ("MES_MAX_ARENA")) MAX_ARENA_SIZE = atoi (p);
   if (p = getenv ("MES_ARENA")) ARENA_SIZE = atoi (p);
+  GC_SAFETY = ARENA_SIZE / 400;
   if (argc > 1 && !strcmp (argv[1], "--help")) return puts ("Usage: mes [--dump|--load] < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version")) {puts ("Mes ");puts (VERSION);puts ("\n");return 0;};
   g_stdin = STDIN;
