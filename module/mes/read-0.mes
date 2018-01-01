@@ -117,7 +117,9 @@
   (define (newline . rest) (core:display (list->string (list (integer->char 10)))))
   (define (display x . rest) (if (null? rest) (core:display x)
                                  (core:display-port x (car rest))))
-  
+  (define (write x . rest) (if (null? rest) (core:write x)
+                               (core:write-port x (car rest))))
+
   (define (list->symbol lst) (core:lookup-symbol lst))
 
   (define (symbol->list s)

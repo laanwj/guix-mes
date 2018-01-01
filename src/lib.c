@@ -19,12 +19,10 @@
  */
 
 int g_depth;
-SCM fdisplay_ (SCM, int);
-
-SCM display_helper (SCM x, int cont, char* sep, int fd);
+SCM fdisplay_ (SCM, int, int);
 
 SCM
-display_helper (SCM x, int cont, char* sep, int fd)
+display_helper (SCM x, int cont, char* sep, int fd, int write_p)
 {
   fputs (sep, fd);
   if (g_depth == 0) return cell_unspecified;
@@ -41,7 +39,7 @@ display_helper (SCM x, int cont, char* sep, int fd)
     case TCLOSURE:
       {
         fputs ("#<closure ", fd);
-        display_helper (CDR (x), cont, "", fd);
+        display_helper (CDR (x), cont, "", fd, 0);
         fputs (">", fd);
         break;
       }
@@ -62,7 +60,7 @@ display_helper (SCM x, int cont, char* sep, int fd)
     case TMACRO:
       {
         fputs ("#<macro ", fd);
-        display_helper (CDR (x), cont, "", fd);
+        display_helper (CDR (x), cont, "", fd, 0);
         fputs (">", fd);
         break;
       }
@@ -78,14 +76,14 @@ display_helper (SCM x, int cont, char* sep, int fd)
           fputs ("*circ* . #-1#", fd);
         else
           {
-            if (x && x != cell_nil) fdisplay_ (CAR (x), fd);
+            if (x && x != cell_nil) fdisplay_ (CAR (x), fd, write_p);
             if (CDR (x) && TYPE (CDR (x)) == TPAIR)
-              display_helper (CDR (x), 1, " ", fd);
+              display_helper (CDR (x), 1, " ", fd, write_p);
             else if (CDR (x) && CDR (x) != cell_nil)
               {
                 if (TYPE (CDR (x)) != TPAIR)
                   fputs (" . ", fd);
-                fdisplay_ (CDR (x), fd);
+                fdisplay_ (CDR (x), fd, write_p);
               }
           }
         if (!cont) fputs (")", fd);
@@ -95,12 +93,14 @@ display_helper (SCM x, int cont, char* sep, int fd)
     case TSTRING:
     case TSYMBOL:
       {
+        if (write_p && TYPE (x) == TSTRING) fputc ('"', fd);
         SCM t = CAR (x);
         while (t && t != cell_nil)
           {
             fputc (VALUE (CAR (t)), fd);
             t = CDR (t);
           }
+        if (write_p && TYPE (x) == TSTRING) fputc ('"', fd);
         break;
       }
     default:
@@ -120,28 +120,42 @@ SCM
 display_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", g_stdout);
+  return display_helper (x, 0, "", g_stdout, 0);
 }
 
 SCM
 display_error_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", STDERR);
+  return display_helper (x, 0, "", STDERR, 0);
 }
 
 SCM
 display_port_ (SCM x, SCM p)
 {
   assert (TYPE (p) == TNUMBER);
-  return fdisplay_ (x, VALUE (p));
+  return fdisplay_ (x, VALUE (p), 0);
 }
 
 SCM
-fdisplay_ (SCM x, int fd) ///((internal))
+write_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", fd);
+  return display_helper (x, 0, "", g_stdout, 1);
+}
+
+SCM
+write_port_ (SCM x, SCM p)
+{
+  assert (TYPE (p) == TNUMBER);
+  return fdisplay_ (x, VALUE (p), 1);
+}
+
+SCM
+fdisplay_ (SCM x, int fd, int write_p) ///((internal))
+{
+  g_depth = 5;
+  return display_helper (x, 0, "", fd, write_p);
 }
 
 SCM
