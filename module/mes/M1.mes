@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -150,14 +150,14 @@
              (data (filter-map labelize data))
              (len (length data))
              (string-max (or (and=> (getenv "M1_STRING_MAX") string->number) 80)))
-        (format #t "\n:~a\n" label)
+        (display (string-append "\n:" label "\n"))
         (cond ((and (< len string-max)
                     (char? (car data))
                     (eq? (last data) #\nul)
                     (not (find (cut memq <> '(#\nul #\backspace #\return #\" #\')) (list-head data (1- (length data)))))
                     (not (any (lambda (ch) (>= (char->integer ch) #x80)) data)))
-               (format #t "\"~a\"" (list->string (list-head data (1- (length data))))))
-              (else (format #t "~a" (string-join (map text->M1 data) " "))))
+               (display (string-append "\"" (list->string (list-head data (1- (length data)))) "\"")))
+              (else (display (string-join (map text->M1 data) " "))))
         (newline)))
     (for-each write-function (filter cdr functions))
     (when (assoc-ref functions "main")
