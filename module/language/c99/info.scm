@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -65,7 +65,9 @@
  (guile-2)
  (guile
   (use-modules (ice-9 syncase)))
- (mes))
+ (mes
+  (mes-use-module (mes optargs))
+  (mes-use-module (mes pmatch))))
 
 (define-immutable-record-type <info>
   (make-<info> types constants functions globals locals function text break continue)
