@@ -1,7 +1,7 @@
 ;;; guix.scm -- Guix package definition
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 
 ;;; Also borrowing code from:
 ;;; guile-sdl2 --- FFI bindings for SDL2
@@ -93,6 +93,30 @@
               (sha256
                (base32
                 "0ykz64jlf1kpxz3qqr0nmci57r5yqwyd3s2g93vrmcnpy9d7y22p"))))
+    (build-system gnu-build-system)
+    (native-inputs
+     `(("guile" ,guile-2.2)))
+    (synopsis "LALR(1) Parser Generator in Guile")
+    (description
+     "NYACC is an LALR(1) parser generator implemented in Guile.
+The syntax and nomenclature should be considered not stable.  It comes with
+extensive examples, including parsers for the Javascript and C99 languages.")
+    (home-page "https://savannah.nongnu.org/projects/nyacc")
+    (license (list gpl3+ lgpl3+))))
+
+(define-public nyacc
+  (package
+    (name "nyacc")
+    (version "0.80.41")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://gitlab.com/janneke/nyacc"
+                                  "/repository/archive.tar.gz?ref=v"
+                                  version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0x0qff81s3yb30b72j94rj7pnsjafgfp8hkyscymg5438g184gwa"))))
     (build-system gnu-build-system)
     (native-inputs
      `(("guile" ,guile-2.2)))
