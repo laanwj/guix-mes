@@ -113,6 +113,16 @@
     (set-current-output-port save)
     r))
 
+(define core:open-input-file open-input-file)
+(define (open-input-file file)
+  (let ((port (core:open-input-file file)))
+    (when (getenv "MES_DEBUG")
+      (core:display-error (string-append "open-input-file: `" file "'\n"))
+      (core:display-error "port=")
+      (core:display-error port)
+      (core:display-error "\n"))
+    port))
+
 (define open-input-string
   (let ((save-set-current-input-port #f)
         (string-port #f))
@@ -128,8 +138,13 @@
                   (tell 0)
                   (end (string-length string)))
               (lambda (port)
+                (when (getenv "MES_DEBUG")
+                    (core:display-error (string-append "open-input-string: `" string "' save-set-current-input-port port="))
+                    (core:display-error port)
+                    (core:display-error "\n"))
                 (if (not (equal? port string-port)) (save-set-current-input-port port)
                     (begin
+                      (set! tell 0)
                       (set! peek-char
                             (lambda () (if (= tell end) (integer->char -1)
                                            (string-ref string (- tell 1)))))
@@ -142,6 +157,10 @@
                             (lambda (c) (set! tell (1- tell)) c))
                       (set! set-current-input-port
                             (lambda (port)
+                              (when (getenv "MES_DEBUG")
+                                (core:display-error (string-append "open-input-string: `" string "' set-current-input-port port="))
+                                (core:display-error port)
+                                (core:display-error "\n"))
                               (save-set-current-input-port port)
                               (set! peek-char save-peek-char)
                               (set! read-char save-read-char)

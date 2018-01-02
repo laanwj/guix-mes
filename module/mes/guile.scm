@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -23,12 +23,39 @@
 ;;; Code:
 
 (define-module (mes guile)
-  #:export (core:display core:display-error))
+  #:export (core:display core:display-error)
+  ;;#:re-export (open-input-file open-input-string with-input-from-string)
+  )
 
 (cond-expand
  (guile
   (define core:display display)
-  (define (core:display-error o) (display o (current-error-port))))
+  (define (core:display-error o) (display o (current-error-port)))
+
+;;   (define core:open-input-file open-input-file)
+;;   (define (open-input-file file)
+;;     (let ((port (core:open-input-file file)))
+;;       (when (getenv "MES_DEBUG")
+;;         (core:display-error (string-append "open-input-file: `" file " port="))
+;;         (core:display-error port)
+;;         (core:display-error "\n"))
+;;       port))
+
+;;   (define core:open-input-string open-input-string)
+;;   (define (open-input-string string)
+;;     (let ((port (core:open-input-string string)))
+;;       (when (getenv "MES_DEBUG")
+;;         (core:display-error (string-append "open-input-string: `" string " port="))
+;;         (core:display-error port)
+;;         (core:display-error "\n"))
+;;       port))
+
+;;   (define core:with-input-from-string with-input-from-string)
+;;   (define (with-input-from-string string thunk)
+;;     (if (getenv "MES_DEBUG")
+;;         (core:display-error (string-append "with-input-from-string: `" string "'\n")))
+;;     (core:with-input-from-string string thunk))
+  )
  (mes))
 
 (cond-expand
