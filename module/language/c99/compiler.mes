@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -63,9 +63,9 @@
 (define mes? (pair? (current-module)))
 
 (define* (c99-input->full-ast #:key (defines '()) (includes '()))
-  (let ((include (if (equal? %prefix "") "include" (string-append %prefix "/share/include"))))
+  (let ((sys-include (if (equal? %prefix "") "include" (string-append %prefix "/share/include"))))
     (parse-c99
-     #:inc-dirs (append includes (cons* include "include" "lib" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
+     #:inc-dirs (append includes (cons* sys-include "include" "lib" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
      #:cpp-defs `(
                   "NULL=0"
                   "__linux__=1"
@@ -104,9 +104,6 @@
     ((,h . ,t) (if (list? o) (filter-map ast-strip-const o)
                    (cons (ast-strip-const h) (ast-strip-const t))))
     (_  o)))
-
-(define* (c99-input->ast #:key (defines '()) (includes '()))
-  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:defines defines #:includes includes)))
 
 (define (ast:function? o)
   (and (pair? o) (eq? (car o) 'fctn-defn)))
@@ -2434,11 +2431,19 @@
               (loop (cdr statements)
                     ((ast->info info) (car statements)))))))))
 
+;; exports
+
 (define (ast-list->info info)
   (lambda (elements)
     (let loop ((elements elements) (info info))
       (if (null? elements) info
           (loop (cdr elements) ((ast->info info) (car elements)))))))
+
+(define* (c99-ast->info ast)
+  ((ast->info (make <info> #:types i386:type-alist)) ast))
+
+(define* (c99-input->ast #:key (defines '()) (includes '()))
+  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:defines defines #:includes includes)))
 
 (define* (c99-input->info #:key (defines '()) (includes '()))
   (lambda ()
@@ -2453,9 +2458,6 @@
 (define* (info->object o)
   `((functions . ,(.functions o))
     (globals . ,(map (lambda (g) (cons (car g) (global:value (cdr g)))) (.globals o)))))
-
-(define* (c99-ast->info ast)
-  ((ast->info (make <info> #:types i386:type-alist)) ast))
 
 (define* (c99-input->elf #:key (defines '()) (includes '()))
   ((compose object->elf info->object (c99-input->info #:defines defines #:includes includes))))

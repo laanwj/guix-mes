@@ -41,7 +41,6 @@
             c99-input->elf
             c99-input->info
             c99-input->object
-            clone
             info->object))
 
 (cond-expand

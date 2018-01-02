@@ -88,9 +88,7 @@ Usage: mescc.scm [OPTION]... FILE...
 
 (define (main:ast->info file)
   (let ((ast (with-input-from-file file read)))
-    (with-input-from-file file
-      (lambda ()
-        (c99-ast->info ast)))))
+    (c99-ast->info ast)))
 
 (define (source->ast defines includes)
   (lambda (file)

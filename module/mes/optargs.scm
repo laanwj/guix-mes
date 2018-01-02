@@ -57,17 +57,17 @@
 
 ;;; Code:
 
-;; (define-module (ice-9 optargs)
-;;   #:use-module (system base pmatch)
-;;   #:replace (lambda*)
-;;   #:export-syntax (let-optional
-;; 		  let-optional*
-;; 		  let-keywords
-;; 		  let-keywords*
-;; 		  define*
-;;                   define*-public
-;; 		  defmacro*
-;; 		  defmacro*-public))
+(define-module (ice-9 optargs)
+  #:use-module (system base pmatch)
+  #:replace (lambda*)
+  #:export-syntax (let-optional
+		  let-optional*
+		  let-keywords
+		  let-keywords*
+		  define*
+                  define*-public
+		  defmacro*
+		  defmacro*-public))
 
 ;; let-optional rest-arg (binding ...) . body
 ;; let-optional* rest-arg (binding ...) . body

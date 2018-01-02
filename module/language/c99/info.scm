@@ -26,7 +26,6 @@
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
-  #:use-module (system base pmatch)
   #:export (<info>
             make
             make-<info>
@@ -66,8 +65,7 @@
  (guile
   (use-modules (ice-9 syncase)))
  (mes
-  (mes-use-module (mes optargs))
-  (mes-use-module (mes pmatch))))
+  (mes-use-module (mes optargs))))
 
 (define-immutable-record-type <info>
   (make-<info> types constants functions globals locals function text break continue)
