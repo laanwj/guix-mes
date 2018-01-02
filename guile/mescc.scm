@@ -9,7 +9,7 @@ exec ${GUILE-guile} -L $GUILEDIR -C $GODIR -e '(mescc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -51,11 +51,11 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
 (define (parse-opts args)
   (let* ((option-spec
           '((c (single-char #\c))
-            (D (single-char #\D) (value #t))
+            (define (single-char #\D) (value #t))
             (E (single-char #\E))
             (g (single-char #\g))
             (help (single-char #\h))
-            (I (single-char #\I) (value #t))
+            (include (single-char #\I) (value #t))
             (o (single-char #\o) (value #t))
             (version (single-char #\V) (value #t))))
          (options (getopt-long args option-spec))
@@ -127,8 +127,8 @@ Usage: mescc.scm [OPTION]... FILE...
                                            (preprocess? (string-append base ".E"))
                                            (else "a.out"))))
          (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o)))))
-         (defines (reverse (filter-map (multi-opt 'D) options)))
-         (includes (reverse (filter-map (multi-opt 'I) options))))
+         (defines (reverse (filter-map (multi-opt 'define) options)))
+         (includes (reverse (filter-map (multi-opt 'include) options))))
     (when (getenv "MES_DEBUG") (format (current-error-port) "options=~s\n" options)
           (format (current-error-port) "output: ~a\n" out))
     (if (and (pair? sources) (pair? objects)) (error "cannot mix source and object files:" files))

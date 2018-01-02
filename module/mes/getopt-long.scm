@@ -1,5 +1,5 @@
 ;;; Copyright (C) 1998, 2001, 2006 Free Software Foundation, Inc.
-;;; Copyright (C) 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright (C) 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;; This library is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU Lesser General Public
@@ -164,17 +164,13 @@
   #:use-module (srfi srfi-9)
   #:export (getopt-long option-ref))
 
-(define (remove-if-not pred l)
-  (let loop ((l l) (result '()))
-    (cond ((null? l) (reverse! result))
-	  ((not (pred (car l))) (loop (cdr l) result))
-	  (else (loop (cdr l) (cons (car l) result))))))
-
 (define-record-type option-spec
-  (%make-option-spec name required? option-spec->single-char predicate value-policy)
+  (%make-option-spec name value required? option-spec->single-char predicate value-policy)
   option-spec?
   (name
    option-spec->name set-option-spec-name!)
+  (value
+   option-spec->value set-option-spec-value!)
   (required?
    option-spec->required? set-option-spec-required?!)
   (option-spec->single-char
@@ -185,7 +181,7 @@
    option-spec->value-policy set-option-spec-value-policy!))
 
 (define (make-option-spec name)
-  (%make-option-spec name #f #f #f #f))
+  (%make-option-spec name #f #f #f #f #f))
 
 (define (parse-option-spec desc)
   (let ((spec (make-option-spec (symbol->string (car desc)))))
@@ -229,20 +225,19 @@
            (reverse ret-ls))                                    ;;; retval
           ((let ((opt (car opt-ls)))
              (and (eq? (string-ref opt 0) #\-)
-                  (let ((n (char->integer (string-ref opt 1))))
-                    (or (and (>= n (char->integer #\A)) (<= n (char->integer #\Z)))
-                        (and (>= n (char->integer #\a)) (<= n (char->integer #\z)))))))
+                  (> (string-length opt) 1)
+                  (char-alphabetic? (string-ref opt 1))))
            (let* ((opt (car opt-ls))
                   (n (char->integer (string-ref opt 1)))
-                  (end (or (string-index opt (lambda (c) (not (or (and (>= n (char->integer #\A)) (<= n (char->integer #\Z)))
-                                                                  (and (>= n (char->integer #\a)) (<= n (char->integer #\z)))))))
-                           (string-length opt)))
+                  (sub (substring opt 1 (string-length opt)))
+                  (end (string-index (substring opt 1 (string-length opt)) (negate char-alphabetic?)))
+                  (end (if end (1+ end) (string-length opt)))
                   (singles-string (substring opt 1 end))
                   (singles (reverse
                             (map (lambda (c)
                                    (string-append "-" (make-string 1 c)))
                                  (string->list singles-string))))
-                 (extra (substring opt end)))
+                  (extra (substring opt end)))
              (loop (cdr opt-ls)
                    (append (if (string=? "" extra)
                                singles
@@ -265,14 +260,14 @@
         (sc-idx (map (lambda (spec)
                        (cons (make-string 1 (option-spec->single-char spec))
                              spec))
-                     (remove-if-not option-spec->single-char specs))))
+                     (filter option-spec->single-char specs))))
     (let loop ((argument-ls argument-ls) (found '()) (etc '()))
       (let ((eat! (lambda (spec ls)
                     (let ((val!loop (lambda (val n-ls n-found n-etc)
-                                      (set-option-spec-value-policy!
+                                      (set-option-spec-value!
                                        spec
                                        ;; handle multiple occurrances
-                                       (cond ((option-spec->value-policy spec)
+                                       (cond ((option-spec->value spec)
                                               => (lambda (cur)
                                                    ((if (list? cur) cons list)
                                                     val cur)))
@@ -356,36 +351,36 @@
                          (cons (car argument-ls) etc)))))))))
 
 (define (getopt-long program-arguments option-desc-list)
-;;   "Process options, handling both long and short options, similar to
-;; the glibc function 'getopt_long'.  PROGRAM-ARGUMENTS should be a value
-;; similar to what (program-arguments) returns.  OPTION-DESC-LIST is a
-;; list of option descriptions.  Each option description must satisfy the
-;; following grammar:
+  "Process options, handling both long and short options, similar to
+the glibc function 'getopt_long'.  PROGRAM-ARGUMENTS should be a value
+similar to what (program-arguments) returns.  OPTION-DESC-LIST is a
+list of option descriptions.  Each option description must satisfy the
+following grammar:
 
-;;     <option-spec>           :: (<name> . <attribute-ls>)
-;;     <attribute-ls>          :: (<attribute> . <attribute-ls>)
-;;                                | ()
-;;     <attribute>             :: <required-attribute>
-;;                                | <arg-required-attribute>
-;;                                | <single-char-attribute>
-;;                                | <predicate-attribute>
-;;                                | <value-attribute>
-;;     <required-attribute>    :: (required? <boolean>)
-;;     <single-char-attribute> :: (single-char <char>)
-;;     <value-attribute>       :: (value #t)
-;;                                (value #f)
-;;                                (value optional)
-;;     <predicate-attribute>   :: (predicate <1-ary-function>)
+    <option-spec>           :: (<name> . <attribute-ls>)
+    <attribute-ls>          :: (<attribute> . <attribute-ls>)
+                               | ()
+    <attribute>             :: <required-attribute>
+                               | <arg-required-attribute>
+                               | <single-char-attribute>
+                               | <predicate-attribute>
+                               | <value-attribute>
+    <required-attribute>    :: (required? <boolean>)
+    <single-char-attribute> :: (single-char <char>)
+    <value-attribute>       :: (value #t)
+                               (value #f)
+                               (value optional)
+    <predicate-attribute>   :: (predicate <1-ary-function>)
 
-;;     The procedure returns an alist of option names and values.  Each
-;; option name is a symbol.  The option value will be '#t' if no value
-;; was specified.  There is a special item in the returned alist with a
-;; key of the empty list, (): the list of arguments that are not options
-;; or option values.
-;;     By default, options are not required, and option values are not
-;; required.  By default, single character equivalents are not supported;
-;; if you want to allow the user to use single character options, you need
-;; to add a `single-char' clause to the option description."
+    The procedure returns an alist of option names and values.  Each
+option name is a symbol.  The option value will be '#t' if no value
+was specified.  There is a special item in the returned alist with a
+key of the empty list, (): the list of arguments that are not options
+or option values.
+    By default, options are not required, and option values are not
+required.  By default, single character equivalents are not supported;
+if you want to allow the user to use single character options, you need
+to add a `single-char' clause to the option description."
   (let* ((specifications (map parse-option-spec option-desc-list))
 	 (pair (split-arg-list (cdr program-arguments)))
 	 (split-ls (expand-clumped-singles (car pair)))
@@ -395,7 +390,7 @@
          (rest-ls (append (cdr found/etc) non-split-ls)))
     (for-each (lambda (spec)
                 (let ((name (option-spec->name spec))
-                      (val (option-spec->value-policy spec)))
+                      (val (option-spec->value spec)))
                   (and (option-spec->required? spec)
                        (or (memq spec found)
                            (error "option must be specified:" name)))
@@ -415,7 +410,7 @@
                    (let ((name (string->symbol (option-spec->name spec))))
                      (cons name
                            ;; handle multiple occurrances
-                           (let ((maybe-ls (option-spec->value-policy spec)))
+                           (let ((maybe-ls (option-spec->value spec)))
                              (if (list? maybe-ls)
                                  (let* ((look (assq name multi-count))
                                         (idx (cdr look))
@@ -426,8 +421,8 @@
                  found)))))
 
 (define (option-ref options key default)
-;;   "Return value in alist OPTIONS using KEY, a symbol; or DEFAULT if not found.
-;; The value is either a string or `#t'."
+  "Return value in alist OPTIONS using KEY, a symbol; or DEFAULT if not found.
+The value is either a string or `#t'."
   (or (assq-ref options key) default))
 
 ;;; getopt-long.scm ends here

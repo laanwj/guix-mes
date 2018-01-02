@@ -43,11 +43,12 @@ tests/syntax.test
 tests/pmatch.test
 tests/let-syntax.test
 tests/guile.test
+tests/getopt-long.test
 tests/psyntax.test
+tests/match.test
 "
 
-slow="
-tests/match.test
+slow_or_broken="
 tests/peg.test
 "
 

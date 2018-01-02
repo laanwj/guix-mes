@@ -487,6 +487,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
     "tests/pmatch.test"
     "tests/let-syntax.test"
     "tests/guile.test"
+    "tests/getopt-long.test"
     "tests/psyntax.test"
     "tests/match.test"
     ;;sloooowwww/broken?
