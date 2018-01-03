@@ -59,6 +59,10 @@
 (define (string-drop s n)
   (list->string (list-tail (string->list s) n)))
 
+(define (string-drop-right s n)
+  (let ((length (string-length s)))
+    (list->string (list-head (string->list s) (- length n)))))
+
 (define (string-delete pred s)
   (let ((p (if (procedure? pred) pred
                (lambda (c) (not (eq? pred c))))))
