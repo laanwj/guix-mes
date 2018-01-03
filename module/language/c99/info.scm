@@ -63,7 +63,8 @@
 (cond-expand
  (guile-2)
  (guile
-  (use-modules (ice-9 syncase)))
+  (use-modules (ice-9 syncase))
+  (use-modules (ice-9 optargs)))
  (mes
   (mes-use-module (mes optargs))))
 

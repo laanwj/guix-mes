@@ -5,7 +5,8 @@ GUILEDIR=${GUILEDIR-@GUILEDIR@}
 [ "$GODIR" = @"GODIR"@ ] && GODIR=$(dirname $0)
 [ "$GUILEDIR" = @"GUILEDIR"@ ] && GUILEDIR=$(dirname $0)
 export GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
-exec ${GUILE-guile} -L $GUILEDIR -C $GODIR -e '(mescc)' -s "$0" "$@"
+GUILE_LOAD_COMPILED_PATH=$GODIR:$GUILE_LOAD_COMPILED_PATH
+exec ${GUILE-guile} -L $GUILEDIR -e '(mescc)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
@@ -44,6 +45,11 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' guile/mescc.scm
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:export (main))
+
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase))))
 
 (define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "MES_PREFIX") "") "@PREFIX@"))
 (module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix)

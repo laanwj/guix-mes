@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -151,5 +151,11 @@
             i386:le?->accu
             i386:z->accu
             ))
+
+(cond-expand
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase)))
+ (mes))
 
 (include-from-path "mes/as-i386.mes")

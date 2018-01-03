@@ -77,5 +77,10 @@
                #'(include fn))))))))
   (export include-from-path))
  (guile
-  (use-modules (ice-9 syncase)))
+  (use-modules (ice-9 syncase))
+  (define (compose proc . rest)
+  (if (null? rest) proc
+      (lambda args
+        (proc (apply (apply compose rest) args)))))
+  (export compose))
  (mes))

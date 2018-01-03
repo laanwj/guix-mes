@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -29,7 +29,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 pretty-print)
   #:use-module (nyacc lang c99 parser)
-  #:use-module (nyacc lang c99 pprint)
+  ;;#:use-module (nyacc lang c99 pprint)
   #:use-module (mes guile)
   #:use-module (mes as)
   #:use-module (mes as-i386)
@@ -44,9 +44,17 @@
             info->object))
 
 (cond-expand
- (guile-2)
+ (guile-2
+  (use-modules (nyacc lang c99 pprint)))
  (guile
+  (debug-set! stack 0)
+  (use-modules (ice-9 optargs))
   (use-modules (ice-9 syncase)))
+ ;; guile-1.8 does not have (sxml match), short-circuit me
+ (define* (pretty-print-c99 tree
+                            #:optional (port (current-output-port))
+                            #:key ugly per-line-prefix (basic-offset 2))
+   (write tree port))
  (mes))
 
 (include-from-path "language/c99/compiler.mes")
