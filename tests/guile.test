@@ -117,4 +117,10 @@ exit $?
                (with-input-from-string "X"
                  (lambda () (peek-char))))
 
+(pass-if-equal "open-input-string peek"
+               #\X
+               (let ((port (open-input-string "X")))
+                 (set-current-input-port port)
+                 (peek-char)))
+
 (result 'report)

@@ -148,7 +148,7 @@
                       (set! tell 0)
                       (set! peek-char
                             (lambda () (if (= tell end) (integer->char -1)
-                                           (string-ref string (- tell 1)))))
+                                           (string-ref string tell))))
                       (set! read-char
                             (lambda () (if (= tell end) (integer->char -1)
                                            (begin
