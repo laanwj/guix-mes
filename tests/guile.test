@@ -112,4 +112,9 @@ exit $?
     (push-input sp)
     (and (pop-input) (not (pop-input)))))
 
+(pass-if-equal "with-input-from-string peek"
+               #\X
+               (with-input-from-string "X"
+                 (lambda () (peek-char))))
+
 (result 'report)

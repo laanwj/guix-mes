@@ -71,8 +71,9 @@
   (let ((tell 0)
         (end (string-length string)))
     (set! peek-char
-          (lambda () (if (= tell end) (integer->char -1)
-                         (string-ref string (- tell 1)))))
+          (lambda ()
+            (if (= tell end) (integer->char -1)
+                (string-ref string tell))))
     (set! read-char
           (lambda () (if (= tell end) (integer->char -1)
                          (begin
