@@ -34,3 +34,6 @@
 
 (define-macro (define-module module . rest) #t)
 (include-from-path "mes/optargs.scm")
+
+(define-macro (define-macro* NAME+ARGLIST . BODY)
+  `(define-macro ,(car NAME+ARGLIST) #f (lambda* ,(cdr NAME+ARGLIST) ,@BODY)))
