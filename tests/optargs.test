@@ -58,9 +58,8 @@ exit $?
 (pass-if-equal "optargs key default" #f ((lambda* (#:key (foo #f)) foo)))
 
 (cond-expand
- (guile (use-modules (system base pmatch)
-                     (ice-9 optargs)))
- (mes (mes-use-module (mes pmatch))))
+ (guile (use-modules (ice-9 optargs)))
+ (mes))
 
 (define <info> '<info>)
 (define <functions> '<functions>)
@@ -69,12 +68,11 @@ exit $?
 (define <text> '<text>)
 
 (define* (make o #:key (functions '()) (globals '()) (locals '()) (text '()))
-  (pmatch o
-    (<info> (list <info>
-                  (cons <functions> functions)
-                  (cons <globals> globals)
-                  (cons <locals> locals)
-                  (cons <text> text)))))
+  (list <info>
+        (cons <functions> functions)
+        (cons <globals> globals)
+        (cons <locals> locals)
+        (cons <text> text)))
 
 ;; (define* (make o #:key (functions '()) (globals '()) (locals '()) (text '()))
 ;;   (format (current-error-port) "make\n")
@@ -86,20 +84,16 @@ exit $?
 ;;                 (cons <text> text))))))
 
 (define (.functions o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <functions>))))
+  (assq-ref (cdr o) <functions>))
 
 (define (.globals o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <globals>))))
+  (assq-ref (cdr o) <globals>))
 
 (define (.locals o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <locals>))))
+  (assq-ref (cdr o) <locals>))
 
 (define (.text o)
-  (pmatch o
-    ((<info> . ,alist) (assq-ref alist <text>))))
+  (assq-ref (cdr o) <text>))
 
 (define (info? o)
   (and (pair? o) (eq? (car o) <info>)))
