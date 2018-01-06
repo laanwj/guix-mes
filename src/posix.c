@@ -55,6 +55,45 @@ unread_byte (SCM i)
 }
 
 SCM
+peek_char ()
+{
+  return MAKE_CHAR (peekchar ());
+}
+
+SCM
+read_char ()
+{
+  return MAKE_CHAR (getchar ());
+}
+
+SCM
+unread_char (SCM i)
+{
+  ungetchar (VALUE (i));
+  return i;
+}
+
+SCM
+write_char (SCM i) ///((arity . n))
+{
+  write_byte (i);
+  return i;
+}
+
+SCM
+read_string ()
+{
+  SCM lst = cell_nil;
+  SCM c = read_char ();
+  while (VALUE (c) != -1)
+    {
+      lst = append2 (lst, cons (c, cell_nil));
+      c = read_char ();
+    }
+  return MAKE_STRING (lst);
+}
+
+SCM
 write_byte (SCM x) ///((arity . n))
 {
   SCM c = car (x);

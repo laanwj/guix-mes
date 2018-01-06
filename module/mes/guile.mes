@@ -41,14 +41,15 @@
 (mes-use-module (srfi srfi-16))
 (mes-use-module (mes display))
 
-(define (read-string)
-  (define (read-string c)
-    (if (eq? c #\*eof*) '()
-        (cons c (read-string (read-char)))))
-  (let ((string (list->string (read-string (read-char)))))
-    (if (getenv "MES_DEBUG")
-        (core:display-error (string-append "drained: `" string "'\n")))
-    string))
+(if #t ;;(not (defined? 'read-string))
+    (define (read-string)
+      (define (read-string c)
+        (if (eq? c #\*eof*) '()
+            (cons c (read-string (read-char)))))
+      (let ((string (list->string (read-string (read-char)))))
+        (if (getenv "MES_DEBUG")
+            (core:display-error (string-append "drained: `" string "'\n")))
+        string)))
 
 (define (drain-input port) (read-string))
 

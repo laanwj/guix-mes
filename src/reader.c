@@ -37,85 +37,85 @@ read_input_file_env (SCM a)
 }
 
 int
-read_line_comment (int c)
+reader_read_line_comment (int c)
 {
   if (c == '\n') return c;
-  return read_line_comment (getchar ());
+  return reader_read_line_comment (getchar ());
 }
 
 #if MES_C_READER
-SCM read_block_comment (int s, int c);
+SCM reader_read_block_comment (int s, int c);
 SCM read_hash (int c, SCM w, SCM a);
 #endif
 
 SCM
-read_word_ (int c, SCM w, SCM a)
+reader_read_word_ (int c, SCM w, SCM a)
 {
   if (c == EOF && w == cell_nil) return cell_nil;
-  if (c == '\t') return read_word_ ('\n', w, a);
-  if (c == '\f') return read_word_ ('\n', w, a);
-  if (c == '\n' && w == cell_nil) return read_word_ (getchar (), w, a);
+  if (c == '\t') return reader_read_word_ ('\n', w, a);
+  if (c == '\f') return reader_read_word_ ('\n', w, a);
+  if (c == '\n' && w == cell_nil) return reader_read_word_ (getchar (), w, a);
   if (c == '\n' && VALUE (car (w)) == '.' && cdr (w) == cell_nil) return cell_dot;
-  if (c == ' ') return read_word_ ('\n', w, a);
-  if (c == EOF || c == '\n') return lookup_ (w, a);
+  if (c == ' ') return reader_read_word_ ('\n', w, a);
+  if (c == EOF || c == '\n') return reader_lookup_ (w, a);
 
-  if (c == '(' && w == cell_nil) return read_list (a);
-  if (c == '(') {ungetchar (c); return lookup_ (w, a);}
+  if (c == '(' && w == cell_nil) return reader_read_list (a);
+  if (c == '(') {ungetchar (c); return reader_lookup_ (w, a);}
   if (c == ')' && w == cell_nil) {ungetchar (c); return cell_nil;}
-  if (c == ')') {ungetchar (c); return lookup_ (w, a);}
-  if (c == ';') {read_line_comment (c); return read_word_ ('\n', w, a);}
+  if (c == ')') {ungetchar (c); return reader_lookup_ (w, a);}
+  if (c == ';') {reader_read_line_comment (c); return reader_read_word_ ('\n', w, a);}
 
 #if MES_C_READER
-  if (c == '"' && w == cell_nil) return read_string ();
-  if (c == '"') {ungetchar (c); return lookup_ (w, a);}
+  if (c == '"' && w == cell_nil) return reader_read_string ();
+  if (c == '"') {ungetchar (c); return reader_lookup_ (w, a);}
   if (c == ',' && peekchar () == '@') {getchar (); return cons (cell_symbol_unquote_splicing,
-                                                                cons (read_word_ (getchar (), w, a),
+                                                                cons (reader_read_word_ (getchar (), w, a),
                                                                       cell_nil));}
-  if (c == '\'') return cons (cell_symbol_quote, cons (read_word_ (getchar (), w, a), cell_nil));
-  if (c == '`') return cons (cell_symbol_quasiquote, cons (read_word_ (getchar (), w, a), cell_nil));
-  if (c == ',') return cons (cell_symbol_unquote, cons (read_word_ (getchar (), w, a), cell_nil));
+  if (c == '\'') return cons (cell_symbol_quote, cons (reader_read_word_ (getchar (), w, a), cell_nil));
+  if (c == '`') return cons (cell_symbol_quasiquote, cons (reader_read_word_ (getchar (), w, a), cell_nil));
+  if (c == ',') return cons (cell_symbol_unquote, cons (reader_read_word_ (getchar (), w, a), cell_nil));
 
-  if (c == '#' && peekchar () == '!') {c = getchar (); read_block_comment (c, getchar ()); return read_word_ (getchar (), w, a);}
-  if (c == '#' && peekchar () == '|') {c = getchar (); read_block_comment (c, getchar ()); return read_word_ (getchar (), w, a);}
-  if (c == '#' && peekchar () == 'f') return read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
-  if (c == '#' && peekchar () == 't') return read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
+  if (c == '#' && peekchar () == '!') {c = getchar (); reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
+  if (c == '#' && peekchar () == '|') {c = getchar (); reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
+  if (c == '#' && peekchar () == 'f') return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
+  if (c == '#' && peekchar () == 't') return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
   if (c == '#') return read_hash (getchar (), w, a);
 #endif //MES_C_READER
 
-  return read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
+  return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
 }
 
 int
 eat_whitespace (int c)
 {
   while (c == ' ' || c == '\t' || c == '\n' || c == '\f') c = getchar ();
-  if (c == ';') return eat_whitespace (read_line_comment (c));
+  if (c == ';') return eat_whitespace (reader_read_line_comment (c));
 #if MES_C_READER
-  if (c == '#' && (peekchar () == '!' || peekchar () == '|')) {c=getchar (); read_block_comment (c, getchar ()); return eat_whitespace (getchar ());}
+  if (c == '#' && (peekchar () == '!' || peekchar () == '|')) {c=getchar (); reader_read_block_comment (c, getchar ()); return eat_whitespace (getchar ());}
 #endif
   return c;
 }
 
 SCM
-read_list (SCM a)
+reader_read_list (SCM a)
 {
   int c = getchar ();
   c = eat_whitespace (c);
   if (c == ')') return cell_nil;
-  SCM w = read_word_ (c, cell_nil, a);
+  SCM w = reader_read_word_ (c, cell_nil, a);
   if (w == cell_dot)
-    return car (read_list (a));
-  return cons (w, read_list (a));
+    return car (reader_read_list (a));
+  return cons (w, reader_read_list (a));
 }
 
 SCM
 read_env (SCM a)
 {
-  return read_word_ (getchar (), cell_nil, a);
+  return reader_read_word_ (getchar (), cell_nil, a);
 }
 
 SCM
-lookup_ (SCM s, SCM a)
+reader_lookup_ (SCM s, SCM a)
 {
   if (isdigit (VALUE (car (s))) || (VALUE (car (s)) == '-' && cdr (s) != cell_nil)) {
     SCM p = s;
@@ -138,10 +138,10 @@ lookup_ (SCM s, SCM a)
 
 #if MES_C_READER
 SCM
-read_block_comment (int s, int c)
+reader_read_block_comment (int s, int c)
 {
   if (c == s && peekchar () == '#') return getchar ();
-  return read_block_comment (s, getchar ());
+  return reader_read_block_comment (s, getchar ());
 }
 
 SCM
@@ -152,34 +152,34 @@ read_hash (int c, SCM w, SCM a)
       if (peekchar () == '@')
         {
           getchar ();
-          return cons (cell_symbol_unsyntax_splicing, cons (read_word_ (getchar (), w, a), cell_nil));
+          return cons (cell_symbol_unsyntax_splicing, cons (reader_read_word_ (getchar (), w, a), cell_nil));
         }
-      return cons (cell_symbol_unsyntax, cons (read_word_ (getchar (), w, a), cell_nil));
+      return cons (cell_symbol_unsyntax, cons (reader_read_word_ (getchar (), w, a), cell_nil));
     }
-  if (c == '\'') return cons (cell_symbol_syntax, cons (read_word_ (getchar (), w, a), cell_nil));
-  if (c == '`') return cons (cell_symbol_quasisyntax, cons (read_word_ (getchar (), w, a), cell_nil));
-  if (c == ':') return MAKE_KEYWORD (CAR (read_word_ (getchar (), cell_nil, a)));
-  if (c == 'o') return read_octal ();
-  if (c == 'x') return read_hex ();
-  if (c == '\\') return read_character ();
-  if (c == '(') return list_to_vector (read_list (a));
-  if (c == ';') read_word_ (getchar (), w, a); return read_word_ (getchar (), w, a);
-  if (c == '!') {read_block_comment (c, getchar ()); return read_word_ (getchar (), w, a);}
-  if (c == '|') {read_block_comment (c, getchar ()); return read_word_ (getchar (), w, a);}
+  if (c == '\'') return cons (cell_symbol_syntax, cons (reader_read_word_ (getchar (), w, a), cell_nil));
+  if (c == '`') return cons (cell_symbol_quasisyntax, cons (reader_read_word_ (getchar (), w, a), cell_nil));
+  if (c == ':') return MAKE_KEYWORD (CAR (reader_read_word_ (getchar (), cell_nil, a)));
+  if (c == 'o') return reader_read_octal ();
+  if (c == 'x') return reader_read_hex ();
+  if (c == '\\') return reader_read_character ();
+  if (c == '(') return list_to_vector (reader_read_list (a));
+  if (c == ';') reader_read_word_ (getchar (), w, a); return reader_read_word_ (getchar (), w, a);
+  if (c == '!') {reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
+  if (c == '|') {reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
   if (c == 'f') return cell_f;
   if (c == 't') return cell_t;
 
-  return read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
+  return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
 }
 
 SCM
-read_word (SCM c, SCM w, SCM a)
+reader_read_word (SCM c, SCM w, SCM a)
 {
-  return read_word_ (VALUE (c), w, a);
+  return reader_read_word_ (VALUE (c), w, a);
 }
 
 SCM
-read_character ()
+reader_read_character ()
 {
   int c = getchar ();
   if (c >= '0' && c <= '7'
@@ -253,7 +253,7 @@ read_character ()
 }
 
 SCM
-read_octal ()
+reader_read_octal ()
 {
   int n = 0;
   int c = peekchar ();
@@ -270,7 +270,7 @@ read_octal ()
 }
 
 SCM
-read_hex ()
+reader_read_hex ()
 {
   int n = 0;
   int c = peekchar ();
@@ -297,7 +297,7 @@ append_char (SCM x, int i)
 }
 
 SCM
-read_string ()
+reader_read_string ()
 {
   SCM p = cell_nil;
   int c = getchar ();
@@ -316,11 +316,11 @@ read_string ()
   return MAKE_STRING (p);
 }
 #else // !MES_C_READER
-SCM read_word (SCM c,SCM w,SCM a) {}
-SCM read_character () {}
-SCM read_octal () {}
-SCM read_hex () {}
-SCM read_string () {}
+SCM reader_read_word (SCM c,SCM w,SCM a) {}
+SCM reader_read_character () {}
+SCM reader_read_octal () {}
+SCM reader_read_hex () {}
+SCM reader_read_string () {}
 #endif // MES_C_READER
 
 int g_tiny = 0;
