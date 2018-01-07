@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -19,7 +19,7 @@
  */
 
 SCM
-make_vector (SCM n)
+make_vector_ (SCM n)
 {
   int k = VALUE (n);
   VALUE (tmp_num) = TVECTOR;
@@ -67,7 +67,7 @@ SCM
 list_to_vector (SCM x)
 {
   VALUE (tmp_num) = VALUE (length (x));
-  SCM v = make_vector (tmp_num);
+  SCM v = make_vector_ (tmp_num);
   SCM p = VECTOR (v);
   while (x != cell_nil)
     {

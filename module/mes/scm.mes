@@ -195,9 +195,8 @@
 
 ;; Vector
 (define (vector . rest) (list->vector rest))
-(define c:make-vector make-vector)
 (define (make-vector n . x)
-  (if (null? x) (c:make-vector n)
+  (if (null? x) (core:make-vector n)
       (list->vector (apply make-list (cons n x)))))
 
 (define (vector-copy x)

@@ -9,7 +9,7 @@ exit $?
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -39,7 +39,7 @@ exit $?
 (pass-if "vector-length" (seq? (vector-length #(1)) 1))
 
 (when (not guile?)
-  (pass-if "c:make-vector" (sequal? (c:make-vector 3) #(*unspecified* *unspecified* *unspecified*)))
+  (pass-if "core:make-vector" (sequal? (core:make-vector 3) #(*unspecified* *unspecified* *unspecified*)))
   (pass-if "make-vector" (sequal? (make-vector 3) #(*unspecified* *unspecified* *unspecified*))))
 
 (pass-if "make-vector 2" (sequal? (make-vector 3 1) #(1 1 1)))
