@@ -145,6 +145,13 @@ write_ (SCM x)
 }
 
 SCM
+write_error_ (SCM x)
+{
+  g_depth = 5;
+  return display_helper (x, 0, "", STDERR, 1);
+}
+
+SCM
 write_port_ (SCM x, SCM p)
 {
   assert (TYPE (p) == TNUMBER);

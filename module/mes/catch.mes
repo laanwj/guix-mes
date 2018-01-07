@@ -29,7 +29,7 @@
                      (display "unhandled exception:" (current-error-port))
                      (display key (current-error-port))
                      (display ":" (current-error-port))
-                     (display args (current-error-port))
+                     (write args (current-error-port))
                      (newline (current-error-port))))
                (exit 1))))
 

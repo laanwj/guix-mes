@@ -510,7 +510,7 @@ error (SCM key, SCM x)
 #endif
   display_error_ (key);
   eputs (": ");
-  display_error_ (x);
+  write_error_ (x);
   eputs ("\n");
   exit (1);
 }
@@ -571,7 +571,7 @@ check_apply (SCM f, SCM e) ///((internal))
       eputs (s);
       eputs (type);
       eputs ("[");
-      display_error_ (e);
+      write_error_ (e);
       eputs ("]\n");
       SCM e = MAKE_STRING (cstring_to_list (s));
       return error (cell_symbol_wrong_type_arg, cons (e, f));
@@ -591,7 +591,7 @@ SCM
 append2 (SCM x, SCM y)
 {
   if (x == cell_nil) return y;
-  assert (TYPE (x) == TPAIR);
+  if (TYPE (x) != TPAIR) error (cell_symbol_not_a_pair, cons (x, cell_append2));
   return cons (car (x), append2 (cdr (x), y));
 }
 
@@ -671,7 +671,7 @@ assq_ref_env (SCM x, SCM a)
 SCM
 set_car_x (SCM x, SCM e)
 {
-  assert (TYPE (x) == TPAIR);
+  if (TYPE (x) != TPAIR) error (cell_symbol_not_a_pair, cons (x, cell_set_car_x));
   CAR (x) = e;
   return cell_unspecified;
 }
@@ -1483,12 +1483,12 @@ main (int argc, char *argv[])
   if (g_debug > 1)
     {
       eputs ("program: ");
-      display_error_ (r1);
+      write_error_ (r1);
       eputs ("\n");
     }
   r3 = cell_vm_begin;
   r1 = eval_apply ();
-  display_error_ (r1);
+  write_error_ (r1);
   eputs ("\n");
   gc (g_stack);
   if (g_debug)
