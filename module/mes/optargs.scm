@@ -85,11 +85,13 @@
 ;; bound to whatever may have been left of rest-arg.
 ;;
 
-(define-macro (let-optional REST-ARG BINDINGS . BODY)
+(defmacro let-optional (REST-ARG BINDINGS . BODY)
   (let-optional-template REST-ARG BINDINGS BODY 'let))
 
-(define-macro (let-optional* REST-ARG BINDINGS . BODY)
+(defmacro let-optional* (REST-ARG BINDINGS . BODY)
   (let-optional-template REST-ARG BINDINGS BODY 'let*))
+
+
 
 ;; let-keywords rest-arg allow-other-keys? (binding ...) . body
 ;; let-keywords* rest-arg allow-other-keys? (binding ...) . body
@@ -106,10 +108,10 @@
 ;;
 
 
-(define-macro (let-keywords REST-ARG ALLOW-OTHER-KEYS? BINDINGS . BODY)
+(defmacro let-keywords (REST-ARG ALLOW-OTHER-KEYS? BINDINGS . BODY)
   (let-keywords-template REST-ARG ALLOW-OTHER-KEYS? BINDINGS BODY 'let))
 
-(define-macro (let-keywords* REST-ARG ALLOW-OTHER-KEYS? BINDINGS . BODY)
+(defmacro let-keywords* (REST-ARG ALLOW-OTHER-KEYS? BINDINGS . BODY)
   (let-keywords-template REST-ARG ALLOW-OTHER-KEYS? BINDINGS BODY 'let*))
 
 
@@ -231,7 +233,7 @@
 ;; Lisp dialects.
 
 
-(define-macro (lambda* ARGLIST . BODY)
+(defmacro lambda* (ARGLIST . BODY)
   (parse-arglist
    ARGLIST
    (lambda (non-optional-args optionals keys aok? rest-arg)
@@ -376,10 +378,10 @@
 ;; Of course, define*[-public] also supports #:rest and #:allow-other-keys
 ;; in the same way as lambda*.
 
-(define-macro (define* ARGLIST . BODY)
+(defmacro define* (ARGLIST . BODY)
   (define*-guts 'define ARGLIST BODY))
 
-(define-macro (define*-public ARGLIST . BODY)
+(defmacro define*-public (ARGLIST . BODY)
   (define*-guts 'define-public ARGLIST BODY))
 
 ;; The guts of define* and define*-public.
@@ -410,13 +412,13 @@
 ;; semantics. Here is an example of a macro with an optional argument:
 ;;   (defmacro* transmorgify (a #:optional b)
 
-(define-macro (define-macro* NAME+ARGLIST . BODY)
-  `(define-macro ,(car NAME+ARGLIST) #f (lambda* ,(cdr NAME+ARGLIST) ,@BODY)))
+(defmacro defmacro* (NAME ARGLIST . BODY)
+  `(define-macro ,NAME #f (lambda* ,ARGLIST ,@BODY)))
 
-(define-macro (define-macro*-public NAME+ARGLIST . BODY)
+(defmacro defmacro*-public (NAME ARGLIST . BODY)
   `(begin
-     (define-macro* ,NAME+ARGLIST ,@BODY)
-     (export-syntax ,(car NAME+ARGLIST))))
+     (defmacro* ,NAME ,ARGLIST ,@BODY)
+     (export-syntax ,NAME)))
 
 ;;; Support for optional & keyword args with the interpreter.
 (define *uninitialized* (list 'uninitialized))

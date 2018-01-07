@@ -26,6 +26,9 @@
 
 (mes-use-module (mes scm))
 
+(define-macro (defmacro name args . body)
+  `(define-macro ,(cons name args) ,@body))
+
 (define-macro (set-procedure-property! proc key value)
   proc)
 
