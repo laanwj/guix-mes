@@ -113,6 +113,18 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         if (write_p && TYPE (x) == TSTRING) fputc ('"', fd);
         break;
       }
+    case TVECTOR:
+      {
+        fputs ("#(", fd);
+        SCM t = CAR (x);
+        for (int i = 0; i < LENGTH (x); i++)
+          {
+            if (i) fputc (' ', fd);
+            fdisplay_ (VECTOR (x) + i, fd, write_p);
+          }
+        fputc (')', fd);
+        break;
+      }
     default:
       {
         fputs ("<", fd);
