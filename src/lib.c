@@ -73,7 +73,17 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       {
         if (!cont) fputs ("(", fd);
         if (CAR (x) == cell_circular)
-          fputs ("*circ* . #-1#", fd);
+          {
+            fputs ("(*circ* . ", fd);
+            int i = 0;
+            x = CDR (x);
+            while (x != cell_nil && i++ < 10)
+              {
+                fdisplay_ (CAAR (x), fd, write_p); fputs (" ", fd);
+                x = CDR (x);
+              }
+            fputs (" ...)", fd);
+          }
         else
           {
             if (x && x != cell_nil) fdisplay_ (CAR (x), fd, write_p);
