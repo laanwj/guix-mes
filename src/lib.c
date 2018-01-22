@@ -32,8 +32,25 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     {
     case TCHAR:
       {
-        fputs ("#\\", fd);
-        fputc (VALUE (x), fd);
+        if (!write_p)
+          fputc (VALUE (x), fd);
+        else
+          {
+            fputs ("#\\", fd);
+            switch (VALUE (x))
+              {
+              case '\0': fputs ("nul", fd); break;
+              case '\a': fputs ("alarm", fd); break;
+              case '\b': fputs ("backspace", fd); break;
+              case '\t': fputs ("tab", fd); break;
+              case '\n': fputs ("newline", fd); break;
+              case '\v': fputs ("vtab", fd); break;
+              case '\f': fputs ("page", fd); break;
+              case '\r': fputs ("return", fd); break;
+              case ' ': fputs ("space", fd); break;
+              default: fputc (VALUE (x), fd);
+              }
+          }
         break;
       }
     case TCLOSURE:
@@ -109,7 +126,14 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         SCM t = CAR (x);
         while (t && t != cell_nil)
           {
-            fputc (VALUE (CAR (t)), fd);
+            switch (write_p ? VALUE (CAR (t)) : 0)
+              {
+              case '\t': fputs ("\\t", fd); break;
+              case '\n': fputs ("\\n", fd); break;
+              case '\\': fputs ("\\\\", fd); break;
+              case '"': fputs ("\\\"", fd); break;
+              default: fputc (VALUE (CAR (t)), fd);
+              }
             t = CDR (t);
           }
         if (write_p && TYPE (x) == TSTRING) fputc ('"', fd);
