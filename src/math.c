@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -20,13 +20,23 @@
 
 #include <limits.h>
 
+void
+assert_number (char const* name, SCM x)
+{
+  if (TYPE (x) != TNUMBER)
+    {
+      eputs (name);
+      error (cell_symbol_not_a_number, x);
+    }
+}
+
 SCM
 greater_p (SCM x) ///((name . ">") (arity . n))
 {
   int n = INT_MAX;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("greater_p", CAR (x));
       if (VALUE (car (x)) >= n) return cell_f;
       n = VALUE (car (x));
       x = cdr (x);
@@ -40,7 +50,7 @@ less_p (SCM x) ///((name . "<") (arity . n))
   int n = INT_MIN;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("less_p", CAR (x));
       if (VALUE (car (x)) <= n) return cell_f;
       n = VALUE (car (x));
       x = cdr (x);
@@ -52,8 +62,8 @@ SCM
 is_p (SCM x) ///((name . "=") (arity . n))
 {
   if (x == cell_nil) return cell_t;
-  assert (TYPE (car (x)) == TNUMBER);
-  int n = VALUE (car (x));
+  assert_number ("is_p", CAR (x));
+  int n = VALUE (CAR (x));
   x = cdr (x);
   while (x != cell_nil)
     {
@@ -66,15 +76,15 @@ is_p (SCM x) ///((name . "=") (arity . n))
 SCM
 minus (SCM x) ///((name . "-") (arity . n))
 {
-  SCM a = car (x);
-  assert (TYPE (a) == TNUMBER);
+  assert_number ("minus", CAR (x));
+  SCM a = CAR (x);
   int n = VALUE (a);
   x = cdr (x);
   if (x == cell_nil)
     n = -n;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("minus", CAR (x));
       n -= VALUE (car (x));
       x = cdr (x);
     }
@@ -87,7 +97,7 @@ plus (SCM x) ///((name . "+") (arity . n))
   int n = 0;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("plus", CAR (x));
       n += VALUE (car (x));
       x = cdr (x);
     }
@@ -99,13 +109,13 @@ divide (SCM x) ///((name . "/") (arity . n))
 {
   int n = 1;
   if (x != cell_nil) {
-    assert (TYPE (car (x)) == TNUMBER);
+    assert_number ("divide", CAR (x));
     n = VALUE (car (x));
     x = cdr (x);
   }
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("divide", CAR (x));
       n /= VALUE (car (x));
       x = cdr (x);
     }
@@ -115,8 +125,8 @@ divide (SCM x) ///((name . "/") (arity . n))
 SCM
 modulo (SCM a, SCM b)
 {
-  assert (TYPE (a) == TNUMBER);
-  assert (TYPE (b) == TNUMBER);
+  assert_number ("modulo", a);
+  assert_number ("modulo", b);
   int x = VALUE (a);
   while (x < 0) x += VALUE (b);
   return MAKE_NUMBER (x % VALUE (b));
@@ -128,7 +138,7 @@ multiply (SCM x) ///((name . "*") (arity . n))
   int n = 1;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("multiply", CAR (x));
       n *= VALUE (car (x));
       x = cdr (x);
     }
@@ -141,7 +151,7 @@ logand (SCM x) ///((arity . n))
   int n = 0;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("multiply", CAR (x));
       n &= VALUE (car (x));
       x = cdr (x);
     }
@@ -154,7 +164,7 @@ logior (SCM x) ///((arity . n))
   int n = 0;
   while (x != cell_nil)
     {
-      assert (TYPE (car (x)) == TNUMBER);
+      assert_number ("logior", CAR (x));
       n |= VALUE (car (x));
       x = cdr (x);
     }
@@ -164,7 +174,7 @@ logior (SCM x) ///((arity . n))
 SCM
 lognot (SCM x)
 {
-  assert (TYPE (x) == TNUMBER);
+  assert_number ("lognot", x);
   int n = ~VALUE (x);
   return MAKE_NUMBER (n);
 }
@@ -172,8 +182,8 @@ lognot (SCM x)
 SCM
 ash (SCM n, SCM count)
 {
-  assert (TYPE (n) == TNUMBER);
-  assert (TYPE (count) == TNUMBER);
+  assert_number ("ash", n);
+  assert_number ("ash", count);
   int cn = VALUE (n);
   int ccount = VALUE (count);
   return MAKE_NUMBER ((ccount < 0) ? cn >> -ccount : cn << ccount);

@@ -63,7 +63,7 @@
 
 (define (char? x)
   (and (eq? (core:type x) <cell:char>)
-       (>= (char->integer x) 0)))
+       (> (char->integer x) -1)))
 
 (define (eof-object? x)
   (and (eq? (core:type x) <cell:char>)

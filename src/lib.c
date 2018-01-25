@@ -96,6 +96,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
             x = CDR (x);
             while (x != cell_nil && i++ < 10)
               {
+                g_depth = 1;
+                //display_helper (CAAR (x), 0, "", fd, write_p); fputs (" ", fd);
                 fdisplay_ (CAAR (x), fd, write_p); fputs (" ", fd);
                 x = CDR (x);
               }

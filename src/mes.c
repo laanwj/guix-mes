@@ -160,6 +160,7 @@ struct scm scm_symbol_write = {TSYMBOL, "write",0};
 struct scm scm_symbol_display = {TSYMBOL, "display",0};
 
 struct scm scm_symbol_throw = {TSYMBOL, "throw",0};
+struct scm scm_symbol_not_a_number = {TSYMBOL, "not-a-number",0};
 struct scm scm_symbol_not_a_pair = {TSYMBOL, "not-a-pair",0};
 struct scm scm_symbol_system_error = {TSYMBOL, "system-error",0};
 struct scm scm_symbol_wrong_number_of_args = {TSYMBOL, "wrong-number-of-args",0};
