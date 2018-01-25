@@ -27,7 +27,6 @@ exit $?
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (cond-expand
- (guile-2)
  (guile
   (use-modules (ice-9 optargs)))
  (mes
@@ -52,14 +51,11 @@ exit $?
 (pass-if-equal "keyword->symbol" 'foo (keyword->symbol #:foo))
 (pass-if-equal "symbol->keyword" #:foo (symbol->keyword 'foo))
 (pass-if-not "keywords" (eq? #:foo ':foo))
+
 (pass-if "optargs #:optional" ((lambda* (#:optional (x #f)) x) #t))
 (pass-if-equal "optargs #:optional default" #f ((lambda* (#:optional (x #f)) x)))
 (pass-if "optargs key" ((lambda* (#:key (foo #f)) foo) #:foo #t))
 (pass-if-equal "optargs key default" #f ((lambda* (#:key (foo #f)) foo)))
-
-(cond-expand
- (guile (use-modules (ice-9 optargs)))
- (mes))
 
 (define <info> '<info>)
 (define <functions> '<functions>)

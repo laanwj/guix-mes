@@ -9,7 +9,7 @@ exit $?
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -29,9 +29,10 @@ exit $?
 (mes-use-module (mes match))
 (mes-use-module (mes test))
 
-(when guile?
-  (use-modules (ice-9 match))
-  )
+(cond-expand
+ (guile
+  (use-modules (ice-9 match)))
+  (mes))
 
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)

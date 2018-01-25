@@ -68,23 +68,6 @@
 
 (define else #t)
 
-(define (cadr x) (car (cdr x)))
-
-(define-macro (let bindings . rest)
-  (cons (cons 'lambda (cons (map1 car bindings) rest))
-        (map1 cadr bindings)))
-
-(define *input-ports* '())
-(define-macro (push! stack o)
-  (cons
-   'begin
-   (list
-    (list 'set! stack (list cons o stack))
-    stack)))
-(define-macro (pop! stack)
-  (list 'let (list (list 'o (list car stack)))
-        (list 'set! stack (list cdr stack))
-        'o))
 (define-macro (load file)
   (list 'begin
         (list 'if (list getenv "MES_DEBUG")
@@ -92,12 +75,9 @@
                     (list core:display-error ";;; read ")
                     (list core:display-error file)
                     (list core:display-error "\n")))
-     (list 'push! '*input-ports* (list current-input-port))
-     (list 'set-current-input-port (list open-input-file file))
-     (list 'primitive-load)
-     (list 'set-current-input-port (list 'pop! '*input-ports*))))
+     (list 'primitive-load file)))
 
-(define include load)
+(define-macro (include file) (list 'load file))
 
 (define (append . rest)
   (if (null? rest) '()

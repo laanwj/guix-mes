@@ -23,7 +23,7 @@
 ;;; Code:
 
 (define (module->file o)
-  (string-append (string-join (map1 symbol->string o) "/") ".mes"))
+  (string-append (string-join (map symbol->string o) "/") ".mes"))
 
 (define *modules* '(mes/base-0.mes))
 (define (mes-load-module-env module a)

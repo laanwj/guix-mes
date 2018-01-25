@@ -1,2 +1,0 @@
-;;; -*-scheme-*-
-(core:display "t00\n")

@@ -23,14 +23,51 @@
 ;;; Code:
 
 (define-module (mes guile)
-  #:export (core:display core:display-error)
+  #:export (
+            append2
+            core:apply
+            core:display
+            core:display-error
+            core:display-port
+            core:exit
+            core:macro-expand
+            core:write
+            core:write-error
+            core:write-port
+            core:type
+            )
   ;;#:re-export (open-input-file open-input-string with-input-from-string)
   )
 
 (cond-expand
  (guile
+  (define core:exit exit)
   (define core:display display)
+  (define core:display-port display)
   (define (core:display-error o) (display o (current-error-port)))
+  (define core:write write)
+  (define (core:write-error o) (write o (current-error-port)))
+  (define core:write-port write)
+  (define core:macro-expand identity)
+  (define (core:apply f a . m) (apply f a))
+  (define append2 append)
+
+  (define guile:keyword? keyword?)
+  (define guile:number? number?)
+  (define guile:pair? pair?)
+  (define guile:string? string?)
+  (define guile:symbol? symbol?)
+  (define (core:type x)
+    (define <cell:keyword> 4)
+    (define <cell:number> 6)
+    (define <cell:pair> 7)
+    (define <cell:string> 10)
+    (define <cell:symbol> 11)
+    (cond ((guile:keyword? x) <cell:keyword>)
+          ((guile:number? x) <cell:number>)
+          ((guile:pair? x) <cell:pair>)
+          ((guile:string? x) <cell:string>)
+          ((guile:symbol? x) <cell:symbol>)))
 
 ;;   (define core:open-input-file open-input-file)
 ;;   (define (open-input-file file)

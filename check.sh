@@ -20,13 +20,18 @@
 
 export GUILE=${GUILE-guile}
 export MES=${MES-./mes}
+#export MES_ARENA=${MES_ARENA-200000000} #9GiB
+
+set -e
+bash check-boot.sh
 
 tests="
+tests/boot.test
 tests/read.test
 tests/base.test
-tests/closure.test
 tests/quasiquote.test
 tests/let.test
+tests/closure.test
 tests/scm.test
 tests/display.test
 tests/cwv.test
@@ -39,13 +44,13 @@ tests/optargs.test
 tests/fluids.test
 tests/catch.test
 tests/record.test
-tests/syntax.test
-tests/pmatch.test
-tests/let-syntax.test
-tests/guile.test
 tests/getopt-long.test
-tests/psyntax.test
+tests/guile.test
+tests/syntax.test
+tests/let-syntax.test
+tests/pmatch.test
 tests/match.test
+tests/psyntax.test
 "
 
 slow_or_broken="
@@ -58,6 +63,10 @@ set +e
 fail=0
 total=0
 for t in $tests; do
+    if [ ! -f $t ]; then
+        echo $t: [SKIP];
+        continue
+    fi
     sh "$t" &> $t.log
     r=$?
     total=$((total+1))

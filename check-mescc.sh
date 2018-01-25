@@ -20,7 +20,7 @@
 
 export MES=${MES-src/mes.gcc}
 export MESCC=${MESCC-scripts/mescc.mes}
-#export MES_ARENA=${MES_ARENA-200000000} > 12GB mem
+#export MES_ARENA=${MES_ARENA-200000000} #9GiB
 
 GUILE=${GUILE-guile}
 MES=${MES-./mes}

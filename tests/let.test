@@ -9,7 +9,7 @@ exit $?
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -32,32 +32,35 @@ exit $?
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
 
-(let () (define *top-let-a* '*top-let-a*) #f)
-(pass-if "top let " (seq? (and (defined? '*top-let-a*) *top-let-a*) #f))
+(pass-if-equal "let " 1
+  (let ((x 1)) 1))
 
-(pass-if "let loop"
-  (sequal?
-   (let loop ((lst '(3 2 1)))
-     (cond ((null? lst) '())
-           (#t (cons (car lst) (loop (cdr lst))))))
-   '(3 2 1)))
+(let () (define *let-define* '*let-define*) #f)
+(pass-if-equal "let define "
+    #f
+    (and (defined? '*let-define*) *let-define*))
 
-(pass-if "let* comments"
-  (seq? (let* ((aa 2)
-               (bb (+ aa 3))
-               #! boo !#
-               ;;(bb 4)
-               )
-          bb)
-        5))
+(begin (define *begin-define* '*begin-define*) #f)
+(pass-if-equal "begin define" '*begin-define*
+               (and (defined? '*begin-define*) *begin-define*))
 
-(pass-if "letrec"
-  (seq?
-   (letrec ((factorial (lambda (n)
-                         (cond ((= n 1) 1)
-                               (#t (* n (factorial (- n 1))))))))
-     (factorial 4))
-   24))
+(pass-if-equal "let loop" '(3 2 1)
+  (let loop ((lst '(3 2 1)))
+    (cond ((null? lst) '())
+          (#t (cons (car lst) (loop (cdr lst)))))))
+
+(pass-if-equal "let* comments" 5
+  (let* ((aa 2)
+         (bb (+ aa 3))
+         #! boo !#
+         ;;(bb 4)
+         )
+    bb))
+
+(pass-if-equal "letrec" 24
+  (letrec ((factorial (lambda (n)
+                        (cond ((= n 1) 1)
+                              (#t (* n (factorial (- n 1))))))))
+    (factorial 4)))
 
 (result 'report)
-

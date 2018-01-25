@@ -26,11 +26,29 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(mes-use-module (mes syntax))
 (mes-use-module (mes test))
+(mes-use-module (mes syntax))
 
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
+
+(define-syntax sr:when
+  (syntax-rules ()
+    ((sr:when condition exp ...)
+     (if condition
+         (begin exp ...)))))
+
+(sr:when #t
+         (display "hallo\n")
+         (display "daar\n"))
+
+
+;; FIXME: macro inside let
+(define-syntax sr:when
+  (syntax-rules ()
+    ((sc:when condition exp ...)
+     (if condition
+         (begin exp ...)))))
 
 (pass-if "define-syntax when"
   (sequal?
@@ -43,6 +61,10 @@ exit $?
      (let ()
        (sr:when #t "if not now, then?")))
    "if not now, then?"))
+
+;; FIXME: macro inside let
+(define-syntax-rule (sre:when c e ...)
+  (if c (begin e ...)))
 
 (pass-if "define-syntax-rule"
   (sequal?
