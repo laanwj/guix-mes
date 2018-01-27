@@ -4,7 +4,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 !#
 
 ;;; Mes --- The Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -107,7 +107,7 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
   (cond
    ((guile:pair? x) #f)
    ((guile:null? x) #f)
-   (#t x)))
+   (#t #t)))
 
 ;; PRIMITIVES
 (define car guile:car)
@@ -154,72 +154,75 @@ exec guile -L $(pwd) -e '(mes)' -s "$0" "$@"
 (define (lookup-macro e a)
   #f)
 
+(define guile:dot '#{.}#)
+
 (define environment
   (guile:map
    (lambda (x) (cons (car x) (guile:eval (cdr x) (guile:current-module))))
    '(
-    ((guile:list) . (guile:list))
-    (#t . #t)
-    (#f . #f)
+     (*closure* . #t)
+     ((guile:list) . (guile:list))
+     (#t . #t)
+     (#f . #f)
     
-    (*unspecified* . guile:*unspecified*)
+     (*unspecified* . guile:*unspecified*)
 
-    (atom? . atom?)
-    (car . car)
-    (cdr . cdr)
-    (cons . cons)
-    ;; (cond . evcon)
-    (eq? . eq?)
+     (atom? . atom?)
+     (car . car)
+     (cdr . cdr)
+     (cons . cons)
+     ;; (cond . evcon)
+     (eq? . eq?)
 
-    (null? . null?)
-    (pair? . guile:pair?)
-    ;;(quote . quote)
+     (null? . null?)
+     (pair? . guile:pair?)
+     ;; (quote . quote)
 
-    (evlis-env . evlis-env)
-    (evcon . evcon)
-    (pairlis . pairlis)
-    (assq . assq)
-    (assq-ref-env . assq-ref-env)
+     (evlis-env . evlis-env)
+     (evcon . evcon)
+     (pairlis . pairlis)
+     (assq . assq)
+     (assq-ref-env . assq-ref-env)
 
-    (eval-env . eval-env)
-    (apply-env . apply-env)
+     (eval-env . eval-env)
+     (apply-env . apply-env)
 
-    (read . read)
-    (display . guile:display)
-    (newline . guile:newline)
+     (read . read)
+     (display . guile:display)
+     (newline . guile:newline)
 
-    (builtin? . builtin?)
-    (number? . number?)
-    (call . call)
+     (builtin? . builtin?)
+     (number? . number?)
+     (call . call)
 
-    (< . guile:<)
-    (- . guile:-)
+     (< . guile:<)
+     (- . guile:-)
 
-    ;; DERIVED
-    (caar . caar)
-    (cadr . cadr)
-    (cdar . cdar)
-    (cddr . cddr)
-    (caadr . caadr)
-    (caddr . caddr)
-    (cdadr . cdadr)
-    (cadar . cadar)
-    (cddar . cddar)
-    (cdddr . cdddr)
+     ;; DERIVED
+     (caar . caar)
+     (cadr . cadr)
+     (cdar . cdar)
+     (cddr . cddr)
+     (caadr . caadr)
+     (caddr . caddr)
+     (cdadr . cdadr)
+     (cadar . cadar)
+     (cddar . cddar)
+     (cdddr . cdddr)
 
-    (append2 . append2)
-    (exit . guile:exit)
+     (append2 . append2)
+     (exit . guile:exit)
 
-    (*macro* . (guile:list))
-    (*dot* . '.)
+     (*macro* . (guile:list))
+     (*dot* . guile:dot)
 
-    ;;
-    (stderr . stderr))))
+     ;;
+     (stderr . stderr))))
 
 (define (main arguments)
-  (let ((program (read-input-file)))
-    ;;(stderr "program:~a\n" program)
-    (guile:display (eval-env program environment)))
+  (let ((program (cons 'begin (read-input-file))))
+    (stderr "program:~a\n" program)
+    (stderr "=> ~s\n" (eval-env program environment)))
   (guile:newline))
 
 (guile:module-define! (guile:resolve-interface '(mes)) 'main main)
