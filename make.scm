@@ -434,9 +434,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    (add-target (snarf "src/vector.c" #:mes? #t))))
 
 (add-target (bin.gcc "src/mes.c" #:dependencies gcc-snarf-targets
-                     #:defines `("MES_C_READER=1"
-                                 "MES_C_DEFINE=1"
-                                 "MES_FIXED_PRIMITIVES=1"
+                     #:defines `("MES_FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
                                  "POSIX=1"
                                  ,(string-append "VERSION=\"" %version "\"")
@@ -446,9 +444,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (bin.gcc "src/mes.c" #:libc libc-gcc.mlibc-o
                      #:dependencies mes-snarf-targets
-                     #:defines `("MES_C_READER=1"
-                                 "MES_C_DEFINE=1"
-                                 "MES_FIXED_PRIMITIVES=1"
+                     #:defines `( "MES_FIXED_PRIMITIVES=1"
                                  "MES_FULL=1"
                                  ,(string-append "VERSION=\"" %version "\"")
                                  ,(string-append "MODULEDIR=\"" (string-append %prefix (if (string-null? %prefix) "" "/") "/" %moduledir "/") "\"")
@@ -456,9 +452,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
                      #:includes '("src")))
 
 (add-target (bin.mescc "src/mes.c" #:dependencies mes-snarf-targets
-                       #:defines `("MES_C_READER=1"
-                                   "MES_C_DEFINE=1"
-                                   "MES_FIXED_PRIMITIVES=1"
+                       #:defines `("MES_FIXED_PRIMITIVES=1"
                                    "MES_FULL=1"
                                    ,(string-append "VERSION=\"" %version "\"")
                                    ,(string-append "MODULEDIR=\"" (string-append %prefix (if (string-null? %prefix) "" "/") %moduledir "/") "\"")
@@ -537,7 +531,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (for-each
  (lambda (f)
    ((install-dir #:dir (string-append %module-dir)) f))
- '("module/language/c99/compiler.mes"
+ '(;;"module/language/c99/compiler.mes"
    "module/language/c99/compiler.scm"
    "module/language/c99/info.mes"
    "module/language/c99/info.scm"
@@ -550,6 +544,9 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/mes/as.scm"
    ;;"module/mes/base-0.mes"
    "module/mes/base.mes"
+   "module/mes/boot-0.scm"
+   "module/mes/boot-00.scm"
+   "module/mes/boot-01.scm"
    "module/mes/bytevectors.mes"
    "module/mes/bytevectors.scm"
    "module/mes/catch.mes"
@@ -587,7 +584,6 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/mes/quasiquote.mes"
    "module/mes/quasisyntax.mes"
    "module/mes/quasisyntax.scm"
-   "module/mes/read-0.mes"
    "module/mes/repl.mes"
    "module/mes/scm.mes"
    "module/mes/syntax.mes"

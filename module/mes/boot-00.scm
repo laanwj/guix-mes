@@ -1,7 +1,5 @@
-;;; -*-scheme-*-
-
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -18,14 +16,20 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+;; boot-00.scm
+(define mes %version)
 
-;;; Code:
+(define (defined? x)
+  (assq x (current-module)))
 
-(define-macro (define-module module . rest) #t)
-(define-macro (use-modules . rest) #t)
+(define (cond-expand-expander clauses)
+  (if (defined? (car (car clauses)))
+      (cdr (car clauses))
+      (cond-expand-expander (cdr clauses))))
 
-;;(mes-use-module (mes guile))
-(mes-use-module (mes quasiquote))
-(mes-use-module (mes syntax))
-(include-from-path "mes/pmatch.scm")
+(define-macro (cond-expand . clauses)
+  (cons 'begin (cond-expand-expander clauses)))
+;; end boot-00.scm
+
+;;((lambda (*program*) *program*) (primitive-load 0))
+(primitive-load 0)

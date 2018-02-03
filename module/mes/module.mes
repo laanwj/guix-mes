@@ -36,10 +36,13 @@
     x))
 
 (define-macro (mes-use-module module)
-  (list
-   'begin
-   (list 'if (list 'not (list 'memq (list string->symbol (module->file module)) '*modules*))
-         (list
-          'begin
-          (list 'set! '*modules* (list cons (list string->symbol (module->file module)) '*modules*))
-          (list 'load (list string-append '%moduledir (module->file module)))))))
+  (list 'if (list not (list memq (list string->symbol (module->file module)) '*modules*))
+        (list
+         'begin
+         (list 'set! '*modules* (list cons (list string->symbol (module->file module)) '*modules*))
+         (list 'load (list string-append '%moduledir (module->file module))))
+        (list 'if (getenv "MES_DEBUG")
+              (list 'begin
+                    (list core:display-error ";;; already loaded: ")
+                    (list core:display-error (list 'quote module))
+                    (list core:display-error "\n")))))

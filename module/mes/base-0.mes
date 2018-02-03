@@ -34,9 +34,6 @@
 (define (primitive-eval e) (core:eval e (current-module)))
 (define eval core:eval)
 
-(if (defined? 'current-input-port) #t
-    (define (current-input-port) 0))
-
 (define (current-output-port) 1)
 (define (current-error-port) 2)
 (define (port-filename port) "<stdin>")
@@ -63,8 +60,8 @@
                             (if (pair? (cdr (car clauses)))
                                 (if (eq? (car (cdr (car clauses))) '=>)
                                     (append2 (cdr (cdr (car clauses))) '(test))
-                                    (list (cons 'lambda (cons '() (cons 'test (cdar clauses))))))
-                                (list (cons 'lambda (cons '() (cons 'test (cdar clauses))))))
+                                    (list (cons 'lambda (cons '() (cons 'test (cdr (car clauses)))))))
+                                (list (cons 'lambda (cons '() (cons 'test (cdr (car clauses)))))))
                             (if (pair? (cdr clauses))
                                 (cons 'cond (cdr clauses)))))))
               (car (car clauses)))))
@@ -118,8 +115,9 @@
                (string->list "/module") ; `module/' gets replaced upon install
                (string->list "/")))))
 
+;;(primitive-load "module/mes/type-0.mes")
 (include (list->string
-          (append (string->list %moduledir) (string->list "/mes/type-0.mes"))))
+          (append2 (string->list %moduledir) (string->list "/mes/type-0.mes"))))
 
 (define (symbol->string s)
   (apply string (symbol->list s)))
@@ -151,15 +149,19 @@
 
 (include-from-path "mes/module.mes")
 
+(mes-use-module (mes base-0))
+
 (mes-use-module (mes base))
-(mes-use-module (srfi srfi-0))
+;; (mes-use-module (srfi srfi-0))
 (mes-use-module (mes quasiquote))
 (mes-use-module (mes let))
 
 (mes-use-module (mes scm))
 
+(mes-use-module (srfi srfi-1)) ;; FIXME: module read order
 (mes-use-module (srfi srfi-13))
+
+(mes-use-module (mes fluids)) ;; FIXME: module read order
 (mes-use-module (mes catch))
 
 (mes-use-module (mes posix))
-

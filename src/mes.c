@@ -24,12 +24,13 @@
 #include <string.h>
 #include <mlibc.h>
 
-#if MES_C_READER
-int ARENA_SIZE = 10000000;
+int ARENA_SIZE = 20000000; // 32B: 100 MiB, 64b: 200 MiB
+#if __MESC__
+//int MAX_ARENA_SIZE = 89478485; // 32b: ~1GiB
+int MAX_ARENA_SIZE = 80000000; // 32b: ~1GiB
 #else
-int ARENA_SIZE = 100000;
+int MAX_ARENA_SIZE = 200000000; // 32b: 2GiB, 64b: 4GiB
 #endif
-int MAX_ARENA_SIZE = 20000000;
 
 int GC_SAFETY = 250;
 
@@ -129,12 +130,9 @@ struct scm scm_symbol_lambda = {TSYMBOL, "lambda",0};
 struct scm scm_symbol_begin = {TSYMBOL, "begin",0};
 struct scm scm_symbol_if = {TSYMBOL, "if",0};
 struct scm scm_symbol_quote = {TSYMBOL, "quote",0};
-#if 1 //MES_C_DEFINE // snarfing makes these always needed for linking
 struct scm scm_symbol_define = {TSYMBOL, "define",0};
 struct scm scm_symbol_define_macro = {TSYMBOL, "define-macro",0};
-#endif
 
-#if 1 //MES_C_READER // snarfing makes these always needed for linking
 struct scm scm_symbol_quasiquote = {TSYMBOL, "quasiquote", 0};
 struct scm scm_symbol_unquote = {TSYMBOL, "unquote", 0};
 struct scm scm_symbol_unquote_splicing = {TSYMBOL, "unquote-splicing", 0};
@@ -142,7 +140,6 @@ struct scm scm_symbol_syntax = {TSYMBOL, "syntax",0};
 struct scm scm_symbol_quasisyntax = {TSYMBOL, "quasisyntax", 0};
 struct scm scm_symbol_unsyntax = {TSYMBOL, "unsyntax", 0};
 struct scm scm_symbol_unsyntax_splicing = {TSYMBOL, "unsyntax-splicing", 0};
-#endif // MES_C_READER
 
 struct scm scm_symbol_set_x = {TSYMBOL, "set!",0};
 
@@ -189,9 +186,7 @@ struct scm scm_vm_eval_car = {TSPECIAL, "*vm-eval-car*",0};
 struct scm scm_vm_eval_cdr = {TSPECIAL, "*vm-eval-cdr*",0};
 struct scm scm_vm_eval_cons = {TSPECIAL, "*vm-eval-cons*",0};
 struct scm scm_vm_eval_null_p = {TSPECIAL, "*vm-eval-null-p*",0};
-#if 1 //MES_C_DEFINE // snarfing makes these always needed for linking
 struct scm scm_vm_eval_define = {TSPECIAL, "*vm-eval-define*",0};
-#endif
 
 struct scm scm_vm_eval_set_x = {TSPECIAL, "*vm-eval-set!*",0};
 struct scm scm_vm_eval_macro = {TSPECIAL, "*vm-eval-macro*",0};
@@ -209,8 +204,6 @@ struct scm scm_vm_return = {TSPECIAL, "*vm-return*",0};
 
 struct scm scm_symbol_gnuc = {TSYMBOL, "%gnuc",0};
 struct scm scm_symbol_mesc = {TSYMBOL, "%mesc",0};
-struct scm scm_symbol_c_reader = {TSYMBOL, "%c-reader",0};
-struct scm scm_symbol_c_define = {TSYMBOL, "%c-define",0};
 
 struct scm scm_test = {TSYMBOL, "test",0};
 
@@ -295,12 +288,8 @@ int g_function = 0;
 #define MAKE_NUMBER(n) make_cell_ (tmp_num_ (TNUMBER), 0, tmp_num2_ (n))
 #define MAKE_REF(n) make_cell_ (tmp_num_ (TREF), n, 0)
 #define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
-#if MES_C_READER
 #define MAKE_KEYWORD(x) make_cell_ (tmp_num_ (TKEYWORD), x, 0)
-#endif
-#if MES_C_DEFINE
 #define MAKE_MACRO(name, x) make_cell_ (tmp_num_ (TMACRO), STRING (name), x)
-#endif
 
 #define CAAR(x) CAR (CAR (x))
 #define CADR(x) CAR (CDR (x))
@@ -768,9 +757,7 @@ eval_apply ()
     case cell_vm_eval_cons: goto eval_cons;
     case cell_vm_eval_null_p: goto eval_null_p;
 #endif
-#if MES_C_DEFINE
     case cell_vm_eval_define: goto eval_define;
-#endif
     case cell_vm_eval_set_x: goto eval_set_x;
     case cell_vm_eval_macro: goto eval_macro;
     case cell_vm_eval_check_func: goto eval_check_func;
@@ -953,56 +940,43 @@ eval_apply ()
               push_cc (CADR (r1), r1, r0, cell_vm_macro_expand);
               goto eval;
             }
-          default: {
-            push_cc (r1, r1, r0, cell_vm_eval_macro);
-            goto macro_expand;
-            eval_macro:
-            if (r1 != r2)
-              {
-                if (TYPE (r1) == TPAIR)
-                  {
-                    set_cdr_x (r2, CDR (r1));
-                    set_car_x (r2, CAR (r1));
-                  }
-                goto eval;
-              }
-#if MES_C_DEFINE
-            if (TYPE (r1) == TPAIR
-                && (CAR (r1) == cell_symbol_define
+          default:
+            {
+              if (TYPE (r1) == TPAIR
+                  && (CAR (r1) == cell_symbol_define
                     || CAR (r1) == cell_symbol_define_macro))
-              {
-                r2 = CADR (r1);
-                if (TYPE (r2) != TPAIR)
-                  {
-                    push_cc (CAR (CDDR (r1)), r2, cons (cons (CADR (r1), CADR (r1)), r0), cell_vm_eval_define);
-                    goto eval;
-                  }
-                else
-                  {
-                    r2 = CAR (r2);
-                    SCM p = pairlis (CADR (r1), CADR (r1), r0);
-                    SCM args = CDR (CADR (r1));
-                    SCM body = CDDR (r1);
-                    r1 = cons (cell_symbol_lambda, cons (args, body));
-                    push_cc (r1, r2, p, cell_vm_eval_define);
-                    goto eval;
-                  }
-              eval_define:
-                if (CAAR (CAAR (g_stack)) == cell_symbol_define_macro
-                    || CAR (CAAR (g_stack)) == cell_symbol_define_macro)
-                  r1 = MAKE_MACRO (r2, r1);
-                SCM entry = cons (r2, r1);
-                SCM aa = cons (entry, cell_nil);
-                set_cdr_x (aa, cdr (r0));
-                set_cdr_x (r0, aa);
-                SCM cl = assq (cell_closure, r0);
-                set_cdr_x (cl, aa);
-                r1 = entry;
-                goto vm_return;
-              }
-#endif // MES_C_DEFINE
-
-            push_cc (CAR (r1), r1, r0, cell_vm_eval_check_func); goto eval;
+                {
+                  r2 = r1;
+                  if (TYPE (CADR (r1)) != TPAIR)
+                    {
+                      push_cc (CAR (CDDR (r1)), r2, cons (cons (CADR (r1), CADR (r1)), r0), cell_vm_eval_define);
+                      goto eval;
+                    }
+                  else
+                    {
+                      SCM p = pairlis (CADR (r1), CADR (r1), r0);
+                      SCM args = CDR (CADR (r1));
+                      SCM body = CDDR (r1);
+                      r1 = cons (cell_symbol_lambda, cons (args, body));
+                      push_cc (r1, r2, p, cell_vm_eval_define);
+                      goto eval;
+                    }
+                eval_define:;
+                  SCM name = CADR (r2);
+                  if (TYPE (CADR (r2)) == TPAIR) name = CAR (name);
+                  if (CAR (r2) == cell_symbol_define_macro)
+                    r1 = MAKE_MACRO (name, r1);
+                  SCM entry = cons (name, r1);
+                  SCM aa = cons (entry, cell_nil);
+                  set_cdr_x (aa, cdr (r0));
+                  set_cdr_x (r0, aa);
+                  SCM cl = assq (cell_closure, r0);
+                  set_cdr_x (cl, aa);
+                  //r1 = entry;
+                  r1 = cell_unspecified;
+                  goto vm_return;
+                }
+              push_cc (CAR (r1), r1, r0, cell_vm_eval_check_func); goto eval;
             eval_check_func:
             push_cc (CDR (r2), r2, r0, cell_vm_eval2); goto evlis;
             eval2:
@@ -1052,10 +1026,28 @@ eval_apply ()
           r1 = append2 (CDAR (r1), CDR (r1));
         else if (CAAR (r1) == cell_symbol_primitive_load)
           {
-            push_cc (cons (cell_symbol_read_input_file, cell_nil), r1, r0, cell_vm_begin_read_input_file);
-            goto apply;
-          begin_read_input_file:
-            r1 = append2 (r1, CDR (r2));
+            // push_cc (cons (cell_symbol_read_input_file, cell_nil), r1, r0, cell_vm_begin_read_input_file);
+            // goto apply;
+
+            push_cc (CAR (CDAR (r1)), r1, r0, cell_vm_begin_read_input_file);
+            goto eval; // FIXME: expand too?!
+          begin_read_input_file:;
+            SCM input = r1;
+            if ((TYPE (r1) == TNUMBER && VALUE (r1) == 0))
+              ;
+            else
+              input = set_current_input_port (open_input_file (r1));
+            push_cc (input, r2, r0, cell_vm_return);
+            x = read_input_file_env (r0);
+            gc_pop_frame ();
+            r1 = x;
+            input = r1;
+#if DEBUG
+            eputs ("  ..2.r2="); write_error_ (r2); eputs ("\n");
+            eputs ("  => result r1="); write_error_ (r1); eputs ("\n");
+#endif
+            set_current_input_port (input);
+            r1 = append2 (r1, cons (cell_t, CDR (r2)));
           }
       }
     if (CDR (r1) == cell_nil)
@@ -1244,18 +1236,6 @@ mes_symbols () ///((internal))
   a = acons (cell_symbol_gnuc, cell_f, a);
   a = acons (cell_symbol_mesc, cell_t, a);
 #endif
-
-#if MES_C_READER
-  a = acons (cell_symbol_c_reader, cell_t, a);
-#else
-  a = acons (cell_symbol_c_reader, cell_f, a);
-#endif
-
-#if MES_C_DEFINE
-  a = acons (cell_symbol_c_define, cell_t, a);
-#else
-  a = acons (cell_symbol_c_define, cell_f, a);
-#endif
   a = acons (cell_closure, a, a);
 
   return a;
@@ -1335,15 +1315,21 @@ load_env (SCM a) ///((internal))
 {
   r0 = a;
   g_stdin = -1;
+  char boot[128];
+  char buf[128];
+  if (getenv ("MES_BOOT"))
+    strcpy (boot, getenv ("MES_BOOT"));
+  else
+    strcpy (boot, "boot-0.scm");
   if (getenv ("MES_PREFIX"))
     {
-      char buf[128];
       strcpy (buf, getenv ("MES_PREFIX"));
       strcpy (buf + strlen (buf), "/module");
-      strcpy (buf + strlen (buf), "/mes/read-0.mes");
+      strcpy (buf + strlen (buf), "/mes/");
+      strcpy (buf + strlen (buf), boot);
       if (getenv ("MES_DEBUG"))
         {
-          eputs ("MES_PREFIX reading read-0:");
+          eputs ("MES_PREFIX reading boot-0:");
           eputs (buf);
           eputs ("\n");
         }
@@ -1351,28 +1337,44 @@ load_env (SCM a) ///((internal))
     }
   if (g_stdin < 0)
     {
-      char *read0 = MODULEDIR "mes/read-0.mes";
+      char const *prefix = MODULEDIR "mes/";
+      strcpy (buf, prefix);
+      strcpy (buf + strlen (buf), boot);
       if (getenv ("MES_DEBUG"))
         {
-          eputs ("MODULEDIR reading read-0:");
-          eputs (read0);
+          eputs ("MODULEDIR reading boot-0:");
+          eputs (buf);
           eputs ("\n");
         }
-      g_stdin = open (read0, O_RDONLY);
+      g_stdin = open (buf, O_RDONLY);
+    }
+  if (g_stdin < 0)
+    {
+      strcpy (buf, "module/mes/");
+      strcpy (buf + strlen (buf), boot);
+      if (getenv ("MES_DEBUG"))
+        {
+          eputs (". reading boot-0:");
+          eputs (buf);
+          eputs ("\n");
+        }
+      g_stdin = open (buf, O_RDONLY);
     }
   if (g_stdin < 0)
     {
       if (getenv ("MES_DEBUG"))
         {
-          eputs (". reading read-0:");
-          eputs ("module/mes/read-0.mes");
+          eputs (". reading boot-0:");
+          eputs (boot);
           eputs ("\n");
         }
-      g_stdin = open ("module/mes/read-0.mes", O_RDONLY);
+      g_stdin = open (boot, O_RDONLY);
     }
   if (g_stdin < 0)
     {
-      eputs ("boot failed, read-0.mes not found\n");
+      eputs ("mes: boot failed: no such file: ");
+      eputs (boot);
+      eputs ("\n");
       exit (1);
     }
 

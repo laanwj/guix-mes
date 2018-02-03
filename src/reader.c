@@ -43,10 +43,8 @@ reader_read_line_comment (int c)
   return reader_read_line_comment (getchar ());
 }
 
-#if MES_C_READER
 SCM reader_read_block_comment (int s, int c);
 SCM read_hash (int c, SCM w, SCM a);
-#endif
 
 SCM
 reader_read_word_ (int c, SCM w, SCM a)
@@ -65,7 +63,6 @@ reader_read_word_ (int c, SCM w, SCM a)
   if (c == ')') {ungetchar (c); return reader_lookup_ (w, a);}
   if (c == ';') {reader_read_line_comment (c); return reader_read_word_ ('\n', w, a);}
 
-#if MES_C_READER
   if (c == '"' && w == cell_nil) return reader_read_string ();
   if (c == '"') {ungetchar (c); return reader_lookup_ (w, a);}
   if (c == ',' && peekchar () == '@') {getchar (); return cons (cell_symbol_unquote_splicing,
@@ -80,7 +77,6 @@ reader_read_word_ (int c, SCM w, SCM a)
   if (c == '#' && peekchar () == 'f') return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
   if (c == '#' && peekchar () == 't') return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
   if (c == '#') return read_hash (getchar (), w, a);
-#endif //MES_C_READER
 
   return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
 }
@@ -90,9 +86,7 @@ eat_whitespace (int c)
 {
   while (c == ' ' || c == '\t' || c == '\n' || c == '\f') c = getchar ();
   if (c == ';') return eat_whitespace (reader_read_line_comment (c));
-#if MES_C_READER
   if (c == '#' && (peekchar () == '!' || peekchar () == '|')) {c=getchar (); reader_read_block_comment (c, getchar ()); return eat_whitespace (getchar ());}
-#endif
   return c;
 }
 
@@ -136,7 +130,6 @@ reader_lookup_ (SCM s, SCM a)
   return lookup_symbol_ (s);
 }
 
-#if MES_C_READER
 SCM
 reader_read_block_comment (int s, int c)
 {
@@ -315,13 +308,6 @@ reader_read_string ()
   }
   return MAKE_STRING (p);
 }
-#else // !MES_C_READER
-SCM reader_read_word (SCM c,SCM w,SCM a) {}
-SCM reader_read_character () {}
-SCM reader_read_octal () {}
-SCM reader_read_hex () {}
-SCM reader_read_string () {}
-#endif // MES_C_READER
 
 int g_tiny = 0;
 

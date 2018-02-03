@@ -33,13 +33,13 @@
         (map1 cadr bindings)))
 
 (define-macro (xsimple-let bindings rest)
-  `(,`(lambda ,(map car bindings) ,@rest)
-    ,@(map cadr bindings)))
+  `(,`(lambda ,(map1 car bindings) ,@rest)
+    ,@(map1 cadr bindings)))
 
 (define-macro (xnamed-let name bindings rest)
   `(simple-let ((,name *unspecified*))
-     (set! ,name (lambda ,(map car bindings) ,@rest))
-     (,name ,@(map cadr bindings))))
+     (set! ,name (lambda ,(map1 car bindings) ,@rest))
+     (,name ,@(map1 cadr bindings))))
 
 (define-macro (let bindings-or-name . rest)
   (if (symbol? bindings-or-name)
@@ -72,4 +72,3 @@
   `(let ,(unspecified-bindings bindings '())
      ,@(letrec-setters bindings '())
      ,@body))
-
