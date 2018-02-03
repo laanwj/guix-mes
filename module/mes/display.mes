@@ -182,11 +182,15 @@
                                          (simple-format (cdr lst) args))
                 (let ((c (cadr lst)))
                   (case c
+                    ((#\A) (display (car args) port))
                     ((#\a) (display (car args) port))
-                    ((#\s) (write (car args) port)))
+                    ((#\S) (write (car args) port))
+                    ((#\s) (write (car args) port))
+                    (else (display (car args) port)))
                   (simple-format (cddr lst) (cdr args)))))))
     
     (if destination (simple-format lst rest)
         (with-output-to-string
           (lambda () (simple-format lst rest))))))
+
 (define format simple-format)
