@@ -99,10 +99,12 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         if (!cont) fputs (")", fd);
         break;
       }
+    case TKEYWORD:
     case TSPECIAL:
     case TSTRING:
     case TSYMBOL:
       {
+        if (TYPE (x) == TKEYWORD) fputs ("#:", fd);
         if (write_p && TYPE (x) == TSTRING) fputc ('"', fd);
         SCM t = CAR (x);
         while (t && t != cell_nil)
