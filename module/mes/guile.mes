@@ -28,7 +28,7 @@
 
 (define-macro (include-from-path file)
   (let loop ((path (cons %moduledir (string-split (or (getenv "GUILE_LOAD_PATH") "") #\:))))
-    (if (getenv "MES_DEBUG") 
+    (if (getenv "MES_DEBUG")
         ;;(format (current-error-port) "include-from-path: ~s [PATH:~s]\n" file path)
         (core:display-error (string-append "include-from-path: " file " [PATH:" (string-join path ":") "]\n")))
     (if (null? path) (error "include-from-path: not found: " file)
@@ -175,3 +175,40 @@
   (let ((lst (filter (negate string-null?) (string-split file-name #\/))))
     (if (<= (length lst) 1) "."
         (string-join (list-head lst (1- (length lst))) "/"))))
+
+;; FIXME: c&p from display
+(define (with-output-to-string thunk)
+  (define save-write-byte write-byte)
+  (let ((stdout '()))
+    (set! write-byte
+          (lambda (x . rest)
+            (let ((out? (or (null? rest) (eq? (car rest) (current-output-port)))))
+              (if (not out?) (apply save-write-byte (cons x rest))
+                  (begin
+                    (set! stdout (append stdout (list (integer->char x))))
+                    x)))))
+    (thunk)
+    (let ((r (apply string stdout)))
+      (set! write-byte save-write-byte)
+      r)))
+
+;; FIXME: c&p from display
+(define (simple-format destination format . rest)
+  (let ((port (if (boolean? destination) (current-output-port) destination))
+        (lst (string->list format)))
+    (define (simple-format lst args)
+      (if (pair? lst)
+          (let ((c (car lst)))
+            (if (not (eq? c #\~)) (begin (write-char (car lst) port)
+                                         (simple-format (cdr lst) args))
+                (let ((c (cadr lst)))
+                  (case c
+                    ((#\a) (display (car args) port))
+                    ((#\s) (write (car args) port)))
+                  (simple-format (cddr lst) (cdr args)))))))
+
+    (if destination (simple-format lst rest)
+        (with-output-to-string
+          (lambda () (simple-format lst rest))))))
+(define format simple-format)
+

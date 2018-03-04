@@ -9,7 +9,7 @@ exit $?
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -46,17 +46,19 @@ exit $?
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
 
-(when (not guile?)
- (pass-if "andmap"
-   (seq? (andmap (lambda (x) (> x 0)) '(3 2 1)) #t))
+(cond-expand
+ (guile)
+ (mes
+  (pass-if "andmap"
+    (seq? (andmap (lambda (x) (> x 0)) '(3 2 1)) #t))
 
- (pass-if "andmap 2"
-   (seq? (andmap (lambda (x) (> x 0)) '(3 2 1 0)) #f))
+  (pass-if "andmap 2"
+    (seq? (andmap (lambda (x) (> x 0)) '(3 2 1 0)) #f))
 
- (pass-if "putprop" (putprop 'foo '*sc-expander 'bar))
+  (pass-if "putprop" (putprop 'foo '*sc-expander 'bar))
 
- (pass-if "getprop"
-   (seq? (getprop 'foo '*sc-expander) 'bar))
+  (pass-if "getprop"
+    (seq? (getprop 'foo '*sc-expander) 'bar)))
  )
 
 (pass-if "syntax-case"
@@ -76,84 +78,97 @@ exit $?
   (sequal? (syntax-object->datum (syntax (set! a b)))
            '(set! a b)))
 
-(pass-if "syntax-case swap!"
-  (sequal? (syntax-object->datum
-            (let ((exp '(set! a b)))
-              (syntax-case exp ()
-                ((swap! a b)
-                 (syntax
-                  (let ((temp a))
-                    (set! a b)
-                    (set! b temp)))))))
-           '(let ((temp a)) (set! a b) (set! b temp))))
+(pass-if-equal "syntax-case swap!"
+    '((lambda (temp)
+        (set! a b)
+        (set! b temp))
+      a)
+  (syntax-object->datum
+   (let ((exp '(set! a b)))
+     (syntax-case exp ()
+       ((swap! a b)
+        (syntax
+         ((lambda (temp)
+            (set! a b)
+            (set! b temp))
+          a)))))))
 
-(when (not guile?)
-  (pass-if "syntax-case manual swap!"
-    (sequal?
-     (let* ((sc (sc-expand '(syntax-case exp () ((swap! a b) (syntax (let ((temp a)) (set! a b) (set! b temp)))))))
-            (exp '(swap foo bar))
-            (foo "foo")
-            (bar "bar")
-            (s (eval sc (current-module)))
-            (d (syntax-object->datum s)))
-       (eval d (current-module))
-       (list foo bar))
-     '("bar" "foo"))))
+(pass-if-equal "syntax-case swap! let"
+    '(let ((temp a)) (set! a b) (set! b temp))
+  (syntax-object->datum
+   (let ((exp '(set! a b)))
+     (syntax-case exp ()
+       ((swap! a b)
+        (syntax
+         (let ((temp a))
+           (set! a b)
+           (set! b temp))))))))
 
-(pass-if "define-syntax swap! [syntax-case]"
-  (sequal?
-   (let ()
-     (define-syntax swap!
-       (lambda (exp)
-         (syntax-case exp ()
-           ((swap! a b)
-            (syntax
-             ((lambda (temp)
-                (set! a b)
-                (set! b temp)) a))))))
-     (let ((foo "foo")
-           (bar "bar"))
-       (swap! foo bar)
-       (list foo bar)))
-   (list "bar" "foo")))
+(cond-expand
+ (guile)
+ (mes
+  (pass-if-equal "syntax-case manual swap!"
+      '("bar" "foo")
+    (let* ((sc (sc-expand '(syntax-case exp () ((swap! a b) (syntax (let ((temp a)) (set! a b) (set! b temp)))))))
+           (exp '(swap foo bar))
+           (foo "foo")
+           (bar "bar")
+           (s (eval sc (current-module)))
+           (d (syntax-object->datum s))
+           (e (core:macro-expand d)))
+      (eval e (current-module))
+      (list foo bar)))))
 
-(pass-if "define-syntax swap! [syntax-case+let]"
-  (sequal?
-   (let ()
-     (define-syntax swap!
-       (lambda (exp)
-         (syntax-case exp ()
-           ((swap! a b)
-            (syntax
-             (let ((temp a))
+(pass-if-equal "define-syntax swap! [syntax-case]"
+    (list "bar" "foo")
+  (let ()
+    (define-syntax swap!
+      (lambda (exp)
+        (syntax-case exp ()
+          ((swap! a b)
+           (syntax
+            ((lambda (temp)
                (set! a b)
-               (set! b temp)))))))
-     (let ((foo "foo")
-           (bar "bar"))
-       (swap! foo bar)
-       (list foo bar)))
-   (list "bar" "foo")))
+               (set! b temp)) a))))))
+    (let ((foo "foo")
+          (bar "bar"))
+      (swap! foo bar)
+      (list foo bar))))
 
-(pass-if "define-syntax sr:when [syntax-rules]"
-  (sequal?
-   (let ()
-     (define-syntax sr:when
-       (syntax-rules ()
-         ((sc:when condition exp ...)
-          (if condition
-              (begin exp ...)))))
-     (let ()
-       (sr:when #t "if not now, then?")))
-   "if not now, then?"))
+(pass-if-equal "define-syntax swap! [syntax-case+let]"
+  (list "bar" "foo")
+  (let ()
+    (define-syntax swap!
+      (lambda (exp)
+        (syntax-case exp ()
+          ((swap! a b)
+           (syntax
+            (let ((temp a))
+              (set! a b)
+              (set! b temp)))))))
+    (let ((foo "foo")
+          (bar "bar"))
+      (swap! foo bar)
+      (list foo bar))))
 
-(pass-if "define-syntax-rule"
-  (sequal?
-   (let ()
-     (define-syntax-rule (sre:when c e ...)
-       (if c (begin e ...)))
-     (let ()
-       (sre:when #t "if not now, then?")))
-   "if not now, then?"))
+(pass-if-equal "define-syntax sr:when [syntax-rules]"
+    "if not now, then?"
+  (let ()
+    (define-syntax sr:when
+      (syntax-rules ()
+        ((sc:when condition exp ...)
+         (if condition
+             (begin exp ...)))))
+    (let ()
+      (sr:when #t "if not now, then?"))))
+
+(pass-if-equal "define-syntax-rule"
+    "if not now, then?"
+  (let ()
+    (define-syntax-rule (sre:when c e ...)
+      (if c (begin e ...)))
+    (let ()
+      (sre:when #t "if not now, then?"))))
 
 (pass-if-equal "syntax-rules plus"
     (+ 1 2 3)
@@ -163,7 +178,8 @@ exit $?
         ((plus x ...) (+ x ...))))
     (plus 1 2 3)))
 
-(when guile?
+(cond-expand
+ (guile
   (pass-if-equal "macro with quasisyntax"
       '("foo" "foo")
     (let ()
@@ -174,6 +190,7 @@ exit $?
              #`(let ((id #,(symbol->string (syntax->datum #'id))))
                  body ...)))))
       (string-let foo (list foo foo)))))
+ (mes))
 
   ;; (pass-if-equal "custom ellipsis within normal ellipsis"
   ;;     '((((a x) (a y) (a …))

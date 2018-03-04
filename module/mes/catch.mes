@@ -23,14 +23,14 @@
 
 (define %eh (make-fluid
              (lambda (key . args)
-               (if (defined? 'simple-format)
+               (if #f ;;(defined? 'simple-format)
                    (simple-format (current-error-port) "unhandled exception:~a:~a\n" key args)
                    (begin
-                     (display "unhandled exception:" (current-error-port))
-                     (display key (current-error-port))
-                     (display ":" (current-error-port))
-                     (write args (current-error-port))
-                     (newline (current-error-port))))
+                     (core:display-error "unhandled exception:")
+                     (core:display-error key)
+                     (core:display-error ":")
+                     (core:write-error args)
+                     (core:display-error "\n")))
                (exit 1))))
 
 (define (catch key thunk handler)

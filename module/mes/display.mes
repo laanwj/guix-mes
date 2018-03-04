@@ -40,15 +40,15 @@
            (and=> (srfi-1:member x (cdr a) (lambda (x e) (eq? x (cdr e))))
                   (lambda (a) (xassq x (cdr a)))))))
 
+(define-macro (display-cut f slot n1)
+  `(lambda (slot) (,f slot ,n1)))
+
+(define-macro (display-cut2 f slot n1 n2)
+  `(lambda (slot) (,f slot ,n1 ,n2)))
+
 (define (display x . rest)
   (let* ((port (if (null? rest) (current-output-port) (car rest)))
          (write? (and (pair? rest) (pair? (cdr rest)) (cadr rest))))
-
-    (define-macro (cut f slot n1)
-      `(lambda (slot) (,f slot ,n1)))
-
-    (define-macro (cut2 f slot n1 n2)
-      `(lambda (slot) (,f slot ,n1 ,n2)))
 
     (define (display-char x port write?)
       (cond ((and write? (or (eq? x #\") (eq? x #\\)))
@@ -60,7 +60,7 @@
             (#t (write-char x port))))
 
     (define (d x cont? sep)
-      (for-each (cut write-char <> port) (string->list sep))
+      (for-each (display-cut write-char <> port) (string->list sep))
       (cond
        ((eof-object? x)
         (display "#<eof>" port))
@@ -114,7 +114,7 @@
        ((or (keyword? x) (special? x) (string? x) (symbol? x))
         (if (and (string? x) write?) (write-char #\" port))
         (if (keyword? x) (display "#:" port))
-        (for-each (cut2 display-char <> port write?) (string->list x))
+        (for-each (display-cut2 display-char <> port write?) (string->list x))
         (if (and (string? x) write?) (write-char #\" port)))
        ((vector? x)
         (display "#(" port)

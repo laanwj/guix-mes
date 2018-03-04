@@ -189,13 +189,25 @@ struct scm scm_vm_eval_null_p = {TSPECIAL, "*vm-eval-null-p*",0};
 struct scm scm_vm_eval_define = {TSPECIAL, "*vm-eval-define*",0};
 
 struct scm scm_vm_eval_set_x = {TSPECIAL, "*vm-eval-set!*",0};
-struct scm scm_vm_eval_macro = {TSPECIAL, "*vm-eval-macro*",0};
+struct scm scm_vm_eval_macro_expand_eval = {TSPECIAL, "*vm:eval-macro-expand-eval*",0};
+struct scm scm_vm_eval_macro_expand_expand = {TSPECIAL, "*vm:eval-macro-expand-expand*",0};
 struct scm scm_vm_eval_check_func = {TSPECIAL, "*vm-eval-check-func*",0};
 struct scm scm_vm_eval2 = {TSPECIAL, "*vm-eval2*",0};
 struct scm scm_vm_macro_expand = {TSPECIAL, "core:macro-expand",0};
+struct scm scm_vm_macro_expand_define = {TSPECIAL, "*vm:core:macro-expand-define*",0};
+struct scm scm_vm_macro_expand_define_macro = {TSPECIAL, "*vm:core:macro-expand-define-macro*",0};
+struct scm scm_vm_macro_expand_lambda = {TSPECIAL, "*vm:core:macro-expand-lambda*",0};
+struct scm scm_vm_macro_expand_set_x = {TSPECIAL, "*vm:core:macro-expand-set!*",0};
+struct scm scm_vm_begin_expand_primitive_load = {TSPECIAL, "*vm:core:begin-expand-primitive-load*",0};
+struct scm scm_vm_begin_primitive_load = {TSPECIAL, "*vm:core:begin-primitive-load*",0};
+struct scm scm_vm_macro_expand_car = {TSPECIAL, "*vm:core:macro-expand-car*",0};
+struct scm scm_vm_macro_expand_cdr = {TSPECIAL, "*vm:macro-expand-cdr*",0};
+struct scm scm_vm_begin_expand = {TSPECIAL, "*vm:begin-expand*",0};
+struct scm scm_vm_begin_expand_eval = {TSPECIAL, "*vm:begin-expand-eval*",0};
+struct scm scm_vm_begin_expand_macro = {TSPECIAL, "*vm:begin-expand-macro*",0};
 struct scm scm_vm_begin = {TSPECIAL, "*vm-begin*",0};
 struct scm scm_vm_begin_read_input_file = {TSPECIAL, "*vm-begin-read-input-file*",0};
-struct scm scm_vm_begin2 = {TSPECIAL, "*vm-begin2*",0};
+struct scm scm_vm_begin_eval = {TSPECIAL, "*vm:begin-eval*",0};
 struct scm scm_vm_if = {TSPECIAL, "*vm-if*",0};
 struct scm scm_vm_if_expr = {TSPECIAL, "*vm-if-expr*",0};
 struct scm scm_vm_call_with_values2 = {TSPECIAL, "*vm-call-with-values2*",0};
@@ -741,6 +753,7 @@ gc_pop_frame () ///((internal))
 SCM
 eval_apply ()
 {
+  int expanding_p = 0;
  eval_apply:
   gc_check ();
   switch (r3)
@@ -759,13 +772,24 @@ eval_apply ()
 #endif
     case cell_vm_eval_define: goto eval_define;
     case cell_vm_eval_set_x: goto eval_set_x;
-    case cell_vm_eval_macro: goto eval_macro;
+    case cell_vm_eval_macro_expand_eval: goto eval_macro_expand_eval;
+    case cell_vm_eval_macro_expand_expand: goto eval_macro_expand_expand;
     case cell_vm_eval_check_func: goto eval_check_func;
     case cell_vm_eval2: goto eval2;
     case cell_vm_macro_expand: goto macro_expand;
+    case cell_vm_macro_expand_define: goto macro_expand_define;
+    case cell_vm_macro_expand_define_macro: goto macro_expand_define_macro;
+    case cell_vm_macro_expand_lambda: goto macro_expand_lambda;
+    case cell_vm_macro_expand_set_x: goto macro_expand_set_x;
+    case cell_vm_macro_expand_car: goto macro_expand_car;
+    case cell_vm_macro_expand_cdr: goto macro_expand_cdr;
     case cell_vm_begin: goto begin;
-    case cell_vm_begin_read_input_file: goto begin_read_input_file;
-    case cell_vm_begin2: goto begin2;
+    case cell_vm_begin_eval: goto begin_eval;
+    case cell_vm_begin_primitive_load: goto begin_primitive_load;
+    case cell_vm_begin_expand: goto begin_expand;
+    case cell_vm_begin_expand_eval: goto begin_expand_eval;
+    case cell_vm_begin_expand_macro: goto begin_expand_macro;
+    case cell_vm_begin_expand_primitive_load: goto begin_expand_primitive_load;
     case cell_vm_if: goto vm_if;
     case cell_vm_if_expr: goto if_expr;
     case cell_vm_call_with_current_continuation2: goto call_with_current_continuation2;
@@ -914,6 +938,12 @@ eval_apply ()
             eval_null_p:
               x = r1; gc_pop_frame (); r1 = null_p (x); goto eval_apply;
             }
+#else
+          eval_car:;
+          eval_cdr:;
+          eval_cons:;
+          eval_null_p:;
+            
 #endif // MES_FIXED_PRIMITIVES
           case cell_symbol_quote:
             {
@@ -937,8 +967,15 @@ eval_apply ()
             }
           case cell_vm_macro_expand:
             {
-              push_cc (CADR (r1), r1, r0, cell_vm_macro_expand);
+              push_cc (CADR (r1), r1, r0, cell_vm_eval_macro_expand_eval);
               goto eval;
+            eval_macro_expand_eval:
+              push_cc (r1, r2, r0, cell_vm_eval_macro_expand_expand);
+              expanding_p++;
+              goto macro_expand;
+            eval_macro_expand_expand:
+              expanding_p--;
+              goto vm_return;
             }
           default:
             {
@@ -978,10 +1015,10 @@ eval_apply ()
                 }
               push_cc (CAR (r1), r1, r0, cell_vm_eval_check_func); goto eval;
             eval_check_func:
-            push_cc (CDR (r2), r2, r0, cell_vm_eval2); goto evlis;
+              push_cc (CDR (r2), r2, r0, cell_vm_eval2); goto evlis;
             eval2:
-            r1 = cons (CAR (r2), r1);
-            goto apply;
+              r1 = cons (CAR (r2), r1);
+              goto apply;
           }
           }
       }
@@ -993,74 +1030,186 @@ eval_apply ()
     default: goto vm_return;
     }
 
-  SCM macro;
-  SCM expanders;
  macro_expand:
-  if (TYPE (r1) == TPAIR
-      && (macro = lookup_macro_ (CAR (r1), r0)) != cell_f)
-    {
-      r1 = cons (macro, CDR (r1));
-      goto apply;
-    }
-  else if (TYPE (r1) == TPAIR
-           && TYPE (CAR (r1)) == TSYMBOL
-           && ((expanders = assq_ref_env (cell_symbol_sc_expander_alist, r0)) != cell_undefined)
-           && ((macro = assq (CAR (r1), expanders)) != cell_f))
-    {
-      SCM sc_expand = assq_ref_env (cell_symbol_macro_expand, r0);
-      if (sc_expand != cell_undefined && sc_expand != cell_f)
-        {
-          r1 = cons (sc_expand, cons (r1, cell_nil));
-          goto apply;
-        }
-    }
-  goto vm_return;
+  {
+    SCM macro;
+    SCM expanders;
+
+    if (TYPE (r1) != TPAIR || CAR (r1) == cell_symbol_quote)
+      goto vm_return;
+
+    if (TYPE (r1) == TPAIR
+        && (macro = lookup_macro_ (CAR (r1), r0)) != cell_f)
+      {
+        r1 = cons (macro, CDR (r1));
+        push_cc (r1, cell_nil, r0, cell_vm_macro_expand);
+        goto apply;
+      }
+    if (CAR (r1) == cell_symbol_define
+        || CAR (r1) == cell_symbol_define_macro)
+      {
+        push_cc (CDDR (r1), r1, r0, cell_vm_macro_expand_define);
+        goto macro_expand;
+      macro_expand_define:
+        CDDR (r2) = r1;
+        r1 = r2;
+        if (CAR (r1) == cell_symbol_define_macro)
+          {
+            push_cc (r1, r1, r0, cell_vm_macro_expand_define_macro);
+            goto eval;
+          macro_expand_define_macro:
+            r1 = r2;
+          }
+        goto vm_return;
+      }
+
+    if (CAR (r1) == cell_symbol_lambda)
+      {
+        push_cc (CDDR (r1), r1, r0, cell_vm_macro_expand_lambda);
+        goto macro_expand;
+      macro_expand_lambda:
+        CDDR (r2) = r1;
+        r1 = r2;
+        goto vm_return;
+      }
+
+    if (CAR (r1) == cell_symbol_set_x)
+      {
+        push_cc (CDDR (r1), r1, r0, cell_vm_macro_expand_set_x);
+        goto macro_expand;
+      macro_expand_set_x:
+        CDDR (r2) = r1;
+        r1 = r2;
+        goto vm_return;
+      }
+
+    if (TYPE (r1) == TPAIR
+        && TYPE (CAR (r1)) == TSYMBOL
+        && CAR (r1) != cell_symbol_begin
+        && ((expanders = assq_ref_env (cell_symbol_sc_expander_alist, r0)) != cell_undefined)
+        && ((macro = assq (CAR (r1), expanders)) != cell_f))
+      {
+        SCM sc_expand = assq_ref_env (cell_symbol_macro_expand, r0);
+        r2 = r1;
+        if (sc_expand != cell_undefined && sc_expand != cell_f)
+          {
+            r1 = cons (sc_expand, cons (r1, cell_nil));
+            goto apply;
+          }
+      }
+
+    push_cc (CAR (r1), r1, r0, cell_vm_macro_expand_car);
+    goto macro_expand;
+
+  macro_expand_car:
+    CAR (r2) = r1;
+    r1 = r2;
+    if (CDR (r1) == cell_nil)
+      goto vm_return;
+
+    push_cc (CDR (r1), r1, r0, cell_vm_macro_expand_cdr);
+    goto macro_expand;
+
+  macro_expand_cdr:
+    CDR (r2) = r1;
+    r1 = r2;
+
+    goto vm_return;
+  }
 
  begin:
   x = cell_unspecified;
-  while (r1 != cell_nil) {
-    gc_check ();
-    if (TYPE (r1) == TPAIR && TYPE (CAR (r1)) == TPAIR)
-      {
-        if (CAAR (r1) == cell_symbol_begin)
-          r1 = append2 (CDAR (r1), CDR (r1));
-        else if (CAAR (r1) == cell_symbol_primitive_load)
-          {
-            // push_cc (cons (cell_symbol_read_input_file, cell_nil), r1, r0, cell_vm_begin_read_input_file);
-            // goto apply;
+  while (r1 != cell_nil)
+    {
+      gc_check ();
+      if (TYPE (r1) == TPAIR)
+        {
+          if (CAAR (r1) == cell_symbol_primitive_load)
+            {
+              SCM program = cons (CAR (r1), cell_nil);
+              push_cc (program, r1, r0, cell_vm_begin_primitive_load);
+              goto begin_expand;
+            begin_primitive_load:
+              CAR (r2) = r1;
+              r1 = r2;
+            }
+        }
 
-            push_cc (CAR (CDAR (r1)), r1, r0, cell_vm_begin_read_input_file);
-            goto eval; // FIXME: expand too?!
-          begin_read_input_file:;
-            SCM input = r1;
-            if ((TYPE (r1) == TNUMBER && VALUE (r1) == 0))
-              ;
-            else
-              input = set_current_input_port (open_input_file (r1));
-            push_cc (input, r2, r0, cell_vm_return);
-            x = read_input_file_env (r0);
-            gc_pop_frame ();
-            r1 = x;
-            input = r1;
-#if DEBUG
-            eputs ("  ..2.r2="); write_error_ (r2); eputs ("\n");
-            eputs ("  => result r1="); write_error_ (r1); eputs ("\n");
-#endif
-            set_current_input_port (input);
-            r1 = append2 (r1, cons (cell_t, CDR (r2)));
-          }
-      }
-    if (CDR (r1) == cell_nil)
-      {
-        r1 = CAR (r1);
-        goto eval;
-      }
-    push_cc (CAR (r1), r1, r0, cell_vm_begin2);
-    goto eval;
-  begin2:
-    x = r1;
-    r1 = CDR (r2);
-  }
+      if (TYPE (r1) == TPAIR && TYPE (CAR (r1)) == TPAIR)
+        {
+          if (CAAR (r1) == cell_symbol_begin)
+            r1 = append2 (CDAR (r1), CDR (r1));
+        }
+      if (CDR (r1) == cell_nil)
+        {
+          r1 = CAR (r1);
+          goto eval;
+        }
+      push_cc (CAR (r1), r1, r0, cell_vm_begin_eval);
+      goto eval;
+    begin_eval:
+      x = r1;
+      r1 = CDR (r2);
+    }
+  r1 = x;
+  goto vm_return;
+
+
+ begin_expand:
+  x = cell_unspecified;
+  while (r1 != cell_nil)
+    {
+      gc_check ();
+
+      if (TYPE (r1) == TPAIR)
+        {
+          if (TYPE (CAR (r1)) == TPAIR && CAAR (r1) == cell_symbol_begin)
+            r1 = append2 (CDAR (r1), CDR (r1));
+          if (CAAR (r1) == cell_symbol_primitive_load)
+            {
+              push_cc (CADR (CAR (r1)), r1, r0, cell_vm_begin_expand_primitive_load);
+              goto eval; // FIXME: expand too?!
+            begin_expand_primitive_load:;
+              SCM input; // = current_input_port ();
+              if (TYPE (r1) == TNUMBER && VALUE (r1) == 0)
+                ;
+              else if (TYPE (r1) == TSTRING)
+                input = set_current_input_port (open_input_file (r1));
+              else
+                assert (0);
+              
+              push_cc (input, r2, r0, cell_vm_return);
+              x = read_input_file_env (r0);
+              gc_pop_frame ();
+              input = r1;
+              r1 = x;
+              set_current_input_port (input);
+              r1 = cons (cell_symbol_begin, r1);
+              CAR (r2) = r1;
+              r1 = r2;
+              continue;
+            }
+        }
+
+      push_cc (CAR (r1), r1, r0, cell_vm_begin_expand_macro);
+      expanding_p++;
+      goto macro_expand;
+    begin_expand_macro:
+      expanding_p--;
+      if (r1 != CAR (r2))
+        {
+          CAR (r2) = r1;
+          r1 = r2;
+          continue;
+        }
+      r1 = r2;
+
+      push_cc (CAR (r1), r1, r0, cell_vm_begin_expand_eval);
+      goto eval;
+    begin_expand_eval:
+      x = r1;
+      r1 = CDR (r2);
+    }
   r1 = x;
   goto vm_return;
 
@@ -1481,6 +1630,7 @@ main (int argc, char *argv[])
 
   SCM lst = cell_nil;
   for (int i=argc-1; i>=0; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
+  r0 = acons (cell_symbol_argv, lst, r0); // FIXME
   r0 = acons (cell_symbol_argv, lst, r0);
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
   if (g_debug > 1)
@@ -1489,14 +1639,14 @@ main (int argc, char *argv[])
       write_error_ (r1);
       eputs ("\n");
     }
-  r3 = cell_vm_begin;
+  r3 = cell_vm_begin_expand;
   r1 = eval_apply ();
   write_error_ (r1);
   eputs ("\n");
   gc (g_stack);
   if (g_debug)
     {
-      eputs ("\nstats: [");
+      eputs ("\ngc stats: [");
       eputs (itoa (g_free));
       eputs ("]\n");
     }

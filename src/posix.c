@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -156,8 +156,9 @@ open_input_file (SCM file_name)
 SCM
 set_current_input_port (SCM port)
 {
+  int prev = g_stdin;
   g_stdin = VALUE (port) ? VALUE (port) : STDIN;
-  return current_input_port ();
+  return MAKE_NUMBER (prev);
 }
 
 SCM
