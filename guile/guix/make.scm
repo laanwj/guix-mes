@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2017,2018 Jan Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -350,6 +350,7 @@
 (define %C32-FLAGS
   '("--std=gnu99"
     "-O0"
+    "-fno-stack-protector"
     "-g"
     "-m32"
     "-I" "src"
