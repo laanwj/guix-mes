@@ -31,8 +31,10 @@ SCM
 read_input_file_env (SCM a)
 {
   r0 = a;
+#if 0
   if (assq_ref_env (cell_symbol_read_input_file, r0) != cell_undefined)
     return apply (cell_symbol_read_input_file, cell_nil, r0);
+#endif
   return read_input_file_env_ (read_env (r0), r0);
 }
 
