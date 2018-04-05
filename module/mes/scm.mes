@@ -109,7 +109,7 @@
 (define assv-ref assq-ref)
 
 (define (assoc key alist)
-  (if (null? alist) #f ;; IF
+  (if (null? alist) #f
       (if (equal? key (caar alist)) (car alist)
           (assoc key (cdr alist)))))
 
@@ -124,14 +124,10 @@
         (let ((entry (set-cdr! entry value)))
           alist))))
 
-(define (memq x lst)
-  (if (null? lst) #f ;; IF
-      (if (eq? x (car lst)) lst
-          (memq x (cdr lst)))))
 (define memv memq)
 
 (define (member x lst)
-  (if (null? lst) #f ;; IF
+  (if (null? lst) #f
       (if (equal? x (car lst)) lst
           (member x (cdr lst)))))
 

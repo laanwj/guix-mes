@@ -243,3 +243,28 @@ xassq (SCM x, SCM a) ///for speed in core only
   while (a != cell_nil && x != CDAR (a)) a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
 }
+
+SCM
+memq (SCM x, SCM a)
+{
+  switch (TYPE (x))
+    {
+    case TCHAR:
+    case TNUMBER:
+      {
+        SCM v = VALUE (x);
+        while (a != cell_nil && v != VALUE (CAR (a))) a = CDR (a); break;
+      }
+    case TKEYWORD:
+      {
+        SCM v = STRING (x);
+        while (a != cell_nil && v != STRING (CAR (a))) a = CDR (a); break;
+      }
+      // case TSYMBOL:
+      // case TSPECIAL:
+    default:
+      while (a != cell_nil && x != CAR (a)) a = CDR (a); break;
+    }
+  return a != cell_nil ? a : cell_f;
+}
+
