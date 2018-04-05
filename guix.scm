@@ -107,7 +107,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
 (define-public nyacc
   (package
     (name "nyacc")
-    (version "0.80.41")
+    (version "0.80.42")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://gitlab.com/janneke/nyacc"
@@ -116,7 +116,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
               (file-name (string-append name "-" version ".tar.gz"))
               (sha256
                (base32
-                "0x0qff81s3yb30b72j94rj7pnsjafgfp8hkyscymg5438g184gwa"))))
+                "101k3hy4jk5p109k6w4dpx3bjm0g53zwb1yxvvad8khfq00wb8hd"))))
     (build-system gnu-build-system)
     (native-inputs
      `(("guile" ,guile-2.2)))
