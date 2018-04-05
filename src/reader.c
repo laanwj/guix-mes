@@ -48,40 +48,78 @@ reader_read_line_comment (int c)
 
 SCM reader_read_block_comment (int s, int c);
 SCM read_hash (int c, SCM w, SCM a);
+SCM reader_read_list (int c, SCM a);
 
 SCM
-reader_read_word_ (int c, SCM w, SCM a)
+reader_read_sexp_ (int c, SCM s, SCM a)
 {
-  if (c == EOF && w == cell_nil) return cell_nil;
-  if (c == '\t') return reader_read_word_ ('\n', w, a);
-  if (c == '\f') return reader_read_word_ ('\n', w, a);
-  if (c == '\n' && w == cell_nil) return reader_read_word_ (getchar (), w, a);
-  if (c == '\n' && VALUE (car (w)) == '.' && cdr (w) == cell_nil) return cell_dot;
-  if (c == ' ') return reader_read_word_ ('\n', w, a);
-  if (c == EOF || c == '\n') return reader_lookup_ (w, a);
-
-  if (c == '(' && w == cell_nil) return reader_read_list (a);
-  if (c == '(') {ungetchar (c); return reader_lookup_ (w, a);}
-  if (c == ')' && w == cell_nil) {ungetchar (c); return cell_nil;}
-  if (c == ')') {ungetchar (c); return reader_lookup_ (w, a);}
-  if (c == ';') {reader_read_line_comment (c); return reader_read_word_ ('\n', w, a);}
-
-  if (c == '"' && w == cell_nil) return reader_read_string ();
-  if (c == '"') {ungetchar (c); return reader_lookup_ (w, a);}
-  if (c == ',' && peekchar () == '@') {getchar (); return cons (cell_symbol_unquote_splicing,
-                                                                cons (reader_read_word_ (getchar (), w, a),
-                                                                      cell_nil));}
-  if (c == '\'') return cons (cell_symbol_quote, cons (reader_read_word_ (getchar (), w, a), cell_nil));
-  if (c == '`') return cons (cell_symbol_quasiquote, cons (reader_read_word_ (getchar (), w, a), cell_nil));
-  if (c == ',') return cons (cell_symbol_unquote, cons (reader_read_word_ (getchar (), w, a), cell_nil));
-
-  if (c == '#' && peekchar () == '!') {c = getchar (); reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
-  if (c == '#' && peekchar () == '|') {c = getchar (); reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
-  if (c == '#' && peekchar () == 'f') return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
-  if (c == '#' && peekchar () == 't') return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
-  if (c == '#') return read_hash (getchar (), w, a);
-
-  return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
+  switch (c)
+    {
+    case ' ':
+      return reader_read_sexp_ ('\n', s, a);
+    case '\f':
+      return reader_read_sexp_ ('\n', s, a);
+    case '\t':
+      return reader_read_sexp_ ('\n', s, a);
+    case '\'':
+      return cons (cell_symbol_quote,
+                   cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
+    case ';':
+      reader_read_line_comment (c);
+      return reader_read_sexp_ ('\n', s, a);
+    case '#':
+      return read_hash (getchar (), s, a);
+    case '`':
+      return cons (cell_symbol_quasiquote,
+                   cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
+    case ',':
+      if (peekchar () == '@')
+        {
+          getchar ();
+          return cons (cell_symbol_unquote_splicing,
+                       cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
+        }
+      return cons (cell_symbol_unquote,
+                   cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
+    default:
+      if (s == cell_nil)
+        switch (c)
+          {
+          case EOF:
+            return cell_nil;
+          case '\n':
+            return reader_read_sexp_ (getchar (), s, a);
+          case '(':
+            return reader_read_list (getchar (), a);
+          case ')':
+            ungetchar (c);
+            return cell_nil;
+          case '"':
+            return reader_read_string ();
+          }
+      else
+        switch (c)
+          {
+          case EOF:
+            return reader_lookup_ (s, a);
+          case '\n':
+            if (CAR (s) == cell_dot && CDR (s) == cell_nil)
+              return cell_dot;
+            else
+              return reader_lookup_ (s, a);
+          case '(':
+            ungetchar (c);
+            return reader_lookup_ (s, a);
+          case  ')':
+            ungetchar (c);
+            return reader_lookup_ (s, a);
+          case '"':
+            ungetchar (c);
+            return reader_lookup_ (s, a);
+          }
+    }
+  return reader_read_sexp_ (getchar (),
+                            append2 (s, cons (MAKE_CHAR (c), cell_nil)), a);
 }
 
 int
@@ -94,21 +132,20 @@ eat_whitespace (int c)
 }
 
 SCM
-reader_read_list (SCM a)
+reader_read_list (int c, SCM a)
 {
-  int c = getchar ();
   c = eat_whitespace (c);
   if (c == ')') return cell_nil;
-  SCM w = reader_read_word_ (c, cell_nil, a);
-  if (w == cell_dot)
-    return car (reader_read_list (a));
-  return cons (w, reader_read_list (a));
+  SCM s = reader_read_sexp_ (c, cell_nil, a);
+  if (s == cell_dot)
+    return car (reader_read_list (getchar (), a));
+  return cons (s, reader_read_list (getchar (), a));
 }
 
 SCM
 read_env (SCM a)
 {
-  return reader_read_word_ (getchar (), cell_nil, a);
+  return reader_read_sexp_ (getchar (), cell_nil, a);
 }
 
 SCM
@@ -141,37 +178,58 @@ reader_read_block_comment (int s, int c)
 }
 
 SCM
-read_hash (int c, SCM w, SCM a)
+read_hash (int c, SCM s, SCM a)
 {
-  if (c == ',')
+  switch (c)
     {
+    case '!':
+      reader_read_block_comment (c, getchar ());
+      return reader_read_sexp_ (getchar (), s, a);
+    case '|':
+      reader_read_block_comment (c, getchar ());
+      return reader_read_sexp_ (getchar (), s, a);
+    case 'f':
+      return cell_f;
+    case 't':
+      return cell_t;
+    case ',':
       if (peekchar () == '@')
         {
           getchar ();
-          return cons (cell_symbol_unsyntax_splicing, cons (reader_read_word_ (getchar (), w, a), cell_nil));
+          return cons (cell_symbol_unsyntax_splicing,
+                       cons (reader_read_sexp_ (getchar (), s, a),
+                             cell_nil));
         }
-      return cons (cell_symbol_unsyntax, cons (reader_read_word_ (getchar (), w, a), cell_nil));
+      return cons (cell_symbol_unsyntax,
+                   cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
+    case '\'':
+      return cons (cell_symbol_syntax,
+                   cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
+    case '`':
+      return cons (cell_symbol_quasisyntax,
+                   cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
+    case ':':
+    return MAKE_KEYWORD (CAR (reader_read_sexp_ (getchar (), cell_nil, a)));
+    case 'o':
+      return reader_read_octal ();
+    case 'x':
+      return reader_read_hex ();
+    case '\\':
+      return reader_read_character ();
+    case '(':
+      return list_to_vector (reader_read_list (getchar (), a));
+    case ';':
+      reader_read_sexp_ (getchar (), s, a);
+      return reader_read_sexp_ (getchar (), s, a);
     }
-  if (c == '\'') return cons (cell_symbol_syntax, cons (reader_read_word_ (getchar (), w, a), cell_nil));
-  if (c == '`') return cons (cell_symbol_quasisyntax, cons (reader_read_word_ (getchar (), w, a), cell_nil));
-  if (c == ':') return MAKE_KEYWORD (CAR (reader_read_word_ (getchar (), cell_nil, a)));
-  if (c == 'o') return reader_read_octal ();
-  if (c == 'x') return reader_read_hex ();
-  if (c == '\\') return reader_read_character ();
-  if (c == '(') return list_to_vector (reader_read_list (a));
-  if (c == ';') reader_read_word_ (getchar (), w, a); return reader_read_word_ (getchar (), w, a);
-  if (c == '!') {reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
-  if (c == '|') {reader_read_block_comment (c, getchar ()); return reader_read_word_ (getchar (), w, a);}
-  if (c == 'f') return cell_f;
-  if (c == 't') return cell_t;
-
-  return reader_read_word_ (getchar (), append2 (w, cons (MAKE_CHAR (c), cell_nil)), a);
+  return reader_read_sexp_ (getchar (),
+                            append2 (s, cons (MAKE_CHAR (c), cell_nil)), a);
 }
 
 SCM
-reader_read_word (SCM c, SCM w, SCM a)
+reader_read_sexp (SCM c, SCM s, SCM a)
 {
-  return reader_read_word_ (VALUE (c), w, a);
+  return reader_read_sexp_ (VALUE (c), s, a);
 }
 
 SCM
