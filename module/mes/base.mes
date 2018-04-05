@@ -91,17 +91,6 @@
 (define (and=> value procedure) (and value (procedure value)))
 (define eqv? eq?)
 
-(define (equal2? a b)
-  (if (and (null? a) (null? b)) #t
-      (if (and (pair? a) (pair? b))
-          (and (equal2? (car a) (car b))
-               (equal2? (cdr a) (cdr b)))
-          (if (and (string? a) (string? b))
-              (eq? (string->symbol a) (string->symbol b))
-              (if (and (vector? a) (vector? b))
-                  (equal2? (vector->list a) (vector->list b))
-                  (eq? a b))))))
-
 (define (equal? . x)
   (if (or (null? x) (null? (cdr x))) #t
       (if (null? (cddr x)) (equal2? (car x) (cadr x))

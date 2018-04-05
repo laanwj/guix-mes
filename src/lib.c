@@ -268,3 +268,33 @@ memq (SCM x, SCM a)
   return a != cell_nil ? a : cell_f;
 }
 
+SCM
+equal2_p (SCM a, SCM b)
+{
+  if (a == cell_nil && b == cell_nil)
+    return cell_t;
+  if (TYPE (a) == TPAIR && TYPE (b) == TPAIR)
+    return equal2_p (CAR (a), CAR (b)) == cell_t
+      && equal2_p (CDR (a), CDR (b)) == cell_t
+      ? cell_t : cell_f;
+  if (TYPE (a) == TSTRING && TYPE (b) == TSTRING)
+    return equal2_p (STRING (a), STRING (b));
+  if (TYPE (a) == TVECTOR && TYPE (b) == TVECTOR)
+    {
+      if (LENGTH (a) != LENGTH (b))
+        return cell_f;
+      for (int i=0; i < LENGTH (a); i++)
+        {
+          SCM ai = VECTOR (a) + i;
+          SCM bi = VECTOR (b) + i;
+          if (TYPE (ai) == TREF)
+            ai = REF (ai);
+          if (TYPE (bi) == TREF)
+            bi = REF (bi);
+          if (equal2_p (ai, bi) == cell_f)
+            return cell_f;
+        }
+      return cell_t;
+    }
+  return eq_p (a, b);
+}
