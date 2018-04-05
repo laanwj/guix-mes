@@ -118,11 +118,6 @@
 (define-macro (include-from-path file)
   (list 'load (list string-append %moduledir file)))
 
-(define (memq x lst)
-  (if (null? lst) #f
-      (if (eq? x (car lst)) lst
-          (memq x (cdr lst)))))
-
 (define (string-join lst infix)
   (if (null? (cdr lst)) (car lst)
       (string-append (car lst) infix (string-join (cdr lst) infix))))
