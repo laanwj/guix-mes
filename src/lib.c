@@ -25,7 +25,8 @@ SCM
 display_helper (SCM x, int cont, char* sep, int fd, int write_p)
 {
   fputs (sep, fd);
-  if (g_depth == 0) return cell_unspecified;
+  if (g_depth == 0)
+    return cell_unspecified;
   g_depth = g_depth - 1;
   
   switch (TYPE (x))
@@ -97,7 +98,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       }
     case TPAIR:
       {
-        if (!cont) fputs ("(", fd);
+        if (!cont)
+          fputs ("(", fd);
         if (CAR (x) == cell_closure)
           fputs ("*closure* ", fd);
         else
@@ -120,7 +122,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
           }
         else
           {
-            if (x && x != cell_nil) fdisplay_ (CAR (x), fd, write_p);
+            if (x && x != cell_nil)
+              fdisplay_ (CAR (x), fd, write_p);
             if (CDR (x) && TYPE (CDR (x)) == TPAIR)
               display_helper (CDR (x), 1, " ", fd, write_p);
             else if (CDR (x) && CDR (x) != cell_nil)
@@ -130,7 +133,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
                 fdisplay_ (CDR (x), fd, write_p);
               }
           }
-        if (!cont) fputs (")", fd);
+        if (!cont)
+          fputs (")", fd);
         break;
       }
     case TKEYWORD:
@@ -138,8 +142,10 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     case TSTRING:
     case TSYMBOL:
       {
-        if (TYPE (x) == TKEYWORD) fputs ("#:", fd);
-        if (write_p && TYPE (x) == TSTRING) fputc ('"', fd);
+        if (TYPE (x) == TKEYWORD)
+          fputs ("#:", fd);
+        if (write_p && TYPE (x) == TSTRING)
+          fputc ('"', fd);
         SCM t = CAR (x);
         while (t && t != cell_nil)
           {
@@ -153,7 +159,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
               }
             t = CDR (t);
           }
-        if (write_p && TYPE (x) == TSTRING) fputc ('"', fd);
+        if (write_p && TYPE (x) == TSTRING)
+          fputc ('"', fd);
         break;
       }
     case TVECTOR:
@@ -162,7 +169,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         SCM t = CAR (x);
         for (int i = 0; i < LENGTH (x); i++)
           {
-            if (i) fputc (' ', fd);
+            if (i)
+              fputc (' ', fd);
             fdisplay_ (VECTOR (x) + i, fd, write_p);
           }
         fputc (')', fd);
@@ -240,7 +248,8 @@ exit_ (SCM x) ///((name . "exit"))
 SCM
 xassq (SCM x, SCM a) ///for speed in core only
 {
-  while (a != cell_nil && x != CDAR (a)) a = CDR (a);
+  while (a != cell_nil && x != CDAR (a))
+    a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
 }
 
@@ -253,17 +262,22 @@ memq (SCM x, SCM a)
     case TNUMBER:
       {
         SCM v = VALUE (x);
-        while (a != cell_nil && v != VALUE (CAR (a))) a = CDR (a); break;
+        while (a != cell_nil && v != VALUE (CAR (a)))
+          a = CDR (a);
+        break;
       }
     case TKEYWORD:
       {
         SCM v = STRING (x);
-        while (a != cell_nil && v != STRING (CAR (a))) a = CDR (a); break;
+        while (a != cell_nil && v != STRING (CAR (a)))
+          a = CDR (a);
+        break;
       }
       // case TSYMBOL:
       // case TSPECIAL:
     default:
-      while (a != cell_nil && x != CAR (a)) a = CDR (a); break;
+      while (a != cell_nil && x != CAR (a))
+        a = CDR (a);
     }
   return a != cell_nil ? a : cell_f;
 }

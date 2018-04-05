@@ -33,7 +33,8 @@ gc_up_arena () ///((internal))
 #endif
 
 #if _POSIX_SOURCE
-  if (!p) error (cell_symbol_system_error, cons (MAKE_STRING (cstring_to_list (strerror (errno))), MAKE_NUMBER (g_free)));
+  if (!p)
+    error (cell_symbol_system_error, cons (MAKE_STRING (cstring_to_list (strerror (errno))), MAKE_NUMBER (g_free)));
   g_cells = (struct scm*)p;
   g_cells++;
 #endif
@@ -59,7 +60,8 @@ gc_flip () ///((internal))
 SCM
 gc_copy (SCM old) ///((internal))
 {
-  if (TYPE (old) == TBROKEN_HEART) return g_cells[old].car;
+  if (TYPE (old) == TBROKEN_HEART)
+    return g_cells[old].car;
   SCM new = g_free++;
   g_news[new] = g_cells[old];
   if (NTYPE (new) == TVECTOR)

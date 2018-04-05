@@ -37,7 +37,8 @@ greater_p (SCM x) ///((name . ">") (arity . n))
   while (x != cell_nil)
     {
       assert_number ("greater_p", CAR (x));
-      if (VALUE (car (x)) >= n) return cell_f;
+      if (VALUE (car (x)) >= n)
+        return cell_f;
       n = VALUE (car (x));
       x = cdr (x);
     }
@@ -51,7 +52,8 @@ less_p (SCM x) ///((name . "<") (arity . n))
   while (x != cell_nil)
     {
       assert_number ("less_p", CAR (x));
-      if (VALUE (car (x)) <= n) return cell_f;
+      if (VALUE (car (x)) <= n)
+        return cell_f;
       n = VALUE (car (x));
       x = cdr (x);
     }
@@ -61,13 +63,15 @@ less_p (SCM x) ///((name . "<") (arity . n))
 SCM
 is_p (SCM x) ///((name . "=") (arity . n))
 {
-  if (x == cell_nil) return cell_t;
+  if (x == cell_nil)
+    return cell_t;
   assert_number ("is_p", CAR (x));
   int n = VALUE (CAR (x));
   x = cdr (x);
   while (x != cell_nil)
     {
-      if (VALUE (car (x)) != n) return cell_f;
+      if (VALUE (car (x)) != n)
+        return cell_f;
       x = cdr (x);
     }
   return cell_t;
@@ -108,11 +112,12 @@ SCM
 divide (SCM x) ///((name . "/") (arity . n))
 {
   int n = 1;
-  if (x != cell_nil) {
-    assert_number ("divide", CAR (x));
-    n = VALUE (car (x));
-    x = cdr (x);
-  }
+  if (x != cell_nil)
+    {
+      assert_number ("divide", CAR (x));
+      n = VALUE (car (x));
+      x = cdr (x);
+    }
   while (x != cell_nil)
     {
       assert_number ("divide", CAR (x));

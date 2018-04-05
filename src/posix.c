@@ -173,7 +173,8 @@ open_output_file (SCM x) ///((arity . n))
   SCM file_name = car (x);
   x = cdr (x);
   int mode = S_IRUSR|S_IWUSR;
-  if (TYPE (x) == TPAIR && TYPE (car (x)) == TNUMBER) mode = VALUE (car (x));
+  if (TYPE (x) == TPAIR && TYPE (car (x)) == TNUMBER)
+    mode = VALUE (car (x));
   return MAKE_NUMBER (open (string_to_cstring (file_name), O_WRONLY|O_CREAT|O_TRUNC,mode));
 }
 

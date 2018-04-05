@@ -23,7 +23,8 @@
 SCM
 read_input_file_env_ (SCM e, SCM a)
 {
-  if (e == cell_nil) return e;
+  if (e == cell_nil)
+    return e;
   return cons (e, read_input_file_env_ (read_env (a), a));
 }
 

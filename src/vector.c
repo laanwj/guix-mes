@@ -42,15 +42,20 @@ vector_ref (SCM x, SCM i)
   assert (TYPE (x) == TVECTOR);
   assert (VALUE (i) < LENGTH (x));
   SCM e = VECTOR (x) + VALUE (i);
-  if (TYPE (e) == TREF) e = REF (e);
-  if (TYPE (e) == TCHAR) e = MAKE_CHAR (VALUE (e));
-  if (TYPE (e) == TNUMBER) e = MAKE_NUMBER (VALUE (e));
+  if (TYPE (e) == TREF)
+    e = REF (e);
+  if (TYPE (e) == TCHAR)
+    e = MAKE_CHAR (VALUE (e));
+  if (TYPE (e) == TNUMBER)
+    e = MAKE_NUMBER (VALUE (e));
   return e;
 }
 
 SCM
-vector_entry (SCM x) {
-  if (TYPE (x) == TPAIR || TYPE (x) == TSPECIAL || TYPE (x) == TSTRING || TYPE (x) == TSYMBOL || TYPE (x) == TVECTOR) x = MAKE_REF (x);
+vector_entry (SCM x)
+{
+  if (TYPE (x) == TPAIR || TYPE (x) == TSPECIAL || TYPE (x) == TSTRING || TYPE (x) == TSYMBOL || TYPE (x) == TVECTOR)
+    x = MAKE_REF (x);
   return x;
 }
 
@@ -81,10 +86,12 @@ SCM
 vector_to_list (SCM v)
 {
   SCM x = cell_nil;
-  for (int i = 0; i < LENGTH (v); i++) {
-    SCM e = VECTOR (v)+i;
-    if (TYPE (e) == TREF) e = REF (e);
-    x = append2 (x, cons (e, cell_nil));
-  }
+  for (int i = 0; i < LENGTH (v); i++)
+    {
+      SCM e = VECTOR (v)+i;
+      if (TYPE (e) == TREF)
+        e = REF (e);
+      x = append2 (x, cons (e, cell_nil));
+    }
   return x;
 }
