@@ -2443,12 +2443,12 @@
   ((ast->info (make <info> #:types i386:type-alist)) ast))
 
 (define* (c99-input->ast #:key (defines '()) (includes '()))
+  (stderr "parsing: input\n")
   ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:defines defines #:includes includes)))
 
 (define* (c99-input->info #:key (defines '()) (includes '()))
   (lambda ()
     (let* ((info (make <info> #:types i386:type-alist))
-           (foo (stderr "parsing: input\n"))
            (ast (c99-input->ast #:defines defines #:includes includes))
            (foo (stderr "compiling: input\n"))
            (info ((ast->info info) ast))
