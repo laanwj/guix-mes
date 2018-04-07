@@ -126,11 +126,6 @@
 
 (define memv memq)
 
-(define (member x lst)
-  (if (null? lst) #f
-      (if (equal? x (car lst)) lst
-          (member x (cdr lst)))))
-
 
 ;;; Lists
 (define (make-list n . x)
