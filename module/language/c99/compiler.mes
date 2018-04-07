@@ -2456,6 +2456,7 @@
       info)))
 
 (define* (info->object o)
+  (stderr "compiling: object\n")
   `((functions . ,(.functions o))
     (globals . ,(map (lambda (g) (cons (car g) (global:value (cdr g)))) (.globals o)))))
 
