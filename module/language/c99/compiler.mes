@@ -592,6 +592,9 @@
 (define (make-local-entry name type pointer id)
   (cons name (make-local type pointer id)))
 
+(define* (mescc:trace name #:optional (type ""))
+  (format (current-error-port) "    :~a~a\n" name type))
+
 (define (push-ident info)
   (lambda (o)
     (let ((local (assoc-ref (.locals info) o)))
@@ -1246,9 +1249,6 @@
                 (ptr-b (expr->pointer info b))
                 (size-a (expr->size info a))
                 (size-b (expr->size info b))
-                ;; (foo (stderr "assign ~s\n"(with-output-to-string (lambda () (pretty-print-c99 o)))))
-                ;; (foo (stderr "  size-a: ~a, ptr=~a\n" size-a ptr-a))
-                ;; (foo (stderr "  size-b: ~a, ptr=~a\n" size-b ptr-b))
                 (info ((expr->accu info) b))
                 (info (if (equal? op "=") info
                           (let* ((ptr (expr->pointer info a))
@@ -1802,7 +1802,8 @@
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
-               (let* ((globals (.globals info))
+               (let* ((foo (mescc:trace name " <g>"))
+                      (globals (.globals info))
                       (count (expr->number info count))
                       (size (ast-type->size info type))
                       (pointer (expr->pointer info `(type-spec ,type)))
@@ -1824,7 +1825,8 @@
                       (locals (cons local locals))
                       (info (clone info #:locals locals)))
                  info)
-               (let* ((globals (.globals info))
+               (let* ((foo (mescc:trace name " <g>"))
+                      (globals (.globals info))
                       (count (expr->number info count))
                       (size 4)
                       (pointer (expr->pointer info `(type-spec ,type)))
@@ -1833,13 +1835,14 @@
                       (globals (append globals (list global))))
                  (clone info #:globals globals)))))
 
-        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (array-of (ident ,array) (p-expr (fixed ,size))) (initzer (p-expr (string ,string))))))
+        ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (array-of (ident ,name) (p-expr (fixed ,size))) (initzer (p-expr (string ,string))))))
          (if (.function info)
              (error  "TODO: " o)
-             (let* ((globals (.globals info))
+             (let* ((foo (mescc:trace name " <g>"))
+                    (globals (.globals info))
                     ;; (count (cstring->number count))
                     ;; (size (ast-type->size info type))
-                    (array (make-global-entry array type -1 (string->list string)))
+                    (array (make-global-entry name type -1 (string->list string)))
                     (globals (append globals (list array))))
                (clone info #:globals globals))))
 
@@ -1896,6 +1899,7 @@
         ;; struct f = {...};
         ;; LOCALS!
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ident ,name) (initzer (initzer-list . ,initzers)))))
+         (if (not (.function info)) (mescc:trace name " <g>"))
          (let* ((info (append-text info (ast->comment o)))
                 (type (decl->ast-type type))
                 (fields (ast-type->description info type))
@@ -1941,6 +1945,7 @@
         ;; DECL
         ;; char *bla[] = {"a", "b"};
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr (pointer) (array-of (ident ,name))) (initzer (initzer-list . ,initzers)))))
+         (if (not (.function info)) (mescc:trace name " <g>"))
          (let* ((type (decl->ast-type type))
                 (pointer (pke "2pointer: " (expr->pointer info `(type-spec ,type))))
                 (pointer (pke "pointer: " (- -3 pointer)))
@@ -1977,6 +1982,7 @@
 
         ;; int foo[2] = { ... }
         ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) ,count) (initzer (initzer-list . ,initzers)))))
+         (if (not (.function info)) (mescc:trace name " <g>"))
          (let* ((info (type->info info type))
                 (xtype type)
                 (type (decl->ast-type type))
@@ -2014,12 +2020,14 @@
                 (xtype type)
                 (type (decl->ast-type type))
                 (name (init-declr->name init))
-                (pointer (pke "pointer:" (init-declr->pointer init)))
+                (foo (if (not (.function info)) (mescc:trace name " <g>")))
+                (pointer (init-declr->pointer init))
                 (initzer-globals (if (null? initzer) '()
                                      (filter identity (append-map (initzer->globals globals) initzer))))
                 (global-names (map car globals))
                 (initzer-globals (filter (lambda (g) (and g (not (member (car g) global-names)))) initzer-globals))
                 (initzer (if (null? initzer) '() ((initzer->non-const info) initzer)))
+                ;;FIXME: ridiculous performance hit with mes
                 (info (append-text info (ast->comment o)))
                 (globals (append globals initzer-globals))
                 (info (clone info #:globals globals))
@@ -2277,6 +2285,9 @@
 
 (define (enum-def-list->constants constants fields)
   (let loop ((fields fields) (i 0) (constants constants))
+    (if (pair? fields)
+        (let ((field (car fields)))
+          (mescc:trace (cadr (cadr field)) " <e>")))
     (if (null? fields) constants
         (let* ((field (car fields))
                (name (pmatch field
@@ -2356,6 +2367,7 @@
 (define (type->info info o)
   (pmatch o
     ((struct-def (ident ,name) (field-list . ,fields))
+     (mescc:trace name " <t>")
      (let ((type-entry (struct->type-entry name (map (struct-field info) fields))))
        (clone info #:types (cons type-entry (.types info)))))
     (_  info)))
@@ -2416,7 +2428,7 @@
            (formals (.formals o))
            (text (formals->text formals))
            (locals (formals->locals formals)))
-      (format (current-error-port) "    :~a\n" name)
+      (mescc:trace name)
       (let loop ((statements (.statements o))
                  (info (clone info #:locals locals #:function (.name o) #:text text)))
         (if (null? statements) (let* ((locals (.locals info))
