@@ -96,3 +96,21 @@
 (define substring/shared substring)
 
 (define string-null? (compose null? string->list))
+
+(define (string-fold cons' nil' s . rest)
+  (let* ((start (and (pair? rest) (car rest)))
+         (end (and start (pair? (cdr rest)) (cadr rest))))
+    (if start (error "string-fold: not supported: start=" start))
+    (if end (error "string-fold: not supported: end=" end))
+    (let loop ((lst (string->list s)) (prev nil'))
+      (if (null? lst) prev
+          (loop (cdr lst) (cons' (car lst) prev))))))
+
+(define (string-fold-right cons' nil' s . rest)
+  (let* ((start (and (pair? rest) (car rest)))
+         (end (and start (pair? (cdr rest)) (cadr rest))))
+    (if start (error "string-fold-right: not supported: start=" start))
+    (if end (error "string-fold-right: not supported: end=" end))
+    (let loop ((lst (reverse (string->list s))) (prev nil'))
+      (if (null? lst) prev
+          (loop (cdr lst) (cons' (car lst) prev))))))
