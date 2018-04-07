@@ -61,9 +61,6 @@ reader_read_sexp_ (int c, SCM s, SCM a)
       return reader_read_sexp_ ('\n', s, a);
     case '\t':
       return reader_read_sexp_ ('\n', s, a);
-    case '\'':
-      return cons (cell_symbol_quote,
-                   cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
     case ';':
       reader_read_line_comment (c);
       return reader_read_sexp_ ('\n', s, a);
@@ -94,6 +91,9 @@ reader_read_sexp_ (int c, SCM s, SCM a)
           case ')':
             ungetchar (c);
             return cell_nil;
+          case '\'':
+            return cons (cell_symbol_quote,
+                         cons (reader_read_sexp_ (getchar (), s, a), cell_nil));
           case '"':
             return reader_read_string ();
           }
