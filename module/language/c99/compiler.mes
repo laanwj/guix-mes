@@ -774,8 +774,9 @@
   (wrap-as `((#:comment ,o))))
 
 (define (ast->comment o)
-  (let ((source (with-output-to-string (lambda () (pretty-print-c99 o)))))
-    (make-comment (string-join (string-split source #\newline) " "))))
+  (if mes? '()
+      (let ((source (with-output-to-string (lambda () (pretty-print-c99 o)))))
+        (make-comment (string-join (string-split source #\newline) " ")))))
 
 (define (accu*n info n)
   (append-text info (wrap-as (case n
