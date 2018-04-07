@@ -133,6 +133,7 @@ Usage: mescc.scm [OPTION]... FILE...
          (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o)))))
          (defines (reverse (filter-map (multi-opt 'define) options)))
          (includes (reverse (filter-map (multi-opt 'include) options))))
+    (setenv "NYACC_TRACE" "yes")
     (when (getenv "MES_DEBUG") (format (current-error-port) "options=~s\n" options)
           (format (current-error-port) "output: ~a\n" out))
     (if (and (pair? sources) (pair? objects)) (error "cannot mix source and object files:" files))
