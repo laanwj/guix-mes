@@ -312,21 +312,3 @@ equal2_p (SCM a, SCM b)
     }
   return eq_p (a, b);
 }
-
-SCM
-member (SCM x, SCM a)
-{
-  switch (TYPE (x))
-    {
-    case TCHAR:
-    case TNUMBER:
-    case TKEYWORD:
-    case TSYMBOL:
-    case TSPECIAL:
-      return memq (x, a);
-    default:
-      while (a != cell_nil && equal2_p (x, CAR (a)) != cell_t)
-        a = CDR (a);
-    }
-  return a != cell_nil ? a : cell_f;
-}
