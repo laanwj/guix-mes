@@ -116,4 +116,11 @@ exit $?
     (pass-if-not "#<eof>"
                  (char? (integer->char -1))))
 
+(pass-if-equal "setenv, getenv"
+    "bar"
+  (begin
+    (setenv "foo" "bar")
+    (getenv "bar")
+    (getenv "foo")))
+
 (result 'report)

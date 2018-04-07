@@ -136,6 +136,15 @@ getenv_ (SCM s) ///((name . "getenv"))
 }
 
 SCM
+setenv_ (SCM s, SCM v) ///((name . "setenv"))
+{
+  char buf[1024];
+  strcpy (buf, string_to_cstring (s));
+  setenv (buf, string_to_cstring (v), 1);
+  return cell_unspecified;
+}
+
+SCM
 access_p (SCM file_name, SCM mode)
 {
   return access (string_to_cstring (file_name), VALUE (mode)) == 0 ? cell_t : cell_f;
