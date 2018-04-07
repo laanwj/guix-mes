@@ -321,6 +321,29 @@ getenv (char const* s)
 }
 
 int
+setenv (char const* s, char const* v, int overwrite_p)
+{
+  char **p = g_environment;
+  int length = strlen (s);
+  while (*p)
+    {
+      if (!strncmp (s, *p, length) && *(*p + length) == '=')
+        break;
+      p++;
+    }
+  char *entry = malloc (length + strlen (v) + 2);
+  int end_p = *p == 0;
+  *p = entry;
+  strcpy (entry, s);
+  strcpy (entry + length, "=");
+  strcpy (entry + length + 1, v);
+  *(entry + length + strlen (v) + 2) = 0;
+  if (end_p)
+    *++p = 0;
+  return 0;
+}
+
+int
 vprintf (char const* format, va_list ap)
 {
   char const *p = format;

@@ -46,10 +46,10 @@ test (char **e)
   puts ("]\n");
 
   puts ("env [0] == \"foo\"\n");
-  if (strcmp (env[0], "foo")) return 1;
+  if (strcmp (env[0], "foo")) return 2;
 
   puts ("env [1] == \"bar\"\n");
-  if (strcmp (env[1], "bar")) return 1;
+  if (strcmp (env[1], "bar")) return 3;
 
   puts ("t: **p in *env[]\n");
 
@@ -68,27 +68,33 @@ test (char **e)
 
   pp = env;
   puts ("t: *pp++ == \"foo\"\n");
-  if (strcmp (*pp++, "foo")) return 1;
+  if (strcmp (*pp++, "foo")) return 4;
 
   puts ("t: *pp++ == \"bar\"\n");
-  if (strcmp (*pp++, "bar")) return 1;
+  if (strcmp (*pp++, "bar")) return 5;
 
   char *buf = "hello";
   puts ("t: buf[0]\n");
-  if (buf[0] != 'h') return 1;
+  if (buf[0] != 'h') return 6;
 
   puts ("t: buf + 1\n");
-  if (*(buf+1) != 'e') return 1;
+  if (*(buf+1) != 'e') return 7;
 
   char **p = &buf;
   puts ("t: **p\n");
-  if (**p != 'h') return 1;
+  if (**p != 'h') return 8;
 
   puts ("t: *(p + 1)\n");
-  if (*(*p + 1) != 'e') return 1;
+  if (*(*p + 1) != 'e') return 9;
 
   puts ("t: getenv ()");
-  if (!getenv ("PATH")) return 1;
+  if (!getenv ("PATH")) return 10;
+
+  puts ("t: setenv ()");
+  if (setenv ("61-array", "yes", 1)) return 11;
+
+  puts ("t: getenv2 ()");
+  if (strcmp (getenv ("61-array"), "yes")) return 12;
 
   return 0;
 }
