@@ -19,7 +19,7 @@
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 export GUILE=${GUILE-guile}
-export MES=${MES-./mes}
+export MES=${MES-src/mes}
 #export MES_ARENA=${MES_ARENA-200000000} #9GiB
 
 set -e

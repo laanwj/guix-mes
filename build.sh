@@ -52,7 +52,7 @@ $HEX2 --LittleEndian --Architecture=1 --BaseAddress=0x1000000\
       -f mes.hex2\
       -f mes-blood-elf-footer.hex2\
       --exec_enable\
-      -o mes
+      -o src/mes
 
 $M1 --LittleEndian --Architecture=1 -f\
     stage0/x86.M1\

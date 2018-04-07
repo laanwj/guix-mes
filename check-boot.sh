@@ -21,7 +21,7 @@
 set -e
 
 export GUILE=${GUILE-guile}
-export MES=${MES-./mes}
+export MES=${MES-./src/mes}
 
 tests="
 

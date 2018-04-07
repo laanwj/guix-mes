@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-MES=${MES-$(dirname $0)/../scripts/mes}
+MES=${MES-$(dirname $0)/../src/mes}
 echo ' ()' | cat $0 /dev/stdin | $MES $MES_FLAGS "$@"
 #paredit:||
 exit $?

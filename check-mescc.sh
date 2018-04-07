@@ -18,12 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-export MES=${MES-src/mes.gcc}
+export MES=${MES-src/mes}
 export MESCC=${MESCC-scripts/mescc.mes}
 #export MES_ARENA=${MES_ARENA-200000000} > 12GB mem
 
 GUILE=${GUILE-guile}
-MES=${MES-./mes}
+MES=${MES-src/mes}
 M1=${M1-M1}
 HEX2=${HEX2-hex2}
 MESCC=${MESCC-guile/mescc.scm}

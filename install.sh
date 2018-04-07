@@ -8,7 +8,7 @@ MES_SEED=${MES_SEED-../mes-seed}
 TINYCC_SEED=${TINYCC_SEED-../tinycc-seed}
 
 mkdir -p $PREFIX/bin
-cp mes $PREFIX/bin/mes
+cp src/mes $PREFIX/bin/mes
 
 mkdir -p $PREFIX/lib
 mkdir -p $MES_PREFIX/lib
