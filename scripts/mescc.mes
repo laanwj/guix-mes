@@ -7,12 +7,9 @@ if [ "$MES_PREFIX" = @PREFIX""@ ]
 then
     MES_PREFIX=$(cd $(dirname $0)/.. && pwd)
     export MES_PREFIX
-    MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
-    export MES_MODULEDIR
-else
-    MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/share/mes/"module"}
-    export MES_MODULEDIR
 fi
+MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
+export MES_MODULEDIR
 echo '()' | cat $MES_MODULEDIR/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS -- "$@"
 #paredit:||
 exit $?
