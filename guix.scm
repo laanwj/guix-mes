@@ -162,10 +162,10 @@ hex2 linker.")
     (license gpl3+)))
 
 (define-public mes
-  (let ((commit "296564978676e8024e7378411be2ee04d3dc8c94")
+  (let ((commit "0330aab202188306aa7676badfa3edafab707403")
         (revision "0")
         (triplet "i686-unknown-linux-gnu")
-        (version "0.11"))
+        (version "0.12"))
     (package
       (name "mes")
       (version (string-append version "-" revision "." (string-take commit 7)))
@@ -176,7 +176,7 @@ hex2 linker.")
                       (commit commit)))
                 (file-name (string-append name "-" version))
                 (sha256
-                 (base32 "10yzkvw0mr8zyihkwls80wkramlx50a0xzlyxr9fyl66q1gmsjv8"))))
+                 (base32 "1jifgmvgds8fxxv0zkna66f2p9cn46ych2qwn9p04088hdvkknwk"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
@@ -217,7 +217,7 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.11")
+ (let ((version "0.12")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
