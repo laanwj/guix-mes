@@ -345,29 +345,47 @@ reader_read_hex ()
 }
 
 SCM
-append_char (SCM x, int i)
-{
-  return append2 (x, cons (MAKE_CHAR (i), cell_nil));
-}
-
-SCM
 reader_read_string ()
 {
-  SCM p = cell_nil;
+  char buf[1024];
+  SCM lst = cell_nil;
+  int i = 0;
   int c = getchar ();
-  while (1) {
-    if (c == '"') break;
-    if (c == '\\' && peekchar () == '\\') p = append_char (p, getchar ());
-    else if (c == '\\' && peekchar () == '"') p = append_char (p, getchar ());
-    else if (c == '\\' && peekchar () == 'n') {getchar (); p = append_char (p, '\n');}
-    else if (c == '\\' && peekchar () == 't') {getchar (); p = append_char (p, '\t');}
+  while (1)
+    {
+      if (c == '"' || i > 1022)
+        {
+          buf[i] = 0;
+          lst = append2 (lst, cstring_to_list (buf));
+          i = 0;
+          if (c == '"')
+            break;
+        }
+      if (c == '\\')
+        {
+          int p = peekchar ();
+          if (p == '\\' || p == '"')
+            buf[i++] = getchar ();
+          else if (p == 'n')
+            {
+              getchar ();
+              buf[i++] = '\n';
+            }
+          else if (p == 't')
+            {
+              getchar ();
+              buf[i++] = '\t';
+            }
+        }
 #if !__MESC__
-    else if (c == EOF) assert (!"EOF in string");
+      else if (c == EOF)
+        assert (!"EOF in string");
 #endif
-    else p = append_char (p, c);
+      else
+        buf[i++] = c;
     c = getchar ();
   }
-  return MAKE_STRING (p);
+  return MAKE_STRING (lst);
 }
 
 int g_tiny = 0;
