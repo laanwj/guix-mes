@@ -25,6 +25,7 @@
 ;;; Code:
 
 (mes-use-module (mes scm))
+(mes-use-module (srfi srfi-14))
 
 (define welcome
   (string-append "Mes " %version "
@@ -127,7 +128,8 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
       (define topic-alist `((#\newline . ,show-commands)
                             (#\c . ,copying)
                             (#\w . ,warranty)))
-      (let ((topic (read-char)))
+      (let* ((word (read-env '()))
+             (topic (find (negate char-whitespace?) (symbol->list word))))
         (display (assoc-ref topic-alist topic))
         *unspecified*))
     (define (use a)
