@@ -32,7 +32,7 @@
          'begin
          (list 'set! '*modules* (list cons (list string->symbol (module->file module)) '*modules*))
          (list 'load (list string-append '%moduledir (module->file module))))
-        (list 'if (getenv "MES_DEBUG")
+        (list 'if (and (getenv "MES_DEBUG") (list '> (list 'core:cdr (list 'car (list 'string->list (getenv "MES_DEBUG")))) 50))
               (list 'begin
                     (list core:display-error ";;; already loaded: ")
                     (list core:display-error (list 'quote module))
@@ -58,7 +58,5 @@
     (set-current-input-port (pop! *input-ports*))
     x))
 (define (mes-load-module-env module a)
-  (core:display-error "loading:") (core:write-error (string-append %moduledir (module->file module))) (core:display-error "\n")
-  (primitive-load (string-append %moduledir (module->file module)))
-  (core:display-error "dun\n")
-  )
+  (core:write-error (string-append %moduledir (module->file module))) (core:display-error "\n")
+  (primitive-load (string-append %moduledir (module->file module))))

@@ -159,4 +159,4 @@ Usage: mescc.mes [OPTION]... FILE...
                                          (objects->elf objects))))))))))
 
 (main (command-line))
-()
+'done

@@ -48,7 +48,7 @@ gc_flip () ///((internal))
   struct scm *cells = g_cells;
   g_cells = g_news;
   g_news = cells;
-  if (g_debug > 1)
+  if (g_debug > 2)
     {
       eputs (";;;   => jam[");
       eputs (itoa (g_free));
@@ -137,9 +137,9 @@ gc_check ()
 SCM
 gc ()
 {
-  if (g_debug == 1)
+  if (g_debug == 2)
     eputs (".");
-  if (g_debug > 1)
+  if (g_debug > 2)
     {
       eputs (";;; gc[");
       eputs (itoa (g_free));
@@ -156,7 +156,7 @@ gc ()
   g_symbols = gc_copy (g_symbols);
   g_macros = gc_copy (g_macros);
   SCM new = gc_copy (g_stack);
-  if (g_debug > 1)
+  if (g_debug > 3)
     {
       eputs ("new=");
       eputs (itoa (new));

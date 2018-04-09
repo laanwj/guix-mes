@@ -430,11 +430,13 @@ car_ (SCM x)
 SCM
 cdr_ (SCM x)
 {
-  return (TYPE (CDR (x)) == TPAIR
-          || TYPE (CDR (x)) == TREF
-          || TYPE (CAR (x)) == TSPECIAL
-          || TYPE (CDR (x)) == TSYMBOL
-          || TYPE (CDR (x)) == TSTRING) ? CDR (x) : MAKE_NUMBER (CDR (x));
+  return (TYPE (x) != TCHAR
+          && TYPE (x) != TNUMBER
+          && (TYPE (CDR (x)) == TPAIR
+              || TYPE (CDR (x)) == TREF
+              || TYPE (CDR (x)) == TSPECIAL
+              || TYPE (CDR (x)) == TSYMBOL
+              || TYPE (CDR (x)) == TSTRING)) ? CDR (x) : MAKE_NUMBER (CDR (x));
 }
 
 SCM
@@ -573,7 +575,7 @@ check_formals (SCM f, SCM formals, SCM args) ///((internal))
       eputs (", got: ");
       eputs (itoa (alen));
       eputs ("\n");
-      display_error_ (f);
+      write_error_ (f);
       SCM e = MAKE_STRING (cstring_to_list (s));
       return error (cell_symbol_wrong_number_of_args, cons (e, f));
     }
@@ -1574,15 +1576,10 @@ mes_symbols () ///((internal))
   a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
   a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
 
-  a = acons (cell_symbol_dot, cell_dot, a);
-
-  a = acons (cell_symbol_begin, cell_begin, a);
-  a = acons (cell_symbol_quasisyntax, cell_symbol_quasisyntax, a);
-
   a = acons (cell_symbol_call_with_values, cell_symbol_call_with_values, a);
   a = acons (cell_symbol_current_module, cell_symbol_current_module, a);
   a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
-  a = acons (cell_symbol_sc_expand, cell_f, a);
+
 
 #if __GNUC__
   a = acons (cell_symbol_gnuc, cell_t, a);
@@ -1644,7 +1641,7 @@ mes_builtins (SCM a) ///((internal))
 #include "vector.environment.i"
 #endif
 
-  if (g_debug > 1)
+  if (g_debug > 3)
     {
       fputs ("functions: ", STDERR);
       fputs (itoa (g_function), STDERR);
@@ -1789,7 +1786,7 @@ bload_env (SCM a) ///((internal))
   set_env_x (cell_symbol_mesc, cell_t, r0);
 #endif
 
-  if (g_debug > 1)
+  if (g_debug > 3)
     {
       eputs ("symbols: ");
       SCM s = g_symbols;
@@ -1828,7 +1825,8 @@ main (int argc, char *argv[])
   if (g_debug)
     {
       eputs (";;; MODULEDIR=");
-      eputs (MODULEDIR);eputs ("\n");
+      eputs (MODULEDIR);
+      eputs ("\n");
     }
   if (p = getenv ("MES_MAX_ARENA"))
     MAX_ARENA_SIZE = atoi (p);
@@ -1857,20 +1855,38 @@ main (int argc, char *argv[])
   r0 = acons (cell_symbol_argv, lst, r0); // FIXME
   r0 = acons (cell_symbol_argv, lst, r0);
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
-  if (g_debug > 1)
+
+  if (g_debug > 2)
+    {
+      eputs ("\ngc stats: [");
+      eputs (itoa (g_free));
+      eputs ("]\n");
+    }
+  if (g_debug > 3)
     {
       eputs ("program: ");
       write_error_ (r1);
       eputs ("\n");
     }
+  if (g_debug > 3)
+    {
+      eputs ("symbols: ");
+      write_error_ (g_symbols);
+      eputs ("\n");
+    }
   r3 = cell_vm_begin_expand;
   r1 = eval_apply ();
-  write_error_ (r1);
-  eputs ("\n");
   if (g_debug)
     {
-      gc (g_stack);
+      write_error_ (r1);
+      eputs ("\n");
+    }
+  if (g_debug)
+    {
       eputs ("\ngc stats: [");
+      eputs (itoa (g_free));
+      gc (g_stack);
+      eputs (" => ");
       eputs (itoa (g_free));
       eputs ("]\n");
     }

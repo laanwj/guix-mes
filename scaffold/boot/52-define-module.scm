@@ -34,6 +34,12 @@
         (if (null? (cdr rest)) (car rest)
             (append2 (car rest) (apply append (cdr rest))))))
 
+  (define-macro (and . x)
+    (if (null? x) #t
+        (if (null? (cdr x)) (car x)
+            (list (quote if) (car x) (cons (quote and) (cdr x))
+                  #f))))
+
   (define (string->list s)
     (core:car s))
 
