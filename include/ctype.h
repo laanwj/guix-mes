@@ -31,6 +31,7 @@
 #include <endian.h>
 int isdigit (int);
 int isxdigit (int);
+int isspace (int);
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_CTYPE_H
