@@ -24,6 +24,8 @@
 #include <string.h>
 #include <mlibc.h>
 
+//#define MES_MINI 1
+
 // minimal for boot-0.scm
 // int ARENA_SIZE = 100000; // 32b: 1MiB, 64b: 2 MiB
 // take a bit more to run all tests
@@ -1562,7 +1564,280 @@ mes_symbols () ///((internal))
   gc_init_cells ();
   gc_init_news ();
 
-#if !_POSIX_SOURCE
+#if MES_MINI
+
+g_free++;
+g_cells[cell_nil] = scm_nil;
+
+g_free++;
+g_cells[cell_f] = scm_f;
+
+g_free++;
+g_cells[cell_t] = scm_t;
+
+g_free++;
+g_cells[cell_dot] = scm_dot;
+
+g_free++;
+g_cells[cell_arrow] = scm_arrow;
+
+g_free++;
+g_cells[cell_undefined] = scm_undefined;
+
+g_free++;
+g_cells[cell_unspecified] = scm_unspecified;
+
+g_free++;
+g_cells[cell_closure] = scm_closure;
+
+g_free++;
+g_cells[cell_circular] = scm_circular;
+
+g_free++;
+g_cells[cell_begin] = scm_begin;
+
+g_free++;
+g_cells[cell_symbol_dot] = scm_symbol_dot;
+
+g_free++;
+g_cells[cell_symbol_lambda] = scm_symbol_lambda;
+
+g_free++;
+g_cells[cell_symbol_begin] = scm_symbol_begin;
+
+g_free++;
+g_cells[cell_symbol_if] = scm_symbol_if;
+
+g_free++;
+g_cells[cell_symbol_quote] = scm_symbol_quote;
+
+g_free++;
+g_cells[cell_symbol_define] = scm_symbol_define;
+
+g_free++;
+g_cells[cell_symbol_define_macro] = scm_symbol_define_macro;
+
+g_free++;
+g_cells[cell_symbol_quasiquote] = scm_symbol_quasiquote;
+
+g_free++;
+g_cells[cell_symbol_unquote] = scm_symbol_unquote;
+
+g_free++;
+g_cells[cell_symbol_unquote_splicing] = scm_symbol_unquote_splicing;
+
+
+////// for GC
+g_free++;
+g_cells[cell_symbol_syntax] = scm_symbol_syntax;
+
+g_free++;
+g_cells[cell_symbol_quasisyntax] = scm_symbol_quasisyntax;
+
+g_free++;
+g_cells[cell_symbol_unsyntax] = scm_symbol_unsyntax;
+
+g_free++;
+g_cells[cell_symbol_unsyntax_splicing] = scm_symbol_unsyntax_splicing;
+
+g_free++;
+g_cells[cell_symbol_set_x] = scm_symbol_set_x;
+
+g_free++;
+g_cells[cell_symbol_sc_expand] = scm_symbol_sc_expand;
+
+g_free++;
+g_cells[cell_symbol_macro_expand] = scm_symbol_macro_expand;
+
+g_free++;
+g_cells[cell_symbol_portable_macro_expand] = scm_symbol_portable_macro_expand;
+
+g_free++;
+g_cells[cell_symbol_sc_expander_alist] = scm_symbol_sc_expander_alist;
+
+g_free++;
+g_cells[cell_symbol_call_with_values] = scm_symbol_call_with_values;
+
+g_free++;
+g_cells[cell_call_with_current_continuation] = scm_call_with_current_continuation;
+
+g_free++;
+g_cells[cell_symbol_call_with_current_continuation] = scm_symbol_call_with_current_continuation;
+
+g_free++;
+g_cells[cell_symbol_current_module] = scm_symbol_current_module;
+
+g_free++;
+g_cells[cell_symbol_primitive_load] = scm_symbol_primitive_load;
+
+g_free++;
+g_cells[cell_symbol_read_input_file] = scm_symbol_read_input_file;
+
+g_free++;
+g_cells[cell_symbol_write] = scm_symbol_write;
+
+g_free++;
+g_cells[cell_symbol_display] = scm_symbol_display;
+
+g_free++;
+g_cells[cell_symbol_throw] = scm_symbol_throw;
+
+g_free++;
+g_cells[cell_symbol_not_a_number] = scm_symbol_not_a_number;
+
+g_free++;
+g_cells[cell_symbol_not_a_pair] = scm_symbol_not_a_pair;
+
+g_free++;
+g_cells[cell_symbol_system_error] = scm_symbol_system_error;
+
+g_free++;
+g_cells[cell_symbol_wrong_number_of_args] = scm_symbol_wrong_number_of_args;
+
+g_free++;
+g_cells[cell_symbol_wrong_type_arg] = scm_symbol_wrong_type_arg;
+
+g_free++;
+g_cells[cell_symbol_unbound_variable] = scm_symbol_unbound_variable;
+
+g_free++;
+g_cells[cell_symbol_argv] = scm_symbol_argv;
+
+g_free++;
+g_cells[cell_symbol_mes_prefix] = scm_symbol_mes_prefix;
+
+g_free++;
+g_cells[cell_symbol_mes_version] = scm_symbol_mes_version;
+
+g_free++;
+g_cells[cell_symbol_car] = scm_symbol_car;
+
+g_free++;
+g_cells[cell_symbol_cdr] = scm_symbol_cdr;
+
+g_free++;
+g_cells[cell_symbol_pmatch_car] = scm_symbol_pmatch_car;
+
+g_free++;
+g_cells[cell_symbol_pmatch_cdr] = scm_symbol_pmatch_cdr;
+
+g_free++;
+g_cells[cell_vm_evlis] = scm_vm_evlis;
+
+g_free++;
+g_cells[cell_vm_evlis2] = scm_vm_evlis2;
+
+g_free++;
+g_cells[cell_vm_evlis3] = scm_vm_evlis3;
+
+g_free++;
+g_cells[cell_vm_apply] = scm_vm_apply;
+
+g_free++;
+g_cells[cell_vm_apply2] = scm_vm_apply2;
+
+g_free++;
+g_cells[cell_vm_eval] = scm_vm_eval;
+
+g_free++;
+g_cells[cell_vm_eval_pmatch_car] = scm_vm_eval_pmatch_car;
+
+g_free++;
+g_cells[cell_vm_eval_pmatch_cdr] = scm_vm_eval_pmatch_cdr;
+
+g_free++;
+g_cells[cell_vm_eval_define] = scm_vm_eval_define;
+
+g_free++;
+g_cells[cell_vm_eval_set_x] = scm_vm_eval_set_x;
+
+g_free++;
+g_cells[cell_vm_eval_macro_expand_eval] = scm_vm_eval_macro_expand_eval;
+
+g_free++;
+g_cells[cell_vm_eval_macro_expand_expand] = scm_vm_eval_macro_expand_expand;
+
+g_free++;
+g_cells[cell_vm_eval_check_func] = scm_vm_eval_check_func;
+
+g_free++;
+g_cells[cell_vm_eval2] = scm_vm_eval2;
+
+g_free++;
+g_cells[cell_vm_macro_expand] = scm_vm_macro_expand;
+
+g_free++;
+g_cells[cell_vm_macro_expand_define] = scm_vm_macro_expand_define;
+
+g_free++;
+g_cells[cell_vm_macro_expand_define_macro] = scm_vm_macro_expand_define_macro;
+
+g_free++;
+g_cells[cell_vm_macro_expand_lambda] = scm_vm_macro_expand_lambda;
+
+g_free++;
+g_cells[cell_vm_macro_expand_set_x] = scm_vm_macro_expand_set_x;
+
+g_free++;
+g_cells[cell_vm_begin_expand_primitive_load] = scm_vm_begin_expand_primitive_load;
+
+g_free++;
+g_cells[cell_vm_begin_primitive_load] = scm_vm_begin_primitive_load;
+
+g_free++;
+g_cells[cell_vm_macro_expand_car] = scm_vm_macro_expand_car;
+
+g_free++;
+g_cells[cell_vm_macro_expand_cdr] = scm_vm_macro_expand_cdr;
+
+g_free++;
+g_cells[cell_vm_begin_expand] = scm_vm_begin_expand;
+
+g_free++;
+g_cells[cell_vm_begin_expand_eval] = scm_vm_begin_expand_eval;
+
+g_free++;
+g_cells[cell_vm_begin_expand_macro] = scm_vm_begin_expand_macro;
+
+g_free++;
+g_cells[cell_vm_begin] = scm_vm_begin;
+
+g_free++;
+g_cells[cell_vm_begin_read_input_file] = scm_vm_begin_read_input_file;
+
+g_free++;
+g_cells[cell_vm_begin_eval] = scm_vm_begin_eval;
+
+g_free++;
+g_cells[cell_vm_if] = scm_vm_if;
+
+g_free++;
+g_cells[cell_vm_if_expr] = scm_vm_if_expr;
+
+g_free++;
+g_cells[cell_vm_call_with_values2] = scm_vm_call_with_values2;
+
+g_free++;
+g_cells[cell_vm_call_with_current_continuation2] = scm_vm_call_with_current_continuation2;
+
+g_free++;
+g_cells[cell_vm_return] = scm_vm_return;
+
+g_free++;
+g_cells[cell_symbol_gnuc] = scm_symbol_gnuc;
+
+g_free++;
+g_cells[cell_symbol_mesc] = scm_symbol_mesc;
+
+g_free++;
+g_cells[cell_test] = scm_test;
+////////////
+
+
+
+
+
+#elif !_POSIX_SOURCE
 #include "mes.mes.symbols.i"
 #else
 #include "mes.symbols.i"
@@ -1575,19 +1850,116 @@ mes_symbols () ///((internal))
 
   SCM a = cell_nil;
 
-#if !_POSIX_SOURCE
+#if MES_MINI
+
+g_cells[cell_nil].car = cstring_to_list (scm_nil.car);
+g_cells[cell_f].car = cstring_to_list (scm_f.car);
+g_cells[cell_t].car = cstring_to_list (scm_t.car);
+g_cells[cell_dot].car = cstring_to_list (scm_dot.car);
+g_cells[cell_arrow].car = cstring_to_list (scm_arrow.car);
+g_cells[cell_undefined].car = cstring_to_list (scm_undefined.car);
+g_cells[cell_unspecified].car = cstring_to_list (scm_unspecified.car);
+g_cells[cell_closure].car = cstring_to_list (scm_closure.car);
+g_cells[cell_circular].car = cstring_to_list (scm_circular.car);
+g_cells[cell_begin].car = cstring_to_list (scm_begin.car);
+g_cells[cell_symbol_dot].car = cstring_to_list (scm_symbol_dot.car);
+g_cells[cell_symbol_lambda].car = cstring_to_list (scm_symbol_lambda.car);
+g_cells[cell_symbol_begin].car = cstring_to_list (scm_symbol_begin.car);
+g_cells[cell_symbol_if].car = cstring_to_list (scm_symbol_if.car);
+g_cells[cell_symbol_quote].car = cstring_to_list (scm_symbol_quote.car);
+g_cells[cell_symbol_define].car = cstring_to_list (scm_symbol_define.car);
+g_cells[cell_symbol_define_macro].car = cstring_to_list (scm_symbol_define_macro.car);
+g_cells[cell_symbol_quasiquote].car = cstring_to_list (scm_symbol_quasiquote.car);
+g_cells[cell_symbol_unquote].car = cstring_to_list (scm_symbol_unquote.car);
+g_cells[cell_symbol_unquote_splicing].car = cstring_to_list (scm_symbol_unquote_splicing.car);
+
+
+//// FOR GC
+g_cells[cell_symbol_syntax].car = cstring_to_list (scm_symbol_syntax.name);
+g_cells[cell_symbol_quasisyntax].car = cstring_to_list (scm_symbol_quasisyntax.name);
+g_cells[cell_symbol_unsyntax].car = cstring_to_list (scm_symbol_unsyntax.name);
+g_cells[cell_symbol_unsyntax_splicing].car = cstring_to_list (scm_symbol_unsyntax_splicing.name);
+g_cells[cell_symbol_set_x].car = cstring_to_list (scm_symbol_set_x.name);
+g_cells[cell_symbol_sc_expand].car = cstring_to_list (scm_symbol_sc_expand.name);
+g_cells[cell_symbol_macro_expand].car = cstring_to_list (scm_symbol_macro_expand.name);
+g_cells[cell_symbol_portable_macro_expand].car = cstring_to_list (scm_symbol_portable_macro_expand.name);
+g_cells[cell_symbol_sc_expander_alist].car = cstring_to_list (scm_symbol_sc_expander_alist.name);
+g_cells[cell_symbol_call_with_values].car = cstring_to_list (scm_symbol_call_with_values.name);
+g_cells[cell_call_with_current_continuation].car = cstring_to_list (scm_call_with_current_continuation.name);
+g_cells[cell_symbol_call_with_current_continuation].car = cstring_to_list (scm_symbol_call_with_current_continuation.name);
+g_cells[cell_symbol_current_module].car = cstring_to_list (scm_symbol_current_module.name);
+g_cells[cell_symbol_primitive_load].car = cstring_to_list (scm_symbol_primitive_load.name);
+g_cells[cell_symbol_read_input_file].car = cstring_to_list (scm_symbol_read_input_file.name);
+g_cells[cell_symbol_write].car = cstring_to_list (scm_symbol_write.name);
+g_cells[cell_symbol_display].car = cstring_to_list (scm_symbol_display.name);
+g_cells[cell_symbol_throw].car = cstring_to_list (scm_symbol_throw.name);
+g_cells[cell_symbol_not_a_number].car = cstring_to_list (scm_symbol_not_a_number.name);
+g_cells[cell_symbol_not_a_pair].car = cstring_to_list (scm_symbol_not_a_pair.name);
+g_cells[cell_symbol_system_error].car = cstring_to_list (scm_symbol_system_error.name);
+g_cells[cell_symbol_wrong_number_of_args].car = cstring_to_list (scm_symbol_wrong_number_of_args.name);
+g_cells[cell_symbol_wrong_type_arg].car = cstring_to_list (scm_symbol_wrong_type_arg.name);
+g_cells[cell_symbol_unbound_variable].car = cstring_to_list (scm_symbol_unbound_variable.name);
+g_cells[cell_symbol_argv].car = cstring_to_list (scm_symbol_argv.name);
+g_cells[cell_symbol_mes_prefix].car = cstring_to_list (scm_symbol_mes_prefix.name);
+g_cells[cell_symbol_mes_version].car = cstring_to_list (scm_symbol_mes_version.name);
+g_cells[cell_symbol_car].car = cstring_to_list (scm_symbol_car.name);
+g_cells[cell_symbol_cdr].car = cstring_to_list (scm_symbol_cdr.name);
+g_cells[cell_symbol_pmatch_car].car = cstring_to_list (scm_symbol_pmatch_car.name);
+g_cells[cell_symbol_pmatch_cdr].car = cstring_to_list (scm_symbol_pmatch_cdr.name);
+
+g_cells[cell_vm_evlis].car = cstring_to_list ("*vm*");
+g_cells[cell_vm_evlis2].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_evlis3].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_apply].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_apply2].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_pmatch_car].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_pmatch_cdr].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_define].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_set_x].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_macro_expand_eval].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_macro_expand_expand].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_check_func].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval2].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_macro_expand].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_macro_expand_define].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_macro_expand_define_macro].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_macro_expand_lambda].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_macro_expand_set_x].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin_expand_primitive_load].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin_primitive_load].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_macro_expand_car].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_macro_expand_cdr].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin_expand].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin_expand_eval].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin_expand_macro].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin_read_input_file].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_begin_eval].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_if].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_if_expr].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_call_with_values2].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_call_with_current_continuation2].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_return].car = g_cells[cell_vm_evlis].car;
+
+g_cells[cell_symbol_gnuc].car = cstring_to_list (scm_symbol_gnuc.name);
+g_cells[cell_symbol_mesc].car = cstring_to_list (scm_symbol_mesc.name);
+g_cells[cell_test].car = cstring_to_list (scm_test.name);
+////////////////// gc
+
+#elif !_POSIX_SOURCE
 #include "mes.mes.symbol-names.i"
 #else
 #include "mes.symbol-names.i"
 #endif
 
-  a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
-  a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
-
+#if !MES_MINI
   a = acons (cell_symbol_call_with_values, cell_symbol_call_with_values, a);
   a = acons (cell_symbol_current_module, cell_symbol_current_module, a);
   a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
 
+  a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
+  a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
 
 #if __GNUC__
   a = acons (cell_symbol_gnuc, cell_t, a);
@@ -1596,6 +1968,7 @@ mes_symbols () ///((internal))
   a = acons (cell_symbol_gnuc, cell_f, a);
   a = acons (cell_symbol_mesc, cell_t, a);
 #endif
+#endif // !MES_MINI
   a = acons (cell_closure, a, a);
 
   return a;
@@ -1611,7 +1984,154 @@ mes_environment () ///((internal))
 SCM
 mes_builtins (SCM a) ///((internal))
 {
-#if !__GNUC__ || !_POSIX_SOURCE
+#if MES_MINI
+
+// GCC
+//mes
+scm_cons.function = g_function;
+g_functions[g_function++] = fun_cons;
+cell_cons = g_free++;
+g_cells[cell_cons] = scm_cons;
+
+scm_car.function = g_function;
+g_functions[g_function++] = fun_car;
+cell_car = g_free++;
+g_cells[cell_car] = scm_car;
+
+scm_cdr.function = g_function;
+g_functions[g_function++] = fun_cdr;
+cell_cdr = g_free++;
+g_cells[cell_cdr] = scm_cdr;
+
+scm_list.function = g_function;
+g_functions[g_function++] = fun_list;
+cell_list = g_free++;
+g_cells[cell_list] = scm_list;
+
+scm_null_p.function = g_function;
+g_functions[g_function++] = fun_null_p;
+cell_null_p = g_free++;
+g_cells[cell_null_p] = scm_null_p;
+
+scm_eq_p.function = g_function;
+g_functions[g_function++] = fun_eq_p;
+cell_eq_p = g_free++;
+g_cells[cell_eq_p] = scm_eq_p;
+
+//math
+scm_minus.function = g_function;
+g_functions[g_function++] = fun_minus;
+cell_minus = g_free++;
+g_cells[cell_minus] = scm_minus;
+
+scm_plus.function = g_function;
+g_functions[g_function++] = fun_plus;
+cell_plus = g_free++;
+g_cells[cell_plus] = scm_plus;
+
+//lib
+scm_display_.function = g_function;
+g_functions[g_function++] = fun_display_;
+cell_display_ = g_free++;
+g_cells[cell_display_] = scm_display_;
+
+scm_display_error_.function = g_function;
+g_functions[g_function++] = fun_display_error_;
+cell_display_error_ = g_free++;
+g_cells[cell_display_error_] = scm_display_error_;
+
+
+
+//mes.environment
+scm_cons.string = cstring_to_list (fun_cons.name);
+g_cells[cell_cons].string = MAKE_STRING (scm_cons.string);
+a = acons (lookup_symbol_ (scm_cons.string), cell_cons, a);
+
+scm_car.string = cstring_to_list (fun_car.name);
+g_cells[cell_car].string = MAKE_STRING (scm_car.string);
+a = acons (lookup_symbol_ (scm_car.string), cell_car, a);
+
+scm_cdr.string = cstring_to_list (fun_cdr.name);
+g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
+a = acons (lookup_symbol_ (scm_cdr.string), cell_cdr, a);
+
+scm_list.string = cstring_to_list (fun_list.name);
+g_cells[cell_list].string = MAKE_STRING (scm_list.string);
+a = acons (lookup_symbol_ (scm_list.string), cell_list, a);
+
+scm_null_p.string = cstring_to_list (fun_null_p.name);
+g_cells[cell_null_p].string = MAKE_STRING (scm_null_p.string);
+a = acons (lookup_symbol_ (scm_null_p.string), cell_null_p, a);
+
+scm_eq_p.string = cstring_to_list (fun_eq_p.name);
+g_cells[cell_eq_p].string = MAKE_STRING (scm_eq_p.string);
+a = acons (lookup_symbol_ (scm_eq_p.string), cell_eq_p, a);
+
+//math.environment
+ scm_minus.string = cstring_to_list (fun_minus.name);
+g_cells[cell_minus].string = MAKE_STRING (scm_minus.string);
+a = acons (lookup_symbol_ (scm_minus.string), cell_minus, a);
+
+scm_plus.string = cstring_to_list (fun_plus.name);
+g_cells[cell_plus].string = MAKE_STRING (scm_plus.string);
+a = acons (lookup_symbol_ (scm_plus.string), cell_plus, a);
+
+//lib.environment
+scm_display_.string = cstring_to_list (fun_display_.name);
+g_cells[cell_display_].string = MAKE_STRING (scm_display_.string);
+a = acons (lookup_symbol_ (scm_display_.string), cell_display_, a);
+
+scm_display_error_.string = cstring_to_list (fun_display_error_.name);
+g_cells[cell_display_error_].string = MAKE_STRING (scm_display_error_.string);
+a = acons (lookup_symbol_ (scm_display_error_.string), cell_display_error_, a);
+
+
+// MESC/MES
+//mes
+// scm_cons.cdr = g_function;
+// g_functions[g_function++] = fun_cons;
+// cell_cons = g_free++;
+// g_cells[cell_cons] = scm_cons;
+
+// scm_car.cdr = g_function;
+// g_functions[g_function++] = fun_car;
+// cell_car = g_free++;
+// g_cells[cell_car] = scm_car;
+
+// scm_cdr.cdr = g_function;
+// g_functions[g_function++] = fun_cdr;
+// cell_cdr = g_free++;
+// g_cells[cell_cdr] = scm_cdr;
+
+// scm_list.cdr = g_function;
+// g_functions[g_function++] = fun_list;
+// cell_list = g_free++;
+// g_cells[cell_list] = scm_list;
+
+// scm_null_p.cdr = g_function;
+// g_functions[g_function++] = fun_null_p;
+// cell_null_p = g_free++;
+// g_cells[cell_null_p] = scm_null_p;
+
+// scm_eq_p.cdr = g_function;
+// g_functions[g_function++] = fun_eq_p;
+// cell_eq_p = g_free++;
+// g_cells[cell_eq_p] = scm_eq_p;
+
+//lib
+// scm_display_.cdr = g_function;
+// g_functions[g_function++] = fun_display_;
+// cell_display_ = g_free++;
+// g_cells[cell_display_] = scm_display_;
+
+// scm_display_error_.cdr = g_function;
+// g_functions[g_function++] = fun_display_error_;
+// cell_display_error_ = g_free++;
+// g_cells[cell_display_error_] = scm_display_error_;
+
+
+
+#elif !__GNUC__ || !_POSIX_SOURCE
 #include "mes.mes.i"
 
   // Do not sort: Order of these includes define builtins
@@ -1859,10 +2379,13 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--dump"))
     return dump ();
 
+#if !MES_MINI
   SCM lst = cell_nil;
-  for (int i=argc-1; i>=0; i--) lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
+  for (int i=argc-1; i>=0; i--)
+    lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
   r0 = acons (cell_symbol_argv, lst, r0); // FIXME
   r0 = acons (cell_symbol_argv, lst, r0);
+#endif
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
 
   if (g_debug > 2)
