@@ -26,13 +26,12 @@
 
 int ARENA_SIZE = 20000000; // 32B: 100 MiB, 64b: 200 MiB
 #if __MESC__
-//int MAX_ARENA_SIZE = 89478485; // 32b: ~1GiB
-int MAX_ARENA_SIZE = 80000000; // 32b: ~1GiB
+int MAX_ARENA_SIZE = 172100000; // 32b: ~ 2GiB
 #else
-int MAX_ARENA_SIZE = 200000000; // 32b: 2GiB, 64b: 4GiB
+int MAX_ARENA_SIZE = 200000000; // 32b: 2.3GiB, 64b: 4.6GiB
 #endif
 
-int GC_SAFETY = 2000;
+int GC_SAFETY = 50000;
 
 char *g_arena = 0;
 typedef int SCM;
