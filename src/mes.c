@@ -1843,6 +1843,8 @@ main (int argc, char *argv[])
   if (p = getenv ("MES_ARENA"))
     ARENA_SIZE = atoi (p);
   GC_SAFETY = ARENA_SIZE / 400;
+  if (p = getenv ("MES_SAFETY"))
+    GC_SAFETY = atoi (p);
   if (argc > 1 && !strcmp (argv[1], "--help"))
     return puts ("Usage: mes [--dump|--load] < FILE\n");
   if (argc > 1 && !strcmp (argv[1], "--version"))
