@@ -1140,8 +1140,8 @@ eval_apply ()
                   && (CAR (r1) == cell_symbol_define
                       || CAR (r1) == cell_symbol_define_macro))
                 {
-                  int global_p = CAAR (r0) != cell_closure;
-                  int macro_p = CAR (r1) == cell_symbol_define_macro;
+                  global_p = CAAR (r0) != cell_closure;
+                  macro_p = CAR (r1) == cell_symbol_define_macro;
                   if (global_p)
                     {
                       name = CADR (r1);

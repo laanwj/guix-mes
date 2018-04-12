@@ -92,6 +92,8 @@ gc_relocate_cdr (SCM new, SCM cdr) ///((internal))
 SCM
 gc_loop (SCM scan) ///((internal))
 {
+  SCM car;
+  SCM cdr;
   while (scan < g_free)
     {
       if (NTYPE (scan) == TCLOSURE
@@ -107,7 +109,7 @@ gc_loop (SCM scan) ///((internal))
           || NTYPE (scan) == TSYMBOL
           || NTYPE (scan) == TVARIABLE)
         {
-          SCM car = gc_copy (g_news[scan].car);
+          car = gc_copy (g_news[scan].car);
           gc_relocate_car (scan, car);
         }
       if ((NTYPE (scan) == TCLOSURE
@@ -118,7 +120,7 @@ gc_loop (SCM scan) ///((internal))
            || NTYPE (scan) == TVARIABLE)
           && g_news[scan].cdr) // allow for 0 terminated list of symbols
         {
-          SCM cdr = gc_copy (g_news[scan].cdr);
+          cdr = gc_copy (g_news[scan].cdr);
           gc_relocate_cdr (scan, cdr);
         }
       scan++;
