@@ -905,6 +905,23 @@ expand_variable (SCM x, SCM formals) ///((internal))
 SCM
 eval_apply ()
 {
+  SCM aa;
+  SCM args;
+  SCM body;
+  SCM cl;
+  SCM entry;
+  SCM expanders;
+  SCM formals;
+  SCM input;
+  SCM name;
+  SCM macro;
+  SCM p;
+  SCM program;
+  SCM sc_expand;
+  SCM x;
+  int global_p;
+  int macro_p;
+
  eval_apply:
   gc_check ();
   switch (r3)
@@ -947,7 +964,6 @@ eval_apply ()
       assert (0);
     }
 
-  SCM x = cell_nil;
  evlis:
   gc_check ();
   if (r1 == cell_nil)
@@ -975,14 +991,14 @@ eval_apply ()
       }
     case TCLOSURE:
       {
-        SCM cl = CLOSURE (CAR (r1));
-        SCM body = CDDR (cl);
-        SCM formals = CADR (cl);
-        SCM args = CDR (r1);
-        SCM aa = CDAR (cl);
+        cl = CLOSURE (CAR (r1));
+        body = CDDR (cl);
+        formals = CADR (cl);
+        args = CDR (r1);
+        aa = CDAR (cl);
         aa = CDR (aa);
         check_formals (CAR (r1), formals, CDR (r1));
-        SCM p = pairlis (formals, args, aa);
+        p = pairlis (formals, args, aa);
         call_lambda (body, p, aa, r0);
         goto begin;
       }
@@ -1036,10 +1052,10 @@ eval_apply ()
           {
           case cell_symbol_lambda:
             {
-              SCM formals = CADR (CAR (r1));
-              SCM args = CDR (r1);
-              SCM body = CDDR (CAR (r1));
-              SCM p = pairlis (formals, CDR (r1), r0);
+              formals = CADR (CAR (r1));
+              args = CDR (r1);
+              body = CDDR (CAR (r1));
+              p = pairlis (formals, CDR (r1), r0);
               check_formals (r1, formals, args);
               call_lambda (body, p, p, r0);
               goto begin;
@@ -1128,12 +1144,12 @@ eval_apply ()
                   int macro_p = CAR (r1) == cell_symbol_define_macro;
                   if (global_p)
                     {
-                      SCM name = CADR (r1);
+                      name = CADR (r1);
                       if (TYPE (CADR (r1)) == TPAIR)
                         name = CAR (name);
                       if (macro_p)
                         {
-                          SCM entry = assq (name, g_macros);
+                          entry = assq (name, g_macros);
                           if (entry == cell_f)
                             {
                               entry = cons (name, cell_f);
@@ -1142,11 +1158,11 @@ eval_apply ()
                         }
                       else
                         {
-                          SCM entry = assq (name, r0);
+                          entry = assq (name, r0);
                           if (entry == cell_f)
                             {
                               entry = cons (name, cell_f);
-                              SCM aa = cons (entry, cell_nil);
+                              aa = cons (entry, cell_nil);
                               set_cdr_x (aa, cdr (r0));
                               set_cdr_x (r0, aa);
                             }
@@ -1160,9 +1176,9 @@ eval_apply ()
                     }
                   else
                     {
-                      SCM p = pairlis (CADR (r1), CADR (r1), r0);
-                      SCM formals = CDR (CADR (r1));
-                      SCM body = CDDR (r1);
+                      p = pairlis (CADR (r1), CADR (r1), r0);
+                      formals = CDR (CADR (r1));
+                      body = CDDR (r1);
 
                       if (macro_p || global_p)
                         expand_variable (body, formals);
@@ -1171,27 +1187,27 @@ eval_apply ()
                       goto eval;
                     }
                 eval_define:;
-                  SCM name = CADR (r2);
+                  name = CADR (r2);
                   if (TYPE (CADR (r2)) == TPAIR)
                     name = CAR (name);
                   if (macro_p)
                     {
-                      SCM entry = assq (name, g_macros);
+                      entry = assq (name, g_macros);
                       r1 = MAKE_MACRO (name, r1);
                       set_cdr_x (entry, r1);
                     }
                   else if (global_p)
                     {
-                      SCM entry = assq (name, r0);
+                      entry = assq (name, r0);
                       set_cdr_x (entry, r1);
                     }
                   else
                     {
-                      SCM entry = cons (name, r1);
-                      SCM aa = cons (entry, cell_nil);
+                      entry = cons (name, r1);
+                      aa = cons (entry, cell_nil);
                       set_cdr_x (aa, cdr (r0));
                       set_cdr_x (r0, aa);
-                      SCM cl = assq (cell_closure, r0);
+                      cl = assq (cell_closure, r0);
                       set_cdr_x (cl, aa);
                     }
                   r1 = cell_unspecified;
@@ -1230,8 +1246,8 @@ eval_apply ()
 
  macro_expand:
   {
-    SCM macro;
-    SCM expanders;
+    macro;
+    expanders;
 
     if (TYPE (r1) != TPAIR || CAR (r1) == cell_symbol_quote)
       goto vm_return;
@@ -1289,7 +1305,7 @@ eval_apply ()
         && ((expanders = assq_ref_env (cell_symbol_sc_expander_alist, r0)) != cell_undefined)
         && ((macro = assq (CAR (r1), expanders)) != cell_f))
       {
-        SCM sc_expand = assq_ref_env (cell_symbol_macro_expand, r0);
+        sc_expand = assq_ref_env (cell_symbol_macro_expand, r0);
         r2 = r1;
         if (sc_expand != cell_undefined && sc_expand != cell_f)
           {
@@ -1326,7 +1342,7 @@ eval_apply ()
         {
           if (CAAR (r1) == cell_symbol_primitive_load)
             {
-              SCM program = cons (CAR (r1), cell_nil);
+              program = cons (CAR (r1), cell_nil);
               push_cc (program, r1, r0, cell_vm_begin_primitive_load);
               goto begin_expand;
             begin_primitive_load:
@@ -1370,7 +1386,7 @@ eval_apply ()
               push_cc (CADR (CAR (r1)), r1, r0, cell_vm_begin_expand_primitive_load);
               goto eval; // FIXME: expand too?!
             begin_expand_primitive_load:;
-              SCM input; // = current_input_port ();
+              input; // = current_input_port ();
               if (TYPE (r1) == TNUMBER && VALUE (r1) == 0)
                 ;
               else if (TYPE (r1) == TSTRING)
