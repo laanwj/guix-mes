@@ -1174,11 +1174,6 @@ eval_apply ()
                   SCM name = CADR (r2);
                   if (TYPE (CADR (r2)) == TPAIR)
                     name = CAR (name);
-#if __MESC__
-                  // hmm, mes needs a reminder...
-                  global_p = CAAR (r0) != cell_closure;
-                  macro_p = CAR (r2) == cell_symbol_define_macro;
-#endif // __MESC__
                   if (macro_p)
                     {
                       SCM entry = assq (name, g_macros);
