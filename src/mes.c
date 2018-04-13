@@ -25,7 +25,7 @@
 #include <mlibc.h>
 
 int ARENA_SIZE = 20000000; // 32B: 100 MiB, 64b: 200 MiB
-#if __MESC__
+#if 1 //__MESC__
 int MAX_ARENA_SIZE = 172100000; // 32b: ~ 2GiB
 #else
 int MAX_ARENA_SIZE = 200000000; // 32b: 2.3GiB, 64b: 4.6GiB
@@ -1521,7 +1521,7 @@ gc_init_cells () ///((internal))
   TYPE (0) = TVECTOR;
   LENGTH (0) = 1000;
   VECTOR (0) = 0;
-#if __MESC__
+#if 0 //__MESC__
   g_cells += sizeof (struct scm);
 #else
   g_cells++;
@@ -1534,7 +1534,7 @@ gc_init_cells () ///((internal))
 SCM
 gc_init_news () ///((internal))
 {
-#if __MESC__
+#if 0 //__MESC__
   char *p = g_cells;
   p -= sizeof (struct scm);
   p += ARENA_SIZE * sizeof (struct scm);
@@ -1546,7 +1546,7 @@ gc_init_news () ///((internal))
   NTYPE (0) = TVECTOR;
   NLENGTH (0) = 1000;
   NVECTOR (0) = 0;
-#if __MESC__
+#if 0 //__MESC__
   g_news += sizeof (struct scm);
 #else
   g_news++;
@@ -1750,7 +1750,7 @@ load_env (SCM a) ///((internal))
 SCM
 bload_env (SCM a) ///((internal))
 {
-#if __MESC__
+#if 1 //__MESC__
   char *mo = "mes/read-0-32.mo";
   g_stdin = open ("module/mes/read-0-32.mo", O_RDONLY);
   char *read0 = MODULEDIR "mes/read-0-32.mo";

@@ -443,7 +443,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (add-target (bin.gcc "src/mes.c" #:libc libc-gcc.mlibc-o
                      #:dependencies mes-snarf-targets
                      #:defines `(,(string-append "VERSION=\"" %version "\"")
-                                 ,(string-append "MODULEDIR=\"" (string-append %prefix (if (string-null? %prefix) "" "/") "/" %moduledir "/") "\"")
+                                 ,(string-append "MODULEDIR=\"" (string-append %prefix (if (string-null? %prefix) "" "/") %moduledir "/") "\"")
                                  ,(string-append "PREFIX=\"" %prefix "\""))
                      #:includes '("src")))
 

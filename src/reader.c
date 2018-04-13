@@ -282,7 +282,7 @@ reader_read_character ()
       else if (!strcmp (buf, "newline")) c = '\n';
       else if (!strcmp (buf, "vtab")) c = '\v';
       else if (!strcmp (buf, "page")) c = '\f';
-#if __MESC__
+#if 1 //__MESC__
       //Nyacc bug
       else if (!strcmp (buf, "return")) c = 13;
       else if (!strcmp (buf, "esc")) c = 27;
@@ -298,7 +298,7 @@ reader_read_character ()
       else if (!strcmp (buf, "ht")) c = '\t';
       else if (!strcmp (buf, "vt")) c = '\v';
 
-#if __MESC__
+#if 1 //__MESC__
       //Nyacc bug
       else if (!strcmp (buf, "cr")) c = 13;
 #else
@@ -390,7 +390,7 @@ reader_read_string ()
               buf[i++] = '\t';
             }
         }
-#if !__MESC__
+#if 0 // !__MESC__
       else if (c == EOF)
         assert (!"EOF in string");
 #endif
