@@ -24,4 +24,3 @@
 
 (define R_OK 0)
 (define S_IRWXU #o700)
-

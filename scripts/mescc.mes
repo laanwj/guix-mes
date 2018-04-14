@@ -10,7 +10,7 @@ then
 fi
 MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
 export MES_MODULEDIR
-echo '()' | cat $MES_MODULEDIR/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS -- "$@"
+$MES $MES_FLAGS -- "$@" < $0
 #paredit:||
 exit $?
 !#

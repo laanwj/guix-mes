@@ -31,5 +31,4 @@
   (cons 'begin (cond-expand-expander clauses)))
 ;; end boot-00.scm
 
-;;((lambda (*program*) *program*) (primitive-load 0))
 (primitive-load 0)

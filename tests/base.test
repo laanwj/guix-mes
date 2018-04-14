@@ -1,8 +1,8 @@
 #! /bin/sh
 # -*-scheme-*-
 MES=${MES-$(dirname $0)/../src/mes}
-echo ' ()' | cat $(dirname $0)/../module/mes/base-0.mes $0 /dev/stdin | $MES $MES_FLAGS "$@"
-#paredit:||
+#export MES_ARENA=${MES_ARENA-40000}
+$MES $MES_FLAGS "$@" < $0
 exit $?
 !#
 
@@ -32,10 +32,6 @@ exit $?
 (pass-if-not "second dummy" #f)
 
 (pass-if "lambda" (symbol? 'lambda))
-
-(cond-expand
- (guile (define append2 append))
- (mes))
 
 (pass-if-equal "append" '(0 1) (append2 '(0) '(1)))
 (pass-if-equal "append 2" '(0) (append2 '(0) '()))
@@ -99,9 +95,9 @@ exit $?
 (pass-if-equal "primitive-load" 42 (primitive-load "tests/data/load.scm") the-answer)
 
 (cond-expand
- (guile)
  (mes
-  (pass-if-equal "include" 42 (include "tests/data/load.scm") the-answer)))
+  (pass-if-equal "include" 42 (include "tests/data/load.scm") the-answer))
+ (else))
 
 (pass-if-eq "call/cc"
     0
@@ -112,9 +108,11 @@ exit $?
                   (cont 2))))
      #f #f))
 
-(if (not guile?)
-    (pass-if-not "#<eof>"
-                 (char? (integer->char -1))))
+(cond-expand
+ (mes
+  (pass-if-not "#<eof>"
+               (char? (integer->char -1))))
+ (else))
 
 (pass-if-equal "setenv, getenv"
     "bar"

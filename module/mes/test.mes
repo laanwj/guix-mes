@@ -26,7 +26,22 @@
 ;;; Code:
 
 (mes-use-module (mes base))
-(define guile? (not (pair? (current-module))))
+(cond-expand
+ (mes
+  (define mes? #t)
+  (define guile? #f)
+  (define guile-2? #f)
+  (define guile-1.8? #f))
+ (guile-2
+  (define mes? #f)
+  (define guile? #t)
+  (define guile-2? #t)
+  (define guile-1.8? #f))
+ (guile
+  (define mes? #f)
+  (define guile? #f)
+  (define guile-2? #f)
+  (define guile-1.8? #t)))
 
 (define result
   ((lambda (pass fail)

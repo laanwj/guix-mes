@@ -520,7 +520,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 (define* ((install-dir #:key dir) name)
   (add-target (install name  #:dir (string-append dir "/" (dirname name)))))
 
-(add-target (install "module/mes/base-0.mes" #:dir (string-append %moduledir "/mes") #:substitutes #t))
+(add-target (install "module/mes/boot-0.scm" #:dir (string-append %moduledir "/mes") #:substitutes #t))
 (add-target (install "module/language/c99/compiler.mes" #:dir (string-append %moduledir "/language/c99") #:substitutes #t))
 
 (define %module-dir "share/mes")
@@ -538,11 +538,11 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/mes/as-i386.scm"
    "module/mes/as.mes"
    "module/mes/as.scm"
-   ;;"module/mes/base-0.mes"
    "module/mes/base.mes"
    "module/mes/boot-0.scm"
    "module/mes/boot-00.scm"
    "module/mes/boot-01.scm"
+   "module/mes/boot-02.scm"
    "module/mes/bytevectors.mes"
    "module/mes/bytevectors.scm"
    "module/mes/catch.mes"

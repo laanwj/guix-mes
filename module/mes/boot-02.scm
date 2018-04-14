@@ -1,5 +1,7 @@
+;;; -*-scheme-*-
+
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -15,6 +17,14 @@
 ;;;
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; read-0.mes - bootstrap reader.  This file is read by a minimal
+;;; core reader.  It only supports s-exps and line-comments; quotes,
+;;; character literals, string literals cannot be used here.
+
+;;; Code:
 
 ;; boot-00.scm
 (define mes %version)
@@ -65,7 +75,9 @@
   (if (null? lst) (list)
       (cons (f (car lst)) (map1 f (cdr lst)))))
 
-(define map map1)
+(define (map f lst)
+  (if (null? lst) (list)
+      (cons (f (car lst)) (map f (cdr lst)))))
 
 (define (cons* . rest)
   (if (null? (cdr rest)) (car rest)
@@ -80,5 +92,28 @@
       (if (null? (cdr rest)) (car rest)
           (append2 (car rest) (apply append (cdr rest))))))
 ;; end boot-01.scm
+
+;; boot-02.scm
+(define-macro (and . x)
+  (if (null? x) #t
+      (if (null? (cdr x)) (car x)
+          (list (quote if) (car x) (cons (quote and) (cdr x))
+                #f))))
+
+(define-macro (or . x)
+  (if (null? x) #f
+      (if (null? (cdr x)) (car x)
+          (list (list (quote lambda) (list (quote r))
+                      (list (quote if) (quote r) (quote r)
+                            (cons (quote or) (cdr x))))
+                (car x)))))
+
+(define-macro (module-define! module name value)
+  ;;(list 'define name value)
+  #t)
+
+(define-macro (mes-use-module module)
+  #t)
+;; end boot-02.scm
 
 (primitive-load 0)

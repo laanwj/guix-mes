@@ -93,6 +93,7 @@
           (append2 (car rest) (apply append (cdr rest))))))
 ;; end boot-01.scm
 
+;; boot-02.scm
 (define-macro (and . x)
   (if (null? x) #t
       (if (null? (cdr x)) (car x)
@@ -113,7 +114,116 @@
 
 (define-macro (mes-use-module module)
   #t)
+;; end boot-02.scm
 
-;;((lambda (*program*) *program*) (primitive-load 0))
+;; boot-0.scm
+(define (primitive-eval e) (core:eval e (current-module)))
+(define eval core:eval)
+
+(define (current-output-port) 1)
+(define (current-error-port) 2)
+(define (port-filename port) "<stdin>")
+(define (port-line port) 0)
+(define (port-column port) 0)
+(define (ftell port) 0)
+(define (false-if-exception x) x)
+
+(define (cons* . rest)
+  (if (null? (cdr rest)) (car rest)
+      (cons (car rest) (core:apply cons* (cdr rest) (current-module)))))
+
+(define (apply f h . t)
+  (if (null? t) (core:apply f h (current-module))
+      (apply f (apply cons* (cons h t)))))
+
+(define-macro (cond . clauses)
+  (list 'if (pair? clauses)
+        (list (cons
+               'lambda
+               (cons
+                '(test)
+                (list (list 'if 'test
+                            (if (pair? (cdr (car clauses)))
+                                (if (eq? (car (cdr (car clauses))) '=>)
+                                    (append2 (cdr (cdr (car clauses))) '(test))
+                                    (list (cons 'lambda (cons '() (cons 'test (cdr (car clauses)))))))
+                                (list (cons 'lambda (cons '() (cons 'test (cdr (car clauses)))))))
+                            (if (pair? (cdr clauses))
+                                (cons 'cond (cdr clauses)))))))
+              (car (car clauses)))))
+
+(define else #t)
+
+(define-macro (load file)
+  (list 'begin
+        (list 'if (list getenv "MES_DEBUG")
+              (list 'begin
+                    (list core:display-error ";;; read ")
+                    (list core:display-error file)
+                    (list core:display-error "\n")))
+     (list 'primitive-load file)))
+
+(define-macro (include file) (list 'load file))
+
+(define (append . rest)
+  (if (null? rest) '()
+      (if (null? (cdr rest)) (car rest)
+          (append2 (car rest) (apply append (cdr rest))))))
+
+(define (string->list s)
+  (core:car s))
+
+(define %prefix (getenv "MES_PREFIX"))
+(define %moduledir
+  (if (not %prefix) "module/"
+      (list->string
+       (append (string->list %prefix)
+               (string->list "/module") ; `module/' gets replaced upon install
+               (string->list "/")))))
+
+(include (list->string
+          (append2 (string->list %moduledir) (string->list "/mes/type-0.mes"))))
+
+(define (symbol->string s)
+  (apply string (symbol->list s)))
+
+(define (string-append . rest)
+  (apply string (apply append (map1 string->list rest))))
+
+(define %version (if (eq? (car (string->list "@VERSION@")) #\@) "git"
+                     "@VERSION@"))
+(define (effective-version) %version)
+
+(if (getenv "MES_DEBUG")
+    (begin
+      (core:display-error ";;; %moduledir=")
+      (core:display-error %moduledir)
+      (core:display-error "\n")))
+
+(define-macro (include-from-path file)
+  (list 'load (list string-append %moduledir file)))
+
+(define (string-join lst infix)
+  (if (null? (cdr lst)) (car lst)
+      (string-append (car lst) infix (string-join (cdr lst) infix))))
+
+(include-from-path "mes/module.mes")
+
+(mes-use-module (mes base))
+;; ;; (mes-use-module (srfi srfi-0))
+(mes-use-module (mes quasiquote))
+(mes-use-module (mes let))
+
+(mes-use-module (mes scm))
+
+(mes-use-module (srfi srfi-1)) ;; FIXME: module read order
+(mes-use-module (srfi srfi-13))
+
+(mes-use-module (mes fluids)) ;; FIXME: module read order
+(mes-use-module (mes catch))
+
+(mes-use-module (mes posix))
+;; ;; end boot-0.scm
+
 (primitive-load 0)
-
+(primitive-load 0)

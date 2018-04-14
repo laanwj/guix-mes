@@ -24,9 +24,12 @@
 #include <string.h>
 #include <mlibc.h>
 
-int ARENA_SIZE = 20000000; // 32B: 100 MiB, 64b: 200 MiB
-#if 1 //__MESC__
-int MAX_ARENA_SIZE = 172100000; // 32b: ~ 2GiB
+// minimal for boot-0.scm
+// int ARENA_SIZE = 100000; // 32b: 1MiB, 64b: 2 MiB
+// take a bit more to run all tests
+int ARENA_SIZE = 400000; // 32b: 1MiB, 64b: 2 MiB
+#if !_POSIX_SOURCE
+int MAX_ARENA_SIZE = 166600000; // 32b: ~ 2GiB
 #else
 int MAX_ARENA_SIZE = 200000000; // 32b: 2.3GiB, 64b: 4.6GiB
 #endif
