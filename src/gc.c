@@ -24,21 +24,21 @@ SCM
 gc_up_arena () ///((internal))
 {
   ARENA_SIZE *= 2;
-  GC_SAFETY *= 2;
-#if _POSIX_SOURCE
   void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(struct scm));
-#else
-  char *p = g_cells;
-  p = realloc (p-sizeof (struct scm), 2*ARENA_SIZE*sizeof(struct scm));
-#endif
-
-#if _POSIX_SOURCE
   if (!p)
-    error (cell_symbol_system_error, cons (MAKE_STRING (cstring_to_list (strerror (errno))), MAKE_NUMBER (g_free)));
+    {
+      eputs ("realloc failed, g_free=");
+      eputs (itoa (g_free));
+      eputs (":");
+      eputs (itoa (ARENA_SIZE - g_free));
+      eputs ("\n");
+      assert (0);
+      exit (1);
+    }
   g_cells = (struct scm*)p;
   g_cells++;
-#endif
   gc_init_news ();
+
   return 0;
 }
 
@@ -132,12 +132,12 @@ SCM
 gc_check ()
 {
   if (g_free + GC_SAFETY > ARENA_SIZE)
-    gc_pop_frame (gc (gc_push_frame ()));
+    gc ();
   return cell_unspecified;
 }
 
 SCM
-gc ()
+gc_ () ///((internal))
 {
   if (g_debug == 2)
     eputs (".");
@@ -150,11 +150,30 @@ gc ()
       eputs ("]...");
     }
   g_free = 1;
-  if (g_cells < g_news && ARENA_SIZE < MAX_ARENA_SIZE)
-    gc_up_arena ();
+
+  if (g_cells < g_news
+      //&& g_free > ARENA_SIZE >> 2
+      && ARENA_SIZE < MAX_ARENA_SIZE)
+    {
+      if (g_debug == 2)
+        eputs ("+");
+      if (g_debug > 2)
+        {
+          eputs (" up[");
+          eputs (itoa (g_cells));
+          eputs (",");
+          eputs (itoa (g_news));
+          eputs (":");
+          eputs (itoa (ARENA_SIZE));
+          eputs (",");
+          eputs (itoa (MAX_ARENA_SIZE));
+          eputs ("]...");
+        }
+      gc_up_arena ();
+    }
+
   for (int i=g_free; i<g_symbol_max; i++)
     gc_copy (i);
-  make_tmps (g_news);
   g_symbols = gc_copy (g_symbols);
   g_macros = gc_copy (g_macros);
   SCM new = gc_copy (g_stack);
@@ -165,5 +184,31 @@ gc ()
       eputs ("\n");
     }
   g_stack = new;
-  return gc_loop (1);
+  gc_loop (1);
+}
+
+SCM
+gc ()
+{
+  if (g_debug > 4)
+    {
+      eputs ("symbols: ");
+      write_error_ (g_symbols);
+      eputs ("\n");
+      eputs ("R0: ");
+      write_error_ (r0);
+      eputs ("\n");
+    }
+  gc_push_frame ();
+  gc_ ();
+  gc_pop_frame ();
+  if (g_debug > 4)
+    {
+      eputs ("symbols: ");
+      write_error_ (g_symbols);
+      eputs ("\n");
+      eputs ("R0: ");
+      write_error_ (r0);
+      eputs ("\n");
+    }
 }

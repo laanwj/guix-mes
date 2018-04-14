@@ -1,7 +1,7 @@
 #! /bin/sh
 # -*-scheme-*-
 MES=${MES-$(dirname $0)/../src/mes}
-#export MES_ARENA=${MES_ARENA-40000}
+#export MES_ARENA=${MES_ARENA-200000}
 $MES $MES_FLAGS "$@" < $0
 exit $?
 !#

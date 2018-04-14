@@ -19,14 +19,18 @@
  */
 
 SCM
-make_vector_ (SCM n)
+make_vector__ (int k)
 {
-  int k = VALUE (n);
-  VALUE (tmp_num) = TVECTOR;
   SCM v = alloc (k);
-  SCM x = make_cell_ (tmp_num, k, v);
+  SCM x = make_cell__ (TVECTOR, k, v);
   for (int i=0; i<k; i++) g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
   return x;
+}
+
+SCM
+make_vector_ (SCM n)
+{
+  return make_vector__ (VALUE (n));
 }
 
 SCM
@@ -71,8 +75,8 @@ vector_set_x (SCM x, SCM i, SCM e)
 SCM
 list_to_vector (SCM x)
 {
-  VALUE (tmp_num) = VALUE (length (x));
-  SCM v = make_vector_ (tmp_num);
+
+  SCM v = make_vector__ (length__ (x));
   SCM p = VECTOR (v);
   while (x != cell_nil)
     {

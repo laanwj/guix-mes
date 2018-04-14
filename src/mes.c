@@ -29,12 +29,14 @@
 // take a bit more to run all tests
 int ARENA_SIZE = 400000; // 32b: 1MiB, 64b: 2 MiB
 #if !_POSIX_SOURCE
+//int MAX_ARENA_SIZE = 60000000; // 32b: ~ 300MiB
 int MAX_ARENA_SIZE = 166600000; // 32b: ~ 2GiB
+//int MAX_ARENA_SIZE = 500000000; // 32b: ~ 8GiB
 #else
 int MAX_ARENA_SIZE = 200000000; // 32b: 2.3GiB, 64b: 4.6GiB
 #endif
 
-int GC_SAFETY = 50000;
+int GC_SAFETY = 4000;
 
 char *g_arena = 0;
 typedef int SCM;
@@ -229,10 +231,6 @@ struct scm scm_test = {TSYMBOL, "test",0};
 #include "mes.symbols.h"
 #endif
 
-SCM tmp;
-SCM tmp_num;
-SCM tmp_num2;
-
 struct function g_functions[200];
 int g_function = 0;
 
@@ -306,13 +304,13 @@ int g_function = 0;
 #define NVECTOR(x) g_news[x].vector
 #endif
 
-#define MAKE_CHAR(n) make_cell_ (tmp_num_ (TCHAR), 0, tmp_num2_ (n))
-#define MAKE_CONTINUATION(n) make_cell_ (tmp_num_ (TCONTINUATION), n, g_stack)
-#define MAKE_NUMBER(n) make_cell_ (tmp_num_ (TNUMBER), 0, tmp_num2_ (n))
-#define MAKE_REF(n) make_cell_ (tmp_num_ (TREF), n, 0)
-#define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
-#define MAKE_KEYWORD(x) make_cell_ (tmp_num_ (TKEYWORD), x, 0)
-#define MAKE_MACRO(name, x) make_cell_ (tmp_num_ (TMACRO), STRING (name), x)
+#define MAKE_CHAR(n) make_cell__ (TCHAR, 0, n)
+#define MAKE_CONTINUATION(n) make_cell__ (TCONTINUATION, n, g_stack)
+#define MAKE_NUMBER(n) make_cell__ (TNUMBER, 0, n)
+#define MAKE_REF(n) make_cell__ (TREF, n, 0)
+#define MAKE_STRING(x) make_cell__ (TSTRING, x, 0)
+#define MAKE_KEYWORD(x) make_cell__ (TKEYWORD, x, 0)
+#define MAKE_MACRO(name, x) make_cell__ (TMACRO, STRING (name), x)
 
 #define CAAR(x) CAR (CAR (x))
 #define CADR(x) CAR (CDR (x))
@@ -332,52 +330,29 @@ alloc (int n)
 }
 
 SCM
-tmp_num_ (int x)
+make_cell__ (int type, SCM car, SCM cdr)
 {
-  VALUE (tmp_num) = x;
-  return tmp_num;
-}
-
-SCM
-tmp_num2_ (int x)
-{
-  VALUE (tmp_num2) = x;
-  return tmp_num2;
+  SCM x = alloc (1);
+  TYPE (x) = type;
+  CAR (x) = car;
+  CDR (x) = cdr;
+  return x;
 }
 
 SCM
 make_cell_ (SCM type, SCM car, SCM cdr)
 {
-  SCM x = alloc (1);
   assert (TYPE (type) == TNUMBER);
-  TYPE (x) = VALUE (type);
-  if (VALUE (type) == TCHAR || VALUE (type) == TNUMBER)
-    {
-      if (car)
-        CAR (x) = CAR (car);
-      if (cdr)
-        CDR (x) = CDR (cdr);
-    }
-  else if (VALUE (type) == TFUNCTION)
-    {
-      if (car)
-        CAR (x) = car;
-      if (cdr)
-        CDR (x) = CDR (cdr);
-    }
-  else
-    {
-      CAR (x) = car;
-      CDR (x) = cdr;
-    }
-  return x;
+  int t = VALUE (type);
+  if (t == TCHAR || t == TNUMBER)
+    return make_cell__ (t, car ? CAR (car) : 0, cdr ? CDR (cdr) : 0);
+  return make_cell__ (t, car, cdr);
 }
 
 SCM
 make_symbol_ (SCM s) ///((internal))
 {
-  VALUE (tmp_num) = TSYMBOL;
-  SCM x = make_cell_ (tmp_num, s, 0);
+  SCM x = make_cell__ (TSYMBOL, s, 0);
   g_symbols = cons (x, g_symbols);
   return x;
 }
@@ -451,8 +426,7 @@ arity_ (SCM x)
 SCM
 cons (SCM x, SCM y)
 {
-  VALUE (tmp_num) = TPAIR;
-  return make_cell_ (tmp_num, x, y);
+  return make_cell__ (TPAIR, x, y);
 }
 
 SCM
@@ -514,18 +488,24 @@ acons (SCM key, SCM value, SCM alist)
   return cons (cons (key, value), alist);
 }
 
-SCM
-length (SCM x)
+int
+length__ (SCM x)
 {
   int n = 0;
   while (x != cell_nil)
     {
       n++;
       if (TYPE (x) != TPAIR)
-        return MAKE_NUMBER (-1);
+        return -1;
       x = CDR (x);
     }
-  return MAKE_NUMBER (n);
+  return n;
+}
+
+SCM
+length (SCM x)
+{
+  return MAKE_NUMBER (length__ (x));
 }
 
 SCM apply (SCM, SCM, SCM);
@@ -757,13 +737,13 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 SCM
 make_closure_ (SCM args, SCM body, SCM a) ///((internal))
 {
-  return make_cell_ (tmp_num_ (TCLOSURE), cell_f, cons (cons (cell_circular, a), cons (args, body)));
+  return make_cell__ (TCLOSURE, cell_f, cons (cons (cell_circular, a), cons (args, body)));
 }
 
 SCM
 make_variable_ (SCM var, SCM global_p) ///((internal))
 {
-  return make_cell_ (tmp_num_ (TVARIABLE), var, global_p);
+  return make_cell__ (TVARIABLE, var, global_p);
 }
 
 SCM
@@ -926,7 +906,6 @@ eval_apply ()
   int macro_p;
 
  eval_apply:
-  gc_check ();
   switch (r3)
     {
     case cell_vm_evlis: goto evlis;
@@ -968,7 +947,6 @@ eval_apply ()
     }
 
  evlis:
-  gc_check ();
   if (r1 == cell_nil)
     goto vm_return;
   if (TYPE (r1) != TPAIR)
@@ -983,7 +961,6 @@ eval_apply ()
   goto vm_return;
 
  apply:
-  gc_check ();
   switch (TYPE (CAR (r1)))
     {
     case TFUNCTION:
@@ -1074,7 +1051,6 @@ eval_apply ()
   goto apply;
 
  eval:
-  gc_check ();
   switch (TYPE (r1))
     {
     case TPAIR:
@@ -1108,7 +1084,8 @@ eval_apply ()
               r1 = CADR (x);
               goto eval_apply;
             }
-          case cell_symbol_begin: goto begin;
+          case cell_symbol_begin:
+            goto begin;
           case cell_symbol_lambda:
             {
               r1 = make_closure_ (CADR (r1), CDDR (r1), r0);
@@ -1217,6 +1194,7 @@ eval_apply ()
                   goto vm_return;
                 }
               push_cc (CAR (r1), r1, r0, cell_vm_eval_check_func);
+              gc_check ();
               goto eval;
             eval_check_func:
               push_cc (CDR (r2), r2, r0, cell_vm_eval2);
@@ -1388,8 +1366,7 @@ eval_apply ()
             {
               push_cc (CADR (CAR (r1)), r1, r0, cell_vm_begin_expand_primitive_load);
               goto eval; // FIXME: expand too?!
-            begin_expand_primitive_load:;
-              input; // = current_input_port ();
+            begin_expand_primitive_load:
               if (TYPE (r1) == TNUMBER && VALUE (r1) == 0)
                 ;
               else if (TYPE (r1) == TSTRING)
@@ -1421,7 +1398,6 @@ eval_apply ()
         }
       r1 = r2;
       expand_variable (CAR (r1), cell_nil);
-      //eputs ("expanded r1="); write_error_ (CAR (r1)); eputs ("\n");
       push_cc (CAR (r1), r1, r0, cell_vm_begin_expand_eval);
       goto eval;
     begin_expand_eval:
@@ -1497,18 +1473,6 @@ mes_g_stack (SCM a) ///((internal))
 
 // Environment setup
 
-SCM
-make_tmps (struct scm* cells)
-{
-  tmp = g_free++;
-  cells[tmp].type = TCHAR;
-  tmp_num = g_free++;
-  cells[tmp_num].type = TNUMBER;
-  tmp_num2 = g_free++;
-  cells[tmp_num2].type = TNUMBER;
-  return 0;
-}
-
 #include "posix.c"
 #include "math.c"
 #include "lib.c"
@@ -1520,15 +1484,10 @@ SCM
 gc_init_cells () ///((internal))
 {
   g_cells = (struct scm *)malloc (2*ARENA_SIZE*sizeof (struct scm));
-
   TYPE (0) = TVECTOR;
   LENGTH (0) = 1000;
   VECTOR (0) = 0;
-#if 0 //__MESC__
-  g_cells += sizeof (struct scm);
-#else
   g_cells++;
-#endif
   TYPE (0) = TCHAR;
   VALUE (0) = 'c';
   return 0;
@@ -1537,23 +1496,11 @@ gc_init_cells () ///((internal))
 SCM
 gc_init_news () ///((internal))
 {
-#if 0 //__MESC__
-  char *p = g_cells;
-  p -= sizeof (struct scm);
-  p += ARENA_SIZE * sizeof (struct scm);
-  g_news = p;
-#else
   g_news = g_cells-1 + ARENA_SIZE;
-#endif
-
   NTYPE (0) = TVECTOR;
   NLENGTH (0) = 1000;
   NVECTOR (0) = 0;
-#if 0 //__MESC__
-  g_news += sizeof (struct scm);
-#else
   g_news++;
-#endif
   NTYPE (0) = TCHAR;
   NVALUE (0) = 'n';
   return 0;
@@ -1571,9 +1518,7 @@ mes_symbols () ///((internal))
 #include "mes.symbols.i"
 #endif
 
-  g_symbol_max = g_free;
-  make_tmps (g_cells);
-
+  g_symbol_max = g_free++;
   g_symbols = 0;
   for (int i=1; i<g_symbol_max; i++)
     g_symbols = cons (i, g_symbols);
@@ -1845,7 +1790,6 @@ main (int argc, char *argv[])
     MAX_ARENA_SIZE = atoi (p);
   if (p = getenv ("MES_ARENA"))
     ARENA_SIZE = atoi (p);
-  GC_SAFETY = ARENA_SIZE / 400;
   if (p = getenv ("MES_SAFETY"))
     GC_SAFETY = atoi (p);
   if (argc > 1 && !strcmp (argv[1], "--help"))
@@ -1900,6 +1844,7 @@ main (int argc, char *argv[])
     {
       eputs ("\ngc stats: [");
       eputs (itoa (g_free));
+      MAX_ARENA_SIZE = 0;
       gc (g_stack);
       eputs (" => ");
       eputs (itoa (g_free));
