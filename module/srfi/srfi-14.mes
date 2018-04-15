@@ -49,3 +49,6 @@
 
 (define (char-set-contains? cs x)
   (and (memq x cs) #t))
+
+(define (char-whitespace? c)
+  (char-set-contains? char-set:whitespace c))
