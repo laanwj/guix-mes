@@ -295,12 +295,24 @@ memcpy (void *dest, void const *src, size_t n)
 }
 
 void *
+memmove (void *dest, void const *src, size_t n)
+{
+  if (dest < src)
+    return memcpy (dest, src, n);
+  char *p = dest + n;
+  char const *q = src +n;
+  while (n--)
+    *--p = *--q;
+  return dest;
+}
+
+void *
 realloc (void *ptr, size_t size)
 {
   void *new = malloc (size);
   if (ptr && new)
     {
-      memcpy (new, ptr, size);
+      memmove (new, ptr, size);
       free (ptr);
     }
   return new;
