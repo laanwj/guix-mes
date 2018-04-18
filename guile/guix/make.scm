@@ -345,10 +345,6 @@
     "-I" "src"
     "-I" "lib"
     "-I" "include"
-    "-v"
-    "-I" "/gnu/store/dhjqp2qd3h3d2n4ann2n2p3b06jc26q6-profile/include" ;; i686-unknown-linux-gnu-glibc for debugging
-    "-L" "/gnu/store/dhjqp2qd3h3d2n4ann2n2p3b06jc26q6-profile/lib"
-    "-Wl,-L/gnu/store/dhjqp2qd3h3d2n4ann2n2p3b06jc26q6-profile/lib"
     "--include=lib/libc-gcc.c"))
 
 (define %C32-FLAGS

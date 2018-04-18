@@ -48,7 +48,6 @@
              (gnu packages base)
              (gnu packages commencement)
              (gnu packages cross-base)
-             (gnu packages elf)
              (gnu packages gcc)
              (gnu packages guile)
              (gnu packages mes)
@@ -190,8 +189,6 @@ hex2 linker.")
                ;; Use cross-compiler rather than #:system "i686-linux" to get
                ;; MesCC 64 bit .go files installed ready for use with Guile.
                `(("i686-linux-binutils" ,(cross-binutils triplet))
-                 ("patchelf" ,patchelf)
-                 ("i686-linux-libc" ,(cross-libc triplet)) ;; FIXME: for debugging only
                  ("i686-linux-gcc" ,(cross-gcc triplet)))
                '())
          ("perl" ,perl)))               ;build-aux/gitlog-to-changelog
