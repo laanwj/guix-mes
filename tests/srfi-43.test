@@ -1,7 +1,15 @@
+#! /bin/sh
+# -*-scheme-*-
+MES=${MES-$(dirname $0)/../src/mes}
+#export MES_ARENA=${MES_ARENA-40000}
+$MES $MES_FLAGS "$@" < $0
+exit $?
+!#
+
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -18,25 +26,25 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+(cond-expand
+ (mes)
+ (guile (use-modules (srfi srfi-43))))
 
-;;; Minimal implementation of srfi-43, for nyacc.
+(mes-use-module (srfi srfi-43))
+(mes-use-module (mes test))
 
-;;; Code:
+(pass-if "first dummy" #t)
+(pass-if-not "second dummy" #f)
 
-(define (vector-map f v)
-  (let* ((k (vector-length v))
-         (n (core:make-vector k)))
-    (let loop ((i 0))
-      (if (= i k) n
-          (begin
-            (vector-set! n i (f i (vector-ref v i)))
-            (loop (+ i 1)))))))
+(pass-if-equal "vector-map"
+               #(0 2 4)
+               (vector-map (lambda (i e) (+ i e)) #(0 1 2)))
 
-(define (vector-for-each f v)
-  (let ((k (vector-length v)))
-    (let loop ((i 0))
-      (if (< i k)
-          (begin
-            (f i (vector-ref v i))
-            (loop (+ i 1)))))))
+(pass-if-equal "vector-for-each"
+               4
+               (let ((g 0))
+                 (vector-for-each (lambda (i e) (set! g (+ i e))) #(0 1 2))
+                 g))
+
+(result 'report)
+

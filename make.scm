@@ -469,6 +469,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
     "tests/srfi-13.test"
     "tests/srfi-14.test"
     "tests/srfi-16.test"
+    "tests/srfi-43.test"
     "tests/optargs.test"
     "tests/fluids.test"
     "tests/catch.test"
