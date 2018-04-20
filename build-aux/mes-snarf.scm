@@ -59,6 +59,7 @@ exec ${GUILE-guile} --no-auto-compile -L $HOME/src/mes/build-aux -L build-aux -e
                     (regexp-replace "_" "-")
                     (regexp-replace "_to_" "->")
                     (regexp-replace "_x$" "!")
+                    (regexp-replace "_x_$" "!-")
                     (regexp-replace "_p$" "?")
                     (regexp-replace "___" "***")
                     (regexp-replace "___" "***"))

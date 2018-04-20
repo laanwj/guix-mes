@@ -167,8 +167,9 @@
       (append2 (iota (- n 1)) (list (- n 1)))))
 
 (define (reverse lst)
-  (if (null? lst) '()
-      (append (reverse (cdr lst)) (cons (car lst) '()))))
+  (let loop ((lst lst) (r '()))
+    (if (null? lst) r
+        (loop (cdr lst) (cons (car lst) r)))))
 
 (define (filter pred lst)
   (let loop ((lst lst))

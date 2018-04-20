@@ -612,7 +612,44 @@ append2 (SCM x, SCM y)
     return y;
   if (TYPE (x) != TPAIR)
     error (cell_symbol_not_a_pair, cons (x, cell_append2));
-  return cons (car (x), append2 (cdr (x), y));
+  SCM r = cell_nil;
+  while (x != cell_nil)
+    {
+      r = cons (CAR (x), r);
+      x = CDR (x);
+    }
+  return reverse_x_ (r, y);
+}
+
+SCM
+append_reverse (SCM x, SCM y)
+{
+  if (x == cell_nil)
+    return y;
+  if (TYPE (x) != TPAIR)
+    error (cell_symbol_not_a_pair, cons (x, cell_append_reverse));
+  while (x != cell_nil)
+    {
+      y = cons (CAR (x), y);
+      x = CDR (x);
+    }
+  return y;
+}
+
+SCM
+reverse_x_ (SCM x, SCM t)
+{
+  if (TYPE (x) != TPAIR)
+    error (cell_symbol_not_a_pair, cons (x, cell_reverse_x_));
+  SCM r = t;
+  while (x != cell_nil)
+    {
+      t = CDR (x);
+      CDR (x) = r;
+      r = x;
+      x = t;
+    }
+  return r;
 }
 
 SCM

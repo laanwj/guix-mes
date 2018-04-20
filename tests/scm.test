@@ -124,7 +124,18 @@ exit $?
 (pass-if-equal "iota -1"
                '() (iota -1))
 
-(pass-if "reverse" (sequal? (reverse '(1 2 3)) '(3 2 1)))
+(pass-if-equal "reverse" '(3 2 1)
+               (reverse '(1 2 3)))
+
+(pass-if-equal "reverse fresh" '(1 2 3)
+               (let ((list '(1 2 3)))
+                 (reverse list)
+                 list))
+
+(pass-if-equal "reverse!" '(1)
+               (let ((list '(1 2 3)))
+                 (reverse! list)
+                 list))
 
 (pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes) (guile (display ": pass: *GUILE*") 'mes)) 'mes))
 

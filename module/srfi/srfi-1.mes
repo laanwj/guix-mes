@@ -64,17 +64,9 @@
 
 (define (remove pred lst) (filter (lambda (x) (not (pred x))) lst))
 
-(define (append-reverse rev-head tail)
-  (let loop ((rev-head rev-head) (tail tail))
-    (if (null? rev-head) tail
-	(loop (cdr rev-head) (cons (car rev-head) tail)))))
-
-(define (reverse! lst)
-  (let loop ((lst lst) (result '()))
-    (if (null? lst) result
-        (let ((tail (cdr lst)))
-          (set-cdr! lst result)
-          (loop tail lst)))))
+(define (reverse! lst . term)
+  (if (null? term) (core:reverse! lst term)
+      (core:reverse! lst (car term))))
 
 (define (srfi-1:member x lst eq)
   (if (null? lst) #f
