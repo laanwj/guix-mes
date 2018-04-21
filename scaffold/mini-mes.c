@@ -18,6 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define MES_MINI 1
 #if POSIX
 #error "POSIX not supported"
 #endif
@@ -40,6 +41,7 @@ int g_free = 0;
 
 SCM g_continuations = 0;
 SCM g_symbols = 0;
+SCM g_macros = 0;
 SCM g_stack = 0;
 // a/env
 SCM r0 = 0;
@@ -104,6 +106,7 @@ struct scm scm_symbol_set_x = {TSYMBOL, "set!",0};
 
 struct scm scm_symbol_sc_expand = {TSYMBOL, "sc-expand",0};
 struct scm scm_symbol_macro_expand = {TSYMBOL, "macro-expand",0};
+struct scm scm_symbol_portable_macro_expand = {TSYMBOL, "portable-macro-expand",0};
 struct scm scm_symbol_sc_expander_alist = {TSYMBOL, "*sc-expander-alist*",0};
 
 struct scm scm_symbol_call_with_values = {TSYMBOL, "call-with-values",0};
@@ -129,9 +132,8 @@ struct scm scm_symbol_mes_version = {TSYMBOL, "%version",0};
 
 struct scm scm_symbol_car = {TSYMBOL, "car",0};
 struct scm scm_symbol_cdr = {TSYMBOL, "cdr",0};
-struct scm scm_symbol_null_p = {TSYMBOL, "null?",0};
-struct scm scm_symbol_eq_p = {TSYMBOL, "eq?",0};
-struct scm scm_symbol_cons = {TSYMBOL, "cons",0};
+struct scm scm_symbol_pmatch_car = {TSYMBOL, "pmatch-car",0};
+struct scm scm_symbol_pmatch_cdr = {TSYMBOL, "pmatch-cdr",0};
 
 struct scm scm_vm_evlis = {TSPECIAL, "*vm-evlis*",0};
 struct scm scm_vm_evlis2 = {TSPECIAL, "*vm-evlis2*",0};
@@ -139,13 +141,10 @@ struct scm scm_vm_evlis3 = {TSPECIAL, "*vm-evlis3*",0};
 struct scm scm_vm_apply = {TSPECIAL, "core:apply",0};
 struct scm scm_vm_apply2 = {TSPECIAL, "*vm-apply2*",0};
 struct scm scm_vm_eval = {TSPECIAL, "core:eval",0};
-struct scm scm_vm_eval_define = {TSPECIAL, "*vm-eval-define*",0};
 
-//MES_FIXED_PRIMITIVES
-struct scm scm_vm_eval_car = {TSPECIAL, "*vm-eval-car*",0};
-struct scm scm_vm_eval_cdr = {TSPECIAL, "*vm-eval-cdr*",0};
-struct scm scm_vm_eval_cons = {TSPECIAL, "*vm-eval-cons*",0};
-struct scm scm_vm_eval_null_p = {TSPECIAL, "*vm-eval-null-p*",0};
+struct scm scm_vm_eval_pmatch_car = {TSPECIAL, "*vm-eval-pmatch-car*",0};
+struct scm scm_vm_eval_pmatch_cdr = {TSPECIAL, "*vm-eval-pmatch-cdr*",0};
+struct scm scm_vm_eval_define = {TSPECIAL, "*vm-eval-define*",0};
 
 struct scm scm_vm_eval_set_x = {TSPECIAL, "*vm-eval-set!*",0};
 struct scm scm_vm_eval_macro_expand_eval = {TSPECIAL, "*vm:eval-macro-expand-eval*",0};
@@ -161,7 +160,7 @@ struct scm scm_vm_begin_expand_primitive_load = {TSPECIAL, "*vm:core:begin-expan
 struct scm scm_vm_begin_primitive_load = {TSPECIAL, "*vm:core:begin-primitive-load*",0};
 struct scm scm_vm_macro_expand_car = {TSPECIAL, "*vm:core:macro-expand-car*",0};
 struct scm scm_vm_macro_expand_cdr = {TSPECIAL, "*vm:macro-expand-cdr*",0};
-struct scm scm_vm_begin_expand = {TSPECIAL, "*vm:begin-expand*",0};
+struct scm scm_vm_begin_expand = {TSPECIAL, "core:eval-expand",0};
 struct scm scm_vm_begin_expand_eval = {TSPECIAL, "*vm:begin-expand-eval*",0};
 struct scm scm_vm_begin_expand_macro = {TSPECIAL, "*vm:begin-expand-macro*",0};
 struct scm scm_vm_begin = {TSPECIAL, "*vm-begin*",0};
@@ -189,11 +188,15 @@ int g_function = 0;
 
 #include "gc.mes.h"
 #include "lib.mes.h"
+#if !MES_MINI
 #include "math.mes.h"
+#endif
 #include "mes.mes.h"
+#if !MES_MINI
 #include "posix.mes.h"
-// #include "reader.mes.h"
+//#include "reader.mes.h"
 #include "vector.mes.h"
+#ndif
 
 #define TYPE(x) g_cells[x].type
 #define CAR(x) g_cells[x].car
@@ -1017,8 +1020,8 @@ make_tmps (struct scm* cells)
   return 0;
 }
 
-#include "posix.c"
-#include "math.c"
+// #include "posix.c"
+// #include "math.c"
 #include "lib.c"
 
 // Jam Collector
@@ -1140,20 +1143,30 @@ mes_builtins (SCM a) ///((internal))
 #include "mes.mes.i"
 
 // Do not sort: Order of these includes define builtins
+#if !MES_MINI
 #include "posix.mes.i"
 #include "math.mes.i"
+#endif
 #include "lib.mes.i"
+#if !MES_MINI
 #include "vector.mes.i"
+#endif
 #include "gc.mes.i"
-// #include "reader.mes.i"
+#if !MES_MINI
+  //#include "reader.mes.i"
+#endif
 
 #include "gc.mes.environment.i"
 #include "lib.mes.environment.i"
+#if !MES_MINI
 #include "math.mes.environment.i"
+#endif
 #include "mes.mes.environment.i"
+#if !MES_MINI
 #include "posix.mes.environment.i"
-// #include "reader.mes.environment.i"
+  //#include "reader.mes.environment.i"
 #include "vector.mes.environment.i"
+#endif
 
   return a;
 }
@@ -1219,7 +1232,9 @@ bload_env (SCM a) ///((internal))
   return r2;
 }
 
+#if !MES_MINI
 #include "vector.c"
+#endif
 #include "gc.c"
 
 int

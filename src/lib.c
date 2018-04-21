@@ -47,7 +47,9 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
               case '\n': fputs ("newline", fd); break;
               case '\v': fputs ("vtab", fd); break;
               case '\f': fputs ("page", fd); break;
-              case '\r': fputs ("return", fd); break;
+                //Nyacc bug
+                // case '\r': fputs ("return", fd); break;
+              case 13: fputs ("return", fd); break;
               case ' ': fputs ("space", fd); break;
               default: fputc (VALUE (x), fd);
               }
@@ -140,13 +142,28 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         SCM t = CAR (x);
         while (t && t != cell_nil)
           {
-            switch (write_p ? VALUE (CAR (t)) : 0)
+            switch (write_p ? VALUE (CAR (t)) : -1)
               {
+              case '\0': fputs ("\\0", fd); break;
+              case '\a': fputs ("\\a", fd); break;
+              case '\b': fputs ("\\b", fd); break;
               case '\t': fputs ("\\t", fd); break;
+              case '\v': fputs ("\\v", fd); break;
               case '\n': fputs ("\\n", fd); break;
+              case '\f': fputs ("\\f", fd); break;
+#if 1 //__MESC__
+      //Nyacc bug
+              case 13: fputs ("\\r", fd); break;
+              case 27: fputs ("\\e", fd); break;
+#else
+                //case '\r': fputs ("\\r", fd); break;
+                //Nyacc crash
+                //case '\e': fputs ("\\e", fd); break;
+#endif
               case '\\': fputs ("\\\\", fd); break;
               case '"': fputs ("\\\"", fd); break;
-              default: fputc (VALUE (CAR (t)), fd);
+              default:
+                fputc (VALUE (CAR (t)), fd);
               }
             t = CDR (t);
           }
