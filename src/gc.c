@@ -96,9 +96,9 @@ gc_loop (SCM scan) ///((internal))
   SCM cdr;
   while (scan < g_free)
     {
-      if (NTYPE (scan) == TCLOSURE
-          || NTYPE (scan) == TCONTINUATION
-          || NTYPE (scan) == TFUNCTION
+      if (NTYPE (scan) == TBROKEN_HEART)
+        error (cell_symbol_system_error,  cell_gc);
+      if (NTYPE (scan) == TFUNCTION
           || NTYPE (scan) == TKEYWORD
           || NTYPE (scan) == TMACRO
           || NTYPE (scan) == TPAIR

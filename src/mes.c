@@ -579,6 +579,8 @@ check_apply (SCM f, SCM e) ///((internal))
     type = "number";
   if (TYPE (f) == TSTRING)
     type = "string";
+  if (TYPE (f) == TBROKEN_HEART)
+    type = "<3";
 
   if (type)
     {
@@ -771,7 +773,7 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 SCM
 make_closure_ (SCM args, SCM body, SCM a) ///((internal))
 {
-  return make_cell__ (TCLOSURE, cell_f, cons (cons (cell_circular, a), cons (args, body)));
+  return make_cell__ (TCLOSURE, 0, cons (cons (cell_circular, a), cons (args, body)));
 }
 
 SCM
@@ -1255,6 +1257,10 @@ eval_apply ()
       {
         r1 = CDR (VARIABLE (r1));
         goto vm_return;
+      }
+    case TBROKEN_HEART:
+      {
+        error (cell_symbol_system_error,  r1);
       }
     default: goto vm_return;
     }

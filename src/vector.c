@@ -59,7 +59,7 @@ vector_ref (SCM x, SCM i)
 SCM
 vector_entry (SCM x)
 {
-  if (TYPE (x) == TPAIR || TYPE (x) == TSPECIAL || TYPE (x) == TSTRING || TYPE (x) == TSYMBOL || TYPE (x) == TVECTOR)
+  if (TYPE (x) != TCHAR && TYPE (x) != TNUMBER)
     x = MAKE_REF (x);
   return x;
 }
