@@ -2,17 +2,12 @@ bootstrappable.org project                                           -*- org -*-
 
 * What?
 ** Full source bootstrapping for GuixSD
-* Why?
-** Reproducibility is essential to Software Freedom
-Reproducible builds are a set of software development practices that
-create a verifiable path from human readable source code to the binary
-code used by computers.
-*** What about the compiler?
-We have the sources: they always lead to bitwise-same binary, but what
-about the compiler?
-*** The current way out: Ignore the problem
 
- ``recipe for yoghurt: add yoghurt to milk''
+A package in GuixSD is can be uniquely identified by the hash of its
+source code, its dependencies and its build recipe.
+
+Every package can be built from source, except for the bootstrap
+binaries.
 
 *** From the GuixSD manual
 
@@ -23,74 +18,96 @@ The root of this dependency graph is a small set of “bootstrap
 binaries”, provided by the ‘(gnu packages bootstrap)’ module.  For more
 information on bootstrapping, *note Bootstrapping::.
 
-*** New solution: Full source bootstrapping path, Stage0 and Mes
+**** GuixSD bootstrap tarballs
+
+$ du -schx $(readlink $(guix build bootstrap-tarballs)/*)
+2.1M	/gnu/store/9623n4bq6iq5c8cwwdq99qb7d0xj93ym-binutils-static-stripped-tarball-2.28.1/binutils-static-stripped-2.28.1-x86_64-linux.tar.xz
+18M	/gnu/store/437xwygmmwwpkddcyy1qvjcv4hak89pb-gcc-stripped-tarball-5.5.0/gcc-stripped-5.5.0-x86_64-linux.tar.xz
+1.8M	/gnu/store/55ccx18a0d1x5y6a575jf1yr0ywizvdg-glibc-stripped-tarball-2.26.105-g0890d5379c/glibc-stripped-2.26.105-g0890d5379c-x86_64-linux.tar.xz
+5.7M	/gnu/store/bqf0ajclbvnbm0a46819f30804y3ilx0-guile-static-stripped-tarball-2.2.3/guile-static-stripped-2.2.3-x86_64-linux.tar.xz
+5.8M	/gnu/store/j8yzjmh9sy4gbdfwjrhw46zca43aah6x-static-binaries-tarball-0/static-binaries-0-x86_64-linux.tar.xz
+33M	total
+$ for i in $(readlink $(guix build bootstrap-tarballs)/*);\
+  do sudo tar xf $i; done
+$ du -schx *
+130M	bin
+13M	include
+54M	lib
+51M	libexec
+5.2M	share
+252M	total
+
+* Why?
+** Reproducibility is essential to Software Freedom
+
+Reproducible builds are a set of software development practices that
+create a verifiable path from human readable source code to the binary
+code used by computers.
+
+*** What about the bootstrap binaries and the compilers?
+
+We have the sources: they always lead to bitwise-same binary, but what
+about the bootstrap binaries and compilers?
+
+*** The current way out: Ignore the problem
+
+ ``recipe for yoghurt: add yoghurt to milk''
+
+*** New solution: Full source bootstrapping path
+
 * How?
-** Software: Stage0 and Mes
-** Stage0
+** Software: MesCC-tools, M2-Planet, Mes and MesCC
+** MesCC-tools
 
-*** hex.0: amazing ~300 byte self-hosting hex assembler that we consider to be source
-*** a M0 macro assembler written in .0
-*** a M1 macro assembler written in M0
-*** a hex2 linker written in M0
+    https://github.com/oriansj/mescc-tools
 
-Look:
-    https://git.savannah.nongnu.org/cgit/stage0.git/tree/Linux%20Bootstrap/hex0.hex
+*** hex.0: ~500 byte well-documented, self-hosting hex assembler
 
-Do:
-    git clone https://git.savannah.nongnu.org/git/stage0.git
-    cd stage0
-    make
-    bin/hex < Linux\ Bootstrap/hex0.hex > hex-1
-    chmod +x hex-1  # later: bin/exec_enable hex-1
-    ./hex-1 < Linux\ Bootstrap/hex0.hex > hex-2
+This 500 byte program is written in ASCII hex.  When converted
+byte-for-byte from ASCCI to binary we have the only binary seed that
+our full source bootstrap path needs.
 
-** Mes
+We bless this simple and easily verifyable binary and consider it to
+be source.
+
+*** hex1: next level hex assembler written in hex.0
+*** M0: a macro assembler written in hex.1
+*** M1: a macro assembler written in M0
+*** hex2: a hex2 linker written in M0
+*** M2-Planet: a self-hosting M2 (C-with-structs) transpiler written in M1
+*** Mes: A Scheme interpreter written in C, with cpp transformed into M2
+*** MesCC: A C compiler written in Scheme
+*** tcc-boot: a patched version of TinyCC
+
+** Mes and MesCC
 
     https://gitlab.com/janneke/mes
 
-*** mes.c: a scheme interpreter prototyped in C ~1400 Lines
-*** mescc.scm: a C compiler written in Scheme (uses Nyacc C99 parser in Scheme)
-*** mes.M1: this scheme interpreter in annotated M1 assembly
+*** mes.c: a Scheme interpreter prototyped in C ~3000 Lines
+*** mescc: a C compiler written in Scheme (uses Nyacc C99 parser in Scheme)
+*** mes.M2: this Scheme interpreter in preprocessed M2
 
-** Naive recipe
-    hex + hex.0 => hex-1
-    hex-1 + M0.0 -> M0
-    M0 + M1.M0 -> M1.0
-    M0 + hex2_linker.M0 -> hex2_linker
-    M1 + mes.M1 -> mes.hex2
-        hex2_linker + stage0/elf32-header.hex2 + mes.hex2 + elf32-footer.hex2 -> mes
-    mes + mescc.scm + tcc.c -> tcc.M1 -> tcc.hex2 -> mes-tcc
-    mes-tcc + gcc.c -> gcc
-    *done*
-** Less naive recipe
-*** Use hex2_linker, M1 prototyped in C from
-    https://github.com/oriansj/mescc-tools
-*** Remember that mes.M1 is compiled by mescc from prototyped src/mes.c in C.
-*** stage0/mescc-tools: TODO
-*** Mes
-   M1 -f stage0/x86.M1 -f lib/crt1.M1 --LittleEndian --Architecture=1 > lib/crt1.hex2
-   M1 -f stage0/x86.M1 -f lib/mini-libc-mes.M1 --LittleEndian --Architecture=1  > lib/libc-mes.hex2
-   M1 -f stage0/x86.M1 -f src/mes.M1 --LittleEndian --Architecture=1 > src/mes.hex2
-   hex2 --LittleEndian --Architecture=1 --BaseAddress=0x1000000 -f stage0/elf32-header.hex2 -f lib/crt1.hex2 -f lib/libc-mes.hex2 -f src/mes.hex2 -f stage0/elf32-footer-single-main.hex2 > src/mes-mes
-   exec_enable src/mes-mes
-*** Tinycc
-   ./build.sh
-   ./link.sh
-* DONE
-** stage0: hex.0, M0 done; M1, hex2_linker prototyped in C
-** tcc compiled with mescc correctly compiles: int main () {return 42;}
-** mes+mescc.scm are mutual self hosting
-** during development we run mescc.scm on Guile (mes is slooowww)
-** tcc compiled with gcc is known to compile gcc
+** TinyCC
+
+    https://gitlab.com/janneke/tinycc
 
 * TODO
-** fix mescc.scm so that tcc can correctly compile gcc
-** fix bootstrap-loops: (Nyacc?, mes.M1?, psyntax.pp?)
+** fix MesCC so that tcc can correctly compile gcc
+** remove or upstream patches from tcc
+** fix bootstrap-loops: (Nyacc?, mes.M12, psyntax.pp?)
 ** make GNU gcc (8.0?) bootstrappable again, remove [need for] tcc stage
-** stage1/2 LISP, FORTH?
-** rain1's LISP compiler?
 ** integrate with GuixSD
-** x86_64, arm?
+** x86_64, arm, the Hurd
+
+* DONE
+** hex.0, hex.1, M0
+** M1, hex2_linker prototyped in C
+** M2-Planet is now self-hosting, written in M2
+** mes+mescc are mutual self-hosting
+** patched tcc compiled with mes+mescc
+** during development we run mescc on Guile (mes is ~30 times slower)
+** tcc compiled with gcc is known to compile gcc
+
 * Contact
 ** #bootstrappable, #guix on freenode
 ** bootstrappable.org

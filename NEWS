@@ -10,6 +10,26 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.13 since 0.12
+** Core
+*** Bootstrapped Mes+MesCC can now compile a patched tcc in ~1h45' (~25,000 LOC).
+*** MesCC scripts for Mes and Guile are now merged; executable is: `mescc'.
+*** Mes now uses only one arena for stop-and-copy; doubles available size.
+*** Mes now has a Guile-like command-line interface (mes.repl has been removed).
+*** Mes now boots into a full Scheme by default.
+*** Mes can now be compiled (MES_MINI=1) to boot into a minimal Scheme (~2000 cells).
+*** Mes now creates less garbage in the reader and in
+append2, append_reverse, reverse, reverse!, vector-for-each, vector-to-list, vector-map.
+*** 5 new functions
+append-reverse, chmod, ioctl, isatty, isspace, last_pair, reverse!.
+** Language
+*** 3 new functions
+char-whitespace?, chmod, isatty?
+** Noteworthy bug fixes
+*** Two bugs in the jam scraper/garbage collector have been fixed.
+*** equal2_p now uses tail call elimination.
+*** Escaped characters in strings are now read and write'd correctly.
+*** The repl now expands macros again.
 * Changes in 0.12 since 0.11
 ** Core
 *** Mes can now run Nyacc (0.80.42) to compile itself in ~4min (~3000 LOC).

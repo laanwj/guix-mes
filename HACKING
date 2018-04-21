@@ -59,8 +59,8 @@ mes.c.
 * ROADMAP
 ** TODO 
 *** release 0.x, unsorted
-  - mes+mescc: compile a mes-tcc that can compile gcc-4.7.
-  - mes: set base-0.scm as default MES_BOOT, drop cat base-0.mes silliness.
+  - mes+mescc: compile a mes-tcc that can build itself.
+  - mes-tcc: full source bootstrapped build of gcc-4.7.
   - mes: real module support, bonus for supporting Guile's define-module/define-public syntax.
   - mes: prepare src/mes.c for M2-Planet transpiler.
   - mes: produce functional mes from mes.M1 transpiled by M2-Planet.
@@ -100,6 +100,7 @@ mes.c.
   - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
   - more architectures?
 ** DONE
+*** 0.13: Mes+MesCC now compiles a modified, functional tcc.c (~25,000LOC) in 1h30'.
 *** 0.12: Mes+MesCC now compiles mes.c (~3000LOC) in ~4min.
 *** 0.11: MesCC now compiles a mes-tcc that passes 26/69 of mescc's C tests.
 *** 0.10: Mescc now compiles a mes-tcc that compiles a trivial C to a running a.out.
@@ -137,9 +138,10 @@ eenough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 
 * Bugs
 ** mes: remove pmatch-car/pmatch-cdr hack.
+** mescc: softcode stack frame size, now hardcoded and very large
 ** mes+mescc: parse tcc.c->tcc.E works, compile tcc.E -> tcc.M1 segfaults.
-  time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH ../mes/scripts/mescc.mes -E -o tcc.E -I . -I ../mes/lib -I ../mes/include -D 'CONFIG_TCCDIR="usr/lib/tcc"' -D 'CONFIG_TCC_CRTPREFIX="usr/lib:{B}/lib:."' -D 'CONFIG_TCC_ELFINTERP="/gnu/store/70jxsnpffkl7fdb7qv398n8yi1a3w5nx-glibc-2.26.105-g0890d5379c/lib/ld-linux.so.2"' -D 'CONFIG_TCC_LIBPATHS="/home/janneke/src/tinycc/usr/lib:{B}/lib:."' -D 'CONFIG_TCC_SYSINCLUDEPATHS="../mes/include:usr/include:{B}/include"' -D CONFIG_USE_LIBGCC=1 -D 'TCC_LIBGCC="/home/janneke/src/tinycc/usr/lib/libc+tcc-gcc.mlibc-o"' -D CONFIG_TCC_STATIC=1 -D ONE_SOURCE=yes -D TCC_TARGET_I386=1 -D BOOTSTRAP=1 tcc.c
-  time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH MES_ARENA=200000000 ../mes/scripts/mescc.mes -c -o tcc.M1 tcc.E
+  time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH ../mes/scripts/mescc -E -o tcc.E -I . -I ../mes/lib -I ../mes/include -D 'CONFIG_TCCDIR="usr/lib/tcc"' -D 'CONFIG_TCC_CRTPREFIX="usr/lib:{B}/lib:."' -D 'CONFIG_TCC_ELFINTERP="/gnu/store/70jxsnpffkl7fdb7qv398n8yi1a3w5nx-glibc-2.26.105-g0890d5379c/lib/ld-linux.so.2"' -D 'CONFIG_TCC_LIBPATHS="/home/janneke/src/tinycc/usr/lib:{B}/lib:."' -D 'CONFIG_TCC_SYSINCLUDEPATHS="../mes/include:usr/include:{B}/include"' -D CONFIG_USE_LIBGCC=1 -D 'TCC_LIBGCC="/home/janneke/src/tinycc/usr/lib/libc+tcc-gcc.mlibc-o"' -D CONFIG_TCC_STATIC=1 -D ONE_SOURCE=yes -D TCC_TARGET_I386=1 -D BOOTSTRAP=1 tcc.c
+  time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH MES_ARENA=200000000 ../mes/scripts/mescc -c -o tcc.M1 tcc.E
 ** mes: with-fluids: tests/fluids.test test 7 fails with Mes.
 ** mescc: 7n-struct-struct-array.c:  struct file f = {"first.h"};
 ** test/match.test ("nyacc-simple"): hygiene problem in match
