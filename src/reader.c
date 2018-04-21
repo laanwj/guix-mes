@@ -369,7 +369,7 @@ reader_read_string ()
       if (c == '"' || i > 1022)
         {
           buf[i] = 0;
-          lst = append2 (lst, cstring_to_list (buf));
+          lst = append2 (lst, string_to_list (buf, i));
           i = 0;
           if (c == '"')
             break;
@@ -379,15 +379,53 @@ reader_read_string ()
           int p = peekchar ();
           if (p == '\\' || p == '"')
             buf[i++] = getchar ();
-          else if (p == 'n')
+          else if (p == '0')
             {
               getchar ();
-              buf[i++] = '\n';
+              buf[i++] = '\0';
+            }
+          else if (p == 'a')
+            {
+              getchar ();
+              buf[i++] = '\a';
+            }
+          else if (p == 'b')
+            {
+              getchar ();
+              buf[i++] = '\b';
             }
           else if (p == 't')
             {
               getchar ();
               buf[i++] = '\t';
+            }
+          else if (p == 'n')
+            {
+              getchar ();
+              buf[i++] = '\n';
+            }
+          else if (p == 'v')
+            {
+              getchar ();
+              buf[i++] = '\v';
+            }
+          else if (p == 'f')
+            {
+              getchar ();
+              buf[i++] = '\f';
+            }
+          else if (p == 'r')
+            {
+              getchar ();
+              //Nyacc bug
+              //buf[i++] = '\r';
+              buf[i++] = 13;
+            }
+          else if (p == 'e')
+            {
+              getchar ();
+              //buf[i++] = '\e';
+              buf[i++] = 27;
             }
         }
 #if 0 // !__MESC__

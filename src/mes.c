@@ -523,13 +523,18 @@ error (SCM key, SCM x)
 }
 
 SCM
-cstring_to_list (char const* s)
+string_to_list (char const* s, int i)
 {
   SCM p = cell_nil;
-  int i = strlen (s);
   while (i--)
     p = cons (MAKE_CHAR (s[i]), p);
   return p;
+}
+
+SCM
+cstring_to_list (char const* s)
+{
+  return string_to_list (s, strlen (s));
 }
 
 //  extra lib
