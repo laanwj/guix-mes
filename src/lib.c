@@ -85,8 +85,6 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     case TVARIABLE:
       {
         fputs ("#<variable ", fd);
-        if (VARIABLE_GLOBAL_P (x) == cell_t)
-          fputs ("*global* ", fd);
         display_helper (CAR (VARIABLE (x)), cont, "", fd, 0);
         fputs (">", fd);
         break;

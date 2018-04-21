@@ -116,8 +116,7 @@ gc_loop (SCM scan) ///((internal))
            || NTYPE (scan) == TCONTINUATION
            || NTYPE (scan) == TMACRO
            || NTYPE (scan) == TPAIR
-           || NTYPE (scan) == TVALUES
-           || NTYPE (scan) == TVARIABLE)
+           || NTYPE (scan) == TVALUES)
           && g_news[scan].cdr) // allow for 0 terminated list of symbols
         {
           cdr = gc_copy (g_news[scan].cdr);

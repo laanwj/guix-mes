@@ -97,8 +97,6 @@
         (display ">" port))
        ((variable? x)
         (display "#<variable " port)
-        (if (variable-global? x)
-            (display "*global* " port))
         (display (car (core:car x)) port)
         (display ">" port))
        ((number? x)

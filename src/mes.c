@@ -105,7 +105,6 @@ struct scm {
     SCM cdr;
     SCM closure;
     SCM continuation;
-    SCM global_p;
     SCM macro;
     SCM vector;
     int hits;
@@ -265,7 +264,6 @@ int g_function = 0;
 #define REF(x) g_cells[x].car
 #define STRING(x) g_cells[x].car
 #define VARIABLE(x) g_cells[x].car
-#define VARIABLE_GLOBAL_P(x) g_cells[x].cdr
 
 #define CLOSURE(x) g_cells[x].cdr
 #define CONTINUATION(x) g_cells[x].cdr
@@ -288,7 +286,6 @@ int g_function = 0;
 #define NAME(x) g_cells[x].name
 #define STRING(x) g_cells[x].string
 #define VARIABLE(x) g_cells[x].variable
-#define VARIABLE_GLOBAL_P(x) g_cells[x].cdr
 
 #define CLOSURE(x) g_cells[x].closure
 #define MACRO(x) g_cells[x].macro
@@ -778,9 +775,9 @@ make_closure_ (SCM args, SCM body, SCM a) ///((internal))
 }
 
 SCM
-make_variable_ (SCM var, SCM global_p) ///((internal))
+make_variable_ (SCM var) ///((internal))
 {
-  return make_cell__ (TVARIABLE, var, global_p);
+  return make_cell__ (TVARIABLE, var, 0);
 }
 
 SCM
@@ -907,7 +904,7 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
             {
               SCM v = assq (CAR (x), r0);
               if (v != cell_f)
-                CAR (x) = make_variable_ (v, cell_t);
+                CAR (x) = make_variable_ (v);
             }
         }
       x = CDR (x);
