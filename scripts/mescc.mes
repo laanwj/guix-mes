@@ -104,7 +104,7 @@ Usage: mescc.mes [OPTION]... FILE...
   (lambda (file)
     (with-input-from-file file
       (lambda ()
-        (core:write (c99-input->ast #:defines defines #:includes includes))))))
+        (write (c99-input->ast #:defines defines #:includes includes))))))
 
 (define (source->info defines includes)
   (lambda (file)
