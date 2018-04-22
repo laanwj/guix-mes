@@ -138,6 +138,37 @@ brk (void *p)
 }
 
 int
+ioctl (int fd, unsigned long request, ...)
+{
+#if !__TINYC__
+  int p;
+  asm (
+       "mov    %%ebp,%%eax\n\t"
+       "add    $0x10,%%eax\n\t"
+       "mov    (%%eax),%%eax\n\t"
+       "mov    %%eax,%0\n\t"
+       : "=p" (p)
+       : //no inputs ""
+       );
+  int r;
+  //syscall (SYS_ioctl, fd));
+  asm (
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    %3,%%edx\n\t"
+
+       "mov    $0x36, %%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (fd), "" (request), "" (p)
+       : "eax", "ebx", "ecx", "edx"
+       );
+  return r;
+#endif
+}
+
+int
 fsync (int fd)
 {
 #if !__TINYC__

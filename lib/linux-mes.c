@@ -70,6 +70,17 @@ brk ()
 }
 
 void
+ioctl ()
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+  asm ("mov____0x8(%ebp),%edx !16");
+
+  asm ("mov____$i32,%eax SYS_ioctl");
+  asm ("int____$0x80");
+}
+
+void
 fsync ()
 {
   asm ("mov____0x8(%ebp),%ebx !8");
