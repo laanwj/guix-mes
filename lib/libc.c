@@ -424,7 +424,7 @@ sprintf (char *str, char const* format, ...)
 int
 isatty (int fd)
 {
-  return ioctl (fd, TCGETS, 0) == -14; // MAGIC
+  return ioctl (fd, TCGETS, 0) & 0xf0;
 }
 
 #endif //!POSIX

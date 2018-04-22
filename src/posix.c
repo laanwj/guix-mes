@@ -199,3 +199,9 @@ force_output (SCM p) ///((arity . n))
 {
   return cell_unspecified;
 }
+
+SCM
+isatty_p (SCM port)
+{
+  return isatty (VALUE (port)) ? cell_t : cell_f;
+}
