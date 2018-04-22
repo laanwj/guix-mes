@@ -160,6 +160,7 @@
 ;;; Code:
 
 (define-module (mes getopt-long)
+  #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:export (getopt-long option-ref))
@@ -249,7 +250,7 @@
 (define (looks-like-an-option string)
   (eq? (string-ref string 0) #\-))
 
-(define (process-options specs argument-ls)
+(define (process-options specs argument-ls stop-at-first-non-option)
   ;; Use SPECS to scan ARGUMENT-LS; return (FOUND . ETC).
   ;; FOUND is an unordered list of option specs for found options, while ETC
   ;; is an order-maintained list of elements in ARGUMENT-LS that are neither
@@ -308,6 +309,7 @@
             (cons found (reverse etc))                          ;;; retval
             (cond ((let ((opt (car argument-ls)))
                      (and (eq? (string-ref opt 0) #\-)
+                          (> (string-length opt) 1)
                           (let ((n (char->integer (string-ref opt 1))))
                             (or (and (>= n (char->integer #\A)) (<= n (char->integer #\Z)))
                                 (and (>= n (char->integer #\a)) (<= n (char->integer #\z)))))))
@@ -345,12 +347,14 @@
                                      (cdr argument-ls)))
                          (error "option does not support argument:"
                                 opt))))
+                  (stop-at-first-non-option
+                   (cons found (append (reverse etc) argument-ls)))
                   (else
                    (loop (cdr argument-ls)
                          found
                          (cons (car argument-ls) etc)))))))))
 
-(define (getopt-long program-arguments option-desc-list)
+(define* (getopt-long program-arguments option-desc-list #:key stop-at-first-non-option)
   "Process options, handling both long and short options, similar to
 the glibc function 'getopt_long'.  PROGRAM-ARGUMENTS should be a value
 similar to what (program-arguments) returns.  OPTION-DESC-LIST is a
@@ -382,10 +386,11 @@ required.  By default, single character equivalents are not supported;
 if you want to allow the user to use single character options, you need
 to add a `single-char' clause to the option description."
   (let* ((specifications (map parse-option-spec option-desc-list))
-	 (pair (split-arg-list (cdr program-arguments)))
+	 (pair (split-arg-list (cdr program-arguments) ))
 	 (split-ls (expand-clumped-singles (car pair)))
 	 (non-split-ls (cdr pair))
-         (found/etc (process-options specifications split-ls))
+         (found/etc (process-options specifications split-ls
+                                     stop-at-first-non-option))
          (found (car found/etc))
          (rest-ls (append (cdr found/etc) non-split-ls)))
     (for-each (lambda (spec)

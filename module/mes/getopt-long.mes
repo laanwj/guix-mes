@@ -25,5 +25,6 @@
 (mes-use-module (srfi srfi-1))
 (mes-use-module (srfi srfi-9))
 (mes-use-module (srfi srfi-13))
+(mes-use-module (mes optargs))
 (define-macro (define-module module . rest) #t)
 (include-from-path "mes/getopt-long.scm")
