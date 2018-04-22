@@ -98,6 +98,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
   ,expand SEXP         - Expand SEXP
   ,help                - Show this help
+  ,quit                - Quit this session
   ,show TOPIC          - Show info on TOPIC [c, w]
   ,use MODULE          - load MODULE
 ")
@@ -132,6 +133,8 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
              (topic (find (negate char-whitespace?) (symbol->list word))))
         (display (assoc-ref topic-alist topic))
         *unspecified*))
+    (define (quit . x)
+      (exit 0))
     (define (use a)
       (lambda ()
         (let ((module (read)))
@@ -139,6 +142,7 @@ along with Mes.  If not, see <http://www.gnu.org/licenses/>.
     (define (meta command a)
       (let ((command-alist `((expand . ,(expand a))
                              (help . ,help)
+                             (quit . ,quit)
                              (show . ,show)
                              (use . ,(use a)))))
         ((or (assoc-ref command-alist command)

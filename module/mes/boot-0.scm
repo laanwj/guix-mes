@@ -225,5 +225,60 @@
 (mes-use-module (mes posix))
 ;; ;; end boot-0.scm
 
+(mes-use-module (mes getopt-long))
+
 (primitive-load 0)
+(let ((tty? (isatty? 0)))
+  (define (parse-opts args)
+    (let* ((option-spec
+            '((dump)
+              (help (single-char #\h))
+              (load)
+              (source (single-char #\s) (value #t))
+              (version (single-char #\V)))))
+      (getopt-long args option-spec #:stop-at-first-non-option #t)))
+  (define (source-arg? o)
+    (equal? "-s" o))
+  (let* ((s-index (list-index source-arg? %argv))
+         (args (if s-index (list-head %argv (+ s-index 2)) %argv))
+         (options (parse-opts args))
+         (source (option-ref options 'source #f))
+         (files (if s-index (list-tail %argv (+ s-index 1))
+                    (option-ref options '() '())))
+         (help? (option-ref options 'help #f))
+         (usage? (and (not help?) (null? files) (not tty?)))
+         (version? (option-ref options 'version #f)))
+    (or
+     (and version?
+          (display (string-append "mes (Mes) " %version "\n"))
+          (exit 0))
+     (and (or help? usage?)
+          (display "Usage: mes [OPTION]... [FILE]...
+Evaluate code with Mes, interactively or from a script.
+
+  [-s] FILE      load source code from FILE, and exit
+  --             stop scanning arguments; run interactively
+
+The above switches stop argument processing, and pass all
+remaining arguments as the value of (command-line).
+
+  --dump             dump binary program to stdout
+  -h, --help         display this help and exit
+  --load             load binary program [module/mes/boot-0.32-mo]
+  -v, --version      display version information and exit
+" (or (and usage? (current-error-port)) (current-output-port)))
+          (exit (or (and usage? 2) 0)))
+     options)
+    (cond ((pair? files)
+           (let* ((file (car files))
+                  (port (if (equal? file "-") 0
+                            (open-input-file file))))
+             (set! %argv files)
+             (set-current-input-port port)))
+          ((and (null? files) tty?)
+           
+           (mes-use-module (mes repl))
+           (set-current-input-port 0)
+           (repl))
+          (else #t))))
 (primitive-load 0)

@@ -29,7 +29,9 @@
 // minimal for boot-0.scm
 // int ARENA_SIZE = 100000; // 32b: 1MiB, 64b: 2 MiB
 // take a bit more to run all tests
-int ARENA_SIZE = 400000; // 32b: 1MiB, 64b: 2 MiB
+// int ARENA_SIZE = 400000; // 32b: 1MiB, 64b: 2 MiB
+// take a bit extra for loading repl
+int ARENA_SIZE = 1000000; // 32b: 2MiB, 64b: 4 MiB
 #if !_POSIX_SOURCE
 //int MAX_ARENA_SIZE = 60000000; // 32b: ~ 300MiB
 int MAX_ARENA_SIZE = 166600000; // 32b: ~ 2GiB
@@ -2268,20 +2270,22 @@ load_env (SCM a) ///((internal))
 SCM
 bload_env (SCM a) ///((internal))
 {
-#if 1 //__MESC__
+#if !_POSIX_SOURCE
   char *mo = "mes/read-0-32.mo";
-  g_stdin = open ("module/mes/read-0-32.mo", O_RDONLY);
-  char *read0 = MODULEDIR "mes/read-0-32.mo";
+  g_stdin = open ("module/mes/boot-0.32-mo", O_RDONLY);
+  char *read0 = MODULEDIR "mes/boot-0.32-mo";
   g_stdin = g_stdin >= 0 ? g_stdin : open (read0, O_RDONLY);
 #else
-  char *mo ="mes/read-0.mo";
-  g_stdin = open ("module/mes/read-0.mo", O_RDONLY);
-  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "mes/read-0.mo", O_RDONLY);
+  char *mo ="mes/boot-0.mo";
+  g_stdin = open ("module/mes/boot-0.mo", O_RDONLY);
+  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "mes/boot-0.mo", O_RDONLY);
 #endif
 
   if (g_stdin < 0)
     {
-      eputs ("no such file: ");eputs (mo);eputs ("\n");
+      eputs ("no such file: ");
+      eputs (mo);
+      eputs ("\n");
       return 1;
     } 
   assert (getchar () == 'M');
@@ -2362,20 +2366,12 @@ main (int argc, char *argv[])
     ARENA_SIZE = atoi (p);
   if (p = getenv ("MES_SAFETY"))
     GC_SAFETY = atoi (p);
-  if (argc > 1 && !strcmp (argv[1], "--help"))
-    return puts ("Usage: mes [--dump|--load] < FILE\n");
-  if (argc > 1 && !strcmp (argv[1], "--version"))
-    {
-      puts ("Mes ");puts (VERSION);puts ("\n");
-      return 0;
-    };
   g_stdin = STDIN;
   g_stdout = STDOUT;
   r0 = mes_environment ();
 
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
-  g_tiny = argc > 2 && !strcmp (argv[2], "--tiny");
   if (argc > 1 && !strcmp (argv[1], "--dump"))
     return dump ();
 

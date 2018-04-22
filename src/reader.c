@@ -439,8 +439,6 @@ reader_read_string ()
   return MAKE_STRING (lst);
 }
 
-int g_tiny = 0;
-
 int
 dump ()
 {

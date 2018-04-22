@@ -512,7 +512,6 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (install "guile/mescc.scm" #:dir "bin" #:substitutes #t))
 (add-target (install "scripts/mescc.mes" #:dir "bin" #:substitutes #t))
-(add-target (install "scripts/repl.mes" #:dir "bin" #:substitutes #t))
 (define bootstrap? #f)
 (if bootstrap?
     (add-target (install "src/mes.mes" #:dir "bin" #:installed-name "mes"))

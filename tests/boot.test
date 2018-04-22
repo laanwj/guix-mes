@@ -2,7 +2,7 @@
 # -*-scheme-*-
 MES=${MES-$(dirname $0)/../src/mes}
 export MES_BOOT=boot-02.scm
-$MES $MES_FLAGS "$@" < $0
+$MES < $0
 exit $?
 !#
 

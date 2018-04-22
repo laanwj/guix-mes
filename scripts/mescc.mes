@@ -10,8 +10,7 @@ then
 fi
 MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
 export MES_MODULEDIR
-$MES $MES_FLAGS -- "$@" < $0
-#paredit:||
+$MES -s $0 "$@"
 exit $?
 !#
 
@@ -121,8 +120,7 @@ Usage: mescc.mes [OPTION]... FILE...
       (string-suffix? ".mes-o" o)))
 
 (define (main args)
-  (let* ((args (cons* (car args) (cdr (member "--" args))))
-         (options (parse-opts args))
+  (let* ((options (parse-opts args))
          (files (option-ref options '() '()))
          (file (car files))
          (preprocess? (option-ref options 'E #f))

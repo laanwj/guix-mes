@@ -2,8 +2,7 @@
 # -*-scheme-*-
 # ***REMOVE THIS BLOCK COMMENT INITIALLY***
 MES=${MES-$(dirname $0)/../src/mes}
-#export MES_ARENA=${MES_ARENA-40000}
-$MES $MES_FLAGS "$@" < $0
+$MES -s $0
 exit $?
 !#
 

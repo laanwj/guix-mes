@@ -2,7 +2,7 @@
 # -*-scheme-*-
 MES=${MES-$(dirname $0)/../src/mes}
 #export MES_ARENA=${MES_ARENA-200000}
-$MES $MES_FLAGS "$@" < $0
+$MES -s $0
 exit $?
 !#
 
