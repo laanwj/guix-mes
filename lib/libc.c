@@ -18,6 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/ioctl.h>
 #include <stdarg.h>
 #include <stdlib.h>
 
@@ -419,4 +420,11 @@ sprintf (char *str, char const* format, ...)
   va_end (ap);
   return r;
 }
+
+int
+isatty (int fd)
+{
+  return ioctl (fd, TCGETS, 0) == -14; // MAGIC
+}
+
 #endif //!POSIX
