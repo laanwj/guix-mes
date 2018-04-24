@@ -293,14 +293,25 @@ memq (SCM x, SCM a)
 SCM
 equal2_p (SCM a, SCM b)
 {
-  if (a == cell_nil && b == cell_nil)
+ equal2:
+  if (a == b)
     return cell_t;
   if (TYPE (a) == TPAIR && TYPE (b) == TPAIR)
-    return equal2_p (CAR (a), CAR (b)) == cell_t
-      && equal2_p (CDR (a), CDR (b)) == cell_t
-      ? cell_t : cell_f;
+    {
+      if (equal2_p (CAR (a), CAR (b)) == cell_t)
+        {
+          a = CDR (a);
+          b = CDR (b);
+          goto equal2;
+        }
+      return cell_f;
+    }
   if (TYPE (a) == TSTRING && TYPE (b) == TSTRING)
-    return equal2_p (STRING (a), STRING (b));
+    {
+      a = STRING (a);
+      b = STRING (b);
+      goto equal2;
+    }
   if (TYPE (a) == TVECTOR && TYPE (b) == TVECTOR)
     {
       if (LENGTH (a) != LENGTH (b))
