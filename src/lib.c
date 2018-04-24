@@ -331,3 +331,11 @@ equal2_p (SCM a, SCM b)
     }
   return eq_p (a, b);
 }
+
+SCM
+last_pair (SCM x)
+{
+  while (x != cell_nil && CDR (x) != cell_nil)
+    x = CDR (x);
+  return x;
+}
