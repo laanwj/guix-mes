@@ -23,8 +23,15 @@
 SCM
 gc_up_arena () ///((internal))
 {
-  ARENA_SIZE *= 2;
-  void *p = realloc (g_cells-1, 2*ARENA_SIZE*sizeof(struct scm));
+  if (ARENA_SIZE >> 1 < MAX_ARENA_SIZE >> 2)
+    {
+      ARENA_SIZE <<= 1;
+      JAM_SIZE <<= 1;
+      GC_SAFETY <<= 1;
+    }
+  else
+    ARENA_SIZE = MAX_ARENA_SIZE -JAM_SIZE;
+  void *p = realloc (g_cells-1, (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm));
   if (!p)
     {
       eputs ("realloc failed, g_free=");
@@ -37,7 +44,6 @@ gc_up_arena () ///((internal))
     }
   g_cells = (struct scm*)p;
   g_cells++;
-  gc_init_news ();
 
   return 0;
 }
@@ -45,15 +51,15 @@ gc_up_arena () ///((internal))
 SCM
 gc_flip () ///((internal))
 {
-  struct scm *cells = g_cells;
-  g_cells = g_news;
-  g_news = cells;
   if (g_debug > 2)
     {
       eputs (";;;   => jam[");
       eputs (itoa (g_free));
       eputs ("]\n");
     }
+  if (g_free > JAM_SIZE)
+    JAM_SIZE = g_free + g_free / 2;
+  memcpy (g_cells-1, g_news-1, (g_free+2)*sizeof (struct scm));
   return g_stack;
 }
 
@@ -136,8 +142,22 @@ gc_check ()
 }
 
 SCM
+gc_init_news () ///((internal))
+{
+  g_news = g_cells + g_free;
+  NTYPE (0) = TVECTOR;
+  NLENGTH (0) = 1000;
+  NVECTOR (0) = 0;
+  g_news++;
+  NTYPE (0) = TCHAR;
+  NVALUE (0) = 'n';
+  return 0;
+}
+
+SCM
 gc_ () ///((internal))
 {
+  gc_init_news ();
   if (g_debug == 2)
     eputs (".");
   if (g_debug > 2)
@@ -150,9 +170,7 @@ gc_ () ///((internal))
     }
   g_free = 1;
 
-  if (g_cells < g_news
-      //&& g_free > ARENA_SIZE >> 2
-      && ARENA_SIZE < MAX_ARENA_SIZE)
+  if (ARENA_SIZE < MAX_ARENA_SIZE && (int)g_news > 0)
     {
       if (g_debug == 2)
         eputs ("+");

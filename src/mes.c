@@ -25,22 +25,15 @@
 #include <mlibc.h>
 
 //#define MES_MINI 1
-
-// minimal for boot-0.scm
-// int ARENA_SIZE = 100000; // 32b: 1MiB, 64b: 2 MiB
-// take a bit more to run all tests
-// int ARENA_SIZE = 400000; // 32b: 1MiB, 64b: 2 MiB
-// take a bit extra for loading repl
-int ARENA_SIZE = 1000000; // 32b: 2MiB, 64b: 4 MiB
-#if !_POSIX_SOURCE
-//int MAX_ARENA_SIZE = 60000000; // 32b: ~ 300MiB
-int MAX_ARENA_SIZE = 166600000; // 32b: ~ 2GiB
-//int MAX_ARENA_SIZE = 500000000; // 32b: ~ 8GiB
+#if _POSIX_SOURCE
+int ARENA_SIZE = 300000000; // 32b: 4GiB, 64b: 8 GiB
 #else
-int MAX_ARENA_SIZE = 200000000; // 32b: 2.3GiB, 64b: 4.6GiB
+int ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
 #endif
+int MAX_ARENA_SIZE = 300000000;
 
-int GC_SAFETY = 4000;
+int JAM_SIZE = 20000;
+int GC_SAFETY = 2000;
 
 char *g_arena = 0;
 typedef int SCM;
@@ -324,7 +317,6 @@ int g_function = 0;
 SCM
 alloc (int n)
 {
-  assert (g_free + n < ARENA_SIZE);
   SCM x = g_free;
   g_free += n;
   return x;
@@ -1537,7 +1529,7 @@ SCM g_symbol_max;
 SCM
 gc_init_cells () ///((internal))
 {
-  g_cells = (struct scm *)malloc (2*ARENA_SIZE*sizeof (struct scm));
+  g_cells = (struct scm *)malloc ((ARENA_SIZE+JAM_SIZE)*sizeof (struct scm));
   TYPE (0) = TVECTOR;
   LENGTH (0) = 1000;
   VECTOR (0) = 0;
@@ -1548,23 +1540,9 @@ gc_init_cells () ///((internal))
 }
 
 SCM
-gc_init_news () ///((internal))
-{
-  g_news = g_cells-1 + ARENA_SIZE;
-  NTYPE (0) = TVECTOR;
-  NLENGTH (0) = 1000;
-  NVECTOR (0) = 0;
-  g_news++;
-  NTYPE (0) = TCHAR;
-  NVALUE (0) = 'n';
-  return 0;
-}
-
-SCM
 mes_symbols () ///((internal))
 {
   gc_init_cells ();
-  gc_init_news ();
 
 #if MES_MINI
 
@@ -2364,6 +2342,10 @@ main (int argc, char *argv[])
     MAX_ARENA_SIZE = atoi (p);
   if (p = getenv ("MES_ARENA"))
     ARENA_SIZE = atoi (p);
+  JAM_SIZE = ARENA_SIZE / 10;
+  if (p = getenv ("MES_JAM"))
+    JAM_SIZE = atoi (p);
+  GC_SAFETY = ARENA_SIZE / 100;
   if (p = getenv ("MES_SAFETY"))
     GC_SAFETY = atoi (p);
   g_stdin = STDIN;
