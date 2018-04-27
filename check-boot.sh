@@ -110,7 +110,7 @@ for i in $tests; do
         echo ' [SKIP]'
         continue;
     fi
-    guile -L guile -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i) >& /dev/null
+    $GUILE -L guile -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i) >& /dev/null
     x=$(
         if [ -z "${i/5[0-9]-*/}" ]; then
             cat scaffold/boot/$i | MES_BOOT=boot-00.scm $MES 2>&1;

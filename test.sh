@@ -26,7 +26,8 @@ rm -f "$t".mes-out
 
 M1=${M1-M1}
 HEX2=${HEX2-hex2}
-MESCC=${MESCC-guile/mescc.scm}
+MES=${MES-guile}
+MESCC=${MESCC-scripts/mescc}
 
 sh $MESCC -E -o scaffold/tests/$t.E scaffold/tests/$t.c
 sh $MESCC -c -o scaffold/tests/$t.M1 scaffold/tests/$t.E

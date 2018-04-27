@@ -19,14 +19,13 @@
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 export MES=${MES-src/mes}
-export MESCC=${MESCC-scripts/mescc.mes}
+export MESCC=${MESCC-scripts/mescc}
 #export MES_ARENA=${MES_ARENA-200000000} > 12GB mem
 
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
 M1=${M1-M1}
 HEX2=${HEX2-hex2}
-MESCC=${MESCC-guile/mescc.scm}
 MES_PREFIX=${MES_PREFIX-.}
 
 # $MESCC -E -o lib/crt1.E lib/crt1.c

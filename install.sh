@@ -20,11 +20,9 @@ cp crt1.hex2 $MES_PREFIX/lib/crt1.hex2
 cp libc-mes.hex2 $MES_PREFIX/lib/libc-mes.hex2
 cp libc+tcc-mes.hex2 $MES_PREFIX/lib/libc+tcc-mes.hex2
 
-cp scripts/mescc.mes $PREFIX/bin/mescc.mes
+cp scripts/mescc $PREFIX/bin/mescc
 sed -e "s,@PREFIX@,$MES_PREFIX,g" \
-    scripts/mescc.mes > $PREFIX/bin/mescc.mes
-sed -e "s,@PREFIX@,$MES_PREFIX,g" \
-    guile/mescc.scm > $PREFIX/bin/mescc.scm
+    scripts/mescc > $PREFIX/bin/mescc
 
 mkdir -p $MES_PREFIX
 tar -cf- doc guile include lib module scaffold stage0 | tar -xf- -C $MES_PREFIX

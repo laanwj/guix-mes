@@ -507,11 +507,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
 
 (add-target (group "check-tests" #:dependencies (filter (target-prefix? "check-tests/") %targets)))
 
-;; FIXME: run tests/base.test
-(setenv "MES" "src/mes.guile")
-
-(add-target (install "guile/mescc.scm" #:dir "bin" #:substitutes #t))
-(add-target (install "scripts/mescc.mes" #:dir "bin" #:substitutes #t))
+(add-target (install "scripts/mescc" #:dir "bin" #:substitutes #t))
 (define bootstrap? #f)
 (if bootstrap?
     (add-target (install "src/mes.mes" #:dir "bin" #:installed-name "mes"))
@@ -539,7 +535,7 @@ exec ${GUILE-guile} --no-auto-compile -L . -L guile -C . -C guile -s "$0" ${1+"$
    "module/mes/as.mes"
    "module/mes/as.scm"
    "module/mes/base.mes"
-   "module/mes/boot-0.scm"
+   ;;"module/mes/boot-0.scm"
    "module/mes/boot-00.scm"
    "module/mes/boot-01.scm"
    "module/mes/boot-02.scm"

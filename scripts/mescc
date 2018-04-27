@@ -1,17 +1,28 @@
 #! /bin/sh
 # -*-scheme-*-
-MES=${MES-$(dirname $0)/mes}
-PREFIX=${PREFIX-@PREFIX@}
-MES_PREFIX=${MES_PREFIX-$PREFIX}
-if [ "$MES_PREFIX" = @PREFIX""@ ]
-then
-    MES_PREFIX=$(cd $(dirname $0)/.. && pwd)
-    export MES_PREFIX
+mes_p=$(type -p mes)
+if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile" ]; then
+    GODIR=${GODIR-@GODIR@}
+    GUILEDIR=${GUILEDIR-@GUILEDIR@}
+    [ "$GODIR" = @"GODIR"@ ] && GODIR=$(dirname $0)
+    [ "$GUILEDIR" = @"GUILEDIR"@ ] && GUILEDIR=$(dirname $0)/../guile
+    export GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
+    GUILE_LOAD_COMPILED_PATH=$GODIR:$GUILE_LOAD_COMPILED_PATH
+    exec ${GUILE-guile} -L $GUILEDIR -e '(mescc)' -s "$0" "$@"
+else
+    MES=${MES-$(dirname $0)/mes}
+    PREFIX=${PREFIX-@PREFIX@}
+    MES_PREFIX=${MES_PREFIX-$PREFIX}
+    if [ "$MES_PREFIX" = @PREFIX""@ ]
+    then
+        MES_PREFIX=$(cd $(dirname $0)/.. && pwd)
+        export MES_PREFIX
+    fi
+    MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
+    export MES_MODULEDIR
+    $MES -s $0 "$@"
+    exit $?
 fi
-MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
-export MES_MODULEDIR
-$MES -s $0 "$@"
-exit $?
 !#
 
 ;;; Mes --- Maxwell Equations of Software
@@ -32,15 +43,38 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+#!
+Run with Guile-1.8:
+GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' scripts/mescc
+!#
 
-;;; mescc.mes is a proof-of-concept simplistic C compiler and linker
+(define-module (mescc)
+  #:use-module (language c99 info)
+  #:use-module (language c99 compiler)
+  #:use-module (mes elf)
+  #:use-module (mes M1)
+  #:use-module (ice-9 getopt-long)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:export (main))
 
-;;; Code:
+(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "MES_PREFIX") "") "@PREFIX@"))
 
-;;LALR
-;;(mes-use-module (language c compiler))
-;;Nyacc
+(cond-expand
+ (mes
+  (define %scheme "mes"))
+ (guile-2
+  (define %scheme "guile")
+  (define-macro (mes-use-module . rest) #t)
+  (module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix))
+ (guile
+  (use-modules (ice-9 syncase))
+  (define %scheme "guile")
+  (define-macro (mes-use-module . rest) #t)
+  (module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix)))
+
+(define guile? (equal? %scheme "guile"))
 
 (mes-use-module (mes guile))
 (mes-use-module (mes getopt-long))
@@ -53,9 +87,7 @@ exit $?
 (mes-use-module (srfi srfi-1))
 (mes-use-module (srfi srfi-26))
 
-(format (current-error-port) "mescc.mes...\n")
-
-(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "MES_PREFIX") "") "@PREFIX@"))
+(format (current-error-port) "mescc[~a]...\n" %scheme)
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -66,7 +98,8 @@ exit $?
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
             (o (single-char #\o) (value #t))
-            (version (single-char #\V))))
+            (version (single-char #\V))
+            (write (single-char #\w) (value #t))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '()))
@@ -74,10 +107,10 @@ exit $?
          (version? (option-ref options 'version #f)))
     (or
      (and version?
-          (format (current-output-port) "mescc.scm (mes) ~a\n" %version))
+          (format (current-output-port) "mescc (mes) ~a\n" %version))
      (and (or help? usage?)
           (format (or (and usage? (current-error-port)) (current-output-port)) "\
-Usage: mescc.mes [OPTION]... FILE...
+Usage: mescc [OPTION]... FILE...
   -c                 compile and assemble, but do not link
   -D DEFINE          define DEFINE
   -E                 preprocess only; do not compile, assemble or link
@@ -86,6 +119,13 @@ Usage: mescc.mes [OPTION]... FILE...
   -I DIR             append DIR to include path
   -o FILE            write output to FILE
   -v, --version      display version and exit
+  -w,--write=TYPE    dump Nyacc AST using TYPE {pretty-print,write}
+
+Environment variables:
+
+  MES=BINARY         run on mes-executable BINARY {mes,guile}
+  MES_DEBUG=LEVEL    show debug output with verbosity LEVEL {0..5}
+  NYACC_TRACE=1      show Nyacc progress
 ")
           (exit (or (and usage? 2) 0)))
      options)))
@@ -99,7 +139,7 @@ Usage: mescc.mes [OPTION]... FILE...
   (let ((ast (with-input-from-file file read)))
     (c99-ast->info ast)))
 
-(define (source->ast defines includes)
+(define (source->ast write defines includes)
   (lambda (file)
     (with-input-from-file file
       (lambda ()
@@ -113,11 +153,11 @@ Usage: mescc.mes [OPTION]... FILE...
 
 (define (ast? o)
   (or (string-suffix? ".E" o)
-      (string-suffix? ".mes-E" o)))
+      (string-suffix? (string-append "." %scheme "-E") o)))
 
 (define (object? o)
   (or (string-suffix? ".o" o)
-      (string-suffix? ".mes-o" o)))
+      (string-suffix? (string-append "." %scheme "-o") o)))
 
 (define (main args)
   (let* ((options (parse-opts args))
@@ -135,14 +175,18 @@ Usage: mescc.mes [OPTION]... FILE...
                                            (else "a.out"))))
          (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o)))))
          (defines (reverse (filter-map (multi-opt 'define) options)))
-         (includes (reverse (filter-map (multi-opt 'include) options))))
-    (setenv "NYACC_TRACE" "yes")
-    (when (getenv "MES_DEBUG") (format (current-error-port) "options=~s\n" options)
-          (format (current-error-port) "output: ~a\n" out))
+         (includes (reverse (filter-map (multi-opt 'include) options)))
+         (pretty-print/write (string->symbol (option-ref options 'write (if guile? "pretty-print" "write"))))
+         (pretty-print/write (if (eq? pretty-print/write 'pretty-print) pretty-print write)))
+    (when (getenv "MES_DEBUG")
+      (setenv "NYACC_TRACE" "yes")
+      (format (current-error-port) "options=~s\n" options)
+      (format (current-error-port) "output: ~a\n" out))
     (if (and (pair? sources) (pair? objects)) (error "cannot mix source and object files:" files))
-    (with-output-to-port (open-output-file out (if (and (not compile?)
-                                                        (not preprocess?)) S_IRWXU))
+    (with-output-to-file out
       (lambda ()
+        (if (and (not compile?)
+                 (not preprocess?)) (set-port-encoding! (current-output-port) "ISO-8859-1"))
         (cond ((pair? objects) (let ((objects (map read-object objects)))
                                  (if compile? (objects->M1 objects)
                                      (objects->elf objects))))
@@ -150,7 +194,7 @@ Usage: mescc.mes [OPTION]... FILE...
                                    (objects (map info->object infos)))
                               (if compile? (objects->M1 objects)
                                   (objects->elf objects))))
-              ((pair? sources) (if preprocess? (map (source->ast defines includes) sources)
+              ((pair? sources) (if preprocess? (map (source->ast pretty-print/write defines includes) sources)
                                    (let* ((infos (map (source->info defines includes) sources))
                                           (objects (map info->object infos)))
                                      (if compile? (objects->M1 objects)

@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-MES=${MES-$(dirname $0)/../src/mes}
+MES=${MES-$(dirname $0)/../src/mes.gcc}
 $MES -s $0
 exit $?
 !#

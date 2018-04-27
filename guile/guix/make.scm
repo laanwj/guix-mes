@@ -385,16 +385,18 @@
                               "-o" ,(target-file-name t)
                               ,@input-files)))))))
 
-(define %MESCC "guile/mescc.scm")
+(define %MESCC "scripts/mescc")
 (define* (CC.mescc #:key (cc %MESCC))
   (method (name "CC.mescc")
           (build (lambda (o t)
                    (let ((input-files (map target-file-name (target-inputs t))))
                      (format #t "  ~a\t ~a -> ~a\n" (method-name o) (string-join input-files) (target-file-name t))
+                     (setenv "MES" "guile")
                      (apply system**
-                            `("guile/mescc.scm" "-c"
+                            `("scripts/mescc" "-c"
                               "-o" ,(target-file-name t)
-                              ,@input-files)))))
+                              ,@input-files))
+                     (unsetenv "MES"))))
           (inputs (list (store #:add-file "guile/language/c99/info.go")
                         (store #:add-file "guile/language/c99/compiler.go")
                         (store #:add-file "guile/mes/as-i386.go")
