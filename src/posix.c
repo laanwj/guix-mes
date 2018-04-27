@@ -201,6 +201,13 @@ force_output (SCM p) ///((arity . n))
 }
 
 SCM
+chmod_ (SCM file_name, SCM mode) ///((name . "chmod"))
+{
+  return chmod (string_to_cstring (file_name), VALUE (mode));
+  return cell_unspecified;
+}
+
+SCM
 isatty_p (SCM port)
 {
   return isatty (VALUE (port)) ? cell_t : cell_f;
