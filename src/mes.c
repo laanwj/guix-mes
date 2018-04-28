@@ -185,7 +185,7 @@ struct scm scm_vm_evlis2 = {TSPECIAL, "*vm-evlis2*",0};
 struct scm scm_vm_evlis3 = {TSPECIAL, "*vm-evlis3*",0};
 struct scm scm_vm_apply = {TSPECIAL, "core:apply",0};
 struct scm scm_vm_apply2 = {TSPECIAL, "*vm-apply2*",0};
-struct scm scm_vm_eval = {TSPECIAL, "core:eval",0};
+struct scm scm_vm_eval = {TSPECIAL, "core:eval-expanded",0};
 
 struct scm scm_vm_eval_pmatch_car = {TSPECIAL, "*vm-eval-pmatch-car*",0};
 struct scm scm_vm_eval_pmatch_cdr = {TSPECIAL, "*vm-eval-pmatch-cdr*",0};
@@ -205,7 +205,7 @@ struct scm scm_vm_begin_expand_primitive_load = {TSPECIAL, "*vm:core:begin-expan
 struct scm scm_vm_begin_primitive_load = {TSPECIAL, "*vm:core:begin-primitive-load*",0};
 struct scm scm_vm_macro_expand_car = {TSPECIAL, "*vm:core:macro-expand-car*",0};
 struct scm scm_vm_macro_expand_cdr = {TSPECIAL, "*vm:macro-expand-cdr*",0};
-struct scm scm_vm_begin_expand = {TSPECIAL, "core:eval-expand",0};
+struct scm scm_vm_begin_expand = {TSPECIAL, "core:eval",0};
 struct scm scm_vm_begin_expand_eval = {TSPECIAL, "*vm:begin-expand-eval*",0};
 struct scm scm_vm_begin_expand_macro = {TSPECIAL, "*vm:begin-expand-macro*",0};
 struct scm scm_vm_begin = {TSPECIAL, "*vm-begin*",0};
