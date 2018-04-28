@@ -162,10 +162,10 @@ hex2 linker.")
     (license gpl3+)))
 
 (define-public mes
-  (let ((commit "0330aab202188306aa7676badfa3edafab707403")
+  (let ((commit "1fdccefe02af992898ca97495ff3c65555e60e8d")
         (revision "0")
         (triplet "i686-unknown-linux-gnu")
-        (version "0.12"))
+        (version "0.13"))
     (package
       (name "mes")
       (version (string-append version "-" revision "." (string-take commit 7)))
@@ -176,7 +176,7 @@ hex2 linker.")
                       (commit commit)))
                 (file-name (string-append name "-" version))
                 (sha256
-                 (base32 "1jifgmvgds8fxxv0zkna66f2p9cn46ych2qwn9p04088hdvkknwk"))))
+                 (base32 "1x2qyc4mw5jbddskl6k9w0vf4igg1l3bbl4ymn8mg21x18arp6a0"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
@@ -217,7 +217,7 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.12")
+ (let ((version "0.13")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
@@ -228,3 +228,4 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
 mes.git
+
