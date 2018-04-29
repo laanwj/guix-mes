@@ -504,7 +504,7 @@ acons (SCM key, SCM value, SCM alist)
 }
 
 int
-length__ (SCM x)
+length__ (SCM x) ///((internal))
 {
   int n = 0;
   while (x != cell_nil)
