@@ -661,7 +661,7 @@ append_reverse (SCM x, SCM y)
 SCM
 reverse_x_ (SCM x, SCM t)
 {
-  if (TYPE (x) != TPAIR)
+  if (x != cell_nil && TYPE (x) != TPAIR)
     error (cell_symbol_not_a_pair, cons (x, cell_reverse_x_));
   SCM r = t;
   while (x != cell_nil)

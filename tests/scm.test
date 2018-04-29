@@ -137,6 +137,9 @@ exit $?
                  (reverse! list)
                  list))
 
+(pass-if-equal "reverse! ()" '()
+  (reverse! '()))
+
 (pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes) (guile (display ": pass: *GUILE*") 'mes)) 'mes))
 
 (pass-if "apply identity" (seq? (apply identity '(0)) 0))
