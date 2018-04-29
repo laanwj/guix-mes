@@ -20,10 +20,10 @@
 
 export GUILE=${GUILE-guile}
 export MES=${MES-src/mes}
-#export MES_ARENA=${MES_ARENA-200000000} #9GiB
+export MES_ARENA=${MES_ARENA-100000000}
 
 set -e
-bash check-boot.sh
+bash build-aux/check-boot.sh
 
 tests="
 tests/boot.test
@@ -85,4 +85,4 @@ else
     echo PASS: $total
 fi
 
-sh check-mescc.sh
+sh build-aux/check-mescc.sh

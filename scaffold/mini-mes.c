@@ -19,6 +19,7 @@
  */
 
 #define MES_MINI 1
+//#define HAVE_UNION 1
 #if POSIX
 #error "POSIX not supported"
 #endif
@@ -29,9 +30,10 @@
 #include <string.h>
 #include <mlibc.h>
 
-int ARENA_SIZE = 100000;
-int MAX_ARENA_SIZE = 40000000;
-int GC_SAFETY = 10000;
+int ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
+int MAX_ARENA_SIZE = 300000000;
+int JAM_SIZE = 20000;
+int GC_SAFETY = 2000;
 
 char *g_arena = 0;
 typedef int SCM;
@@ -42,6 +44,7 @@ int g_free = 0;
 SCM g_continuations = 0;
 SCM g_symbols = 0;
 SCM g_macros = 0;
+SCM g_ports = 0;
 SCM g_stack = 0;
 // a/env
 SCM r0 = 0;
@@ -52,7 +55,7 @@ SCM r2 = 0;
 // continuation
 SCM r3 = 0;
 
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
+enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
 
 struct scm {
   enum type_t type;
@@ -172,6 +175,24 @@ struct scm scm_vm_call_with_values2 = {TSPECIAL, "*vm-call-with-values2*",0};
 struct scm scm_vm_call_with_current_continuation2 = {TSPECIAL, "*vm-call-with-current-continuation2*",0};
 struct scm scm_vm_return = {TSPECIAL, "*vm-return*",0};
 
+struct scm scm_type_char = {TSYMBOL, "<cell:char>",0};
+struct scm scm_type_closure = {TSYMBOL, "<cell:closure>",0};
+struct scm scm_type_continuation = {TSYMBOL, "<cell:continuation>",0};
+struct scm scm_type_function = {TSYMBOL, "<cell:function>",0};
+struct scm scm_type_keyword = {TSYMBOL, "<cell:keyword>",0};
+struct scm scm_type_macro = {TSYMBOL, "<cell:macro>",0};
+struct scm scm_type_number = {TSYMBOL, "<cell:number>",0};
+struct scm scm_type_pair = {TSYMBOL, "<cell:pair>",0};
+struct scm scm_type_port = {TSYMBOL, "<cell:port>",0};
+struct scm scm_type_ref = {TSYMBOL, "<cell:ref>",0};
+struct scm scm_type_special = {TSYMBOL, "<cell:special>",0};
+struct scm scm_type_string = {TSYMBOL, "<cell:string>",0};
+struct scm scm_type_symbol = {TSYMBOL, "<cell:symbol>",0};
+struct scm scm_type_values = {TSYMBOL, "<cell:values>",0};
+struct scm scm_type_variable = {TSYMBOL, "<cell:variable>",0};
+struct scm scm_type_vector = {TSYMBOL, "<cell:vector>",0};
+struct scm scm_type_broken_heart = {TSYMBOL, "<cell:broken-heart>",0};
+
 struct scm scm_symbol_gnuc = {TSYMBOL, "%gnuc",0};
 struct scm scm_symbol_mesc = {TSYMBOL, "%mesc",0};
 
@@ -216,6 +237,7 @@ int g_function = 0;
 
 #define FUNCTION(x) g_functions[g_cells[x].cdr]
 #define MACRO(x) g_cells[x].cdr
+#define PORT(x) g_cells[x].cdr
 #define VALUE(x) g_cells[x].cdr
 #define VECTOR(x) g_cells[x].cdr
 
@@ -513,9 +535,48 @@ gc_push_frame () ///((internal))
 SCM
 append2 (SCM x, SCM y)
 {
-  if (x == cell_nil) return y;
-  assert (TYPE (x) == TPAIR);
-  return cons (car (x), append2 (cdr (x), y));
+  if (x == cell_nil)
+    return y;
+  if (TYPE (x) != TPAIR)
+    error (cell_symbol_not_a_pair, cons (x, cell_append2));
+  SCM r = cell_nil;
+  while (x != cell_nil)
+    {
+      r = cons (CAR (x), r);
+      x = CDR (x);
+    }
+  return reverse_x_ (r, y);
+}
+
+SCM
+append_reverse (SCM x, SCM y)
+{
+  if (x == cell_nil)
+    return y;
+  if (TYPE (x) != TPAIR)
+    error (cell_symbol_not_a_pair, cons (x, cell_append_reverse));
+  while (x != cell_nil)
+    {
+      y = cons (CAR (x), y);
+      x = CDR (x);
+    }
+  return y;
+}
+
+SCM
+reverse_x_ (SCM x, SCM t)
+{
+  if (TYPE (x) != TPAIR)
+    error (cell_symbol_not_a_pair, cons (x, cell_reverse_x_));
+  SCM r = t;
+  while (x != cell_nil)
+    {
+      t = CDR (x);
+      CDR (x) = r;
+      r = x;
+      x = t;
+    }
+  return r;
 }
 
 SCM
@@ -656,10 +717,25 @@ gc_pop_frame () ///((internal))
   return frame;
 }
 
+char const* string_to_cstring (SCM s);
+
+SCM
+add_formals (SCM formals, SCM x)
+{
+  while (TYPE (x) == TPAIR)
+    {
+      formals = cons (CAR (x), formals);
+      x = CDR (x);
+    }
+  if (TYPE (x) == TSYMBOL)
+    formals = cons (x, formals);
+  return formals;
+}
+
 SCM
 eval_apply ()
 {
-  return scm_unspecified;
+  return cell_unspecified;
 }
 
 SCM
@@ -726,42 +802,6 @@ gc_init_cells () ///((internal))
   g_cells++;
   TYPE (0) = TCHAR;
   VALUE (0) = 'c';
-  return 0;
-}
-
-SCM
-gc_init_news () ///((internal))
-{
-  eputs ("gc_init_news\n");
-  ///g_news = g_cells-1 + ARENA_SIZE;
-  //g_news = g_cells + ARENA_SIZE * 12 + GC_SAFETY * 6;
-  char *p = g_cells;
-  // g_news = g_cells;
-  int halfway = ARENA_SIZE * 12;
-  int safety = GC_SAFETY * 12;
-  safety = safety / 2;
-  halfway = halfway + safety;
-  // g_news = g_news + halfway;
-  p = p + halfway;
-  g_news = p;
-  eputs ("g_cells=");
-  eputs (itoa (g_cells));
-  eputs (" size=");
-  eputs (itoa (halfway));
-  eputs (" news=");
-  eputs (itoa (g_news));
-  eputs (" news - cells=");
-  char * c = g_cells;
-  eputs (itoa (p - c));
-  eputs ("\n");
-
-
-  NTYPE (0) = TVECTOR;
-  NLENGTH (0) = 1000;
-  NVECTOR (0) = 0;
-  g_news++;
-  NTYPE (0) = TCHAR;
-  NVALUE (0) = 'n';
   return 0;
 }
 

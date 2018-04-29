@@ -20,31 +20,18 @@
 
 set -ex
 
-export CC=${CC-$(type -p gcc)}
-export CC32=${CC32-$(type -p i686-unknown-linux-gnu-gcc)}
-export MESCC=${MESCC-$(type -p mescc)}
-export MES_SEED=${MES_SEED-../mes-seed}
-export GUILE=${GUILE-$(type -p guile)}
-export MES_ARENA=${MES_ARENA-300000000}
-export MES_DEBUG=${MES_DEBUG-2}
+t=${1-scaffold/tests/t}
+#rm -f "$t".i686-unknown-linux-gnu-out
+rm -f "$t".mes-out
 
-export PREFIX=${PREFIX-/usr/local}
-export DATADIR=${DATADIR-$PREFIX/share/mes}
-export MODULEDIR=${MODULEDIR-$DATADIR/module}
+sh build-aux/cc-mes.sh "$t"
 
+r=0
+set +e
+"$t".mes-out | tee "$t".stdout
+m=$?
 
-if [ -n "$GUILE" ]; then
-    sh build-aux/build-guile.sh
+[ $m = $r ]
+if [ -f "$t".expect ]; then
+    diff -u "$t".expect "$t".stdout;
 fi
-
-if [ -n "$CC" ]; then
-    sh build-aux/build-cc.sh
-    cp src/mes.gcc-out src/mes
-fi
-
-if [ -n "$CC32" ]; then
-    sh build-aux/build-mlibc.sh
-    cp src/mes.mlibc-out src/mes
-fi
-
-sh build-aux/build-mes.sh

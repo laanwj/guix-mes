@@ -1,7 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-MES=${MES-$(dirname $0)/../src/mes.gcc}
-#export MES_ARENA=${MES_ARENA-200000}
+MES=${MES-$(dirname $0)/../src/mes}
 $MES -s $0
 exit $?
 !#

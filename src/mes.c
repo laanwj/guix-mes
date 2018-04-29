@@ -2220,8 +2220,8 @@ load_env (SCM a) ///((internal))
 {
   r0 = a;
   g_stdin = -1;
-  char boot[128];
-  char buf[128];
+  char boot[1024];
+  char buf[1024];
   if (getenv ("MES_BOOT"))
     strcpy (boot, getenv ("MES_BOOT"));
   else
@@ -2242,7 +2242,7 @@ load_env (SCM a) ///((internal))
     }
   if (g_stdin < 0)
     {
-      char const *prefix = MODULEDIR "mes/";
+      char const *prefix = MODULEDIR "/mes/";
       strcpy (buf, prefix);
       strcpy (buf + strlen (buf), boot);
       if (getenv ("MES_DEBUG"))
@@ -2296,12 +2296,12 @@ bload_env (SCM a) ///((internal))
 #if !_POSIX_SOURCE
   char *mo = "mes/read-0-32.mo";
   g_stdin = open ("module/mes/boot-0.32-mo", O_RDONLY);
-  char *read0 = MODULEDIR "mes/boot-0.32-mo";
+  char *read0 = MODULEDIR "/mes/boot-0.32-mo";
   g_stdin = g_stdin >= 0 ? g_stdin : open (read0, O_RDONLY);
 #else
   char *mo ="mes/boot-0.mo";
   g_stdin = open ("module/mes/boot-0.mo", O_RDONLY);
-  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "mes/boot-0.mo", O_RDONLY);
+  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "/mes/boot-0.mo", O_RDONLY);
 #endif
 
   if (g_stdin < 0)

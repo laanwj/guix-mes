@@ -2,7 +2,7 @@
 
 set -e
 
-PREFIX=${PREFIX-usr}
+export PREFIX=${PREFIX-/usr/local}
 MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
 MES_SEED=${MES_SEED-../mes-seed}
 TINYCC_SEED=${TINYCC_SEED-../tinycc-seed}
@@ -12,17 +12,38 @@ cp src/mes $PREFIX/bin/mes
 
 mkdir -p $PREFIX/lib
 mkdir -p $MES_PREFIX/lib
-cp $MES_SEED/crt1.M1 $MES_PREFIX/lib/crt1.M1
-cp $MES_SEED/libc-mes.M1 $MES_PREFIX/lib/libc-mes.M1
-cp $MES_SEED/libc+tcc-mes.M1 $MES_PREFIX/lib/libc+tcc-mes.M1
-
-cp crt1.hex2 $MES_PREFIX/lib/crt1.hex2
-cp libc-mes.hex2 $MES_PREFIX/lib/libc-mes.hex2
-cp libc+tcc-mes.hex2 $MES_PREFIX/lib/libc+tcc-mes.hex2
-
 cp scripts/mescc $PREFIX/bin/mescc
-sed -e "s,@PREFIX@,$MES_PREFIX,g" \
-    scripts/mescc > $PREFIX/bin/mescc
 
 mkdir -p $MES_PREFIX
 tar -cf- doc guile include lib module scaffold stage0 | tar -xf- -C $MES_PREFIX
+
+GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
+DATADIR=${MODULEDIR-$PREFIX/share/mes}
+DOCDIR=${MODULEDIR-$PREFIX/share/doc/mes}
+MODULEDIR=${MODULEDIR-$DATADIR/module}
+GUILEDIR=${MODULEDIR-$PREFIX/share/guile/site/$GUILE_EFFECTIVE_VERSION}
+GODIR=${GODIR-$PREFIX/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
+DOCDIR=${MODULEDIR-$PREFIX/share/doc/mes}
+
+chmod +w $PREFIX/bin/mescc
+sed \
+    -e "s,module/,$MODULEDIR/," \
+    -e "s,@DATADIR@,$DATADIR,g" \
+    -e "s,@DOCDIR@,$DOCDIR,g" \
+    -e "s,@GODIR@,$GODIR,g" \
+    -e "s,@GUILEDIR@,$GUILEDIR,g" \
+    -e "s,@MODULEDIR@,$MODULEDIR,g" \
+    -e "s,@PREFIX@,$PREFIX,g" \
+    -e "s,@VERSION@,$VERSION,g" \
+    scripts/mescc > $PREFIX/bin/mescc
+chmod +w $MODULEDIR/mes/boot-0.scm
+sed \
+    -e "s,module/,$MODULEDIR/," \
+    -e "s,@DATADIR@,$DATADIR,g" \
+    -e "s,@DOCDIR@,$DOCDIR,g" \
+    -e "s,@GODIR@,$GODIR,g" \
+    -e "s,@GUILEDIR@,$GUILEDIR,g" \
+    -e "s,@MODULEDIR@,$MODULEDIR,g" \
+    -e "s,@PREFIX@,$PREFIX,g" \
+    -e "s,@VERSION@,$VERSION,g" \
+    module/mes/boot-0.scm > $MODULEDIR/mes/boot-0.scm

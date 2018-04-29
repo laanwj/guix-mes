@@ -6,13 +6,34 @@ include .config.make
 export PREFIX
 export VERSION
 
-PHONY_TARGETS:= all all-go check clean clean-go default help install list
+PHONY_TARGETS:= all all-go check clean clean-go default help install
 .PHONY: $(PHONY_TARGETS)
 
-$(PHONY_TARGETS):
-	$(GUILE) $(GUILE_FLAGS) -s make.scm $@
+default: all
 
-%:
-	$(GUILE) $(GUILE_FLAGS) -s make.scm $@
+all:
+	./build.sh
+
+clean:
+	true
+
+all-go:
+	build-aux/build-guile.sh
+
+clean-go:
+	rm -f $(shell find . -name '*.go')
+
+check:
+	./check.sh
+
+
+install:
+	./install.sh
 
 .config.make: ./configure
+
+seed:
+	cd ../mes-seed && git reset --hard HEAD
+	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh
+	cd ../mes-seed && ./bootstrap.sh && cd ../mes
+	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh

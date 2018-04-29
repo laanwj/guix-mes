@@ -1,4 +1,6 @@
 *-
+*.blood-elf-M1
+*.blood-elf-hex2
 *.go
 *~
 .#*
@@ -32,7 +34,10 @@
 /.tarball-version
 /ChangeLog
 /a.out
+*.gcc-out
 *.mes-out
+*.mlibc-out
+*.seed-out
 
 #keep this: bootstrap
 #/mes.mes

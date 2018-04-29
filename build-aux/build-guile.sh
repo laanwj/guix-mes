@@ -20,31 +20,19 @@
 
 set -ex
 
-export CC=${CC-$(type -p gcc)}
-export CC32=${CC32-$(type -p i686-unknown-linux-gnu-gcc)}
-export MESCC=${MESCC-$(type -p mescc)}
-export MES_SEED=${MES_SEED-../mes-seed}
 export GUILE=${GUILE-$(type -p guile)}
-export MES_ARENA=${MES_ARENA-300000000}
-export MES_DEBUG=${MES_DEBUG-2}
 
-export PREFIX=${PREFIX-/usr/local}
-export DATADIR=${DATADIR-$PREFIX/share/mes}
-export MODULEDIR=${MODULEDIR-$DATADIR/module}
+SCM_FILES="
+language/c99/compiler.scm
+language/c99/info.scm
+mes/as-i386.scm
+mes/as.scm
+mes/bytevectors.scm
+mes/elf.scm
+mes/guile.scm
+mes/M1.scm"
 
-
-if [ -n "$GUILE" ]; then
-    sh build-aux/build-guile.sh
-fi
-
-if [ -n "$CC" ]; then
-    sh build-aux/build-cc.sh
-    cp src/mes.gcc-out src/mes
-fi
-
-if [ -n "$CC32" ]; then
-    sh build-aux/build-mlibc.sh
-    cp src/mes.mlibc-out src/mes
-fi
-
-sh build-aux/build-mes.sh
+export srcdir=.
+export host=$($GUILE -c "(display %host-type)")
+cd guile
+$GUILE --no-auto-compile -L . -C . -s ../build-aux/compile-all.scm $SCM_FILES

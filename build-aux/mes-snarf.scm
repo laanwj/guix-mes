@@ -65,12 +65,12 @@ exec ${GUILE-guile} -L $(dirname 0) -e '(mes-snarf)' -s "$0" "$@"
 
 (define %gcc? #t)
 
-(define-record-type file (make-file name content)
+(define-record-type <file> (make-file name content)
   file?
   (name file.name)
   (content file.content))
 
-(define-record-type function (make-function name formals annotation)
+(define-record-type <function> (make-function name formals annotation)
   function?
   (name function.name)
   (formals function.formals)

@@ -12,11 +12,12 @@ if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile
 else
     MES=${MES-$(dirname $0)/mes}
     PREFIX=${PREFIX-@PREFIX@}
-    MES_PREFIX=${MES_PREFIX-$PREFIX}
     if [ "$MES_PREFIX" = @PREFIX""@ ]
     then
         MES_PREFIX=$(cd $(dirname $0)/.. && pwd)
         export MES_PREFIX
+    else
+        MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
     fi
     MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
     export MES_MODULEDIR
@@ -63,7 +64,8 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' scripts/mescc
 
 (cond-expand
  (mes
-  (define %scheme "mes"))
+  (define %scheme "mes")
+  (define (set-port-encoding! port encoding) #t))
  (guile-2
   (define %scheme "guile")
   (define-macro (mes-use-module . rest) #t)
@@ -153,11 +155,13 @@ Environment variables:
 
 (define (ast? o)
   (or (string-suffix? ".E" o)
-      (string-suffix? (string-append "." %scheme "-E") o)))
+      (string-suffix? (string-append "." %scheme "-E") o)
+      (string-suffix? "-E" o)))
 
 (define (object? o)
   (or (string-suffix? ".o" o)
-      (string-suffix? (string-append "." %scheme "-o") o)))
+      (string-suffix? (string-append "." %scheme "-o") o)
+      (string-suffix? "-o" o)))
 
 (define (main args)
   (let* ((options (parse-opts args))
