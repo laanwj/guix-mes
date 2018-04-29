@@ -22,6 +22,5 @@
 
 ;;; Code:
 
-(define-macro (define-module module . rest) #t)
 (define (cond-expand-provide . rest) #t)
 (include-from-path "srfi/srfi-16.scm")

@@ -220,6 +220,15 @@
 (mes-use-module (mes catch))
 
 (mes-use-module (mes posix))
+
+(define-macro (define-module module . rest)
+  `(if ,(and (pair? module)
+             (= 1 (length module))
+             (symbol? (car module)))
+       (define (,(car module) . arguments) (main (command-line)))))
+
+(define-macro (use-modules . rest) #t)
+
 ;; ;; end boot-0.scm
 
 (mes-use-module (mes getopt-long))

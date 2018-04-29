@@ -22,9 +22,6 @@
 
 ;;; Code:
 
-(define-macro (define-module module . rest) #t)
-(define-macro (use-modules . rest) #t)
-
 ;;(mes-use-module (mes guile))
 (mes-use-module (mes quasiquote))
 (mes-use-module (mes syntax))
