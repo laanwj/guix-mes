@@ -200,8 +200,9 @@
   (list 'load (list string-append %moduledir file)))
 
 (define (string-join lst infix)
-  (if (null? (cdr lst)) (car lst)
-      (string-append (car lst) infix (string-join (cdr lst) infix))))
+  (if (null? lst) ""
+      (if (null? (cdr lst)) (car lst)
+          (string-append (car lst) infix (string-join (cdr lst) infix)))))
 
 (include-from-path "mes/module.mes")
 
