@@ -62,4 +62,10 @@ exit $?
 (pass-if-equal "string-drop-right" "foo"
   (string-drop-right "foobar" 3))
 
+(pass-if-equal "string-contains" 3
+  (string-contains "foobar" "bar"))
+
+(pass-if-not "string-contains not"
+             (string-contains "fuba" "bar"))
+
 (result 'report)

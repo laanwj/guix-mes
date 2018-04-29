@@ -120,3 +120,15 @@
     (let loop ((lst (reverse (string->list s))) (prev nil'))
       (if (null? lst) prev
           (loop (cdr lst) (cons' (car lst) prev))))))
+
+(define (string-contains string needle)
+  (let ((needle (string->list needle)))
+    (let loop ((string (string->list string)) (i 0))
+      (and (pair? string)
+           (let match ((start string) (needle needle) (n i))
+             (if (null? needle) i
+                 (and (pair? start)
+                      (if (eq? (car start) (car needle))
+                          (or (match (cdr start) (cdr needle) (1+ n))
+                              (loop (cdr string) (1+ i)))
+                          (loop (cdr string) (1+ i))))))))))
