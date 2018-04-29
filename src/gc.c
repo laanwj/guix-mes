@@ -177,9 +177,9 @@ gc_ () ///((internal))
       if (g_debug > 2)
         {
           eputs (" up[");
-          eputs (itoa (g_cells));
+          eputs (itoa ((unsigned long)g_cells));
           eputs (",");
-          eputs (itoa (g_news));
+          eputs (itoa ((unsigned long)g_news));
           eputs (":");
           eputs (itoa (ARENA_SIZE));
           eputs (",");

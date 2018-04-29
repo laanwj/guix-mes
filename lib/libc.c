@@ -279,7 +279,7 @@ malloc (size_t size)
 {
   if (!g_brk)
     g_brk = brk (0);
-  if (brk (g_brk + size) == -1)
+  if (brk (g_brk + size) == (void*)-1)
     return 0;
   char *p = g_brk;
   g_brk += size;
@@ -290,7 +290,7 @@ void *
 memcpy (void *dest, void const *src, size_t n)
 {
   char* p = dest;
-  char* q = src;
+  char const* q = src;
   while (n--) *p++ = *q++;
   return dest;
 }

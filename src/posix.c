@@ -18,7 +18,9 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 int
@@ -203,7 +205,7 @@ force_output (SCM p) ///((arity . n))
 SCM
 chmod_ (SCM file_name, SCM mode) ///((name . "chmod"))
 {
-  return chmod (string_to_cstring (file_name), VALUE (mode));
+  chmod (string_to_cstring (file_name), VALUE (mode));
   return cell_unspecified;
 }
 
