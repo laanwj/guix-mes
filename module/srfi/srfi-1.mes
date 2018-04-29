@@ -100,4 +100,13 @@
 
 (define last (compose car last-pair))
 
+(define (delete-duplicates lst . equal)
+  (let ((equal (and (pair? equal) (car equal))))
+    (let loop ((lst lst))
+      (if (null? lst) '()
+          (if (if equal (member (car lst) (cdr lst) equal)
+                  (member (car lst) (cdr lst)))
+              (loop (cdr lst))
+                (cons (car lst) (loop (cdr lst))))))))
+
 (include-from-path "srfi/srfi-1.scm")
