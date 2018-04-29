@@ -233,6 +233,7 @@
 
 (mes-use-module (mes getopt-long))
 
+(define %main #f)
 (primitive-load 0)
 (let ((tty? (isatty? 0)))
   (define (parse-opts args)
@@ -240,6 +241,7 @@
             '((dump)
               (help (single-char #\h))
               (load)
+              (main (single-char #\e) (value #t))
               (source (single-char #\s) (value #t))
               (version (single-char #\V)))))
       (getopt-long args option-spec #:stop-at-first-non-option #t)))
@@ -248,11 +250,12 @@
   (let* ((s-index (list-index source-arg? %argv))
          (args (if s-index (list-head %argv (+ s-index 2)) %argv))
          (options (parse-opts args))
+         (main (option-ref options 'main #f))
          (source (option-ref options 'source #f))
          (files (if s-index (list-tail %argv (+ s-index 1))
                     (option-ref options '() '())))
          (help? (option-ref options 'help #f))
-         (usage? (and (not help?) (null? files) (not tty?)))
+         (usage? (and (not help?) (null? files) (not tty?) (not main)))
          (version? (option-ref options 'version #f)))
     (or
      (and version?
@@ -262,19 +265,21 @@
           (display "Usage: mes [OPTION]... [FILE]...
 Evaluate code with Mes, interactively or from a script.
 
-  [-s] FILE      load source code from FILE, and exit
-  --             stop scanning arguments; run interactively
+  [-s] FILE       load source code from FILE, and exit
+  --              stop scanning arguments; run interactively
 
 The above switches stop argument processing, and pass all
 remaining arguments as the value of (command-line).
 
-  --dump             dump binary program to stdout
-  -h, --help         display this help and exit
-  --load             load binary program [module/mes/boot-0.32-mo]
-  -v, --version      display version information and exit
+  --dump          dump binary program to stdout
+  -e,--main=MAIN  after reading script, apply MAIN to command-line arguments
+  -h, --help      display this help and exit
+  --load          load binary program [module/mes/boot-0.32-mo]
+  -v, --version   display version information and exit
 " (or (and usage? (current-error-port)) (current-output-port)))
           (exit (or (and usage? 2) 0)))
      options)
+    (if main (set! %main main))
     (cond ((pair? files)
            (let* ((file (car files))
                   (port (if (equal? file "-") 0
@@ -288,3 +293,4 @@ remaining arguments as the value of (command-line).
            (repl))
           (else #t))))
 (primitive-load 0)
+(primitive-load (open-input-string %main))
