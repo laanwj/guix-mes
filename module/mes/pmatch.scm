@@ -74,6 +74,6 @@
     ((_ v (unquote var) kt kf) (let ((var v)) kt))
     ((_ v (x . y) kt kf)
      (if (pair? v)
-         (ppat (car v) x (ppat (cdr v) y kt kf) kf)
+         (ppat (pmatch-car v) x (ppat (pmatch-cdr v) y kt kf) kf)
          kf))
     ((_ v lit kt kf) (if (eq? v (quote lit)) kt kf))))

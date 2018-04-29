@@ -177,6 +177,8 @@ struct scm scm_symbol_mes_version = {TSYMBOL, "%version",0};
 
 struct scm scm_symbol_car = {TSYMBOL, "car",0};
 struct scm scm_symbol_cdr = {TSYMBOL, "cdr",0};
+struct scm scm_symbol_pmatch_car = {TSYMBOL, "pmatch-car",0};
+struct scm scm_symbol_pmatch_cdr = {TSYMBOL, "pmatch-cdr",0};
 
 struct scm scm_vm_evlis = {TSPECIAL, "*vm-evlis*",0};
 struct scm scm_vm_evlis2 = {TSPECIAL, "*vm-evlis2*",0};
@@ -185,6 +187,8 @@ struct scm scm_vm_apply = {TSPECIAL, "core:apply",0};
 struct scm scm_vm_apply2 = {TSPECIAL, "*vm-apply2*",0};
 struct scm scm_vm_eval = {TSPECIAL, "core:eval",0};
 
+struct scm scm_vm_eval_pmatch_car = {TSPECIAL, "*vm-eval-pmatch-car*",0};
+struct scm scm_vm_eval_pmatch_cdr = {TSPECIAL, "*vm-eval-pmatch-cdr*",0};
 struct scm scm_vm_eval_define = {TSPECIAL, "*vm-eval-define*",0};
 
 struct scm scm_vm_eval_set_x = {TSPECIAL, "*vm-eval-set!*",0};
@@ -971,6 +975,8 @@ eval_apply ()
     case cell_vm_apply: goto apply;
     case cell_vm_apply2: goto apply2;
     case cell_vm_eval: goto eval;
+    case cell_vm_eval_pmatch_car: goto eval_pmatch_car;
+    case cell_vm_eval_pmatch_cdr: goto eval_pmatch_cdr;
     case cell_vm_eval_define: goto eval_define;
     case cell_vm_eval_set_x: goto eval_set_x;
     case cell_vm_eval_macro_expand_eval: goto eval_macro_expand_eval;
@@ -1117,6 +1123,26 @@ eval_apply ()
       {
         switch (CAR (r1))
           {
+          case cell_symbol_pmatch_car:
+            {
+              push_cc (CADR (r1), r1, r0, cell_vm_eval_pmatch_car);
+              goto eval;
+            eval_pmatch_car:
+              x = r1;
+              gc_pop_frame ();
+              r1 = CAR (x);
+              goto eval_apply;
+            }
+          case cell_symbol_pmatch_cdr:
+            {
+              push_cc (CADR (r1), r1, r0, cell_vm_eval_pmatch_cdr);
+              goto eval;
+            eval_pmatch_cdr:
+              x = r1;
+              gc_pop_frame ();
+              r1 = CDR (x);
+              goto eval_apply;
+            }
           case cell_symbol_quote:
             {
               x = r1;
@@ -1696,6 +1722,12 @@ g_free++;
 g_cells[cell_symbol_cdr] = scm_symbol_cdr;
 
 g_free++;
+g_cells[cell_symbol_pmatch_car] = scm_symbol_pmatch_car;
+
+g_free++;
+g_cells[cell_symbol_pmatch_cdr] = scm_symbol_pmatch_cdr;
+
+g_free++;
 g_cells[cell_vm_evlis] = scm_vm_evlis;
 
 g_free++;
@@ -1712,6 +1744,12 @@ g_cells[cell_vm_apply2] = scm_vm_apply2;
 
 g_free++;
 g_cells[cell_vm_eval] = scm_vm_eval;
+
+g_free++;
+g_cells[cell_vm_eval_pmatch_car] = scm_vm_eval_pmatch_car;
+
+g_free++;
+g_cells[cell_vm_eval_pmatch_cdr] = scm_vm_eval_pmatch_cdr;
 
 g_free++;
 g_cells[cell_vm_eval_define] = scm_vm_eval_define;
@@ -1872,6 +1910,8 @@ g_cells[cell_symbol_mes_prefix].car = cstring_to_list (scm_symbol_mes_prefix.nam
 g_cells[cell_symbol_mes_version].car = cstring_to_list (scm_symbol_mes_version.name);
 g_cells[cell_symbol_car].car = cstring_to_list (scm_symbol_car.name);
 g_cells[cell_symbol_cdr].car = cstring_to_list (scm_symbol_cdr.name);
+g_cells[cell_symbol_pmatch_car].car = cstring_to_list (scm_symbol_pmatch_car.name);
+g_cells[cell_symbol_pmatch_cdr].car = cstring_to_list (scm_symbol_pmatch_cdr.name);
 
 g_cells[cell_vm_evlis].car = cstring_to_list ("*vm*");
 g_cells[cell_vm_evlis2].car = g_cells[cell_vm_evlis].car;
@@ -1879,6 +1919,8 @@ g_cells[cell_vm_evlis3].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_apply].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_apply2].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_eval].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_pmatch_car].car = g_cells[cell_vm_evlis].car;
+g_cells[cell_vm_eval_pmatch_cdr].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_eval_define].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_eval_set_x].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_eval_macro_expand_eval].car = g_cells[cell_vm_evlis].car;

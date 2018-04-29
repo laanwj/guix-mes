@@ -135,6 +135,8 @@ struct scm scm_symbol_mes_version = {TSYMBOL, "%version",0};
 
 struct scm scm_symbol_car = {TSYMBOL, "car",0};
 struct scm scm_symbol_cdr = {TSYMBOL, "cdr",0};
+struct scm scm_symbol_pmatch_car = {TSYMBOL, "pmatch-car",0};
+struct scm scm_symbol_pmatch_cdr = {TSYMBOL, "pmatch-cdr",0};
 
 struct scm scm_vm_evlis = {TSPECIAL, "*vm-evlis*",0};
 struct scm scm_vm_evlis2 = {TSPECIAL, "*vm-evlis2*",0};
@@ -143,6 +145,8 @@ struct scm scm_vm_apply = {TSPECIAL, "core:apply",0};
 struct scm scm_vm_apply2 = {TSPECIAL, "*vm-apply2*",0};
 struct scm scm_vm_eval = {TSPECIAL, "core:eval",0};
 
+struct scm scm_vm_eval_pmatch_car = {TSPECIAL, "*vm-eval-pmatch-car*",0};
+struct scm scm_vm_eval_pmatch_cdr = {TSPECIAL, "*vm-eval-pmatch-cdr*",0};
 struct scm scm_vm_eval_define = {TSPECIAL, "*vm-eval-define*",0};
 
 struct scm scm_vm_eval_set_x = {TSPECIAL, "*vm-eval-set!*",0};
