@@ -77,4 +77,7 @@ exit $?
 (pass-if-equal "string-trim-both" "foo"
              (string-trim-both "  foo  "))
 
+(pass-if-equal "string-map" "fuubar"
+             (string-map (lambda (c) (if (eq? c #\o) #\u c)) "foobar"))
+
 (result 'report)

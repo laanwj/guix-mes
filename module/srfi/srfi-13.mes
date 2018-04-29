@@ -154,3 +154,6 @@
 (define (string-trim-both string . pred)
   ((compose string-trim string-trim-right) string))
 
+(define (string-map f string)
+  (list->string (map f (string->list string))))
+
