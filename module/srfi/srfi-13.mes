@@ -54,14 +54,20 @@
                         (list (list->string (list-head lst (- (length lst) (length rest)))))))))))
 
 (define (string-take s n)
-  (list->string (list-head (string->list s) n)))
+  (cond ((zero? n) s)
+        ((> n 0) (list->string (list-head (string->list s) n)))
+        (else (error "string-take: not supported: n=" n))))
 
 (define (string-drop s n)
-  (list->string (list-tail (string->list s) n)))
+  (cond ((zero? n) s)
+        ((> n 0) (list->string (list-tail (string->list s) n)))
+        (else s (error "string-drop: not supported: (n s)=" (cons n s)))))
 
 (define (string-drop-right s n)
-  (let ((length (string-length s)))
-    (list->string (list-head (string->list s) (- length n)))))
+  (cond ((zero? n) s)
+        ((> n 0) (let ((length (string-length s)))
+                   (list->string (list-head (string->list s) (- length n)))))
+        (else (error "string-drop-right: not supported: n=" n))))
 
 (define (string-delete pred s)
   (let ((p (if (procedure? pred) pred

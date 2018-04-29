@@ -56,4 +56,10 @@ exit $?
     "f-o-o-:"
   (list->string (string-fold-right (lambda (e p) (cons e (cons #\- p))) '(#\:) "foo")))
 
+(pass-if-equal "string-drop" "bar"
+  (string-drop "foobar" 3))
+
+(pass-if-equal "string-drop-right" "foo"
+  (string-drop-right "foobar" 3))
+
 (result 'report)
