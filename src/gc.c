@@ -170,7 +170,11 @@ gc_ () ///((internal))
     }
   g_free = 1;
 
+#if __MESC__
   if (ARENA_SIZE < MAX_ARENA_SIZE && (int)g_news > 0)
+#else
+  if (ARENA_SIZE < MAX_ARENA_SIZE && g_news > 0)
+#endif
     {
       if (g_debug == 2)
         eputs ("+");
