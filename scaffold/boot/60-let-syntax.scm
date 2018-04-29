@@ -60,7 +60,6 @@
 ;;   (define (core:apply f a m) (f a))
 ;;   )
 ;;  (mes
-  (define <cell:symbol> 11)
   (define (symbol? x)
     (eq? (core:type x) <cell:symbol>))
 
@@ -68,11 +67,9 @@
     (if (not (pair? (core:car s))) '()
         (core:lookup-symbol (core:car s))))
 
-  (define <cell:string> 10)
   (define (string? x)
     (eq? (core:type x) <cell:string>))
   
-  (define <cell:vector> 14)
   (define (vector? x)
     (eq? (core:type x) <cell:vector>))
  

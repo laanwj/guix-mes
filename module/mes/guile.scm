@@ -24,6 +24,14 @@
 
 (define-module (mes guile)
   #:export (
+            <cell:char>
+            <cell:keyword>
+            <cell:number>
+            <cell:pair>
+            <cell:string>
+            <cell:symbol>
+            <cell:vector>
+
             append2
             core:apply
             core:display
@@ -37,9 +45,7 @@
             core:type
             pmatch-car
             pmatch-cdr
-            )
-  ;;#:re-export (open-input-file open-input-string with-input-from-string)
-  )
+            ))
 
 (cond-expand
  (guile
@@ -61,42 +67,22 @@
   (define guile:pair? pair?)
   (define guile:string? string?)
   (define guile:symbol? symbol?)
+
+  (define <cell:char> 0)
+  (define <cell:keyword> 4)
+  (define <cell:number> 6)
+  (define <cell:pair> 7)
+  (define <cell:string> 9)
+  (define <cell:symbol> 10)
+  (define <cell:vector> 14)
+
   (define (core:type x)
-    (define <cell:keyword> 4)
-    (define <cell:number> 6)
-    (define <cell:pair> 7)
-    (define <cell:string> 10)
-    (define <cell:symbol> 11)
     (cond ((guile:keyword? x) <cell:keyword>)
           ((guile:number? x) <cell:number>)
           ((guile:pair? x) <cell:pair>)
           ((guile:string? x) <cell:string>)
-          ((guile:symbol? x) <cell:symbol>)))
+          ((guile:symbol? x) <cell:symbol>))))
 
-;;   (define core:open-input-file open-input-file)
-;;   (define (open-input-file file)
-;;     (let ((port (core:open-input-file file)))
-;;       (when (getenv "MES_DEBUG")
-;;         (core:display-error (string-append "open-input-file: `" file " port="))
-;;         (core:display-error port)
-;;         (core:display-error "\n"))
-;;       port))
-
-;;   (define core:open-input-string open-input-string)
-;;   (define (open-input-string string)
-;;     (let ((port (core:open-input-string string)))
-;;       (when (getenv "MES_DEBUG")
-;;         (core:display-error (string-append "open-input-string: `" string " port="))
-;;         (core:display-error port)
-;;         (core:display-error "\n"))
-;;       port))
-
-;;   (define core:with-input-from-string with-input-from-string)
-;;   (define (with-input-from-string string thunk)
-;;     (if (getenv "MES_DEBUG")
-;;         (core:display-error (string-append "with-input-from-string: `" string "'\n")))
-;;     (core:with-input-from-string string thunk))
-  )
  (mes))
 
 (cond-expand

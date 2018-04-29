@@ -216,6 +216,23 @@ struct scm scm_vm_call_with_values2 = {TSPECIAL, "*vm-call-with-values2*",0};
 struct scm scm_vm_call_with_current_continuation2 = {TSPECIAL, "*vm-call-with-current-continuation2*",0};
 struct scm scm_vm_return = {TSPECIAL, "*vm-return*",0};
 
+struct scm scm_type_char = {TSYMBOL, "<cell:char>",0};
+struct scm scm_type_closure = {TSYMBOL, "<cell:closure>",0};
+struct scm scm_type_continuation = {TSYMBOL, "<cell:continuation>",0};
+struct scm scm_type_function = {TSYMBOL, "<cell:function>",0};
+struct scm scm_type_keyword = {TSYMBOL, "<cell:keyword>",0};
+struct scm scm_type_macro = {TSYMBOL, "<cell:macro>",0};
+struct scm scm_type_number = {TSYMBOL, "<cell:number>",0};
+struct scm scm_type_pair = {TSYMBOL, "<cell:pair>",0};
+struct scm scm_type_ref = {TSYMBOL, "<cell:ref>",0};
+struct scm scm_type_special = {TSYMBOL, "<cell:special>",0};
+struct scm scm_type_string = {TSYMBOL, "<cell:string>",0};
+struct scm scm_type_symbol = {TSYMBOL, "<cell:symbol>",0};
+struct scm scm_type_values = {TSYMBOL, "<cell:values>",0};
+struct scm scm_type_variable = {TSYMBOL, "<cell:variable>",0};
+struct scm scm_type_vector = {TSYMBOL, "<cell:vector>",0};
+struct scm scm_type_broken_heart = {TSYMBOL, "<cell:broken-heart>",0};
+
 struct scm scm_symbol_gnuc = {TSYMBOL, "%gnuc",0};
 struct scm scm_symbol_mesc = {TSYMBOL, "%mesc",0};
 
@@ -1946,9 +1963,27 @@ g_cells[cell_test].car = cstring_to_list (scm_test.name);
   a = acons (cell_symbol_mesc, cell_f, a);
 #else
   a = acons (cell_symbol_gnuc, cell_f, a);
-  a = acons (cell_symbol_mesc, cell_t, a);
+
 #endif
 #endif // !MES_MINI
+
+  a = acons (cell_type_char, MAKE_NUMBER (TCHAR), a);
+  a = acons (cell_type_closure, MAKE_NUMBER (TCLOSURE), a);
+  a = acons (cell_type_continuation, MAKE_NUMBER (TCONTINUATION), a);
+  a = acons (cell_type_function, MAKE_NUMBER (TFUNCTION), a);
+  a = acons (cell_type_keyword, MAKE_NUMBER (TKEYWORD), a);
+  a = acons (cell_type_macro, MAKE_NUMBER (TMACRO), a);
+  a = acons (cell_type_number, MAKE_NUMBER (TNUMBER), a);
+  a = acons (cell_type_pair, MAKE_NUMBER (TPAIR), a);
+  a = acons (cell_type_ref, MAKE_NUMBER (TREF), a);
+  a = acons (cell_type_special, MAKE_NUMBER (TSPECIAL), a);
+  a = acons (cell_type_string, MAKE_NUMBER (TSTRING), a);
+  a = acons (cell_type_symbol, MAKE_NUMBER (TSYMBOL), a);
+  a = acons (cell_type_values, MAKE_NUMBER (TVALUES), a);
+  a = acons (cell_type_variable, MAKE_NUMBER (TVARIABLE), a);
+  a = acons (cell_type_vector, MAKE_NUMBER (TVECTOR), a);
+  a = acons (cell_type_broken_heart, MAKE_NUMBER (TBROKEN_HEART), a);
+
   a = acons (cell_closure, a, a);
 
   return a;

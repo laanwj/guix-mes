@@ -32,10 +32,6 @@
 ;; end boot-00.scm
 
 ;; boot-01.scm
-(define <cell:character> 0)
-(define <cell:pair> 7)
-(define <cell:string> 10)
-
 (define (pair? x) (eq? (core:type x) <cell:pair>))
 (define (not x) (if x #f #t))
 
@@ -51,7 +47,7 @@
   (core:make-cell <cell:string> lst 0))
 
 (define (integer->char x)
-  (core:make-cell <cell:character> 0 x))
+  (core:make-cell <cell:char> 0 x))
 
 (define (newline . rest)
   (core:display (list->string (list (integer->char 10)))))

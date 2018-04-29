@@ -16,7 +16,6 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define <cell:char> 0)
 (define cell:type-alist
   (list (cons <cell:char> (quote <cell:char>))))
 cell:type-alist

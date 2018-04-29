@@ -8,7 +8,6 @@
 (define (cdar x) (cdr (car x)))
 (define (cddr x) (cdr (cdr x)))
 
-(define <cell:symbol> 11)
 (define (symbol? x)
   (eq? (core:type x) <cell:symbol>))
 
@@ -77,8 +76,6 @@
 
 (define (string->list s)
   (core:car s))
-
-(define <cell:string> 10)
 
 (define (list->string lst)
   (core:make-cell <cell:string> lst 0))

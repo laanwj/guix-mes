@@ -25,23 +25,6 @@
 
 ;;; Code:
 
-(define <cell:char> 0)
-(define <cell:closure> 1)
-(define <cell:continuation> 2)
-(define <cell:function> 3)
-(define <cell:keyword> 4)
-(define <cell:macro> 5)
-(define <cell:number> 6)
-(define <cell:pair> 7)
-(define <cell:ref> 8)
-(define <cell:special> 9)
-(define <cell:string> 10)
-(define <cell:symbol> 11)
-(define <cell:values> 12)
-(define <cell:variable> 13)
-(define <cell:vector> 14)
-(define <cell:broken-heart> 15)
-
 (define cell:type-alist
   (list (cons <cell:char> (quote <cell:char>))
         (cons <cell:closure> (quote <cell:closure>))
@@ -151,7 +134,7 @@
   (core:car s))
 
 (define (integer->char x)
-  (core:make-cell <cell:character> 0 x))
+  (core:make-cell <cell:char> 0 x))
 
 (define (char->integer x)
   (core:make-cell <cell:number> 0 x))

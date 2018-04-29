@@ -43,8 +43,6 @@
   (define (string->list s)
     (core:car s))
 
-  (define <cell:string> 10)
-
   (define (string . lst)
     (core:make-cell <cell:string> lst 0))
 

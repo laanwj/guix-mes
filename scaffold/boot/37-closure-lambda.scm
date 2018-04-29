@@ -16,8 +16,6 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define <cell:pair> 7)
-
 (define (pair? x)
   (eq? (core:type x) <cell:pair>))
 
