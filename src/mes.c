@@ -713,6 +713,8 @@ call (SCM fn, SCM x)
 SCM
 assq (SCM x, SCM a)
 {
+  if (TYPE (a) != TPAIR)
+    return cell_f;
   switch (TYPE (x))
     {
     case TCHAR:

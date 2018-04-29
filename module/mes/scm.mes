@@ -109,7 +109,7 @@
 (define assv-ref assq-ref)
 
 (define (assoc key alist)
-  (if (null? alist) #f
+  (if (not (pair? alist)) #f
       (if (equal? key (caar alist)) (car alist)
           (assoc key (cdr alist)))))
 
