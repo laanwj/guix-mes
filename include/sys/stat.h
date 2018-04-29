@@ -23,7 +23,15 @@
 #if __GNUC__ && POSIX
 #undef __MES_SYS_STAT_H
 #include_next <sys/stat.h>
-#endif // (__GNUC__ && POSIX)
+
+#else // !(__GNUC__ && POSIX)
+
+#ifndef __MES_MODE_T
+#define __MES_MODE_T
+typedef int mode_t;
+#endif
+
+int chmod (char const *file_name, mode_t mode);
 
 struct stat {
   int st_dev;
@@ -40,6 +48,8 @@ struct stat {
   int st_mtime;
   int st_ctime;
 };
+
+#endif // !(__GNUC__ && POSIX)
 
 #endif // __MES_SYS_STAT_H
 
