@@ -68,4 +68,13 @@ exit $?
 (pass-if-not "string-contains not"
              (string-contains "fuba" "bar"))
 
+(pass-if-equal "string-trim" "foo  "
+             (string-trim "  foo  "))
+
+(pass-if-equal "string-trim-right" "  foo"
+             (string-trim-right "  foo  "))
+
+(pass-if-equal "string-trim-both" "foo"
+             (string-trim-both "  foo  "))
+
 (result 'report)

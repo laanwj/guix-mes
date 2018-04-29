@@ -25,6 +25,7 @@
 ;;; Code:
 
 (mes-use-module (srfi srfi-1))
+(mes-use-module (srfi srfi-14))
 
 (define (string-copy s)
   (list->string (string->list s)))
@@ -132,3 +133,24 @@
                           (or (match (cdr start) (cdr needle) (1+ n))
                               (loop (cdr string) (1+ i)))
                           (loop (cdr string) (1+ i))))))))))
+
+(define (string-trim string . pred)
+  (list->string
+   (if (pair? pred) (error "string-trim: not supported: PRED=" pred)
+       (let loop ((lst (string->list string)))
+         (if (or (null? lst)
+                 (not (char-whitespace? (car lst)))) lst
+                 (loop (cdr lst)))))))
+
+(define (string-trim-right string . pred)
+  (list->string
+   (reverse!
+    (if (pair? pred) (error "string-trim-right: not supported: PRED=" pred)
+        (let loop ((lst (reverse (string->list string))))
+          (if (or (null? lst)
+                  (not (char-whitespace? (car lst)))) lst
+                  (loop (cdr lst))))))))
+
+(define (string-trim-both string . pred)
+  ((compose string-trim string-trim-right) string))
+
