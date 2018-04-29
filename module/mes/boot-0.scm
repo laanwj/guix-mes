@@ -238,9 +238,11 @@
 (let ((tty? (isatty? 0)))
   (define (parse-opts args)
     (let* ((option-spec
-            '((dump)
+            '((compiled-path (single-char #\C) (value #t))
+              (dump)
               (help (single-char #\h))
               (load)
+              (load-path (single-char #\L) (value #t))
               (main (single-char #\e) (value #t))
               (source (single-char #\s) (value #t))
               (version (single-char #\V)))))
@@ -265,21 +267,27 @@
           (display "Usage: mes [OPTION]... [FILE]...
 Evaluate code with Mes, interactively or from a script.
 
-  [-s] FILE       load source code from FILE, and exit
-  --              stop scanning arguments; run interactively
+  [-s] FILE           load source code from FILE, and exit
+  --                  stop scanning arguments; run interactively
 
 The above switches stop argument processing, and pass all
 remaining arguments as the value of (command-line).
 
-  --dump          dump binary program to stdout
-  -e,--main=MAIN  after reading script, apply MAIN to command-line arguments
-  -h, --help      display this help and exit
-  --load          load binary program [module/mes/boot-0.32-mo]
-  -v, --version   display version information and exit
+  -C,--compiled-path=DIR
+                      ignored for Guile compatibility
+  --dump              dump binary program to stdout
+  -e,--main=MAIN      after reading script, apply MAIN to command-line arguments
+  -h, --help          display this help and exit
+  --load              load binary program [module/mes/boot-0.32-mo]
+  -L,--load-path=DIR  add DIR to the front of the module load path
+  -v, --version       display version information and exit
 " (or (and usage? (current-error-port)) (current-output-port)))
           (exit (or (and usage? 2) 0)))
      options)
     (if main (set! %main main))
+    (and=> (option-ref options 'load-path #f)
+           (lambda (dir)
+             (setenv "GUILE_LOAD_PATH" (string-append dir ":" (getenv "GUILE_LOAD_PATH")))))
     (cond ((pair? files)
            (let* ((file (car files))
                   (port (if (equal? file "-") 0
