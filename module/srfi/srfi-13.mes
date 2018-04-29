@@ -157,3 +157,15 @@
 (define (string-map f string)
   (list->string (map f (string->list string))))
 
+(define (string-replace string replace . rest)
+  (let* ((start1 (and (pair? rest) (car rest)))
+         (end1 (and start1 (pair? (cdr rest)) (cadr rest)))
+         (start2 (and end1 (pair? (cddr rest)) (caddr rest)))
+         (end2 (and start2 (pair? (cdddr rest)) (cadddr rest))))
+    (if start2 (error "string-replace: not supported: START2=" start2))
+    (if end2 (error "string-replace: not supported: END2=" end2))
+    (list->string
+     (append
+      (string->list (string-take string (or start1 0)))
+      (string->list replace)
+      (string->list (string-drop string (or end1 (string-length string))))))))
