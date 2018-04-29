@@ -40,11 +40,17 @@
 (define (append-map f lst . rest)
   (apply append (apply map f (cons lst rest))))
 
-(define (filter-map f lst)
-  (if (null? lst) (list)
-      (let ((r (f (car lst))))
-        (if r (cons r (filter-map f (cdr lst)))
-            (filter-map f (cdr lst))))))
+(define (filter-map f h . t)
+  (if (null? h) '()
+      (if (null? t)
+          (let ((r (f (car h))))
+            (if r (cons r (filter-map f (cdr h)))
+                (filter-map f (cdr h))))
+          (if (null? (cdr t))
+              (let ((r (f (car h) (caar t))))
+                (if r (cons r (filter-map f (cdr h) (cdar t)))
+                    (filter-map f (cdr h) (cdar t))))
+              (error 'unsupported (cons* "filter-map 3:" f h t))))))
 
 ;;; nyacc requirements
 
