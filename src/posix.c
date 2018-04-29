@@ -23,17 +23,43 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int
-ungetchar (int c)
-{
-  return ungetc (c, g_stdin);
-}
+int readchar ();
+int unreadchar ();
 
 int
 peekchar ()
 {
-  int c = getchar ();
-  ungetchar (c);
+  if (g_stdin >= 0)
+    {
+      int c = readchar ();
+      unreadchar (c);
+      return c;
+    }
+  SCM port = current_input_port ();
+  return VALUE (CAR (STRING (port)));
+}
+
+int
+readchar ()
+{
+  if (g_stdin >= 0)
+    return  getchar ();
+  SCM port = current_input_port ();
+  SCM string = STRING (port);
+  if (string == cell_nil)
+    return -1;
+  int c = VALUE (CAR (string));
+  STRING (port) = CDR (string);
+  return c;
+}
+
+int
+unreadchar (int c)
+{
+  if (g_stdin >= 0)
+    return ungetc (c, g_stdin);
+  SCM port = current_input_port ();
+  STRING (port) = cons (MAKE_CHAR (c), STRING (port));
   return c;
 }
 
@@ -46,13 +72,13 @@ peek_byte ()
 SCM
 read_byte ()
 {
-  return MAKE_NUMBER (getchar ());
+  return MAKE_NUMBER (readchar ());
 }
 
 SCM
 unread_byte (SCM i)
 {
-  ungetchar (VALUE (i));
+  unreadchar (VALUE (i));
   return i;
 }
 
@@ -65,13 +91,13 @@ peek_char ()
 SCM
 read_char ()
 {
-  return MAKE_CHAR (getchar ());
+  return MAKE_CHAR (readchar ());
 }
 
 SCM
 unread_char (SCM i)
 {
-  ungetchar (VALUE (i));
+  unreadchar (VALUE (i));
   return i;
 }
 
@@ -155,7 +181,12 @@ access_p (SCM file_name, SCM mode)
 SCM
 current_input_port ()
 {
-  return MAKE_NUMBER (g_stdin);
+  if (g_stdin >= 0)
+    return MAKE_NUMBER (g_stdin);
+  SCM x = g_ports;
+  while (x && PORT (CAR (x)) != g_stdin)
+    x = CDR (x);
+  return CAR (x);
 }
 
 SCM
@@ -165,11 +196,22 @@ open_input_file (SCM file_name)
 }
 
 SCM
+open_input_string (SCM string)
+{
+  SCM port = MAKE_STRING_PORT (STRING (string));
+  g_ports = cons (port, g_ports);
+  return port;
+}
+
+SCM
 set_current_input_port (SCM port)
 {
-  int prev = g_stdin;
-  g_stdin = VALUE (port) ? VALUE (port) : STDIN;
-  return MAKE_NUMBER (prev);
+  SCM prev = current_input_port ();
+  if (TYPE (port) == TNUMBER)
+    g_stdin = VALUE (port) ? VALUE (port) : STDIN;
+  else if (TYPE (port) == TPORT)
+    g_stdin = PORT (port);
+  return prev;
 }
 
 SCM

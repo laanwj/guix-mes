@@ -22,8 +22,6 @@
 
 ;;; Code:
 
-(define-macro (define-module module . rest) #t)
-(define-macro (use-modules . rest) #t)
 (define-macro (cond-expand-provide . rest) #t)
 
 (define-macro (include-from-path file)
@@ -65,28 +63,9 @@
 (define (port-line p) 0)
 
 (define (with-input-from-string string thunk)
-  (define save-peek-char peek-char)
-  (define save-read-char read-char)
-  (define save-unread-char unread-char)
-  (if (and=> (getenv "MES_DEBUG") (compose (cut > <> 3) string->number))
-      (core:display-error (string-append "with-input-from-string: `" string "'\n")))
-  (let ((tell 0)
-        (end (string-length string)))
-    (set! peek-char
-          (lambda ()
-            (if (= tell end) (integer->char -1)
-                (string-ref string tell))))
-    (set! read-char
-          (lambda () (if (= tell end) (integer->char -1)
-                         (begin
-                           (set! tell (1+ tell))
-                           (string-ref string (- tell 1))))))
-    (set! unread-char
-          (lambda (c) (set! tell (1- tell)) c)))
-  (let ((r (thunk)))
-    (set! peek-char save-peek-char)
-    (set! read-char save-read-char)
-    (set! unread-char save-unread-char)
+  (let ((prev (set-current-input-port (open-input-string string)))
+        (r (thunk)))
+    (set-current-input-port prev)
     r))
 
 (define (with-input-from-file file thunk)
@@ -127,52 +106,6 @@
         (core:display-error port)))
     (core:display-error "\n")
     port))
-
-(define open-input-string
-  (let ((save-set-current-input-port #f)
-        (string-port #f))
-    (lambda (string)
-      (if (and=> (getenv "MES_DEBUG") (compose (cut > <> 3) string->number))
-          (core:display-error (string-append "open-input-string: `" string "'\n")))
-      (set! save-set-current-input-port set-current-input-port)
-      (set! string-port (cons '*string-port* (gensym)))
-      (set! set-current-input-port
-            (let ((save-peek-char peek-char)
-                  (save-read-char read-char)
-                  (save-unread-char unread-char)
-                  (tell 0)
-                  (end (string-length string)))
-              (lambda (port)
-                (when (and=> (getenv "MES_DEBUG") (compose (cut > <> 5) string->number))
-                    (core:display-error (string-append "open-input-string: `" string "' save-set-current-input-port port="))
-                    (core:display-error port)
-                    (core:display-error "\n"))
-                (if (not (equal? port string-port)) (save-set-current-input-port port)
-                    (begin
-                      (set! tell 0)
-                      (set! peek-char
-                            (lambda () (if (= tell end) (integer->char -1)
-                                           (string-ref string tell))))
-                      (set! read-char
-                            (lambda () (if (= tell end) (integer->char -1)
-                                           (begin
-                                             (set! tell (1+ tell))
-                                             (string-ref string (- tell 1))))))
-                      (set! unread-char
-                            (lambda (c) (set! tell (1- tell)) c))
-                      (set! set-current-input-port
-                            (lambda (port)
-                              (when (and=> (getenv "MES_DEBUG") (compose (cut > <> 4) string->number))
-                                (core:display-error (string-append "open-input-string: `" string "' set-current-input-port port="))
-                                (core:display-error port)
-                                (core:display-error "\n"))
-                              (save-set-current-input-port port)
-                              (set! peek-char save-peek-char)
-                              (set! read-char save-read-char)
-                              (set! unread-char save-unread-char)
-                              (set! set-current-input-port save-set-current-input-port)
-                              string-port)))))))
-      string-port)))
 
 (define (dirname file-name)
   (let ((lst (filter (negate string-null?) (string-split file-name #\/))))

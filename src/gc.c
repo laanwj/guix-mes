@@ -108,6 +108,7 @@ gc_loop (SCM scan) ///((internal))
           || NTYPE (scan) == TKEYWORD
           || NTYPE (scan) == TMACRO
           || NTYPE (scan) == TPAIR
+          || NTYPE (scan) == TPORT
           || NTYPE (scan) == TREF
           || scan == 1 // null
           || NTYPE (scan) == TSPECIAL
@@ -197,6 +198,7 @@ gc_ () ///((internal))
     gc_copy (i);
   g_symbols = gc_copy (g_symbols);
   g_macros = gc_copy (g_macros);
+  g_ports = gc_copy (g_ports);
   SCM new = gc_copy (g_stack);
   if (g_debug > 3)
     {

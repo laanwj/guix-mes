@@ -77,8 +77,8 @@
 (define (pair? x)
   (eq? (core:type x) <cell:pair>))
 
-(define (pair? x)
-  (eq? (core:type x) <cell:pair>))
+(define (port? x)
+  (eq? (core:type x) <cell:port>))
 
 (define (special? x)
   (eq? (core:type x) <cell:special>))

@@ -131,13 +131,20 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         break;
       }
     case TKEYWORD:
+    case TPORT:
     case TSPECIAL:
     case TSTRING:
     case TSYMBOL:
       {
+        if (TYPE (x) == TPORT)
+          {
+            fputs ("#<port ", fd);
+            fputs (itoa (PORT (x)), fd);
+            fputs (" " ,fd);
+          }
         if (TYPE (x) == TKEYWORD)
           fputs ("#:", fd);
-        if (write_p && TYPE (x) == TSTRING)
+        if ((write_p && TYPE (x) == TSTRING) || TYPE (x) == TPORT)
           fputc ('"', fd);
         SCM t = CAR (x);
         while (t && t != cell_nil)
@@ -167,8 +174,10 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
               }
             t = CDR (t);
           }
-        if (write_p && TYPE (x) == TSTRING)
+        if ((write_p && TYPE (x) == TSTRING) || TYPE (x) == TPORT)
           fputc ('"', fd);
+        if (TYPE (x) == TPORT)
+          fputs (">", fd);
         break;
       }
     case TVECTOR:

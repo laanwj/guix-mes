@@ -72,9 +72,9 @@
   (define <cell:keyword> 4)
   (define <cell:number> 6)
   (define <cell:pair> 7)
-  (define <cell:string> 9)
-  (define <cell:symbol> 10)
-  (define <cell:vector> 14)
+  (define <cell:string> 10)
+  (define <cell:symbol> 11)
+  (define <cell:vector> 15)
 
   (define (core:type x)
     (cond ((guile:keyword? x) <cell:keyword>)

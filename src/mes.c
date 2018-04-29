@@ -53,10 +53,11 @@ SCM r2 = 0;
 // continuation
 SCM r3 = 0;
 // macro
-SCM g_macros = 1; // cell_nil
+SCM g_macros = 1;
+SCM g_ports = 1;
 
 
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
+enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
 
 #if !_POSIX_SOURCE
 struct scm {
@@ -99,12 +100,12 @@ struct scm {
   union {
     int value;
     int function;
+    int port;
     SCM cdr;
     SCM closure;
     SCM continuation;
     SCM macro;
     SCM vector;
-    int hits;
   };
 };
 #endif
@@ -224,6 +225,7 @@ struct scm scm_type_keyword = {TSYMBOL, "<cell:keyword>",0};
 struct scm scm_type_macro = {TSYMBOL, "<cell:macro>",0};
 struct scm scm_type_number = {TSYMBOL, "<cell:number>",0};
 struct scm scm_type_pair = {TSYMBOL, "<cell:pair>",0};
+struct scm scm_type_port = {TSYMBOL, "<cell:port>",0};
 struct scm scm_type_ref = {TSYMBOL, "<cell:ref>",0};
 struct scm scm_type_special = {TSYMBOL, "<cell:special>",0};
 struct scm scm_type_string = {TSYMBOL, "<cell:string>",0};
@@ -285,6 +287,7 @@ int g_function = 0;
 #define FUNCTION(x) g_functions[g_cells[x].cdr]
 #define FUNCTION0(x) g_functions[g_cells[x].cdr].function
 #define MACRO(x) g_cells[x].cdr
+#define PORT(x) g_cells[x].cdr
 #define VALUE(x) g_cells[x].cdr
 #define VECTOR(x) g_cells[x].cdr
 
@@ -303,6 +306,7 @@ int g_function = 0;
 
 #define CLOSURE(x) g_cells[x].closure
 #define MACRO(x) g_cells[x].macro
+#define PORT(x) g_cells[x].port
 #define REF(x) g_cells[x].ref
 #define VALUE(x) g_cells[x].value
 #define VECTOR(x) g_cells[x].vector
@@ -321,6 +325,7 @@ int g_function = 0;
 #define MAKE_REF(n) make_cell__ (TREF, n, 0)
 #define MAKE_STRING(x) make_cell__ (TSTRING, x, 0)
 #define MAKE_KEYWORD(x) make_cell__ (TKEYWORD, x, 0)
+#define MAKE_STRING_PORT(x) make_cell__ (TPORT, x, -length__ (g_ports) - 2)
 #define MAKE_MACRO(name, x) make_cell__ (TMACRO, STRING (name), x)
 
 #define CAAR(x) CAR (CAR (x))
@@ -1436,6 +1441,8 @@ eval_apply ()
                 ;
               else if (TYPE (r1) == TSTRING)
                 input = set_current_input_port (open_input_file (r1));
+              else if (TYPE (r1) == TPORT)
+                input = set_current_input_port (r1);
               else
                 assert (0);
               
@@ -1977,6 +1984,7 @@ g_cells[cell_test].car = cstring_to_list (scm_test.name);
   a = acons (cell_type_macro, MAKE_NUMBER (TMACRO), a);
   a = acons (cell_type_number, MAKE_NUMBER (TNUMBER), a);
   a = acons (cell_type_pair, MAKE_NUMBER (TPAIR), a);
+  a = acons (cell_type_port, MAKE_NUMBER (TPORT), a);
   a = acons (cell_type_ref, MAKE_NUMBER (TREF), a);
   a = acons (cell_type_special, MAKE_NUMBER (TSPECIAL), a);
   a = acons (cell_type_string, MAKE_NUMBER (TSTRING), a);

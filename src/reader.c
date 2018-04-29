@@ -44,7 +44,7 @@ reader_read_line_comment (int c)
 {
   if (c == '\n')
     return c;
-  return reader_read_line_comment (getchar ());
+  return reader_read_line_comment (readchar ());
 }
 
 SCM reader_read_block_comment (int s, int c);
@@ -71,22 +71,22 @@ reader_read_identifier_or_number (int c)
   int n = 0;
   int negative_p = 0;
   if (c == '+' && isdigit (peekchar ()))
-    c = getchar ();
+    c = readchar ();
   else if (c == '-' && isdigit (peekchar ()))
     {
       negative_p = 1;
-      c = getchar ();
+      c = readchar ();
     }
   while (isdigit (c))
     {
       buf[i++] = c;
       n *= 10;
       n += c - '0';
-      c = getchar ();
+      c = readchar ();
     }
   if (reader_end_of_word_p (c))
     {
-      ungetchar (c);
+      unreadchar (c);
       if (negative_p)
         n = 0 - n;
       return MAKE_NUMBER (n);
@@ -94,9 +94,9 @@ reader_read_identifier_or_number (int c)
   while (!reader_end_of_word_p (c))
     {
       buf[i++] = c;
-      c = getchar ();
+      c = readchar ();
     }
-  ungetchar (c);
+  unreadchar (c);
   buf[i] = 0;
   return lookup_symbol_ (cstring_to_list (buf));
 }
@@ -115,28 +115,28 @@ reader_read_sexp_ (int c, SCM a)
     case '\t':
     case '\n':
     case '\f':
-      return reader_read_sexp_ (getchar (), a);
+      return reader_read_sexp_ (readchar (), a);
     case '(':
-      return reader_read_list (getchar (), a);
+      return reader_read_list (readchar (), a);
     case  ')':
       return cell_nil;
     case '#':
-      return reader_read_hash (getchar (), a);
+      return reader_read_hash (readchar (), a);
     case '`':
       return cons (cell_symbol_quasiquote,
-                   cons (reader_read_sexp_ (getchar (), a), cell_nil));
+                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
     case ',':
       if (peekchar () == '@')
         {
-          getchar ();
+          readchar ();
           return cons (cell_symbol_unquote_splicing,
-                       cons (reader_read_sexp_ (getchar (), a), cell_nil));
+                       cons (reader_read_sexp_ (readchar (), a), cell_nil));
         }
       return cons (cell_symbol_unquote,
-                   cons (reader_read_sexp_ (getchar (), a), cell_nil));
+                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
     case '\'':
       return cons (cell_symbol_quote,
-                   cons (reader_read_sexp_ (getchar (), a), cell_nil));
+                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
     case '"':
       return reader_read_string ();
     case '.':
@@ -151,14 +151,14 @@ int
 reader_eat_whitespace (int c)
 {
   while (isspace (c))
-    c = getchar ();
+    c = readchar ();
   if (c == ';')
     return reader_eat_whitespace (reader_read_line_comment (c));
   if (c == '#' && (peekchar () == '!' || peekchar () == '|'))
     {
-      c=getchar ();
-      reader_read_block_comment (c, getchar ());
-      return reader_eat_whitespace (getchar ());
+      c=readchar ();
+      reader_read_block_comment (c, readchar ());
+      return reader_eat_whitespace (readchar ());
     }
   return c;
 }
@@ -174,21 +174,21 @@ reader_read_list (int c, SCM a)
     //return cell_nil;
   SCM s = reader_read_sexp_ (c, a);
   if (s == cell_dot)
-    return CAR (reader_read_list (getchar (), a));
-  return cons (s, reader_read_list (getchar (), a));
+    return CAR (reader_read_list (readchar (), a));
+  return cons (s, reader_read_list (readchar (), a));
 }
 
 SCM
 read_env (SCM a)
 {
-  return reader_read_sexp_ (getchar (), a);
+  return reader_read_sexp_ (readchar (), a);
 }
 
 SCM
 reader_read_block_comment (int s, int c)
 {
-  if (c == s && peekchar () == '#') return getchar ();
-  return reader_read_block_comment (s, getchar ());
+  if (c == s && peekchar () == '#') return readchar ();
+  return reader_read_block_comment (s, readchar ());
 }
 
 SCM
@@ -197,11 +197,11 @@ reader_read_hash (int c, SCM a)
   switch (c)
     {
     case '!':
-      reader_read_block_comment (c, getchar ());
-      return reader_read_sexp_ (getchar (), a);
+      reader_read_block_comment (c, readchar ());
+      return reader_read_sexp_ (readchar (), a);
     case '|':
-      reader_read_block_comment (c, getchar ());
-      return reader_read_sexp_ (getchar (), a);
+      reader_read_block_comment (c, readchar ());
+      return reader_read_sexp_ (readchar (), a);
     case 'f':
       return cell_f;
     case 't':
@@ -209,21 +209,21 @@ reader_read_hash (int c, SCM a)
     case ',':
       if (peekchar () == '@')
         {
-          getchar ();
+          readchar ();
           return cons (cell_symbol_unsyntax_splicing,
-                       cons (reader_read_sexp_ (getchar (), a),
+                       cons (reader_read_sexp_ (readchar (), a),
                              cell_nil));
         }
       return cons (cell_symbol_unsyntax,
-                   cons (reader_read_sexp_ (getchar (), a), cell_nil));
+                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
     case '\'':
       return cons (cell_symbol_syntax,
-                   cons (reader_read_sexp_ (getchar (), a), cell_nil));
+                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
     case '`':
       return cons (cell_symbol_quasisyntax,
-                   cons (reader_read_sexp_ (getchar (), a), cell_nil));
+                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
     case ':':
-    return MAKE_KEYWORD (CAR (reader_read_sexp_ (getchar (), a)));
+    return MAKE_KEYWORD (CAR (reader_read_sexp_ (readchar (), a)));
     case 'o':
       return reader_read_octal ();
     case 'x':
@@ -231,12 +231,12 @@ reader_read_hash (int c, SCM a)
     case '\\':
       return reader_read_character ();
     case '(':
-      return list_to_vector (reader_read_list (getchar (), a));
+      return list_to_vector (reader_read_list (readchar (), a));
     case ';':
-      reader_read_sexp_ (getchar (), a);
-      return reader_read_sexp_ (getchar (), a);
+      reader_read_sexp_ (readchar (), a);
+      return reader_read_sexp_ (readchar (), a);
     }
-  return reader_read_sexp_ (getchar (), a);
+  return reader_read_sexp_ (readchar (), a);
 }
 
 SCM
@@ -248,7 +248,7 @@ reader_read_sexp (SCM c, SCM s, SCM a)
 SCM
 reader_read_character ()
 {
-  int c = getchar ();
+  int c = readchar ();
   if (c >= '0' && c <= '7'
       && peekchar () >= '0' && peekchar () <= '7')
     {
@@ -256,7 +256,7 @@ reader_read_character ()
       while (peekchar () >= '0' && peekchar () <= '7')
         {
           c <<= 3;
-          c += getchar () - '0';
+          c += readchar () - '0';
         }
     }
   else if (((c >= 'a' && c <= 'z')
@@ -270,7 +270,7 @@ reader_read_character ()
       while ((peekchar () >= 'a' && peekchar () <= 'z')
              || peekchar () == '*')
         {
-          *p++ = getchar ();
+          *p++ = readchar ();
         }
       *p = 0;
       if (!strcmp (buf, "*eof*")) c = EOF;
@@ -325,12 +325,12 @@ reader_read_octal ()
   int n = 0;
   int c = peekchar ();
   int s = 1;
-  if (c == '-') {s = -1;getchar (); c = peekchar ();}
+  if (c == '-') {s = -1;readchar (); c = peekchar ();}
   while (c >= '0' && c <= '7')
     {
       n <<= 3;
       n+= c - '0';
-      getchar ();
+      readchar ();
       c = peekchar ();
     }
   return MAKE_NUMBER (s*n);
@@ -342,7 +342,7 @@ reader_read_hex ()
   int n = 0;
   int c = peekchar ();
   int s = 1;
-  if (c == '-') {s = -1;getchar (); c = peekchar ();}
+  if (c == '-') {s = -1;readchar (); c = peekchar ();}
   while ((c >= '0' && c <= '9')
          || (c >= 'A' && c <= 'F')
          || (c >= 'a' && c <= 'f'))
@@ -351,7 +351,7 @@ reader_read_hex ()
       if (c >= 'a') n += c - 'a' + 10;
       else if (c >= 'A') n += c - 'A' + 10;
       else n+= c - '0';
-      getchar ();
+      readchar ();
       c = peekchar ();
     }
   return MAKE_NUMBER (s*n);
@@ -363,7 +363,7 @@ reader_read_string ()
   char buf[1024];
   SCM lst = cell_nil;
   int i = 0;
-  int c = getchar ();
+  int c = readchar ();
   while (1)
     {
       if (c == '"' || i > 1022)
@@ -378,52 +378,52 @@ reader_read_string ()
         {
           int p = peekchar ();
           if (p == '\\' || p == '"')
-            buf[i++] = getchar ();
+            buf[i++] = readchar ();
           else if (p == '0')
             {
-              getchar ();
+              readchar ();
               buf[i++] = '\0';
             }
           else if (p == 'a')
             {
-              getchar ();
+              readchar ();
               buf[i++] = '\a';
             }
           else if (p == 'b')
             {
-              getchar ();
+              readchar ();
               buf[i++] = '\b';
             }
           else if (p == 't')
             {
-              getchar ();
+              readchar ();
               buf[i++] = '\t';
             }
           else if (p == 'n')
             {
-              getchar ();
+              readchar ();
               buf[i++] = '\n';
             }
           else if (p == 'v')
             {
-              getchar ();
+              readchar ();
               buf[i++] = '\v';
             }
           else if (p == 'f')
             {
-              getchar ();
+              readchar ();
               buf[i++] = '\f';
             }
           else if (p == 'r')
             {
-              getchar ();
+              readchar ();
               //Nyacc bug
               //buf[i++] = '\r';
               buf[i++] = 13;
             }
           else if (p == 'e')
             {
-              getchar ();
+              readchar ();
               //buf[i++] = '\e';
               buf[i++] = 27;
             }
@@ -434,7 +434,7 @@ reader_read_string ()
 #endif
       else
         buf[i++] = c;
-    c = getchar ();
+    c = readchar ();
   }
   return MAKE_STRING (lst);
 }

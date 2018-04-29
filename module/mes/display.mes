@@ -23,7 +23,6 @@
 ;;; Code:
 
 (mes-use-module (mes scm))
-;;(mes-use-module (mes srfi srfi-1))
 
 (define (srfi-1:member x lst eq)
   (if (null? lst) #f
@@ -113,9 +112,14 @@
         (display "#<macro " port)
         (display (core:cdr x) port)
         (display ">" port))
+       ((port? x)
+        (display "#<port " port)
+        (display (core:cdr x) port)
+        (display (core:car x) port)
+        (display ">" port))
        ((variable? x)
         (display "#<variable " port)
-        (display (car (core:car x)) port)
+        (write (list->string (car (core:car x))) port)
         (display ">" port))
        ((number? x)
         (display (number->string x) port))
