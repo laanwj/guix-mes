@@ -567,8 +567,8 @@ assert_defined (SCM x, SCM e) ///((internal))
 SCM
 check_formals (SCM f, SCM formals, SCM args) ///((internal))
 {
-  int flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : VALUE (length (formals));
-  int alen = VALUE (length (args));
+  int flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : length__ (formals);
+  int alen = length__ (args);
   if (alen != flen && alen != -1 && flen != -1)
     {
       char *s = "apply: wrong number of arguments; expected: ";
