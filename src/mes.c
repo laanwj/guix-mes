@@ -520,8 +520,6 @@ length__ (SCM x) ///((internal))
 SCM
 length (SCM x)
 {
-  if (x != cell_nil && TYPE (x) != TPAIR)
-    error (cell_symbol_not_a_pair, x);
   return MAKE_NUMBER (length__ (x));
 }
 
