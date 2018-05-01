@@ -20,6 +20,10 @@
 
 set -ex
 
+GUILE=${GUILE-$MES}
+DIFF=${DIFF-$(command -v diff)}
+DIFF=${DIFF-sh build-aux/diff.scm}
+
 t=${1-scaffold/tests/t}
 #rm -f "$t".i686-unknown-linux-gnu-out
 rm -f "$t".mes-out
@@ -27,11 +31,14 @@ rm -f "$t".mes-out
 sh build-aux/cc-mes.sh "$t"
 
 r=0
+[ -f "$t".exit ] && r=$(cat "$t".exit)
 set +e
-"$t".mes-out | tee "$t".stdout
+"$t".mes-out "$@" > "$t".stdout
 m=$?
+cat "$t".stdout
+set -e
 
 [ $m = $r ]
 if [ -f "$t".expect ]; then
-    diff -u "$t".expect "$t".stdout;
+    $DIFF -u "$t".expect "$t".stdout;
 fi

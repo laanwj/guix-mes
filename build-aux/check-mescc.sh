@@ -107,19 +107,29 @@ t
 82-define
 "
 
-if [ ! -x ./i686-unknown-linux-gnu-tcc ]; then
-    tests=$(echo "$tests" | grep -Ev "02-return-1|05-call-1|80-setjmp|81-qsort")
-fi
+broken="$broken
+"
 
 set +e
+expect=$(echo $broken | wc -w)
+pass=0
 fail=0
 total=0
+export LIBC=libc/libc
 for t in $tests; do
+    if [ -z "${t/[012][0-9]-*/}" ]; then
+        LIBC=lib/mini-libc;
+    elif [ -z "${t/8[0-9]-*/}" ]; then
+        LIBC=lib/libc+tcc;
+    else
+        LIBC=lib/libc;
+    fi
     sh build-aux/test.sh "scaffold/tests/$t" &> scaffold/tests/"$t".log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then
         echo $t: [OK]
+        pass=$((pass+1))
     else
         echo $t: [FAIL]
         fail=$((fail+1))
@@ -141,7 +151,7 @@ tests="
 10_pointer
 11_precedence
 12_hashdefine
-
+13_integer_literals
 14_if
 15_recursion
 16_nesting
@@ -151,44 +161,71 @@ tests="
 
 20_pointer_comparison
 21_char_array
-
-
-
+22_floating_point
+23_type_coercion
+24_math_library
 25_quicksort
-
-
+26_character_constants
+27_sizeof
+28_strings
 29_array_address
 
-
+30_hanoi
 31_args
-
-
+32_led
 33_ternary_op
+34_array_assignment
 35_sizeof
+36_array_initialisers
+37_sprintf
+38_multiple_array_index
+39_typedef
 
-
-
-
-
-
+40_stdio
 41_hashif
-
+42_function_pointer
 43_void_param
 44_scoped_declarations
 45_empty_for
-
+46_grep
 47_switch_return
 48_nested_break
-
+49_bracket_evaluation
 
 50_logical_second_arg
-
-
+51_static
+52_unnamed_enum
+55_lshift_type
 54_goto
-
 "
 
-#13_integer_literals     ; fail
+broken="$broken
+18_include
+
+22_floating_point
+23_type_coercion
+24_math_library
+26_character_constants
+27_sizeof
+28_strings
+
+30_hanoi
+32_led
+34_array_assignment
+37_sprintf
+38_multiple_array_index
+39_typedef
+
+40_stdio
+42_function_pointer
+46_grep
+49_bracket_evaluation
+
+51_static
+52_unnamed_enum
+55_lshift_type
+"
+
 #22_floating_point       ; float
 #23_type_coercion        ; float
 #24_math_library         ; float
@@ -211,27 +248,33 @@ tests="
 #55_lshift_type          ; unsigned
 
 
-# FIXME: have no diff
-tests=
+expect=$(echo $broken | wc -w)
 for t in $tests; do
     if [ ! -f scaffold/tinycc/"$t.c" ]; then
         echo ' [SKIP]'
         continue;
     fi
-    sh build-aux/test.sh "scaffold/tinycc/$t" &> scaffold/tinycc/"$t".log
+    sh build-aux/test.sh "scaffold/tinycc/$t" arg1 arg2 arg3 arg4 arg5 &> scaffold/tinycc/"$t".log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then
         echo $t: [OK]
+        pass=$((pass+1))
     else
         echo $t: [FAIL]
         fail=$((fail+1))
     fi
 done
-
-if [ $fail != 0 ]; then
+[ $expect != 0 ] && echo "expect: $expect"
+[ $fail != 0 ] && echo "failed: $fail"
+[ $fail -lt $expect ] && echo "solved: $(($expect - $fail))"
+echo "passed: $pass"
+echo "total:  $total"
+if [ $fail != 0 -a $fail -gt $expect ]; then
     echo FAILED: $fail/$total
     exit 1
+elif [ $fail != 0 ]; then
+    echo PASS: $pass/$total
 else
     echo PASS: $total
 fi

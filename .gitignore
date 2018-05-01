@@ -14,7 +14,8 @@
 *.hex2
 *.hex2-o
 *.log
-*.log
+*.stderr
+*.stdout
 *.mini-M1
 *.mini-guile
 *.mini-hex2

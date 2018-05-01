@@ -40,6 +40,7 @@ CPPFLAGS=${CPPFLAGS-"
 
 MESCCLAGS=${MESCCFLAGS-"
 "}
+LIBC=${LIBC-lib/libc}
 
 c=$1
 
@@ -72,7 +73,7 @@ if [ -z "$NOLINK" ]; then
     $BLOOD_ELF\
         -f stage0/x86.M1\
         -f "$c".M1\
-        -f lib/libc-mes.M1\
+        -f $LIBC-mes.M1\
         -o "$c".blood-elf-M1
     $M1 --LittleEndian --Architecture=1\
         -f "$c".blood-elf-M1\
@@ -80,7 +81,7 @@ if [ -z "$NOLINK" ]; then
     $HEX2 --LittleEndian --Architecture=1 --BaseAddress=0x1000000\
           -f stage0/elf32-header.hex2\
           -f lib/crt1.hex2\
-          -f lib/libc-mes.hex2\
+          -f $LIBC-mes.hex2\
           -f "$c".hex2\
           -f "$c".blood-elf-hex2\
           --exec_enable\
