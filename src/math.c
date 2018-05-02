@@ -33,7 +33,11 @@ assert_number (char const* name, SCM x)
 SCM
 greater_p (SCM x) ///((name . ">") (arity . n))
 {
-  int n = INT_MAX;
+  if (x == cell_nil)
+    return cell_t;
+  assert_number ("greater_p", CAR (x));
+  int n = VALUE (CAR (x));
+  x = CDR (x);
   while (x != cell_nil)
     {
       assert_number ("greater_p", CAR (x));
@@ -48,7 +52,11 @@ greater_p (SCM x) ///((name . ">") (arity . n))
 SCM
 less_p (SCM x) ///((name . "<") (arity . n))
 {
-  int n = INT_MIN;
+  if (x == cell_nil)
+    return cell_t;
+  assert_number ("less_p", CAR (x));
+  int n = VALUE (CAR (x));
+  x = CDR (x);
   while (x != cell_nil)
     {
       assert_number ("less_p", CAR (x));
@@ -81,8 +89,7 @@ SCM
 minus (SCM x) ///((name . "-") (arity . n))
 {
   assert_number ("minus", CAR (x));
-  SCM a = CAR (x);
-  int n = VALUE (a);
+  int n = VALUE (CAR (x));
   x = cdr (x);
   if (x == cell_nil)
     n = -n;

@@ -47,6 +47,14 @@ exit $?
                3
                (string-index "foo:bar" #\:))
 
+(pass-if-equal "string->number" 42 (string->number "42"))
+(pass-if-equal "string->number INT-MAX" 2147483647 (string->number "2147483647"))
+(pass-if-equal "string->number INT-MIN" -2147483648 (string->number "-2147483648"))
+(pass-if-equal "number->string" "16" (number->string 16))
+(pass-if-equal "number->string INT-MAX" "2147483647" (number->string 2147483647))
+(pass-if-equal "number->string INT-MIN" "-2147483648" (number->string -2147483648))
+(pass-if-equal "number->string" "-4" (number->string -4))
+
 (pass-if-equal "string-fold"
     "oof"
   (list->string (string-fold cons '() "foo")))

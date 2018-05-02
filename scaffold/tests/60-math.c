@@ -18,6 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -145,6 +146,31 @@ test ()
 
   puts ("t: 0x11 == 3\n");
   if (0x11 != 17) return 32;
+
+  puts ("t: i = INT_MAX\n");
+  i = INT_MAX;
+
+  if (strcmp ("2147483647", itoa (i)))
+    return 33;
+
+  puts ("t: i = 2147483646\n");
+  i = 2147483646;
+
+  puts ("t: i++\n");
+  i++;
+
+  puts ("t: i = INT_MIN\n");
+  i = INT_MIN;
+
+  if (strcmp ("-2147483648", itoa (i)))
+    return 34;
+
+  puts ("t: i = -2147483647\n");
+  i = -2147483647;
+
+  puts ("t: i--\n");
+  i--;
+
 
   return 0;
 }
