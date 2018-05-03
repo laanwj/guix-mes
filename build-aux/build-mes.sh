@@ -93,5 +93,4 @@ NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc-mes
 # sh build-aux/cc-mes.sh scaffold/mini-mes
 
 sh build-aux/cc-mes.sh src/mes
-# FIXME: broken
-# cp src/mes.mes-out src/mes
+cp src/mes.mes-out src/mes
