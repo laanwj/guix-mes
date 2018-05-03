@@ -18,16 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -ex
+set -x
 
 GUILE=${GUILE-$MES}
 DIFF=${DIFF-$(command -v diff)}
-DIFF=${DIFF-sh build-aux/diff.scm}
+[ -z "$DIFF" ] && DIFF="sh build-aux/diff.scm"
 
 t=${1-scaffold/tests/t}
-#rm -f "$t".i686-unknown-linux-gnu-out
 rm -f "$t".mes-out
+shift
 
+set -e
+
+rm -f "$t".mes-out
 sh build-aux/cc-mes.sh "$t"
 
 r=0

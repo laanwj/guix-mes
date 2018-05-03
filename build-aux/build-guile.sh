@@ -20,7 +20,8 @@
 
 set -ex
 
-export GUILE=${GUILE-$(type -p guile)}
+export GUILE
+GUILE=${GUILE-$(command -v guile)}
 
 SCM_FILES="
 language/c99/compiler.scm

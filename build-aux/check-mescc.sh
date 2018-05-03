@@ -18,18 +18,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-export MES=${MES-src/mes}
-export MESCC=${MESCC-scripts/mescc}
-export GUILE=${GUILE-guile}
-export MES_PREFIX=${MES_PREFIX-.}
+export BLOOD_ELF GUILE HEX2 M1 MES MESCC
+export M1FLAGS HEX2FLAGS PREPROCESS LIBC
+export MES_ARENA MES_PREFIX MES_SEED
 
-export HEX2=${HEX2-hex2}
-export M1=${M1-M1}
-export BLOOD_ELF=${BLOOD_ELF-blood-elf}
-export MES_SEED=${MES_SEED-../mes-seed}
-export MESCC=${MESCC-$(type -p mescc)}
+MES=${MES-src/mes}
+MESCC=${MESCC-scripts/mescc}
+GUILE=${GUILE-guile}
+MES_PREFIX=${MES_PREFIX-.}
+
+HEX2=${HEX2-hex2}
+M1=${M1-M1}
+BLOOD_ELF=${BLOOD_ELF-blood-elf}
+MES_SEED=${MES_SEED-../mes-seed}
+MESCC=${MESCC-$(command -v mescc)}
 [ -z "$MESCC" ] && MESCC=scripts/mescc
-export MES=${MES-$(type -p mes)}
+MES=${MES-$(command -v mes)}
 [ -z "$MES" ] && MES=src/mes
 
 
@@ -115,7 +119,7 @@ expect=$(echo $broken | wc -w)
 pass=0
 fail=0
 total=0
-export LIBC=libc/libc
+LIBC=libc/libc
 for t in $tests; do
     if [ -z "${t/[012][0-9]-*/}" ]; then
         LIBC=lib/mini-libc;

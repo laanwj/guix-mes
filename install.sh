@@ -2,7 +2,8 @@
 
 set -e
 
-export PREFIX=${PREFIX-/usr/local}
+export PREFIX
+PREFIX=${PREFIX-/usr/local}
 MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
 MES_SEED=${MES_SEED-../mes-seed}
 TINYCC_SEED=${TINYCC_SEED-../tinycc-seed}

@@ -2,7 +2,7 @@
 # -*- scheme -*-
 unset LANG LC_ALL
 echo -n "checking for guile..."
-GUILE=$(type -p ${GUILE-guile} 2>/dev/null|tail -n 1|sed 's,^.* ,,')
+GUILE=$(command -v ${GUILE-guile} 2>/dev/null|tail -n 1|sed 's,^.* ,,')
 export GUILE
 if [ -x "$GUILE" ]; then
     echo " $GUILE"
@@ -175,6 +175,11 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -C $(pwd) -e 'main' -s "$0" ${1+"$@"}
                      "i686-unknown-linux-gnu-gcc")))
 (define HEX2 (or (getenv "HEX2") "hex2"))
 (define M1 (or (getenv "M1") "M1"))
+(define CFLAGS (getenv "CFLAGS"))
+(define C32FLAGS (getenv "C32FLAGS"))
+(define HEX2FLAGS (getenv "HEX2FLAGS"))
+(define M1FLAGS (getenv "M1FLAGS"))
+(define MESCCFLAGS (getenv "MESCCFLAGS"))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -261,10 +266,15 @@ Usage: ./configure [OPTION]...
         (stdout "PACKAGE:=~a\n" PACKAGE)
         (stdout "VERSION:=~a\n" VERSION)
         (stdout "PREFIX:=~a\n" (gulp-pipe (string-append "echo " prefix)))
-        (stdout "SYSCONFDIR:=~a\n" sysconfdir)))
+        (stdout "SYSCONFDIR:=~a\n" sysconfdir)
+        (when CFLAGS (stdout "CFLAGS:=~a\n" CFLAGS))
+        (when C32FLAGS (stdout "C32FLAGS:=~a\n" C32FLAGS))
+        (when HEX2FLAGS (stdout "HEX2FLAGS:=~a\n" HEX2FLAGS))
+        (when M1FLAGS (stdout "M1FLAGS:=~a\n" M1FLAGS))
+        (when MESCCFLAGS (stdout "MESCCFLAGS:=~a\n" MESCCFLAGS))))
     (format (current-output-port)
             "\nRun:
   ~a            to build mes
   ~a help       for help on other targets\n"
-            (if make? "make" "./make.scm")
-            (if make? "make" "./make.scm"))))
+            (if make? "make" "./build.sh")
+            (if make? "make" "./build.sh"))))

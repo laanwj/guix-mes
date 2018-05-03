@@ -18,9 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-export GUILE=${GUILE-guile}
-export MES=${MES-src/mes}
-export MES_ARENA=${MES_ARENA-100000000}
+export GUILE MES MES_ARENA
+GUILE=${GUILE-guile}
+MES=${MES-src/mes}
+MES_ARENA=${MES_ARENA-100000000}
 
 set -e
 bash build-aux/check-boot.sh

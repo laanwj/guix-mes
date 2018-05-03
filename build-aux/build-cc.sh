@@ -20,17 +20,16 @@
 
 set -ex
 
-export CC=${CC-gcc}
+export CC CFLAGS CPPFLAGS
 
-build-aux/mes-snarf.scm src/gc.c
-build-aux/mes-snarf.scm src/lib.c
-build-aux/mes-snarf.scm src/math.c
-build-aux/mes-snarf.scm src/mes.c
-build-aux/mes-snarf.scm src/posix.c
-build-aux/mes-snarf.scm src/reader.c
-build-aux/mes-snarf.scm src/vector.c
+CC=${CC-gcc}
+CFLAGS=${CFLAGS-"
+--std=gnu99
+-O0
+-g
+"}
 
-export CPPFLAGS=${CPPFLAGS-"
+CPPFLAGS=${CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$MODULEDIR\"
 -D PREFIX=\"$PREFIX\"
@@ -39,11 +38,13 @@ export CPPFLAGS=${CPPFLAGS-"
 -I include
 "}
 
-export CFLAGS=${CFLAGS-"
---std=gnu99
--O0
--g
-"}
+build-aux/mes-snarf.scm src/gc.c
+build-aux/mes-snarf.scm src/lib.c
+build-aux/mes-snarf.scm src/math.c
+build-aux/mes-snarf.scm src/mes.c
+build-aux/mes-snarf.scm src/posix.c
+build-aux/mes-snarf.scm src/reader.c
+build-aux/mes-snarf.scm src/vector.c
 
 NOLINK=1 sh build-aux/cc.sh lib/libc-gcc
 #NOLINK=1 sh build-aux/cc.sh lib/libc+tcc-gcc

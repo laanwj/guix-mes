@@ -20,7 +20,9 @@
 
 set -ex
 
-export CC32=${CC32-$(type -p i686-unknown-linux-gnu-gcc)}
+export CC32 CPPFLAGS C32FLAGS
+
+CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 build-aux/mes-snarf.scm --mes src/gc.c
 build-aux/mes-snarf.scm --mes src/lib.c
 build-aux/mes-snarf.scm --mes src/math.c
@@ -37,7 +39,7 @@ build-aux/mes-snarf.scm src/posix.c
 build-aux/mes-snarf.scm src/reader.c
 build-aux/mes-snarf.scm src/vector.c
 
-export CPPFLAGS=${CPPFLAGS-"
+CPPFLAGS=${CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$MODULEDIR\"
 -D PREFIX=\"$PREFIX\"
@@ -46,7 +48,7 @@ export CPPFLAGS=${CPPFLAGS-"
 -I include
 "}
 
-export C32FLAGS=${C32FLAGS-"
+C32FLAGS=${C32FLAGS-"
 --std=gnu99
 -O0
 -fno-stack-protector

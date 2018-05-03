@@ -20,8 +20,9 @@
 
 set -e
 
-export GUILE=${GUILE-guile}
-export MES=${MES-./src/mes}
+export GUILE MES
+GUILE=${GUILE-guile}
+MES=${MES-./src/mes}
 
 tests="
 

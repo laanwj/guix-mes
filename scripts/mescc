@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-mes_p=$(type -p mes)
+mes_p=$(command -v mes)
 if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile" ]; then
     GODIR=${GODIR-@GODIR@}
     GUILEDIR=${GUILEDIR-@GUILEDIR@}

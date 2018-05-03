@@ -3,9 +3,6 @@ GUILE_FLAGS:=--no-auto-compile -L . -L guile -C . -C guile
 
 include .config.make
 
-export PREFIX
-export VERSION
-
 PHONY_TARGETS:= all all-go check clean clean-go default help install
 .PHONY: $(PHONY_TARGETS)
 
@@ -37,3 +34,61 @@ seed:
 	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh
 	cd ../mes-seed && ./bootstrap.sh && cd ../mes
 	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh
+
+ifdef PREFIX
+export PREFIX
+endif
+
+ifdef VERSION
+export VERSION
+endif
+
+ifdef CC
+export CC
+endif
+
+ifdef CC32
+export CC32
+endif
+
+ifdef M1
+export M1
+endif
+
+ifdef HEX2
+export HEX2
+endif
+
+ifdef GUILE
+export GUILE
+endif
+
+ifdef GUILE_LOAD_PATH
+export GUILE_LOAD_PATH
+endif
+
+ifdef GUILE_LOAD_COMPILED_PATH
+export GUILE_LOAD_COMPILED_PATH
+endif
+
+ifdef CFLAGS
+export CFLAGS
+endif
+
+ifdef C32FLAGS
+export C32FLAGS
+endif
+
+ifdef HEX2FLAGS
+export HEX2FLAGS
+endif
+
+ifdef M1FLAGS
+export M1FLAGS
+endif
+
+ifdef MESCCFLAGS
+export MESCCFLAGS
+endif
+
+
