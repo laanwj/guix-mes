@@ -43,14 +43,14 @@
 (define (stderr string . rest)
   (apply logf (cons* (current-error-port) string rest)))
 
-(define (objects->M1 objects)
-  ((compose object->M1 merge-objects) objects))
+(define (objects->M1 file-name objects)
+  ((compose (cut object->M1 file-name <>) merge-objects) objects))
 
-(define (object->elf o)
-  ((compose M1->elf object->M1) o))
+(define (object->elf file-name o)
+  ((compose M1->elf (cut object->M1 file-name <>)) o))
 
-(define (objects->elf objects)
-  ((compose M1->elf object->M1 merge-objects) objects))
+(define (objects->elf file-name objects)
+  ((compose M1->elf (cut object->M1 file-name <>) merge-objects) objects))
 
 (define (merge-objects objects)
   (let loop ((objects (cdr objects)) (object (car objects)))
@@ -92,11 +92,10 @@
           (display sep))
       (loop (cdr o)))))
 
-(define (object->M1 o)
+(define (object->M1 file-name o)
   (stderr "dumping M1: object\n")
   (let* ((functions (assoc-ref o 'functions))
          (function-names (map car functions))
-         (file-name (car (or (assoc-ref o 'file-names) function-names)))
          (globals (assoc-ref o 'globals))
          (global-names (map car globals))
          (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names)))
