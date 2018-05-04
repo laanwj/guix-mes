@@ -113,6 +113,7 @@ t
 81-qsort
 82-define
 83-heterogenoous-init
+84-struct-field-list
 "
 
 broken="$broken

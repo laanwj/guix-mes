@@ -1548,58 +1548,64 @@
     (pmatch o
       ((comp-decl (decl-spec-list (type-spec (enum-ref (ident ,type))))
                   (comp-declr-list (comp-declr (ident ,name))))
-       (list name `("tag" ,type) 4 0))
+       (list (list name `("tag" ,type) 4 0)))
       ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ident ,name))))
-       (list name type (ast-type->size info type) 0))
+       (list (list name type (ast-type->size info type) 0)))
       ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ident ,name))))
-       (list name type (ast-type->size info type) 0))
+       (list (list name type (ast-type->size info type) 0)))
       ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list name type 4 2))
+       (list (list name type 4 2)))
       ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)))))
-       (list name type 4 1))
+       (list (list name type 4 1)))
       ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list name type 4 1))
+       (list (list name type 4 1)))
       ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list name type 4 2))
+       (list (list name type 4 2)))
       ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list name "void" 4 2))
+       (list (list name "void" 4 2)))
       ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list name "void" 4 1))
+       (list (list name "void" 4 1)))
       ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)))))
-       (list name "void" 4 1))
+       (list (list name "void" 4 1)))
       ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list name type 4 1))
+       (list (list name type 4 1)))
 
       ;; FIXME: array: -1,-2-3, name??
       ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (array-of (ident ,name) ,count)))))
        (let ((size 4)
              (count (expr->number info count)))
-         (list name type (* count size) -2)))
+         (list (list name type (* count size) -2))))
 
       ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (array-of (ident ,name) ,count))))
        (let ((size (ast-type->size info type))
              (count (expr->number info count)))
-         (list name type (* count size) -1)))
+         (list (list name type (* count size) -1))))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list name `("tag" ,type) 4 2))
+       (list (list name `("tag" ,type) 4 2)))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list name `("tag" ,type) 4 1))
+       (list (list name `("tag" ,type) 4 1)))
 
       ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
        (let ((size (ast-type->size info `("tag" ,type))))
-         (list name `("tag" ,type) size 0)))
+         (list (list name `("tag" ,type) size 0))))
 
       ((comp-decl (decl-spec-list (type-spec (struct-def (field-list . ,fields)))))
-       `(struct ,@(map (struct-field info) fields)))
+       (list `(struct ,@(append-map (struct-field info) fields))))
 
       ((comp-decl (decl-spec-list (type-spec (union-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
        (let ((size (ast-type->size info `("tag" ,type))))
-         (list name `("tag" ,type) size 0)))
+         (list (list name `("tag" ,type) size 0))))
 
       ((comp-decl (decl-spec-list (type-spec (union-def (field-list . ,fields)))))
-       `(union ,@(map (struct-field info) fields)))
+       (list `(union ,@(append-map (struct-field info) fields))))
+
+      ((comp-decl (decl-spec-list ,type) (comp-declr-list . ,decls)) (guard (pair? (cdr decls)))
+       (let loop ((decls decls))
+         (if (null? decls) '()
+             (append ((struct-field info) `(comp-decl (decl-spec-list ,type) (comp-declr-list ,(car decls))))
+                     (loop (cdr decls))))))
 
       (_ (error "struct-field: not supported: " o)))))
 
@@ -1850,12 +1856,12 @@
 
         ;; struct
         ((decl (decl-spec-list (type-spec (struct-def (ident ,name) (field-list . ,fields)))))
-         (let ((type-entry (struct->type-entry name (map (struct-field info) fields))))
+         (let ((type-entry (struct->type-entry name (append-map (struct-field info) fields))))
            (clone info #:types (cons type-entry types))))
 
         ;; union
         ((decl (decl-spec-list (type-spec (union-def (ident ,name) (field-list . ,fields)))))
-         (let ((type-entry (union->type-entry name (map (struct-field info) fields))))
+         (let ((type-entry (union->type-entry name (append-map (struct-field info) fields))))
            (clone info #:types (cons type-entry types))))
 
         ;; enum e i;
@@ -2442,7 +2448,7 @@
   (pmatch o
     ((struct-def (ident ,name) (field-list . ,fields))
      (mescc:trace name " <t>")
-     (let ((type-entry (struct->type-entry name (map (struct-field info) fields))))
+     (let ((type-entry (struct->type-entry name (append-map (struct-field info) fields))))
        (clone info #:types (cons type-entry (.types info)))))
     (_  info)))
 
