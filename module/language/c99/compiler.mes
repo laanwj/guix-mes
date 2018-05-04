@@ -2147,6 +2147,9 @@
                      ((decl->info info)
                       `(decl (decl-spec-list (type-spec ,type)) (init-declr-list ,(car inits))))))))
 
+        ((decl (decl-spec-list (stor-spec (static)) (type-spec ,type)) ,init)
+         ((decl->info info) `(decl (decl-spec-list (type-spec ,type)) ,init)))
+
         ((decl (decl-spec-list (stor-spec (typedef)) ,type) ,name)
          (format (current-error-port) "SKIP: typedef=~s\n" o)
          info)
