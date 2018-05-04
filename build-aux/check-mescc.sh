@@ -114,6 +114,7 @@ t
 82-define
 83-heterogenoous-init
 84-struct-field-list
+85-sizeof
 "
 
 broken="$broken

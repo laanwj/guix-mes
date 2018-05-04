@@ -979,23 +979,8 @@
         ((ref-to ,expr)
          ((expr->accu* info) expr))
 
-        ((sizeof-expr (p-expr (ident ,name)))
-         (let* ((type (ident->type info name))
-                (size (ast-type->size info type)))
-           (append-text info (wrap-as (i386:value->accu size)))))
-
-        ((sizeof-expr (p-expr (string ,string)))
-         (append-text info (wrap-as (i386:value->accu (1+ (string-length string))))))
-
-        ((sizeof-expr (i-sel (ident ,field) (p-expr (ident ,struct))))
-         (let* ((type (ident->type info struct))
-                (size (field-size info type field)))
-           (append-text info (wrap-as (i386:value->accu size)))))
-
-        ((sizeof-expr (d-sel (ident ,field) (p-expr (ident ,struct))))
-         (let* ((type (ident->type info struct))
-                (size (field-size info type field)))
-           (append-text info (wrap-as (i386:value->accu size)))))
+        ((sizeof-expr ,expr)
+         (append-text info (wrap-as (i386:value->accu (expr->size info expr)))))
 
         ((sizeof-type (type-name (decl-spec-list (type-spec (fixed-type ,name)))))
          (let* ((type name)
