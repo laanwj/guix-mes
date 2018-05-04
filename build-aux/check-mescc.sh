@@ -72,6 +72,7 @@ t
 43-for-do-while
 44-switch
 45-void-call
+46-function-static
 50-assert
 51-strcmp
 52-itoa

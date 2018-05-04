@@ -23,8 +23,6 @@
 ;;; Code:
 
 (mes-use-module (srfi srfi-9))
-(define-macro (define-immutable-record-type type constructor+params predicate . fields)
-  `(define-record-type ,type ,constructor+params ,predicate ,@fields))
-
+(mes-use-module (srfi srfi-9 gnu))
 (include-from-path "language/c99/info.scm")
 

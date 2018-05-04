@@ -55,9 +55,6 @@
   (newline (current-error-port))
   (car (last-pair stuff)))
 
-(define (pke . stuff)
-  (car (last-pair stuff)))
-
 (define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "PREFIX") "") "@PREFIX@"))
 
 (define mes? (pair? (current-module)))
@@ -149,6 +146,7 @@
                (functions (.functions o))
                (globals (.globals o))
                (locals (.locals o))
+               (statics (.statics o))
                (function (.function o))
                (text (.text o))
                (break (.break o))
@@ -160,11 +158,12 @@
                           (functions functions)
                           (globals globals)
                           (locals locals)
+                          (statics statics)
                           (function function)
                           (text text)
                           (break break)
                           (continue continue))
-                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:function function #:text text #:break break #:continue continue))))))
+                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:statics statics #:function function #:text text #:break break #:continue continue))))))
 
 (define (ident->constant name value)
   (cons name value))
@@ -578,7 +577,7 @@
           (error "TODO int-de-de-ref")))))
 
 (define (make-global-entry key type pointer value)
-  (cons key (make-global type pointer value)))
+  (cons key (make-global key type pointer value #f)))
 
 (define (string->global-entry string)
   (make-global-entry `(#:string ,string) "string" 0 (append (string->list string) (list #\nul))))
@@ -679,43 +678,61 @@
 
 (define (ident->accu info)
   (lambda (o)
-    (let ((local (assoc-ref (.locals info) o))
-          (global (assoc-ref (.globals info) o))
-          (constant (assoc-ref (.constants info) o)))
-      (if local
-          (let* ((ptr (local:pointer local))
-                 (type (ident->type info o))
-                 (size (if (= ptr 0) (ast-type->size info type)
-                           4)))
-            (cond ((< ptr 0) (wrap-as (i386:local-ptr->accu (local:id local))))
-                  (else (wrap-as (case size
-                                   ((1) (i386:byte-local->accu (local:id local)))
-                                   ((2) (i386:word-local->accu (local:id local)))
-                                   (else (i386:local->accu (local:id local))))))))
-          (if global
-              (let* ((ptr (ident->pointer info o)))
-                (cond ((< ptr 0) (list (i386:label->accu `(#:address ,o))))
-                      (else (list (i386:label-mem->accu `(#:address ,o))))))
-              (if constant (wrap-as (i386:value->accu constant))
-                  (list (i386:label->accu `(#:address ,o)))))))))
+    (cond ((assoc-ref (.locals info) o)
+           =>
+           (lambda (local)
+             (let* ((ptr (local:pointer local))
+                    (type (ident->type info o))
+                    (size (if (= ptr 0) (ast-type->size info type)
+                              4)))
+               (cond ((< ptr 0) (wrap-as (i386:local-ptr->accu (local:id local))))
+                     (else (wrap-as (case size
+                                      ((1) (i386:byte-local->accu (local:id local)))
+                                      ((2) (i386:word-local->accu (local:id local)))
+                                      (else (i386:local->accu (local:id local))))))))))
+          ((assoc-ref (.statics info) o)
+           =>
+           (lambda (global)
+             (let* ((ptr (ident->pointer info o)))
+               (cond ((< ptr 0) (list (i386:label->accu `(#:address ,global))))
+                     (else (list (i386:label-mem->accu `(#:address ,global))))))))
+          ((assoc-ref (.globals info) o)
+           =>
+           (lambda (global)
+             (let* ((ptr (ident->pointer info o)))
+               (cond ((< ptr 0) (list (i386:label->accu `(#:address ,o))))
+                     (else (list (i386:label-mem->accu `(#:address ,o))))))))
+          ((assoc-ref (.constants info) o)
+           =>
+           (lambda (constant) (wrap-as (i386:value->accu constant))))
+          (else (list (i386:label->accu `(#:address ,o)))))))
 
 (define (ident-address->accu info)
   (lambda (o)
-    (let ((local (assoc-ref (.locals info) o))
-          (global (assoc-ref (.globals info) o))
-          (constant (assoc-ref (.constants info) o)))
-      (if local (wrap-as (i386:local-ptr->accu (local:id local)))
-          (if global (list (i386:label->accu `(#:address ,o)))
-              (list (i386:label->accu `(#:address ,o))))))))
+    (cond ((assoc-ref (.locals info) o)
+           =>
+           (lambda (local) (wrap-as (i386:local-ptr->accu (local:id local)))))
+          ((assoc-ref (.statics info) o)
+           =>
+           (lambda (global) (list (i386:label->accu `(#:address ,global)))))
+          ((assoc-ref (.globals info) o)
+           =>
+           (lambda (global) (list (i386:label->accu `(#:address ,global)))))
+          (else (list (i386:label->accu `(#:address ,o)))))))
 
 (define (ident-address->base info)
   (lambda (o)
-    (let ((local (assoc-ref (.locals info) o))
-          (global (assoc-ref (.globals info) o))
-          (constant (assoc-ref (.constants info) o)))
-      (if local (wrap-as (i386:local-ptr->base (local:id local)))
-          (if global (list (i386:label->base `(#:address ,o)))
-              (list (i386:label->base `(#:address ,o))))))))
+    (cond
+     ((assoc-ref (.locals info) o)
+      =>
+      (lambda (local) (wrap-as (i386:local-ptr->base (local:id local)))))
+     ((assoc-ref (.statics info) o)
+      =>
+      (lambda (global) (list (i386:label->base `(#:address ,global)))))
+     ((assoc-ref (.globals info) o)
+      =>
+      (lambda (global) (list (i386:label->base `(#:address ,global)))))
+     (else (list (i386:label->base `(#:address ,o)))))))
 
 (define (value->accu v)
   (wrap-as (i386:value->accu v)))
@@ -1634,6 +1651,25 @@
                        (_ (loop2 (cdr statements) (append c (list s)))))))))
             (_ (error "statements->clauses: unsupported:" s)))))))
 
+(define (global->static function)
+  (lambda (o)
+    (cons (car o) (set-field (cdr o) (global:function) function))))
+
+(define (decl-local->info info)
+  (lambda (o)
+    (pmatch o
+      (((decl-spec-list (stor-spec (static)) (type-spec ,type)) (init-declr-list ,init))
+       (let* ((function (.function info))
+              (i (clone info #:function #f #:globals '()))
+              (i ((decl->info i) `(decl (decl-spec-list (type-spec ,type)) (init-declr-list ,init))))
+              (statics (map (global->static function) (.globals i))))
+         (clone info #:statics (append statics (.statics info)))))
+      (_ #f))))
+
+(define (decl-global->info info)
+  (lambda (o)
+    #f))
+
 (define (decl->info info)
   (lambda (o)
     (let ((functions (.functions info))
@@ -1686,6 +1722,11 @@
         ;; extern type foo ()
         ((decl (decl-spec-list (stor-spec (extern)) ,type) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
          (declare name))
+
+        ;; static
+        ((decl (decl-spec-list (stor-spec (static)) (type-spec ,type)) (init-declr-list ,init-declr-list))
+         (guard (not (.function info)))
+         ((decl->info info) `(decl (decl-spec-list (type-spec ,type)) (init-declr-list ,init-declr-list))))
 
         ;; struct TCCState;
         ((decl (decl-spec-list (type-spec (struct-ref (ident ,name)))))
@@ -2262,7 +2303,10 @@
            (append-text info (append (wrap-as (i386:ret))))))
 
         ((decl . ,decl)
-         ((decl->info info) o))
+         (or (if (.function info)
+                 ((decl-local->info info) decl)
+                 ((decl-global->info info) decl))
+             ((decl->info info) o)))
 
         ;; ...
         ((gt . _) ((expr->accu info) o))
@@ -2438,8 +2482,10 @@
                                       (stack (and count (* count 4))))
                                  (if (and stack (getenv "MESC_DEBUG")) (stderr "        stack: ~a\n" stack))
                                  (clone info
-                                       #:function #f
-                                       #:functions (append (.functions info) (list (cons name (assert-return (.text info)))))))
+                                        #:function #f
+                                        #:globals (append (.statics info) (.globals info))
+                                        #:statics '()
+                                        #:functions (append (.functions info) (list (cons name (assert-return (.text info)))))))
             (let* ((statement (car statements)))
               (loop (cdr statements)
                     ((ast->info info) (car statements)))))))))
@@ -2471,7 +2517,7 @@
 (define* (info->object o)
   (stderr "compiling: object\n")
   `((functions . ,(.functions o))
-    (globals . ,(map (lambda (g) (cons (car g) (global:value (cdr g)))) (.globals o)))))
+    (globals . ,(.globals o))))
 
 (define* (c99-input->elf #:key (defines '()) (includes '()))
   ((compose object->elf info->object (c99-input->info #:defines defines #:includes includes))))

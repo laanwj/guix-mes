@@ -26,6 +26,7 @@
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
+  #:use-module (srfi srfi-26)
   #:export (<info>
             make
             make-<info>
@@ -37,6 +38,7 @@
             .globals
             .locals
             .function
+            .statics
             .text
             .break
             .continue
@@ -50,9 +52,12 @@
 
             make-global
             global?
+            global:name
             global:type
             global:pointer
             global:value
+            global:function
+            global->string
 
             make-local
             local?
@@ -69,20 +74,21 @@
   (mes-use-module (mes optargs))))
 
 (define-immutable-record-type <info>
-  (make-<info> types constants functions globals locals function text break continue)
+  (make-<info> types constants functions globals locals statics function text break continue)
   info?
   (types .types)
   (constants .constants)
   (functions .functions)
   (globals .globals)
   (locals .locals)
+  (statics .statics)
   (function .function)
   (text .text)
   (break .break)
   (continue .continue))
 
-(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (function #f) (text '()) (break '()) (continue '()))
-  (make-<info> types constants functions globals locals function text break continue))
+(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (statics '()) (function #f) (text '()) (break '()) (continue '()))
+  (make-<info> types constants functions globals locals statics function text break continue))
 
 (define-immutable-record-type <type>
   (make-type type size pointer description)
@@ -93,11 +99,17 @@
   (description type:description))
 
 (define-immutable-record-type <global>
-  (make-global type pointer value)
+  (make-global name type pointer value function)
   global?
+  (name global:name)
   (type global:type)
   (pointer global:pointer)
-  (value global:value))
+  (value global:value)
+  (function global:function))
+
+(define (global->string o)
+  (or (and=> (global:function o) (cut string-append <> "-" (global:name o)))
+      (global:name o)))
 
 (define-immutable-record-type <local>
   (make-local type pointer id)
