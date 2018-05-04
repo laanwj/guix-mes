@@ -30,18 +30,36 @@ shift
 
 set -e
 
+rm -f "$t".mlibc-out
+if [ -n "$CC32" ]; then
+    sh build-aux/cc-mlibc.sh "$t"
+
+    r=0
+    [ -f "$t".exit ] && r=$(cat "$t".exit)
+    set +e
+    "$t".mlibc-out > "$t".mlibc-stdout
+    m=$?
+    cat "$t".mlibc-stdout
+    set -e
+
+    [ $m = $r ]
+    if [ -f "$t".expect ]; then
+        $DIFF -u "$t".expect "$t".mlibc-stdout;
+    fi
+fi
+
 rm -f "$t".mes-out
 sh build-aux/cc-mes.sh "$t"
 
 r=0
 [ -f "$t".exit ] && r=$(cat "$t".exit)
 set +e
-"$t".mes-out "$@" > "$t".stdout
+"$t".mes-out > "$t".mes-stdout
 m=$?
-cat "$t".stdout
+cat "$t".mes-stdout
 set -e
 
 [ $m = $r ]
 if [ -f "$t".expect ]; then
-    $DIFF -u "$t".expect "$t".stdout;
+    $DIFF -u "$t".expect "$t".mes-stdout;
 fi
