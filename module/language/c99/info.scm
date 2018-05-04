@@ -43,6 +43,7 @@
             .break
             .continue
 
+            <type>
             make-type
             type?
             type:type
@@ -50,6 +51,7 @@
             type:pointer
             type:description
 
+            <global>
             make-global
             global?
             global:name
@@ -59,11 +61,19 @@
             global:function
             global->string
 
+            <local>
             make-local
             local?
             local:type
             local:pointer
-            local:id))
+            local:id
+
+            <function>
+            make-function
+            function?
+            function:name
+            function:type
+            function:text))
 
 (cond-expand
  (guile-2)
@@ -117,3 +127,10 @@
   (type local:type)
   (pointer local:pointer)
   (id local:id))
+
+(define-immutable-record-type <function>
+  (make-function name type text)
+  function?
+  (name function:name)
+  (type function:type)
+  (text function:text))

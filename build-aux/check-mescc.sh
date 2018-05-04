@@ -73,6 +73,8 @@ t
 44-switch
 45-void-call
 46-function-static
+47-function-expression
+48-function-destruct
 50-assert
 51-strcmp
 52-itoa

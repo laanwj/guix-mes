@@ -59,6 +59,9 @@
 
 (define mes? (pair? (current-module)))
 
+(define %int-size 4)
+(define %pointer-size %int-size)
+
 (define* (c99-input->full-ast #:key (defines '()) (includes '()))
   (let ((sys-include (if (equal? %prefix "") "include" (string-append %prefix "/share/include"))))
     (parse-c99
@@ -137,7 +140,7 @@
     ((fctn-defn _ (ftn-declr (ident ,name) _) (compd-stmt (block-item-list . ,statements))) statements)
     ((fctn-defn _ (ptr-declr (pointer) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)
     ((fctn-defn _ (ptr-declr (pointer (pointer)) (ftn-declr (ident ,name) _)) (compd-stmt (block-item-list . ,statements))) statements)
-    (_ (error ".statements: unsupported: " o))))
+    (_ (error ".statements: not supported: " o))))
 
 (define (clone o . rest)
   (cond ((info? o)
@@ -201,7 +204,10 @@
     ;; ("unsigned long long int" . ,(make-type 'builtin 8 0 #f))
     ("unsigned long long" . ,(make-type 'builtin 4 0 #f)) ;; FIXME
     ("unsigned long long int" . ,(make-type 'builtin 4 0 #f))
-    ))
+
+    ("float" . ,(make-type 'builtin 4 0 #f))
+    ("double" . ,(make-type 'builtin 8 0 #f))
+    ("long double" . ,(make-type 'builtin 16 0 #f))))
 
 (define (field:name o)
   (pmatch o
@@ -229,48 +235,50 @@
     ((,name ,type ,size ,pointer) type)
     (_ (error (format #f "field:type: ~s\n" o)))))
 
-(define (get-type types o)
-  (let ((t (assoc-ref types o)))
+(define (get-type info o)
+  (let ((t (assoc-ref (.types info) o)))
     (pmatch t
-      ((typedef ,next) (get-type types next))
+      ((typedef ,next) (or (get-type info next) o))
       (_ t))))
 
 (define (ast-type->type info o)
-  (pmatch o
-    ((p-expr ,expr) (ast-type->type info (expr->type info o)))
-    ((pre-inc ,expr) (ast-type->type info expr))
-    ((post-inc ,expr) (ast-type->type info expr))
-    ((decl-spec-list ,type-spec)
-     (ast-type->type info type-spec))
-    ((decl-spec-list (type-qual ,qual) (type-spec (fixed-type ,type)))
-     (ast-type->type info type))
-    ((array-ref ,index (p-expr (ident ,array)))
-     (ast-type->type info `(p-expr (ident ,array))))
-    ((struct-ref (ident ,type))
-     (or (get-type (.types info) type)
-         (let ((struct (if (pair? type) type `("tag" ,type))))
-           (ast-type->type info struct))))
-    ((union-ref (ident ,type))
-     (or (get-type (.types info) type)
-         (let ((struct (if (pair? type) type `("tag" ,type))))
-           (ast-type->type info struct))))
-    ((void) (ast-type->type info "void"))
-    ((type-spec ,type) (ast-type->type info type))
-    ((fixed-type ,type) (ast-type->type info type))
-    ((typename ,type) (ast-type->type info type))
-    ((de-ref ,expr)
-     (ast-type->type info expr))
-    ((d-sel (idend ,field) ,struct)
-     (let ((type0 (ast-type->type info struct)))
-       (field-type info type0 field)))
-    ((i-sel (ident ,field) ,struct)
-     (let ((type0 (ast-type->type info struct)))
-       (field-type info type0 field)))
-    (_ (let ((type (get-type (.types info) o)))
-         (if type type
-             (begin
-               (stderr "types: ~s\n" (.types info))
-               (error "ast-type->type: unsupported: " o)))))))
+  (if (type? o) o
+      (pmatch o
+        ((p-expr ,expr) (ast-type->type info (expr->type info o)))
+        ((pre-inc ,expr) (ast-type->type info expr))
+        ((post-inc ,expr) (ast-type->type info expr))
+        ((decl-spec-list ,type-spec)
+         (ast-type->type info type-spec))
+        ((decl-spec-list (type-qual ,qual) (type-spec (fixed-type ,type)))
+         (ast-type->type info type))
+        ((array-ref ,index (p-expr (ident ,array)))
+         (ast-type->type info `(p-expr (ident ,array))))
+        ((struct-ref (ident ,type))
+         (or (get-type info type)
+             (let ((struct (if (pair? type) type `("tag" ,type))))
+               (ast-type->type info struct))))
+        ((union-ref (ident ,type))
+         (or (get-type info type)
+             (let ((struct (if (pair? type) type `("tag" ,type))))
+               (ast-type->type info struct))))
+        ((void) (ast-type->type info "void"))
+        ((type-spec ,type) (ast-type->type info type))
+        ((fixed-type ,type) (ast-type->type info type))
+        ((float-type ,type) (ast-type->type info type))
+        ((typename ,type) (ast-type->type info type))
+        ((de-ref ,expr)
+         (ast-type->type info expr))
+        ((d-sel (idend ,field) ,struct)
+         (let ((type0 (ast-type->type info struct)))
+           (field-type info type0 field)))
+        ((i-sel (ident ,field) ,struct)
+         (let ((type0 (ast-type->type info struct)))
+           (field-type info type0 field)))
+        (_ (let ((type (get-type info o)))
+             (if type type
+                 (begin
+                   (stderr "types: ~s\n" (.types info))
+                   (error "ast-type->type: not supported: " o))))))))
 
 (define (ast-type->description info o)
   (let* ((type (ast-type->type info o))
@@ -340,7 +348,7 @@
      type)
     ((struct-ref (ident ,type))
      `("tag" ,type))
-    (_ (stderr "SKIP: type=~s\n" o)
+    (_ (stderr "SKIP: .type=~s\n" o)
        "int")))
 
 (define (decl->ast-type o)
@@ -353,7 +361,7 @@
      `("tag" ,name)) ;; FIXME
     ((typename ,name) name)
     (,name name)
-    (_ (error "decl->ast-type: unsupported: " o))))
+    (_ (error "decl->ast-type: not supported: " o))))
 
 (define (byte->hex.m1 o)
   (string-drop o 2))
@@ -423,12 +431,12 @@
     ((array-ref ,index ,array) (ptr-dec (expr->pointer info array)))
 
     ((d-sel (ident ,field) ,struct)
-       (let ((type (expr->type info struct)))
-         (field-pointer info type field)))
+     (let ((type (expr->type info struct)))
+       (field-pointer info type field)))
 
     ((i-sel (ident ,field) ,struct)
-       (let ((type (expr->type info struct)))
-         (field-pointer info type field)))
+     (let ((type (expr->type info struct)))
+       (field-pointer info type field)))
 
     ((cast (type-name ,type) ,expr)     ; FIXME: add expr?
      (let* ((type (ast-type->type info type))
@@ -440,10 +448,19 @@
             (pointer1 (ptr-declr->pointer pointer))
             (pointer2 (expr->pointer info expr)))
        (+ pointer0 pointer1)))
-    (_ (stderr "expr->pointer: unsupported: ~s\n" o) 0)))
-
-(define %int-size 4)
-(define %pointer-size %int-size)
+    ((type-spec ,type)
+     (or (and=> (ast-type->type info o) type:pointer)
+         (begin
+           (stderr "expr->pointer: not supported: ~a\n" o)
+           0)))
+    ((fctn-call (p-expr (ident ,function)) . ,rest)
+     (or (and=> (and=> (assoc-ref (.functions info) function) function:type)
+                (lambda (t)
+                  (and (type? t) (type:pointer t))))
+         (begin
+           (stderr "expr->pointer: no such function: ~a\n" function)
+           0)))
+    (_ (stderr "expr->pointer: not supported: ~s\n" o) 0)))
 
 (define (expr->type-size info o)
   (pmatch o
@@ -483,7 +500,14 @@
     ((cast (type-name ,type (abs-declr ,pointer)) ,expr) ; FIXME: ignore expr?
      (let ((type (ast-type->type info type)))
        (type:size type)))
-    (_ (stderr "expr->type-size: unsupported: ~s\n" o) 4)))
+    ((fctn-call (p-expr (ident ,function)) . ,rest)
+     (or (and=> (and=> (assoc-ref (.functions info) function) function:type)
+                (lambda (t)
+                  (and (type? t) (type:size t))))
+         (begin
+           (stderr "expr->type-size: no such function: ~a\n" function)
+           4)))
+    (_ (stderr "expr->type-size: not supported: ~s\n" o) 4)))
 
 (define (expr->size info o)
   (let ((ptr (expr->pointer info o)))
@@ -524,11 +548,13 @@
      type)
     ((cast (type-name ,type (abs-declr ,pointer)) ,expr) ; FIXME: ignore expr?
      type)
-    ((fctn-call (p-expr (ident ,name)))
-     (stderr "TODO: expr->type: unsupported: ~s\n" o)
-     "int")
-    (_ ;;(error (format #f "expr->type: unsupported: ~s") o)
-     (stderr "TODO: expr->type: unsupported: ~s\n" o)
+    ((fctn-call (p-expr (ident ,function)) . ,rest)
+     (or (and=> (assoc-ref (.functions info) function) function:type)
+         (begin
+           (stderr "expr->type: no such function: ~s\n" function)
+           "int")))
+    (_ ;;(error (format #f "expr->type: not supported: ~s") o)
+     (stderr "TODO: expr->type: not supported: ~s\n" o)
      "int")))
 
 (define (append-text info text)
@@ -868,6 +894,12 @@
               (info ((expr->accu* info) struct)))
          (append-text info (wrap-as (i386:accu+value offset)))))
 
+      ((i-sel (ident ,field) (fctn-call (p-expr (ident ,function)) . ,rest))
+       (let* ((type (expr->type info `(fctn-call (p-expr (ident ,function)) ,@rest)))
+              (offset (field-offset info type field))
+              (info ((expr->accu info) `(fctn-call (p-expr (ident ,function)) ,@rest))))
+         (append-text info (wrap-as (i386:accu+value offset)))))
+
       ((i-sel (ident ,field) ,struct)
        (let* ((type (expr->type info struct))
               (offset (field-offset info type field))
@@ -884,7 +916,7 @@
               (info ((expr->base info) array)))
          (append-text info (wrap-as (i386:accu+base)))))
 
-      (_ (error "expr->accu*: unsupported: " o)))))
+      (_ (error "expr->accu*: not supported: " o)))))
 
 (define (expr->accu info)
   (lambda (o)
@@ -1314,7 +1346,7 @@
              (_ (let ((info ((expr->base* info) a)))
                   (accu->base-mem*n info (min size-a (max 4 size-b)))))))) ;; FIXME: long long = int
 
-        (_ (error "expr->accu: unsupported: " o))))))
+        (_ (error "expr->accu: not supported: " o))))))
 
 (define (expr->base info)
   (lambda (o)
@@ -1352,7 +1384,7 @@
                    ((p-expr (ident ,constant)) (assoc-ref (.constants info) constant))
                    ((p-expr (fixed ,value)) (cstring->number value))
                    ((neg (p-expr (fixed ,value))) (- (cstring->number value)))
-                   (_ (error "case test: unsupported: " test)))))
+                   (_ (error "case test: not supported: " test)))))
       (append (wrap-as (i386:accu-cmp-value value))
               (jump-z body-label))))
   (define (cases+jump info cases)
@@ -1569,7 +1601,7 @@
       ((comp-decl (decl-spec-list (type-spec (union-def (field-list . ,fields)))))
        `(union ,@(map (struct-field info) fields)))
 
-      (_ (error "struct-field: unsupported: " o)))))
+      (_ (error "struct-field: not supported: " o)))))
 
 (define (local-var? o) ;; formals < 0, locals > 0
   (positive? (local:id o)))
@@ -1579,7 +1611,7 @@
     ((pointer) 1)
     ((pointer (pointer)) 2)
     ((pointer (pointer (pointer))) 3)
-    (_ (error "ptr-declr->pointer unsupported: " o))))
+    (_ (error "ptr-declr->pointer not supported: " o))))
 
 (define (init-declr->name o)
   (pmatch o
@@ -1590,7 +1622,7 @@
     ((ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,params)) name)
     ((ptr-declr (pointer) (array-of (ident ,name))) name)
     ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) name)
-    (_ (error "init-declr->name unsupported: " o))))
+    (_ (error "init-declr->name not supported: " o))))
 
 (define (init-declr->count info o)
   (pmatch o
@@ -1606,7 +1638,7 @@
     ((ftn-declr (scope (ptr-declr ,pointer (ident ,name))) (param-list . ,params)) (ptr-declr->pointer pointer))
     ((ptr-declr (pointer) (array-of (ident ,name))) -2)
     ((ptr-declr (pointer) (array-of (ident ,name) (p-expr ,size))) -2)
-    (_ (error "init-declr->pointer unsupported: " o))))
+    (_ (error "init-declr->pointer not supported: " o))))
 
 (define (statements->clauses statements)
   (let loop ((statements statements) (clauses '()))
@@ -1649,7 +1681,7 @@
                        ((break) (loop (cdr statements) (append clauses (list `(default (compd-stmt (block-item-list ,@(append c (list s)))))))))
 
                        (_ (loop2 (cdr statements) (append c (list s)))))))))
-            (_ (error "statements->clauses: unsupported:" s)))))))
+            (_ (error "statements->clauses: not supported:" s)))))))
 
 (define (global->static function)
   (lambda (o)
@@ -1685,7 +1717,10 @@
           locals))
       (define (declare name)
         (if (member name functions) info
-            (clone info #:functions (cons (cons name #f) functions))))
+            (let* ((type (function->type info o))
+                   (function (make-function name type  #f)))
+              (clone info #:functions (cons (cons name function) functions)))))
+
       (pmatch o
 
         ;; FIXME: Nyacc sometimes produces extra parens: (ident (<struct-name>))
@@ -1693,7 +1728,7 @@
          (declare name))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ident ,name))))
-         (clone info #:types (cons (cons name (get-type types type)) types)))
+         (clone info #:types (cons (cons name (get-type info type)) types)))
 
         ;; int foo ();
         ((decl (decl-spec-list (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ftn-declr (ident ,name) (param-list . ,param-list)))))
@@ -1765,16 +1800,16 @@
          info)
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))
-         (clone info #:types (cons (cons name (or (get-type types type) `(typedef ("tag" ,type)))) types)))
+         (clone info #:types (cons (cons name (or (get-type info type) `(typedef ("tag" ,type)))) types)))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ident ,name))))
-         (clone info #:types (cons (cons name (or (get-type types type) `(typedef ("tag" ,type)))) types)))
+         (clone info #:types (cons (cons name (or (get-type info type) `(typedef ("tag" ,type)))) types)))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (typename ,type))) (init-declr-list (init-declr (ident ,name))))
-         (clone info #:types (cons (cons name (or (get-type types type) `(typedef ,type))) types)))
+         (clone info #:types (cons (cons name (or (get-type info type) `(typedef ,type))) types)))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (typename ,type))) (init-declr-list (init-declr (array-of (ident ,name) ,value))))
-         (let* ((type (get-type types type))
+         (let* ((type (get-type info type))
                 (value (expr->number info value))
                 (size (* value 4))
                 (pointer -1)
@@ -1783,7 +1818,7 @@
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-ref (ident ,type)))) (init-declr-list (init-declr (ptr-declr ,pointer (ident ,name)))))
          (let* ((pointer (expr->pointer info pointer))
-                (type (or (get-type types type) `(typedef ,type)))
+                (type (or (get-type info type) `(typedef ,type)))
                 (size 4)
                 (type (make-type 'typedef size pointer type)))
            (clone info #:types (cons (cons name type) types))))
@@ -1797,15 +1832,15 @@
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (struct-def (ident ,type) ,field-list))) (init-declr-list (init-declr (ident ,name))))
          (let* ((info ((decl->info info) `(decl (decl-spec-list (type-spec (struct-def (ident ,type) ,field-list))))))
                 (types (.types info)))
-           (clone info #:types (cons (cons name (or (get-type types `("tag" ,type)) `(typedef ,type))) types))))
+           (clone info #:types (cons (cons name (or (get-type info `("tag" ,type)) `(typedef ,type))) types))))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (union-def (ident ,type) ,field-list))) (init-declr-list (init-declr (ident ,name))))
          (let* ((info ((decl->info info) `(decl (decl-spec-list (type-spec (union-def (ident ,type) ,field-list))))))
                 (types (.types info)))
-           (clone info #:types (cons (cons name (or (get-type types `("tag" ,type)) `(typedef ,type))) types))))
+           (clone info #:types (cons (cons name (or (get-type info `("tag" ,type)) `(typedef ,type))) types))))
 
         ((decl (decl-spec-list (stor-spec (typedef)) (type-spec (fixed-type ,type))) (init-declr-list (init-declr (ptr-declr (pointer) (ident ,name)))))
-         (let* ((type (get-type types type))
+         (let* ((type (get-type info type))
                 (type (make-type (type:type type)
                                  (type:size type)
                                  (1+ (type:pointer type))
@@ -2120,7 +2155,7 @@
          (format (current-error-port) "SKIP: at=~s\n" o)
          info)
 
-        ((decl . _) (error "decl->info: unsupported: " o))))))
+        ((decl . _) (error "decl->info: not supported: " o))))))
 
 (define (ast->info info)
   (lambda (o)
@@ -2376,7 +2411,7 @@
       (() (int->bv32 0))
       ((initzer ,p-expr)
        (int->bv32 (expr->number info p-expr)))
-      (_ (error "initzer->data: unsupported: " o)))))
+      (_ (error "initzer->data: not supported: " o)))))
 
 (define (initzer->accu info)
   (lambda (o)
@@ -2438,7 +2473,7 @@
        (wrap-as (append (i386:function-preamble)
                         (append-map (formal->text n) formals (iota n))
                         (i386:function-locals)))))
-    (_ (error "formals->text: unsupported: " o))))
+    (_ (error "formals->text: not supported: " o))))
 
 (define (formal:ptr o)
   (pmatch o
@@ -2461,7 +2496,43 @@
     ((param-list . ,formals)
      (let ((n (length formals)))
        (map make-local-entry (map .name formals) (map .type formals) (map formal:ptr formals) (iota n -2 -1))))
-    (_ (error "formals->locals: unsupported: " o))))
+    (_ (error "formals->locals: not supported: " o))))
+
+
+(define (function->type info o)
+  (pmatch o
+    ((fctn-defn (decl-spec-list (type-spec ,type)) (ptr-declr ,pointer ,rest) ,statement)
+     (let ((type (ast-type->type info type))
+           (pointer (ptr-declr->pointer pointer)))
+       (make-type (type:type type)
+                  (type:size type)
+                  (+ (type:pointer type) pointer)
+                  (type:description type))))
+    ((decl (decl-spec-list (type-spec ,type)) (init-declr (ptr-declr ,pointer (ftn-declr . ,rest))))
+     (let ((type (ast-type->type info type))
+           (pointer (ptr-declr->pointer pointer)))
+       (make-type (type:type type)
+                  (type:size type)
+                  (+ (type:pointer type) pointer)
+                  (type:description type))))
+    ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr ,pointer (ftn-declr . ,rest)))))
+     (ast-type->type info type))
+    ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ftn-declr . ,rest))))
+     (ast-type->type info type))
+    ((decl (decl-spec-list (stor-spec ,store) (type-spec ,type)) (init-declr-list (init-declr (ptr-declr ,pointer (ftn-declr . ,rest)))))
+     (ast-type->type info type))
+    ((decl (decl-spec-list (stor-spec ,store) (type-spec ,type)) (init-declr-list (init-declr (ftn-declr . ,rest))))
+     (ast-type->type info type))
+    ((fctn-defn (decl-spec-list (stor-spec . ,store) (type-spec ,type)) (ptr-declr ,pointer (ftn-declr . ,rest)) ,statement)
+     (ast-type->type info type))
+    ((fctn-defn (decl-spec-list (stor-spec . ,store) (type-spec ,type)) . ,rest)
+     (ast-type->type info type))
+    ((decl (decl-spec-list (type-spec ,type)) (init-declr (ftn-declr . ,rest)))
+     (ast-type->type info type))
+    ((fctn-defn (decl-spec-list (type-spec ,type)) . ,rest)
+     (ast-type->type info type))
+    (_ (stderr "TODO: function->type: not supported: ~s\n" o)
+       (get-type info "info"))))
 
 (define (function->info info)
   (lambda (o)
@@ -2470,6 +2541,7 @@
         (if (equal? (list-tail text (- (length text) (length return))) return) text
             (append text return))))
     (let* ((name (.name o))
+           (type (function->type info o))
            (formals (.formals o))
            (text (formals->text formals))
            (locals (formals->locals formals)))
@@ -2485,7 +2557,7 @@
                                         #:function #f
                                         #:globals (append (.statics info) (.globals info))
                                         #:statics '()
-                                        #:functions (append (.functions info) (list (cons name (assert-return (.text info)))))))
+                                        #:functions (append (.functions info) (list (cons name (make-function name type (assert-return (.text info))))))))
             (let* ((statement (car statements)))
               (loop (cdr statements)
                     ((ast->info info) (car statements)))))))))
@@ -2516,7 +2588,7 @@
 
 (define* (info->object o)
   (stderr "compiling: object\n")
-  `((functions . ,(.functions o))
+  `((functions . ,(filter (compose function:text cdr) (.functions o)))
     (globals . ,(.globals o))))
 
 (define* (c99-input->elf #:key (defines '()) (includes '()))

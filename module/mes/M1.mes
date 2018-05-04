@@ -139,7 +139,7 @@
        ((pair? o) (string-join (map text->M1 o)))))
     (define (write-function o)
       (let ((name (car o))
-            (text (cdr o)))
+            (text (function:text (cdr o))))
         (define (line->M1 o)
           (cond ((eq? (car o) #:label)
                  (display (string-append ":" (cadr o))))
