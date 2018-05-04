@@ -213,7 +213,6 @@ broken="$broken
 27_sizeof
 28_strings
 
-30_hanoi
 32_led
 34_array_assignment
 37_sprintf
@@ -258,7 +257,7 @@ for t in $tests; do
         echo ' [SKIP]'
         continue;
     fi
-    sh build-aux/test.sh "scaffold/tinycc/$t" arg1 arg2 arg3 arg4 arg5 &> scaffold/tinycc/"$t".log
+    sh build-aux/test.sh "scaffold/tinycc/$t" &> scaffold/tinycc/"$t".log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then
