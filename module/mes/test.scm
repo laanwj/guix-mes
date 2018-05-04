@@ -1,14 +1,7 @@
-#! /bin/sh
-# -*-scheme-*-
-MES=${MES-$(dirname $0)/../src/mes}
-$MES -s $0
-exit $?
-!#
-
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -25,26 +18,5 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(mes-use-module (srfi srfi-0))
-(mes-use-module (srfi srfi-9))
-(mes-use-module (mes test))
-
-(cond-expand
- (guile
-  (use-modules (srfi srfi-9)))
- (mes))
-
-(pass-if "first dummy" #t)
-(pass-if-not "second dummy" #f)
-
-(define-record-type lexical-token
-  (make-lexical-token category source value)
-  lexical-token?
-  (category lexical-token-category)
-  (source   lexical-token-source)
-  (value    lexical-token-value))
-
-(pass-if "record"
-  (lexical-token? (make-lexical-token 'x 'y 'z)))
-
-(result 'report)
+(define-module (mes test))
+(include-from-path "mes/test.mes")

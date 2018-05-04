@@ -41,13 +41,13 @@ tests/cwv.test
 tests/math.test
 tests/vector.test
 tests/srfi-1.test
+tests/srfi-9.test
 tests/srfi-13.test
 tests/srfi-14.test
 tests/srfi-43.test
 tests/optargs.test
 tests/fluids.test
 tests/catch.test
-tests/record.test
 tests/getopt-long.test
 tests/guile.test
 tests/syntax.test

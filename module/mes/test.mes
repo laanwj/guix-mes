@@ -25,7 +25,11 @@
 
 ;;; Code:
 
-(mes-use-module (mes base))
+(cond-expand
+ (mes
+  (mes-use-module (mes base)))
+ (else))
+
 (cond-expand
  (mes
   (define mes? #t)

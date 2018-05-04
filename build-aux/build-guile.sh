@@ -31,6 +31,7 @@ mes/as.scm
 mes/bytevectors.scm
 mes/elf.scm
 mes/guile.scm
+mes/test.scm
 mes/M1.scm"
 
 export srcdir=.

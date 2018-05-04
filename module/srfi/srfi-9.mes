@@ -53,9 +53,10 @@
 
 (define (record-getter type field)
   (let ((i (record-field-index type field)))
-    (lambda (o)
+    (lambda (o . field?)
       (if (not (eq? (record-type o) type)) (error "record getter: record expected" type o)
-          (vector-ref o i)))))
+          (if (pair? field?) field
+              (vector-ref o i))))))
 
 (define (record-setter type field)
   (let ((i (record-field-index type field)))
