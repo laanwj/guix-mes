@@ -112,6 +112,7 @@ t
 80-setjmp
 81-qsort
 82-define
+83-heterogenoous-init
 "
 
 broken="$broken

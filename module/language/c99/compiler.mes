@@ -2131,17 +2131,8 @@
                       (globals (append globals (list global))))
                  (clone info #:globals globals)))))
 
-        ;; int i = 0, j = 0;
-        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ident ,name) . ,initzer) . ,rest))
-         (let loop ((inits `((init-declr (ident ,name) ,@initzer) ,@rest)) (info info))
-           (if (null? inits) info
-               (loop (cdr inits)
-                     ((decl->info info)
-                      `(decl (decl-spec-list (type-spec ,type)) (init-declr-list ,(car inits))))))))
-
-        ;; int *i = 0, j ..;
-        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list (init-declr (ptr-declr ,pointer (ident ,name)) . ,initzer) . ,rest))
-         (let loop ((inits `((init-declr (ptr-declr ,pointer (ident ,name)) ,@initzer) ,@rest)) (info info))
+        ((decl (decl-spec-list (type-spec ,type)) (init-declr-list . ,inits))
+         (let loop ((inits inits) (info info))
            (if (null? inits) info
                (loop (cdr inits)
                      ((decl->info info)
