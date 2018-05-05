@@ -75,6 +75,7 @@ t
 46-function-static
 47-function-expression
 48-function-destruct
+49-global-static
 50-assert
 51-strcmp
 52-itoa
@@ -82,6 +83,7 @@ t
 54-argv
 60-math
 61-array
+62-array
 63-struct-cell
 64-make-cell
 65-read
@@ -205,8 +207,8 @@ tests="
 50_logical_second_arg
 51_static
 52_unnamed_enum
-55_lshift_type
 54_goto
+55_lshift_type
 "
 
 broken="$broken
@@ -219,6 +221,7 @@ broken="$broken
 27_sizeof
 28_strings
 
+31_args
 32_led
 34_array_assignment
 37_sprintf
@@ -230,7 +233,6 @@ broken="$broken
 46_grep
 49_bracket_evaluation
 
-51_static
 52_unnamed_enum
 55_lshift_type
 "

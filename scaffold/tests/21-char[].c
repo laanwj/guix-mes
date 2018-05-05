@@ -23,10 +23,10 @@
 int
 test ()
 {
-  int f;
-  int v = 3;
   char *s = "mes";
   if (!s[0]) return 1;
+  int f;
+  int v = 3;
   if (!s[f]) return 1;
   if (s[3]) return 1;
   if (s[v]) return 1;

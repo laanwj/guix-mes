@@ -69,6 +69,8 @@ test ()
   char *strings[] = { "one\n", "two\n", "three\n", NULL };
   char **p = strings;
   while (*p) puts (*p++);
+  if (strcmp (strings[1], "two\n"))
+    return 3;
 
   strcpy (f.name, "hallo\n");
   puts (f.name);

@@ -54,9 +54,9 @@ test ()
   struct anon a = {3,4};
   a.baz = 4; // FIXME
   printf ("a.bar=%d\n", a.bar);
-  if (a.bar != 3) return 1;
+  if (a.bar != 3) return 3;
   printf ("a.baz=%d\n", a.baz);
-  if (a.baz != 4) return 1;
+  if (a.baz != 4) return 4;
   
   return 0;
 }

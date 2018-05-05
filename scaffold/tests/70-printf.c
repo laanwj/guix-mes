@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -34,13 +34,14 @@ test ()
   sprintf (buf, "c=%c\n", c);
   if (strcmp (buf, "c=m\n")) return 1;
 
+  if (i != 3) return 15;
   printf ("i=%d\n", i);
   sprintf (buf, "i=%d\n", i);
-  if (strcmp (buf, "i=3\n")) return 1;
+  if (strcmp (buf, "i=3\n")) return 2;
 
   printf ("s=%s\n", s);
   sprintf (buf, "s=%s\n", s);
-  if (strcmp (buf, "s=mes\n")) return 1;
+  if (strcmp (buf, "s=mes\n")) return 3;
 
   return 0;
 }

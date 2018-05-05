@@ -22,7 +22,9 @@ int
 test ()
 {
   static int i = 1;
-  return i--;
+  static int foo = 0;
+  foo = 0;
+  return foo - i--;
 }
 
 static int i = 2;

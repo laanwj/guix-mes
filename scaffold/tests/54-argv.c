@@ -26,6 +26,7 @@ main (int argc, char *argv[])
 {
   puts ("\n");
   puts ("t: argv[0] == \"scaffold/test....\"\n");
+  puts ("argv0="); puts (argv[0]); puts ("\n");
   if (strncmp (argv[0], "scaffold/test", 5)) return 1;
 
   puts ("t: *argv\"\n");
@@ -33,7 +34,7 @@ main (int argc, char *argv[])
   puts ("\n");
 
   puts ("t: if (argc > 1 && !strcmp (argv[1], \"--help\")\n");
-  if (argc > 1 && !strcmp (argv[1], "--help")) return 1;
+  if (argc > 1 && !strcmp (argv[1], "--help")) return 2;
 
   return 0;
 }

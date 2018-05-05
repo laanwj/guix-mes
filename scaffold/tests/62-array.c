@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -18,46 +18,38 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "00-test.i"
-
-char g_arena[4] = "XXX";
-char *g_chars = g_arena;
-
-struct foo {
-  int fd;
+#include <string.h>
+int one_two_three[3] =
+{
+  1, 2, 3
 };
 
-struct foo *file;
+char *foo_bar_baz[3] =
+{
+  "foo", "bar", "baz"
+};
+
+char foo_bar_baz_haha[3][4] =
+{
+  "foo", "bar", "baz"
+};
+
+char *foo = "foo";
+char *bar = "bar";
+char *baz = "baz";
+
+char *foo_bar_baz_mwhuhahaha[3] =
+{
+  &foo, &bar, &baz
+};
 
 int
-test ()
+main ()
 {
-  if (*g_chars != 'X') return 1;
-  g_arena[0] = 'A';
-  if (*g_chars != 'A') return 2;
-  char *x = g_arena;
-  if (*x++ != 'A') return 3;
-  *x++ = 'C';
-  if (g_chars[1] != 'C') return 4;
-  if (g_chars[2] != 'X') return 5;
-  *--x = 'X';
-  if (g_chars[1] != 'X') return 7;
-
-  char **pp = &x;
-  if (**pp != 'X') return 7;
-
-  char *p = *pp;
-  if (*p != 'X') return 8;
-
-  char ***ppp = &pp;
-  if (***ppp != 'X') return 9;
-
-  char **pp2 = *ppp;
-  if (**pp2 != 'X') return 10;
-
-  struct foo *f = 0;
-  if (f) return 11;
-  if (file) return 12;
-
-  return 0;
+  puts ("one:"); puts (itoa (one_two_three[0])); puts ("\n");
+  puts ("foo:"); puts (foo_bar_baz[1]); puts ("\n");
+  puts ("bar:"); puts (foo_bar_baz_haha[2]); puts ("\n");
+  char *p = foo_bar_baz_haha[2];
+  puts ("baz:"); puts (p); puts ("\n");
+  return strcmp (foo_bar_baz[2], "baz");
 }

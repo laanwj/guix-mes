@@ -57,6 +57,7 @@
             global:name
             global:type
             global:pointer
+            global:array
             global:value
             global:function
             global->string
@@ -66,6 +67,7 @@
             local?
             local:type
             local:pointer
+            local:array
             local:id
 
             <function>
@@ -109,11 +111,12 @@
   (description type:description))
 
 (define-immutable-record-type <global>
-  (make-global name type pointer value function)
+  (make-global name type pointer array value function)
   global?
   (name global:name)
   (type global:type)
   (pointer global:pointer)
+  (array global:array)
   (value global:value)
   (function global:function))
 
@@ -122,10 +125,11 @@
       (global:name o)))
 
 (define-immutable-record-type <local>
-  (make-local type pointer id)
+  (make-local type pointer array id)
   local?
   (type local:type)
   (pointer local:pointer)
+  (array local:array)
   (id local:id))
 
 (define-immutable-record-type <function>
