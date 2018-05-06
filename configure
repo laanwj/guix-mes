@@ -3,17 +3,25 @@
 unset LANG LC_ALL
 echo -n "checking for guile..."
 GUILE=$(command -v ${GUILE-guile} 2>/dev/null|tail -n 1|sed 's,^.* ,,')
-export GUILE
+GUIX=$(command -v ${GUIX-guix} 2>/dev/null|tail -n 1|sed 's,^.* ,,')
+export GUILE GUIX
 if [ -x "$GUILE" ]; then
     echo " $GUILE"
-else
+elif [ -x "$GUIX" ]; then
     pm=$({ guix --help || dpkg --help; }|head -n 1|sed 's,.*Usage: \([^ ]*\).*,\1,g')
-#-paredit:'})(
-    case "$pm" in dpkg) message="sudo apt-get install guile-2.0";; *) message="guix environment guix.scm";; esac
     cat <<EOF
+not found
 Missing dependencies, run
 
-    $pm
+    guix environment -l guix.scm
+EOF
+    exit 1
+else
+cat <<EOF
+not found
+Missing dependencies, run
+
+    sudo apt-get install guile-2.2
 EOF
     exit 1
 fi
@@ -42,6 +50,7 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -C $(pwd) -e 'main' -s "$0" ${1+"$@"}
   ((@@ (configure) main) args))
 
 (define-module (configure)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
@@ -167,20 +176,6 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -C $(pwd) -e 'main' -s "$0" ${1+"$@"}
   (and (zero? (system "guix --version 1>/dev/null 2>/dev/null")) 1))
 ;;;
 
-(define CC (or (getenv "CC") "gcc"))
-(define BUILD_TRIPLET %host-type)
-(define ARCH (car (string-split BUILD_TRIPLET #\-)))
-(define CC32 (or (getenv "CC32")
-                 (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
-                     "i686-unknown-linux-gnu-gcc")))
-(define HEX2 (or (getenv "HEX2") "hex2"))
-(define M1 (or (getenv "M1") "M1"))
-(define CFLAGS (getenv "CFLAGS"))
-(define C32FLAGS (getenv "C32FLAGS"))
-(define HEX2FLAGS (getenv "HEX2FLAGS"))
-(define M1FLAGS (getenv "M1FLAGS"))
-(define MESCCFLAGS (getenv "MESCCFLAGS"))
-
 (define (parse-opts args)
   (let* ((option-spec
   	  '((build (value #t))
@@ -191,90 +186,119 @@ exec ${GUILE} --no-auto-compile -L $(pwd) -C $(pwd) -e 'main' -s "$0" ${1+"$@"}
             (verbose (single-char #\v))
             (with-courage)
             ;;ignore
-            (enable-fast-install)))
-         (options (getopt-long args option-spec))
-         (help? (option-ref options 'help #f))
-         (files (option-ref options '() '()))
-         (prefix (option-ref options '() PREFIX))
-         (usage? (and (not help?) #f)))
-    (if (pair? files)
-        (stderr "ignoring files: ~a\n" files))
-    (or (and (or help? usage?)
-             ((or (and usage? stderr) stdout) "\
-Usage: ./configure [OPTION]...
+            (enable-fast-install))))
+    (getopt-long args option-spec #:stop-at-first-non-option #t)))
+
+(define* (print-help #:optional (port (current-output-port)))
+  (format port "\
+`configure' configures ~a ~a to adapt to many kinds of systems.
+
+Usage: ./configure [OPTION]... [VAR=VALUE]
+
+To assign environment variables (e.g., CC, CFLAGS...), specify them as
+VAR=VALUE.  See below for descriptions of some of the useful variables.
+
+Defaults for the options are specified in brackets.
+
+Options:
   -h, --help           display this help
       --build=BUILD    configure for building on BUILD [guessed]
       --host=HOST      cross-compile to build programs to run on HOST [BUILD]
-  --prefix=DIR         install in PREFIX [~a]
-  --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
   -v, --verbose        be verbose
   --with-courage       assert being courageous to configure for unsupported platform
-" PREFIX)
-             (exit (or (and usage? 2) 0)))
-        options)))
+
+Installation directories:
+  --prefix=DIR         install in PREFIX [~a]
+  --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
+
+Some influential environment variables:
+  CC          C compiler command
+  CFLAGS      C compiler flags
+  CC32        x86 C compiler command
+  C32FLAGS    x86 C compiler flags
+" PACKAGE VERSION (getenv "PREFIX")))
 
 (define (main args)
-  (let* ((options (parse-opts args))
+  (let* ((CC (or (getenv "CC") "gcc"))
+         (BUILD_TRIPLET %host-type)
+         (ARCH (car (string-split BUILD_TRIPLET #\-)))
+         (options (parse-opts args))
          (build-triplet (option-ref options 'build BUILD_TRIPLET))
          (host-triplet (option-ref options 'host BUILD_TRIPLET))
          (prefix (option-ref options 'prefix PREFIX))
          (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
          (verbose? (option-ref options 'verbose #f))
          (with-courage? (option-ref options 'with-courage #f))
-         (make? #f))
-    (set! *verbose?* verbose?)
-    (check-version 'guile '(2 0))
-    (check-version HEX2 '(0 1))
-    (check-version M1 '(0 2))
-    (check-version 'nyacc '(0 80 3) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
+         (make? #f)
+         (vars (filter (cut string-index <> #\=) (option-ref options '() '())))
+         (help? (option-ref options 'help #f)))
+    (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
+    (let ((CC32 (or (getenv "CC32")
+                    (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
+                        "i686-unknown-linux-gnu-gcc")))
+          (HEX2 (or (getenv "HEX2") "hex2"))
+          (M1 (or (getenv "M1") "M1"))
+          (CFLAGS (getenv "CFLAGS"))
+          (C32FLAGS (getenv "C32FLAGS"))
+          (HEX2FLAGS (getenv "HEX2FLAGS"))
+          (M1FLAGS (getenv "M1FLAGS"))
+          (MESCCFLAGS (getenv "MESCCFLAGS")))
+      (when help?
+        (print-help)
+        (exit 0))
+      (set! *verbose?* verbose?)
+      (check-version 'guile '(2 0))
+      (check-version HEX2 '(0 1))
+      (check-version M1 '(0 2))
+      (check-version 'nyacc '(0 80 3) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
 
-    (check-version 'bash '(4 0))
-    (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
-          (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
-          (exit 1))
-    (if (not (check-version CC '(4 8) #:optional? #t))
-        (set! CC #f))
-    (when CC
-      (check-header-c "stdio.h" "libc-dev")
-      (check-header-c "limits.h" "linux-headers"))
-    (if (not (check-version CC32 '(4 8) #:optional? #t))
-        (set! CC32 #f))
-    (set! make? (check-version 'make '(4 0) #:optional? #t))
-    (check-version 'perl '(5))
+      (check-version 'bash '(4 0))
+      (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
+        (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
+        (exit 1))
+      (if (not (check-version CC '(4 8) #:optional? #t))
+          (set! CC #f))
+      (when CC
+        (check-header-c "stdio.h" "libc-dev")
+        (check-header-c "limits.h" "linux-headers"))
+      (if (not (check-version CC32 '(4 8) #:optional? #t))
+          (set! CC32 #f))
+      (set! make? (check-version 'make '(4 0) #:optional? #t))
+      (check-version 'perl '(5))
 
-    (when (pair? required)
-      (stderr "\nMissing dependencies [~a], run\n\n" ((->string ", ") required))
-      (if guix?
-          (stderr "    guix environment -l guix.scm\n")
-          (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
-      (exit 1))
-    (with-output-to-file ".config.make"
-      (lambda ()
-        (stdout "build:=~a\n" build-triplet)
-        (stdout "host:=~a\n" host-triplet)
-        (stdout "srcdir:=.\n")
-        (stdout "ARCH:=~a\n" ARCH)
-        (stdout "CC:=~a\n" (or CC ""))
-        (stdout "CC32:=~a\n" (or CC32 ""))
-        (stdout "HEX2:=~a\n" (or HEX2 ""))
-        (stdout "M1:=~a\n" (or M1 ""))
-        (stdout "GUILE:=~a\n" GUILE)
-        (stdout "GUILE_FOR_BUILD:=~a\n" GUILE)
-        (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
-        (stdout "GUIX_P:=~a\n" (if guix? guix? ""))
-        (stdout "HEX2:=~a\n" (or HEX2 ""))
-        (stdout "PACKAGE:=~a\n" PACKAGE)
-        (stdout "VERSION:=~a\n" VERSION)
-        (stdout "PREFIX:=~a\n" (gulp-pipe (string-append "echo " prefix)))
-        (stdout "SYSCONFDIR:=~a\n" sysconfdir)
-        (when CFLAGS (stdout "CFLAGS:=~a\n" CFLAGS))
-        (when C32FLAGS (stdout "C32FLAGS:=~a\n" C32FLAGS))
-        (when HEX2FLAGS (stdout "HEX2FLAGS:=~a\n" HEX2FLAGS))
-        (when M1FLAGS (stdout "M1FLAGS:=~a\n" M1FLAGS))
-        (when MESCCFLAGS (stdout "MESCCFLAGS:=~a\n" MESCCFLAGS))))
-    (format (current-output-port)
-            "\nRun:
+      (when (pair? required)
+        (stderr "\nMissing dependencies [~a], run\n\n" ((->string ", ") required))
+        (if guix?
+            (stderr "    guix environment -l guix.scm\n")
+            (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
+        (exit 1))
+      (with-output-to-file ".config.make"
+        (lambda ()
+          (stdout "build:=~a\n" build-triplet)
+          (stdout "host:=~a\n" host-triplet)
+          (stdout "srcdir:=.\n")
+          (stdout "ARCH:=~a\n" ARCH)
+          (stdout "CC:=~a\n" (or CC ""))
+          (stdout "CC32:=~a\n" (or CC32 ""))
+          (stdout "HEX2:=~a\n" (or HEX2 ""))
+          (stdout "M1:=~a\n" (or M1 ""))
+          (stdout "GUILE:=~a\n" GUILE)
+          (stdout "GUILE_FOR_BUILD:=~a\n" GUILE)
+          (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
+          (stdout "GUIX_P:=~a\n" (if guix? guix? ""))
+          (stdout "HEX2:=~a\n" (or HEX2 ""))
+          (stdout "PACKAGE:=~a\n" PACKAGE)
+          (stdout "VERSION:=~a\n" VERSION)
+          (stdout "PREFIX:=~a\n" (gulp-pipe (string-append "echo " prefix)))
+          (stdout "SYSCONFDIR:=~a\n" sysconfdir)
+          (when CFLAGS (stdout "CFLAGS:=~a\n" CFLAGS))
+          (when C32FLAGS (stdout "C32FLAGS:=~a\n" C32FLAGS))
+          (when HEX2FLAGS (stdout "HEX2FLAGS:=~a\n" HEX2FLAGS))
+          (when M1FLAGS (stdout "M1FLAGS:=~a\n" M1FLAGS))
+          (when MESCCFLAGS (stdout "MESCCFLAGS:=~a\n" MESCCFLAGS))))
+      (format (current-output-port)
+              "\nRun:
   ~a            to build mes
   ~a help       for help on other targets\n"
-            (if make? "make" "./build.sh")
-            (if make? "make" "./build.sh"))))
+              (if make? "make" "./build.sh")
+              (if make? "make" "./build.sh")))))
