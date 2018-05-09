@@ -51,13 +51,32 @@
             type:pointer
             type:description
 
+            <c-array>
+            make-c-array
+            c-array?
+            c-array:type
+            c-array:count
+
+            <pointer>
+            make-pointer
+            pointer?
+            pointer:type
+            pointer:rank
+
+            <var>
+            var:name
+            var:type
+            var:pointer
+            var:c-array
+
             <global>
             make-global
             global?
             global:name
             global:type
             global:pointer
-            global:array
+            global:c-array
+            global:var
             global:value
             global:function
             global->string
@@ -67,7 +86,8 @@
             local?
             local:type
             local:pointer
-            local:array
+            local:c-array
+            local:var
             local:id
 
             <function>
@@ -75,7 +95,13 @@
             function?
             function:name
             function:type
-            function:text))
+            function:text
+
+            -><type>
+            ->rank
+            rank--
+            rank++
+            structured-type?))
 
 (cond-expand
  (guile-2)
@@ -102,35 +128,69 @@
 (define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (statics '()) (function #f) (text '()) (break '()) (continue '()))
   (make-<info> types constants functions globals locals statics function text break continue))
 
+;; ("int" . ,(make-type 'builtin 4 #f 0 #f))
+;;           (make-type 'enum 4 0 fields)
+;;           (make-type 'struct (apply + (map field:size fields)) 0 fields)
+
 (define-immutable-record-type <type>
-  (make-type type size pointer description)
+  (make-type type size description)
   type?
   (type type:type)
   (size type:size)
-  (pointer type:pointer)
   (description type:description))
 
+(define-immutable-record-type <c-array>
+  (make-c-array type count)
+  c-array?
+  (type c-array:type)
+  (count c-array:count))
+
+(define-immutable-record-type <pointer>
+  (make-pointer type rank)
+  pointer?
+  (type pointer:type)
+  (rank pointer:rank))
+
+(define-immutable-record-type <var>
+  (make-var name type function id value)
+  var?
+  (name var:name)
+  (type var:type)                       ; <type>
+  (function var:function)
+  (id var:id)
+  (value var:value))
+
 (define-immutable-record-type <global>
-  (make-global name type pointer array value function)
+  (make-global- name type var pointer c-array value function)
   global?
   (name global:name)
   (type global:type)
+  (var global:var)                      ; <var>
+
   (pointer global:pointer)
-  (array global:array)
+  (c-array global:c-array)
   (value global:value)
   (function global:function))
+
+(define (make-global name type pointer c-array value function)
+  (make-global- name type (make-var name type function #f value) pointer c-array value function))
 
 (define (global->string o)
   (or (and=> (global:function o) (cut string-append <> "-" (global:name o)))
       (global:name o)))
 
 (define-immutable-record-type <local>
-  (make-local type pointer array id)
+  (make-local- type var id pointer c-array)
   local?
   (type local:type)
+  (var local:var)                       ; <var>
+
+  (id local:id)
   (pointer local:pointer)
-  (array local:array)
-  (id local:id))
+  (c-array local:c-array))
+
+(define (make-local name type pointer c-array id)
+  (make-local- type (make-var name type #f id #f) id pointer c-array))
 
 (define-immutable-record-type <function>
   (make-function name type text)
@@ -138,3 +198,43 @@
   (name function:name)
   (type function:type)
   (text function:text))
+
+(define (structured-type? o)
+  (cond ((type? o) (memq (type:type o) '(struct union)))
+        ((global? o) ((compose structured-type? global:type) o))
+        ((local? o) ((compose structured-type? local:type) o))
+        ((and (pair? o) (eq? (car o) 'tag))) ;; FIXME: enum?
+        (else #f)))
+
+(define (-><type> o)
+  (cond ((type? o) o)
+        ((pointer? o) (pointer:type o))
+        ((c-array? o) (c-array:type o))
+        ((and (pair? o) (eq? (car o) 'tag)) o)
+        ;; FIXME
+        (#t
+         (format (current-error-port) "->type--: not a <type>: ~s\n" o)
+         (make-type 'builtin 4 #f))
+        (else (error "-><type>: not a <type>:" o))))
+
+(define (->rank o)
+  (cond ((type? o) 0)
+        ((pointer? o) (pointer:rank o))
+        ((c-array? o) ((compose ->rank c-array:type) o))
+        ;; FIXME
+        (#t
+         (format (current-error-port) "->rank--: not a type: ~s\n" o)
+         0)
+        (else (error "->rank: not a <type>:" o))))
+
+(define (rank-- o)
+  (cond ((and (pointer? o) (zero? (pointer:rank o))) (pointer:type o))
+        ((pointer? o) (set-field o (pointer:rank) (1- (pointer:rank o))))
+        ;; FIXME
+        (#t (format (current-error-port) "rank--: not a pointer: ~s\n" o)
+              o)
+        (else (error "rank--: not a pointer" o))))
+
+(define (rank++ o)
+  (cond ((pointer? o) (set-field o (pointer:rank) (1+ (pointer:rank o))))
+        (else (make-pointer o 1))))

@@ -86,25 +86,25 @@ main (int argc, char* argv[])
     return 17;
   struct foo g = {4, "baar"};
   if (g.length != 4)
-    return 16;
-  if (strcmp (g.string, "baar"))
     return 18;
+  if (strcmp (g.string, "baar"))
+    return 19;
   struct foo f = {3, "foo"};
   g_foes[0] = f;
   g_foes[1] = f;
   if (g_foe)
-    return 19;
+    return 20;
   char *strings[] = { "one\n", "two\n", "three\n", 0 };
   char **p = strings;
   while (*p) puts (*p++);
   if (strcmp (strings[1], "two\n"))
-    return 20;
+    return 21;
   p = list;
   struct anon a = {3,4};
   eputs ("bar:"); eputs (itoa (a.bar)); eputs ("\n");
   eputs ("baz:"); eputs (itoa (a.baz)); eputs ("\n");
-  if (a.bar != 3) return 1;
-  if (a.baz != 4) return 2;
+  if (a.bar != 3) return 22;
+  if (a.baz != 4) return 23;
 
   i = 1;
   int lst[6] = {-1, 1 - 1, i, 2, 3};
@@ -112,7 +112,7 @@ main (int argc, char* argv[])
     {
       puts ("i: "); puts (itoa (lst[i])); puts ("\n");
       if (lst[i+1] != i)
-        return i;
+        return 30 + i;
     }
 
   return 0;
