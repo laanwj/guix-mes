@@ -138,10 +138,13 @@
   (cons `(tag ,name) (make-type 'enum 4 fields)))
 
 (define (struct->type-entry name fields)
-  (cons `(tag ,name) (make-type 'struct (apply + (map field:size fields)) fields)))
+  (stderr "struct->type-entry name=~s fields=~s\n" name fields)
+  (let ((size (apply + (map (compose ->size cdr) fields))))
+    (cons `(tag ,name) (make-type 'struct size fields))))
 
 (define (union->type-entry name fields)
-  (cons `(tag ,name) (make-type 'union (apply + (map field:size fields)) fields)))
+  (let ((size (apply max (map (compose ->size cdr) fields))))
+    (cons `(tag ,name) (make-type 'union size fields))))
 
 (define i386:type-alist
   `(("char" . ,(make-type 'builtin 1 #f))
@@ -176,33 +179,28 @@
   (pmatch o
     ((struct (,name ,type ,size ,pointer) . ,rest) name)
     ((union (,name ,type ,size ,pointer) . ,rest) name)
-    ((,name ,type ,size ,pointer) name)
+    ((,name . ,type) name)
     (_ (error "field:name not supported:" o))))
 
 (define (field:pointer o)
   (pmatch o
     ((struct (,name ,type ,size ,pointer) . ,rest) pointer)
     ((union (,name ,type ,size ,pointer) . ,rest) pointer)
-    ((,name ,type ,size ,pointer) pointer)
-    (_ (error "field:name not supported:" o))))
+    ((,name . ,type) (->rank type))
+    (_ (error "field:pointer not supported:" o))))
 
 (define (field:size o)
   (pmatch o
     ((struct . ,fields) (apply + (map field:size fields)))
     ((union . ,fields) (apply max (map field:size fields)))
-    ((,name ,type ,size ,pointer) size)
+    ((,name . ,type) (->size type))
     (_ (error (format #f "field:size: ~s\n" o)))))
 
-(define (struct:size o)
-  (field:size (cons 'struct (type:description o)))) ;;FIXME
-
-(define (field:type o)
-  (pmatch o
-    ((,name ,type ,size ,pointer) type)
-    (_ (error (format #f "field:type: ~s\n" o)))))
-
 (define (ast->type info o)
-  (-><type> (ast-><type> o info)))
+  (let ((type (-><type> (ast-><type> o info))))
+    (cond ((type? type) type)
+          ((equal? type o) o)
+          (else (ast->type info type)))))
 
 (define (get-type o info)
   (let ((t (assoc-ref (.types info) o)))
@@ -211,7 +209,6 @@
       (_ t))))
 
 (define (ast-><type> o info)
-  (stderr "ast-><type> o=~s\n" o)
   (pmatch o
     (,t (guard (type? t)) t)
     (,p (guard (pointer? p)) p)
@@ -341,29 +338,31 @@
       (if (null? fields) (error (format #f "no such field: ~a in ~s" field struct))
           (let ((f (car fields)))
             (cond ((equal? (car f) field) f)
-                  ((and (memq (car f) '(struct union))
-                        (find (lambda (x) (equal? (car x) field)) (cdr f))))
+                  ((and (memq (car f) '(struct union)) (type? (cdr f)))
+                   (find (lambda (x) (equal? (car x) field)) (type:description (cdr f))))
                   (else (loop (cdr fields)))))))))
 
 (define (field-offset info struct field)
   (let ((xtype (if (type? struct) struct
-                    (ast->type info struct))))
+                   (ast->type info struct))))
     (if (eq? (type:type xtype) 'union) 0
         (let ((fields (type:description xtype)))
           (let loop ((fields fields) (offset 0))
             (if (null? fields) (error (format #f "no such field: ~a in ~s" field struct))
                 (let ((f (car fields)))
                   (cond ((equal? (car f) field) offset)
-                        ((and (eq? (car f) 'struct)
-                              (find (lambda (x) (equal? (car x) field)) (cdr f))
-                              (apply + (cons offset
-                                             (map field:size
-                                                  (member field (reverse (cdr f))
-                                                          (lambda (a b)
-                                                            (equal? a (car b) field))))))))
-                        ((and (eq? (car f) 'union)
-                              (find (lambda (x) (equal? (car x) field)) (cdr f))
-                              offset))
+                        ((and (eq? (car f) 'struct) (type? (cdr f)))
+                         (let ((fields (type:description (cdr f))))
+                           (find (lambda (x) (equal? (car x) field)) fields)
+                           (apply + (cons offset
+                                          (map field:size
+                                               (member field (reverse fields)
+                                                       (lambda (a b)
+                                                         (equal? a (car b) field))))))))
+                        ((and (eq? (car f) 'union) (type? (cdr f)))
+                         (let ((fields (type:description (cdr f))))
+                           (find (lambda (x) (equal? (car x) field)) fields)
+                           offset))
                         (else (loop (cdr fields) (+ offset (field:size f))))))))))))
 
 (define (field-pointer info struct field)
@@ -379,16 +378,16 @@
 
 (define (field-type info struct field)
   (let ((field (field-field info struct field)))
-    (field:type field)))
+    (cdr field)))
 
 (define (struct->fields o)
   (pmatch o
     (_ (guard (and (type? o) (eq? (type:type o) 'struct)))
        (append-map struct->fields (type:description o)))
     (_ (guard (and (type? o) (eq? (type:type o) 'union)))
-       (struct->fields (car (type:description o))))
-    ((struct . ,fields)
-     (append-map struct->fields fields))
+       (append-map struct->fields (type:description o)))
+    ((struct . ,type) (struct->fields type))
+    ((union . ,type) (struct->fields type))
     (_ (list o))))
 
 (define (byte->hex.m1 o)
@@ -984,10 +983,10 @@
       ((d-sel ,field ,struct)
        (let* ((info (expr->accu* o info))
               (info (append-text info (ast->comment o)))
-              (ptr (expr->rank info o))
-              (size (if (= ptr 0) (ast-type->size info o)
-                        4)))
-         (if (or (= -2 ptr) (= -1 ptr)) info
+              (type (ast-><type> o info))
+              (size (->size type))
+              (array? (c-array? type)))
+         (if array? info
              (append-text info (wrap-as (case size
                                           ((1) (i386:byte-mem->accu))
                                           ((2) (i386:word-mem->accu))
@@ -997,10 +996,10 @@
       ((i-sel ,field ,struct)
        (let* ((info (expr->accu* o info))
               (info (append-text info (ast->comment o)))
-              (ptr (expr->rank info o))
-              (size (if (= ptr 0) (ast-type->size info o)
-                        4)))
-         (if (or (= -2 ptr) (= ptr -1)) info
+              (type (ast-><type> o info))
+              (size (->size type))
+              (array? (c-array? type)))
+         (if array? info
              (append-text info (wrap-as (case size
                                           ((1) (i386:byte-mem->accu))
                                           ((2) (i386:word-mem->accu))
@@ -1495,74 +1494,52 @@
   (pmatch o
     ((eq ,a ,b) (eq? (expr->number info a) (expr->number info b)))))
 
-
 (define (struct-field info)
   (lambda (o)
     (pmatch o
-      ((comp-decl (decl-spec-list (type-spec (enum-ref (ident ,type))))
-                  (comp-declr-list (comp-declr (ident ,name))))
-       (list (list name `(tag ,type) 4 0)))
-      ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ident ,name))))
-       (list (list name type (ast-type->size info type) 0)))
-      ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ident ,name))))
-       (list (list name type (ast-type->size info type) 0)))
-      ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list (list name type 4 2)))
-      ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)))))
-       (list (list name type 4 1)))
-      ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list (list name type 4 1)))
-      ((comp-decl (decl-spec-list (type-spec (fixed-type ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list (list name type 4 2)))
-      ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list (list name "void" 4 2)))
-      ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list (list name "void" 4 1)))
-      ((comp-decl (decl-spec-list (type-spec (void))) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr (pointer) (ident ,name))) (param-list . ,param-list)))))
-       (list (list name "void" 4 1)))
-      ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list (list name type 4 1)))
-
-      ;; FIXME: array: -1,-2-3, name??
-      ((comp-decl (decl-spec-list (type-spec (typename ,type))) (comp-declr-list (comp-declr (ptr-declr (pointer) (array-of (ident ,name) ,count)))))
-       (let ((size 4)
+      ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (ident ,name))))
+       (list (cons name (ast-><type> type info))))
+      ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (ptr-declr ,pointer (ident ,name)))))
+       (let ((rank (pointer->ptr pointer)))
+         (list (cons name (rank+= (ast-><type> type info) rank)))))
+      ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (ftn-declr (scope (ptr-declr ,pointer (ident ,name))) _))))
+       (let ((rank (pointer->ptr pointer)))
+         (list (cons name (rank+= (ast-><type> type info) rank)))))
+      ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (ptr-declr ,pointer (array-of (ident ,name) ,count)))))
+       (let ((rank (pointer->ptr pointer))
              (count (expr->number info count)))
-         (list (list name type (* count size) -2))))
-
+         (list (cons name (make-c-array (rank+= type rank) count)))))
       ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (array-of (ident ,name) ,count))))
-       (let* ((type (if (type? type) type
-                        (ast->type info type)))
-              (size (ast-type->size info type))
-              (count (expr->number info count)))
-         (list (list name type (* count size) -1))))      
-
-      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer (pointer)) (ident ,name)))))
-       (list (list name `(tag ,type) 4 2)))
-
-      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ptr-declr (pointer) (ident ,name)))))
-       (list (list name `(tag ,type) 4 1)))
-
-      ((comp-decl (decl-spec-list (type-spec (struct-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
-       (let ((size (ast-type->size info `(tag ,type))))
-         (list (list name `(tag ,type) size 0))))
-
+       (let ((count (expr->number info count)))
+         (list (cons name (make-c-array (ast-><type> type info) count)))))
       ((comp-decl (decl-spec-list (type-spec (struct-def (field-list . ,fields)))))
-       (list `(struct ,@(append-map (struct-field info) fields))))
-
-      ((comp-decl (decl-spec-list (type-spec (union-ref (ident ,type)))) (comp-declr-list (comp-declr (ident ,name))))
-       (let ((size (ast-type->size info `(tag ,type))))
-         (list (list name `(tag ,type) size 0))))
-
+       (let ((fields (append-map (struct-field info) fields)))
+         (list (cons 'struct (make-type 'struct (apply + (map field:size fields)) fields)))))
       ((comp-decl (decl-spec-list (type-spec (union-def (field-list . ,fields)))))
-       (list `(union ,@(append-map (struct-field info) fields))))
-
-      ((comp-decl (decl-spec-list ,type) (comp-declr-list . ,decls)) (guard (pair? (cdr decls)))
-       (let loop ((decls decls))
-         (if (null? decls) '()
-             (append ((struct-field info) `(comp-decl (decl-spec-list ,type) (comp-declr-list ,(car decls))))
-                     (loop (cdr decls))))))
-
+       (let ((fields (append-map (struct-field info) fields)))
+         (list (cons 'union (make-type 'union (apply + (map field:size fields)) fields)))))
+      ((comp-decl (decl-spec-list ,type) (comp-declr-list . ,decls))
+       (append-map (lambda (o)
+                     ((struct-field info) `(comp-decl (decl-spec-list ,type) (comp-declr-list ,o))))
+                   decls))
       (_ (error "struct-field: not supported: " o)))))
+
+(define (->size o)
+  (cond ((and (type? o) (eq? (type:type o) 'struct))
+         (apply + (map (compose ->size cdr) (struct->fields o))))
+        ((and (type? o) (eq? (type:type o) 'union))
+         (apply max (map (compose ->size cdr) (struct->fields o))))
+        ((type? o) (type:size o))
+        ((pointer? o) %pointer-size)
+        ((c-array? o) %pointer-size)
+        ((local? o) ((compose ->size local:type) o))
+        ((global? o) ((compose ->size global:type) o))
+        ;; FIXME
+        ;; (#t
+        ;;  (stderr "o=~s\n" o)
+        ;;  (format (current-error-port) "->size: not a <type>: ~s\n" o)
+        ;;  4)
+        (else (error "->size>: not a <type>:" o))))
 
 (define (local-var? o) ;; formals < 0, locals > 0
   (positive? (local:id o)))
@@ -1955,7 +1932,7 @@
                            (= -1 pointer))
                        (structured-type? type)))
          (size (or (and (zero? pointer) (type? type) (type:size type))
-                   (and struct? (and=> (ast->type info type) struct:size))
+                   (and struct? (and=> (ast->type info type) ->size))
                    4))
          (local (if (not array) local
                     (make-local-entry name type pointer array (+ (local:id (cdr local)) -1 (quotient (+ (* array size) 3) 4)))))

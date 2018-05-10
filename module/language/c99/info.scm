@@ -101,6 +101,7 @@
             ->rank
             rank--
             rank++
+            rank+=
             structured-type?))
 
 (cond-expand
@@ -220,21 +221,27 @@
 (define (->rank o)
   (cond ((type? o) 0)
         ((pointer? o) (pointer:rank o))
-        ((c-array? o) ((compose ->rank c-array:type) o))
+        ((c-array? o) (1+ ((compose ->rank c-array:type) o)))
+        ((local? o) ((compose ->rank local:type) o))
+        ((global? o) ((compose ->rank global:type) o))
         ;; FIXME
         (#t
-         (format (current-error-port) "->rank--: not a type: ~s\n" o)
+         (format (current-error-port) "->rank: not a type: ~s\n" o)
          0)
         (else (error "->rank: not a <type>:" o))))
 
 (define (rank-- o)
-  (cond ((and (pointer? o) (zero? (pointer:rank o))) (pointer:type o))
+  (cond ((and (pointer? o) (= (pointer:rank o) 1)) (pointer:type o))
         ((pointer? o) (set-field o (pointer:rank) (1- (pointer:rank o))))
+        ((c-array? o) (c-array:type o))
         ;; FIXME
         (#t (format (current-error-port) "rank--: not a pointer: ~s\n" o)
               o)
         (else (error "rank--: not a pointer" o))))
 
+(define (rank+= o i)
+  (cond ((pointer? o) (set-field o (pointer:rank) (+ i (pointer:rank o))))
+        (else (make-pointer o i))))
+
 (define (rank++ o)
-  (cond ((pointer? o) (set-field o (pointer:rank) (1+ (pointer:rank o))))
-        (else (make-pointer o 1))))
+  (rank+= o 1))
