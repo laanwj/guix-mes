@@ -97,7 +97,7 @@
             function:type
             function:text
 
-            -><type>
+            ->type
             ->rank
             rank--
             rank++
@@ -162,36 +162,32 @@
   (value var:value))
 
 (define-immutable-record-type <global>
-  (make-global- name type var pointer c-array value function)
+  (make-global- name type var value function)
   global?
   (name global:name)
   (type global:type)
   (var global:var)                      ; <var>
 
-  (pointer global:pointer)
-  (c-array global:c-array)
   (value global:value)
   (function global:function))
 
-(define (make-global name type pointer c-array value function)
-  (make-global- name type (make-var name type function #f value) pointer c-array value function))
+(define (make-global name type value function)
+  (make-global- name type (make-var name type function #f value) value function))
 
 (define (global->string o)
   (or (and=> (global:function o) (cut string-append <> "-" (global:name o)))
       (global:name o)))
 
 (define-immutable-record-type <local>
-  (make-local- type var id pointer c-array)
+  (make-local- type var id)
   local?
   (type local:type)
   (var local:var)                       ; <var>
 
-  (id local:id)
-  (pointer local:pointer)
-  (c-array local:c-array))
+  (id local:id))
 
-(define (make-local name type pointer c-array id)
-  (make-local- type (make-var name type #f id #f) id pointer c-array))
+(define (make-local name type id)
+  (make-local- type (make-var name type #f id #f) id))
 
 (define-immutable-record-type <function>
   (make-function name type text)
@@ -207,7 +203,7 @@
         ((and (pair? o) (eq? (car o) 'tag))) ;; FIXME: enum?
         (else #f)))
 
-(define (-><type> o)
+(define (->type o)
   (cond ((type? o) o)
         ((pointer? o) (pointer:type o))
         ((c-array? o) (c-array:type o))
@@ -216,7 +212,7 @@
         (#t
          (format (current-error-port) "->type--: not a <type>: ~s\n" o)
          (make-type 'builtin 4 #f))
-        (else (error "-><type>: not a <type>:" o))))
+        (else (error "->type: not a <type>:" o))))
 
 (define (->rank o)
   (cond ((type? o) 0)

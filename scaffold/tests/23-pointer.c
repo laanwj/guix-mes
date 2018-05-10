@@ -20,6 +20,7 @@
 
 #include "00-test.i"
 
+char *g_hello = "hello";
 char g_arena[4] = "XXX";
 char *g_chars = g_arena;
 
@@ -32,32 +33,36 @@ struct foo *file;
 int
 test ()
 {
-  if (*g_chars != 'X') return 1;
+  if (*g_hello != 'h') return 1;
+  if (g_hello[0] != 'h') return 2;
+  if (g_chars[0] != 'X') return 3;
+  if (*g_chars != 'X') return 4;
+
   g_arena[0] = 'A';
-  if (*g_chars != 'A') return 2;
+  if (*g_chars != 'A') return 5;
   char *x = g_arena;
-  if (*x++ != 'A') return 3;
+  if (*x++ != 'A') return 5;
   *x++ = 'C';
-  if (g_chars[1] != 'C') return 4;
-  if (g_chars[2] != 'X') return 5;
+  if (g_chars[1] != 'C') return 7;
+  if (g_chars[2] != 'X') return 8;
   *--x = 'X';
-  if (g_chars[1] != 'X') return 7;
+  if (g_chars[1] != 'X') return 9;
 
   char **pp = &x;
-  if (**pp != 'X') return 7;
+  if (**pp != 'X') return 10;
 
   char *p = *pp;
-  if (*p != 'X') return 8;
+  if (*p != 'X') return 11;
 
   char ***ppp = &pp;
-  if (***ppp != 'X') return 9;
+  if (***ppp != 'X') return 12;
 
   char **pp2 = *ppp;
-  if (**pp2 != 'X') return 10;
+  if (**pp2 != 'X') return 13;
 
   struct foo *f = 0;
-  if (f) return 11;
-  if (file) return 12;
+  if (f) return 14;
+  if (file) return 15;
 
   return 0;
 }

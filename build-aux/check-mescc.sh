@@ -232,9 +232,6 @@ broken="$broken
 42_function_pointer
 46_grep
 49_bracket_evaluation
-
-52_unnamed_enum
-55_lshift_type
 "
 
 #22_floating_point       ; float

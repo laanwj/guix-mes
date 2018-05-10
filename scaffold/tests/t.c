@@ -42,6 +42,14 @@ struct anon {struct {int bar; int baz;};};
 struct here {int and;} there;
 
 int
+test (struct foo* p)
+{
+  struct foo *g = &f;
+  g[0].length = 0;
+  p[0].length = 0;
+}
+
+int
 main (int argc, char* argv[])
 {
   int i;

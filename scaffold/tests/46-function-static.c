@@ -18,6 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+static int i = 2;
+
 int
 test ()
 {
@@ -27,10 +29,9 @@ test ()
   return foo - i--;
 }
 
-static int i = 2;
 int
 main ()
 {
   test ();
-  return test ();
+  return i - 2 - test ();
 }

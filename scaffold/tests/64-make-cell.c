@@ -32,11 +32,7 @@ struct scm {
 
 int bla = 1234;
 char g_arena[84];
-#if __MESC__
-struct scm *g_cells = g_arena;
-#else
 struct scm *g_cells = (struct scm*)g_arena;
-#endif
 char *g_chars = g_arena;
 
 int foo () {puts ("t: foo\n"); return 0;};
