@@ -90,6 +90,12 @@ if [ -d "$MES_SEED" ]; then
         -o src/libc+tcc-mes.hex2
 fi
 
+PREPROCESS=1
+NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
+NOLINK=1 sh build-aux/cc-mes.sh lib/mini-libc-mes
+NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mes
+NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc-mes
+
 [ -n "$SEED" ] && exit 0
 
 GUILE=src/mes
@@ -101,12 +107,6 @@ sh build-aux/mes-snarf.scm --mes src/mes.c
 sh build-aux/mes-snarf.scm --mes src/posix.c
 sh build-aux/mes-snarf.scm --mes src/reader.c
 sh build-aux/mes-snarf.scm --mes src/vector.c
-
-PREPROCESS=1
-NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
-NOLINK=1 sh build-aux/cc-mes.sh lib/mini-libc-mes
-NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mes
-NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc-mes
 
 # sh build-aux/cc-mes.sh scaffold/main
 # sh build-aux/cc-mes.sh scaffold/hello

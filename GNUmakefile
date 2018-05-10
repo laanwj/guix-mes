@@ -32,8 +32,10 @@ install:
 seed:
 	cd ../mes-seed && git reset --hard HEAD
 	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh
-	cd ../mes-seed && ./bootstrap.sh && cd ../mes
+	cd ../mes-seed && ./refresh.sh && cd ../mes
 	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh
+	build-aux/build-mlibc.sh
+	cd ../tinycc-seed && ./refresh.sh && cd ../mes
 
 ifdef PREFIX
 export PREFIX
