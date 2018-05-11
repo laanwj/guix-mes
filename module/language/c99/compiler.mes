@@ -307,6 +307,11 @@
 
       ((decl-spec-list (type-spec ,type))
        (ast->type type info))
+
+       ;; `typedef int size; void foo (unsigned size u)
+      ((decl-spec-list (type-spec ,type) (type-spec ,type2))
+       (ast->type type info))
+
       ((assn-expr ,a ,op ,b)
        (ast->type a info))
 
@@ -410,8 +415,7 @@
       (assoc-ref (.constants info) o)
       (assoc-ref (.functions info) o)
       (begin
-        (stderr "info=~s\n" info)
-        (error "ident->variable: undefined variabled:" o))))
+        (error "ident->variable: undefined variable:" o))))
 
 (define (static-global? o)
   ((compose global:function cdr) o))
@@ -702,13 +706,8 @@
 
 (define (ast->comment o)
   (if mes? '()
-      (begin
-        (pmatch o
-          ;; Nyacc 0.80.42: missing  (enum-ref (ident "fred"))
-          ((decl (decl-spec-list (type-spec (enum-ref . _))) . _)
-           '())
-         (_ (let ((source (with-output-to-string (lambda () (pretty-print-c99 o)))))
-              (make-comment (string-join (string-split source #\newline) " "))))))))
+      (let ((source (with-output-to-string (lambda () (pretty-print-c99 o)))))
+        (make-comment (string-join (string-split source #\newline) " ")))))
 
 (define (accu*n info n)
   (append-text info (wrap-as (case n
@@ -1670,7 +1669,9 @@
 
       ((decl . ,decl)
        ;;FIXME: ridiculous performance hit with mes
-       (let ((info (append-text info (ast->comment o))))
+       ;; Nyacc 0.80.42: missing  (enum-ref (ident "fred"))
+       (let (;;(info (append-text info (ast->comment o)))
+             )
          (decl->info info decl)))
       ;; ...
       ((gt . _) (expr->accu o info))
@@ -1878,6 +1879,11 @@
 
     (((initzer (p-expr (string ,string))))
      (let ((data (string->list string)))
+       (if (not size) data
+           (append data (string->list (make-string (max 0 (- size (length data))) #\nul))))))
+
+    (((initzer (p-expr (string . ,strings))))
+     (let ((data (string->list (apply string-append strings))))
        (if (not size) data
            (append data (string->list (make-string (max 0 (- size (length data))) #\nul))))))
 
@@ -2120,10 +2126,16 @@
             (rank (ptr-declr->rank pointer)))
        (if (zero? rank) type
            (make-pointer type rank))))
-    (((decl-spec-list (type-spec ,type)) . ,rest)
+    (((decl-spec-list (type-spec ,type)) . _)
      (ast->type type info))
-    (((decl-spec-list (stor-spec ,store) (type-spec ,type)) (ftn-declr (ident _) _) _)
+    (((decl-spec-list (stor-spec ,store) (type-spec ,type)) . _)
      (ast->type type info))
+
+    ;; (((decl-spec-list (stor-spec ,store) (type-spec ,type)) (ftn-declr (ident _) _) _)
+    ;;  (ast->type type info))
+    ;; (((decl-spec-list (stor-spec ,store) (type-spec ,type)) (ptr-declr ,pointer (ftn-declr (ident _) _)) _)
+    ;;  (ast->type type info))
+
     (_ (error "fctn-defn:get-type: not supported:" o))))
 
 (define (ftn-declr:get-type info o)
@@ -2149,7 +2161,9 @@
            (text (param-list->text formals))
            (locals (param-list->locals formals info))
            (statement (fctn-defn:get-statement o))
-           (info (clone info #:locals locals #:function name #:text text #:statics '()))
+           (function (cons name (make-function name type '())))
+           (functions (cons function (.functions info)))
+           (info (clone info #:locals locals #:function name #:text text #:functions functions #:statics '()))
            (info (ast->info statement info))
            (locals (.locals info))
            (local (and (pair? locals) (car locals)))

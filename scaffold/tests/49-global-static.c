@@ -20,16 +20,19 @@
 
 static int sint;
 static int sint2, sint3;
-
-static int
-test ()
+typedef unsigned int size;
+static void*
+test (size u)
 {
-  return 0;
+  void *r;
+  if (u)
+    r = test (u);
 }
 
 static int i = 2;
 int
 main ()
 {
-  return test ();
+  void (*foo)() = &test;
+  return test (0);
 }

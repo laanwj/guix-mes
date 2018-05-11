@@ -26,6 +26,7 @@ struct foo
 struct foo*
 test (struct foo* f)
 {
+  void (*fun) () = test;
   return f;
 }
 
