@@ -46,6 +46,9 @@ struct here {int and;} there;
 typedef int int_array_t[1];
 int_array_t bar;
 
+typedef struct foo *foo_pointer_t;
+foo_pointer_t foep;
+
 int
 test (struct foo* p)
 {
