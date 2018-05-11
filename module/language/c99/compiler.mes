@@ -174,27 +174,6 @@
     ("double" . ,(make-type 'builtin 8 #f))
     ("long double" . ,(make-type 'builtin 16 #f))))
 
-(define (field:name o)
-  (pmatch o
-    ((struct (,name ,type ,size ,pointer) . ,rest) name)
-    ((union (,name ,type ,size ,pointer) . ,rest) name)
-    ((,name . ,type) name)
-    (_ (error "field:name not supported:" o))))
-
-(define (field:pointer o)
-  (pmatch o
-    ((struct (,name ,type ,size ,pointer) . ,rest) pointer)
-    ((union (,name ,type ,size ,pointer) . ,rest) pointer)
-    ((,name . ,type) (->rank type))
-    (_ (error "field:pointer not supported:" o))))
-
-(define (field:size o)
-  (pmatch o
-    ((struct . ,fields) (apply + (map field:size fields)))
-    ((union . ,fields) (apply max (map field:size fields)))
-    ((,name . ,type) (->size type))
-    (_ (error (format #f "field:size: ~s\n" o)))))
-
 (define (ast->type o info)
   (define (type-helper o info)
     (pmatch o
@@ -264,6 +243,7 @@
 
       ((d-sel (ident ,field) ,struct)
        (let ((type0 (ast->type struct info)))
+         (stderr "type0=~s\n" type0)
          (ast->type (field-type info type0 field) info)))
 
       ((i-sel (ident ,field) ,struct)
@@ -345,14 +325,35 @@
           (else (stderr "ast-type->size barf: ~s => ~s\n" o type)
                 4))))
 
+(define (field:name o)
+  (pmatch o
+    ((struct (,name ,type ,size ,pointer) . ,rest) name)
+    ((union (,name ,type ,size ,pointer) . ,rest) name)
+    ((,name . ,type) name)
+    (_ (error "field:name not supported:" o))))
+
+(define (field:pointer o)
+  (pmatch o
+    ((struct (,name ,type ,size ,pointer) . ,rest) pointer)
+    ((union (,name ,type ,size ,pointer) . ,rest) pointer)
+    ((,name . ,type) (->rank type))
+    (_ (error "field:pointer not supported:" o))))
+
+(define (field:size o)
+  (pmatch o
+    ((struct . ,type) (apply + (map field:size (struct->fields type))))
+    ((union . ,type) (apply max (map field:size (struct->fields type))))
+    ((,name . ,type) (->size type))
+    (_ (error (format #f "field:size: ~s\n" o)))))
+
 (define (field-field info struct field)
-  (let* ((fields (type:description struct)))
+  (let ((fields (type:description struct)))
     (let loop ((fields fields))
       (if (null? fields) (error (format #f "no such field: ~a in ~s" field struct))
           (let ((f (car fields)))
             (cond ((equal? (car f) field) f)
-                  ((and (memq (car f) '(struct union)) (type? (cdr f)))
-                   (find (lambda (x) (equal? (car x) field)) (type:description (cdr f))))
+                  ((and (memq (car f) '(struct union)) (type? (cdr f))
+                        (find (lambda (x) (equal? (car x) field)) (struct->fields (cdr f)))))
                   (else (loop (cdr fields)))))))))
 
 (define (field-offset info struct field)
@@ -370,10 +371,10 @@
                                              (member field (reverse fields)
                                                      (lambda (a b)
                                                        (equal? a (car b) field))))))))
-                      ((and (eq? (car f) 'union) (type? (cdr f)))
-                       (let ((fields (type:description (cdr f))))
-                         (find (lambda (x) (equal? (car x) field)) fields)
-                         offset))
+                      ((and (eq? (car f) 'union) (type? (cdr f))
+                            (let ((fields (struct->fields (cdr f))))
+                              (and (find (lambda (x) (equal? (car x) field)) fields)
+                                   offset))))
                       (else (loop (cdr fields) (+ offset (field:size f)))))))))))
 
 (define (field-pointer info struct field)
@@ -385,6 +386,10 @@
       (let ((field (field-field info struct field)))
         (field:size field))))
 
+(define (field-size info struct field)
+  (let ((field (field-field info struct field)))
+    (field:size field)))
+
 (define (field-type info struct field)
   (let ((field (field-field info struct field)))
     (ast->type (cdr field) info)))
@@ -395,8 +400,18 @@
        (append-map struct->fields (type:description o)))
     (_ (guard (and (type? o) (eq? (type:type o) 'union)))
        (append-map struct->fields (type:description o)))
-    ((struct . ,type) (struct->fields type))
-    ((union . ,type) (struct->fields type))
+    ((struct . ,type) (list (car (type:description type))))
+    ((struct . ,type) (list (car (type:description type))))
+    (_ (list o))))
+
+(define (struct->init-fields o)
+  (pmatch o
+    (_ (guard (and (type? o) (eq? (type:type o) 'struct)))
+       (append-map struct->init-fields (type:description o)))
+    (_ (guard (and (type? o) (eq? (type:type o) 'union)))
+       (append-map struct->init-fields (type:description o)))
+    ((struct . ,type) (struct->init-fields type))
+    ((union . ,type) (list (car (type:description type))))
     (_ (list o))))
 
 (define (byte->hex.m1 o)
@@ -1797,7 +1812,7 @@
     ((initzer-list . ,inits)
      (let ((struct? (structured-type? local)))
        (cond (struct?
-              (let ((fields ((compose struct->fields local:type) local)))
+              (let ((fields ((compose struct->init-fields local:type) local)))
                 (fold (cut init-struct-field local <> <> <>) info fields (append inits (map (const '(p-expr (fixed "22"))) (iota (max 0 (- (length fields) (length inits)))))))))
              (else (fold (cut init-local local <> <> <>) info inits (iota (length inits)))))))
     (((initzer (initzer-list . ,inits)))

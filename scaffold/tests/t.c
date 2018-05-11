@@ -38,6 +38,7 @@ struct foo g_foes[2];
 int g_foe;
 
 struct anon {struct {int bar; int baz;};};
+struct anion {union {int foo; int bar;}; union {int baz; int bla;};};
 
 struct here {int and;} there;
 
@@ -113,6 +114,12 @@ main (int argc, char* argv[])
   eputs ("baz:"); eputs (itoa (a.baz)); eputs ("\n");
   if (a.bar != 3) return 22;
   if (a.baz != 4) return 23;
+
+  struct anion u = {3, 4};
+  eputs ("u.foo:"); eputs (itoa (u.foo)); eputs ("\n");
+  eputs ("u.bla:"); eputs (itoa (u.bla)); eputs ("\n");
+  if (u.foo != 3) return 24;
+  if (u.bla != 4) return 25;
 
   i = 1;
   int lst[6] = {-1, 1 - 1, i, 2, 3};
