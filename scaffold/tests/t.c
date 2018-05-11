@@ -33,7 +33,8 @@ char *env[] = {"foo", "bar", "baz", 0};
 char *list[2] = {"foo\n", "bar\n"};
 
 struct foo {int length; char* string;};
-struct foo f = {3, "foo"};
+struct foo g_f = {3, "foo"};
+struct foo g_g = &g_f;
 struct foo g_foes[2];
 int g_foe;
 
@@ -45,7 +46,7 @@ struct here {int and;} there;
 int
 test (struct foo* p)
 {
-  struct foo *g = &f;
+  struct foo *g = &g_f;
   g[0].length = 0;
   p[0].length = 0;
 }
@@ -89,9 +90,9 @@ main (int argc, char* argv[])
     return 14;
   if (env[3])
     return 15;
-  if (f.length != 3)
+  if (g_f.length != 3)
     return 16;
-  if (strcmp (f.string, "foo"))
+  if (strcmp (g_f.string, "foo"))
     return 17;
   struct foo g = {4, "baar"};
   if (g.length != 4)
@@ -120,6 +121,9 @@ main (int argc, char* argv[])
   eputs ("u.bla:"); eputs (itoa (u.bla)); eputs ("\n");
   if (u.foo != 3) return 24;
   if (u.bla != 4) return 25;
+
+  char buf[sizeof (g_f.string)];
+  char buf1[sizeof (g_g->string)];
 
   i = 1;
   int lst[6] = {-1, 1 - 1, i, 2, 3};
