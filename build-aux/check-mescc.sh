@@ -112,6 +112,7 @@ t
 7m-struct-char-array-assign
 7n-struct-struct-array
 7o-struct-pre-post
+7p-struct-cast
 80-setjmp
 81-qsort
 82-define
