@@ -176,6 +176,8 @@
 
 (define (ast->type o info)
   (define (type-helper o info)
+    (if (getenv "MESC_DEBUG")
+        (stderr "type-helper: ~s\n" o))
     (pmatch o
       (,t (guard (type? t)) t)
       (,p (guard (pointer? p)) p)
@@ -202,8 +204,13 @@
              (let ((type (get-type name info)))
                (ast->type type info)))
 
-      ((fctn-call (p-expr (ident ,name)) . _) (or (ident->type info name)
-                                                  (get-type "int" info)))
+      ((fctn-call (p-expr (ident ,name)) . _)
+       (or (and=> (assoc-ref (.functions info) name) function:type)
+           (get-type "int" info)))
+
+      ((fctn-call (de-ref (p-expr (ident ,name))) . _)
+       (or (and=> (assoc-ref (.functions info) name) function:type)
+           (get-type "int" info)))
 
       ((fixed-type ,type) (ast->type type info))
       ((float-type ,type) (ast->type type info))
@@ -1745,6 +1752,8 @@
                   (strings (filter string-global? (.globals tmp))))
              (clone info #:globals (append (.globals info) strings)
                     #:statics (append statics (.statics info)))))))
+    (((decl-spec-list (stor-spec (,store)) (type-spec ,type)))
+     (type->info type #f info))
     (((@ . _))
      (stderr "decl->info: skip: ~s\n" o)
      info)
@@ -1938,6 +1947,11 @@
             (type (rank+= type rank)))
        (if (.function info) (local->info type name o init info)
            (global->info type name o init info))))
+    (((ftn-declr (scope (ptr-declr ,pointer (ident ,name))) ,param-list))
+     (let* ((rank (pointer->rank pointer))
+            (type (rank+= type rank)))
+       (if (.function info) (local->info type name o '() info)
+           (global->info type name o '() info))))
     (((ptr-declr ,pointer . ,_) . ,init)
      (let* ((rank (pointer->rank pointer))
             (type (rank+= type rank)))

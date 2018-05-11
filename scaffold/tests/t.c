@@ -34,7 +34,7 @@ char *list[2] = {"foo\n", "bar\n"};
 
 struct foo {int length; char* string;};
 struct foo g_f = {3, "foo"};
-struct foo g_g = &g_f;
+struct foo *g_g = &g_f;
 struct foo g_foes[2];
 int g_foe;
 
@@ -55,6 +55,12 @@ test (struct foo* p)
   struct foo *g = &g_f;
   g[0].length = 0;
   p[0].length = 0;
+}
+
+int
+next_main (int argc, char* argv[])
+{
+  return 0;
 }
 
 int
@@ -130,6 +136,14 @@ main (int argc, char* argv[])
 
   char buf[sizeof (g_f.string)];
   char buf1[sizeof (g_g->string)];
+
+  int (*fun)(int, char **);
+  fun = &next_main;
+  //i = (*fun)(argc, argv);
+
+  int (*fun2)(int, char *[]);
+  fun2 = &next_main;
+  //i = (*fun2)(argc, argv);
 
   i = 1;
   int lst[6] = {-1, 1 - 1, i, 2, 3};
