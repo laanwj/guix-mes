@@ -1364,7 +1364,7 @@
           ((string-prefix? "0" s) (string->number s 8))
           (else (string->number s)))))
 
-(define (expr->number info o)
+(define (try-expr->number info o)
   (pmatch o
     ((fixed ,a) (cstring->number a))
     ((p-expr ,expr) (expr->number info expr))
@@ -1400,7 +1400,12 @@
     ((cond-expr ,test ,then ,else)
      (if (p-expr->bool info test) (expr->number info then) (expr->number info else)))
     (,string (guard (string? string)) (cstring->number string))
-    (_  (error (format #f "expr->number: not supported: ~s\n" o)))))
+    ((ident ,name) (assoc-ref (.constants info) name))
+    (_  #f)))
+
+(define (expr->number info o)
+  (or (try-expr->number info  o)
+      (error (format #f "expr->number: not supported: ~s\n" o))))
 
 (define (p-expr->bool info o)
   (pmatch o
@@ -2025,7 +2030,9 @@
      (append (map int->bv32 o)))
     ((initzer ,init) (init->data init info))
     ((cast _ ,expr) (init->data expr info))
-    (_ (error "init->data: not supported: " o))))
+    (_ (let ((number (try-expr->number info o)))
+         (cond (number (int->bv32 number))
+               (else (error "init->data: not supported: " o)))))))
 
 (define (init->strings o info)
   (let ((globals (.globals info)))
