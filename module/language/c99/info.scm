@@ -96,6 +96,7 @@
             function:name
             function:type
             function:text
+            function->string
 
             ->type
             ->rank
@@ -195,6 +196,9 @@
   (name function:name)
   (type function:type)
   (text function:text))
+
+(define (function->string o)
+  (function:name o))
 
 (define (structured-type? o)
   (cond ((type? o) (memq (type:type o) '(struct union)))

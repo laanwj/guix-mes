@@ -1767,10 +1767,10 @@
 (define (ast->name o)
   (pmatch o
     ((ident ,name) name)
-    ((ptr-declr ,pointer (ident ,name)) name)
     ((array-of ,array . ,_) (ast->name array))
-    ((ftn-declr (scope (ptr-declr ,pointer (ident ,name)))) name)
+    ((ftn-declr (scope (ptr-declr ,pointer (ident ,name))) . _) name)
     ((ptr-declr ,pointer ,decl . ,_) (ast->name decl))
+    ((ptr-declr ,pointer (ident ,name)) name)
     (_ (error "ast->name not supported: " o))))
 
 (define (init-declr->count info o)
