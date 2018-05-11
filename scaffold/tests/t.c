@@ -43,6 +43,9 @@ struct anion {union {int foo; int bar;}; union {int baz; int bla;};};
 
 struct here {int and;} there;
 
+typedef int int_array_t[1];
+int_array_t bar;
+
 int
 test (struct foo* p)
 {

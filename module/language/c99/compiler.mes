@@ -1722,6 +1722,13 @@
      (let* ((info (type->info type name info))
             (type (ast->type type info)))
        (clone info #:types (acons name type (.types info)))))
+    ;; FIXME: recursive types, pointer, array
+    (((decl-spec-list (stor-spec (typedef)) (type-spec ,type)) (init-declr-list (init-declr (array-of (ident ,name) ,count))))
+     (let* ((info (type->info type name info))
+            (type (ast->type type info))
+            (count (expr->number info count))
+            (type (make-c-array type count)))
+       (clone info #:types (acons name type (.types info)))))
     (((decl-spec-list (stor-spec (,store)) (type-spec ,type)) (init-declr-list . ,inits))
      (let* ((type (ast->type type info))
             (function (.function info)))
