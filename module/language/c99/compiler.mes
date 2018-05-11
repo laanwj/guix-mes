@@ -305,15 +305,15 @@
        (let ((rank (pointer->rank pointer)))
          (rank+= (ast->type type info) rank)))
 
-      ((decl-spec-list (type-spec ,type))
-       (ast->type type info))
+      ((decl-spec-list (type-spec ,type)) (ast->type type info))
 
-       ;; `typedef int size; void foo (unsigned size u)
+      ;;  ;; `typedef int size; void foo (unsigned size u)
       ((decl-spec-list (type-spec ,type) (type-spec ,type2))
        (ast->type type info))
 
-      ((assn-expr ,a ,op ,b)
-       (ast->type a info))
+      ((assn-expr ,a ,op ,b) (ast->type a info))
+
+      ((cond-expr _ ,a ,b) (ast->type a info))
 
       (_ (get-type o info))))
 

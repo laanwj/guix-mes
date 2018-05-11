@@ -222,7 +222,6 @@ broken="$broken
 28_strings
 
 31_args
-32_led
 34_array_assignment
 37_sprintf
 38_multiple_array_index

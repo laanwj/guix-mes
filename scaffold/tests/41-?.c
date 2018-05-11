@@ -21,6 +21,11 @@
 #include "30-test.i"
 #include <stdio.h>
 
+union foo
+{
+  int i;
+};
+
 int
 test ()
 {
@@ -33,7 +38,10 @@ test ()
   (one == 1) ? 1 : exit (1);
 
   puts ("t: (f) ?\n");
-  (f) ? exit (1) : 1;
+  (f) ? exit (2) : 1;
+
+  union foo fu;
+  fu.i = 1 ? 0 : 1;
 
   return 0;
 }
