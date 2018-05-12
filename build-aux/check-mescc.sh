@@ -76,6 +76,7 @@ t
 47-function-expression
 48-function-destruct
 49-global-static
+4a-char-array
 50-assert
 51-strcmp
 52-itoa
@@ -224,7 +225,6 @@ broken="$broken
 28_strings
 
 31_args
-34_array_assignment
 37_sprintf
 38_multiple_array_index
 39_typedef
