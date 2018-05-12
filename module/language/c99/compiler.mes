@@ -1552,7 +1552,7 @@
          (apply max (map (compose ->size cdr) (struct->fields o))))
         ((type? o) (type:size o))
         ((pointer? o) %pointer-size)
-        ((c-array? o) %pointer-size)
+        ((c-array? o) (* (c-array:count o) ((compose type:size c-array:type) o)))
         ((local? o) ((compose ->size local:type) o))
         ((global? o) ((compose ->size global:type) o))
         ;; FIXME
@@ -2087,7 +2087,8 @@
             (info (if (null? strings) info
                       (clone info #:globals (append (.globals info) strings))))
             (count (expr->number info count))
-            (type (make-c-array (rank++ type) count)))
+            (count1 (expr->number info count1))
+            (type (rank++ (make-c-array type (* %pointer-size count count1)))))
        (if (.function info) (local->info type name o init info)
            (global->info type name o init info))))
     (_ (error "init-declr->info: not supported: " o))))

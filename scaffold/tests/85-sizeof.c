@@ -18,10 +18,19 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+struct foo
+{
+  int length;
+  char buf[16];
+};
+
 int
 main ()
 {
   char **p;
-  if (sizeof (*p) != 4) return 2;
-  return sizeof (**p) - 1;
+  if (sizeof (*p) != 4) return 1;
+  if (sizeof (**p) != 1) return 2;
+  puts ("size: "); puts (itoa (sizeof (struct foo))); puts ("\n");
+  if (sizeof (struct foo) != 20) return 3;
+  return 0;
 }
