@@ -40,6 +40,7 @@
             .function
             .statics
             .text
+            .post
             .break
             .continue
 
@@ -114,7 +115,7 @@
   (mes-use-module (mes optargs))))
 
 (define-immutable-record-type <info>
-  (make-<info> types constants functions globals locals statics function text break continue)
+  (make-<info> types constants functions globals locals statics function text post break continue)
   info?
   (types .types)
   (constants .constants)
@@ -124,11 +125,12 @@
   (statics .statics)
   (function .function)
   (text .text)
+  (post .post)
   (break .break)
   (continue .continue))
 
-(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (statics '()) (function #f) (text '()) (break '()) (continue '()))
-  (make-<info> types constants functions globals locals statics function text break continue))
+(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (statics '()) (function #f) (text '()) (post '()) (break '()) (continue '()))
+  (make-<info> types constants functions globals locals statics function text post break continue))
 
 ;; ("int" . ,(make-type 'builtin 4 #f 0 #f))
 ;;           (make-type 'enum 4 0 fields)
