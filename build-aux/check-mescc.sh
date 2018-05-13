@@ -114,6 +114,7 @@ t
 7n-struct-struct-array
 7o-struct-pre-post
 7p-struct-cast
+7q-bit-field
 80-setjmp
 81-qsort
 82-define

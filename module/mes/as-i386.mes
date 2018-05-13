@@ -282,7 +282,16 @@
     ("shr____%cl,%eax")))               ; shr    %cl,%eax
 
 (define (i386:accu-and-base)
-  '(("and____%edx,%eax")))              ; and    %edx,%eax
+  '(("and____%edx,%eax")))
+
+(define (i386:accu-and v)
+  `(("and____$i32,%eax" (#:immediate ,v))))
+
+(define (i386:accu-and-base-mem)
+  '(("and____(%edx),%eax")))
+
+(define (i386:accu-or-base-mem)
+  '(("or_____(%edx),%eax")))
 
 (define (i386:accu-not)
   '(("not____%eax")))                   ; not %eax
@@ -357,14 +366,13 @@
   '(("movzbl_(%edx),%edx")))            ; movzbl (%edx),%edx
 
 (define (i386:base-mem->accu)
-  '(("add___%edx,%eax")                 ; add    %edx,%eax
-    ("mov____(%eax),%eax")))            ; mov    (%eax),%eax
+  '(("mov____(%edx),%eax")))
 
 (define (i386:mem->accu)
-  '(("mov____(%eax),%eax")))            ; mov    (%eax),%eax
+  '(("mov____(%eax),%eax")))
 
 (define (i386:mem->base)
-  '(("mov____(%edx),%edx")))            ; mov    (%edx),%edx
+  '(("mov____(%edx),%edx")))
 
 (define (i386:mem+n->accu n)
   `(,(if (< (abs n) #x80) `("mov____0x8(%eax),%eax" (#:immediate1 ,n))

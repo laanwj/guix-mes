@@ -37,7 +37,9 @@ DEFINE add____%eax,%eax 01c0
 DEFINE add____%ebp,%eax 01e8
 DEFINE add____%edx,%eax 01d0
 DEFINE add____%edx,%eax 01d0
+DEFINE and____$i32,%eax 25
 DEFINE and____%edx,%eax 21d0
+DEFINE and____(%edx),%eax 2302
 DEFINE call32 e8
 DEFINE call___*%eax ffd0
 DEFINE cmp____$0x32,%eax 3d
@@ -116,6 +118,7 @@ DEFINE mov____%edx,0x8(%ebp) 8955
 DEFINE mov____%esp,%ebp 89e5
 DEFINE mov____(%eax),%eax 8b00
 DEFINE mov____(%eax),%ecx 8b08
+DEFINE mov____(%edx),%eax 8b02
 DEFINE mov____(%edx),%ecx 8b0a
 DEFINE mov____(%edx),%edx 8b12
 DEFINE mov____0x32(%eax),%eax 8b80
@@ -157,6 +160,7 @@ DEFINE mul____%edx f7e2
 DEFINE nop 90
 DEFINE not____%eax f7d0
 DEFINE or_____%edx,%eax 09d0
+DEFINE or_____(%edx),%eax 0b02
 DEFINE pop____%eax 58
 DEFINE pop____%edx 5a
 DEFINE push___$i32 68

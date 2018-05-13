@@ -64,6 +64,13 @@
             pointer:type
             pointer:rank
 
+            <bit-field>
+            make-bit-field
+            bit-field?
+            bit-field:type
+            bit-field:bit
+            bit-field:bits
+
             <var>
             var:name
             var:type
@@ -155,6 +162,13 @@
   (type pointer:type)
   (rank pointer:rank))
 
+(define-immutable-record-type <bit-field>
+  (make-bit-field type bit bits)
+  bit-field?
+  (type bit-field:type)
+  (bit bit-field:bit)
+  (bits bit-field:bits))
+
 (define-immutable-record-type <var>
   (make-var name type function id value)
   var?
@@ -211,6 +225,7 @@
 
 (define (->type o)
   (cond ((type? o) o)
+        ((bit-field? o) o)
         ((pointer? o) (pointer:type o))
         ((c-array? o) (c-array:type o))
         ((and (pair? o) (eq? (car o) 'tag)) o)
@@ -226,6 +241,7 @@
         ((c-array? o) (1+ ((compose ->rank c-array:type) o)))
         ((local? o) ((compose ->rank local:type) o))
         ((global? o) ((compose ->rank global:type) o))
+        ((bit-field? o) 0)
         ;; FIXME
         (#t
          (format (current-error-port) "->rank: not a type: ~s\n" o)
