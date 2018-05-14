@@ -189,15 +189,7 @@
       ((char ,value) (get-type "char" info))
       ((enum-ref . _) (get-type "int" info))
       ((fixed ,value) (get-type "int" info))
-      ((sizeof-expr . _) (get-type "int" info))
-      ((sizeof-type . _) (get-type "int" info))
-      ((string ,string) (make-c-array (get-type "char" info) (1+ (string-length string))))
       ((void) (get-type "void" info))
-
-      ((type-name ,type) (ast->type type info))
-      ((type-name ,type (abs-declr ,pointer))
-       (let ((rank (pointer->rank pointer)))
-         (rank+= (ast->type type info) rank)))
 
       ((ident ,name) (ident->type info name))
       ((tag ,name) (or (get-type o info)
@@ -206,6 +198,21 @@
       (,name (guard (string? name))
              (let ((type (get-type name info)))
                (ast->type type info)))
+
+      ((type-name (decl-spec-list ,type) (abs-declr (pointer . ,pointer)))
+       (let ((rank (pointer->rank `(pointer ,@pointer)))
+             (type (ast->type type info)))
+         (rank+= type rank)))
+
+      ((type-name ,type) (ast->type type info))
+      ((type-spec ,type) (ast->type type info))
+
+      ((sizeof-expr ,expr) (ast->type expr info))
+      ((sizeof-type ,type) (ast->type type info))
+
+      ((string ,string) (make-c-array (get-type "char" info) (1+ (string-length string))))
+
+      ((decl-spec-list (type-spec ,type)) (ast->type type info))
 
       ((fctn-call (p-expr (ident ,name)) . _)
        (or (and=> (assoc-ref (.functions info) name) function:type)
@@ -1586,9 +1593,7 @@
       (_ (error "struct-field: not supported: " o)))))
 
 (define (->size o)
-  (cond ((and (type? o) (eq? (type:type o) 'struct))
-         (apply + (map (compose ->size cdr) (struct->fields o))))
-        ((and (type? o) (eq? (type:type o) 'union))
+  (cond ((and (type? o) (eq? (type:type o) 'union))
          (apply max (map (compose ->size cdr) (struct->fields o))))
         ((type? o) (type:size o))
         ((pointer? o) %pointer-size)

@@ -24,13 +24,31 @@ struct foo
   char buf[16];
 };
 
+struct bar
+{
+  struct
+  {
+    int x;
+    int y;
+    int z;
+  };
+};
+
 int
 main ()
 {
   char **p;
-  if (sizeof (*p) != 4) return 1;
-  if (sizeof (**p) != 1) return 2;
+  if (sizeof (*p) != 4)
+    return 1;
+  if (sizeof (**p) != 1)
+    return 2;
   puts ("size: "); puts (itoa (sizeof (struct foo))); puts ("\n");
-  if (sizeof (struct foo) != 20) return 3;
+  if (sizeof (struct foo) != 20)
+    return 3;
+  struct foo f;
+  if (sizeof f != 20)
+    return 4;
+  if (sizeof (struct bar) != 12)
+    return 5;
   return 0;
 }
