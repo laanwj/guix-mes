@@ -110,7 +110,7 @@
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
         (if index
             (string-append "_string_" file-name "_" (number->string index))
-            "")))
+            (error "no such string:" o))))
     (define (text->M1 o)
       (cond
        ((char? o) (text->M1 (char->integer o)))

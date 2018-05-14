@@ -942,6 +942,12 @@
                 (info (clone info #:globals globals)))
            (append-text info (list (i386:label->accu `(#:string ,string))))))
 
+        ((p-expr (string . ,strings))
+         (let* ((string (apply string-append strings))
+                (globals ((globals:add-string globals) string))
+                (info (clone info #:globals globals)))
+           (append-text info (list (i386:label->accu `(#:string ,string))))))
+
         ((p-expr (fixed ,value))
          (let ((value (cstring->number value)))
            (append-text info (wrap-as (i386:value->accu value)))))
@@ -953,9 +959,6 @@
         ((p-expr (char ,char))
          (let ((char (char->integer (car (string->list char)))))
            (append-text info (wrap-as (i386:value->accu char)))))
-
-        ((p-expr (string . ,strings))
-         (append-text info (list (i386:label->accu `(#:string ,(apply string-append strings))))))
 
         (,char (guard (char? char)) (append-text info (wrap-as (i386:value->accu char))))
 

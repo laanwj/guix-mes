@@ -153,6 +153,8 @@ main (int argc, char* argv[])
       if (lst[i+1] != i)
         return 30 + i;
     }
+  puts ("foo"
+        "bar");
 
   return 0;
 }
