@@ -98,4 +98,21 @@ __umoddi3 (unsigned long long a, unsigned long long b)
   return ai % bi;
 }
 
+unsigned long long
+__lshrdi3 (unsigned long long a, int b)
+{
+  return a >> b;
+}
+
+long long
+__ashldi3 (long long a, int b)
+{
+  return a << b;
+}
+
+long long
+__ashrdi3 (long long a, int b)
+{
+  return a >> b;
+}
 #endif // !POSIX
