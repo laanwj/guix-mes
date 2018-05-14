@@ -28,6 +28,10 @@ main ()
 #else // !__MESC__
   asm ("mov    $0,%ebx");
   asm ("mov    $1,%eax");
+#if !__TINYC__
   asm ("int    $0x80");
+#else
+  asm ("int    $128");
+#endif
 #endif
 }

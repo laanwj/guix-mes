@@ -20,6 +20,10 @@
 
 int g_time = 1;
 
+#if __TINYC__
+#define time time_
+#endif
+
 int*
 time ()
 {

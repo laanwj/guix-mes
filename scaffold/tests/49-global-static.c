@@ -18,6 +18,10 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if __TINYC__
+#define unsigned
+#endif
+
 static int sint;
 static int sint2, sint3;
 typedef unsigned int size;
@@ -34,5 +38,6 @@ int
 main ()
 {
   void (*foo)() = &test;
-  return test (0);
+  test (0);
+  return 0;
 }
