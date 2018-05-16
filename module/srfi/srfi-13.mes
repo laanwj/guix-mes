@@ -27,6 +27,18 @@
 (mes-use-module (srfi srfi-1))
 (mes-use-module (srfi srfi-14))
 
+(define (string-join lst . delimiter+grammar)
+  (let ((delimiter (or (and (pair? delimiter+grammar) (car delimiter+grammar))
+                       " "))
+        (grammar (or (and (pair? delimiter+grammar) (pair? (cdr delimiter+grammar)) (cadr delimiter+grammar))
+                     'infix)))
+    (if (null? lst) ""
+        (case grammar
+         ((infix) (if (null? (cdr lst)) (car lst)
+                                   (string-append (car lst) delimiter (string-join (cdr lst) delimiter))))
+         ((prefix) (string-append delimiter (car lst) (apply string-join (cdr lst) delimiter+grammar)))
+         ((suffix) (string-append (car lst) delimiter (apply string-join (cdr lst) delimiter+grammar)))))))
+
 (define (string-copy s)
   (list->string (string->list s)))
 

@@ -31,6 +31,22 @@ exit $?
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
 
+(pass-if-equal "string-join"
+               "foo bar"
+               (string-join '("foo" "bar")))
+
+(pass-if-equal "string-join infix"
+               "foo+bar"
+               (string-join '("foo" "bar") "+"))
+
+(pass-if-equal "string-join prefix"
+               ",foo,bar"
+               (string-join '("foo" "bar") "," 'prefix))
+
+(pass-if-equal "string-join suffix"
+               "foo,bar,"
+               (string-join '("foo" "bar") "," 'suffix))
+
 (pass-if-equal "string-split"
                '("foo")
                (string-split "foo" #\:))
