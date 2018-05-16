@@ -155,4 +155,8 @@ exit $?
 
 (pass-if "make-vector 2" (sequal? (make-vector 3 1) #(1 1 1)))
 
+(pass-if-equal "binary" 5 #b101)
+(pass-if-equal "octal" 65 #o101)
+(pass-if-equal "hex" 257 #x101)
+
 (result 'report)

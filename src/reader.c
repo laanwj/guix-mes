@@ -224,6 +224,8 @@ reader_read_hash (int c, SCM a)
                    cons (reader_read_sexp_ (readchar (), a), cell_nil));
     case ':':
     return MAKE_KEYWORD (CAR (reader_read_sexp_ (readchar (), a)));
+    case 'b':
+      return reader_read_binary ();
     case 'o':
       return reader_read_octal ();
     case 'x':
@@ -317,6 +319,23 @@ reader_read_character ()
         }
     }
   return MAKE_CHAR (c);
+}
+
+SCM
+reader_read_binary ()
+{
+  int n = 0;
+  int c = peekchar ();
+  int s = 1;
+  if (c == '-') {s = -1; readchar (); c = peekchar ();}
+  while (c == '0' || c == '1')
+    {
+      n <<= 1;
+      n+= c - '0';
+      readchar ();
+      c = peekchar ();
+    }
+  return MAKE_NUMBER (s*n);
 }
 
 SCM
