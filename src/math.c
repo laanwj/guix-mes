@@ -192,6 +192,19 @@ lognot (SCM x)
 }
 
 SCM
+logxor (SCM x) ///((arity . n))
+{
+  int n = 0;
+  while (x != cell_nil)
+    {
+      assert_number ("logxor", CAR (x));
+      n ^= VALUE (car (x));
+      x = cdr (x);
+    }
+  return MAKE_NUMBER (n);
+}
+
+SCM
 ash (SCM n, SCM count)
 {
   assert_number ("ash", n);

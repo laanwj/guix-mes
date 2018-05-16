@@ -36,6 +36,7 @@ exit $?
 (pass-if-equal "modulo" 2 (modulo 11 3))
 (pass-if-equal "expt" 8 (expt 2 3))
 (pass-if-equal "logior" 7 (logior 0 1 2 4))
+(pass-if-equal "logxor" -2 (logxor 1 -1))
 (pass-if-equal "ash"
     8 (ash 1 3))
 (pass-if-equal "ash -1"
