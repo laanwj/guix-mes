@@ -30,10 +30,10 @@ swits (int c)
 
   switch (c)
     {
-    case TCHAR: {goto next;}
-    case 1: {goto next;}
-    case 2: {goto next;}
-    default: {goto next;}
+    case TCHAR: {puts ("TCHAR\n"); goto next;}
+    case 1: {puts ("1\n"); goto next;}
+    case 2: {puts ("2\n"); goto next;}
+    default: {puts ("default\n"); goto next;}
     }
 
   return 1;
@@ -42,6 +42,7 @@ swits (int c)
     {
     case 0:
       {
+        puts ("0\n");
         x = 0;
         c = 34;
         break;
@@ -52,9 +53,11 @@ swits (int c)
     case 2:
     case -1:
     case 1:
+      puts ("5..1, -1\n");
       x = 1;
       break;
     default:
+      puts ("default\n");
       x = 2;
       x = 2;
       break;
@@ -63,20 +66,91 @@ swits (int c)
 }
 
 int
+default_first (int c)
+{
+  int a;
+  switch (c)
+    {
+    here:
+    default:
+      a = 1;
+      {
+      }
+      a = 2;
+      return a;
+    there:
+    case 0:
+      ;
+      {}
+      return 0;
+    }
+  return -1;
+}
+
+int
 test ()
 {
   puts ("\n");
   puts ("t: switch 0\n");
-  if (swits (0) != 0) return swits (0);
+  int i = swits (0);
+  if (i != 0)
+    return i;
 
   puts ("t: switch 1\n");
-  if (swits (1) != 1) return 1;
+  if (swits (1) != 1)
+    return 10;
 
   puts ("t: switch -1\n");
-  if (swits (-1) != 1) return 1;
+  if (swits (-1) != 1)
+    return 11;
 
   puts ("t: switch -1\n");
-  if (swits (-2) != 2) return 1;
+  if (swits (-2) != 2)
+    return 12;
 
-  return 0;
+  if (default_first (1) != 2)
+    return 13;
+
+  if (default_first (0) != 0)
+    return 14;
+
+  i = 15;
+  switch (i)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+      i = 15;
+      break;
+    }
+  if (i != 15)
+    return 15;
+
+  i = 16;
+  switch (i)
+    {
+    case 1:
+    default:
+    case 0:
+      i = 0;
+      break;
+    }
+
+  if (i!= 0)
+    return 16;
+
+  i = 2;
+  switch (i)
+    {
+    default:
+    case 0:
+      i = 17;
+      break;
+    case 2:
+      i = 0;
+    }
+
+  return i;
 }
