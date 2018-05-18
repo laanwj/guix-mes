@@ -114,16 +114,6 @@
     `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%ebp)" (#:immediate1 ,n))
            `("mov____%eax,0x32(%ebp)" (#:immediate ,n))))))
 
-(define (i386:byte-accu->local+n id n)
-  (let ((n (+ (- 0 (* 4 id)) n)))
-    `(,(if (< (abs n) #x80) `("mov____%al,0x8(%ebp)" (#:immediate1 ,n))
-           `("mov____%al,0x32(%ebp)" (#:immediate ,n))))))
-
-(define (i386:word-accu->local+n id n)
-  (let ((n (+ (- 0 (* 4 id)) n)))
-    `(,(if (< (abs n) #x80) `("mov____%ax,0x8(%ebp)" (#:immediate1 ,n))
-           `("mov____%ax,0x32(%ebp)" (#:immediate ,n))))))
-
 (define (i386:accu*n->local i n)
   (or n (error "invalid value: accu->local: " n))
   (let ((o (- 0 (* 4 i))))
@@ -155,18 +145,6 @@
   `(("mov____%ebp,%eax")                ; mov    %ebp,%eax
     ,(if (< (abs n) #x80) `("add____$i8,%eax" (#:immediate1 ,n))
          `("add____$i32,%eax" (#:immediate ,n))))))
-
-(define (i386:byte-local->accu n)
-  (or n (error "invalid value: byte-local->accu: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("movzbl_0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("movzbl_0x32(%ebp),%eax" (#:immediate ,n))))))
-
-(define (i386:word-local->accu n)
-  (or n (error "invalid value: word-local->accu: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("movzwl_0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("movzwl_0x32(%ebp),%eax" (#:immediate ,n))))))
 
 (define (i386:byte-local->base n)
   (or n (error "invalid value: byte-local->base: " n))
@@ -542,3 +520,15 @@
 
 (define (i386:accu<->stack)
   '(("xchg___%eax,(%esp)")))            ; xchg   %eax,(%esp)
+
+(define (i386:byte-accu)
+  '(("movzbl_%al,%eax")))
+
+(define (i386:signed-byte-accu)
+  '(("movsbl_%al,%eax")))
+
+(define (i386:word-accu)
+  '(("movzwl_%ax,%eax")))
+
+(define (i386:signed-word-accu)
+  '(("movswl_%ax,%eax")))

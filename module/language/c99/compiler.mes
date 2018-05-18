@@ -148,33 +148,56 @@
     (cons `(tag ,name) (make-type 'union size fields))))
 
 (define i386:type-alist
-  `(("char" . ,(make-type 'builtin 1 #f))
-    ("short" . ,(make-type 'builtin 2 #f))
-    ("int" . ,(make-type 'builtin 4 #f))
-    ("long" . ,(make-type 'builtin 4 #f))
-    ;;("long long" . ,(make-type 'builtin 8 #f))
-    ;;("long long int" . ,(make-type 'builtin 8 #f))
+  `(("char" . ,(make-type 'signed 1 #f))
+    ("short" . ,(make-type 'signed 2 #f))
+    ("int" . ,(make-type 'signed 4 #f))
+    ("long" . ,(make-type 'signed 4 #f))
+    ;;("long long" . ,(make-type 'signed 8 #f))
+    ;;("long long int" . ,(make-type 'signed 8 #f))
 
-    ("long long" . ,(make-type 'builtin 4 #f))  ;; FIXME
-    ("long long int" . ,(make-type 'builtin 4 #f))
+    ("long long" . ,(make-type 'signed 4 #f))  ;; FIXME
+    ("long long int" . ,(make-type 'signed 4 #f))
 
-    ("void" . ,(make-type 'builtin 1 #f))
+    ("void" . ,(make-type 'void 1 #f))
     ;; FIXME sign
-    ("unsigned char" . ,(make-type 'builtin 1 #f))
-    ("unsigned short" . ,(make-type 'builtin 2 #f))
-    ("unsigned short int" . ,(make-type 'builtin 2 #f))
-    ("unsigned" . ,(make-type 'builtin 4 #f))
-    ("unsigned int" . ,(make-type 'builtin 4 #f))
-    ("unsigned long" . ,(make-type 'builtin 4 #f))
+    ("unsigned char" . ,(make-type 'unsigned 1 #f))
+    ("unsigned short" . ,(make-type 'unsigned 2 #f))
+    ("unsigned short int" . ,(make-type 'unsigned 2 #f))
+    ("unsigned" . ,(make-type 'unsigned 4 #f))
+    ("unsigned int" . ,(make-type 'unsigned 4 #f))
+    ("unsigned long" . ,(make-type 'unsigned 4 #f))
 
     ;; ("unsigned long long" . ,(make-type 'builtin 8 #f))
     ;; ("unsigned long long int" . ,(make-type 'builtin 8 #f))
-    ("unsigned long long" . ,(make-type 'builtin 4 #f)) ;; FIXME
-    ("unsigned long long int" . ,(make-type 'builtin 4 #f))
+    ("unsigned long long" . ,(make-type 'unsigned 4 #f)) ;; FIXME
+    ("unsigned long long int" . ,(make-type 'unsigned 4 #f))
 
-    ("float" . ,(make-type 'builtin 4 #f))
-    ("double" . ,(make-type 'builtin 8 #f))
-    ("long double" . ,(make-type 'builtin 16 #f))))
+    ("float" . ,(make-type 'float 4 #f))
+    ("double" . ,(make-type 'float 8 #f))
+    ("long double" . ,(make-type 'float 16 #f))))
+
+(define (signed? o)
+  (eq? ((compose type:type ->type) o) 'signed))
+
+(define (unsigned? o)
+  (eq? ((compose type:type ->type) o) 'unsigned))
+
+(define (->size o)
+  (cond ((and (type? o) (eq? (type:type o) 'union))
+         (apply max (map (compose ->size cdr) (struct->fields o))))
+        ((type? o) (type:size o))
+        ((pointer? o) %pointer-size)
+        ((c-array? o) (* (c-array:count o) ((compose ->size c-array:type) o)))
+        ((local? o) ((compose ->size local:type) o))
+        ((global? o) ((compose ->size global:type) o))
+        ((bit-field? o) ((compose ->size bit-field:type) o))
+        ((and (pair? o) (pair? (car o)) (bit-field? (cdar o))) ((compose ->size cdar) o))
+        ;; FIXME
+        ;; (#t
+        ;;  (stderr "o=~s\n" o)
+        ;;  (format (current-error-port) "->size: not a <type>: ~s\n" o)
+        ;;  4)
+        (else (error "->size>: not a <type>:" o))))
 
 (define (ast->type o info)
   (define (type-helper o info)
@@ -617,11 +640,8 @@
   (let* ((type (local:type o)))
     (cond ((or (c-array? type)
                (structured-type? type)) (wrap-as (i386:local-ptr->accu (local:id o))))
-          (else (let ((size (->size o)))
-                  (wrap-as (case size
-                             ((1) (i386:byte-local->accu (local:id o)))
-                             ((2) (i386:word-local->accu (local:id o)))
-                             (else (i386:local->accu (local:id o))))))))))
+          (else (append (wrap-as (i386:local->accu (local:id o)))
+                        (convert-accu type))))))
 
 (define (global->accu o)
   (let ((type (global:type o)))
@@ -663,15 +683,7 @@
   (wrap-as (i386:value->accu v)))
 
 (define (accu->local+n-text local n)
-  (let* ((type (local:type local))
-         (ptr (->rank local))
-         (size (if (= ptr -1) ((compose type:size local:type) local)
-                   4))
-         (id (local:id local)))
-    (wrap-as (case size
-               ((1) (i386:byte-accu->local+n id n))
-               ((2) (i386:word-accu->local+n id n))
-               (else (i386:accu->local+n id n))))))
+  (let ((id (local:id local))) (wrap-as (i386:accu->local+n id n))))
 
 (define (accu->ident info)
   (lambda (o)
@@ -1002,12 +1014,8 @@
 
         ((array-ref ,index ,array)
          (let* ((info (expr->accu* o info))
-                (size (ast->size o info)))
-           (append-text info (wrap-as (case size
-                                        ((1) (i386:byte-mem->accu))
-                                        ((2) (i386:word-mem->accu))
-                                        ((4) (i386:mem->accu))
-                                        (else '()))))))
+                (type (ast->type o info)))
+           (append-text info (mem->accu type))))
 
         ((d-sel ,field ,struct)
          (let* ((info (expr->accu* o info))
@@ -1016,11 +1024,7 @@
                 (size (->size type))
                 (array? (c-array? type)))
            (if array? info
-               (append-text info (wrap-as (case size
-                                            ((1) (i386:byte-mem->accu))
-                                            ((2) (i386:word-mem->accu))
-                                            ((4) (i386:mem->accu))
-                                            (else '())))))))
+               (append-text info (mem->accu type)))))
 
         ((i-sel ,field ,struct)
          (let* ((info (expr->accu* o info))
@@ -1029,20 +1033,12 @@
                 (size (->size type))
                 (array? (c-array? type)))
            (if array? info
-               (append-text info (wrap-as (case size
-                                            ((1) (i386:byte-mem->accu))
-                                            ((2) (i386:word-mem->accu))
-                                            ((4) (i386:mem->accu))
-                                            (else '())))))))
+               (append-text info (mem->accu type)))))
 
         ((de-ref ,expr)
          (let* ((info (expr->accu expr info))
-                (size (ast->size o info)))
-           (append-text info (wrap-as (case size
-                                        ((1) (i386:byte-mem->accu))
-                                        ((2) (i386:word-mem->accu))
-                                        ((4) (i386:mem->accu))
-                                        (else '()))))))
+                (type (ast->type o info)))
+           (append-text info (mem->accu type))))
 
         ((fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list))
          (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list)))) ;; FIXME
@@ -1252,7 +1248,9 @@
            info))
 
         ((cast ,type ,expr)
-         (expr->accu expr info))
+         (let ((info (expr->accu expr info))
+               (type (ast->type o info)))
+           (append-text info (convert-accu type))))
 
         ((assn-expr (de-ref (post-inc (p-expr (ident ,name)))) (op ,op) ,b)
          (let* ((info (expr->accu `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b) info))
@@ -1348,6 +1346,28 @@
     (let ((info (helper)))
       (if (null? (.post info)) info
           (append-text (clone info #:post '()) (.post info))))))
+
+(define (mem->accu type)
+  (let ((size (->size type)))
+    (case size
+      ((1) (append (wrap-as (i386:byte-mem->accu)) (convert-accu type)))
+      ((2) (append (wrap-as (i386:word-mem->accu)) (convert-accu type)))
+      ((4) (wrap-as (i386:mem->accu)))
+      (else '()))))
+
+(define (convert-accu type)
+  (if (not (type? type)) '()
+      (let ((sign (signed? type))
+            (size (->size type)))
+        (cond ((and (= size 1) sign)
+               (wrap-as (i386:signed-byte-accu)))
+              ((= size 1)
+               (wrap-as (i386:byte-accu)))
+              ((and (= size 2) sign)
+               (wrap-as (i386:signed-word-accu)))
+              ((= size 1)
+               (wrap-as (i386:word-accu)))
+              (else '())))))
 
 (define (expr->base o info)
   (let* ((info (append-text info (wrap-as (i386:push-accu))))
@@ -1547,23 +1567,6 @@
                      ((struct-field info) `(comp-decl (decl-spec-list ,type) (comp-declr-list ,o))))
                    decls))
       (_ (error "struct-field: not supported: " o)))))
-
-(define (->size o)
-  (cond ((and (type? o) (eq? (type:type o) 'union))
-         (apply max (map (compose ->size cdr) (struct->fields o))))
-        ((type? o) (type:size o))
-        ((pointer? o) %pointer-size)
-        ((c-array? o) (* (c-array:count o) ((compose ->size c-array:type) o)))
-        ((local? o) ((compose ->size local:type) o))
-        ((global? o) ((compose ->size global:type) o))
-        ((bit-field? o) ((compose ->size bit-field:type) o))
-        ((and (pair? o) (pair? (car o)) (bit-field? (cdar o))) ((compose ->size cdar) o))
-        ;; FIXME
-        ;; (#t
-        ;;  (stderr "o=~s\n" o)
-        ;;  (format (current-error-port) "->size: not a <type>: ~s\n" o)
-        ;;  4)
-        (else (error "->size>: not a <type>:" o))))
 
 (define (local-var? o) ;; formals < 0, locals > 0
   (positive? (local:id o)))

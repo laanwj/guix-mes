@@ -226,8 +226,8 @@
 (define (->type o)
   (cond ((type? o) o)
         ((bit-field? o) o)
-        ((pointer? o) (pointer:type o))
-        ((c-array? o) (c-array:type o))
+        ((pointer? o) ((compose ->type pointer:type) o))
+        ((c-array? o) ((compose ->type c-array:type) o))
         ((and (pair? o) (eq? (car o) 'tag)) o)
         ;; FIXME
         (#t

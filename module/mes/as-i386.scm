@@ -45,8 +45,6 @@
             i386:accu->label
             i386:accu->local
             i386:accu->local+n
-            i386:byte-accu->local+n
-            i386:word-accu->local+n
             i386:accu->local+n
             i386:accu-and
             i386:accu-and-base
@@ -81,8 +79,6 @@
             i386:byte-base->accu-mem+n
             i386:byte-base-mem->accu
             i386:byte-base-sub
-            i386:byte-local->accu
-            i386:word-local->accu
             i386:byte-local->base
             i386:byte-mem->accu
             i386:word-mem->accu
@@ -153,6 +149,10 @@
             i386:l?->accu
             i386:le?->accu
             i386:z->accu
+            i386:byte-accu
+            i386:signed-byte-accu
+            i386:word-accu
+            i386:signed-word-accu
             ))
 
 (cond-expand

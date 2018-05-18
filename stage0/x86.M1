@@ -79,13 +79,9 @@ DEFINE mov____$i32,0x32 c705
 DEFINE mov____$i32,0x8(%eax) c740
 DEFINE mov____$i32,0x8(%ebp) c745
 DEFINE mov____%al,(%edx) 8802
-DEFINE mov____%al,0x32(%ebp) 8885
-DEFINE mov____%al,0x8(%ebp) 8845
 DEFINE mov____%al,0x8(%edx) 8842
 DEFINE mov____%ax,(%edx) 668902
-DEFINE mov____%ax,0x32(%ebp) 668985
 DEFINE mov____%ax,0x32(%edx) 668982
-DEFINE mov____%ax,0x8(%ebp) 668945
 DEFINE mov____%ax,0x8(%edx) 668942
 DEFINE mov____%dl,(%eax) 8810
 DEFINE mov____%dl,0x8(%eax) 8850
@@ -141,21 +137,22 @@ DEFINE mov____0x8(%ebp),%ebx 8b5d
 DEFINE mov____0x8(%ebp),%ecx 8b4d
 DEFINE mov____0x8(%ebp),%edx 8b55
 DEFINE mov____0x8(%ebp),%esp 8b65
+DEFINE movsbl_%al,%eax 0fbec0
+DEFINE movswl_%ax,%eax 0fbfc0
+DEFINE movzbl_%al,%eax 0fb6c0
 DEFINE movzbl_%al,%eax 0fb6c0
 DEFINE movzbl_%dl,%edx 0fb6d2
 DEFINE movzbl_(%eax),%eax 0fb600
 DEFINE movzbl_(%eax),%edx 0fb610
 DEFINE movzbl_(%edx),%edx 0fb612
 DEFINE movzbl_0x32(%eax),%eax 0fb680
-DEFINE movzbl_0x32(%ebp),%eax 0fb685
 DEFINE movzbl_0x8(%eax),%eax 0fb640
 DEFINE movzbl_0x8(%ebp),%eax 0fb645
-DEFINE movzbl_0x8(%ebp),%edx 0fb655
+DEFINE movzwl_%ax,%eax 0fb7c0
 DEFINE movzwl_(%eax),%eax 0fb700
 DEFINE movzwl_0x32(%eax),%eax 0fb780
 DEFINE movzwl_0x32(%ebp),%eax 0fb785
 DEFINE movzwl_0x8(%eax),%eax 0fb740
-DEFINE movzwl_0x8(%ebp),%eax 0fb745
 DEFINE mul____%edx f7e2
 DEFINE nop 90
 DEFINE not____%eax f7d0
@@ -198,6 +195,16 @@ DEFINE xor____%ebx,%ebx 31db
 DEFINE xor____%ecx,%ecx 31c9
 DEFINE xor____%edx,%eax 31d0
 DEFINE xor____%edx,%edx 31d2
+
+# Deprecated.  Remove after 0.14 release.
+DEFINE mov____%al,0x32(%ebp) 8885
+DEFINE mov____%al,0x8(%ebp) 8845
+DEFINE mov____%ax,0x32(%ebp) 668985
+DEFINE mov____%ax,0x8(%ebp) 668945
+DEFINE movzbl_0x32(%ebp),%eax 0fb685
+DEFINE movzbl_0x8(%ebp),%edx 0fb655
+DEFINE movzwl_0x8(%ebp),%eax 0fb745
+DEFINE movzwl_0x8(%ebp),%eax 0fb745
 
 DEFINE SYS_exit   01000000
 DEFINE SYS_read   03000000
