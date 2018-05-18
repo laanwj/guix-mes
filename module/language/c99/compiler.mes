@@ -189,6 +189,7 @@
       ((char ,value) (get-type "char" info))
       ((enum-ref . _) (get-type "int" info))
       ((fixed ,value) (get-type "int" info))
+      ((float ,float) (get-type "float" info))
       ((void) (get-type "void" info))
 
       ((ident ,name) (ident->type info name))
@@ -949,11 +950,15 @@
            (append-text info (list (i386:label->accu `(#:string ,string))))))
 
         ((p-expr (fixed ,value))
-         (let ((value (cstring->number value)))
+         (let ((value (cstring->int value)))
+           (append-text info (wrap-as (i386:value->accu value)))))
+
+        ((p-expr (float ,value))
+         (let ((value (cstring->float value)))
            (append-text info (wrap-as (i386:value->accu value)))))
 
         ((neg (p-expr (fixed ,value)))
-         (let ((value (- (cstring->number value))))
+         (let ((value (- (cstring->int value))))
            (append-text info (wrap-as (i386:value->accu value)))))
 
         ((p-expr (char ,char))
@@ -975,7 +980,7 @@
         ((ref-to (i-sel (ident ,field) (cast (type-name (decl-spec-list ,struct) (abs-declr (pointer))) (p-expr (fixed ,base)))))
          (let* ((type (ast->basic-type struct info))
                 (offset (field-offset info type field))
-                (base (cstring->number base)))
+                (base (cstring->int base)))
            (append-text info (wrap-as (i386:value->accu (+ base offset))))))
 
         ;; &foo
@@ -1124,7 +1129,7 @@
                             ((and struct? (= rank 2)) 4)
                             (else 1)))
                 (info (expr->accu a info))
-                (value (cstring->number value))
+                (value (cstring->int value))
                 (value (* size value)))
            (append-text info (wrap-as (i386:accu+value value)))))
 
@@ -1155,7 +1160,7 @@
                             ((and struct? (= rank 2)) 4)
                             (else 1)))
                 (info (expr->accu a info))
-                (value (cstring->number value))
+                (value (cstring->int value))
                 (value (* size value)))
            (append-text info (wrap-as (i386:accu+value (- value))))))
 
@@ -1439,20 +1444,25 @@
 
       (_ ((jump i386:jump-z (wrap-as (i386:accu-zero?))) o)))))
 
-(define (cstring->number s)
-  (let ((s (cond ((string-suffix? "ULL" s) (string-drop-right s 3))
-                 ((string-suffix? "UL" s) (string-drop-right s 2))
-                 ((string-suffix? "LL" s) (string-drop-right s 2))
-                 ((string-suffix? "L" s) (string-drop-right s 1))
-                 (else s))))
-    (cond ((string-prefix? "0x" s) (string->number (string-drop s 2) 16))
-          ((string-prefix? "0b" s) (string->number (string-drop s 2) 2))
-          ((string-prefix? "0" s) (string->number s 8))
-          (else (string->number s)))))
+(define (cstring->int o)
+  (let ((o (cond ((string-suffix? "ULL" o) (string-drop-right o 3))
+                 ((string-suffix? "UL" o) (string-drop-right o 2))
+                 ((string-suffix? "LL" o) (string-drop-right o 2))
+                 ((string-suffix? "L" o) (string-drop-right o 1))
+                 (else o))))
+    (or (cond ((string-prefix? "0x" o) (string->number (string-drop o 2) 16))
+              ((string-prefix? "0b" o) (string->number (string-drop o 2) 2))
+              ((string-prefix? "0" o) (string->number o 8))
+              (else (string->number o)))
+        (error "cstring->int: not supported:" o))))
+
+(define (cstring->float o)
+  (or (string->number o)
+      (error "cstring->float: not supported:" o)))
 
 (define (try-expr->number info o)
   (pmatch o
-    ((fixed ,a) (cstring->number a))
+    ((fixed ,a) (cstring->int a))
     ((p-expr ,expr) (expr->number info expr))
     ((neg ,a)
      (- (expr->number info a)))
@@ -1485,7 +1495,7 @@
     ((cast ,type ,expr) (expr->number info expr))
     ((cond-expr ,test ,then ,else)
      (if (p-expr->bool info test) (expr->number info then) (expr->number info else)))
-    (,string (guard (string? string)) (cstring->number string))
+    (,string (guard (string? string)) (cstring->int string))
     ((ident ,name) (assoc-ref (.constants info) name))
     (_  #f)))
 
@@ -1528,7 +1538,7 @@
                                  (let ((field (car o)))
                                    (pmatch field
                                      ((comp-declr (bit-field (ident ,name) (p-expr (fixed ,bits))))
-                                      (let ((bits (cstring->number bits)))
+                                      (let ((bits (cstring->int bits)))
                                         (cons (cons name (make-bit-field type bit bits))
                                               (loop (cdr o) (+ bit bits)))))
                                      (_ (error "struct-field: not supported:" field o))))))))))
@@ -1814,8 +1824,8 @@
                         (0 0)
                         ((p-expr (char ,value)) (char->integer (car (string->list value))))
                         ((p-expr (ident ,constant)) (assoc-ref (.constants info) constant))
-                        ((p-expr (fixed ,value)) (cstring->number value))
-                        ((neg (p-expr (fixed ,value))) (- (cstring->number value)))
+                        ((p-expr (fixed ,value)) (cstring->int value))
+                        ((neg (p-expr (fixed ,value))) (- (cstring->int value)))
                         (_ (error "case test: not supported: " test)))))
            (append (wrap-as (i386:accu-cmp-value value))
                    (jump-z body-label))))
@@ -2106,7 +2116,7 @@
      (list->string (map (lambda (i) (pmatch i
                                       ((initzer (p-expr (char ,c))) ((compose car string->list) c))
                                       ((initzer (p-expr (fixed ,fixed)))
-                                       (let ((value (cstring->number fixed)))
+                                       (let ((value (cstring->int fixed)))
                                          (if (and (>= value 0) (<= value 255))
                                              (integer->char value)
                                              (error "array-init->string: not supported:" i o))))
@@ -2208,7 +2218,7 @@
     ((ref-to (i-sel (ident ,field) (cast (type-name (decl-spec-list ,struct) (abs-declr (pointer))) (p-expr (fixed ,base)))))
      (let* ((type (ast->type struct info))
             (offset (field-offset info type field))
-            (base (cstring->number base)))
+            (base (cstring->int base)))
        (int->bv32 (+ base offset))))
     ((,char . _) (guard (char? char)) o)
     ((,number . _) (guard (number? number))
@@ -2286,6 +2296,7 @@
     ((typename ,name) info)
     ((union-ref . _) info)
     ((fixed-type . _) info)
+    ((float-type . _) info)
     ((void) info)
 
     (_ ;;(error "type->info: not supported:" o)

@@ -8,7 +8,7 @@ exit $?
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -25,9 +25,12 @@ exit $?
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(mes-use-module (mes scm))
-(mes-use-module (srfi srfi-0))
 (mes-use-module (mes test))
+(pass-if-equal "string->number" 42 (string->number "42"))
+(pass-if-equal "string->number neg" -42 (string->number "-42"))
+(pass-if-not "string->number hex" (string->number "aa"))
+(pass-if-equal "string->number hex" 170 (string->number "aa" 16))
+(pass-if-equal "string->number float" 1 (inexact->exact (string->number "1.0")))
 
 (pass-if-equal "+" 6 (+ 1 2 3))
 (pass-if-equal "*" 27 (* 3 3 3))

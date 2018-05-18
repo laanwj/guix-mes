@@ -127,6 +127,13 @@ gettimeofday (struct timeval *tv, struct timezone *tz)
   return 0;
 }
 
+double
+ldexp (double x, int exp)
+{
+  eputs ("ldexp stub\n");
+  return 0;
+}
+
 struct tm *
 localtime (time_t const *timep)
 {
@@ -283,6 +290,24 @@ strstr (char const *haystack, char const *needle)
 {
   eputs ("strstr stub\n");
   return 0;
+}
+
+double
+strtod (char const *nptr, char **endptr)
+{
+  eputs ("strtoul stub\n");
+}
+
+float
+strtof (char const *nptr, char **endptr)
+{
+  return strtod (nptr, endptr);
+}
+
+long double
+strtold (char const *nptr, char **endptr)
+{
+  return strtod (nptr, endptr);
 }
 
 long

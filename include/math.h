@@ -23,7 +23,9 @@
 #if __GNUC__ && POSIX
 #undef __MES_MATH_H
 #include_next <math.h>
-#endif // (__GNUC__ && POSIX)
+#else  // !(__GNUC__ && POSIX)
+double ldexp (double x, int exp);
+#endif  // !(__GNUC__ && POSIX)
 
 #endif // __MES_MATH_H
 
