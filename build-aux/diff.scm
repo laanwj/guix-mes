@@ -66,6 +66,9 @@ exec ${GUILE-guile} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
 (define (safe-list-head lst n)
   (list-head lst (min n (length lst))))
 
+(define (line-equal? a b)
+  (equal? (string-trim-right a) (string-trim-right b)))
+
 ;; naive diff
 (define (diff a b)
   (let ((a-lines (string-split (with-input-from-file a read-string) #\newline))
@@ -77,21 +80,21 @@ exec ${GUILE-guile} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
              (list (make-hunk context (safe-list-head a-lines 3) '() b-lines)))
             ((null? b-lines)
              (list (make-hunk context (safe-list-head a-lines 3) a-lines '())))
-            ((equal? (car a-lines) (car b-lines))
+            ((line-equal? (car a-lines) (car b-lines))
              (loop `(,(1+ (car context))
                      ,(1+ (cadr context))
                      ,@(cdddr context)
                      ,(car a-lines))
                    (cdr a-lines) (cdr b-lines)))
             (else
-             (cond ((and (pair? (cdr b-lines)) (equal? (car a-lines) (cadr b-lines)))
+             (cond ((and (pair? (cdr b-lines)) (line-equal? (car a-lines) (cadr b-lines)))
                     (cons (make-hunk context (safe-list-head a-lines 3) '() (list (car b-lines)))
                           (loop `(,(+ 1 (car context))
                                   ,(+ 2 (cadr context))
                                   ,@(cdddr context)
                                   ,(car a-lines))
                                 (cdr a-lines) (cddr b-lines))))
-                   ((and (pair? (cdr a-lines)) (equal? (cadr a-lines) (car b-lines)))
+                   ((and (pair? (cdr a-lines)) (line-equal? (cadr a-lines) (car b-lines)))
                     (cons (make-hunk context (safe-list-head a-lines 3) (list (car a-lines)) '())
                           (loop `(,(+ 2 (car context))
                                   ,(+ 1 (cadr context))
@@ -108,7 +111,7 @@ exec ${GUILE-guile} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
 
 (define (main args)
   (let* ((files (cdr args))
-         (files (if (equal? (car files) "-u") (cdr files) files))
+         (files (if (string-prefix? "-" (car files)) (cdr files) files))
          (hunks (apply diff (list-head files 2))))
     (when (pair? hunks)
       (display (string-join (append-map hunk->lines hunks) "\n"))

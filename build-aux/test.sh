@@ -44,7 +44,7 @@ if [ -n "$CC32" ]; then
 
     [ $m = $r ]
     if [ -f "$t".expect ]; then
-        $DIFF -u "$t".expect "$t".mlibc-stdout;
+        $DIFF -ub "$t".expect "$t".mlibc-stdout;
     fi
 fi
 
@@ -61,5 +61,5 @@ set -e
 
 [ $m = $r ]
 if [ -f "$t".expect ]; then
-    $DIFF -u "$t".expect "$t".mes-stdout;
+    $DIFF -ub "$t".expect "$t".mes-stdout;
 fi
