@@ -116,6 +116,7 @@ t
 7p-struct-cast
 7q-bit-field
 7r-sign-extend
+7s-struct-short
 80-setjmp
 81-qsort
 82-define
@@ -228,7 +229,6 @@ broken="$broken
 
 31_args
 37_sprintf
-38_multiple_array_index
 39_typedef
 
 40_stdio
@@ -245,7 +245,6 @@ broken="$broken
 #30_hanoi                ; fails with GCC
 #34_array_assignment     ; fails with GCC
 #37_sprintf              ; integer formatting unsupported
-#38_multiple_array_index ; unspported: (decl (decl-spec-list (type-spec (fixed-type "int"))) (init-declr-list (init-declr (array-of (array-of (ident "a") (p-expr (fixed "4"))) (p-expr (fixed "4"))))))
 #39_typedef              ;unsupported: (decl (decl-spec-list (stor-spec (typedef)) (type-spec (typename "MyFunStruct"))) (init-declr-list (init-declr (ptr-declr (pointer) (ident "MoreFunThanEver")))))
 
 #40_stdio                ; f* functions

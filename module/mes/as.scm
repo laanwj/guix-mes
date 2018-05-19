@@ -27,6 +27,7 @@
   #:use-module (mes guile)
   #:use-module (mes bytevectors)
   #:export (dec->hex
+            int->bv8
             int->bv16
             int->bv32))
 

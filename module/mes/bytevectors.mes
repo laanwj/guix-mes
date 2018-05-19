@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -43,6 +43,12 @@
             (modulo (ash value -8) #x100))))
     (set-car! bv (car x))
     (set-cdr! bv (cdr x))
+    x))
+
+(define (bytevector-u8-set! bv index value)
+  (when (not (= 0 index)) (error "bytevector-u8-set! index not zero: " index " value: " value))
+  (let ((x (modulo value #x100)))
+    (set-car! bv x)
     x))
 
 (define (make-bytevector length)

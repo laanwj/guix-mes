@@ -41,9 +41,9 @@ int g_hello_int[] = {0, 1, 2, 3, 4, 5};
 int
 main (int argc)
 {
-  puts (g_hello);
-  puts (g_hello2);
-  puts (g_hello3);
+  puts ("0:"); puts (g_hello); puts ("\n");
+  puts ("2:"); puts (g_hello2); puts ("\n");
+  puts ("3:"); puts (g_hello3); puts ("\n");
   if (strcmp (g_hello, g_hello2))
     return 1;
 

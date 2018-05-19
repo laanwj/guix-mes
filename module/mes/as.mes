@@ -42,6 +42,11 @@
     (bytevector-u16-native-set! bv 0 value)
     bv))
 
+(define (int->bv8 value)
+  (let ((bv (make-bytevector 1)))
+    (bytevector-u8-set! bv 0 value)
+    bv))
+
 (define (dec->hex o)
   (cond ((number? o) (number->string o 16))
         ((char? o) (number->string (char->integer o) 16))

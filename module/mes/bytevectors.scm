@@ -26,6 +26,7 @@
   #:use-module (mes guile)
   #:export (bytevector-u32-native-set!
             bytevector-u16-native-set!
+            bytevector-u8-set!
             make-bytevector))
 
 (cond-expand
