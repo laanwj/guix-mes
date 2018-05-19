@@ -1544,7 +1544,15 @@
 (define (struct-field info)
   (lambda (o)
     (pmatch o
-      ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (ident ,name))))
+      ((comp-decl (decl-spec-list (type-spec (enum-def (ident ,name) (enum-def-list . ,fields)))) (comp-declr-list . ,decls))
+       (let (
+             ;;(constants (enum-def-list->constants (.constants info) fields))
+             ;;(type-entry (enum->type-entry name fields))
+             )
+         (append-map (lambda (o)
+                       ((struct-field info) `(comp-decl (decl-spec-list (type-spec "int")) (comp-declr-list ,o))))
+                     decls)))
+    ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (ident ,name))))
        (list (cons name (ast->type type info))))
       ((comp-decl (decl-spec-list (type-spec ,type)) (comp-declr-list (comp-declr (ptr-declr ,pointer (ident ,name)))))
        (let ((rank (pointer->rank pointer)))
@@ -1934,7 +1942,8 @@
             (type (rank+= type rank)))
        (clone info #:types (acons name type (.types info)))))
     (((decl-spec-list (stor-spec (,store)) (type-spec ,type)) (init-declr-list . ,inits))
-     (let* ((type (ast->type type info))
+     (let* ((info (type->info type #f info))
+            (type (ast->type type info))
             (function (.function info)))
        (if (not function) (fold (cut init-declr->info type <> <>) info (map cdr inits))
            (let* ((tmp (clone info #:function #f #:globals '()))
@@ -2290,12 +2299,14 @@
 
     ((struct-def (field-list . ,fields))
      (mescc:trace name " <t>")
-     (let ((type-entry (struct->type-entry name (append-map (struct-field info) fields))))
+     (let* ((info (fold field->info info fields))
+            (type-entry (struct->type-entry name (append-map (struct-field info) fields))))
        (clone info #:types (cons type-entry (.types info)))))
 
     ((struct-def (ident ,name) (field-list . ,fields))
      (mescc:trace name " <t>")
-     (let ((type-entry (struct->type-entry name (append-map (struct-field info) fields))))
+     (let* ((info (fold field->info info fields))
+            (type-entry (struct->type-entry name (append-map (struct-field info) fields))))
        (clone info #:types (cons type-entry (.types info)))))
 
     ((union-def (ident ,name) (field-list . ,fields))
@@ -2320,6 +2331,28 @@
      (stderr "type->info: not supported: ~s\n" o)
      info
      )))
+
+(define (field->info o info)
+  (pmatch o
+    ((comp-decl (decl-spec-list (type-spec (struct-def (ident ,name) (field-list . ,fields)))) . _)
+     (let* ((fields (append-map (struct-field info) fields))
+            (struct (make-type 'struct (apply + (map field:size fields)) fields)))
+       (clone info #:types (acons `(tag ,name) struct (.types info)))))
+    ((comp-decl (decl-spec-list (type-spec (union-def (ident ,name) (field-list . ,fields)))) . _)
+     (let* ((fields (append-map (struct-field info) fields))
+            (union (make-type 'union (apply + (map field:size fields)) fields)))
+       (clone info #:types (acons `(tag ,name) union (.types info))) ))
+    ((comp-decl (decl-spec-list (type-spec (enum-def (enum-def-list . ,fields)))) . _)
+     (let ((constants (enum-def-list->constants (.constants info) fields)))
+       (clone info
+              #:constants (append constants (.constants info)))))
+    ((comp-decl (decl-spec-list (type-spec (enum-def (ident ,name) (enum-def-list . ,fields)))) . _)
+     (let ((constants (enum-def-list->constants (.constants info) fields))
+           (type-entry (enum->type-entry name fields)))
+       (clone info
+              #:types (cons type-entry (.types info))
+              #:constants (append constants (.constants info)))))
+    (_ info)))
 
 ;;; fctn-defn
 (define (param-decl:get-name o)

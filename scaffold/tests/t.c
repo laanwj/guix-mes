@@ -49,6 +49,23 @@ int_array_t bar;
 typedef struct foo *foo_pointer_t;
 foo_pointer_t foep;
 
+struct nest
+{
+  struct bar
+  {
+    int baz;
+  } bar;
+  int i;
+  enum baz
+    {
+      bla
+    } baz;
+  enum
+    {
+      blub = 33,
+    } blub;
+};
+
 int
 test (struct foo* p)
 {
@@ -133,6 +150,16 @@ main (int argc, char* argv[])
   eputs ("u.bla:"); eputs (itoa (u.bla)); eputs ("\n");
   if (u.foo != 3) return 24;
   if (u.bla != 4) return 25;
+
+  struct nest n = {0};
+  if (n.bar.baz)
+    return 26;
+
+  if (bla != 0)
+    return 27;
+
+  if (blub != 33)
+    return 28;
 
   char buf[sizeof (g_f.string)];
   char buf1[sizeof (g_g->string)];
