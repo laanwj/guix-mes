@@ -92,14 +92,16 @@ be source.
     https://gitlab.com/janneke/tinycc
 
 * TODO
-** fix MesCC so that tcc can correctly compile gcc
-** remove or upstream patches from tcc
-** fix bootstrap-loops: (Nyacc?, mes.M12, psyntax.pp?)
+** have bootstrapped tcc compile gcc-4.7
+** remove or upstream patches from tcc-boot
+** prepare src/mes.c for M2-Planet transpiler.
+** fix bootstrap-loops: (Nyacc?, mes.M2, psyntax.pp?)
 ** make GNU gcc (8.0?) bootstrappable again, remove [need for] tcc stage
 ** integrate with GuixSD
 ** x86_64, arm, the Hurd
 
 * DONE
+** have tcc-boot's mes-tcc compile a fully functional tcc
 ** hex.0, hex.1, M0
 ** M1, hex2_linker prototyped in C
 ** M2-Planet is now self-hosting, written in M2

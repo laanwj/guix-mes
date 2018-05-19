@@ -14,7 +14,7 @@ Pre-R6RS [[https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html][p
 Guile's [[https://www.gnu.org/software/guile/docs/master/guile.html/PEG-Parsing.html][PEG]] --and test suite just barely enough to support a simple
 REPL and simple C-compiler: MesCC.
 
-Mes+MesCC can compile a [[https://gitlab.com/janneke/tinycc][modified TinyCC]] that is close to being
+Mes+MesCC can compile a only [[https://gitlab.com/janneke/tinycc][lightly modified TinyCC]] that is
 self-hosting.  A GNU Ccc-compiled tcc is [[https://lists.gnu.org/archive/html/tinycc-devel/2017-05/msg00103.html][known]] to compile GCC.
 
 Mes is inspired by The Maxwell Equations of Software: [[http://www.softwarepreservation.org/projects/LISP/book/LISP%2525201.5%252520Programmers%252520Manual.pdf][LISP-1.5]] -- John

@@ -59,10 +59,10 @@ mes.c.
 * ROADMAP
 ** TODO 
 *** release 0.x, unsorted
-  - mes+mescc: compile a mes-tcc that can build itself.
-  - mes-tcc: full source bootstrapped build of gcc-4.7.
-  - mes: real module support, bonus for supporting Guile's define-module/define-public syntax.
+  - mes-tcc: have bootstrapped tcc compile gcc-4.7.
+  - tcc: remove or upstream patches from tcc-boot
   - mes: prepare src/mes.c for M2-Planet transpiler.
+  - mes: real module support, bonus for supporting Guile's define-module/define-public syntax.
   - mes: produce functional mes from mes.M1 transpiled by M2-Planet.
   - mes: we're a full Scheme now, drop .MES prefix, use .SCM.
     + find a way to fix foo.mes/foo.scm trickery (full Guile-like module support?)
@@ -71,23 +71,12 @@ mes.c.
       internally, we could make sure to start every cond-expand with (mes)
   - mes: use more efficient scheme continuation stack (wip-array?)
   - mes: drop SCM stack in C / implement call/cc a la guile-1.8 setjmp?
-  - mescc: refactor type(/ptr?) system; expr->type and ast-type->type.
-  - mescc: refactor initializers.
-  - mescc: record and support function types, and thus foo ()->bar, *foo ().
-  - mescc: refactor switch statement to support unpatched tinycc.
   - mes/mescc: bootstrap a minimal-Guile
     + libguile/{eval,init,list,strings,values,..}.c
     + ice-9/eval.scm
   - mescc: have mes-tcc pass all scaffold/tests, scaffold/tinycc tests.
-  - mescc: compile a mes-tcc that can compile gcc-4.7.
-  - mescc: refactor switch; support heterogeneous switch case.
-  - mescc: support sizeof any expr.
-  - mescc: support function-static.
-  - mescc: support/grok global static.
-  - mescc: support unsigned comparison, arithmetic.
   - mescc: support long long.
-  - mescc: support bitfields.
-  - mescc: support floats.
+  - mescc: full support for floats?
   - mescc: some success with 8cc,pcc,guile/libguile/eval.c.
   - build: guile/guix/make.scm: add file-types, intermediate, hash all dependencies
   - build: make.scm: imperative->declaritive
@@ -100,6 +89,7 @@ mes.c.
   - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
   - more architectures?
 ** DONE
+*** 0.14: Mes+MesCC now compiles a slightly patched self-hosting tcc.
 *** 0.13: Mes+MesCC now compiles a modified, functional tcc.c (~25,000LOC) in 1h30'.
 *** 0.12: Mes+MesCC now compiles mes.c (~3000LOC) in ~4min.
 *** 0.11: MesCC now compiles a mes-tcc that passes 26/69 of mescc's C tests.

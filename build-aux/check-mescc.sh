@@ -123,6 +123,7 @@ t
 83-heterogenoous-init
 84-struct-field-list
 85-sizeof
+86-strncpy
 "
 
 broken="$broken
@@ -229,6 +230,7 @@ broken="$broken
 28_strings
 
 31_args
+34_array_assignment
 37_sprintf
 39_typedef
 

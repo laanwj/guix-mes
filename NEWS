@@ -10,6 +10,40 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.14 since 0.13
+** Core
+*** Bootstrapped Mes+MesCC  now compiles a tcc that is self-hosting and only slightly patched.
+*** The reader now supports binary numbers (previously: read as decimal).
+*** String port support has been moved to C.
+*** The build has been simplified, the Make-in-Scheme experiment has been removed.
+*** 2 new functions
+chmod, logxor.
+** Language
+*** Mes now supports define-immutable-record-type and single set-field from srfi-9 gnu.
+*** 12 new functions
+basename, chmod, const, delete-duplicates, logxor, string-contains,
+string-map, string-replace, string-trim, string-trim-both,
+string-trim-right, unfold.
+** MesCC
+*** MesCC now supports standalone usage of nestedly defined enums, structs and unions.
+*** MesCC now supports comparison of unsigned and promotion of signed/unsigned -> unsigned.
+*** MesCC now supports sign extension for char, short.
+*** MesCC now has stubbing for floats; compiling works, data is fu.
+*** MesCC now has full suport for switch case, e.g. with default as first clause.
+*** MesCC now supports destruction of casted expressions: ((struct foo*)p)->bar.
+*** MesCC now has full support for pre/post, e.g.: (foo--)->bar and permutations.
+*** MesCC now supports sizeof any expression or type.
+*** MesCC now supports initialization of anonymous unions.
+*** MesCC now supports bit fields.
+*** MesCC now supports valued functions in expressions: destruction and dereferencing.
+*** MesCC now supports function-static variables.
+*** MesCC now supports initializer lists in structs and unions.
+*** MesCC now has full support for heterogeneous variable declarations, e.g.: char p, *x = "foo", buf[3];
+**** 4 new functions
+__lshrdi3, __ashldi3, __ashrdi3, strncpy.
+**** 9 new mlibc stubs
+__fixdfdi, __fixsfdi, __fixunsxfdi, __fixxfdi, __floatundixf, ldexp,
+strtod, strtof, strtold.
 * Changes in 0.13 since 0.12
 ** Core
 *** Bootstrapped Mes+MesCC can now compile a patched tcc in ~1h45' (~25,000 LOC).
@@ -64,8 +98,8 @@ endian.h, sys/signal.h.
 * Changes in 0.11 since 0.10
 ** MesCC
 *** MesCC now compiles a mes-tcc that fails 41/69 of mescc's C tests.
-*** Messc's libc can now be compiled with tcc (syscall support: write).
-*** Messc now compiles a less-patched tcc: -214/+458 lines [WAS: -333/+747].
+*** MesCC's libc can now be compiled with tcc (syscall support: write).
+*** MesCC now compiles a less-patched tcc: -214/+458 lines [WAS: -333/+747].
 *** MesCC now supports empty for.
 *** MesCC has been greatly refactored, 500/3000 lines have been removed.
 *** MesCC now supports complex [struct] by value assign foo.bar, foo->bar, foo[bar].
