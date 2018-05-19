@@ -55,6 +55,10 @@ DEFINE hlt f4
 DEFINE idiv___%ebx f7fb
 DEFINE int cd
 DEFINE int____$0x80 cd80
+DEFINE ja32  0f87
+DEFINE jae32 0f83
+DEFINE jb32  0f82
+DEFINE jbe32 0f86
 DEFINE je32 0f84
 DEFINE je8 74
 DEFINE jg32 0f8f
@@ -169,6 +173,10 @@ DEFINE push___0x32(%ebp) ffb5
 DEFINE push___0x8(%ebp) ff75
 DEFINE ret c3
 DEFINE sahf 9e
+DEFINE seta___%al 0f97c0
+DEFINE setae__%al 0f93c0
+DEFINE setb___%al 0f92c0
+DEFINE setbe__%al 0f96c0
 DEFINE sete___%al 0f94c0
 DEFINE setg___%al 0f9fc0
 DEFINE setge__%al 0f9dc0

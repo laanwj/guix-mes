@@ -459,19 +459,61 @@
 
 ;; signed
 (define (i386:jump-g label)
-  `(("jg32  " (#:offset ,label))))        ; jg/jnle <n>
+  `(("jg32  " (#:offset ,label))))
 
-;; signed
 (define (i386:jump-ge label)
-  `(("jge32 " (#:offset ,label))))       ; jge/jnl <n>
+  `(("jge32 " (#:offset ,label))))
 
-;; signed
 (define (i386:jump-l label)
   `(("jl32  " (#:offset ,label))))
 
-;; signed
 (define (i386:jump-le label)
   `(("jle32 " (#:offset ,label))))
+
+(define (i386:g?->accu)
+  '(("setg___%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:ge?->accu)
+  '(("setge__%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:l?->accu)
+  '(("setl___%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:le?->accu)
+  '(("setle__%al")
+    ("movzbl_%al,%eax")))
+
+;; unsigned
+(define (i386:jump-a label)
+  `(("ja32  " (#:offset ,label))))
+
+(define (i386:jump-ae label)
+  `(("jae32 " (#:offset ,label))))
+
+(define (i386:jump-b label)
+  `(("jb32  " (#:offset ,label))))
+
+(define (i386:jump-be label)
+  `(("jbe32 " (#:offset ,label))))
+
+(define (i386:a?->accu)
+  '(("seta___%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:ae?->accu)
+  '(("setae__%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:b?->accu)
+  '(("setb___%al")
+    ("movzbl_%al,%eax")))
+
+(define (i386:be?->accu)
+  '(("setbe__%al")
+    ("movzbl_%al,%eax")))
 
 (define (i386:jump-nz label)
   `(("jne32 " (#:offset ,label))))       ; jnz . + <n>
@@ -493,22 +535,6 @@
 
 (define (i386:base-sub)
   `(("sub____%eax,%edx")))              ; sub    %eax,%edx
-
-(define (i386:g?->accu)
-  '(("setg___%al")
-    ("movzbl_%al,%eax")))
-
-(define (i386:ge?->accu)
-  '(("setge__%al")
-    ("movzbl_%al,%eax")))
-
-(define (i386:l?->accu)
-  '(("setl___%al")
-    ("movzbl_%al,%eax")))
-
-(define (i386:le?->accu)
-  '(("setle__%al")
-    ("movzbl_%al,%eax")))
 
 (define (i386:nz->accu)
   '(("setne__%al")                      ; setne   %al

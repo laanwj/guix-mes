@@ -152,6 +152,7 @@
     ("short" . ,(make-type 'signed 2 #f))
     ("int" . ,(make-type 'signed 4 #f))
     ("long" . ,(make-type 'signed 4 #f))
+    ("default" . ,(make-type 'signed 4 #f))
     ;;("long long" . ,(make-type 'signed 8 #f))
     ;;("long long int" . ,(make-type 'signed 8 #f))
 
@@ -210,8 +211,8 @@
       (,b (guard (bit-field? b)) b)
 
       ((char ,value) (get-type "char" info))
-      ((enum-ref . _) (get-type "int" info))
-      ((fixed ,value) (get-type "int" info))
+      ((enum-ref . _) (get-type "default" info))
+      ((fixed ,value) (get-type "default" info))
       ((float ,float) (get-type "float" info))
       ((void) (get-type "void" info))
 
@@ -240,11 +241,11 @@
 
       ((fctn-call (p-expr (ident ,name)) . _)
        (or (and=> (assoc-ref (.functions info) name) function:type)
-           (get-type "int" info)))
+           (get-type "default" info)))
 
       ((fctn-call (de-ref (p-expr (ident ,name))) . _)
        (or (and=> (assoc-ref (.functions info) name) function:type)
-           (get-type "int" info)))
+           (get-type "default" info)))
 
       ((fixed-type ,type) (ast->type type info))
       ((float-type ,type) (ast->type type info))
@@ -280,7 +281,7 @@
        (let ((fields (append-map (struct-field info) fields)))
          (make-type 'union (apply + (map field:size fields)) fields)))
       ((enum-def (enum-def-list . ,fields))
-       (get-type "int" info))
+       (get-type "default" info))
 
       ((d-sel (ident ,field) ,struct)
        (let ((type0 (ast->type struct info)))
@@ -487,7 +488,7 @@
     (cond ((global? var) (global:type var))
           ((local? var) (local:type var))
           ((function? var) (function:type var))
-          ((assoc-ref (.constants info) o) (assoc-ref (.types info) "int"))
+          ((assoc-ref (.constants info) o) (assoc-ref (.types info) "default"))
           ((pair? var) (car var))
           (else (stderr "ident->type ~s => ~s\n" o var)
                 #f))))
@@ -1207,8 +1208,18 @@
                                      (wrap-as (i386:sub-base))))))
 
         ((eq ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:z->accu))))
-        ((ge ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:ge?->accu))))
-        ((gt ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:g?->accu) (i386:accu-test))))
+
+        ((ge ,a ,b)
+         (let* ((type-a (ast->type a info))
+                (type-b (ast->type b info))
+                (test->accu (if (or (unsigned? type-a) (unsigned? type-b)) i386:ae?->accu i386:ge?->accu)))
+           ((binop->accu info) a b (append (i386:sub-base) (test->accu) (i386:accu-test)))))
+
+        ((gt ,a ,b)
+         (let* ((type-a (ast->type a info))
+                (type-b (ast->type b info))
+                (test->accu (if (or (unsigned? type-a) (unsigned? type-b)) i386:a?->accu i386:g?->accu)))
+           ((binop->accu info) a b (append (i386:sub-base) (test->accu) (i386:accu-test)))))
 
         ;; FIXME: set accu *and* flags
         ((ne ,a ,b) ((binop->accu info) a b (append (i386:push-accu)
@@ -1220,8 +1231,18 @@
                                                     (i386:pop-accu))))
 
         ((ne ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:xor-zf))))
-        ((le ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:le?->accu))))
-        ((lt ,a ,b) ((binop->accu info) a b (append (i386:sub-base) (i386:l?->accu))))
+
+        ((le ,a ,b)
+         (let* ((type-a (ast->type a info))
+                (type-b (ast->type b info))
+                (test->accu (if (or (unsigned? type-a) (unsigned? type-b)) i386:be?->accu i386:le?->accu)))
+           ((binop->accu info) a b (append (i386:sub-base) (test->accu) (i386:accu-test)))))
+
+        ((lt ,a ,b)
+         (let* ((type-a (ast->type a info))
+                (type-b (ast->type b info))
+                (test->accu (if (or (unsigned? type-a) (unsigned? type-b)) i386:b?->accu i386:l?->accu)))
+           ((binop->accu info) a b (append (i386:sub-base) (test->accu) (i386:accu-test)))))
 
         ((or ,a ,b)
          (let* ((info (expr->accu a info))
@@ -1411,17 +1432,10 @@
   (lambda (o)
     (pmatch o
       ((expr) info)
-      ;; unsigned
-      ;; ((le ,a ,b) ((jump i386:jump-ncz) o)) ; ja
-      ;; ((lt ,a ,b) ((jump i386:jump-nc) o))  ; jae
-      ;; ((ge ,a ,b) ((jump i386:jump-ncz) o))
-      ;; ((gt ,a ,b) ((jump i386:jump-nc) o))
-
-      ((le ,a ,b) ((jump i386:jump-g) o))
-      ((lt ,a ,b) ((jump i386:jump-ge) o))
-      ((ge ,a ,b) ((jump i386:jump-l) o))
-      ((gt ,a ,b) ((jump i386:jump-le) o))
-
+      ((le ,a ,b) ((jump i386:jump-z) o))
+      ((lt ,a ,b) ((jump i386:jump-z) o))
+      ((ge ,a ,b) ((jump i386:jump-z) o))
+      ((gt ,a ,b) ((jump i386:jump-z) o))
       ((ne ,a ,b) ((jump i386:jump-nz) o))
       ((eq ,a ,b) ((jump i386:jump-nz) o))
       ((not _) ((jump i386:jump-z) o))

@@ -92,6 +92,10 @@
             i386:function-preamble
             i386:jump
             i386:jump
+            i386:jump-a
+            i386:jump-ae
+            i386:jump-b
+            i386:jump-be
             i386:jump-byte-z
             i386:jump-g
             i386:jump-ge
@@ -148,6 +152,10 @@
             i386:ge?->accu
             i386:l?->accu
             i386:le?->accu
+            i386:a?->accu
+            i386:ae?->accu
+            i386:b?->accu
+            i386:be?->accu
             i386:z->accu
             i386:byte-accu
             i386:signed-byte-accu

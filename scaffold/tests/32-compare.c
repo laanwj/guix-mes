@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -37,89 +37,89 @@ test ()
   if (f) return 1;
 
   puts ("t: if (one != 1)\n");
-  if (one != 1) return 1;
+  if (one != 1) return 2;
 
   puts ("t: if (1 != one)\n");
-  if (1 != one) return 1;
+  if (1 != one) return 3;
 
   puts ("t: if (one > 1)\n");
-  if (one > 1) return 1;
+  if (one > 1) return 4;
 
   puts ("t: if (one < 0)\n");
-  if (one < 0) return 1;
+  if (one < 0) return 5;
 
   puts ("t: if (one <= 0)\n");
-  if (one <= 0) return 1;
+  if (one <= 0) return 6;
 
   puts ("t: if (one >= 2)\n");
-  if (one >= 2) return 1;
+  if (one >= 2) return 7;
 
   puts ("t: if (!1)\n");
-  if (!1) return 1;
+  if (!1) return 8;
 
   puts ("t: if (one == 0)\n");
-  if (one == 0) return 1;
+  if (one == 0) return 9;
 
   puts ("t: if (f != 0)\n");
-  if (one != 1) return 1;
+  if (one != 1) return 10;
 
   puts ("t: if (1)\n");
   if (1) goto ok0;
-  return 1;
+  return 111;
  ok0:
 
   puts ("t: if (0); return 1; else;\n");
-  if (0) return 1; else goto ok1;
+  if (0) return 12; else goto ok1;
  ok1:
 
   puts ("t: if (t)\n");
   if (t) goto ok2;
-  return 1;
+  return 13;
  ok2:
 
   puts ("t: if (one > 0)\n");
   if (one > 0) goto ok3;
-  return 1;
+  return 14;
  ok3:
 
   puts ("t: if (one < 2)\n");
   if (one < 2) goto ok4;
-  return 1;
+  return 15;
  ok4:
 
   puts ("t: if (one >= 0)\n");
   if (one >= 0) goto ok5;
-  return 1;
+  return 16;
  ok5:
 
   puts ("t: if (one >= 1)\n");
   if (one >= 0) goto ok6;
-  return 1;
+  return 17;
  ok6:
 
   puts ("t: if (one <= 2)\n");
   if (one <= 2) goto ok7;
-  return 1;
+  return 18;
  ok7:
 
   puts ("t: if (one <= 1)\n");
   if (one <= 1) goto ok8;
-  return 1;
+  return 19;
  ok8:
 
   puts ("t: if (!0)\n");
   if (!0) goto ok9;
-  return 1;
+  return 20;
  ok9:
 
   puts ("t: if (one == 1)\n");
   if (one == 1) goto ok10;
-  return 1;
+  return 21;
  ok10:
 
   puts ("t: if (one != 0)\n");
   if (one != 0) goto ok11;
-  return 1;
+  return 22;
  ok11:
   ;
 
@@ -128,84 +128,84 @@ test ()
 
   puts ("t: i = one > 0\n");
   i = one > 0;
-  if (!i) return 1;
+  if (!i) return 23;
 
   puts ("t: i = one >= 1\n");
   i = one >= 1;
-  if (!i) return 2;
+  if (!i) return 24;
 
   puts ("t: i = one < 2\n");
   i = one < 2;
-  if (!i) return 3;
+  if (!i) return 25;
 
   puts ("t: i = one <= 1\n");
   i = one <= 1;
-  if (!i) return 4;
+  if (!i) return 26;
 
 
   puts ("t: i = 0 > one\n");
   i = 0 > one;
-  if (i) return 5;
+  if (i) return 27;
 
   puts ("t: i = 0 >= one\n");
   i = 0 >= one;
-  if (i) return 6;
+  if (i) return 28;
 
   puts ("t: i = 1 < one \n");
   i = 1 < one;
-  if (i) return 7;
+  if (i) return 29;
 
   puts ("t: i = 2 <= one\n");
   i = 2 <= one;
-  if (i) return 8;
+  if (i) return 30;
 
 
   puts ("t: i = m1 > -2\n");
   i = m1 > -2;
-  if (!i) return 9;
+  if (!i) return 31;
 
   puts ("t: i = m1 >= -1\n");
   i = m1 >= -1;
-  if (!i) return 10;
+  if (!i) return 32;
 
   puts ("t: i = m1 < 0\n");
   i = m1 < 0;
-  if (!i) return 11;
+  if (!i) return 33;
 
   puts ("t: i = m1 <= -1\n");
   i = m1 <= -1;
-  if (!i) return 12;
+  if (!i) return 34;
 
 
   puts ("t: i = -1 > m1\n");
   i = -1 > m1;
-  if (i) return 13;
+  if (i) return 35;
 
   puts ("t: i = -2 >= m1\n");
   i = -2 >= m1;
-  if (i) return 14;
+  if (i) return 36;
 
   puts ("t: i = -1 < m1 \n");
   i = -1 < m1;
-  if (i) return 15;
+  if (i) return 37;
 
   puts ("t: i = -2 <= m1\n");
   i = 0 <= m1;
-  if (i) return 16;
+  if (i) return 38;
 
 
   puts ("t: isid (0)\n");
-  if (isid (0)) return 17;
+  if (isid (0)) return 39;
 
   puts ("t: isid (6)\n");
 
-  if (isid (6)) return 18;
+  if (isid (6)) return 40;
 
   puts ("t: isid (a)\n");
-  if (isid ('a') != 1) return 19;
+  if (isid ('a') != 1) return 41;
 
   puts ("t: isid ( )\n");
-  if (isid (' ')) return 20;
+  if (isid (' ')) return 42;
 
   return 0;
 }
