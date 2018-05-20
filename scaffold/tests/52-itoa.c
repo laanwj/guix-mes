@@ -30,16 +30,21 @@ test ()
 
   puts ("\n");
   puts ("t: itoa (33) == \"33\"\n");
-  if (strcmp (itoa (33), "33")) return 1;
+  if (strcmp (itoa (33), "33"))
+    return 1;
 
   puts ("strcmp (itoa (-1), \"-1\")\n");
-  if (strcmp (itoa (-1), "-1")) return 1;
+  puts (itoa (-1));
+  if (strcmp (itoa (-1), "-1"))
+    return 2;
 
   puts ("strcmp (itoa (0), \"0\")\n");
-  if (strcmp (itoa (0), "0")) return 1;
+  if (strcmp (itoa (0), "0"))
+    return 3;
 
   puts ("strcmp (itoa (1), \"1\")\n");
-  if (strcmp (itoa (1), "1")) return 1;
+  if (strcmp (itoa (1), "1"))
+    return 4;
 
   return 0;
 }

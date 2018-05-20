@@ -91,28 +91,26 @@ atoi (char const *s)
   return abtoi (&p, 0);
 }
 
-char itoa_buf[10];
-
 char const*
 itoa (int x)
 {
-  //static char itoa_buf[10];
-  //char *p = buf+9;
-  char *p = itoa_buf;
-  p += 9;
+  static char itoa_buf[12];
+  char *p = itoa_buf + 11;
   *p-- = 0;
 
-  //int sign = x < 0; // FIXME
   int sign = 0;
-  if (x < 0) sign = 1;
-  if (sign)
-    x = -x;
+  unsigned u = x;
+  if (x < 0)
+    {
+      sign = 1;
+      u = -x;
+    }
 
   do
      {
-       *p-- = '0' + (x % 10);
-       x = x / 10;
-     } while (x);
+       *p-- = '0' + (u % 10);
+       u = u / 10;
+     } while (u);
 
   if (sign && *(p + 1) != '0')
     *p-- = '-';
@@ -123,24 +121,24 @@ itoa (int x)
 char const*
 itoab (int x, int base)
 {
-  //static char itoa_buf[10];
-  //char *p = buf+9;
-  char *p = itoa_buf;
-  p += 9;
+  static char itoa_buf[12];
+  char *p = itoa_buf + 11;
   *p-- = 0;
 
-  //int sign = x < 0; // FIXME
   int sign = 0;
-  if (x < 0) sign = 1;
-  if (sign)
-    x = -x;
+  unsigned u = x;
+  if (x < 0)
+    {
+      sign = 1;
+      u = -x;
+    }
 
   do
      {
-       int i = x % base;
+       int i = u % base;
        *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
-       x = x / base;
-     } while (x);
+       x = u / base;
+     } while (u);
 
   if (sign && *(p + 1) != '0')
     *p-- = '-';
