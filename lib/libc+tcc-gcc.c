@@ -115,4 +115,18 @@ __ashrdi3 (long long a, int b)
 {
   return a >> b;
 }
+
+long double
+__floatundixf (unsigned long long a)
+{
+  eputs ("__floatundix stub\n");
+  return 0;
+}
+
+unsigned long long
+__fixunsxfdi (double a1)
+{
+  eputs ("__fixunsxfdi stub\n");
+  return 0;
+}
 #endif // !POSIX
