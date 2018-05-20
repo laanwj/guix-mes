@@ -272,6 +272,19 @@ strchr (char const *s, int c)
 }
 
 char *
+strncpy (char *dest, char const *src, size_t length)
+{
+  char *p = dest;
+  while (*src && length--)
+    *p++ = *src++;
+  if (*src)
+    length++;
+  while (length--)
+    *p++ = 0;
+  return dest;
+}
+
+char *
 strrchr (char const *s, int c)
 {
   int n = strlen (s);

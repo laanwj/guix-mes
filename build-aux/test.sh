@@ -20,6 +20,8 @@
 
 set -x
 
+export LIBC
+
 GUILE=${GUILE-$MES}
 DIFF=${DIFF-$(command -v diff)}
 [ -z "$DIFF" ] && DIFF="sh scripts/diff.scm"

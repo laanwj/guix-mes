@@ -39,6 +39,7 @@ C32FLAGS=${C32FLAGS-"
 -nostdinc
 -nostdlib
 "}
+LIBC=${LIBC-lib/libc}
 
 c=$1
 
@@ -55,5 +56,5 @@ if [ -z "$NOLINK" ]; then
         -o "$c".mlibc-out\
         lib/crt1.mlibc-o\
         "$c".mlibc-o\
-        lib/libc-gcc.mlibc-o
+        $LIBC-gcc.mlibc-o
 fi
