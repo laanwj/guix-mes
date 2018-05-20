@@ -126,6 +126,7 @@ t
 "
 
 broken="$broken
+7s-struct-short
 "
 
 set +e
