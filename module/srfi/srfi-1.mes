@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -52,8 +52,6 @@
                     (filter-map f (cdr h) (cdar t))))
               (error 'unsupported (cons* "filter-map 3:" f h t))))))
 
-;;; nyacc requirements
-
 (define (fold proc init lst1 . rest)
   (if (null? rest)
       (let loop ((lst lst1) (result init))
@@ -67,6 +65,20 @@
         (if (null? lst) init
             (proc (car lst) (loop (cdr lst)))))
       '*FOLD-RIGHT-n-NOT-SUPPORTED))
+
+(define (unfold p f g seed . rest)
+  (let ((tail-gen (if (null? rest) (const '())
+                      (car rest))))
+    (define (reverse+tail lst seed)
+            (let loop ((lst lst)
+                       (result (tail-gen seed)))
+              (if (null? lst) result
+                  (loop (cdr lst)
+                        (cons (car lst) result)))))
+    (let loop ((seed seed) (result '()))
+      (if (p seed) (reverse+tail result seed)
+          (loop (g seed)
+                (cons (f seed) result))))))
 
 (define (remove pred lst) (filter (lambda (x) (not (pred x))) lst))
 
