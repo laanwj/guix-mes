@@ -159,4 +159,7 @@ exit $?
 (pass-if-equal "octal" 65 #o101)
 (pass-if-equal "hex" 257 #x101)
 
+(pass-if-equal "negate" #t ((negate eq?) 0 1))
+(pass-if-equal "const" 42 ((const 42) 1 2 3 4))
+
 (result 'report)

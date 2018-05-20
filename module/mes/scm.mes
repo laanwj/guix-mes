@@ -351,3 +351,7 @@
 (define (negate proc)
   (lambda args
     (not (apply proc args))))
+
+(define (const . rest)
+  (lambda (. _)
+    (car rest)))
