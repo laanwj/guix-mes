@@ -246,6 +246,11 @@
                                (<= i (char->integer #\f)))
                           (let ((d (char->integer #\a)))
                             (loop (cdr lst) (+ (* n radix) (- i (- d 10))))))
+                         ((and (= radix 16)
+                               (>= i (char->integer #\A))
+                               (<= i (char->integer #\F)))
+                          (let ((d (char->integer #\A)))
+                            (loop (cdr lst) (+ (* n radix) (- i (- d 10))))))
                          ((= i (char->integer #\.)) ; minimal FLOAT support
                           (let ((fraction (cdr lst)))
                             (if (null? fraction) n
