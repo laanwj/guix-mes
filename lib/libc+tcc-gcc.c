@@ -129,4 +129,25 @@ __fixunsxfdi (double a1)
   eputs ("__fixunsxfdi stub\n");
   return 0;
 }
+
+unsigned long long
+__fixdfdi (double a1)
+{
+  eputs ("__fixdfdi stub\n");
+  return 0;
+}
+
+unsigned long long
+__fixxfdi (double a1)
+{
+  eputs ("__fixxfdi stub\n");
+  return 0;
+}
+
+unsigned long long
+__fixsfdi (double a1)
+{
+  eputs ("__fixsfdi stub\n");
+  return 0;
+}
 #endif // !POSIX
