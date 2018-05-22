@@ -128,10 +128,10 @@ hex2 linker.")
     (license gpl3+)))
 
 (define-public mes
-  (let ((commit "1fdccefe02af992898ca97495ff3c65555e60e8d")
+  (let ((commit "4e50490aa2513ced5b568f434b23ba36218ba7b3")
         (revision "0")
         (triplet "i686-unknown-linux-gnu")
-        (version "0.13"))
+        (version "0.14"))
     (package
       (name "mes")
       (version (string-append version "-" revision "." (string-take commit 7)))
@@ -142,12 +142,12 @@ hex2 linker.")
                       (commit commit)))
                 (file-name (string-append name "-" version))
                 (sha256
-                 (base32 "1x2qyc4mw5jbddskl6k9w0vf4igg1l3bbl4ymn8mg21x18arp6a0"))))
+                 (base32 "184cyxbl9fq9gvb1r9dav1cbz1hgiakg50bi932d8zfmbkfw0qqv"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
        `(("mescc-tools" ,mescc-tools)
-         ("nyacc" ,nyacc)))
+         ("nyacc" ,nyacc-for-mes)))
       (native-inputs
        `(("guile" ,guile-2.2)
          ,@(if (string-prefix? "x86_64-linux" (or (%current-target-system)
@@ -159,7 +159,9 @@ hex2 linker.")
                '())
          ("perl" ,perl)))               ;build-aux/gitlog-to-changelog
       (arguments
-       `(#:phases
+       `(#:make-flags (list
+                       (string-append "PREFIX=" (assoc-ref %outputs "out")))
+         #:phases
          (modify-phases %standard-phases
            (add-before 'build 'make-git-source-writable
            (lambda* (#:key outputs #:allow-other-keys)
@@ -183,7 +185,7 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.13")
+ (let ((version "0.14")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
@@ -194,4 +196,3 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
 mes.git
-
