@@ -2101,12 +2101,16 @@
     ((initzer (p-expr (fixed ,fixed)))
      (int->bv type (expr->number info fixed)))
     ((initzer (initzer-list . ,inits))
-     (if (structured-type? type)
-         (map (cut init->data <> <> info) (map cdr (struct->init-fields type)) inits)
-         (begin
-           (stderr "array-init-element->data: oops:~s\n" o)
-           (stderr "type:~s\n" type)
-           (error "array-init-element->data: not supported: " o))))
+      (if (structured-type? type)
+          (let* ((fields (map cdr (struct->init-fields type)))
+                 (missing (max 0 (- (length fields) (length inits))))
+                 (inits (append inits
+                                (map (const '(fixed "0")) (iota missing)))))
+            (map (cut init->data <> <> info) fields inits))
+          (begin
+            (stderr "array-init-element->data: oops:~s\n" o)
+            (stderr "type:~s\n" type)
+            (error "array-init-element->data: not supported: " o))))
     (_ (init->data type o info))
     (_ (error "array-init-element->data: not supported: " o))))
 
