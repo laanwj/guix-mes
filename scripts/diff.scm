@@ -73,8 +73,7 @@ exec ${MES-mes} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
 (define (line-equal? a b)
   (equal? (string-trim-right a) (string-trim-right b)))
 
-;; naive diff
-(define (diff a b)
+(define (diff-files a b)
   (let ((a-lines (string-split (with-input-from-file a read-string) #\newline))
         (b-lines (string-split (with-input-from-file b read-string) #\newline)))
     (let loop ((context '(1 1 #f #f #f)) (a-lines a-lines) (b-lines b-lines))
@@ -116,7 +115,7 @@ exec ${MES-mes} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
 (define (main args)
   (let* ((files (cdr args))
          (files (if (string-prefix? "-" (car files)) (cdr files) files))
-         (hunks (apply diff (list-head files 2))))
+         (hunks (apply diff-files (list-head files 2))))
     (when (pair? hunks)
       (display (string-join (append-map hunk->lines hunks) "\n"))
       (newline)
