@@ -81,52 +81,18 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
-(define-public nyacc
+(define-public nyacc-for-mes
   (package
-    (name "nyacc")
-    (version "0.82.4")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://savannah/nyacc/"
-                                  name "-" version ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0ykz64jlf1kpxz3qqr0nmci57r5yqwyd3s2g93vrmcnpy9d7y22p"))))
-    (build-system gnu-build-system)
-    (native-inputs
-     `(("guile" ,guile-2.2)))
-    (synopsis "LALR(1) Parser Generator in Guile")
-    (description
-     "NYACC is an LALR(1) parser generator implemented in Guile.
-The syntax and nomenclature should be considered not stable.  It comes with
-extensive examples, including parsers for the Javascript and C99 languages.")
-    (home-page "https://savannah.nongnu.org/projects/nyacc")
-    (license (list gpl3+ lgpl3+))))
-
-(define-public nyacc
-  (package
-    (name "nyacc")
+    (inherit nyacc)
     (version "0.80.42")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "https://gitlab.com/janneke/nyacc"
-                                  "/repository/archive.tar.gz?ref=v"
-                                  version))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "101k3hy4jk5p109k6w4dpx3bjm0g53zwb1yxvvad8khfq00wb8hd"))))
-    (build-system gnu-build-system)
-    (native-inputs
-     `(("guile" ,guile-2.2)))
-    (synopsis "LALR(1) Parser Generator in Guile")
-    (description
-     "NYACC is an LALR(1) parser generator implemented in Guile.
-The syntax and nomenclature should be considered not stable.  It comes with
-extensive examples, including parsers for the Javascript and C99 languages.")
-    (home-page "https://savannah.nongnu.org/projects/nyacc")
-    (license (list gpl3+ lgpl3+))))
+      (source (origin
+                (method url-fetch)
+                (uri (string-append "https://gitlab.com/janneke/nyacc"
+                                    "/-/archive/v" version
+                                    "/nyacc-" version ".tar.gz"))
+                (sha256
+                 (base32
+                  "101k3hy4jk5p109k6w4dpx3bjm0g53zwb1yxvvad8khfq00wb8hd"))))))
 
 (define-public mescc-tools
   (package
