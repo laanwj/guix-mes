@@ -59,6 +59,7 @@ C32FLAGS=${C32FLAGS-"
 "}
 
 NOLINK=1 sh build-aux/cc-mlibc.sh lib/crt1
+NOLINK=1 sh build-aux/cc-mlibc.sh lib/mini-libc-gcc
 NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc-gcc
 NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc+tcc-gcc
 

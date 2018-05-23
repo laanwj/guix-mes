@@ -19,6 +19,4 @@
  */
 
 #include <mini-linux-mes.c>
-
-typedef unsigned long size_t;
 #include <mini-libc.c>

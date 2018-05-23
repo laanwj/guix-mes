@@ -34,6 +34,8 @@
 #include <libc+tcc.c>
 #include <getopt.c>
 
+#if !POSIX
+
 int errno;
 
 void
@@ -95,3 +97,5 @@ __umoddi3 (unsigned long long a, unsigned long long b)
   int bi = b;
   return ai % bi;
 }
+
+#endif // !POSIX

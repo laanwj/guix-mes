@@ -32,7 +32,6 @@
 #include <endian.h>
 int isdigit (int);
 int isxdigit (int);
-#endif // ! (__GNUC__ && POSIX)
 
 char *optarg;
 int optind;
@@ -55,6 +54,8 @@ enum _argtype
 int getopt (int argc, char *const *argv, char const *shortopts);
 int getopt_long (int argc, char *const *argv, char const *shortopts,
                  struct option const *longopts, int *longind);
+
+#endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_GETOPT_H
 
