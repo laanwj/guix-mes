@@ -29,7 +29,7 @@ DOCDIR=${MODULEDIR-$PREFIX/share/doc/mes}
 
 chmod +w $PREFIX/bin/mescc
 sed \
-    -e "s,^#! /bin/sh,#! $SHELL/," \
+    -e "s,^#! /bin/sh,#! $SHELL," \
     -e "s,module/,$MODULEDIR/," \
     -e "s,@DATADIR@,$DATADIR,g" \
     -e "s,@DOCDIR@,$DOCDIR,g" \
@@ -41,7 +41,7 @@ sed \
     scripts/mescc > $PREFIX/bin/mescc
 chmod +w $MODULEDIR/mes/boot-0.scm
 sed \
-    -e "s,^#! /bin/sh,#! $SHELL/," \
+    -e "s,^#! /bin/sh,#! $SHELL," \
     -e "s,module/,$MODULEDIR/," \
     -e "s,@DATADIR@,$DATADIR,g" \
     -e "s,@DOCDIR@,$DOCDIR,g" \
@@ -54,5 +54,5 @@ sed \
 
 cp scripts/diff.scm $PREFIX/bin/diff.scm
 sed \
-    -e "s,^#! /bin/sh,#! $SHELL/," \
+    -e "s,^#! /bin/sh,#! $SHELL," \
     scripts/diff.scm > $PREFIX/bin/diff.scm

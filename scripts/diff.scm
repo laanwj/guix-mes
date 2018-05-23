@@ -4,7 +4,7 @@ mes_p=$(command -v mes)
 if [ "$mes_p" -a -z "$MES" ]; then
     MES=guile
 fi
-exec ${MES-mes} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
+exec ${MES-mes} -L ${0%/*} -e '(diff)' -s "$0" "$@"
 !#
 
 ;;; Mes --- Maxwell Equations of Software
