@@ -57,14 +57,16 @@ mes.c.
 
 
 * ROADMAP
-** TODO 
+** TODO
 *** release 0.x, unsorted
-  - mes-tcc: have bootstrapped tcc compile gcc-4.7.
+  - upstream mes-boot to GuixSD.
+  - add full source gcc-4.7 package build.
+  - replace GuixSD bootstrap for x86.
   - tcc: remove or upstream patches from tcc-boot
   - mes: prepare src/mes.c for M2-Planet transpiler.
   - mes: real module support, bonus for supporting Guile's define-module/define-public syntax.
   - mes: produce functional mes from mes.M1 transpiled by M2-Planet.
-  - mes: we're a full Scheme now, drop .MES prefix, use .SCM.
+  - mes: we're a full Scheme now, drop .MES suffix, use .SCM.
     + find a way to fix foo.mes/foo.scm trickery (full Guile-like module support?)
     + how about setting `guile' or even `guile-2' cond-expand features
       for external libraries (Nyacc) we look like Guile/Guile-2
@@ -89,6 +91,7 @@ mes.c.
   - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
   - more architectures?
 ** DONE
+*** 0.15: MesCC now has a libc+gnu that supports compiling binutils-2.14, gcc-2.95.3 and glibc-2.2.5.
 *** 0.14: Mes+MesCC now compiles a slightly patched self-hosting tcc.
 *** 0.13: Mes+MesCC now compiles a modified, functional tcc.c (~25,000LOC) in 1h30'.
 *** 0.12: Mes+MesCC now compiles mes.c (~3000LOC) in ~4min.
@@ -110,7 +113,7 @@ eenough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 * DEBUG
   MES_DEBUG=<level> mes
 ** Levels
-  1) Informational: 
+  1) Informational:
      - MODULEDIR
      - included SCM modules and sources
      - result of program
@@ -159,7 +162,7 @@ neat, Lisp/Scheme, bootstrapping and trusted binaries are probably not
 in scope as there is no mention of such things; only ML is mentioned
 while Guile is used for bootstrapping.
 
-* Assorted ideas and info 
+* Assorted ideas and info
 ** Using GDB on assembly/a.out
 info registers
 p/x $eax
@@ -186,7 +189,7 @@ out/i686-unknown-linux-gnu-mes --dump < module/mes/read-0.mes > module/mes/read-
 ** SC - c as s-expressions
 sc: http://sph.mn/content/3d3
 ** RNRS
-*** [[http://www.scheme-reports.org/][Scheme Reports]] 
+*** [[http://www.scheme-reports.org/][Scheme Reports]]
 *** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-349.pdf][Scheme - Report on Scheme]]
 *** [[ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-452.pdf][RRS - Revised Report on Scheme]]
 
@@ -237,4 +240,3 @@ https://miyuki.github.io/2017/10/04/gcc-archaeology-1.html
 ** rain1's Bootstrapping Wiki: https://bootstrapping.miraheze.org/wiki/Main_Page
 ** rain1's hex86
 https://notabug.org/rain1/hex86/src/master/tests/hex0b3.hex86
-

@@ -92,7 +92,9 @@ be source.
     https://gitlab.com/janneke/tinycc
 
 * TODO
-** have bootstrapped tcc compile gcc-4.7
+** upstream mes-boot to GuixSD.
+** add full source gcc-4.7 package build.
+** replace GuixSD bootstrap for x86.
 ** remove or upstream patches from tcc-boot
 ** prepare src/mes.c for M2-Planet transpiler.
 ** fix bootstrap-loops: (Nyacc?, mes.M2, psyntax.pp?)
@@ -101,6 +103,7 @@ be source.
 ** x86_64, arm, the Hurd
 
 * DONE
+** have tcc-boot compile gnutools triplet: binutils-2.14, gcc-2.95.3, glibc-2.2.5.
 ** have tcc-boot's mes-tcc compile a fully functional tcc
 ** hex.0, hex.1, M0
 ** M1, hex2_linker prototyped in C

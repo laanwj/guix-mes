@@ -10,6 +10,40 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.15 since 0.14
+** Core
+*** Support fork, exec, waitpid.
+*** Boot-0 loading has been refactored.
+*** MesCC now has out of the box Geiser support.
+** Language
+*** 2 new functions
+drop, drop-right.
+** MesCC
+*** MesCC and Mes Lib C can now build binutils-2.30, gcc-2.95.3 and glibc-2.2.5.
+*** MesCC now provides dummy crti.o, crtn.o so that tcc needs not be patched for those.
+*** Mes Lib C now supports compiling glibc-2.2.25.
+*** Mes Lib C now supports compiling gcc-2.95.3
+*** Mes Lib C now supports compiling binutils-2.30.
+*** Mes Lib C now supports compiling m4-1.4.
+*** Mes Lib C has been split into archs: gcc, x86-mes-gcc and x86-mes.
+*** MesCC now has a posixy command line interface.
+**** 70 new functions
+abs, access, alarm, alloca, atexit, atol, bcmp, bcopy, brk, bzero,
+chmod, clearerr, close, dup, dup2, execve, fabs, fcntl, fdgets, feof,
+fgets, fileno, fork, freopen, fscanf, fstat, fsync, getcwd, getgid,
+getpid, getrusage, getuid, index, ioctl, isalnum, isalpha, isascii,
+iscntrl, isprint, ispunct, kill, link, lseek, lstat, mkdir, mktemp,
+nanosleep, open, perror, pipe, raise, read, rename, rindex, rmdir,
+sbrk, sbrk, setitimer, signal, sleep, stat, strcspn, strdup, strerror,
+strncat, strpbrk, strspn, unlink, unsetenv, waitpid.
+**** 23 new stubs
+abort, atof, bsearch, bsearch, chown, ctime, fpurge, freadahead,
+frexp, getpwnam, gmtime, mbstowcs, pclose, popen, rewind, setbuf,
+sigsetmask, strftime, sys_siglist, system, times, umask, utime.
+**** 10 new C tests
+51-strcmp.c, 70-printf.c, 87-sscanf.c, 90-strpbrk.c, 91-fseek.c,
+92-stat.c, 93-fread-fwrite.c, 94-unsetenv.c, 95-signal.c, 96-strto.c.
+
 * Changes in 0.14 since 0.13
 ** Core
 *** Bootstrapped Mes+MesCC  now compiles a tcc that is self-hosting and only slightly patched.
