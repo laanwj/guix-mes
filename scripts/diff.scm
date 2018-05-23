@@ -1,6 +1,10 @@
 #! /bin/sh
 # -*-scheme-*-
-exec ${GUILE-guile} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
+mes_p=$(command -v mes)
+if [ "$mes_p" -a -z "$MES" ]; then
+    MES=guile
+fi
+exec ${MES-mes} -L $(dirname 0) -e '(diff)' -s "$0" "$@"
 !#
 
 ;;; Mes --- Maxwell Equations of Software

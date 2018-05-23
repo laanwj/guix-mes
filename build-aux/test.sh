@@ -22,7 +22,7 @@ set -x
 
 GUILE=${GUILE-$MES}
 DIFF=${DIFF-$(command -v diff)}
-[ -z "$DIFF" ] && DIFF="sh build-aux/diff.scm"
+[ -z "$DIFF" ] && DIFF="sh scripts/diff.scm"
 
 t=${1-scaffold/tests/t}
 rm -f "$t".mes-out

@@ -3,6 +3,7 @@
 set -e
 
 export PREFIX
+SHELL=${SHELL-$(command -v sh)}
 PREFIX=${PREFIX-/usr/local}
 MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
 MES_SEED=${MES_SEED-../mes-seed}
@@ -28,6 +29,7 @@ DOCDIR=${MODULEDIR-$PREFIX/share/doc/mes}
 
 chmod +w $PREFIX/bin/mescc
 sed \
+    -e "s,^#! /bin/sh,#! $SHELL/," \
     -e "s,module/,$MODULEDIR/," \
     -e "s,@DATADIR@,$DATADIR,g" \
     -e "s,@DOCDIR@,$DOCDIR,g" \
@@ -39,6 +41,7 @@ sed \
     scripts/mescc > $PREFIX/bin/mescc
 chmod +w $MODULEDIR/mes/boot-0.scm
 sed \
+    -e "s,^#! /bin/sh,#! $SHELL/," \
     -e "s,module/,$MODULEDIR/," \
     -e "s,@DATADIR@,$DATADIR,g" \
     -e "s,@DOCDIR@,$DOCDIR,g" \
@@ -48,3 +51,8 @@ sed \
     -e "s,@PREFIX@,$PREFIX,g" \
     -e "s,@VERSION@,$VERSION,g" \
     module/mes/boot-0.scm > $MODULEDIR/mes/boot-0.scm
+
+cp scripts/diff.scm $PREFIX/bin/diff.scm
+sed \
+    -e "s,^#! /bin/sh,#! $SHELL/," \
+    scripts/diff.scm > $PREFIX/bin/diff.scm
