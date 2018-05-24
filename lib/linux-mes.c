@@ -19,6 +19,13 @@
  */
 
 void
+fork ()
+{
+  asm ("mov____$i32,%eax SYS_fork");
+  asm ("int____$0x80");
+}
+
+void
 read ()
 {
   asm ("mov____0x8(%ebp),%ebx !8");
@@ -37,6 +44,28 @@ open ()
   asm ("mov____0x8(%ebp),%edx !16");
 
   asm ("mov____$i32,%eax SYS_open");
+  asm ("int____$0x80");
+}
+
+void
+waitpid ()
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+  asm ("mov____0x8(%ebp),%edx !16");
+
+  asm ("mov____$i32,%eax SYS_waitpid");
+  asm ("int____$0x80");
+}
+
+void
+execve ()
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+  asm ("mov____0x8(%ebp),%edx !16");
+
+  asm ("mov____$i32,%eax SYS_execve");
   asm ("int____$0x80");
 }
 

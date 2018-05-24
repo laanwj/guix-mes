@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -21,8 +21,28 @@
 #include <stdio.h>
 #include <mlibc.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #if !POSIX
+
+int
+fork ()
+{
+#if !__TINYC__
+  int r;
+  //syscall (SYS_fork, fd));
+  asm (
+       "mov    $0x02,%%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : //no inputs
+       : "eax"
+       );
+  return r;
+#endif
+}
 
 int
 read (int fd, void* buf, size_t n)
@@ -71,6 +91,52 @@ open (char const *s, int flags, ...)
        "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (s), "" (flags), "" (mode)
+       : "eax", "ebx", "ecx", "edx"
+       );
+  return r;
+#endif
+}
+
+pid_t
+waitpid (pid_t pid, int *status_ptr, int options)
+{
+#if !__TINYC__
+  int r;
+  //syscall (SYS_execve, file_name, argv, env));
+  asm (
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    %3,%%edx\n\t"
+
+       "mov    $0x07,%%eax\n\t"
+       "int    $0x80\n\t"
+
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (pid), "" (status_ptr), "" (options)
+       : "eax", "ebx", "ecx", "edx"
+       );
+  return r;
+#endif
+}
+
+int
+execve (char const* file_name, char *const argv[], char *const env[])
+{
+#if !__TINYC__
+  int r;
+  //syscall (SYS_execve, file_name, argv, env));
+  asm (
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+       "mov    %3,%%edx\n\t"
+
+       "mov    $0x0b,%%eax\n\t"
+       "int    $0x80\n\t"
+
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (file_name), "" (argv), "" (env)
        : "eax", "ebx", "ecx", "edx"
        );
   return r;

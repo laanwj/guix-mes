@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -23,7 +23,16 @@
 #if __GNUC__ && POSIX
 #undef __MES_SYS_WAIT_H
 #include_next <sys/wait.h>
-#endif // (__GNUC__ && POSIX)
+#else // !(__GNUC__ && POSIX)
+
+#ifndef __MES_PID_T
+#define __MES_PID_T
+typedef int pid_t;
+#endif
+
+pid_t waitpid (pid_t pid, int *status_ptr, int options);
+pid_t wait (int *status_ptr);
+
+#endif // !(__GNUC__ && POSIX)
 
 #endif // __MES_SYS_WAIT_H
-

@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -49,7 +49,9 @@ typedef long ssize_t;
 
 int access (char const *s, int mode);
 int close (int fd);
+int execve (char const *file, char *const argv[], char *const env[]);
 int execvp (char const *file, char *const argv[]);
+int fork ();
 char *getcwd (char *buf, size_t size);
 int isatty (int fd);
 off_t lseek (int fd, off_t offset, int whence);

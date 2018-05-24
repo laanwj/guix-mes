@@ -19,6 +19,7 @@
  */
 
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -139,11 +140,9 @@ write_byte (SCM x) ///((arity . n))
 
 char string_to_cstring_buf[1024];
 char const*
-string_to_cstring (SCM s)
+string_to_cstring_ (SCM s, char *buf)
 {
-  //static char buf[1024];
-  //char *p = buf;
-  char *p = string_to_cstring_buf;
+  char *p = buf;
   s = STRING(s);
   while (s != cell_nil)
     {
@@ -151,8 +150,13 @@ string_to_cstring (SCM s)
       s = cdr (s);
     }
   *p = 0;
-  //return buf;
-  return string_to_cstring_buf;
+  return buf;
+}
+
+char const*
+string_to_cstring (SCM s)
+{
+  return string_to_cstring_ (s, string_to_cstring_buf);
 }
 
 SCM
@@ -255,4 +259,38 @@ SCM
 isatty_p (SCM port)
 {
   return isatty (VALUE (port)) ? cell_t : cell_f;
+}
+
+SCM
+primitive_fork ()
+{
+  return MAKE_NUMBER (fork ());
+}
+
+SCM
+execl_ (SCM file_name, SCM args) ///((name . "execl"))
+{
+  char *c_argv[10];
+  int i = 0;
+  int n = 0;
+  c_argv[i++] = string_to_cstring_ (file_name, string_to_cstring_buf+n);
+  n += length__ (STRING (file_name)) + 1;
+  while (args != cell_nil)
+    {
+      assert (TYPE (CAR (args)) == TSTRING);
+      assert (i < 20);
+      c_argv[i++] = string_to_cstring_ (CAR (args), string_to_cstring_buf+n);
+      n += length__ (STRING (CAR (args))) + 1;
+      args = CDR (args);
+    }
+  c_argv[i] = 0;
+  return MAKE_NUMBER (execve (c_argv[0], c_argv, g_environment));
+}
+
+SCM
+waitpid_ (SCM pid, SCM options)
+{
+  int status;
+  int child = waitpid (VALUE (pid), &status, VALUE (options));
+  return cons (MAKE_NUMBER (child), MAKE_NUMBER (status));
 }

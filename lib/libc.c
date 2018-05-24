@@ -444,4 +444,10 @@ isatty (int fd)
   return ioctl (fd, TCGETS, 0) & 0xf0;
 }
 
+int
+wait (int *status_ptr)
+{
+  return waitpid  (-1, status_ptr, 0);
+}
+
 #endif //!POSIX
