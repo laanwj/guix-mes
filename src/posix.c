@@ -272,7 +272,6 @@ execl_ (SCM file_name, SCM args) ///((name . "execl"))
 {
   char *c_argv[100];
   int i = 0;
-  eputs ("core:execl file_name="); write_error_ (file_name); eputs ("\n");
   int n = 0;
   c_argv[i++] = string_to_cstring_ (file_name, string_to_cstring_buf+n);
   n += length__ (STRING (file_name)) + 1;
@@ -285,11 +284,6 @@ execl_ (SCM file_name, SCM args) ///((name . "execl"))
       args = CDR (args);
     }
   c_argv[i] = 0;
-  i = 0;
-  while (c_argv[i])
-    {
-      eputs ("  argv["); eputs (itoa (i)); eputs ("]: "); eputs (c_argv[i++]); eputs ("\n");
-    }
   return MAKE_NUMBER (execve (c_argv[0], c_argv, g_environment));
 }
 
