@@ -131,10 +131,4 @@
               (loop (cdr lst))
                 (cons (car lst) (loop (cdr lst))))))))
 
-(define (drop lst n)
-  (list-tail lst n))
-
-(define (drop-right lst n)
-  (list-head lst (- (length lst) n)))
-
 (include-from-path "srfi/srfi-1.scm")

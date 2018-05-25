@@ -1,7 +1,5 @@
-;;; -*-scheme-*-
-
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -20,51 +18,31 @@
 
 ;;; Commentary:
 
-;;; M1.mes produces stage0' M1 object format
+;;; M1.scm produces stage0' M1 assembly format
 
 ;;; Code:
 
-(cond-expand
- (guile)
- (mes
-  (mes-use-module (srfi srfi-1))
-  (mes-use-module (srfi srfi-26))
-  (mes-use-module (mes as))
-  (mes-use-module (mes elf))
-  (mes-use-module (mes optargs))
-  (mes-use-module (mes pmatch))
-  (mes-use-module (language c99 info))))
+(define-module (mescc M1)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module (system base pmatch)
+  #:use-module (mes misc)
+  #:use-module (mes guile)
 
-(define (logf port string . rest)
-  (apply format (cons* port string rest))
-  (force-output port)
-  #t)
+  #:use-module (mescc as)
+  #:use-module (mescc info)
+  #:export (info->M1
+            infos->M1
+            M1:merge-infos))
 
-(define (stderr string . rest)
-  (apply logf (cons* (current-error-port) string rest)))
+(define (infos->M1 file-name infos)
+  (let ((info (fold M1:merge-infos (make <info>) infos)))
+    (info->M1 file-name info)))
 
-(define (pke . stuff)
-  (newline (current-error-port))
-  (display ";;; " (current-error-port))
-  (write stuff (current-error-port))
-  (newline (current-error-port))
-  (car (last-pair stuff)))
-
-(define (objects->M1 file-name objects)
-  ((compose (cut object->M1 file-name <>) merge-objects) objects))
-
-(define (object->elf file-name o)
-  ((compose M1->elf (cut object->M1 file-name <>)) o))
-
-(define (objects->elf file-name objects)
-  ((compose M1->elf (cut object->M1 file-name <>) merge-objects) objects))
-
-(define (merge-objects objects)
-  (let loop ((objects (cdr objects)) (object (car objects)))
-    (if (null? objects) object
-        (loop (cdr objects)
-              `((functions . ,(alist-add (assoc-ref object 'functions) (assoc-ref (car objects) 'functions)))
-                (globals . ,(alist-add (assoc-ref object 'globals) (assoc-ref (car objects) 'globals))))))))
+(define (M1:merge-infos o info)
+  (clone info
+         #:functions (alist-add (.functions info) (.functions o))
+         #:globals (alist-add (.globals info) (.globals o))))
 
 (define (alist-add a b)
   (let* ((b-keys (map car b))
@@ -99,11 +77,10 @@
           (display sep))
       (loop (cdr o)))))
 
-(define (object->M1 file-name o)
-  (stderr "dumping M1: object\n")
-  (let* ((functions (assoc-ref o 'functions))
+(define (info->M1 file-name o)
+  (let* ((functions (.functions o))
          (function-names (map car functions))
-         (globals (assoc-ref o 'globals))
+         (globals (.globals o))
          (global-names (map car globals))
          (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names)))
     (define (string->label o)

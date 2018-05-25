@@ -8,12 +8,13 @@
 *.0-guile
 *.0-hex2
 *.E
-*.M1
+*.S
+*.o
+*.blood-elf
 *.gcc
 *.guile
-*.hex2
-*.hex2-o
 *.log
+*.gcc-o
 *.mes-o
 *.mes-stdout
 *.mini-M1
@@ -32,8 +33,8 @@
 
 /src/*.h
 /src/*.i
+/src/mes
 
-*.o
 /.config.make
 /.store
 /.tarball-version
@@ -59,4 +60,3 @@
 /doc/fosdem/fosdem.tex
 /doc/fosdem/fosdem.toc
 /doc/fosdem/fosdem.*vrb
-

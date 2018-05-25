@@ -1,7 +1,5 @@
-;;; -*-scheme-*-
-
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -20,15 +18,148 @@
 
 ;;; Commentary:
 
-;;; as-i386.mes defines i386 assembly
+;;; define i386 assembly
 
 ;;; Code:
 
-(cond-expand
- (guile-2)
- (guile)
- (mes
-  (mes-use-module (mes as))))
+(define-module (mescc i386 as)
+  #:use-module (mes guile)
+  #:use-module (mescc as)
+  #:export (
+            i386:accu%base
+            i386:accu*base
+            i386:accu*n->label
+            i386:accu*n->local
+            i386:accu+accu
+            i386:accu+base
+            i386:accu+value
+            i386:accu->base
+            i386:accu->base-mem
+            i386:byte-accu->base-mem
+            i386:word-accu->base-mem
+            i386:accu->base-mem+n
+            i386:byte-accu->base-mem+n
+            i386:word-accu->base-mem+n
+            i386:accu->label
+            i386:accu->local
+            i386:accu->local+n
+            i386:accu->local+n
+            i386:accu-and
+            i386:accu-and-base
+            i386:accu-and-base-mem
+            i386:accu-base
+            i386:accu-cmp-value
+            i386:accu-mem-add
+            i386:accu-mem->base-mem
+            i386:accu-negate
+            i386:accu-not
+            i386:accu-or-base
+            i386:accu-or-base-mem
+            i386:accu-shl
+            i386:accu-test
+            i386:accu-xor-base
+            i386:accu-zero?
+            i386:accu/base
+            i386:accu<->stack
+            i386:accu<<base
+            i386:accu>>base
+            i386:base+value
+            i386:base->accu
+            i386:base->accu-mem
+            i386:base->label
+            i386:base-mem->accu-mem
+            i386:base-mem+n->accu
+            i386:base-mem->accu
+            i386:base-sub
+            i386:byte-accu->base-mem
+            i386:word-accu->base-mem
+            i386:byte-base->accu-mem
+            i386:byte-base->accu-mem+n
+            i386:byte-base-mem->accu
+            i386:byte-base-sub
+            i386:byte-local->base
+            i386:byte-mem->accu
+            i386:word-mem->accu
+            i386:byte-mem->base
+            i386:byte-sub-base
+            i386:byte-test-base
+            i386:call-accu
+            i386:call-label
+            i386:formal
+            i386:function-locals
+            i386:function-preamble
+            i386:jump
+            i386:jump
+            i386:jump-a
+            i386:jump-ae
+            i386:jump-b
+            i386:jump-be
+            i386:jump-byte-z
+            i386:jump-g
+            i386:jump-ge
+            i386:jump-l
+            i386:jump-le
+            i386:jump-nz
+            i386:jump-z
+            i386:label->accu
+            i386:label->base
+            i386:label-mem->accu
+            i386:label-mem->base
+            i386:label-mem-add
+            i386:local->accu
+            i386:local->base
+            i386:local-add
+            i386:local-address->accu
+            i386:local-address->accu
+            i386:local-address->base
+            i386:local-ptr->accu
+            i386:local-ptr->base
+            i386:local-test
+            i386:mem+n->accu
+            i386:byte-mem+n->accu
+            i386:word-mem+n->accu
+            i386:mem->accu
+            i386:mem->base
+            i386:nop
+            i386:nz->accu
+            i386:pop-accu
+            i386:pop-base
+            i386:push-accu
+            i386:push-base
+            i386:push-byte-local-de-de-ref
+            i386:push-byte-local-de-ref
+            i386:push-word-local-de-ref
+            i386:push-label
+            i386:push-label-mem
+            i386:push-local
+            i386:push-local-address
+            i386:push-local-de-ref
+            i386:ret
+            i386:ret-local
+            i386:sub-base
+            i386:test-base
+            i386:value->accu
+            i386:value->accu-mem
+            i386:value->accu-mem+n
+            i386:value->base
+            i386:value->label
+            i386:value->local
+            i386:xor-accu
+            i386:xor-zf
+            i386:g?->accu
+            i386:ge?->accu
+            i386:l?->accu
+            i386:le?->accu
+            i386:a?->accu
+            i386:ae?->accu
+            i386:b?->accu
+            i386:be?->accu
+            i386:z->accu
+            i386:byte-accu
+            i386:signed-byte-accu
+            i386:word-accu
+            i386:signed-word-accu
+            ))
 
 (define (i386:nop)
   '(("nop")))

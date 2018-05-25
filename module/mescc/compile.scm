@@ -1,5 +1,3 @@
-;;; -*-scheme-*-
-
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -20,118 +18,47 @@
 
 ;;; Commentary:
 
-;;; compiler.mes produces an i386 binary from the C produced by
-;;; Nyacc c99.
-
 ;;; Code:
 
-(cond-expand
- (guile-2)
- (guile)
- (mes
-  (mes-use-module (srfi srfi-1))
-  (mes-use-module (srfi srfi-26))
-  (mes-use-module (mes pmatch))
-  (mes-use-module (nyacc lang c99 parser))
-  (mes-use-module (nyacc lang c99 pprint))
-  (mes-use-module (mes as))
-  (mes-use-module (mes as-i386))
-  (mes-use-module (mes M1))
-  (mes-use-module (mes optargs))
-  (mes-use-module (language c99 info))))
+(define-module (mescc compile)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9 gnu)
+  #:use-module (srfi srfi-26)
+  #:use-module (system base pmatch)
+  #:use-module (ice-9 optargs)
+  #:use-module (ice-9 pretty-print)
+  #:use-module (nyacc lang c99 pprint)
 
-(define (logf port string . rest)
-  (apply format (cons* port string rest))
-  (force-output port)
-  #t)
+  #:use-module (mes guile)
+  #:use-module (mes misc)
 
-(define (stderr string . rest)
-  (apply logf (cons* (current-error-port) string rest)))
-
-(define (pke . stuff)
-  (newline (current-error-port))
-  (display ";;; " (current-error-port))
-  (write stuff (current-error-port))
-  (newline (current-error-port))
-  (car (last-pair stuff)))
-
-(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "PREFIX") "") "@PREFIX@"))
+  #:use-module (mescc preprocess)
+  #:use-module (mescc info)
+  #:use-module (mescc as)
+  #:use-module (mescc i386 as)
+  #:use-module (mescc M1)
+  #:export (c99-ast->info
+            c99-input->info
+            c99-input->object))
 
 (define mes? (pair? (current-module)))
 
+(define* (c99-input->info #:key (prefix "") (defines '()) (includes '()))
+  (let ((ast (c99-input->ast #:prefix prefix #:defines defines #:includes includes)))
+    (c99-ast->info ast)))
+
+(define* (c99-ast->info o)
+  (stderr "compiling: input\n")
+  (let ((info (ast->info o (make <info> #:types i386:type-alist))))
+    (clean-info info)))
+
+(define (clean-info o)
+  (make <info>
+    #:functions (filter (compose pair? function:text cdr) (.functions o))
+    #:globals (.globals o)))
+
 (define %int-size 4)
 (define %pointer-size %int-size)
-
-(define* (c99-input->full-ast #:key (defines '()) (includes '()))
-  (let ((sys-include (if (equal? %prefix "") "include" (string-append %prefix "/share/include"))))
-    (parse-c99
-     #:inc-dirs (append includes (cons* sys-include "include" "lib" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
-     #:cpp-defs `(
-                  "NULL=0"
-                  "__linux__=1"
-                  "__i386__=1"
-                  "POSIX=0"
-                  "_POSIX_SOURCE=0"
-                  "__MESC__=1"
-                  ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
-                  ,@defines)
-     #:mode 'code)))
-
-(define (ast-strip-comment o)
-  (pmatch o
-    ((comment . ,comment) #f)
-    (((comment . ,comment) . ,t) (filter-map ast-strip-comment t))
-    (((comment . ,comment) . ,cdr) cdr)
-    ((,car . (comment . ,comment)) car)
-    ((,h . ,t) (if (list? o) (filter-map ast-strip-comment o)
-                   (cons (ast-strip-comment h) (ast-strip-comment t))))
-    (_  o)))
-
-(define (ast-strip-const o)
-  (pmatch o
-    ((type-qual ,qual) (if (equal? qual "const") #f o))
-    ((pointer (type-qual-list (type-qual ,qual)) . ,rest)
-     (if (equal? qual "const") `(pointer ,@rest) o))
-    ((decl-spec-list (type-qual ,qual))
-     (if (equal? qual "const") #f
-         `(decl-spec-list (type-qual ,qual))))
-    ((decl-spec-list (type-qual ,qual) . ,rest)
-     (if (equal? qual "const") `(decl-spec-list ,@rest)
-         `(decl-spec-list (type-qual ,qual) ,@(map ast-strip-const rest))))
-    ((decl-spec-list (type-qual-list (type-qual ,qual)) . ,rest)
-     (if (equal? qual "const") `(decl-spec-list ,@rest)
-         `(decl-spec-list (type-qual-list (type-qual ,qual)) ,@(map ast-strip-const rest))))
-    ((,h . ,t) (if (list? o) (filter-map ast-strip-const o)
-                   (cons (ast-strip-const h) (ast-strip-const t))))
-    (_  o)))
-
-(define (clone o . rest)
-  (cond ((info? o)
-         (let ((types (.types o))
-               (constants (.constants o))
-               (functions (.functions o))
-               (globals (.globals o))
-               (locals (.locals o))
-               (statics (.statics o))
-               (function (.function o))
-               (text (.text o))
-               (post (.post o))
-               (break (.break o))
-               (continue (.continue o)))
-           (let-keywords rest
-                         #f
-                         ((types types)
-                          (constants constants)
-                          (functions functions)
-                          (globals globals)
-                          (locals locals)
-                          (statics statics)
-                          (function function)
-                          (text text)
-                          (post post)
-                          (break break)
-                          (continue continue))
-                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:statics statics #:function function #:text text #:post post #:break break #:continue continue))))))
 
 (define (ident->constant name value)
   (cons name value))
@@ -755,7 +682,11 @@
 
 (define (ast->comment o)
   (if mes? '()
-      (let ((source (with-output-to-string (lambda () (pretty-print-c99 o)))))
+      (let* ((source (with-output-to-string (lambda () (pretty-print-c99 o))))
+             ;; Nyacc 0.80.42 fixups
+             (source (string-substitute source "'\\'" "'\\\\'"))
+             (source (string-substitute source "'\"'" "'\\\"'"))
+             (source (string-substitute source "'''" "'\\''")))
         (make-comment (string-join (string-split source #\newline) " ")))))
 
 (define (accu*n info n)
@@ -2496,32 +2427,3 @@
              #:globals (append (.statics info) (.globals info))
              #:statics '()
              #:functions (append (.functions info) (list (cons name (make-function name type (assert-return (.text info))))))))))
-
-;; exports
-
-(define* (c99-ast->info o)
-  (ast->info o (make <info> #:types i386:type-alist)))
-
-(define* (c99-input->ast #:key (defines '()) (includes '()))
-  (stderr "parsing: input\n")
-  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:defines defines #:includes includes)))
-
-(define* (c99-input->info #:key (defines '()) (includes '()))
-  (lambda ()
-    (let* ((info (make <info> #:types i386:type-alist))
-           (ast (c99-input->ast #:defines defines #:includes includes))
-           (foo (stderr "compiling: input\n"))
-           (info (ast->info ast info))
-           (info (clone info #:text '() #:locals '())))
-      info)))
-
-(define* (info->object o)
-  (stderr "compiling: object\n")
-  `((functions . ,(filter (compose pair? function:text cdr) (.functions o)))
-    (globals . ,(.globals o))))
-
-(define* (c99-input->elf #:key (defines '()) (includes '()))
-  ((compose object->elf info->object (c99-input->info #:defines defines #:includes includes))))
-
-(define* (c99-input->object #:key (defines '()) (includes '()))
-  ((compose object->M1 info->object (c99-input->info #:defines defines #:includes includes))))

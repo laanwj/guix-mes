@@ -24,7 +24,6 @@
 
 ;;; Code:
 
-(mes-use-module (srfi srfi-1))
 (mes-use-module (srfi srfi-14))
 
 (define (string-join lst . delimiter+grammar)
@@ -76,10 +75,12 @@
         ((> n 0) (list->string (list-tail (string->list s) n)))
         (else s (error "string-drop: not supported: (n s)=" (cons n s)))))
 
+(define (drop-right lst n)
+  (list-head lst (- (length lst) n)))
+
 (define (string-drop-right s n)
   (cond ((zero? n) s)
-        ((> n 0) (let ((length (string-length s)))
-                   (list->string (list-head (string->list s) (- length n)))))
+        ((> n 0) ((compose list->string (lambda (o) (drop-right o n)) string->list) s))
         (else (error "string-drop-right: not supported: n=" n))))
 
 (define (string-delete pred s)

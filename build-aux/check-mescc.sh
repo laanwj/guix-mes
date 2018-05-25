@@ -18,9 +18,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
+
 export BLOOD_ELF GUILE HEX2 M1 MES MESCC
-export M1FLAGS HEX2FLAGS PREPROCESS LIBC
+export M1FLAGS HEX2FLAGS PREPROCESS
 export MES_ARENA MES_PREFIX MES_SEED
+export BUILD_DEBUG
+export CC32LIBS MESCCLIBS
 
 MES=${MES-src/mes}
 MESCC=${MESCC-scripts/mescc}
@@ -36,6 +42,9 @@ MESCC=${MESCC-$(command -v mescc)}
 MES=${MES-$(command -v mes)}
 [ -z "$MES" ] && MES=src/mes
 
+if ! command -v $GUILE > /dev/null; then
+    GUILE=true
+fi
 
 tests="
 t
@@ -135,14 +144,18 @@ expect=$(echo $broken | wc -w)
 pass=0
 fail=0
 total=0
+MESCCLIBS=
 LIBC=libc/libc
 for t in $tests; do
     if [ -z "${t/[012][0-9]-*/}" ]; then
-        LIBC=lib/mini-libc;
+        LIBC="lib/libc-mini"
+        MESCCLIBS="-l c-mini"
     elif [ -z "${t/8[0-9]-*/}" ]; then
-        LIBC=lib/libc+tcc;
+        LIBC="lib/libc+tcc"
+        MESCCLIBS="-l c+tcc"
     else
-        LIBC=lib/libc;
+        LIBC=libc/libc
+        MESCCLIBS=
     fi
     sh build-aux/test.sh "scaffold/tests/$t" &> scaffold/tests/"$t".log
     r=$?

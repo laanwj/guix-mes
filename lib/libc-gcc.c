@@ -29,8 +29,8 @@
 #include <fcntl.h>
 #include <assert.h>
 
-#include <mini-linux-gcc.c>
-#include <mini-libc.c>
+#include <linux-mini-gcc.c>
+#include <libc-mini.c>
 #include <linux-gcc.c>
 #include <libc.c>
 

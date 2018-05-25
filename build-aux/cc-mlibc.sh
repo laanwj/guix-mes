@@ -18,7 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -ex
+set -e
+
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
 
 CPPFLAGS=${CPPFLAGS-"
 -D VERSION=\"$VERSION\"
@@ -56,5 +60,6 @@ if [ -z "$NOLINK" ]; then
         -o "$c".mlibc-out\
         lib/crt1.mlibc-o\
         "$c".mlibc-o\
-        $LIBC-gcc.mlibc-o
+        $LIBC-gcc.mlibc-o\
+        $CC32LIBS
 fi

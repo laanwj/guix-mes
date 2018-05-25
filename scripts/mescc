@@ -1,5 +1,14 @@
 #! /bin/sh
 # -*-scheme-*-
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
+PREFIX=${PREFIX-@PREFIX@}
+if [ "$PREFIX" = @PREFIX""@ -o ! -d "$PREFIX" ]
+then
+    MES_PREFIX=${MES_PREFIX-$(cd $(dirname $0)/.. && pwd)}
+    export MES_PREFIX
+fi
 mes_p=$(command -v mes)
 if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile" ]; then
     GODIR=${GODIR-@GODIR@}
@@ -11,18 +20,9 @@ if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile
     exec ${GUILE-guile} -L $GUILEDIR -e '(mescc)' -s "$0" "$@"
 else
     MES=${MES-$(dirname $0)/mes}
-    PREFIX=${PREFIX-@PREFIX@}
-    if [ "$MES_PREFIX" = @PREFIX""@ ]
-    then
-        MES_PREFIX=$(cd $(dirname $0)/.. && pwd)
-        export MES_PREFIX
-    else
-        MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
-    fi
     MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
     export MES_MODULEDIR
     exec ${MES-mes} -e '(mescc)' -s $0 "$@"
-    exit $?
 fi
 !#
 
@@ -44,63 +44,43 @@ fi
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-#!
-Run with Guile-1.8:
-GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' scripts/mescc
-!#
-
 (define-module (mescc)
-  #:use-module (language c99 info)
-  #:use-module (language c99 compiler)
-  #:use-module (mes elf)
-  #:use-module (mes M1)
   #:use-module (ice-9 getopt-long)
-  #:use-module (ice-9 pretty-print)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
+  #:use-module (mes misc)
+  #:use-module (mescc mescc)
   #:export (main))
 
 (define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "MES_PREFIX") "") "@PREFIX@"))
 
+(define %version (if (string-prefix? "@VERSION" "@VERSION@") "git"
+                     "@VERSION@"))
+
 (cond-expand
  (mes
-  (define %scheme "mes")
-  (define (set-port-encoding! port encoding) #t))
- (guile-2
-  (define %scheme "guile")
-  (define-macro (mes-use-module . rest) #t)
-  (module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix))
+  (define (set-port-encoding! port encoding) #t)
+  (mes-use-module (mes guile))
+  (mes-use-module (mes misc))
+  (mes-use-module (mes getopt-long))
+  (mes-use-module (mes display))
+  (mes-use-module (mescc mescc)))
  (guile
-  (use-modules (ice-9 syncase))
-  (define %scheme "guile")
-  (define-macro (mes-use-module . rest) #t)
-  (module-define! (resolve-module '(language c99 compiler)) '%prefix %prefix)))
-
-(define guile? (equal? %scheme "guile"))
-
-(mes-use-module (mes guile))
-(mes-use-module (mes getopt-long))
-(mes-use-module (mes pretty-print))
-(mes-use-module (language c99 info))
-(mes-use-module (language c99 compiler))
-(mes-use-module (mes display))
-(mes-use-module (mes elf))
-(mes-use-module (mes M1))
-(mes-use-module (srfi srfi-1))
-(mes-use-module (srfi srfi-26))
+  (define-macro (mes-use-module . rest) #t)))
 
 (format (current-error-port) "mescc[~a]...\n" %scheme)
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((c (single-char #\c))
+          '((assemble (single-char #\c))
+            (compile (single-char #\S))
             (define (single-char #\D) (value #t))
-            (E (single-char #\E))
-            (g (single-char #\g))
+            (debug-info (single-char #\g))
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
-            (o (single-char #\o) (value #t))
+            (library (single-char #\l) (value #t))
+            (preprocess (single-char #\E))
+            (output (single-char #\o) (value #t))
             (version (single-char #\V))
+            (verbose (single-char #\v))
             (write (single-char #\w) (value #t))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
@@ -113,13 +93,15 @@ GUILE='~/src/guile-1.8/build/pre-inst-guile --debug -q' scripts/mescc
      (and (or help? usage?)
           (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
-  -c                 compile and assemble, but do not link
-  -D DEFINE          define DEFINE
+  -c                 preprocess, compile and assemble only; do not link
+  -D DEFINE[=VALUE]  define DEFINE [VALUE=1]
   -E                 preprocess only; do not compile, assemble or link
   -g                 add debug info [GDB, objdump] TODO: hex2 footer
   -h, --help         display this help and exit
   -I DIR             append DIR to include path
+  -l LIBNAME         link with LIBNAME
   -o FILE            write output to FILE
+  -S                 preprocess and compile only; do not assemble or link
   -v, --version      display version and exit
   -w,--write=TYPE    dump Nyacc AST using TYPE {pretty-print,write}
 
@@ -132,76 +114,18 @@ Environment variables:
           (exit (or (and usage? 2) 0)))
      options)))
 
-(define (read-object file)
-  (let ((char (with-input-from-file file read-char)))
-    (if (eq? char #\#) (error "hex2 format not supported:" file)))
-  (with-input-from-file file read))
-
-(define (main:ast->info file)
-  (let ((ast (with-input-from-file file read)))
-    (c99-ast->info ast)))
-
-(define (source->ast write defines includes)
-  (lambda (file)
-    (with-input-from-file file
-      (lambda ()
-        (write (c99-input->ast #:defines defines #:includes includes))))))
-
-(define (source->info defines includes)
-  (lambda (file)
-    (with-input-from-file file
-      (lambda ()
-        ((c99-input->info #:defines defines #:includes includes))))))
-
-(define (ast? o)
-  (or (string-suffix? ".E" o)
-      (string-suffix? (string-append "." %scheme "-E") o)
-      (string-suffix? "-E" o)))
-
-(define (object? o)
-  (or (string-suffix? ".o" o)
-      (string-suffix? (string-append "." %scheme "-o") o)
-      (string-suffix? "-o" o)))
-
 (define (main args)
   (let* ((options (parse-opts args))
-         (files (option-ref options '() '()))
-         (file (car files))
-         (file-name (car (string-split (basename file) #\.)))
-         (preprocess? (option-ref options 'E #f))
-         (compile? (option-ref options 'c #f))
-         (debug-info? (option-ref options 'g #f))
-         (asts (filter ast? files))
-         (objects (filter object? files))
-         (sources (filter (cut string-suffix? ".c" <>) files))
-         (base (substring file (1+ (or (string-rindex file #\/) -1)) (- (string-length file) 2)))
-         (out (option-ref options 'o (cond (compile? (string-append base ".o"))
-                                           (preprocess? (string-append base ".E"))
-                                           (else "a.out"))))
-         (multi-opt (lambda (option) (lambda (o) (and (eq? (car o) option) (cdr o)))))
-         (defines (reverse (filter-map (multi-opt 'define) options)))
-         (includes (reverse (filter-map (multi-opt 'include) options)))
-         (pretty-print/write (string->symbol (option-ref options 'write (if guile? "pretty-print" "write"))))
-         (pretty-print/write (if (eq? pretty-print/write 'pretty-print) pretty-print write)))
-    (when (getenv "MES_DEBUG")
+         (options (acons 'prefix %prefix options))
+         (preprocess? (option-ref options 'preprocess #f))
+         (compile? (option-ref options 'compile #f))
+         (assemble? (option-ref options 'assemble #f))
+         (verbose? (option-ref options 'verbose (getenv "MES_DEBUG"))))
+    (when verbose?
       (setenv "NYACC_TRACE" "yes")
-      (format (current-error-port) "options=~s\n" options)
-      (format (current-error-port) "output: ~a\n" out))
-    (if (and (pair? sources) (pair? objects)) (error "cannot mix source and object files:" files))
-    (with-output-to-file out
-      (lambda ()
-        (if (and (not compile?)
-                 (not preprocess?)) (set-port-encoding! (current-output-port) "ISO-8859-1"))
-        (cond ((pair? objects) (let ((objects (map read-object objects)))
-                                 (if compile? (objects->M1 file-name objects)
-                                     (objects->elf file objects))))
-              ((pair? asts) (let* ((infos (map main:ast->info asts))
-                                   (objects (map info->object infos)))
-                              (if compile? (objects->M1 file-name objects)
-                                  (objects->elf file objects))))
-              ((pair? sources) (if preprocess? (map (source->ast pretty-print/write defines includes) sources)
-                                   (let* ((infos (map (source->info defines includes) sources))
-                                          (objects (map info->object infos)))
-                                     (if compile? (objects->M1 file-name objects)
-                                         (objects->elf file objects))))))))))
+      (format (current-error-port) "options=~s\n" options))
+    (cond (preprocess? (mescc:preprocess options))
+          (compile? (mescc:compile options))
+          (assemble? (mescc:assemble options))
+          (else (mescc:link options)))))
 'done

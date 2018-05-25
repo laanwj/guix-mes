@@ -18,11 +18,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -x
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
 
 export BLOOD_ELF GUILE HEX2 M1 MES MESCC
 export M1FLAGS HEX2FLAGS PREPROCESS
 export MES_SEED MES_ARENA
+
+GUILE=${GUILE-guile}
+if [ -z "$GUILE" -o "$GUILE" = "true" ] || ! command -v $GUILE > /dev/null; then
+    GUILE=src/mes
+fi
 
 HEX2=${HEX2-hex2}
 M1=${M1-M1}
@@ -50,55 +57,58 @@ if [ -d "$MES_SEED" ]; then
         $M1FLAGS\
         -f stage0/x86.M1\
         -f $MES_SEED/crt1.M1\
-        -o lib/crt1.hex2
+        -o lib/crt1.o
     $M1\
         $M1FLAGS\
         -f stage0/x86.M1\
         -f $MES_SEED/libc-mes.M1\
-        -o lib/libc-mes.hex2
+        -o lib/libc-mes.o
     $M1\
         --LittleEndian\
         --Architecture=1\
         -f stage0/x86.M1\
         -f $MES_SEED/mes.M1\
-        -o src/mes.hex2
+        -o src/mes.o
     $BLOOD_ELF\
         -f stage0/x86.M1\
         -f $MES_SEED/mes.M1\
         -f $MES_SEED/libc-mes.M1\
-        -o src/mes.blood-elf.M1
+        -o src/mes.S.blood-elf
     $M1\
         --LittleEndian\
         --Architecture=1\
-        -f src/mes.blood-elf.M1\
-        -o src/mes.blood-elf.hex2
+        -f src/mes.S.blood-elf\
+        -o src/mes.o.blood-elf
     $HEX2\
         $HEX2FLAGS\
         -f stage0/elf32-header.hex2\
-        -f lib/crt1.hex2\
-        -f lib/libc-mes.hex2\
-        -f src/mes.hex2\
-        -f src/mes.blood-elf.hex2\
+        -f lib/crt1.o\
+        -f lib/libc-mes.o\
+        -f src/mes.o\
+        -f src/mes.o.blood-elf\
         --exec_enable\
         -o src/mes.seed-out
     cp src/mes.seed-out src/mes
-
     $M1\
         $M1FLAGS\
         -f stage0/x86.M1\
         -f $MES_SEED/libc+tcc-mes.M1\
-        -o src/libc+tcc-mes.hex2
+        -o lib/libc+tcc-mes.o
 fi
 
 PREPROCESS=1
 NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
-NOLINK=1 sh build-aux/cc-mes.sh lib/mini-libc-mes
+NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mini-mes
 NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mes
 NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc-mes
 
+cp lib/crt1.mes-o lib/crt1.o
+cp lib/libc-mini-mes.mes-o lib/libc-mini-mes.o
+cp lib/libc-mes.mes-o lib/libc-mes.o
+cp lib/libc+tcc-mes.mes-o lib/libc+tcc-mes.o
+
 [ -n "$SEED" ] && exit 0
 
-GUILE=src/mes
 MES_ARENA=${MES_ARENA-30000000}
 sh build-aux/mes-snarf.scm --mes src/gc.c
 sh build-aux/mes-snarf.scm --mes src/lib.c
@@ -108,10 +118,10 @@ sh build-aux/mes-snarf.scm --mes src/posix.c
 sh build-aux/mes-snarf.scm --mes src/reader.c
 sh build-aux/mes-snarf.scm --mes src/vector.c
 
-# sh build-aux/cc-mes.sh scaffold/main
-# sh build-aux/cc-mes.sh scaffold/hello
-# sh build-aux/cc-mes.sh scaffold/argv
-# sh build-aux/cc-mes.sh scaffold/malloc
+sh build-aux/cc-mes.sh scaffold/main
+sh build-aux/cc-mes.sh scaffold/hello
+sh build-aux/cc-mes.sh scaffold/argv
+sh build-aux/cc-mes.sh scaffold/malloc
 ##sh build-aux/cc-mes.sh scaffold/micro-mes
 ##sh build-aux/cc-mes.sh scaffold/tiny-mes
 # sh build-aux/cc-mes.sh scaffold/mini-mes

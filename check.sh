@@ -20,10 +20,17 @@
 
 export CC32
 export GUILE MES MES_ARENA
+export BUILD_DEBUG
+
 CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
-MES_ARENA=${MES_ARENA-100000000}
+MES_ARENA=${MES_ARENA-300000000}
+PREFIX=
+
+if ! command -v $GUILE > /dev/null; then
+    GUILE=true
+fi
 
 set -e
 bash build-aux/check-boot.sh

@@ -18,9 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -x
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
 
-export LIBC
+export LIBC MESCCLIBS
 
 GUILE=${GUILE-$MES}
 DIFF=${DIFF-$(command -v diff)}

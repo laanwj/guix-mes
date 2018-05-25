@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -18,23 +18,10 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
-
-;;; Code:
-
-(define-module (mes as)
-  #:use-module (srfi srfi-1)
-  #:use-module (mes guile)
-  #:use-module (mes bytevectors)
-  #:export (dec->hex
-            int->bv8
-            int->bv16
-            int->bv32))
-
-(cond-expand
- (guile-2)
- (guile
-  (use-modules (ice-9 syncase)))
- (mes))
-
-(include-from-path "mes/as.mes")
+(mes-use-module (mes optargs))
+(mes-use-module (mes pmatch))
+(mes-use-module (srfi srfi-1))
+(mes-use-module (srfi srfi-13))
+(mes-use-module (srfi srfi-26))
+(mes-use-module (nyacc lang c99 parser))
+(include-from-path "mescc/preprocess.scm")

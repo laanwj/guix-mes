@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -18,27 +18,16 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
+(mes-use-module (srfi srfi-1))
+(mes-use-module (srfi srfi-13))
+(mes-use-module (srfi srfi-26))
+(mes-use-module (mes pmatch))
+(mes-use-module (mes optargs))
+(mes-use-module (mes misc))
+(mes-use-module (nyacc lang c99 pprint))
 
-;;; Code:
-
-(define-module (mes M1)
-  #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:use-module (system base pmatch)
-  #:use-module (mes guile)
-  #:use-module (mes as)
-  #:use-module (mes elf)
-  #:use-module (language c99 info)
-  #:export (object->M1
-            objects->M1
-            object->elf
-            objects->elf))
-
-(cond-expand
- (guile-2)
- (guile
-  (use-modules (ice-9 syncase)))
- (mes))
-
-(include-from-path "mes/M1.mes")
+(mes-use-module (mescc as))
+(mes-use-module (mescc i386 as))
+(mes-use-module (mescc info))
+(mes-use-module (mescc M1))
+(include-from-path "mescc/compile.scm")

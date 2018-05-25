@@ -1,5 +1,3 @@
-;;; -*-scheme-*-
-
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -20,9 +18,14 @@
 
 ;;; Commentary:
 
-;;; bytevectors.mes 
-
 ;;; Code:
+
+(define-module (mescc bytevectors)
+  #:use-module (mes guile)
+  #:export (bytevector-u32-native-set!
+            bytevector-u16-native-set!
+            bytevector-u8-set!
+            make-bytevector))
 
 ;; rnrs compatibility
 (define (bytevector-u32-native-set! bv index value)

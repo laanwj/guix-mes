@@ -12,9 +12,6 @@ List of imported files
 Based on Guile ECMAScript
 module/language/c/lexer.mes
 
-Included verbatim from GNU Guix
-build-aux/compile-all.scm
-
 Included verbatim from gnulib
 build-aux/gitlog-to-changelog
 

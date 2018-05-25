@@ -18,7 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -ex
+set -e
+
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
 
 export CC32 CPPFLAGS C32FLAGS
 
@@ -59,7 +63,7 @@ C32FLAGS=${C32FLAGS-"
 "}
 
 NOLINK=1 sh build-aux/cc-mlibc.sh lib/crt1
-NOLINK=1 sh build-aux/cc-mlibc.sh lib/mini-libc-gcc
+NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc-mini-gcc
 NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc-gcc
 NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc+tcc-gcc
 

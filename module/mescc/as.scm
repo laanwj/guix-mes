@@ -1,7 +1,5 @@
-;;; -*-scheme-*-
-
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -18,19 +16,14 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
-
-;;; compiler.mes produces an i386 binary from the C produced by
-;;; Nyacc c99.
-
-;;; Code:
-
-(cond-expand
- (guile)
- (guile-2)
- (mes
-  (mes-use-module (srfi srfi-1))
-  (mes-use-module (mes bytevectors))))
+(define-module (mescc as)
+  #:use-module (srfi srfi-1)
+  #:use-module (mes guile)
+  #:use-module (mescc bytevectors)
+  #:export (dec->hex
+            int->bv8
+            int->bv16
+            int->bv32))
 
 (define (int->bv32 value)
   (let ((bv (make-bytevector 4)))

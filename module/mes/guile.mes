@@ -22,13 +22,16 @@
 
 ;;; Code:
 
+(mes-use-module (srfi srfi-13))
+
 (define-macro (cond-expand-provide . rest) #t)
 
 (define-macro (include-from-path file)
   (let loop ((path (cons %moduledir (string-split (or (getenv "GUILE_LOAD_PATH") "") #\:))))
-    (if (getenv "MES_DEBUG")
-        ;;(format (current-error-port) "include-from-path: ~s [PATH:~s]\n" file path)
-        (core:display-error (string-append "include-from-path: " file " [PATH:" (string-join path ":") "]\n")))
+    (cond ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 1)) string->number))
+           (core:display-error (string-append "include-from-path: " file "\n")))
+          ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 1)) string->number)))
+          (core:display-error (string-append "include-from-path: " file " [PATH:" (string-join path ":") "]\n")))
     (if (null? path) (error "include-from-path: not found: " file)
         (let ((file (string-append (car path) "/" file)))
           (if (access? file R_OK) `(load ,file)
@@ -37,7 +40,6 @@
 (mes-use-module (mes catch))
 (mes-use-module (mes posix))
 (mes-use-module (srfi srfi-16))
-(mes-use-module (srfi srfi-26))
 (mes-use-module (mes display))
 
 (if #t ;;(not (defined? 'read-string))
@@ -46,7 +48,7 @@
         (if (eq? c #\*eof*) '()
             (cons c (read-string (read-char)))))
       (let ((string (list->string (read-string (read-char)))))
-        (if (and=> (getenv "MES_DEBUG") (compose (cut > <> 3) string->number))
+        (if (and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 3)) string->number))
             (core:display-error (string-append "drained: `" string "'\n")))
         string)))
 
@@ -147,4 +149,3 @@
         (with-output-to-string
           (lambda () (simple-format lst rest))))))
 (define format simple-format)
-

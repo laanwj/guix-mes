@@ -18,5 +18,5 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mini-linux-mes.c>
-#include <mini-libc.c>
+#include <linux-mini-mes.c>
+#include <libc-mini.c>

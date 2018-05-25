@@ -18,12 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -x
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
+
 # dash does not export foo=${foo-bar} for some values
 export CC CC32 GUILE MESCC MES_SEED
 export MES_ARENA MES_DEBUG
 export PREFIX DATADIR MODULEDIR
 export CPPFLAGS CFLAGS C32FLAGS MESCCFLAGS
+export BUILD_DEBUG
 
 CC=${CC-$(command -v gcc)}
 CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
@@ -31,7 +35,7 @@ MESCC=${MESCC-$(command -v mescc)}
 MES_SEED=${MES_SEED-../mes-seed}
 GUILE=${GUILE-$(command -v guile)}
 MES_ARENA=${MES_ARENA-300000000}
-MES_DEBUG=${MES_DEBUG-2}
+MES_DEBUG=${MES_DEBUG-1}
 
 PREFIX=${PREFIX-/usr/local}
 DATADIR=${DATADIR-$PREFIX/share/mes}

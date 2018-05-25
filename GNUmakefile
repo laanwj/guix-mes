@@ -38,7 +38,7 @@ install:
 
 .config.make: ./configure
 
-seed:
+seed: all-go
 	cd $(MES_SEED) && git reset --hard HEAD
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
 	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh

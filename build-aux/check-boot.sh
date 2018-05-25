@@ -18,11 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -e
 
 export GUILE MES
-GUILE=${GUILE-guile}
 MES=${MES-./src/mes}
+
+GUILE=${GUILE-guile}
+if ! command -v $GUILE > /dev/null; then
+    GUILE=true
+fi
+
+set -e
 
 tests="
 

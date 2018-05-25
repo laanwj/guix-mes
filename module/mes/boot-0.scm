@@ -152,7 +152,9 @@
 
 (define-macro (load file)
   (list 'begin
-        (list 'if (list getenv "MES_DEBUG")
+        (list 'if (list 'and (list getenv "MES_DEBUG")
+                        (list not (list equal2? (list getenv "MES_DEBUG") "0"))
+                        (list not (list equal2? (list getenv "MES_DEBUG") "1")))
               (list 'begin
                     (list core:display-error ";;; read ")
                     (list core:display-error file)
@@ -190,7 +192,9 @@
                      "@VERSION@"))
 (define (effective-version) %version)
 
-(if (getenv "MES_DEBUG")
+(if (list 'and (list getenv "MES_DEBUG")
+          (list not (list equal2? (list getenv "MES_DEBUG") "0"))
+          (list not (list equal2? (list getenv "MES_DEBUG") "1")))
     (begin
       (core:display-error ";;; %moduledir=")
       (core:display-error %moduledir)
@@ -295,7 +299,7 @@ remaining arguments as the value of (command-line).
              (set! %argv files)
              (set-current-input-port port)))
           ((and (null? files) tty?)
-           
+
            (mes-use-module (mes repl))
            (set-current-input-port 0)
            (repl))

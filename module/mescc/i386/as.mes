@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of Mes.
 ;;;
@@ -18,11 +18,5 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
-
-;;; Code:
-
-(mes-use-module (srfi srfi-9))
-(mes-use-module (srfi srfi-9 gnu))
-(include-from-path "language/c99/info.scm")
-
+(mes-use-module (mescc as))
+(include-from-path "mescc/i386/as.scm")

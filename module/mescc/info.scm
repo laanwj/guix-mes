@@ -1,5 +1,3 @@
-;;; -*-scheme-*-
-
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
@@ -18,17 +16,20 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; info.scm defines [Guile] record data types for compiler.mes
+;;; Commentary:
+
+;;; info.scm defines [Guile] record data types for MesCC
 
 ;;; Code:
 
-(define-module (language c99 info)
+(define-module (mescc info)
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:export (<info>
             make
+            clone
             make-<info>
             info?
 
@@ -113,14 +114,6 @@
             rank+=
             structured-type?))
 
-(cond-expand
- (guile-2)
- (guile
-  (use-modules (ice-9 syncase))
-  (use-modules (ice-9 optargs)))
- (mes
-  (mes-use-module (mes optargs))))
-
 (define-immutable-record-type <info>
   (make-<info> types constants functions globals locals statics function text post break continue)
   info?
@@ -137,7 +130,36 @@
   (continue .continue))
 
 (define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (statics '()) (function #f) (text '()) (post '()) (break '()) (continue '()))
-  (make-<info> types constants functions globals locals statics function text post break continue))
+  (cond ((eq? o <info>)
+         (make-<info> types constants functions globals locals statics function text post break continue))))
+
+(define (clone o . rest)
+  (cond ((info? o)
+         (let ((types (.types o))
+               (constants (.constants o))
+               (functions (.functions o))
+               (globals (.globals o))
+               (locals (.locals o))
+               (statics (.statics o))
+               (function (.function o))
+               (text (.text o))
+               (post (.post o))
+               (break (.break o))
+               (continue (.continue o)))
+           (let-keywords rest
+                         #f
+                         ((types types)
+                          (constants constants)
+                          (functions functions)
+                          (globals globals)
+                          (locals locals)
+                          (statics statics)
+                          (function function)
+                          (text text)
+                          (post post)
+                          (break break)
+                          (continue continue))
+                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:statics statics #:function function #:text text #:post post #:break break #:continue continue))))))
 
 ;; ("int" . ,(make-type 'builtin 4 #f 0 #f))
 ;;           (make-type 'enum 4 0 fields)

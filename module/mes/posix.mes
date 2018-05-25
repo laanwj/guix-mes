@@ -22,6 +22,8 @@
 
 ;;; Code:
 
+(mes-use-module (srfi srfi-13))
+
 (define R_OK 0)
 (define S_IRWXU #o700)
 

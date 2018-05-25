@@ -18,7 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -ex
+set -e
+
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
 
 export CC CFLAGS CPPFLAGS
 
@@ -46,7 +50,7 @@ build-aux/mes-snarf.scm src/posix.c
 build-aux/mes-snarf.scm src/reader.c
 build-aux/mes-snarf.scm src/vector.c
 
-NOLINK=1 sh build-aux/cc.sh lib/mini-libc-gcc
+NOLINK=1 sh build-aux/cc.sh lib/libc-mini-gcc
 NOLINK=1 sh build-aux/cc.sh lib/libc-gcc
 NOLINK=1 sh build-aux/cc.sh lib/libc+tcc-gcc
 
