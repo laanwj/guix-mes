@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -73,13 +73,6 @@ int
 fflush (FILE *stream)
 {
   eputs ("fflush stub\n");
-  return 0;
-}
-
-FILE *
-fopen (char const *pathname, char const *mode)
-{
-  eputs ("fopen stub\n");
   return 0;
 }
 

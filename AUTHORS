@@ -1,6 +1,13 @@
 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 Main author
-All files except the files listed below
+All files except the imported files listed below
+
+Jeremiah Orians <jeremiah@pdp10.guru>
+lib/libc.c (fopen)
+
+
+
+List of imported files
 
 Based on Guile ECMAScript
 module/language/c/lexer.mes

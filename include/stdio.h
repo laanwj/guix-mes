@@ -103,7 +103,7 @@ int eputs (char const* s);
 int fclose (FILE *stream);
 FILE *fdopen (int fd, char const *mode);
 int fflush (FILE *stream);
-FILE *fopen (char const *pathname, char const *mode);
+FILE *fopen (char const *file_name, char const *mode);
 int ferror (FILE *stream);
 int fprintf (FILE *stream, char const *format, ...);
 int fdputc (int c, int fd);

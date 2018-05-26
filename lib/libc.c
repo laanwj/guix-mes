@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jeremiah Orians <jeremiah@pdp10.guru>
  *
  * This file is part of Mes.
  *
@@ -172,6 +173,24 @@ int
 eputc (int c)
 {
   return fdputc (c, STDERR);
+}
+
+FILE*
+fopen (char const* file_name, char const* mode)
+{
+  FILE* f;
+  if ('w' == mode[0])
+    /* 577 is O_WRONLY|O_CREAT|O_TRUNC, 384 is 600 in octal */
+    f = open (file_name, 577 , 384);
+  else
+    /* Everything else is a read */
+    f = open (file_name, 0, 0);
+
+  /* Negative numbers are error codes */
+  if (0 > f)
+    return 0;
+
+  return f;
 }
 
 int
