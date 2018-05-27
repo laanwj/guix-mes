@@ -87,10 +87,15 @@ fprintf (FILE *stream, char const *format, ...)
 }
 
 size_t
-fread (void *ptr, size_t size, size_t nmemb, FILE *stream)
+fread (void *data, size_t size, size_t count, FILE *stream)
 {
-  eputs ("fread stub\n");
-  return 0;
+  if (! size || !count)
+    return 0;
+  int bytes = read ((int)stream, data, size * count);
+  if (bytes > 0)
+    return bytes/size;
+
+  return bytes;
 }
 
 int
@@ -105,13 +110,6 @@ ftell (FILE *stream)
 {
   eputs ("ftell stub\n");
   return 0;
-}
-
-size_t
-fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-  int fd = (int)stream;
-  return write (fd, ptr, size * nmemb);
 }
 
 int

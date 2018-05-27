@@ -26,6 +26,15 @@
 #else // ! (__GNUC__ && POSIX)
 #include <stdint.h>
 #include <unistd.h>
+
+#ifndef offsetof
+#if __MESC__
+#define offsetof(type, field) (&((type *)0)->field)
+#else // !__MESC__
+#define offsetof(type, field) ((size_t)&((type *)0)->field)
+#endif // !__MESC__
+#endif // offsetof
+
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_STDDEF_H

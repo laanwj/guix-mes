@@ -24,6 +24,11 @@
 #undef __MES_FLOAT_H
 #include_next <float.h>
 #else // ! (__GNUC__ && POSIX)
+
+#define MIN_EXP -1021
+#define DBL_MIN_EXP -1021
+#define LDBL_MIN_EXP -1021
+
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_FLOAT_H

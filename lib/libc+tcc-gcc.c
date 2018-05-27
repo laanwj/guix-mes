@@ -150,4 +150,7 @@ __fixsfdi (double a1)
   eputs ("__fixsfdi stub\n");
   return 0;
 }
+
+#include <m4.c>
+
 #endif // !POSIX

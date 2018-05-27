@@ -175,6 +175,24 @@ eputc (int c)
   return fdputc (c, STDERR);
 }
 
+int
+fputc (int c, FILE* stream)
+{
+  return fdputc (c, (int)stream);
+}
+
+int
+fputs (char const* s, FILE* stream)
+{
+  return fdputs (s, (int)stream);
+}
+
+int
+putc (int c, FILE* stream)
+{
+  return fdputc (c, (int)stream);
+}
+
 FILE*
 fopen (char const* file_name, char const* mode)
 {
@@ -329,6 +347,18 @@ strncmp (char const* a, char const* b, size_t length)
 {
   while (*a && *b && *a == *b && --length) {a++;b++;}
   return *a - *b;
+}
+
+size_t
+fwrite (void const *data, size_t size, size_t count, FILE *stream)
+{
+  if (! size || !count)
+    return 0;
+  int bytes = write ((int)stream, data, size * count);
+  if (bytes > 0)
+    //return bytes/size;
+    return count;
+  return bytes;
 }
 
 char *

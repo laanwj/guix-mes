@@ -27,6 +27,8 @@
 #define SYS_lseek  "0x13"
 #define SYS_access "0x21"
 #define SYS_brk    "0x2d"
+#define SYS_stat   "0x6a"
+#define SYS_fstat  "0x6c"
 #define SYS_fsync  "0x76"
 #define SYS_getcwd "0xb7"
 
@@ -79,6 +81,50 @@ lseek (int fd, off_t offset, int whence)
        : "=r" (r)
        : "" (fd), "" (offset), "" (whence)
        : "eax", "ebx", "ecx", "edx"
+       );
+  return r;
+#endif
+}
+
+
+int
+stat (char const *file_name, struct stat *statbuf)
+{
+#if !__TINYC__
+  int r;
+  asm (
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+
+       "mov    $"SYS_stat",%%eax\n\t"
+       "int  $0x80\n\t"
+
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (file_name), "" (statbuf)
+       : "eax", "ebx", "ecx"
+       );
+  return r;
+#endif
+}
+
+int
+fstat (int fd, struct stat *statbuf)
+{
+#if !__TINYC__
+  int r;
+  asm (
+       "mov    %1,%%ebx\n\t"
+       "mov    %2,%%ecx\n\t"
+
+       "mov    $"SYS_fstat",%%eax\n\t"
+       //"mov    $"SYS_oldfstat",%%eax\n\t"
+       "int  $0x80\n\t"
+
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (fd), "" (statbuf)
+       : "eax", "ebx", "ecx"
        );
   return r;
 #endif

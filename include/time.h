@@ -41,7 +41,24 @@ struct tm {
 struct tm *localtime (time_t const *timep);
 time_t time (time_t *tloc);
 
+#ifndef __MES_STRUCT_TIMESPEC
+#define __MES_STRUCT_TIMESPEC
+
+#ifndef __kernel_long_t
+typedef long		__kernel_long_t;
+typedef unsigned long	__kernel_ulong_t;
+#endif
+
+typedef __kernel_long_t	__kernel_time_t;
+
+struct timespec
+{
+  __kernel_time_t tv_sec;
+  long tv_nsec;
+};
+
+#endif // __MES_STRUCT_TIMESPEC
+
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_TIME_H
-

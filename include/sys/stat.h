@@ -18,7 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef __MES_SYS_STAT_H
-#define __MES_SYS_STAT_H 1
+#define __MES_SYS_STAT_H 1lei
 
 #if __GNUC__ && POSIX
 #undef __MES_SYS_STAT_H
@@ -33,23 +33,30 @@ typedef int mode_t;
 
 int chmod (char const *file_name, mode_t mode);
 
-struct stat {
-  int st_dev;
-  int st_ino;
-  int st_mode;
-  int st_nlink;
-  int st_uid;
-  int st_gid;
-  int st_rdev;
-  int st_size;
-  int st_blksize;
-  int st_blocks;
-  int st_atime;
-  int st_mtime;
-  int st_ctime;
+struct stat
+{
+  unsigned long	st_dev;		/* Device.  */
+  unsigned long	st_ino;		/* File serial number.  */
+  unsigned int	st_mode;	/* File mode.  */
+  unsigned int	st_nlink;	/* Link count.  */
+  unsigned int	st_uid;		/* User ID of the file's owner.  */
+  unsigned int	st_gid;		/* Group ID of the file's group. */
+  unsigned long	st_rdev;	/* Device number, if device.  */
+  unsigned long	__pad1;
+  long		st_size;	/* Size of file, in bytes.  */
+  int		st_blksize;	/* Optimal block size for I/O.  */
+  int		__pad2;
+  long		st_blocks;	/* Number 512-byte blocks allocated. */
+  long		st_atime;	/* Time of last access.  */
+  unsigned long	st_atime_nsec;
+  long		st_mtime;	/* Time of last modification.  */
+  unsigned long	st_mtime_nsec;
+  long		st_ctime;	/* Time of last status change.  */
+  unsigned long	st_ctime_nsec;
+  unsigned int	__unused4;
+  unsigned int	__unused5;
 };
 
 #endif // !(__GNUC__ && POSIX)
 
 #endif // __MES_SYS_STAT_H
-

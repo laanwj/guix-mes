@@ -28,8 +28,16 @@ typedef int sigset_t;
 
 typedef int stack_t;
 
+#ifndef __MES_PID_T
+#define __MES_PID_T
 typedef int pid_t;
+#endif
+
+#ifndef __MES_UID_T
+#define __MES_UID_T
 typedef int uid_t;
+#endif
+
 typedef int clock_t;
 typedef int sigval_t;
 
@@ -116,14 +124,20 @@ typedef struct siginfo_t {
 
 // typedef void __signalfn_t(int);
 // typedef __signalfn_t *__sighandler_t;
+// typedef __signalfn_t *__sighandler_t;
+typedef void __sighandler_t(int);
 
 struct sigaction {
  void (*sa_sigaction) (int, siginfo_t *, void *);
   //__sighandler_t sa_handler;
+  void (*sa_handler) (int);
   unsigned long sa_flags;
   sigset_t sa_mask;
 };
 
+#define SIG_DFL	((__sighandler_t)0)	/* default signal handling */
+#define SIG_IGN	((__sighandler_t)1)	/* ignore signal */
+#define SIG_ERR	((__sighandler_t)-1)	/* error return from signal */
 
 #ifdef __i386__
 
@@ -206,4 +220,3 @@ int sigemptyset (sigset_t *set);
 #endif //! (__GNUC__ && POSIX)
 
 #endif // __MES_SIGNAL_H
-

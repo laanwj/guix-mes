@@ -87,8 +87,8 @@ int fdungetc (int c, int fd);
 int fdputs (char const* s, int fd);
 #endif // __MES_GNUC__
 
-#define fputs fdputs
-#define fputc fdputc
+//#define fputs fdputs
+//#define fputc fdputc
 
 typedef int FILE;
 
@@ -98,16 +98,27 @@ typedef int FILE;
 typedef unsigned long size_t;
 #endif
 
+int getc (FILE *stream);
+int fputc (int c, FILE* stream);
+int fdputs (char const* s, int fd);
+int fputs (char const* s, FILE *stream);
+int putc (int c, FILE* stream);
+//int putc (int c, int fd);
+
 int eputc (int c);
 int eputs (char const* s);
 int fclose (FILE *stream);
 FILE *fdopen (int fd, char const *mode);
-int fflush (FILE *stream);
-FILE *fopen (char const *file_name, char const *mode);
-int ferror (FILE *stream);
-int fprintf (FILE *stream, char const *format, ...);
 int fdputc (int c, int fd);
+int fflush (FILE *stream);
+int ferror (FILE *stream);
+FILE *fopen (char const *file_name, char const *mode);
+int fpurge (FILE *stream);
+//void __fpurge (FILE *stream);
+int fprintf (FILE *stream, char const *format, ...);
 size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
+size_t __freadahead (FILE *fp);
+//size_t freadahead (FILE *fp);
 int fseek (FILE *stream, long offset, int whence);
 long ftell (FILE *stream);
 size_t fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream);
