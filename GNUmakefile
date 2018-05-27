@@ -11,8 +11,17 @@ default: all
 all:
 	./build.sh
 
+cc:
+	build-aux/build-cc.sh
+
+mlibc:
+	build-aux/build-mlibc.sh
+
+mes:
+	build-aux/build-mes.sh
+
 clean:
-	true
+	git clean -dfx
 
 all-go:
 	build-aux/build-guile.sh
@@ -30,12 +39,31 @@ install:
 .config.make: ./configure
 
 seed:
-	cd ../mes-seed && git reset --hard HEAD
-	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh
-	cd ../mes-seed && ./refresh.sh && cd ../mes
-	MES=guile GUILE=guile SEED=1 build-aux/build-mes.sh
+	cd $(MES_SEED) && git reset --hard HEAD
+	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
+	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
+	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
 	build-aux/build-mlibc.sh
-	cd ../tinycc-seed && ./refresh.sh && cd ../mes
+	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
+
+define HELP_TOP
+Usage: make [OPTION]... [TARGET]...
+
+Targets:
+  all             update everything
+  all-go          update .go files
+  cc              update src/mes.gcc-out
+  mlibc           update src/mes.mlibc-out
+  mes             update src/mes
+  check           run unit tests
+  clean           run git clean -dfx
+  clean-go        clean .go files
+  install         install in $(PREFIX)
+  seed            update mes-seed in $(MES_SEED)
+endef
+export HELP_TOP
+help:
+	@echo "$$HELP_TOP"
 
 ifdef PREFIX
 export PREFIX
@@ -53,6 +81,10 @@ ifdef CC32
 export CC32
 endif
 
+ifdef BLOOD_ELF
+export BLOOD_ELF
+endif
+
 ifdef M1
 export M1
 endif
@@ -63,6 +95,10 @@ endif
 
 ifdef GUILE
 export GUILE
+endif
+
+ifdef GUILE_TOOLS
+export GUILE_TOOLS
 endif
 
 ifdef GUILE_LOAD_PATH
@@ -93,4 +129,10 @@ ifdef MESCCFLAGS
 export MESCCFLAGS
 endif
 
+ifdef MES_SEED
+export MES_SEED
+endif
 
+ifdef TINYCC_SEED
+export TINYCC_SEED
+endif

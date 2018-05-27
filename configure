@@ -24,7 +24,7 @@ Missing dependencies, run
 EOF
     exit 1
 fi
-exec ${GUILE-guile} --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
+exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 !#
 
 ;;; Mes --- Maxwell Equations of Software
@@ -220,6 +220,10 @@ Some influential environment variables:
   CFLAGS      C compiler flags
   CC32        x86 C compiler command
   C32FLAGS    x86 C compiler flags
+  GUILE       guile command
+  GUILE_TOOLS guile-tools command
+  MES_SEED    location of mes-seed
+  TINYCC_SEED location of tinycc-seed
 " PACKAGE VERSION (getenv "PREFIX")))
 
 (define (main args)
@@ -240,20 +244,28 @@ Some influential environment variables:
     (let ((CC32 (or (getenv "CC32")
                     (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
                         "i686-unknown-linux-gnu-gcc")))
+          (GUILE_TOOLS (or (getenv "GUILE_TOOLS") "guile-tools"))
+          (BLOOD_ELF (or (getenv "BLOOD_ELF") "blood-elf"))
           (HEX2 (or (getenv "HEX2") "hex2"))
           (M1 (or (getenv "M1") "M1"))
           (CFLAGS (getenv "CFLAGS"))
           (C32FLAGS (getenv "C32FLAGS"))
           (HEX2FLAGS (getenv "HEX2FLAGS"))
           (M1FLAGS (getenv "M1FLAGS"))
-          (MESCCFLAGS (getenv "MESCCFLAGS")))
+          (MESCCFLAGS (getenv "MESCCFLAGS"))
+          (MES_SEED (or (getenv "MES_SEED") "../mes-seed"))
+          (TINYCC_SEED (or (getenv "TINYCC_SEED") "../tinycc-seed")))
       (when help?
         (print-help)
         (exit 0))
       (set! *verbose?* verbose?)
       (check-version "guile" '(2 0))
-      (check-version HEX2 '(0 1))
-      (check-version M1 '(0 2))
+      (check-version "guile-tools" '(2 0))
+      (check-version "mes-seed" '(0 14) #:optional? #t #:command (string-append MES_SEED "/refresh.sh"))
+      (check-version "tinycc-seed" '(0 14) #:optional? #t #:command (string-append TINYCC_SEED "/refresh.sh"))
+      (check-version BLOOD_ELF '(0 1))
+      (check-version HEX2 '(0 3))
+      (check-version M1 '(0 3))
       (check-version "nyacc" '(0 80 41) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
 
       (check-version "bash" '(4 0))
@@ -284,9 +296,13 @@ Some influential environment variables:
           (stdout "ARCH:=~a\n" ARCH)
           (stdout "CC:=~a\n" (or CC ""))
           (stdout "CC32:=~a\n" (or CC32 ""))
+          (stdout "BLOOD_ELF:=~a\n" (or BLOOD_ELF ""))
+          (stdout "MES_SEED:=~a\n" (or MES_SEED ""))
+          (stdout "TINYCC_SEED:=~a\n" (or TINYCC_SEED ""))
           (stdout "HEX2:=~a\n" (or HEX2 ""))
           (stdout "M1:=~a\n" (or M1 ""))
           (stdout "GUILE:=~a\n" GUILE)
+          (stdout "GUILE_TOOLS:=~a\n" GUILE_TOOLS)
           (stdout "GUILE_FOR_BUILD:=~a\n" GUILE)
           (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
           (stdout "GUIX_P:=~a\n" (if guix? guix? ""))
