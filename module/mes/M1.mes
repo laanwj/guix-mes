@@ -173,7 +173,7 @@
                     (else (string-append "&" label))))))
       (define (display-align size)
         (let ((alignment (- 4 (modulo size 4))))
-          (when (> alignment 0)
+          (when (> 4 alignment 0)
             (display " ")
             (display-join (map text->M1 (map (const 0) (iota alignment))) " "))))
       (let* ((label (cond
