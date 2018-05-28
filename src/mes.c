@@ -1445,7 +1445,7 @@ eval_apply ()
                 input = set_current_input_port (r1);
               else
                 assert (0);
-              
+
               push_cc (input, r2, r0, cell_vm_return);
               x = read_input_file_env (r0);
               gc_pop_frame ();
@@ -2215,65 +2215,61 @@ a = acons (lookup_symbol_ (scm_display_error_.string), cell_display_error_, a);
 
 SCM read_input_file_env (SCM);
 
+int
+load_boot (char *prefix, char const *boot, char const *location)
+{
+  strcpy (prefix + strlen (prefix), boot);
+  if (g_debug > 1)
+    {
+      eputs ("mes: reading boot-0 [");
+      eputs (location);
+      eputs ("]: ");
+      eputs (prefix);
+      eputs ("\n");
+    }
+  int fd = open (prefix, O_RDONLY);
+  if (g_debug && fd > 0)
+    {
+      eputs ("mes: read boot-0: ");
+      eputs (prefix);
+      eputs ("\n");
+    }
+  return fd;
+}
+
 SCM
 load_env (SCM a) ///((internal))
 {
   r0 = a;
   g_stdin = -1;
+  char prefix[1024];
   char boot[1024];
-  char buf[1024];
   if (getenv ("MES_BOOT"))
     strcpy (boot, getenv ("MES_BOOT"));
   else
     strcpy (boot, "boot-0.scm");
   if (getenv ("MES_PREFIX"))
     {
-      strcpy (buf, getenv ("MES_PREFIX"));
-      strcpy (buf + strlen (buf), "/module");
-      strcpy (buf + strlen (buf), "/mes/");
-      strcpy (buf + strlen (buf), boot);
-      if (getenv ("MES_DEBUG"))
-        {
-          eputs ("MES_PREFIX reading boot-0:");
-          eputs (buf);
-          eputs ("\n");
-        }
-      g_stdin = open (buf, O_RDONLY);
+      strcpy (prefix, getenv ("MES_PREFIX"));
+      strcpy (prefix + strlen (prefix), "/module");
+      strcpy (prefix + strlen (prefix), "/mes/");
+      g_stdin = load_boot (prefix, boot, "MES_PREFIX");
     }
   if (g_stdin < 0)
     {
-      char const *prefix = MODULEDIR "/mes/";
-      strcpy (buf, prefix);
-      strcpy (buf + strlen (buf), boot);
-      if (getenv ("MES_DEBUG"))
-        {
-          eputs ("MODULEDIR reading boot-0:");
-          eputs (buf);
-          eputs ("\n");
-        }
-      g_stdin = open (buf, O_RDONLY);
+      char const *p = MODULEDIR "/mes/";
+      strcpy (prefix, p);
+      g_stdin = load_boot (prefix, boot, "MODULEDIR");
     }
   if (g_stdin < 0)
     {
-      strcpy (buf, "module/mes/");
-      strcpy (buf + strlen (buf), boot);
-      if (getenv ("MES_DEBUG"))
-        {
-          eputs (". reading boot-0:");
-          eputs (buf);
-          eputs ("\n");
-        }
-      g_stdin = open (buf, O_RDONLY);
+      strcpy (prefix, "module/mes/");
+      g_stdin = load_boot (prefix, boot, ".");
     }
   if (g_stdin < 0)
     {
-      if (getenv ("MES_DEBUG"))
-        {
-          eputs (". reading boot-0:");
-          eputs (boot);
-          eputs ("\n");
-        }
-      g_stdin = open (boot, O_RDONLY);
+      prefix[0] = 0;
+      g_stdin = load_boot (prefix, boot, "<boot>");
     }
   if (g_stdin < 0)
     {
@@ -2310,7 +2306,7 @@ bload_env (SCM a) ///((internal))
       eputs (mo);
       eputs ("\n");
       return 1;
-    } 
+    }
   assert (getchar () == 'M');
   assert (getchar () == 'E');
   assert (getchar () == 'S');
@@ -2377,7 +2373,7 @@ main (int argc, char *argv[])
   char *p;
   if (p = getenv ("MES_DEBUG"))
     g_debug = atoi (p);
-  if (g_debug)
+  if (g_debug > 1)
     {
       eputs (";;; MODULEDIR=");
       eputs (MODULEDIR);
