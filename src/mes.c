@@ -22,7 +22,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mlibc.h>
+#include <libmes.h>
 
 //#define MES_MINI 1
 #if _POSIX_SOURCE
@@ -2196,18 +2196,18 @@ a = acons (lookup_symbol_ (scm_display_error_.string), cell_display_error_, a);
 
   if (g_debug > 3)
     {
-      fputs ("functions: ", STDERR);
-      fputs (itoa (g_function), STDERR);
-      fputs ("\n", STDERR);
+      fdputs ("functions: ", STDERR);
+      fdputs (itoa (g_function), STDERR);
+      fdputs ("\n", STDERR);
       for (int i = 0; i < g_function; i++)
         {
-          fputs ("[", STDERR);
-          fputs (itoa (i), STDERR);
-          fputs ("]: ", STDERR);
-          fputs (g_functions[i].name, STDERR);
-          fputs ("\n", STDERR);
+          fdputs ("[", STDERR);
+          fdputs (itoa (i), STDERR);
+          fdputs ("]: ", STDERR);
+          fdputs (g_functions[i].name, STDERR);
+          fdputs ("\n", STDERR);
         }
-      fputs ("\n", STDERR);
+      fdputs ("\n", STDERR);
     }
 
   return a;

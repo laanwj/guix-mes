@@ -18,8 +18,6 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !POSIX
-
 void
 exit (int code)
 {
@@ -79,5 +77,3 @@ write (int fd, char const* s, int n)
 #endif
   return r;
 }
-
-#endif //!POSIX

@@ -50,8 +50,4 @@ build-aux/mes-snarf.scm src/posix.c
 build-aux/mes-snarf.scm src/reader.c
 build-aux/mes-snarf.scm src/vector.c
 
-NOLINK=1 sh build-aux/cc.sh lib/libc-mini-gcc
-NOLINK=1 sh build-aux/cc.sh lib/libc-gcc
-NOLINK=1 sh build-aux/cc.sh lib/libc+tcc-gcc
-
 sh build-aux/cc.sh src/mes

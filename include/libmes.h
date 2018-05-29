@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -18,12 +18,21 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MES_MLIBC_H
-#define __MES_MLIBC_H
+#ifndef __MES_LIBMES_H
+#define __MES_LIBMES_H
 
 char const* itoa (int);
+char const* itoab (int x, int base);
 int _atoi (char const**, int base);
+int atoi (char const *s);
 int eputc (int c);
 int eputs (char const* s);
+int fdgetc (int fd);
+int fdputc (int c, int fd);
+int fdputs (char const* s, int fd);
+int fdungetc (int c, int fd);
+int isdigit (int c);
+int isspace (int c);
+int isxdigit (int c);
 
-#endif //__MES_MLIBC_H
+#endif //__MES_LIBMES_H

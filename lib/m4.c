@@ -65,13 +65,6 @@ fileno (FILE *stream)
   return (int)stream;
 }
 
-// void
-// __fpurge (FILE *stream)
-// {
-//   eputs ("__fpurge stub\n");
-//   return 0;
-// }
-
 int
 fpurge (FILE *stream)
 {
@@ -79,24 +72,11 @@ fpurge (FILE *stream)
   return 0;
 }
 
-// size_t
-// __freadahead (FILE *fp)
-// {
-//   eputs ("__freadahead stub\n");
-//   return 0;
-// }
-
 size_t
 freadahead (FILE *fp)
 {
   eputs ("freadahead stub\n");
   return 0;
-}
-
-int
-getc (FILE *stream)
-{
-  return fgetc ((int)stream);
 }
 
 int
@@ -220,5 +200,12 @@ int
 tolower (int x)
 {
   eputs ("tolower stub\n");
+  return 0;
+}
+
+int
+toupper (int x)
+{
+  eputs ("toupper stub\n");
   return 0;
 }

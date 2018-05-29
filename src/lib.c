@@ -24,94 +24,94 @@ SCM fdisplay_ (SCM, int, int);
 SCM
 display_helper (SCM x, int cont, char* sep, int fd, int write_p)
 {
-  fputs (sep, fd);
+  fdputs (sep, fd);
   if (g_depth == 0)
     return cell_unspecified;
   g_depth = g_depth - 1;
-  
+
   switch (TYPE (x))
     {
     case TCHAR:
       {
         if (!write_p)
-          fputc (VALUE (x), fd);
+          fdputc (VALUE (x), fd);
         else
           {
-            fputs ("#\\", fd);
+            fdputs ("#\\", fd);
             switch (VALUE (x))
               {
-              case '\0': fputs ("nul", fd); break;
-              case '\a': fputs ("alarm", fd); break;
-              case '\b': fputs ("backspace", fd); break;
-              case '\t': fputs ("tab", fd); break;
-              case '\n': fputs ("newline", fd); break;
-              case '\v': fputs ("vtab", fd); break;
-              case '\f': fputs ("page", fd); break;
+              case '\0': fdputs ("nul", fd); break;
+              case '\a': fdputs ("alarm", fd); break;
+              case '\b': fdputs ("backspace", fd); break;
+              case '\t': fdputs ("tab", fd); break;
+              case '\n': fdputs ("newline", fd); break;
+              case '\v': fdputs ("vtab", fd); break;
+              case '\f': fdputs ("page", fd); break;
                 //Nyacc bug
-                // case '\r': fputs ("return", fd); break;
-              case 13: fputs ("return", fd); break;
-              case ' ': fputs ("space", fd); break;
-              default: fputc (VALUE (x), fd);
+                // case '\r': fdputs ("return", fd); break;
+              case 13: fdputs ("return", fd); break;
+              case ' ': fdputs ("space", fd); break;
+              default: fdputc (VALUE (x), fd);
               }
           }
         break;
       }
     case TCLOSURE:
       {
-        fputs ("#<closure ", fd);
+        fdputs ("#<closure ", fd);
         display_helper (CDR (x), cont, "", fd, 0);
-        fputs (">", fd);
+        fdputs (">", fd);
         break;
       }
     case TFUNCTION:
       {
-        fputs ("#<procedure ", fd);
+        fdputs ("#<procedure ", fd);
         char const *p = "?";
         if (FUNCTION (x).name != 0)
           p = FUNCTION (x).name;
-        fputs (p, fd);
-        fputs ("[", fd);
-        fputs (itoa (CDR (x)), fd);
-        fputs (",", fd);
-        fputs (itoa (x), fd);
-        fputs ("]>", fd);
+        fdputs (p, fd);
+        fdputs ("[", fd);
+        fdputs (itoa (CDR (x)), fd);
+        fdputs (",", fd);
+        fdputs (itoa (x), fd);
+        fdputs ("]>", fd);
         break;
       }
     case TMACRO:
       {
-        fputs ("#<macro ", fd);
+        fdputs ("#<macro ", fd);
         display_helper (CDR (x), cont, "", fd, 0);
-        fputs (">", fd);
+        fdputs (">", fd);
         break;
       }
     case TVARIABLE:
       {
-        fputs ("#<variable ", fd);
+        fdputs ("#<variable ", fd);
         display_helper (CAR (VARIABLE (x)), cont, "", fd, 0);
-        fputs (">", fd);
+        fdputs (">", fd);
         break;
       }
     case TNUMBER:
       {
-        fputs (itoa (VALUE (x)), fd);
+        fdputs (itoa (VALUE (x)), fd);
         break;
       }
     case TPAIR:
       {
         if (!cont)
-          fputs ("(", fd);
+          fdputs ("(", fd);
         if (CAR (x) == cell_circular
             && CADR (x) != cell_closure)
           {
-            fputs ("(*circ* . ", fd);
+            fdputs ("(*circ* . ", fd);
             int i = 0;
             x = CDR (x);
             while (x != cell_nil && i++ < 10)
               {
-                fdisplay_ (CAAR (x), fd, write_p); fputs (" ", fd);
+                fdisplay_ (CAAR (x), fd, write_p); fdputs (" ", fd);
                 x = CDR (x);
               }
-            fputs (" ...)", fd);
+            fdputs (" ...)", fd);
           }
         else
           {
@@ -122,12 +122,12 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
             else if (CDR (x) && CDR (x) != cell_nil)
               {
                 if (TYPE (CDR (x)) != TPAIR)
-                  fputs (" . ", fd);
+                  fdputs (" . ", fd);
                 fdisplay_ (CDR (x), fd, write_p);
               }
           }
         if (!cont)
-          fputs (")", fd);
+          fdputs (")", fd);
         break;
       }
     case TKEYWORD:
@@ -138,68 +138,68 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       {
         if (TYPE (x) == TPORT)
           {
-            fputs ("#<port ", fd);
-            fputs (itoa (PORT (x)), fd);
-            fputs (" " ,fd);
+            fdputs ("#<port ", fd);
+            fdputs (itoa (PORT (x)), fd);
+            fdputs (" " ,fd);
           }
         if (TYPE (x) == TKEYWORD)
-          fputs ("#:", fd);
+          fdputs ("#:", fd);
         if ((write_p && TYPE (x) == TSTRING) || TYPE (x) == TPORT)
-          fputc ('"', fd);
+          fdputc ('"', fd);
         SCM t = CAR (x);
         while (t && t != cell_nil)
           {
             switch (write_p ? VALUE (CAR (t)) : -1)
               {
-              case '\0': fputs ("\\0", fd); break;
-              case '\a': fputs ("\\a", fd); break;
-              case '\b': fputs ("\\b", fd); break;
-              case '\t': fputs ("\\t", fd); break;
-              case '\v': fputs ("\\v", fd); break;
-              case '\n': fputs ("\\n", fd); break;
-              case '\f': fputs ("\\f", fd); break;
+              case '\0': fdputs ("\\0", fd); break;
+              case '\a': fdputs ("\\a", fd); break;
+              case '\b': fdputs ("\\b", fd); break;
+              case '\t': fdputs ("\\t", fd); break;
+              case '\v': fdputs ("\\v", fd); break;
+              case '\n': fdputs ("\\n", fd); break;
+              case '\f': fdputs ("\\f", fd); break;
 #if 1 //__MESC__
       //Nyacc bug
-              case 13: fputs ("\\r", fd); break;
-              case 27: fputs ("\\e", fd); break;
+              case 13: fdputs ("\\r", fd); break;
+              case 27: fdputs ("\\e", fd); break;
 #else
-                //case '\r': fputs ("\\r", fd); break;
+                //case '\r': fdputs ("\\r", fd); break;
                 //Nyacc crash
-                //case '\e': fputs ("\\e", fd); break;
+                //case '\e': fdputs ("\\e", fd); break;
 #endif
-              case '\\': fputs ("\\\\", fd); break;
-              case '"': fputs ("\\\"", fd); break;
+              case '\\': fdputs ("\\\\", fd); break;
+              case '"': fdputs ("\\\"", fd); break;
               default:
-                fputc (VALUE (CAR (t)), fd);
+                fdputc (VALUE (CAR (t)), fd);
               }
             t = CDR (t);
           }
         if ((write_p && TYPE (x) == TSTRING) || TYPE (x) == TPORT)
-          fputc ('"', fd);
+          fdputc ('"', fd);
         if (TYPE (x) == TPORT)
-          fputs (">", fd);
+          fdputs (">", fd);
         break;
       }
     case TVECTOR:
       {
-        fputs ("#(", fd);
+        fdputs ("#(", fd);
         SCM t = CAR (x);
         for (int i = 0; i < LENGTH (x); i++)
           {
             if (i)
-              fputc (' ', fd);
+              fdputc (' ', fd);
             fdisplay_ (VECTOR (x) + i, fd, write_p);
           }
-        fputc (')', fd);
+        fdputc (')', fd);
         break;
       }
     default:
       {
-        fputs ("<", fd);
-        fputs (itoa (TYPE (x)), fd);
-        fputs (":", fd);
-        fputs (itoa (x), fd);
-        fputs (">", fd);
+        fdputs ("<", fd);
+        fdputs (itoa (TYPE (x)), fd);
+        fdputs (":", fd);
+        fdputs (itoa (x), fd);
+        fdputs (">", fd);
         break;
       }
     }

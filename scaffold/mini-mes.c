@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mlibc.h>
+#include <libmes.h>
 
 int ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
 int MAX_ARENA_SIZE = 300000000;

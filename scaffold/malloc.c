@@ -22,7 +22,7 @@
 #error "POSIX not supported"
 #endif
 
-#include <mlibc.h>
+#include <libmes.h>
 
 int
 main (int argc, char *argv[])

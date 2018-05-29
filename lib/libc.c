@@ -23,148 +23,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#if POSIX
-#define _GNU_SOURCE
-#include <assert.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-#endif // POSIX
-
-int
-isdigit (int c)
-{
-  return (c>='0') && (c<='9');
-}
-
-int
-isxdigit (int c)
-{
-  return isdigit (c) || (c>='a') && (c<='f');
-}
-
-int
-isspace (int c)
-{
-  return (c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r' || c == ' ');
-}
-
-int
-isnumber (int c, int base)
-{
-  if (base == 2)
-    return (c>='0') && (c<='1');
-  if (base == 8)
-    return (c>='0') && (c<='7');
-  if (base == 10)
-    return isdigit (c);
-  if (base == 16)
-    return isxdigit (c);
-}
-
-int
-abtoi (char const **p, int base)
-{
-  char const *s = *p;
-  int i = 0;
-  int sign = 1;
-  if (!base) base = 10;
-  if (*s && *s == '-')
-    {
-      sign = -1;
-      s++;
-    }
-  while (isnumber (*s, base))
-    {
-      i *= base;
-      int m = *s > '9' ? 'a' - 10 : '0';
-      i += *s - m;
-      s++;
-    }
-  *p = s;
-  return i * sign;
-}
-
-int
-atoi (char const *s)
-{
-  char const *p = s;
-  return abtoi (&p, 0);
-}
-
-char const*
-itoa (int x)
-{
-  static char itoa_buf[12];
-  char *p = itoa_buf + 11;
-  *p-- = 0;
-
-  int sign = 0;
-  unsigned u = x;
-  if (x < 0)
-    {
-      sign = 1;
-      u = -x;
-    }
-
-  do
-     {
-       *p-- = '0' + (u % 10);
-       u = u / 10;
-     } while (u);
-
-  if (sign && *(p + 1) != '0')
-    *p-- = '-';
-
-  return p+1;
-}
-
-char const*
-itoab (int x, int base)
-{
-  static char itoa_buf[12];
-  char *p = itoa_buf + 11;
-  *p-- = 0;
-
-  int sign = 0;
-  unsigned u = x;
-  if (x < 0)
-    {
-      sign = 1;
-      u = -x;
-    }
-
-  do
-     {
-       int i = u % base;
-       *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
-       x = u / base;
-     } while (u);
-
-  if (sign && *(p + 1) != '0')
-    *p-- = '-';
-
-  return p+1;
-}
-
-int
-fdputc (int c, int fd)
-{
-  write (fd, (char*)&c, 1);
-  return 0;
-}
-
-int
-fdputs (char const* s, int fd)
-{
-  int i = strlen (s);
-  write (fd, s, i);
-  return 0;
-}
-
-#if !POSIX
-
-///char **g_environment = 0; // FIXME: todo extern
 int g_stdin = 0;
 
 void _env ();
@@ -196,26 +54,19 @@ putc (int c, FILE* stream)
 FILE*
 fopen (char const* file_name, char const* mode)
 {
-  FILE* f;
+  int fd;
   if ('w' == mode[0])
     /* 577 is O_WRONLY|O_CREAT|O_TRUNC, 384 is 600 in octal */
-    f = open (file_name, 577 , 384);
+    fd = open (file_name, 577 , 384);
   else
     /* Everything else is a read */
-    f = open (file_name, 0, 0);
+    fd = open (file_name, 0, 0);
 
   /* Negative numbers are error codes */
-  if (0 > f)
+  if (fd > 0)
     return 0;
 
-  return f;
-}
-
-int
-putchar (int c)
-{
-  write (STDOUT, (char*)&c, 1);
-  return 0;
+  return (FILE*)fd;
 }
 
 void
@@ -224,48 +75,21 @@ assert_fail (char* s)
   eputs ("assert fail: ");
   eputs (s);
   eputs ("\n");
-  //*((int*)0) = 0;
   char *fail = s;
   fail = 0;
   *fail = 0;
 }
 
-int ungetc_char = -1;
-char ungetc_buf[2];
-
 int
-getchar ()
+getc (FILE *stream)
 {
-  char c;
-  int i;
-  if (ungetc_char == -1)
-    {
-      int r = read (g_stdin, &c, 1);
-      if (r < 1) return -1;
-      i = c;
-   }
-  else
-    {
-       //FIXME
-       //i = ungetc_buf[ungetc_char--];
-       i = ungetc_buf[ungetc_char];
-       //ungetc_char--;
-       ungetc_char = ungetc_char - 1;
-     }
-  if (i < 0) i += 256;
-
-  return i;
+  return fdgetc ((int)stream);
 }
 
 int
-fgetc (int fd)
+fgetc (FILE *stream)
 {
-  char c;
-  int i;
-  int r = read (fd, &c, 1);
-  if (r < 1) return -1;
-  i = c;
-  return i;
+  return fdgetc ((int)stream);
 }
 
 void
@@ -273,18 +97,10 @@ free (void *ptr)
 {
 }
 
-//#define assert(x) ((x) ? (void)0 : assert_fail (#x))
 int
-ungetc (int c, int fd)
+ungetc (int c, FILE *stream)
 {
-  //FIXME
-  //assert (ungetc_char < 2);
-  //assert (ungetc_char == -1 || ungetc_char < 2);
-  //FIXME
-  //ungetc_buf[++ungetc_char] = c;
-  ungetc_char++;
-  ungetc_buf[ungetc_char] = c;
-  return c;
+  return fdungetc (c, (int)stream);
 }
 
 int
@@ -356,7 +172,6 @@ fwrite (void const *data, size_t size, size_t count, FILE *stream)
     return 0;
   int bytes = write ((int)stream, data, size * count);
   if (bytes > 0)
-    //return bytes/size;
     return count;
   return bytes;
 }
@@ -479,5 +294,3 @@ wait (int *status_ptr)
 {
   return waitpid  (-1, status_ptr, 0);
 }
-
-#endif //!POSIX

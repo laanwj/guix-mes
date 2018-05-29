@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -19,9 +19,9 @@
  */
 
 char **g_environment = 0;
-int main (int,char*[]);
+int main (int argc, char *argv[]);
 
-#if __GNUC__ && !POSIX
+#if __GNUC__
 
 void
 _start ()

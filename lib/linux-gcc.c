@@ -19,12 +19,10 @@
  */
 
 #include <stdio.h>
-#include <mlibc.h>
+#include <libmes.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
-#if !POSIX
 
 int
 fork ()
@@ -253,5 +251,3 @@ fsync (int fd)
   return r;
 #endif
 }
-
-#endif //!POSIX

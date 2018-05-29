@@ -44,7 +44,7 @@ int
 readchar ()
 {
   if (g_stdin >= 0)
-    return  getchar ();
+    return fdgetc (g_stdin);
   SCM port = current_input_port ();
   SCM string = STRING (port);
   if (string == cell_nil)
@@ -58,7 +58,7 @@ int
 unreadchar (int c)
 {
   if (g_stdin >= 0)
-    return ungetc (c, g_stdin);
+    return fdungetc (c, g_stdin);
   SCM port = current_input_port ();
   STRING (port) = cons (MAKE_CHAR (c), STRING (port));
   return c;

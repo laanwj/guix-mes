@@ -43,24 +43,6 @@ int g_stdout;
 #undef __MES_STDIO_H
 #include_next <stdio.h>
 
-int fdputs (char const* s, int fd);
-
-#undef puts
-#define fputs fdputs
-
-#ifdef putc
-#undef putc
-#endif
-
-int eputc (int c);
-int eputs (char const* s);
-int fdputc (int c, int fd);
-int getchar ();
-
-#define fputc fdputc
-#define ungetc fdungetc
-int fdungetc (int c, int fd);
-
 #else // ! (__GNUC__ && POSIX)
 
 #ifndef EOF
@@ -81,15 +63,6 @@ int fdungetc (int c, int fd);
 #define SEEK_CUR 1
 #define SEEK_END 2
 
-#if __GNUC__
-#undef fputs
-#undef fdputs
-int fdputs (char const* s, int fd);
-#endif // __MES_GNUC__
-
-//#define fputs fdputs
-//#define fputc fdputc
-
 typedef int FILE;
 
 #ifndef __MES_SIZE_T
@@ -98,39 +71,34 @@ typedef int FILE;
 typedef unsigned long size_t;
 #endif
 
-int getc (FILE *stream);
-int fputc (int c, FILE* stream);
-int fdputs (char const* s, int fd);
-int fputs (char const* s, FILE *stream);
-int putc (int c, FILE* stream);
-//int putc (int c, int fd);
-
+FILE *fdopen (int fd, char const *mode);
+FILE *fopen (char const *file_name, char const *mode);
 int eputc (int c);
 int eputs (char const* s);
 int fclose (FILE *stream);
-FILE *fdopen (int fd, char const *mode);
-int fdputc (int c, int fd);
-int fflush (FILE *stream);
 int ferror (FILE *stream);
-FILE *fopen (char const *file_name, char const *mode);
-int fpurge (FILE *stream);
-//void __fpurge (FILE *stream);
+int fflush (FILE *stream);
+int fgetc (FILE* stream);
 int fprintf (FILE *stream, char const *format, ...);
-size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
-size_t __freadahead (FILE *fp);
-//size_t freadahead (FILE *fp);
+int fpurge (FILE *stream);
+int fputc (int c, FILE *stream);
+int fputs (char const* s, FILE *stream);
 int fseek (FILE *stream, long offset, int whence);
-long ftell (FILE *stream);
-size_t fwrite (void const *ptr, size_t size, size_t nmemb, FILE *stream);
+int getc (FILE *stream);
 int getchar ();
 int printf (char const* format, ...);
+int putc (int c, FILE* stream);
 int putchar (int c);
 int puts (char const* s);
 int remove (char const *file_name);
-int sscanf (char const *str, const char *format, ...);
 int snprintf(char *str,  size_t size,  char const *format, ...);
 int sprintf (char *str, char const* format, ...);
-int ungetc (int c, int fd);
+int sscanf (char const *str, const char *format, ...);
+int ungetc (int c, FILE* stream);
+long ftell (FILE *stream);
+size_t fread (void *ptr, size_t size, size_t count, FILE *stream);
+size_t freadahead (FILE *fp);
+size_t fwrite (void const *ptr, size_t size, size_t count, FILE *stream);
 
 #endif // ! (__GNUC__ && POSIX)
 

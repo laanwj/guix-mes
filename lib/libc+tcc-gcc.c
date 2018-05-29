@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -33,8 +33,7 @@
 #include <linux+tcc-gcc.c>
 #include <libc+tcc.c>
 #include <getopt.c>
-
-#if !POSIX
+#include <m4.c>
 
 int errno;
 
@@ -150,7 +149,3 @@ __fixsfdi (double a1)
   eputs ("__fixsfdi stub\n");
   return 0;
 }
-
-#include <m4.c>
-
-#endif // !POSIX

@@ -18,7 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mlibc.h>
+#include <libmes.h>
 
 #include <stdio.h>
 #include <stdlib.h>
