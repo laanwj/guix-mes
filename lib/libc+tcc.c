@@ -98,18 +98,16 @@ fread (void *data, size_t size, size_t count, FILE *stream)
   return bytes;
 }
 
-int
-fseek (FILE *stream, long offset, int whence)
-{
-  eputs ("fseek stub\n");
-  return 0;
-}
-
 long
 ftell (FILE *stream)
 {
-  eputs ("ftell stub\n");
-  return 0;
+  return lseek ((int)stream, 0, SEEK_CUR);
+}
+
+int
+fseek (FILE *stream, long offset, int whence)
+{
+  return lseek ((int)stream, offset, whence);
 }
 
 int
