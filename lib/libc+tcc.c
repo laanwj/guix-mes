@@ -30,6 +30,23 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <libc.c>
+
+#if __MESC__
+
+#include <linux+tcc-mes.c>
+#include <libc+tcc-mes.c>
+#include <getopt.c>
+
+#else // !__MESC__
+
+#include <linux+tcc-gcc.c>
+#include <libc+tcc-gcc.c>
+#include <getopt.c>
+#include <m4.c>
+
+#endif // !__MESC__
+
 int
 dlclose (void *handle)
 {
@@ -108,7 +125,10 @@ ftell (FILE *stream)
 int
 fseek (FILE *stream, long offset, int whence)
 {
-  return lseek ((int)stream, offset, whence);
+  int pos = lseek ((int)stream, offset, whence);
+  if (pos >= 0)
+    return 0;
+  return -1;
 }
 
 int

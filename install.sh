@@ -17,7 +17,7 @@ mkdir -p $MES_PREFIX/lib
 cp scripts/mescc $PREFIX/bin/mescc
 
 mkdir -p $MES_PREFIX
-tar -cf- doc guile include lib module scaffold stage0 | tar -xf- -C $MES_PREFIX
+tar -cf- doc guile include lib module scaffold | tar -xf- -C $MES_PREFIX
 
 GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
 DATADIR=${MODULEDIR-$PREFIX/share/mes}

@@ -62,17 +62,17 @@ C32FLAGS=${C32FLAGS-"
 -nostdlib
 "}
 
-NOLINK=1 sh build-aux/cc-mlibc.sh lib/crt1
-NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc-mini-gcc
-NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc-gcc
-NOLINK=1 sh build-aux/cc-mlibc.sh lib/libc+tcc-gcc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crt1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc-mini
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc+tcc
 
-sh build-aux/cc-mlibc.sh scaffold/main
-sh build-aux/cc-mlibc.sh scaffold/hello
-sh build-aux/cc-mlibc.sh scaffold/argv
-sh build-aux/cc-mlibc.sh scaffold/malloc
-sh build-aux/cc-mlibc.sh scaffold/micro-mes
-sh build-aux/cc-mlibc.sh scaffold/tiny-mes
-sh build-aux/cc-mlibc.sh scaffold/mini-mes
+sh build-aux/cc-mes-gcc.sh scaffold/main
+sh build-aux/cc-mes-gcc.sh scaffold/hello
+sh build-aux/cc-mes-gcc.sh scaffold/argv
+sh build-aux/cc-mes-gcc.sh scaffold/malloc
+sh build-aux/cc-mes-gcc.sh scaffold/micro-mes
+sh build-aux/cc-mes-gcc.sh scaffold/tiny-mes
+sh build-aux/cc-mes-gcc.sh scaffold/mini-mes
 
-sh build-aux/cc-mlibc.sh src/mes
+sh build-aux/cc-mes-gcc.sh src/mes

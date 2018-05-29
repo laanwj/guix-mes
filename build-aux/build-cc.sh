@@ -50,4 +50,5 @@ build-aux/mes-snarf.scm src/posix.c
 build-aux/mes-snarf.scm src/reader.c
 build-aux/mes-snarf.scm src/vector.c
 
+ARCHDIR=1 NOLINK=1 sh build-aux/cc.sh lib/libmes
 sh build-aux/cc.sh src/mes

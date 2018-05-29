@@ -52,21 +52,31 @@ c=$1
 
 set -e
 
+if [ -z "$ARCHDIR" ]; then
+    o="$c"
+    p="mes-"
+else
+    b=${c##*/}
+    d=${c%/*}
+    o="$d/x86-mes/$b"
+    mkdir -p $d/x86-mes
+fi
+
 if [ -n "$PREPROCESS" ]; then
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -E "$c".c
-    sh $MESCC $MESCCFLAGS -S "$c".E
-    sh $MESCC $MESCCFLAGS -c -o "$c".mes-o "$c".S
+    sh $MESCC $MESCCFLAGS $CPPFLAGS -E -o "$o.E" "$c".c
+    sh $MESCC $MESCCFLAGS -S "$o".E
+    sh $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        sh $MESCC $MESCCFLAGS -o "$c".mes-out "$c".mes-o $MESCCLIBS
+        sh $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
     fi
 elif [ -n "$COMPILE" ]; then
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -S "$c".c
-    sh $MESCC $MESCCFLAGS -c -o "$c".mes-o "$c".S
+    sh $MESCC $MESCCFLAGS $CPPFLAGS -S -o "$o.S" "$c".c
+    sh $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        sh $MESCC $MESCCFLAGS -o "$c".mes-out "$c".mes-o $MESCCLIBS
+        sh $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
     fi
 elif [ -z "$NOLINK" ]; then
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -o "$c".mes-out "$c".c $MESCCLIBS
+    sh $MESCC $MESCCFLAGS $CPPFLAGS -o "$o".${p}out "$c".c $MESCCLIBS
 else
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -c -o "$c".mes-out "$c".c
+    sh $MESCC $MESCCFLAGS $CPPFLAGS -c -o "$o".${p}out "$c".c
 fi

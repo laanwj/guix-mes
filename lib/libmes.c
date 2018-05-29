@@ -19,6 +19,8 @@
  */
 
 #include <libmes.h>
+#include <string.h>
+#include <unistd.h>
 
 int
 isdigit (int c)
@@ -170,13 +172,6 @@ fdputc (int c, int fd)
 }
 
 int
-putchar (int c)
-{
-  write (STDOUT, (char*)&c, 1);
-  return 0;
-}
-
-int
 fdputs (char const* s, int fd)
 {
   int i = strlen (s);
@@ -192,8 +187,19 @@ fdungetc (int c, int fd)
   return c;
 }
 
+#if POSIX
+#define STDERR 2
 int
-getchar ()
+eputs (char const* s)
 {
-  return fdgetc (g_stdin);
+  int i = strlen (s);
+  write (STDERR, s, i);
+  return 0;
+}
+#endif
+
+int
+eputc (int c)
+{
+  return fdputc (c, STDERR);
 }

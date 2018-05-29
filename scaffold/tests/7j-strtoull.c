@@ -24,15 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined ( __TINYC__)
-unsigned long long
-strtoull (char const *p, char **end, int base)
-{
-  *end = p;
-  return abtoi (end, base);
-}
-#endif
-
 int
 test ()
 {
@@ -43,10 +34,10 @@ test ()
   if (strcmp (p, "foo\n")) return 2;
 
   p = "2azar\n";
-  n = strtoull (p, (char**)&p, 16);  
+  n = strtoull (p, (char**)&p, 16);
   if (n != 42) return 3;
   eputs (p);
   if (strcmp (p, "zar\n")) return 4;
-  
+
   return 0;
 }

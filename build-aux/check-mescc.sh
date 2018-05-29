@@ -26,7 +26,7 @@ export BLOOD_ELF GUILE HEX2 M1 MES MESCC
 export M1FLAGS HEX2FLAGS PREPROCESS
 export MES_ARENA MES_PREFIX MES_SEED
 export BUILD_DEBUG
-export CC32LIBS MESCCLIBS
+export LIBC CC32LIBS MESCCLIBS
 
 MES=${MES-src/mes}
 MESCC=${MESCC-scripts/mescc}
@@ -144,17 +144,15 @@ expect=$(echo $broken | wc -w)
 pass=0
 fail=0
 total=0
-MESCCLIBS=
-LIBC=libc/libc
 for t in $tests; do
     if [ -z "${t/[012][0-9]-*/}" ]; then
-        LIBC="lib/libc-mini"
+        LIBC=c-mini
         MESCCLIBS="-l c-mini"
     elif [ -z "${t/8[0-9]-*/}" ]; then
-        LIBC="lib/libc+tcc"
+        LIBC=c+tcc
         MESCCLIBS="-l c+tcc"
     else
-        LIBC=libc/libc
+        LIBC=c
         MESCCLIBS=
     fi
     sh build-aux/test.sh "scaffold/tests/$t" &> scaffold/tests/"$t".log
@@ -251,6 +249,7 @@ broken="$broken
 42_function_pointer
 46_grep
 49_bracket_evaluation
+55_lshift_type
 "
 
 #22_floating_point       ; float

@@ -34,7 +34,7 @@ CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 MESCC=${MESCC-$(command -v mescc)}
 MES_SEED=${MES_SEED-../mes-seed}
 GUILE=${GUILE-$(command -v guile)}
-MES_ARENA=${MES_ARENA-300000000}
+MES_ARENA=${MES_ARENA-100000000}
 MES_DEBUG=${MES_DEBUG-1}
 
 PREFIX=${PREFIX-/usr/local}
@@ -86,8 +86,8 @@ if [ -n "$CC" ]; then
 fi
 
 if [ -n "$CC32" ]; then
-    sh build-aux/build-mlibc.sh
-    cp src/mes.mlibc-out src/mes
+    sh build-aux/build-mes-gcc.sh
+    cp src/mes.mes-gcc-out src/mes
 fi
 
 sh build-aux/build-mes.sh

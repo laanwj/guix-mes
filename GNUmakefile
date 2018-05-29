@@ -14,8 +14,8 @@ all:
 cc:
 	build-aux/build-cc.sh
 
-mlibc:
-	build-aux/build-mlibc.sh
+mes-gcc:
+	build-aux/build-mes-gcc.sh
 
 mes:
 	build-aux/build-mes.sh
@@ -43,7 +43,7 @@ seed: all-go
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
 	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
-	build-aux/build-mlibc.sh
+	build-aux/build-mes-gcc.sh
 	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 
 define HELP_TOP
@@ -53,7 +53,7 @@ Targets:
   all             update everything
   all-go          update .go files
   cc              update src/mes.gcc-out
-  mlibc           update src/mes.mlibc-out
+  mes-gcc         update src/mes.mes-gcc-out
   mes             update src/mes
   check           run unit tests
   clean           run git clean -dfx

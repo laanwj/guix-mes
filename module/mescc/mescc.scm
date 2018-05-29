@@ -100,8 +100,6 @@
     hex2-file-name))
 
 (define (mescc:link options)
-  (define (library->hex2 o)
-    (prefix-file options (string-append "lib/lib" o "-mes.o")))
   (let* ((files (option-ref options '() '("a.c")))
          (source-files (filter (disjoin .c? .E?) files))
          (S-files (filter .S? files))
@@ -120,9 +118,9 @@
                                  (list (infos->hex2 options hex2-file-name infos)))))
          (libraries (filter-map (multi-opt 'library) options))
          (libraries (if (pair? libraries) libraries '("c")))
-         (hex2-libraries (map library->hex2 libraries))
+         (hex2-libraries (map (cut find-library options ".o" <>) libraries))
          (hex2-files (append hex2-files hex2-libraries))
-         (S-files (append S-files (map (cut replace-suffix <> ".S") hex2-libraries)))
+         (S-files (append S-files (map (cut find-library options ".S" <>)  libraries)))
          (debug-info? (option-ref options 'debug-info #f))
          (S-files (cons (replace-suffix input-file-name ".S") S-files))
          (elf-footer (and debug-info?
@@ -157,7 +155,7 @@
          (command `(,M1
                     "--LittleEndian"
                     "--Architecture=1"
-                    "-f" ,(prefix-file options "stage0/x86.M1")
+                    "-f" ,(arch-find options "x86.M1")
                     ,@(append-map (cut list "-f" <>) M1-files)
                     "-o" ,hex2-file-name)))
     (when verbose?
@@ -170,21 +168,20 @@
          (elf-file-name (cond ((option-ref options 'output #f))
                               (else (replace-suffix input-file-name ""))))
          (verbose? (option-ref options 'verbose #f))
-         (elf-footer (or elf-footer (prefix-file options "stage0/elf32-footer-single-main.hex2")))
+         (elf-footer (or elf-footer (arch-find options "elf32-footer-single-main.hex2")))
          (hex2 (or (getenv "HEX2") "hex2"))
          (command `(,hex2
                     "--LittleEndian"
                     "--Architecture=1"
                     "--BaseAddress=0x1000000"
-                    "-f" ,(prefix-file options "stage0/elf32-header.hex2")
-                    "-f" ,(prefix-file options "lib/crt1.o")
+                    "-f" ,(arch-find options "elf32-header.hex2")
+                    "-f" ,(arch-find options "crt1.o")
                     ,@(append-map (cut list "-f" <>) hex2-files)
                     "-f" ,elf-footer
                     "--exec_enable"
                     "-o" ,elf-file-name)))
     (when verbose?
-      (stderr "command=~s\n" command)
-      (format (current-error-port) "~a\n" (string-join command)))
+      (stderr "~a\n" (string-join command)))
     (and (zero? (apply system* command))
          elf-file-name)))
 
@@ -196,7 +193,7 @@
          (verbose? (option-ref options 'verbose #f))
          (blood-elf (or (getenv "BLOOD_ELF") "blood-elf"))
          (command `(,blood-elf
-                      "-f" ,(prefix-file options "stage0/x86.M1")
+                      "-f" ,(arch-find options "x86.M1")
                       ,@(append-map (cut list "-f" <>) M1-files)
                       "-o" ,M1-blood-elf-footer)))
     (when verbose?
@@ -211,11 +208,26 @@
          (base (if (pair? (cdr parts)) (drop-right parts 1))))
     (string-append (string-join base ".") suffix)))
 
+(define (find-library options ext o)
+  (arch-find options (string-append "lib" o ext)))
+
+(define* (arch-find options file-name)
+  (let* ((path (cons (prefix-file options "lib")
+                     (filter-map (multi-opt 'library-dir) options)))
+         (arch-file-name (string-append "x86-mes/" file-name))
+         (verbose? (option-ref options 'verbose #f)))
+    (when verbose?
+      (stderr "arch-find=~s\n" arch-file-name)
+      (stderr "     path=~s\n" path)
+      (stderr "  => ~s\n" (search-path path arch-file-name)))
+    (search-path path arch-file-name)))
+
 (define (prefix-file options file-name)
   (let ((prefix (option-ref options 'prefix "")))
     (define (prefix-file o)
       (if (string-null? prefix) o (string-append prefix "/" o)))
     (prefix-file file-name)))
+
 
 (define (multi-opt option-name) (lambda (o) (and (eq? (car o) option-name) (cdr o))))
 

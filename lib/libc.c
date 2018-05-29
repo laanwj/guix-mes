@@ -22,15 +22,45 @@
 #include <sys/ioctl.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <libmes.h>
+#include <stdio.h>
+
+#include <libmes.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#if __MESC__
+
+#include <linux-mes.c>
+
+#else // !__MESC__
+
+#include <fcntl.h>
+#include <assert.h>
+
+#include <linux-gcc.c>
+
+#endif // !__MESC__
+
+#include <libc-mini.c>
+#include <libmes.c>
 
 int g_stdin = 0;
 
 void _env ();
 
 int
-eputc (int c)
+getchar ()
 {
-  return fdputc (c, STDERR);
+  return fdgetc (g_stdin);
+}
+
+int
+putchar (int c)
+{
+  write (STDOUT, (char*)&c, 1);
+  return 0;
 }
 
 int
@@ -61,10 +91,6 @@ fopen (char const* file_name, char const* mode)
   else
     /* Everything else is a read */
     fd = open (file_name, 0, 0);
-
-  /* Negative numbers are error codes */
-  if (fd > 0)
-    return 0;
 
   return (FILE*)fd;
 }

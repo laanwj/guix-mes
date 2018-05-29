@@ -47,3 +47,13 @@ puts (char const* s)
   write (1, s, i);
   return 0;
 }
+
+#if __MESC__
+
+#include <linux-mini-mes.c>
+
+#else // !__MESC__
+
+#include <linux-mini-gcc.c>
+
+#endif // !__MESC__

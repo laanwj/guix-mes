@@ -41,18 +41,28 @@ CFLAGS=${CFLAGS-"
 
 c=$1
 
+if [ -z "$ARCHDIR" ]; then
+    o="$c"
+    p="gcc-"
+else
+    b=${c##*/}
+    d=${c%/*}
+    o="$d/gcc/$b"
+    mkdir -p $d/gcc
+fi
+
 $CC\
     -c\
     $CPPFLAGS\
     $CFLAGS\
     -D POSIX=1\
-    -o "$c".gcc-o\
+    -o "$o".${p}o\
     "$c".c
 
 if [ -z "$NOLINK" ]; then
     $CC\
         $CFLAGS\
-        -o "$c".gcc-out\
-        "$c".gcc-o\
-        lib/libc-gcc.gcc-o
+        -o "$o".${p}out\
+        "$o".${p}o\
+        lib/gcc/libmes.o
 fi

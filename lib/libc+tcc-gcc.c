@@ -29,12 +29,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <libc-gcc.c>
-#include <linux+tcc-gcc.c>
-#include <libc+tcc.c>
-#include <getopt.c>
-#include <m4.c>
-
 int errno;
 
 void

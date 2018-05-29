@@ -34,21 +34,21 @@ shift
 
 set -e
 
-rm -f "$t".mlibc-out
+rm -f "$t".mes-gcc-out
 if [ -n "$CC32" ]; then
-    sh build-aux/cc-mlibc.sh "$t"
+    sh build-aux/cc-mes-gcc.sh "$t"
 
     r=0
     [ -f "$t".exit ] && r=$(cat "$t".exit)
     set +e
-    "$t".mlibc-out > "$t".mlibc-stdout
+    "$t".mes-gcc-out > "$t".mes-gcc-stdout
     m=$?
-    cat "$t".mlibc-stdout
+    cat "$t".mes-gcc-stdout
     set -e
 
     [ $m = $r ]
     if [ -f "$t".expect ]; then
-        $DIFF -ub "$t".expect "$t".mlibc-stdout;
+        $DIFF -ub "$t".expect "$t".mes-gcc-stdout;
     fi
 fi
 

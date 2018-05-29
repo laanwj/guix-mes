@@ -43,23 +43,35 @@ C32FLAGS=${C32FLAGS-"
 -nostdinc
 -nostdlib
 "}
-LIBC=${LIBC-lib/libc}
+LIBC=${LIBC-c}
+if [ -n "$LIBC" ]; then
+    CC32LIBS="lib/x86-mes-gcc/lib$LIBC.o"
+fi
 
 c=$1
+
+if [ -z "$ARCHDIR" ]; then
+    o="$c"
+    p="mes-gcc-"
+else
+    b=${c##*/}
+    d=${c%/*}
+    o="$d/x86-mes-gcc/$b"
+    mkdir -p $d/x86-mes-gcc
+fi
 
 $CC32\
     -c\
     $CPPFLAGS\
     $C32FLAGS\
-    -o "$c".mlibc-o\
+    -o "$o".${p}o\
     "$c".c
 
 if [ -z "$NOLINK" ]; then
     $CC32\
         $C32FLAGS\
-        -o "$c".mlibc-out\
-        lib/crt1.mlibc-o\
-        "$c".mlibc-o\
-        $LIBC-gcc.mlibc-o\
+        -o "$o".${p}out\
+        lib/x86-mes-gcc/crt1.o\
+        "$o".${p}o\
         $CC32LIBS
 fi

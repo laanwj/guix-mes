@@ -55,24 +55,24 @@ HEX2FLAGS=${HEX2FLAGS-"
 if [ -d "$MES_SEED" ]; then
     $M1\
         $M1FLAGS\
-        -f stage0/x86.M1\
-        -f $MES_SEED/crt1.M1\
-        -o lib/crt1.o
+        -f lib/x86-mes/x86.M1\
+        -f $MES_SEED/x86-mes/crt1.S\
+        -o lib/x86-mes/crt1.o
     $M1\
         $M1FLAGS\
-        -f stage0/x86.M1\
-        -f $MES_SEED/libc-mes.M1\
-        -o lib/libc-mes.o
+        -f lib/x86-mes/x86.M1\
+        -f $MES_SEED/x86-mes/libc.S\
+        -o lib/x86-mes/libc.o
     $M1\
         --LittleEndian\
         --Architecture=1\
-        -f stage0/x86.M1\
-        -f $MES_SEED/mes.M1\
+        -f lib/x86-mes/x86.M1\
+        -f $MES_SEED/x86-mes/mes.S\
         -o src/mes.o
     $BLOOD_ELF\
-        -f stage0/x86.M1\
-        -f $MES_SEED/mes.M1\
-        -f $MES_SEED/libc-mes.M1\
+        -f lib/x86-mes/x86.M1\
+        -f $MES_SEED/x86-mes/mes.S\
+        -f $MES_SEED/x86-mes/libc.S\
         -o src/mes.S.blood-elf
     $M1\
         --LittleEndian\
@@ -81,9 +81,9 @@ if [ -d "$MES_SEED" ]; then
         -o src/mes.o.blood-elf
     $HEX2\
         $HEX2FLAGS\
-        -f stage0/elf32-header.hex2\
-        -f lib/crt1.o\
-        -f lib/libc-mes.o\
+        -f lib/x86-mes/elf32-header.hex2\
+        -f lib/x86-mes/crt1.o\
+        -f lib/x86-mes/libc.o\
         -f src/mes.o\
         -f src/mes.o.blood-elf\
         --exec_enable\
@@ -91,25 +91,20 @@ if [ -d "$MES_SEED" ]; then
     cp src/mes.seed-out src/mes
     $M1\
         $M1FLAGS\
-        -f stage0/x86.M1\
-        -f $MES_SEED/libc+tcc-mes.M1\
-        -o lib/libc+tcc-mes.o
+        -f lib/x86-mes/x86.M1\
+        -f $MES_SEED/x86-mes/libc+tcc.S\
+        -o lib/x86-mes/libc+tcc.o
 fi
 
 PREPROCESS=1
-NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
-NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mini-mes
-NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mes
-NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc-mes
-
-cp lib/crt1.mes-o lib/crt1.o
-cp lib/libc-mini-mes.mes-o lib/libc-mini-mes.o
-cp lib/libc-mes.mes-o lib/libc-mes.o
-cp lib/libc+tcc-mes.mes-o lib/libc+tcc-mes.o
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mini
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc
 
 [ -n "$SEED" ] && exit 0
 
-MES_ARENA=${MES_ARENA-30000000}
+MES_ARENA=${MES_ARENA-10000000}
 sh build-aux/mes-snarf.scm --mes src/gc.c
 sh build-aux/mes-snarf.scm --mes src/lib.c
 sh build-aux/mes-snarf.scm --mes src/math.c

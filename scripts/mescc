@@ -7,8 +7,10 @@ PREFIX=${PREFIX-@PREFIX@}
 if [ "$PREFIX" = @PREFIX""@ -o ! -d "$PREFIX" ]
 then
     MES_PREFIX=${MES_PREFIX-$(cd $(dirname $0)/.. && pwd)}
-    export MES_PREFIX
+else
+    MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
 fi
+export MES_PREFIX
 mes_p=$(command -v mes)
 if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile" ]; then
     GODIR=${GODIR-@GODIR@}
@@ -50,7 +52,10 @@ fi
   #:use-module (mescc mescc)
   #:export (main))
 
-(define %prefix (if (string-prefix? "@PREFIX" "@PREFIX@") (or (getenv "MES_PREFIX") "") "@PREFIX@"))
+(define %prefix (or (getenv "MES_PREFIX")
+                    (if (string-prefix? "@PREFIX" "@PREFIX@")
+                        ""
+                        "@PREFIX@/share/mes")))
 
 (define %version (if (string-prefix? "@VERSION" "@VERSION@") "git"
                      "@VERSION@"))
@@ -76,6 +81,7 @@ fi
             (debug-info (single-char #\g))
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
+            (library-dir (single-char #\L) (value #t))
             (library (single-char #\l) (value #t))
             (preprocess (single-char #\E))
             (output (single-char #\o) (value #t))
@@ -99,6 +105,7 @@ Usage: mescc [OPTION]... FILE...
   -g                 add debug info [GDB, objdump] TODO: hex2 footer
   -h, --help         display this help and exit
   -I DIR             append DIR to include path
+  -L DIR             append DIR to library path
   -l LIBNAME         link with LIBNAME
   -o FILE            write output to FILE
   -S                 preprocess and compile only; do not assemble or link
