@@ -90,7 +90,6 @@ ferror (FILE *stream)
 int
 fflush (FILE *stream)
 {
-  eputs ("fflush stub\n");
   return 0;
 }
 
@@ -254,9 +253,13 @@ snprintf(char *str,  size_t size,  char const *format, ...)
 }
 
 int
-sscanf (char const *str, const char *format, ...)
+sscanf (char const *str, const char *template, ...)
 {
-  eputs ("sscanf stub\n");
+  va_list ap;
+  va_start (ap, template);
+  int r = vsscanf (str, template, ap);
+  va_end (ap);
+  return r;
   return 0;
 }
 
@@ -445,6 +448,41 @@ vfprintf (FILE* f, char const* format, va_list ap)
           default: {fputc (*p, fd); break;}
           }
         p++;
+      }
+  va_end (ap);
+  return 0;
+}
+
+int
+vsscanf (char const *s, char const *template, va_list ap)
+{
+  char const *p = s;
+  char const *t = template;
+  while (*t && *p)
+    if (*t != '%')
+      {
+        t++;
+        p++;
+      }
+    else
+      {
+        t++;
+        char c = *t;
+        switch (c)
+          {
+          case '%': {p++; break;}
+          case 'c': {char *c = va_arg (ap, char*); *c = *p++; break;}
+          case 'd': {int *d = va_arg (ap, int*); *d = abtoi (&p, 10); break;}
+          default:
+            {
+              eputs ("vsscanf: not supported: %");
+              eputc (c);
+              eputs ("\n");
+              t++;
+              p++;
+            }
+          }
+        t++;
       }
   va_end (ap);
   return 0;

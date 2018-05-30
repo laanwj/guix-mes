@@ -46,6 +46,7 @@ typedef int va_list;
 int vprintf (char const* format, va_list ap);
 int vsprintf (char *str, char const *format, va_list ap);
 int vsnprintf (char *str, size_t size, char const *format, va_list ap);
+int vsscanf (char const *s, char const *template, va_list ap);
 
 #endif // ! (__GNUC__ && POSIX)
 

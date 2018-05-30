@@ -133,6 +133,7 @@ t
 84-struct-field-list
 85-sizeof
 86-strncpy
+87-sscanf
 "
 
 broken="$broken
