@@ -22,16 +22,27 @@
 #include <libmes.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
+
+#define SYS_fork    "0x02"
+#define SYS_read    "0x03"
+#define SYS_open    "0x05"
+#define SYS_waitpid "0x07"
+#define SYS_execve  "0x0b"
+#define SYS_chmod   "0x0f"
+#define SYS_access  "0x21"
+#define SYS_brk     "0x2d"
+#define SYS_ioctl   "0x36"
+#define SYS_fsync   "0x76"
 
 int
 fork ()
 {
 #if !__TINYC__
   int r;
-  //syscall (SYS_fork, fd));
   asm (
-       "mov    $0x02,%%eax\n\t"
+       "mov    $"SYS_fork",%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
@@ -47,14 +58,13 @@ read (int fd, void* buf, size_t n)
 {
 #if !__TINYC__
   int r;
-  //syscall (SYS_write, fd, s, n));
   asm (
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
        "mov    %3,%%edx\n\t"
 
-       "movl $0x3,%%eax\n\t"
-       "int  $0x80\n\t"
+       "mov    $"SYS_read",%%eax\n\t"
+       "int    $0x80\n\t"
 
        "mov    %%eax,%0\n\t"
        : "=r" (r)
@@ -84,7 +94,8 @@ open (char const *s, int flags, ...)
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
        "mov    %3,%%edx\n\t"
-       "mov    $0x5,%%eax\n\t"
+
+       "mov    $"SYS_open",%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
@@ -100,13 +111,12 @@ waitpid (pid_t pid, int *status_ptr, int options)
 {
 #if !__TINYC__
   int r;
-  //syscall (SYS_execve, file_name, argv, env));
   asm (
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
        "mov    %3,%%edx\n\t"
 
-       "mov    $0x07,%%eax\n\t"
+       "mov    $"SYS_waitpid",%%eax\n\t"
        "int    $0x80\n\t"
 
        "mov    %%eax,%0\n\t"
@@ -123,13 +133,12 @@ execve (char const* file_name, char *const argv[], char *const env[])
 {
 #if !__TINYC__
   int r;
-  //syscall (SYS_execve, file_name, argv, env));
   asm (
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
        "mov    %3,%%edx\n\t"
 
-       "mov    $0x0b,%%eax\n\t"
+       "mov    $"SYS_execve",%%eax\n\t"
        "int    $0x80\n\t"
 
        "mov    %%eax,%0\n\t"
@@ -142,15 +151,15 @@ execve (char const* file_name, char *const argv[], char *const env[])
 }
 
 int
-chmod (char const *s, int mode)
+chmod (char const *s, mode_t mode)
 {
 #if !__TINYC__
   int r;
-  //syscall (SYS_chmod, mode));
   asm (
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
-       "mov    $0x0f,%%eax\n\t"
+
+       "mov    $"SYS_chmod",%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
@@ -166,11 +175,11 @@ access (char const *s, int mode)
 {
 #if !__TINYC__
   int r;
-  //syscall (SYS_access, mode));
   asm (
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
-       "mov    $0x21,%%eax\n\t"
+
+       "mov    $"SYS_access",%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
@@ -189,9 +198,8 @@ brk (void *p)
   asm (
        "mov    %1,%%ebx\n\t"
 
-       "mov    $0x2d,%%eax\n\t"
+       "mov    $"SYS_brk",%%eax\n\t"
        "int    $0x80\n\t"
-
        "mov    %%eax,%0\n\t"
        : "=r" (r)
        : "" (p)
@@ -221,7 +229,7 @@ ioctl (int fd, unsigned long request, ...)
        "mov    %2,%%ecx\n\t"
        "mov    %3,%%edx\n\t"
 
-       "mov    $0x36, %%eax\n\t"
+       "mov    $"SYS_ioctl",%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
@@ -241,7 +249,7 @@ fsync (int fd)
   asm (
        "mov    %1,%%ebx\n\t"
 
-       "mov    $0x76, %%eax\n\t"
+       "mov    $"SYS_fsync",%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)

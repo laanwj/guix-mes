@@ -20,7 +20,7 @@
 #ifndef __MES_STDIO_H
 #define __MES_STDIO_H 1
 
-char **g_environment;
+char **environ;
 int g_stdin;
 int g_stdout;
 
@@ -45,12 +45,24 @@ int g_stdout;
 
 #else // ! (__GNUC__ && POSIX)
 
+#ifndef __MESCCLIB__
+#define __MESCCLIB__ 15
+#endif
+
 #ifndef EOF
 #define EOF -1
 #endif
 
 #ifndef NULL
 #define NULL 0
+#endif
+
+#ifndef BUFSIZ
+#define BUFSIZ 256
+#endif
+
+#ifndef L_tmpnam
+#define L_tmpnam 100
 #endif
 
 // Hmm
@@ -76,6 +88,7 @@ FILE *fopen (char const *file_name, char const *mode);
 int eputc (int c);
 int eputs (char const* s);
 int fclose (FILE *stream);
+int feof (FILE *stream);
 int ferror (FILE *stream);
 int fflush (FILE *stream);
 int fgetc (FILE* stream);

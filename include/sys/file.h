@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -17,31 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_FCNTL_H
-#define __MES_FCNTL_H 1
+#ifndef __MES_SYS_FILE_H
+#define __MES_SYS_FILE_H 1
 
 #if __GNUC__ && POSIX
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_FCNTL_H
-#include_next <fcntl.h>
+#undef __MES_SYS_FILE_H
+#include_next <sys/file.h>
 
-#else // ! (__GNUC__ && POSIX)
-#define O_RDONLY 0
-#define O_WRONLY 1
-#define O_RDWR 2
-#define O_CREAT 64
-#define O_EXCL 128
-#define O_TRUNC 512
+#else // !(__GNUC__ && POSIX)
 
-#define F_DUPFD 0
-#define F_GETFD 1
-#define F_SETFD 2
-#define F_GETFL 3
-#define F_SETFL 4
 
-int open (char const *s, int flags, ...);
-#endif // ! (__GNUC__ && POSIX)
+#endif // !(__GNUC__ && POSIX)
 
-#endif // __MES_FCNTL_H
+#endif // __MES_SYS_FILE_H

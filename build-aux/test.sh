@@ -41,7 +41,7 @@ if [ -n "$CC32" ]; then
     r=0
     [ -f "$t".exit ] && r=$(cat "$t".exit)
     set +e
-    "$t".mes-gcc-out > "$t".mes-gcc-stdout
+    "$t".mes-gcc-out $ARGS > "$t".mes-gcc-stdout
     m=$?
     cat "$t".mes-gcc-stdout
     set -e
@@ -58,7 +58,7 @@ sh build-aux/cc-mes.sh "$t"
 r=0
 [ -f "$t".exit ] && r=$(cat "$t".exit)
 set +e
-"$t".mes-out > "$t".mes-stdout
+"$t".mes-out $ARGS > "$t".mes-stdout
 m=$?
 cat "$t".mes-stdout
 set -e

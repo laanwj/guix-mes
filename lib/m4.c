@@ -33,17 +33,15 @@ atof (int x)
 }
 
 int
-atol (int x)
+atol (char const *s)
 {
-  eputs ("atol stub\n");
-  return 0;
+  return atoi (s);
 }
 
 int
-bcmp (int x)
+bcmp (void const *s1, void const *s2, size_t size)
 {
-  eputs ("bcmp stub\n");
-  return 0;
+  return memcmp (s1, s2, size);
 }
 
 void
@@ -53,10 +51,9 @@ bcopy (void const *src, void *dest, size_t n)
 }
 
 int
-bzero (int x)
+bzero (void *block, size_t size)
 {
-  eputs ("bzero stub\n");
-  return 0;
+  return memset (block, 0, size);
 }
 
 int
@@ -127,11 +124,12 @@ isupper (int c)
   return c >= 'A' && c <= 'Z';
 }
 
-int
-mktemp (int x)
+char *
+mktemp (char *template)
 {
-  eputs ("mktemp stub\n");
-  return 0;
+  char *p = strchr (template, '0');
+  *--p = &p;
+  return template;
 }
 
 int
@@ -197,15 +195,17 @@ system (int x)
 }
 
 int
-tolower (int x)
+tolower (int c)
 {
-  eputs ("tolower stub\n");
-  return 0;
+  if (isupper (c))
+    return c + ('a' - 'A');
+  return c;
 }
 
 int
-toupper (int x)
+toupper (int c)
 {
-  eputs ("toupper stub\n");
-  return 0;
+  if (islower (c))
+    return c - ('a' - 'A');
+  return c;
 }

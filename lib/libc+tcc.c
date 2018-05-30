@@ -27,6 +27,7 @@
 #include <time.h>
 #include <signal.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -36,14 +37,11 @@
 
 #include <linux+tcc-mes.c>
 #include <libc+tcc-mes.c>
-#include <getopt.c>
 
 #else // !__MESC__
 
 #include <linux+tcc-gcc.c>
 #include <libc+tcc-gcc.c>
-#include <getopt.c>
-#include <m4.c>
 
 #endif // !__MESC__
 
@@ -226,8 +224,12 @@ qsort (void *base, size_t count, size_t size, int (*compare)(void const *, void 
 int
 remove (char const *file_name)
 {
-  eputs ("remove stub\n");
-  return 0;
+  struct stat buf;
+  if (stat (file_name, &buf) < 0)
+    return -1;
+  if (S_ISDIR (buf.st_mode))
+    return rmdir (file_name);
+  return unlink (file_name);
 }
 
 int
@@ -264,12 +266,13 @@ sscanf (char const *str, const char *template, ...)
 }
 
 char *
-strcat (char *dest, char const *src)
+strcat (char *to, char const *from)
 {
-  char *p = strchr (dest, '\0');
-  while (*src++) *p++ = *src++;
+  char *p = strchr (to, '\0');
+  while (*from)
+    *p++ = *from++;
   *p = 0;
-  return dest;
+  return to;
 }
 
 char *
@@ -278,7 +281,8 @@ strchr (char const *s, int c)
   char const *p = s;
   while (*p || !c)
     {
-      if (c == *p) return p;
+      if (c == *p)
+        return p;
       *p++;
     }
   return 0;
@@ -360,7 +364,7 @@ strstr (char const *haystack, char const *needle)
 double
 strtod (char const *nptr, char **endptr)
 {
-  eputs ("strtoul stub\n");
+  eputs ("strtod stub\n");
 }
 
 float
@@ -445,12 +449,24 @@ vfprintf (FILE* f, char const* format, va_list ap)
           case 'c': {char c; c = va_arg (ap, char); fputc (c, fd); break;}
           case 'd': {int d; d = va_arg (ap, int); fputs (itoa (d), fd); break;}
           case 's': {char *s; s = va_arg (ap, char *); fputs (s, fd); break;}
-          default: {fputc (*p, fd); break;}
+          default:
+            {
+              eputs ("vfprintf: not supported: %");
+              eputc (c);
+              eputs ("\n");
+              p++;
+            }
           }
         p++;
       }
   va_end (ap);
   return 0;
+}
+
+int
+vprintf (char const* format, va_list ap)
+{
+  return vfprintf (STDOUT, format, ap);
 }
 
 int
@@ -472,7 +488,9 @@ vsscanf (char const *s, char const *template, va_list ap)
           {
           case '%': {p++; break;}
           case 'c': {char *c = va_arg (ap, char*); *c = *p++; break;}
-          case 'd': {int *d = va_arg (ap, int*); *d = abtoi (&p, 10); break;}
+          case 'd':
+          case 'i':
+          case 'u': {int *d = va_arg (ap, int*); *d = abtoi (&p, 10); break;}
           default:
             {
               eputs ("vsscanf: not supported: %");
@@ -486,4 +504,90 @@ vsscanf (char const *s, char const *template, va_list ap)
       }
   va_end (ap);
   return 0;
+}
+
+int
+vsprintf (char *str, char const* format, va_list ap)
+{
+  char const *p = format;
+  while (*p)
+    if (*p != '%')
+      *str++ = *p++;
+    else
+      {
+        p++;
+        char c = *p;
+        int left_p = 0;
+        int width = -1;
+        if (c == '-')
+          {
+            left_p = 1;
+            c = *++p;
+          }
+        char pad = ' ';
+        if (c == '0')
+          {
+            pad = c;
+            c = *p++;
+          }
+        if (c >= '0' && c <= '9')
+          {
+            width = abtoi (&p, 10);
+            c = *p;
+          }
+        switch (c)
+          {
+          case '%': {*str++ = *p; break;}
+          case 'c': {char c; c = va_arg (ap, char); *str++ = c; break;}
+          case 'd':
+          case 'i':
+          case 'u':
+            {
+              int d = va_arg (ap, int);
+              char const *s = itoa (d);
+              if (width >= 0)
+                width = width - strlen (s);
+              if (!left_p)
+                while (width-- > 0)
+                  *str++ = pad;
+              while (*s)
+                *str++ = *s++;
+              while (width-- > 0)
+                *str++ = pad;
+              break;
+            }
+          case 's': {char *s; s = va_arg (ap, char *); while (*s) *str++ = *s++; break;}
+          default:
+            {
+              eputs ("vsprintf: not supported: %");
+              eputc (c);
+              eputs ("\n");
+              p++;
+            }
+          }
+        p++;
+      }
+  va_end (ap);
+  *str = 0;
+  return strlen (str);
+}
+
+int
+sprintf (char *str, char const* format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  int r = vsprintf (str, format, ap);
+  va_end (ap);
+  return r;
+}
+
+int
+printf (char const* format, ...)
+{
+  va_list ap;
+  va_start (ap, format);
+  int r = vprintf (format, ap);
+  va_end (ap);
+  return r;
 }

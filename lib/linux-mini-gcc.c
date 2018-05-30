@@ -18,6 +18,9 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define SYS_exit   "0x01"
+#define SYS_write  "0x04"
+
 void
 exit (int code)
 {
@@ -32,7 +35,8 @@ exit (int code)
 #else // __TINYC__
   asm (
        "mov    %0,%%ebx\n\t"
-       "mov    $1,%%eax\n\t"
+
+       "mov    $"SYS_exit",%%eax\n\t"
        "int    $128\n\t"
        : // no outputs "=" (r)
        : "Ir" (code)
@@ -59,15 +63,13 @@ write (int fd, char const* s, int n)
        : "" (fd), "" (s), "" (n)
        : "eax", "ebx", "ecx", "edx"
        );
-
-  //syscall (SYS_write, fd, s, n));
 #elif __TINYC__
   asm (
        "mov    %1,%%ebx\n\t"
        "mov    %2,%%ecx\n\t"
        "mov    %3,%%edx\n\t"
 
-       "mov    $4, %%eax\n\t"
+       "mov    $"SYS_write",%%eax\n\t"
        "int    $128\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)

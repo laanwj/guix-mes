@@ -29,6 +29,7 @@
 #else // ! (__GNUC__ && POSIX)
 int errno;
 #define	ENOENT		 2	/* No such file or directory */
+#define	EIO		 5	/* I/O error */
 #define	EBADF		 9	/* Bad file number */
 #define	ENOMEM		12	/* Out of memory */
 #define	EEXIST		17	/* File exists */

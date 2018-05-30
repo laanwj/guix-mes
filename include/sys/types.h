@@ -34,15 +34,22 @@ typedef unsigned long size_t;
 
 #ifndef __MES_PID_T
 #define __MES_PID_T
+#undef pid_t
 typedef int pid_t;
+#endif
+
+#ifndef __MES_GID_T
+#define __MES_GID_T
+#undef gid_t
+typedef int gid_t;
 #endif
 
 #ifndef __MES_UID_T
 #define __MES_UID_T
+#undef uid_t
 typedef int uid_t;
 #endif
 
 #endif // ! (__GNUC__ && POSIX)
 
 #endif // __MES_SYS_TYPES_H
-

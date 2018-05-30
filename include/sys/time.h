@@ -26,19 +26,31 @@
 
 #else // !(__GNUC__ && POSIX)
 
-struct timeval {
+struct timeval
+{
   long tv_sec;
   long tv_usec;
 };
 
-struct timezone {
+struct timezone
+{
   int tz_minuteswest;
   int tz_dsttime;
 };
 
+struct itimerval
+{
+  struct timeval it_interval;
+  struct timeval it_value;
+};
+
+#define	ITIMER_REAL    0
+#define	ITIMER_VIRTUAL 1
+#define	ITIMER_PROF    2
+
 int gettimeofday (struct timeval *tv, struct timezone *tz);
+int setitimer (int which, struct itimerval const *new, struct itimerval *old);
 
 #endif // !(__GNUC__ && POSIX)
 
 #endif // __MES_SYS_TIME_H
-

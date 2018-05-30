@@ -26,12 +26,12 @@
 
 #else // !(__GNUC__ && POSIX)
 
+#include <sys/types.h>
+
 #ifndef __MES_MODE_T
 #define __MES_MODE_T
 typedef int mode_t;
 #endif
-
-int chmod (char const *file_name, mode_t mode);
 
 struct stat
 {
@@ -56,6 +56,24 @@ struct stat
   unsigned int	__unused4;
   unsigned int	__unused5;
 };
+
+int chmod (char const *file_name, mode_t mode);
+int mkdir (char const *file_name, mode_t mode);
+int chown (char const *file_name, uid_t owner, gid_t group);
+int rmdir (char const *file_name);
+
+#define S_IFMT  0170000
+#define S_IFDIR 0040000
+#define S_IFREG 0100000
+#define S_IFLNK 0120000
+
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+
+#define S_IRWXU 00700
+#define S_IXUSR 00100
+#define S_IWUSR 00200
+#define S_IRUSR 00400
 
 #endif // !(__GNUC__ && POSIX)
 

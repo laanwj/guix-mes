@@ -1,7 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright (C) 1989, 1990, 1991, 1992 Free Software Foundation, Inc.
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -18,45 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_GETOPT_H
-#define __MES_GETOPT_H 1
+#ifndef __MES_MEMORY_H
+#define __MES_MEMORY_H 1
 
 #if __GNUC__ && POSIX
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#undef __MES_GETOPT_H
-#include_next <getopt.h>
+#undef __MES_MEMORY_H
+#include_next <memory.h>
 
 #else // ! (__GNUC__ && POSIX)
-#include <endian.h>
-int isdigit (int);
-int isxdigit (int);
 
-char *optarg;
-int optind;
-int opterr;
-struct option
-{
-  char const *name;
-  int has_arg;
-  int *flag;
-  int val;
-};
-
-enum _argtype
-{
-  no_argument,
-  required_argument,
-  optional_argument
-};
-
-int getopt (int argc, char *const *argv, char const *options);
-int getopt_long (int argc, char *const *argv, char const *options,
-                 struct option const *long_options, int *opt_index);
-int getopt_long_only (int argc, char *const *argv, char const *options,
-                      struct option const *long_options, int *opt_index);
+#include <string.h>
 
 #endif // ! (__GNUC__ && POSIX)
 
-#endif // __MES_GETOPT_H
+#endif // __MES_MEMORY_H

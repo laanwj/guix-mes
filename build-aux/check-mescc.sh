@@ -134,10 +134,15 @@ t
 85-sizeof
 86-strncpy
 87-sscanf
+90-strpbrk
+91-fseek
 "
 
+# 90: needs GNU, fails for mescc, passes for tcc
 broken="$broken
 7s-struct-short
+90-strpbrk
+91-fseek
 "
 
 set +e
@@ -149,9 +154,12 @@ for t in $tests; do
     if [ -z "${t/[012][0-9]-*/}" ]; then
         LIBC=c-mini
         MESCCLIBS="-l c-mini"
-    elif [ -z "${t/8[0-9]-*/}" ]; then
+    elif [ -z "${t/[78][0-9a-z]-*/}" ]; then
         LIBC=c+tcc
         MESCCLIBS="-l c+tcc"
+    elif [ -z "${t/9[0-9]-*/}" ]; then
+        LIBC=c+gnu
+        MESCCLIBS="-l c+gnu"
     else
         LIBC=c
         MESCCLIBS=
@@ -219,7 +227,6 @@ tests="
 43_void_param
 44_scoped_declarations
 45_empty_for
-46_grep
 47_switch_return
 48_nested_break
 49_bracket_evaluation
@@ -241,14 +248,11 @@ broken="$broken
 27_sizeof
 28_strings
 
-31_args
 34_array_assignment
-37_sprintf
 39_typedef
 
 40_stdio
 42_function_pointer
-46_grep
 49_bracket_evaluation
 55_lshift_type
 "
@@ -260,17 +264,18 @@ broken="$broken
 #28_strings              ; TODO: strncpy strchr strrchr memset memcpy memcmp
 #30_hanoi                ; fails with GCC
 #34_array_assignment     ; fails with GCC
-#37_sprintf              ; integer formatting unsupported
 #39_typedef              ;unsupported: (decl (decl-spec-list (stor-spec (typedef)) (type-spec (typename "MyFunStruct"))) (init-declr-list (init-declr (ptr-declr (pointer) (ident "MoreFunThanEver")))))
 
 #40_stdio                ; f* functions
 #42_function_pointer     ; f* functions
-#46_grep                 ; f* functions
 #49_bracket_evaluation   ; float
 
-
+LIBC=c+gnu
+MESCCLIBS="-l c+tcc"
 
 expect=$(echo $broken | wc -w)
+ARGS="arg1 arg2 arg3 arg4 arg5"
+export ARGS
 for t in $tests; do
     if [ ! -f scaffold/tinycc/"$t.c" ]; then
         echo ' [SKIP]'

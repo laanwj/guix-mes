@@ -29,6 +29,10 @@
 
 #else // ! (__GNUC__ && POSIX)
 
+#ifndef NULL
+#define NULL 0
+#endif
+
 #ifndef __MES_OFF_T
 #define __MES_OFF_T
 #undef off_t

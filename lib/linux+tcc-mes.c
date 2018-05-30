@@ -38,6 +38,25 @@ unlink (char const *file_name)
   asm ("int____$0x80");
 }
 
+int
+rmdir (char const *file_name)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+
+  asm ("mov____$i32,%eax SYS_unlink");
+  asm ("int____$0x80");
+}
+
+int
+stat (char const *file_name, struct stat *statbuf)
+{
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+
+  asm ("mov____$i32,%eax SYS_getcwd");
+  asm ("int____$0x80");
+}
+
 off_t
 lseek (int fd, off_t offset, int whence)
 {

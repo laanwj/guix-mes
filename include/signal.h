@@ -41,6 +41,7 @@ typedef int uid_t;
 typedef int clock_t;
 typedef int sigval_t;
 
+#define NSIG 30
 #define SIGHUP		 1
 #define SIGINT		 2
 #define SIGQUIT		 3

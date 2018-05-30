@@ -100,6 +100,7 @@ PREPROCESS=1
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libgetopt
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc
 
 [ -n "$SEED" ] && exit 0

@@ -49,6 +49,7 @@
                   "__i386__=1"
                   "POSIX=0"
                   "_POSIX_SOURCE=0"
+                  "__STDC__=1"
                   "__MESC__=1"
                   ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
                   ,@defines)

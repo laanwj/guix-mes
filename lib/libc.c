@@ -139,7 +139,6 @@ strcmp (char const* a, char const* b)
   return *a - *b;
 }
 
-
 char *
 strcpy (char *dest, char const *src)
 {
@@ -185,9 +184,13 @@ realloc (void *ptr, size_t size)
 }
 
 int
-strncmp (char const* a, char const* b, size_t length)
+strncmp (char const* a, char const* b, size_t size)
 {
-  while (*a && *b && *a == *b && --length) {a++;b++;}
+  while (*a && *b && *a == *b && --size)
+    {
+      a++;
+      b++;
+    }
   return *a - *b;
 }
 
@@ -205,7 +208,7 @@ fwrite (void const *data, size_t size, size_t count, FILE *stream)
 char *
 getenv (char const* s)
 {
-  char **p = g_environment;
+  char **p = environ;
   int length = strlen (s);
   while (*p)
     {
@@ -218,7 +221,7 @@ getenv (char const* s)
 int
 setenv (char const* s, char const* v, int overwrite_p)
 {
-  char **p = g_environment;
+  char **p = environ;
   int length = strlen (s);
   while (*p)
     {
@@ -236,77 +239,6 @@ setenv (char const* s, char const* v, int overwrite_p)
   if (end_p)
     *++p = 0;
   return 0;
-}
-
-int
-vprintf (char const* format, va_list ap)
-{
-  char const *p = format;
-  while (*p)
-    if (*p != '%')
-      putchar (*p++);
-    else
-      {
-        p++;
-        char c = *p;
-        switch (c)
-          {
-          case '%': {putchar (*p); break;}
-          case 'c': {char c; c = va_arg (ap, char); putchar (c); break;}
-          case 'd': {int d; d = va_arg (ap, int); puts (itoa (d)); break;}
-          case 's': {char *s; s = va_arg (ap, char *); puts (s); break;}
-          default: {putchar (*p); break;}
-          }
-        p++;
-      }
-  va_end (ap);
-  return 0;
-}
-
-int
-printf (char const* format, ...)
-{
-  va_list ap;
-  va_start (ap, format);
-  int r = vprintf (format, ap);
-  va_end (ap);
-  return r;
-}
-
-int
-vsprintf (char *str, char const* format, va_list ap)
-{
-  char const *p = format;
-  while (*p)
-    if (*p != '%')
-      *str++ = *p++;
-    else
-      {
-        p++;
-        char c = *p;
-        switch (c)
-          {
-          case '%': {*str++ = *p; break;}
-          case 'c': {char c; c = va_arg (ap, char); *str++ = c; break;}
-          case 'd': {int d; d = va_arg (ap, int); char const *s; s = itoa (d); while (*s) *str++ = *s++; break;}
-          case 's': {char *s; s = va_arg (ap, char *); while (*s) *str++ = *s++; break;}
-          default: {*str++ = *p; break;}
-          }
-        p++;
-      }
-  va_end (ap);
-  *str = 0;
-  return strlen (str);
-}
-
-int
-sprintf (char *str, char const* format, ...)
-{
-  va_list ap;
-  va_start (ap, format);
-  int r = vsprintf (str, format, ap);
-  va_end (ap);
-  return r;
 }
 
 int

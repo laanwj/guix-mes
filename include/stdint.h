@@ -29,6 +29,25 @@
 
 #else // ! (__GNUC__ && POSIX)
 
+#undef unsigned
+#undef uint8_t
+#undef int8_t
+
+#undef uint16_t
+#undef int16_t
+
+#undef uint32_t
+#undef int32_t
+
+#undef uint64_t
+#undef int64_t
+
+#undef uintptr_t
+#undef intmax_t
+#undef intptr_t
+#undef uintmax_t
+#undef ptrdiff_t
+
 typedef unsigned char uint8_t;
 typedef char int8_t;
 typedef unsigned short uint16_t;

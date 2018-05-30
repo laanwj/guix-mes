@@ -33,6 +33,8 @@
 #define INT_MIN -2147483648
 #define INT_MAX 2147483647
 #define MB_CUR_MAX 1
+#define LONG_MIN -2147483648
+#define LONG_MAX 2147483647
 
 #endif // ! (__GNUC__ && POSIX)
 

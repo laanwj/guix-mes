@@ -18,7 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-char **g_environment = 0;
+char **environ = 0;
 int main (int argc, char *argv[]);
 
 #if __GNUC__
@@ -34,7 +34,7 @@ _start ()
        "shl     $2,%%eax\n\t"
        "add     %%ebp,%%eax\n\t"
        "movl    %%eax,%0\n\t"
-       : "=g_environment" (g_environment)
+       : "=environ" (environ)
        : //no inputs ""
        );
   asm (
@@ -70,7 +70,7 @@ _start ()
 
   asm ("shl____$i8,%eax !0x02");
   asm ("add____%ebp,%eax");
-  asm ("mov____%eax,0x32 &g_environment");
+  asm ("mov____%eax,0x32 &environ");
 
   asm ("mov____%ebp,%eax");
   asm ("add____$i8,%eax !8");

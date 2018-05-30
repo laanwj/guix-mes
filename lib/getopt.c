@@ -1,6 +1,6 @@
 /* Getopt for GNU.
    Copyright (C) 1987, 88, 89, 90, 91, 1992 Free Software Foundation, Inc.
-   Copyright (C) 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+   Copyright (C) 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -361,16 +361,22 @@ _getopt_internal (int argc, char *const
 }
 
 int
-getopt (int argc, char *const *argv, char const *optstring)
+getopt (int argc, char *const *argv, char const *options)
 {
-  return _getopt_internal (argc, argv, optstring,
-			   (const struct option *) 0,
-			   (int *) 0,
-			   0);
+  return _getopt_internal (argc, argv, options,
+                           (const struct option *) 0, (int *) 0, 0);
 }
 
 int
-getopt_long (int argc, char *const *argv, const char *options, struct option const *long_options, int *opt_index)
+getopt_long (int argc, char *const *argv, char const *options,
+             struct option const *long_options, int *opt_index)
 {
   return _getopt_internal (argc, argv, options, long_options, opt_index, 0);
+}
+
+int
+getopt_long_only (int argc, char *const *argv, char const *options,
+                  struct option const *long_options, int *opt_index)
+{
+  return _getopt_internal (argc, argv, options, long_options, opt_index, 1);
 }
