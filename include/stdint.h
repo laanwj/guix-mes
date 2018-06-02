@@ -20,14 +20,14 @@
 #ifndef __MES_STDINT_H
 #define __MES_STDINT_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STDINT_H
 #include_next <stdint.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #undef unsigned
 #undef uint8_t
@@ -71,6 +71,6 @@ typedef unsigned* uintptr_t;
 
 typedef unsigned ptrdiff_t;
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_STDINT_H

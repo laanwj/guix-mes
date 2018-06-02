@@ -20,17 +20,17 @@
 #ifndef __MES_SYS_IOCTL_H
 #define __MES_SYS_IOCTL_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SYS_IOCTL_H
 #include_next <sys/ioctl.h>
 
-#else // !(__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #define TCGETS 0x5401
 #define TCGETA 0x5405
 int ioctl (int fd, unsigned long request, ...);
 
-#endif // !(__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_SYS_IOCTL_H
 

@@ -20,17 +20,17 @@
 #ifndef __MES_MEMORY_H
 #define __MES_MEMORY_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_MEMORY_H
 #include_next <memory.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #include <string.h>
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_MEMORY_H

@@ -20,14 +20,14 @@
 #ifndef __MES_STRING_H
 #define __MES_STRING_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STRING_H
 #include_next <string.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #ifndef NULL
 #define NULL 0
@@ -55,10 +55,11 @@ char *strchr (char const *s, int c);
 int strcmp (char const*, char const*);
 char *strcpy (char *dest, char const *src);
 size_t strlen (char const*);
+char *strncpy (char *to, char const *from, size_t size);
 int strncmp (char const*, char const*, size_t);
 char *strrchr (char const *s, int c);
 char *strstr (char const *haystack, char const *needle);
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_STRING_H

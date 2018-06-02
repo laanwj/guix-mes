@@ -26,14 +26,14 @@ test ()
 {
   int i;
   int r = sscanf ("42", "%d", &i);
-  if (r)
+  if (r != 1)
     return 1;
   if (i != 42)
     return 2;
 
   char c;
   r = sscanf ("foo bar", "foo%cbar", &c);
-  if (r)
+  if (r != 1)
     return 3;
   if (c != ' ')
     return 4;

@@ -43,7 +43,7 @@ rmdir (char const *file_name)
 {
   asm ("mov____0x8(%ebp),%ebx !8");
 
-  asm ("mov____$i32,%eax SYS_unlink");
+  asm ("mov____$i32,%eax SYS_rmdir");
   asm ("int____$0x80");
 }
 

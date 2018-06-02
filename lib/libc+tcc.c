@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
  * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jeremiah Orians <jeremiah@pdp10.guru>
  * Copyright (C) 2018 Han-Wen Nienhuys <hanwen@xs4all.nl>
  *
  * This file is part of Mes.
@@ -19,6 +20,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+#include <fcntl.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -57,11 +60,63 @@ dlopen (char const *filename, int flags)
   return 0;
 }
 
-int
-execvp (char const *file, char *const argv[])
+char *
+search_path (char const *file_name)
 {
-  eputs ("execvp stub\n");
+  static char buf[256];
+  char *path = getenv ("PATH");
+  if (getenv ("MESC_DEBUG"))
+    {
+      eputs ("\n search-path: "); eputs (file_name); eputs ("\n");
+    }
+  while (*path)
+    {
+      char *end = strchr (path, ':');
+      if (!end)
+        end = strchr (path, '\0');
+      strncpy (buf, path, end - path);
+      buf[end - path] = 0;
+      if (getenv ("MESC_DEBUG"))
+        {
+          eputs (" dir: "); eputs (buf); eputs ("\n");
+        }
+      if (buf[end - path] != '/')
+        strcat (buf, "/");
+      strcat (buf, file_name);
+      if (!access (buf, X_OK))
+        {
+          if (getenv ("MESC_DEBUG"))
+            {
+              eputs (" found: "); eputs (buf); eputs ("\n");
+            }
+          return buf;
+        }
+      path = end + 1;
+    }
   return 0;
+}
+
+int
+execvp (char const *file_name, char *const argv[])
+{
+  if (file_name[0] != '/')
+    file_name = search_path (file_name);
+  if (!file_name)
+    {
+      errno = ENOENT;
+      return -1;
+    }
+  if (getenv ("MESC_DEBUG"))
+    {
+      eputs (" EXEC: "); eputs (file_name); eputs ("\n");
+      int i = 0;
+      while (argv[i])
+        {
+          eputs (" arg["); eputs (itoa (i)); eputs ("]: "); eputs (argv[i]); eputs ("\n");
+          i++;
+        }
+    }
+  return execve (file_name, argv, environ);
 }
 
 int
@@ -110,13 +165,49 @@ fread (void *data, size_t size, size_t count, FILE *stream)
   if (bytes > 0)
     return bytes/size;
 
-  return bytes;
+  return 0;
+}
+
+size_t
+fwrite (void const *data, size_t size, size_t count, FILE *stream)
+{
+  if (! size || !count)
+    return 0;
+  int bytes = write ((int)stream, data, size * count);
+  if (bytes > 0)
+    return bytes/size;
+  return 0;
 }
 
 long
 ftell (FILE *stream)
 {
   return lseek ((int)stream, 0, SEEK_CUR);
+}
+
+FILE*
+fopen (char const *file_name, char const *opentype)
+{
+  int fd;
+  if (opentype[0] == 'a')
+    {
+      fd = open (file_name, O_RDONLY);
+      if (fd > 0)
+        {
+          close (fd);
+          fd = open (file_name, O_RDWR);
+          lseek (fd, 0, SEEK_END);
+          return fd;
+        }
+    }
+  if (opentype[0] == 'w' || opentype[0] == 'a')
+    /* 577 is O_WRONLY|O_CREAT|O_TRUNC, 384 is 600 in octal */
+    fd = open (file_name, 577 , 384);
+  else
+    /* Everything else is a read */
+    fd = open (file_name, 0, 0);
+
+  return (FILE*)fd;
 }
 
 int
@@ -262,7 +353,6 @@ sscanf (char const *str, const char *template, ...)
   int r = vsscanf (str, template, ap);
   va_end (ap);
   return r;
-  return 0;
 }
 
 char *
@@ -289,16 +379,18 @@ strchr (char const *s, int c)
 }
 
 char *
-strncpy (char *dest, char const *src, size_t length)
+strncpy (char *to, char const *from, size_t size)
 {
-  char *p = dest;
-  while (*src && length--)
-    *p++ = *src++;
-  if (*src)
-    length++;
-  while (length--)
+  if (size == 0)
+    return to;
+  char *p = to;
+  while (*from && size--)
+    *p++ = *from++;
+  if (*from)
+    size++;
+  while (size--)
     *p++ = 0;
-  return dest;
+  return to;
 }
 
 char *
@@ -431,6 +523,58 @@ calloc (size_t nmemb, size_t size)
   return p;
 }
 
+
+int
+islower (int c)
+{
+  return c >= 'a' && c <= 'z';
+}
+int
+isupper (int c)
+{
+  return c >= 'A' && c <= 'Z';
+}
+
+int
+tolower (int c)
+{
+  if (isupper (c))
+    return c + ('a' - 'A');
+  return c;
+}
+
+int
+toupper (int c)
+{
+  if (islower (c))
+    return c - ('a' - 'A');
+  return c;
+}
+
+char *
+strlwr (char *string)
+{
+  char *p = string;
+  while (*p)
+    {
+      *p = tolower (*p);
+      p++;
+    }
+  return string;
+}
+
+char *
+strupr (char *string)
+{
+  char *p = string;
+  while (*p)
+    {
+      *p = toupper (*p);
+      p++;
+    }
+  return string;
+}
+
 int
 vfprintf (FILE* f, char const* format, va_list ap)
 {
@@ -443,12 +587,90 @@ vfprintf (FILE* f, char const* format, va_list ap)
       {
         p++;
         char c = *p;
+        int left_p = 0;
+        int precision_p = 0;
+        int width = -1;
+        if (c == 'l')
+          c = *++p;
+        if (c == '-')
+          {
+            left_p = 1;
+            c = *++p;
+          }
+        if (c == '.')
+          {
+            precision_p = 1;
+            c = *++p;
+          }
+        char pad = ' ';
+        if (c == '0')
+          {
+            pad = c;
+            c = *p++;
+          }
+        if (c >= '0' && c <= '9')
+          {
+            width = abtoi (&p, 10);
+            c = *p;
+          }
+        else if (c == '*')
+          {
+            width = va_arg (ap, int);
+            c = *++p;
+          }
+        if (c == 'l')
+          c = *++p;
         switch (c)
           {
           case '%': {fputc (*p, fd); break;}
-          case 'c': {char c; c = va_arg (ap, char); fputc (c, fd); break;}
-          case 'd': {int d; d = va_arg (ap, int); fputs (itoa (d), fd); break;}
-          case 's': {char *s; s = va_arg (ap, char *); fputs (s, fd); break;}
+          case 'c': {char c; c = va_arg (ap, int); fputc (c, fd); break;}
+          case 'd':
+          case 'i':
+          case 'o':
+          case 'u':
+          case 'x':
+          case 'X':
+            {
+              int d = va_arg (ap, int);
+              int base = c == 'o' ? 8
+                : c == 'x' || c == 'X' ? 16
+                : 10;
+              char const *s = number_to_ascii (d, base, c != 'u' && c != 'x' && c != 'X');
+              if (c == 'X')
+                strupr (s);
+              if (!precision_p && width >= 0)
+                width = width - strlen (s);
+              if (!left_p && !precision_p)
+                while (!precision_p && width-- > 0)
+                  fputc (pad, f);
+              while (*s)
+                {
+                  if (precision_p && width-- == 0)
+                    break;
+                  fputc (*s++, f);
+                }
+              while (!precision_p && width-- > 0)
+                fputc (pad, f);
+              break;
+            }
+          case 's':
+            {
+              char *s = va_arg (ap, char *);
+              if (!precision_p && width >= 0)
+                width = width - strlen (s);
+              if (!left_p && !precision_p)
+                while (!precision_p && width-- > 0)
+                  fputc (pad, f);
+              while (*s)
+                {
+                  if (precision_p && width-- == 0)
+                    break;
+                  fputc (*s++, f);
+                }
+              while (!precision_p && width-- > 0)
+                fputc (pad, f);
+              break;
+            }
           default:
             {
               eputs ("vfprintf: not supported: %");
@@ -474,6 +696,7 @@ vsscanf (char const *s, char const *template, va_list ap)
 {
   char const *p = s;
   char const *t = template;
+  int count = 0;
   while (*t && *p)
     if (*t != '%')
       {
@@ -487,10 +710,22 @@ vsscanf (char const *s, char const *template, va_list ap)
         switch (c)
           {
           case '%': {p++; break;}
-          case 'c': {char *c = va_arg (ap, char*); *c = *p++; break;}
+          case 'c':
+            {
+              char *c = va_arg (ap, char*);
+              *c = *p++;
+              count++;
+              break;
+            }
           case 'd':
           case 'i':
-          case 'u': {int *d = va_arg (ap, int*); *d = abtoi (&p, 10); break;}
+          case 'u':
+            {
+              int *d = va_arg (ap, int*);
+              *d = abtoi (&p, 10);
+              count++;
+              break;
+            }
           default:
             {
               eputs ("vsscanf: not supported: %");
@@ -503,7 +738,7 @@ vsscanf (char const *s, char const *template, va_list ap)
         t++;
       }
   va_end (ap);
-  return 0;
+  return count;
 }
 
 int
@@ -518,10 +753,18 @@ vsprintf (char *str, char const* format, va_list ap)
         p++;
         char c = *p;
         int left_p = 0;
+        int precision_p = 0;
         int width = -1;
+        if (c == 'l')
+          c = *++p;
         if (c == '-')
           {
             left_p = 1;
+            c = *++p;
+          }
+        if (c == '.')
+          {
+            precision_p = 1;
             c = *++p;
           }
         char pad = ' ';
@@ -535,28 +778,64 @@ vsprintf (char *str, char const* format, va_list ap)
             width = abtoi (&p, 10);
             c = *p;
           }
+        else if (c == '*')
+          {
+            width = va_arg (ap, int);
+            c = *++p;
+          }
+        if (c == 'l')
+          c = *++p;
         switch (c)
           {
           case '%': {*str++ = *p; break;}
-          case 'c': {char c; c = va_arg (ap, char); *str++ = c; break;}
+          case 'c': {c = va_arg (ap, int); *str++ = c; break;}
           case 'd':
           case 'i':
+          case 'o':
           case 'u':
+          case 'x':
+          case 'X':
             {
               int d = va_arg (ap, int);
-              char const *s = itoa (d);
-              if (width >= 0)
+              int base = c == 'o' ? 8
+                : c == 'x' || c == 'X' ? 16
+                : 10;
+              char const *s = number_to_ascii (d, base, c != 'u' && c != 'x' && c != 'X');
+              if (c == 'X')
+                strupr (s);
+              if (!precision_p && width >= 0)
                 width = width - strlen (s);
-              if (!left_p)
-                while (width-- > 0)
+              if (!left_p && !precision_p)
+                while (!precision_p && width-- > 0)
                   *str++ = pad;
               while (*s)
-                *str++ = *s++;
-              while (width-- > 0)
+                {
+                  if (precision_p && width-- == 0)
+                    break;
+                  *str++ = *s++;
+                }
+              while (!precision_p && width-- > 0)
                 *str++ = pad;
               break;
             }
-          case 's': {char *s; s = va_arg (ap, char *); while (*s) *str++ = *s++; break;}
+          case 's':
+            {
+              char *s = va_arg (ap, char *);
+              if (!precision_p && width >= 0)
+                width = width - strlen (s);
+              if (!left_p && !precision_p)
+                while (!precision_p && width-- > 0)
+                  *str++ = pad;
+              while (*s)
+                {
+                  if (precision_p && width-- == 0)
+                    break;
+                  *str++ = *s++;
+                }
+              while (!precision_p && width-- > 0)
+                *str++ = pad;
+              break;
+            }
           default:
             {
               eputs ("vsprintf: not supported: %");

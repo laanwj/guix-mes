@@ -36,14 +36,14 @@ int g_stdout;
 #define STDERR 2
 #endif
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STDIO_H
 #include_next <stdio.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #ifndef __MESCCLIB__
 #define __MESCCLIB__ 15
@@ -113,6 +113,6 @@ size_t fread (void *ptr, size_t size, size_t count, FILE *stream);
 size_t freadahead (FILE *fp);
 size_t fwrite (void const *ptr, size_t size, size_t count, FILE *stream);
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_STDIO_H

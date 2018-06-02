@@ -3,6 +3,9 @@ GUILE_FLAGS:=--no-auto-compile -L . -L guile -C . -C guile
 
 include .config.make
 
+.config.make:
+	./configure
+
 PHONY_TARGETS:= all all-go check clean clean-go default help install
 .PHONY: $(PHONY_TARGETS)
 

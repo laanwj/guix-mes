@@ -20,10 +20,10 @@
 #ifndef __MES_PWD_H
 #define __MES_PWD_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_PWD_H
 #include_next <pwd.h>
-#else  // !(__GNUC__ && POSIX)
+#else  // ! WITH_GLIBC
 
 struct passwd
 {
@@ -36,6 +36,6 @@ struct passwd
   char *pw_shell;
 };
 
-#endif  // !(__GNUC__ && POSIX)
+#endif  // ! WITH_GLIBC
 
 #endif // __MES_PWD_H

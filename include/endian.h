@@ -20,17 +20,17 @@
 #ifndef __MES_ENDIAN_H
 #define __MES_ENDIAN_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_ENDIAN_H
 #include_next <endian.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 #define	__LITTLE_ENDIAN 1234
 #define	__BIG_ENDIAN 4321
 #define __BYTE_ORDER __LITTLE_ENDIAN
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_ENDIAN_H

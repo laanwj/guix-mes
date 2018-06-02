@@ -23,6 +23,22 @@
 #include <stdio.h>
 #include <string.h>
 
+#if __i386__
+#define strncmp xstrncmp
+int
+strncmp (char const* a, char const* b, size_t size)
+{
+  if (!size)
+    return 0;
+  while (*a && *b && *a == *b && --size)
+    {
+      a++;
+      b++;
+    }
+  return *a - *b;
+}
+#endif
+
 int
 test ()
 {
@@ -69,7 +85,7 @@ test ()
   if (!strncmp ("abc", "x", 1))
     return 10;
 
-  if (!strncmp ("abc", "", 0))
+  if (strncmp ("abc", "", 0))
     return 11;
 
   return 0;

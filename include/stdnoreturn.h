@@ -20,15 +20,15 @@
 #ifndef __MES_STDNORETURN_H
 #define __MES_STDNORETURN_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STDNORETURN_H
 #include_next <stdnoreturn.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 // whut?
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_STDNORETURN_H

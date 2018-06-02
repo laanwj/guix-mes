@@ -20,15 +20,15 @@
 #ifndef __MES_ASSERT_H
 #define __MES_ASSERT_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_ASSERT_H
 #include_next <assert.h>
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))
 void assert_fail (char* s);
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_ASSERT_H

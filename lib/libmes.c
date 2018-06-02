@@ -84,7 +84,7 @@ atoi (char const *s)
 }
 
 char const*
-itoa (int x)
+number_to_ascii (int x, int base, int signed_p)
 {
   static char itoa_buf[12];
   char *p = itoa_buf + 11;
@@ -92,7 +92,7 @@ itoa (int x)
 
   int sign = 0;
   unsigned u = x;
-  if (x < 0)
+  if (signed_p && x < 0)
     {
       sign = 1;
       u = -x;
@@ -100,8 +100,9 @@ itoa (int x)
 
   do
      {
-       *p-- = '0' + (u % 10);
-       u = u / 10;
+       int i = u % base;
+       *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
+       u = u / base;
      } while (u);
 
   if (sign && *(p + 1) != '0')
@@ -113,29 +114,19 @@ itoa (int x)
 char const*
 itoab (int x, int base)
 {
-  static char itoa_buf[12];
-  char *p = itoa_buf + 11;
-  *p-- = 0;
+  return number_to_ascii (x, base, 1);
+}
 
-  int sign = 0;
-  unsigned u = x;
-  if (x < 0)
-    {
-      sign = 1;
-      u = -x;
-    }
+char const*
+itoa (int x)
+{
+  return number_to_ascii (x, 10, 1);
+}
 
-  do
-     {
-       int i = u % base;
-       *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
-       x = u / base;
-     } while (u);
-
-  if (sign && *(p + 1) != '0')
-    *p-- = '-';
-
-  return p+1;
+char const*
+utoa (unsigned x)
+{
+  return number_to_ascii (x, 10, 0);
 }
 
 int _ungetc_pos = -1;
@@ -187,7 +178,7 @@ fdungetc (int c, int fd)
   return c;
 }
 
-#if POSIX
+#if POSIX || __x86_64__
 #define STDERR 2
 int
 eputs (char const* s)

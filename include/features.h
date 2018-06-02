@@ -20,10 +20,10 @@
 #ifndef __MES_FEATURES_H
 #define __MES_FEATURES_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_FEATURES_H
 #include_next <features.h>
-#endif // (__GNUC__ && POSIX)
+#endif // (WITH_GLIBC)
 
 #endif // __MES_FEATURES_H
 

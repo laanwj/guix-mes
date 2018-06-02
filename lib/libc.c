@@ -1,7 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
  * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
- * Copyright © 2018 Jeremiah Orians <jeremiah@pdp10.guru>
  *
  * This file is part of Mes.
  *
@@ -36,7 +35,6 @@
 
 #else // !__MESC__
 
-#include <fcntl.h>
 #include <assert.h>
 
 #include <linux-gcc.c>
@@ -79,20 +77,6 @@ int
 putc (int c, FILE* stream)
 {
   return fdputc (c, (int)stream);
-}
-
-FILE*
-fopen (char const* file_name, char const* mode)
-{
-  int fd;
-  if ('w' == mode[0])
-    /* 577 is O_WRONLY|O_CREAT|O_TRUNC, 384 is 600 in octal */
-    fd = open (file_name, 577 , 384);
-  else
-    /* Everything else is a read */
-    fd = open (file_name, 0, 0);
-
-  return (FILE*)fd;
 }
 
 void
@@ -186,23 +170,14 @@ realloc (void *ptr, size_t size)
 int
 strncmp (char const* a, char const* b, size_t size)
 {
+  if (!size)
+    return 0;
   while (*a && *b && *a == *b && --size)
     {
       a++;
       b++;
     }
   return *a - *b;
-}
-
-size_t
-fwrite (void const *data, size_t size, size_t count, FILE *stream)
-{
-  if (! size || !count)
-    return 0;
-  int bytes = write ((int)stream, data, size * count);
-  if (bytes > 0)
-    return count;
-  return bytes;
 }
 
 char *
@@ -251,4 +226,10 @@ int
 wait (int *status_ptr)
 {
   return waitpid  (-1, status_ptr, 0);
+}
+
+int
+execv (char const *file_name, char *const argv[])
+{
+  return execve (file_name, argv, environ);
 }

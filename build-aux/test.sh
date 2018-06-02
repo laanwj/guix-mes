@@ -34,6 +34,24 @@ shift
 
 set -e
 
+rm -f "$t".gcc-out
+if [ -n "$CC" ]; then
+    sh build-aux/cc.sh "$t"
+
+    r=0
+    [ -f "$t".exit ] && r=$(cat "$t".exit)
+    set +e
+    "$t".gcc-out $ARGS > "$t".gcc-stdout
+    m=$?
+    cat "$t".gcc-stdout
+    set -e
+
+    [ $m = $r ]
+    if [ -f "$t".expect ]; then
+        $DIFF -ub "$t".expect "$t".gcc-stdout;
+    fi
+fi
+
 rm -f "$t".mes-gcc-out
 if [ -n "$CC32" ]; then
     sh build-aux/cc-mes-gcc.sh "$t"

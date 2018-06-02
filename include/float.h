@@ -20,15 +20,15 @@
 #ifndef __MES_FLOAT_H
 #define __MES_FLOAT_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_FLOAT_H
 #include_next <float.h>
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #define MIN_EXP -1021
 #define DBL_MIN_EXP -1021
 #define LDBL_MIN_EXP -1021
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_FLOAT_H

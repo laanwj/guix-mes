@@ -20,12 +20,12 @@
 #ifndef __MES_SYS_SELECT_H
 #define __MES_SYS_SELECT_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SYS_SELECT_H
 #include_next <sys/select.h>
-#else  //! (__GNUC__ && POSIX)
+#else  //! WITH_GLIBC
 typedef int fd_set;
-#endif //! (__GNUC__ && POSIX)
+#endif //! WITH_GLIBC
 
 #endif // __MES_SYS_SELECT_H
 

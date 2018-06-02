@@ -20,14 +20,14 @@
 #ifndef __MES_LIMITS_H
 #define __MES_LIMITS_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_LIMITS_H
 #include_next <limits.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 #define CHAR_BIT 8
 #define UCHAR_MAX 255
 #define INT_MIN -2147483648
@@ -36,6 +36,6 @@
 #define LONG_MIN -2147483648
 #define LONG_MAX 2147483647
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_LIMITS_H

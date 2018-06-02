@@ -20,12 +20,12 @@
 #ifndef __MES_MATH_H
 #define __MES_MATH_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_MATH_H
 #include_next <math.h>
-#else  // !(__GNUC__ && POSIX)
+#else  // ! WITH_GLIBC
 double ldexp (double x, int exp);
-#endif  // !(__GNUC__ && POSIX)
+#endif  // ! WITH_GLIBC
 
 #endif // __MES_MATH_H
 

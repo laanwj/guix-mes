@@ -20,10 +20,10 @@
 #ifndef __MES_TIME_H
 #define __MES_TIME_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_TIME_H
 #include_next <time.h>
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 typedef int time_t;
 
 struct tm {
@@ -44,21 +44,22 @@ time_t time (time_t *tloc);
 #ifndef __MES_STRUCT_TIMESPEC
 #define __MES_STRUCT_TIMESPEC
 
-#ifndef __kernel_long_t
-typedef long		__kernel_long_t;
-typedef unsigned long	__kernel_ulong_t;
-#endif
+// #ifndef __kernel_long_t
+// typedef long		__kernel_long_t;
+// typedef unsigned long	__kernel_ulong_t;
+// #endif
 
-typedef __kernel_long_t	__kernel_time_t;
+// typedef __kernel_long_t	__kernel_time_t;
 
 struct timespec
 {
-  __kernel_time_t tv_sec;
+  //__kernel_time_t tv_sec;
+  long tv_sec;
   long tv_nsec;
 };
 
 #endif // __MES_STRUCT_TIMESPEC
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_TIME_H

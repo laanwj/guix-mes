@@ -284,7 +284,7 @@ execl_ (SCM file_name, SCM args) ///((name . "execl"))
       args = CDR (args);
     }
   c_argv[i] = 0;
-  return MAKE_NUMBER (execve (c_argv[0], c_argv, environ));
+  return MAKE_NUMBER (execv (c_argv[0], c_argv));
 }
 
 SCM

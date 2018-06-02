@@ -20,14 +20,14 @@
 #ifndef __MES_UNISTD_H
 #define __MES_UNISTD_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_UNISTD_H
 #include_next <unistd.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #ifndef NULL
 #define NULL 0
@@ -51,8 +51,20 @@ typedef unsigned long size_t;
 typedef long ssize_t;
 #endif
 
+#ifndef R_OK
+#define F_OK 0
+#define X_OK 1
+#define W_OK 2
+#define R_OK 4
+#endif
+
 int access (char const *s, int mode);
+unsigned int alarm (unsigned int seconds);
+#define alarm(x) {eputs ("alarm x="); eputs (itoa (x)); eputs ("\n"); kill (getpid (), 14);}
+#define atexit(x) eputs ("atexit\n")
+
 int close (int fd);
+int execv (char const *file_name, char *const argv[]);
 int execve (char const *file, char *const argv[], char *const env[]);
 int execvp (char const *file, char *const argv[]);
 int fork ();
@@ -62,6 +74,6 @@ off_t lseek (int fd, off_t offset, int whence);
 int read (int fd, void* buf, size_t n);
 int unlink (char const *file_name);
 int write (int fd, char const* s, int n);
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_UNISTD_H

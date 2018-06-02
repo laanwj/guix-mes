@@ -9,6 +9,7 @@
 *.gcc
 *.gcc-o
 *.gcc-out
+*.gcc-stdout
 *.go
 *.guile
 *.log

@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -17,18 +17,32 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_LIBGEN_H
-#define __MES_LIBGEN_H 1
 
-#if WITH_GLIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_LIBGEN_H
-#include_next <libgen.h>
+#include <libmes.h>
+#include <stdint.h>
+#include <time.h>
+#include <sys/time.h>
 
-#else // ! WITH_GLIBC
-char* dirname (char*);
-#endif // ! WITH_GLIBC
+FILE *
+freopen (char const *file_name, char const *opentype, FILE *stream)
+{
+  fclose (stream);
+  return fopen (file_name, opentype);
+}
 
-#endif // __MES_LIBGEN_H
+clock_t
+times (struct tms *buffer)
+{
+  eputs ("times stub\n");
+  return 0;
+}
+
+unsigned int
+sleep (unsigned int seconds)
+{
+  struct timespec requested_time;
+  struct timespec remaining;
+  requested_time.tv_sec = seconds;
+  requested_time.tv_nsec = 0;
+  return nanosleep (&requested_time, &remaining);
+}

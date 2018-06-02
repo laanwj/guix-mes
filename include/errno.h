@@ -20,30 +20,31 @@
 #ifndef __MES_ERRNO_H
 #define __MES_ERRNO_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_ERRNO_H
 #include_next <errno.h>
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 int errno;
-#define	ENOENT		 2	/* No such file or directory */
-#define	EIO		 5	/* I/O error */
-#define	EBADF		 9	/* Bad file number */
-#define	ENOMEM		12	/* Out of memory */
-#define	EEXIST		17	/* File exists */
-#define	ENOTDIR		20	/* Not a directory */
-#define	EISDIR		21	/* Is a directory */
-#define	EINVAL		22	/* Invalid argument */
-#define	EMFILE		24	/* Too many open files */
-#define	EPIPE		32	/* Broken pipe */
-#define	ERANGE		34	/* Math result not representable */
+#define ENOENT   2
+#define EIO      5
+#define EBADF    9
+#define EAGAIN  11
+#define ENOMEM  12
+#define EEXIST  17
+#define ENOTDIR 20
+#define EISDIR  21
+#define EINVAL  22
+#define EMFILE  24
+#define EPIPE   32
+#define ERANGE  34
 
-#define	ENAMETOOLONG	36	/* File name too long */
-#define	ENOSYS		38	/* Invalid system call number */
-#define	ELOOP		40	/* Too many symbolic links encountered */
+#define ENAMETOOLONG 36
+#define ENOSYS 38
+#define ELOOP  40
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_ERRNO_H

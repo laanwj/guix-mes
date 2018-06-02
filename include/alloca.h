@@ -20,15 +20,15 @@
 #ifndef __MES_ALLOCA_H
 #define __MES_ALLOCA_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_ALLOCA_H 1
 #include_next <alloca.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 void* alloca (size_t);
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_ALLOCA_H

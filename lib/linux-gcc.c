@@ -18,6 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <libmes.h>
 #include <stdlib.h>
@@ -29,12 +30,60 @@
 #define SYS_read    "0x03"
 #define SYS_open    "0x05"
 #define SYS_waitpid "0x07"
-#define SYS_execve  "0x0b"
+#define SYS_execve   0x0b
 #define SYS_chmod   "0x0f"
 #define SYS_access  "0x21"
 #define SYS_brk     "0x2d"
 #define SYS_ioctl   "0x36"
 #define SYS_fsync   "0x76"
+
+#define xSYS_execve   "0x0b"
+
+int
+_sys_call2 (int sys_call, int one, int two)
+{
+#if !__TINYC__
+  int r;
+  asm (
+       "mov    %2,%%ebx\n\t"
+       "mov    %3,%%ecx\n\t"
+
+       "mov    %1,%%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (sys_call), "" (one), "" (two)
+       : "eax", "ebx", "ecx"
+       );
+  if (r < 0)
+    errno = -r;
+  return r;
+#endif
+}
+
+int
+_sys_call3 (int sys_call, int one, int two, int three)
+{
+#if !__TINYC__
+  int r;
+  asm (
+       "mov    %2,%%ebx\n\t"
+       "mov    %3,%%ecx\n\t"
+       "mov    %4,%%edx\n\t"
+
+       "mov    %1,%%eax\n\t"
+       "int    $0x80\n\t"
+
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "" (sys_call), "" (one), "" (two), "" (three)
+       : "eax", "ebx", "ecx", "edx"
+       );
+    if (r < 0)
+      errno = -r;
+  return r;
+#endif
+}
 
 int
 fork ()
@@ -131,23 +180,7 @@ waitpid (pid_t pid, int *status_ptr, int options)
 int
 execve (char const* file_name, char *const argv[], char *const env[])
 {
-#if !__TINYC__
-  int r;
-  asm (
-       "mov    %1,%%ebx\n\t"
-       "mov    %2,%%ecx\n\t"
-       "mov    %3,%%edx\n\t"
-
-       "mov    $"SYS_execve",%%eax\n\t"
-       "int    $0x80\n\t"
-
-       "mov    %%eax,%0\n\t"
-       : "=r" (r)
-       : "" (file_name), "" (argv), "" (env)
-       : "eax", "ebx", "ecx", "edx"
-       );
-  return r;
-#endif
+  return _sys_call3 (SYS_execve, (int)file_name, (int)argv, (int)env);
 }
 
 int

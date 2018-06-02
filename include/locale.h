@@ -20,15 +20,15 @@
 #ifndef __MES_LOCALE_H
 #define __MES_LOCALE_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_LOCALE_H
 #include_next <locale.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 char* dirname (char*);
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_LOCALE_H

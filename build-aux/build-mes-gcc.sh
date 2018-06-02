@@ -62,12 +62,14 @@ C32FLAGS=${C32FLAGS-"
 -nostdlib
 "}
 
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crt0
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crt1
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libgetopt
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc+tcc
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc+gnu
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libg
 
 sh build-aux/cc-mes-gcc.sh scaffold/main
 sh build-aux/cc-mes-gcc.sh scaffold/hello

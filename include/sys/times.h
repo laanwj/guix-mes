@@ -17,18 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_LIBGEN_H
-#define __MES_LIBGEN_H 1
+#ifndef __MES_SYS_TIMES_H
+#define __MES_SYS_TIMES_H 1
 
 #if WITH_GLIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_LIBGEN_H
-#include_next <libgen.h>
+#undef __MES_SYS_TIMES_H
+#include_next <sys/times.h>
 
 #else // ! WITH_GLIBC
-char* dirname (char*);
+
+#ifndef __MES_CLOCK_T
+#define __MES_CLOCK_T
+#undef clock_t
+typedef long clock_t;
+#endif
+
+#ifndef HZ
+#define HZ 100
+#endif
+
+struct tms
+{
+  clock_t tms_utime;
+  clock_t tms_stime;
+  clock_t tms_cutime;
+  clock_t tms_cstime;
+};
+
 #endif // ! WITH_GLIBC
 
-#endif // __MES_LIBGEN_H
+#endif // __MES_SYS_TIMES_H

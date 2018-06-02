@@ -20,14 +20,14 @@
 #ifndef __MES_FCNTL_H
 #define __MES_FCNTL_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_FCNTL_H
 #include_next <fcntl.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 #define O_RDONLY 0
 #define O_WRONLY 1
 #define O_RDWR 2
@@ -42,6 +42,6 @@
 #define F_SETFL 4
 
 int open (char const *s, int flags, ...);
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_FCNTL_H

@@ -21,6 +21,7 @@
 #include "30-test.i"
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 int
 test ()
@@ -65,6 +66,73 @@ test ()
   eputs (buf); eputs ("\n");
   if (strcmp (buf, ">44<"))
     return 7;
+
+  printf (">>%.*s<<\n", 5, "hello, world");
+  printf (">>%.*s<<\n", 20, "hello, world");
+
+  printf (">>%.*s<<\n", 10, "foo");
+  printf (">>%*s<<\n", 10, "bar");
+  printf (">>%-*s<<\n", 10, "baz");
+
+  sprintf (buf, "%ld", 42);
+  eputs ("buf="); eputs (buf); eputs ("\n");
+  if (strcmp (buf, "42"))
+    return 8;
+
+  sprintf (buf, "%u", -1);
+  eputs ("buf="); eputs (buf); eputs ("\n");
+  if (strcmp (buf, "4294967295"))
+    return 9;
+
+  sprintf (buf, ">>%.5s<<\n", "hello, world");
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>hello<<\n"))
+    return 10;
+
+  sprintf (buf, ">>%.*s<<\n", 5, "hello, world");
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>hello<<\n"))
+    return 11;
+
+  sprintf (buf, ">>%.*s<<\n", 20, "hello, world");
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>hello, world<<\n"))
+    return 12;
+
+  sprintf (buf, ">>%.*s<<\n", 10, "foo");
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>foo<<\n"))
+    return 13;
+
+  sprintf (buf, ">>%*s<<\n", 10, "bar");
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>       bar<<\n"))
+    return 14;
+
+  sprintf (buf, ">>%-*s<<\n", 10, "baz");
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>baz       <<\n"))
+    return 15;
+
+  sprintf (buf, ">>%ld<<\n", 12);
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>12<<\n"))
+    return 16;
+
+  sprintf (buf, ">>%o<<\n", 12);
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>14<<\n"))
+    return 17;
+
+  sprintf (buf, ">>%x<<\n", 12);
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>c<<\n"))
+    return 18;
+
+  sprintf (buf, ">>%X<<\n", 12);
+  eputs ("buf="); eputs (buf);
+  if (strcmp (buf, ">>C<<\n"))
+    return 19;
 
   return 0;
 }

@@ -20,11 +20,11 @@
 #ifndef __MES_SYS_STAT_H
 #define __MES_SYS_STAT_H 1lei
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SYS_STAT_H
 #include_next <sys/stat.h>
 
-#else // !(__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #include <sys/types.h>
 
@@ -75,6 +75,6 @@ int rmdir (char const *file_name);
 #define S_IWUSR 00200
 #define S_IRUSR 00400
 
-#endif // !(__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_SYS_STAT_H

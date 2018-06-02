@@ -20,10 +20,10 @@
 #ifndef __MES_SYS_TIMEB_H
 #define __MES_SYS_TIMEB_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SYS_TIMEB_H
 #include_next <sys/timeb.h>
-#endif // (__GNUC__ && POSIX)
+#endif // (WITH_GLIBC)
 
 #endif // __MES_SYS_TIMEB_H
 

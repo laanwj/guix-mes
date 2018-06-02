@@ -20,10 +20,10 @@
 #ifndef __MES_SYS_WAIT_H
 #define __MES_SYS_WAIT_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SYS_WAIT_H
 #include_next <sys/wait.h>
-#else // !(__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #ifndef __MES_PID_T
 #define __MES_PID_T
@@ -33,6 +33,6 @@ typedef int pid_t;
 pid_t waitpid (pid_t pid, int *status_ptr, int options);
 pid_t wait (int *status_ptr);
 
-#endif // !(__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_SYS_WAIT_H

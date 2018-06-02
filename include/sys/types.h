@@ -20,22 +20,16 @@
 #ifndef __MES_SYS_TYPES_H
 #define __MES_SYS_TYPES_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SYS_TYPES_H
 #include_next <sys/types.h>
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 #include <endian.h>
 
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-#undef size_t
-typedef unsigned long size_t;
-#endif
-
-#ifndef __MES_PID_T
-#define __MES_PID_T
-#undef pid_t
-typedef int pid_t;
+#ifndef __MES_DEV_T
+#define __MES_DEV_T
+#undef dev_t
+typedef int dev_t;
 #endif
 
 #ifndef __MES_GID_T
@@ -44,12 +38,30 @@ typedef int pid_t;
 typedef int gid_t;
 #endif
 
+#ifndef __MES_INO_T
+#define __MES_INO_T
+#undef ino_t
+typedef unsigned ino_t;
+#endif
+
+#ifndef __MES_PID_T
+#define __MES_PID_T
+#undef pid_t
+typedef int pid_t;
+#endif
+
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+#undef size_t
+typedef unsigned long size_t;
+#endif
+
 #ifndef __MES_UID_T
 #define __MES_UID_T
 #undef uid_t
 typedef int uid_t;
 #endif
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_SYS_TYPES_H

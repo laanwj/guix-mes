@@ -20,13 +20,13 @@
 #ifndef __MES_SYS_FILE_H
 #define __MES_SYS_FILE_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SYS_FILE_H
 #include_next <sys/file.h>
 
-#else // !(__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 
-#endif // !(__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_SYS_FILE_H

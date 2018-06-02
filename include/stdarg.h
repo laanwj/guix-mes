@@ -20,10 +20,10 @@
 #ifndef __MES_STDARG_H
 #define __MES_STDARG_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_STDARG_H
 #include_next <stdarg.h>
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
@@ -48,6 +48,6 @@ int vsprintf (char *str, char const *format, va_list ap);
 int vsnprintf (char *str, size_t size, char const *format, va_list ap);
 int vsscanf (char const *s, char const *template, va_list ap);
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_STDARG_H

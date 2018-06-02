@@ -145,6 +145,8 @@ broken="$broken
 91-fseek
 "
 
+# gcc not supported
+CC=
 set +e
 expect=$(echo $broken | wc -w)
 pass=0

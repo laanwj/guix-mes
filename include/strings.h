@@ -20,10 +20,10 @@
 #ifndef __MES_STRINGS_H
 #define __MES_STRINGS_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_STRINGS_H
 #include_next <strings.h>
-#endif // (__GNUC__ && POSIX)
+#endif // (WITH_GLIBC)
 
 #endif // __MES_STRINGS_H
 

@@ -20,10 +20,10 @@
 #ifndef __MES_SIGNAL_H
 #define __MES_SIGNAL_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_SIGNAL_H
 #include_next <signal.h>
-#else //! (__GNUC__ && POSIX)
+#else //! WITH_GLIBC
 typedef int sigset_t;
 
 typedef int stack_t;
@@ -218,6 +218,6 @@ typedef struct ucontext
 int sigaction (int signum, struct sigaction const *act, struct sigaction *oldact);
 int sigemptyset (sigset_t *set);
 
-#endif //! (__GNUC__ && POSIX)
+#endif //! WITH_GLIBC
 
 #endif // __MES_SIGNAL_H

@@ -101,12 +101,6 @@ iscntrl (int c)
 }
 
 int
-islower (int c)
-{
-  return c >= 'a' && c <= 'z';
-}
-
-int
 isprint (int c)
 {
   return c >= 32 && c < 127;
@@ -118,17 +112,17 @@ ispunct (int c)
   return isprint (c) && !isspace (c) && !isalnum (c);
 }
 
-int
-isupper (int c)
-{
-  return c >= 'A' && c <= 'Z';
-}
-
 char *
 mktemp (char *template)
 {
-  char *p = strchr (template, '0');
-  *--p = &p;
+  char *p = strchr (template, '\0');
+  int q = (int)template;
+  *--p = ((unsigned char)(q >> 4)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 8)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 12)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 16)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 20)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 24)) % 26 + 'a';
   return template;
 }
 
@@ -192,20 +186,4 @@ system (int x)
 {
   eputs ("system stub\n");
   return 0;
-}
-
-int
-tolower (int c)
-{
-  if (isupper (c))
-    return c + ('a' - 'A');
-  return c;
-}
-
-int
-toupper (int c)
-{
-  if (islower (c))
-    return c - ('a' - 'A');
-  return c;
 }

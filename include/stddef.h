@@ -20,10 +20,11 @@
 #ifndef __MES_STDDEF_H
 #define __MES_STDDEF_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #undef __MES_STDDEF_H
 #include_next <stddef.h>
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
+
 #include <stdint.h>
 #include <unistd.h>
 
@@ -35,6 +36,6 @@
 #endif // !__MESC__
 #endif // offsetof
 
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_STDDEF_H

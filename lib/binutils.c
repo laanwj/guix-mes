@@ -157,8 +157,10 @@ strcspn (char const *string, char const *stopset)
 char *
 strncat (char *to, char const *from, size_t size)
 {
+  if (size == 0)
+    return to;
   char *p = strchr (to , '\0');
-  while (*from && size--)
+  while (*from && size-- > 1)
     *p++ = *from++;
   *p = 0;
   return to;

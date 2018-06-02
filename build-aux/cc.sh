@@ -55,6 +55,7 @@ $CC\
     -c\
     $CPPFLAGS\
     $CFLAGS\
+    -D WITH_GLIBC=1\
     -D POSIX=1\
     -o "$o".${p}o\
     "$c".c

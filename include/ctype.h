@@ -20,18 +20,18 @@
 #ifndef __MES_CTYPE_H
 #define __MES_CTYPE_H 1
 
-#if __GNUC__ && POSIX
+#if WITH_GLIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_CTYPE_H
 #include_next <ctype.h>
 
-#else // ! (__GNUC__ && POSIX)
+#else // ! WITH_GLIBC
 #include <endian.h>
 int isdigit (int);
 int isxdigit (int);
 int isspace (int);
-#endif // ! (__GNUC__ && POSIX)
+#endif // ! WITH_GLIBC
 
 #endif // __MES_CTYPE_H
