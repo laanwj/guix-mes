@@ -24,18 +24,22 @@
 #undef __MES_TIME_H
 #include_next <time.h>
 #else // ! WITH_GLIBC
+
+#ifndef __MES_TIME_T
+#define __MES_TIME_T 1
 typedef int time_t;
+#endif
 
 struct tm {
-  int tm_sec;    /* Seconds (0-60) */
-  int tm_min;    /* Minutes (0-59) */
-  int tm_hour;   /* Hours (0-23) */
-  int tm_mday;   /* Day of the month (1-31) */
-  int tm_mon;    /* Month (0-11) */
-  int tm_year;   /* Year - 1900 */
-  int tm_wday;   /* Day of the week (0-6, Sunday = 0) */
-  int tm_yday;   /* Day in the year (0-365, 1 Jan = 0) */
-  int tm_isdst;  /* Daylight saving time */
+  int tm_sec;
+  int tm_min;
+  int tm_hour;
+  int tm_mday;
+  int tm_mon;
+  int tm_year;
+  int tm_wday;
+  int tm_yday;
+  int tm_isdst;
 };
 
 struct tm *localtime (time_t const *timep);
@@ -44,16 +48,8 @@ time_t time (time_t *tloc);
 #ifndef __MES_STRUCT_TIMESPEC
 #define __MES_STRUCT_TIMESPEC
 
-// #ifndef __kernel_long_t
-// typedef long		__kernel_long_t;
-// typedef unsigned long	__kernel_ulong_t;
-// #endif
-
-// typedef __kernel_long_t	__kernel_time_t;
-
 struct timespec
 {
-  //__kernel_time_t tv_sec;
   long tv_sec;
   long tv_nsec;
 };

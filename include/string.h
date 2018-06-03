@@ -60,6 +60,9 @@ int strncmp (char const*, char const*, size_t);
 char *strrchr (char const *s, int c);
 char *strstr (char const *haystack, char const *needle);
 
+char *strerror (int errnum);
+void perror (char const *message);
+
 #endif // ! WITH_GLIBC
 
 #endif // __MES_STRING_H

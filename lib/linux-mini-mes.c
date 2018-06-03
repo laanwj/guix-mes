@@ -21,19 +21,17 @@
 void
 exit ()
 {
-  asm ("mov____0x8(%ebp),%ebx !8");
-
   asm ("mov____$i32,%eax SYS_exit");
+  asm ("mov____0x8(%ebp),%ebx !8");
   asm ("int____$0x80");
 }
 
 void
 write ()
 {
+  asm ("mov____$i32,%eax SYS_write");
   asm ("mov____0x8(%ebp),%ebx !8");
   asm ("mov____0x8(%ebp),%ecx !12");
   asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_write");
   asm ("int____$0x80");
 }

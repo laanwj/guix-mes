@@ -42,12 +42,12 @@ install:
 .config.make: ./configure
 
 seed: all-go
+	build-aux/build-mes-gcc.sh
+	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 	cd $(MES_SEED) && git reset --hard HEAD
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
 	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
-	build-aux/build-mes-gcc.sh
-	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 
 define HELP_TOP
 Usage: make [OPTION]... [TARGET]...

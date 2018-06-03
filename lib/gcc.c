@@ -21,7 +21,7 @@
 #include <libmes.h>
 #include <stdint.h>
 #include <time.h>
-#include <sys/time.h>
+#include <sys/times.h>
 
 FILE *
 freopen (char const *file_name, char const *opentype, FILE *stream)

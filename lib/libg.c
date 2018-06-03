@@ -29,6 +29,7 @@
 #define malloc _malloc
 #define printf _printf
 #define putchar _putchar
+#define puts _puts
 #define setjmp _setjmp
 #define signal _signal
 #define strcmp _strcmp
@@ -36,7 +37,7 @@
 #define sscanf _sscanf
 
 #include <libc+tcc.c>
-#include <linux+gnu-gcc.c>
+#include <linux+gnu.c>
 #include <m4.c>
 #include <binutils.c>
 #include <gcc.c>
@@ -44,53 +45,6 @@
 int
 __cleanup ()
 {
-  eputs ("cleanup stub\n");
+  eputs ("__cleanup stub\n");
   return 0;
-}
-
-int
-_dprop ()
-{
-  eputs ("dprop stub\n");
-}
-
-int
-_edprop ()
-{
-  eputs ("edprop stub\n");
-}
-
-int
-_eldprop ()
-{
-  eputs ("eldprop stub\n");
-}
-
-int
-_iprop ()
-{
-  eputs ("iprop stub\n");
-}
-
-int
-_lprop ()
-{
-  eputs ("lprop stub\n");
-}
-
-int
-_ldprop ()
-{
-  eputs ("ldprop stub\n");
-}
-
-int
-_uiprop ()
-{
-  eputs ("uiprop stub\n");
-}
-int
-_ulprop ()
-{
-  eputs ("ulprop stub\n");
 }

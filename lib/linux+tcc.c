@@ -18,50 +18,45 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-#undef size_t
-typedef unsigned long size_t;
-#endif
+#define SYS_close  0x06
+#define SYS_lseek  0x13
+#define SYS_unlink 0x0a
+#define SYS_rmdir  0x28
+#define SYS_stat   0x6a
+#define SYS_getcwd 0xb7
 
-#ifndef __MES_SSIZE_T
-#define __MES_SSIZE_T
-#undef ssize_t
-typedef long ssize_t;
-#endif
-
-ssize_t write (int filedes, void const *buffer, size_t size);
-
-size_t
-strlen (char const* s)
+int
+close (int filedes)
 {
-  int i = 0;
-  while (s[i]) i++;
-  return i;
+  return _sys_call1 (SYS_close, (int)filedes);
+}
+
+off_t
+lseek (int filedes, off_t offset, int whence)
+{
+  return _sys_call3 (SYS_lseek, (int)filedes, (int)offset, (int)whence);
 }
 
 int
-eputs (char const* s)
+unlink (char const *file_name)
 {
-  int i = strlen (s);
-  write (2, s, i);
-  return 0;
+  return _sys_call1 (SYS_unlink, (int)file_name);
 }
 
 int
-puts (char const* s)
+rmdir (char const *file_name)
 {
-  int i = strlen (s);
-  write (1, s, i);
-  return 0;
+  return _sys_call1 (SYS_rmdir, (int)file_name);
 }
 
-#if __MESC__
+int
+stat (char const *file_name, struct stat *statbuf)
+{
+  return _sys_call2 (SYS_stat, (int)file_name, (int)statbuf);
+}
 
-#include <linux-mini-mes.c>
-
-#else // !__MESC__
-
-#include <linux-mini-gcc.c>
-
-#endif // !__MESC__
+char *
+getcwd (char *buffer, size_t size)
+{
+  return _sys_call2 (SYS_getcwd, (int)buffer, (int)size);
+}

@@ -38,8 +38,17 @@ typedef int pid_t;
 typedef int uid_t;
 #endif
 
-typedef int clock_t;
+#ifndef __MES_CLOCK_T
+#define __MES_CLOCK_T
+#undef clock_t
+typedef long clock_t;
+#endif
+
+#ifndef __MES_SIGVAL_T
+#define __MES_SIGVAL_T
+#undef clock_t
 typedef int sigval_t;
+#endif
 
 #define NSIG 30
 #define SIGHUP		 1

@@ -71,9 +71,9 @@ int fork ();
 char *getcwd (char *buf, size_t size);
 int isatty (int fd);
 off_t lseek (int fd, off_t offset, int whence);
-int read (int fd, void* buf, size_t n);
+ssize_t read (int fd, void *buffer, size_t size);
 int unlink (char const *file_name);
-int write (int fd, char const* s, int n);
+ssize_t write (int filedes, void const *buffer, size_t size);
 #endif // ! WITH_GLIBC
 
 #endif // __MES_UNISTD_H

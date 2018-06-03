@@ -102,6 +102,7 @@ ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libgetopt
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc+gnu
 
 [ -n "$SEED" ] && exit 0
 

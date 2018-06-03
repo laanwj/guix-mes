@@ -18,102 +18,38 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void
-fork ()
+#include <errno.h>
+
+int
+_sys_call (int sys_call)
 {
-  asm ("mov____$i32,%eax SYS_fork");
+  asm ("mov____0x8(%ebp),%eax !8");
   asm ("int____$0x80");
 }
 
-void
-read ()
+int
+_sys_call1 (int sys_call, int one)
 {
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_read");
+  asm ("mov____0x8(%ebp),%eax !8");
+  asm ("mov____0x8(%ebp),%ebx !12");
   asm ("int____$0x80");
 }
 
-void
-open ()
+int
+_sys_call2 (int sys_call, int one, int two)
 {
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_open");
+  asm ("mov____0x8(%ebp),%eax !8");
+  asm ("mov____0x8(%ebp),%ebx !12");
+  asm ("mov____0x8(%ebp),%ecx !16");
   asm ("int____$0x80");
 }
 
-void
-waitpid ()
+int
+_sys_call3 (int sys_call, int one, int two, int three)
 {
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_waitpid");
-  asm ("int____$0x80");
-}
-
-void
-execve ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_execve");
-  asm ("int____$0x80");
-}
-
-void
-chmod ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-
-  asm ("mov____$i32,%eax SYS_chmod");
-  asm ("int____$0x80");
-}
-
-void
-access ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-
-  asm ("mov____$i32,%eax SYS_access");
-  asm ("int____$0x80");
-}
-
-void
-brk ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-
-  asm ("mov____$i32,%eax SYS_brk");
-  asm ("int____$0x80");
-}
-
-void
-ioctl ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-
-  asm ("mov____$i32,%eax SYS_ioctl");
-  asm ("int____$0x80");
-}
-
-void
-fsync ()
-{
-  asm ("mov____0x8(%ebp),%ebx !8");
-
-  asm ("mov____$i32,%eax SYS_fsync");
+  asm ("mov____0x8(%ebp),%eax !8");
+  asm ("mov____0x8(%ebp),%ebx !12");
+  asm ("mov____0x8(%ebp),%ecx !16");
+  asm ("mov____0x8(%ebp),%edx !20");
   asm ("int____$0x80");
 }

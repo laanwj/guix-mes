@@ -168,22 +168,63 @@ signal (int x)
 }
 
 int
-sys_errlist (int x)
-{
-  eputs ("sys_errlist stub\n");
-  return 0;
-}
-
-int
-sys_nerr (int x)
-{
-  eputs ("sys_nerr stub\n");
-  return 0;
-}
-
-int
 system (int x)
 {
   eputs ("system stub\n");
   return 0;
+}
+
+//char const *const sys_errlist[40] = {
+char *sys_errlist[] = {
+  "error 00",
+  "error 01",
+  "error 02",
+  "error 03",
+  "error 04",
+  "error 05",
+  "error 06",
+  "error 07",
+  "error 08",
+  "error 09",
+  "error 10",
+  "error 11",
+  "error 12",
+  "error 13",
+  "error 14",
+  "error 15",
+  "error 16",
+  "error 17",
+  "error 18",
+  "error 19",
+  "error 20",
+  "error 21",
+  "error 22",
+  "error 23",
+  "error 24",
+  "error 25",
+  "error 26",
+  "error 27",
+  "error 28",
+  "error 29",
+  "error 30",
+  "error 31",
+  "error 32",
+  "error 33",
+  "error 34",
+  "error 35",
+  "error 36",
+  "error 37",
+  "error 38",
+  "error 39",
+};
+
+int sys_nerr = 39;
+
+char *
+strerror (int errnum)
+{
+  eputs ("strerror errnum="); eputs (itoa (errnum)); eputs ("\n");
+  if (errnum > 0 && errnum <= sys_nerr)
+    return sys_errlist[errnum];
+  return "sterror: unknown error";
 }

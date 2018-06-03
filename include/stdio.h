@@ -65,17 +65,19 @@ int g_stdout;
 #define L_tmpnam 100
 #endif
 
-// Hmm
-#define stdin 0
-#define stdout 1
-#define stderr 2
+#if !defined (__MES_FILE_T) && ! defined (_FILE_T)
+#define __MES_FILE_T
+#define _FILE_T
+typedef int FILE;
+#endif
 
-// TODO: fseek etc
+#define stdin (FILE*)0
+#define stdout (FILE*)1
+#define stderr (FILE*)2
+
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
-
-typedef int FILE;
 
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
@@ -92,6 +94,7 @@ int feof (FILE *stream);
 int ferror (FILE *stream);
 int fflush (FILE *stream);
 int fgetc (FILE* stream);
+char *fgets (char *s, int size, FILE *stream);
 int fprintf (FILE *stream, char const *format, ...);
 int fpurge (FILE *stream);
 int fputc (int c, FILE *stream);

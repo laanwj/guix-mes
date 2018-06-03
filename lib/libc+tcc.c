@@ -35,15 +35,14 @@
 #include <unistd.h>
 
 #include <libc.c>
+#include <linux+tcc.c>
 
 #if __MESC__
 
-#include <linux+tcc-mes.c>
 #include <libc+tcc-mes.c>
 
 #else // !__MESC__
 
-#include <linux+tcc-gcc.c>
 #include <libc+tcc-gcc.c>
 
 #endif // !__MESC__
@@ -143,7 +142,7 @@ ferror (FILE *stream)
 int
 fflush (FILE *stream)
 {
-  return 0;
+  fsync ((int)stream);
 }
 
 int
@@ -189,22 +188,19 @@ FILE*
 fopen (char const *file_name, char const *opentype)
 {
   int fd;
-  if (opentype[0] == 'a')
+  int mode = 0600;
+  if (opentype[0] == 'a' && !access (file_name, O_RDONLY))
     {
-      fd = open (file_name, O_RDONLY);
-      if (fd > 0)
-        {
-          close (fd);
-          fd = open (file_name, O_RDWR);
-          lseek (fd, 0, SEEK_END);
-          return fd;
-        }
+      fd = open (file_name, O_RDWR, mode);
+      lseek (fd, 0, SEEK_END);
     }
-  if (opentype[0] == 'w' || opentype[0] == 'a')
-    /* 577 is O_WRONLY|O_CREAT|O_TRUNC, 384 is 600 in octal */
-    fd = open (file_name, 577 , 384);
+  else if (opentype[0] == 'w' || opentype[0] == 'a')
+    {
+      char *plus_p = strchr (opentype, '+');
+      int flags = plus_p ? O_RDWR | O_CREAT : O_WRONLY | O_CREAT | O_TRUNC;
+      fd = open (file_name, flags, mode);
+    }
   else
-    /* Everything else is a read */
     fd = open (file_name, 0, 0);
 
   return (FILE*)fd;

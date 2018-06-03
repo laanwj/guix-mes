@@ -32,6 +32,10 @@
 typedef long clock_t;
 #endif
 
+#ifndef CLOCKS_PER_SEC
+#define CLOCKS_PER_SEC 1000000
+#endif
+
 #ifndef HZ
 #define HZ 100
 #endif

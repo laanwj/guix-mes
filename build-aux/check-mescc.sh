@@ -136,13 +136,13 @@ t
 87-sscanf
 90-strpbrk
 91-fseek
+92-stat
+93-fread-fwrite
 "
 
 # 90: needs GNU, fails for mescc, passes for tcc
 broken="$broken
 7s-struct-short
-90-strpbrk
-91-fseek
 "
 
 # gcc not supported
@@ -273,7 +273,7 @@ broken="$broken
 #49_bracket_evaluation   ; float
 
 LIBC=c+gnu
-MESCCLIBS="-l c+tcc"
+MESCCLIBS="-l c+gnu"
 
 expect=$(echo $broken | wc -w)
 ARGS="arg1 arg2 arg3 arg4 arg5"

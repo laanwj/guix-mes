@@ -43,6 +43,7 @@
 
 #include <libc-mini.c>
 #include <libmes.c>
+#include <linux.c>
 
 int g_stdin = 0;
 

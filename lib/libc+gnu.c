@@ -18,9 +18,9 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/time.h>
 #include <libc+tcc.c>
-#include <linux+gnu-gcc.c>
+#include <linux+gnu.c>
 #include <m4.c>
 #include <binutils.c>
 #include <gcc.c>
+#include <glibc.c>

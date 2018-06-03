@@ -35,6 +35,7 @@
 #define MB_CUR_MAX 1
 #define LONG_MIN -2147483648
 #define LONG_MAX 2147483647
+#define LONG_MAX _POSIX_OPEN_MAX 16
 
 #endif // ! WITH_GLIBC
 
