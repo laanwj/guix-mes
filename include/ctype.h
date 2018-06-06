@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -29,9 +29,11 @@
 
 #else // ! WITH_GLIBC
 #include <endian.h>
-int isdigit (int);
-int isxdigit (int);
-int isspace (int);
+int isalpha (int c);
+int isascii (int c);
+int isdigit (int c);
+int isxdigit (int c);
+int isspace (int c);
 #endif // ! WITH_GLIBC
 
 #endif // __MES_CTYPE_H

@@ -33,6 +33,12 @@
 #define NULL 0
 #endif
 
+#ifndef STDIN_FILENO
+#define	STDIN_FILENO  0
+#define	STDOUT_FILENO 1
+#define	STDERR_FILENO 2
+#endif // STDIN_FILENO
+
 #ifndef __MES_OFF_T
 #define __MES_OFF_T
 #undef off_t
@@ -49,6 +55,18 @@ typedef unsigned long size_t;
 #define __MES_SSIZE_T
 #undef ssize_t
 typedef long ssize_t;
+#endif
+
+#ifndef __MES_INTPTR_T
+#define __MES_INTPTR_T
+#undef intptr_t
+typedef long intptr_t;
+#endif
+
+#ifndef __MES_PTRDIFF_T
+#define __MES_PTRDIFF_T
+#undef ptrdiff_t
+typedef long ptrdiff_t;
 #endif
 
 #ifndef R_OK
@@ -72,6 +90,12 @@ char *getcwd (char *buf, size_t size);
 int isatty (int fd);
 off_t lseek (int fd, off_t offset, int whence);
 ssize_t read (int fd, void *buffer, size_t size);
+#if __SBRK_CHAR_PTRDIFF
+/* xmalloc in binutils <= 2.10.1 uses this old prototype */
+char * sbrk (ptrdiff_t delta);
+#else
+void * sbrk (intptr_t delta);
+#endif
 int unlink (char const *file_name);
 ssize_t write (int filedes, void const *buffer, size_t size);
 #endif // ! WITH_GLIBC

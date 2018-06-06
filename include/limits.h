@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -28,6 +28,7 @@
 #include_next <limits.h>
 
 #else // ! WITH_GLIBC
+
 #define CHAR_BIT 8
 #define UCHAR_MAX 255
 #define INT_MIN -2147483648
@@ -35,7 +36,7 @@
 #define MB_CUR_MAX 1
 #define LONG_MIN -2147483648
 #define LONG_MAX 2147483647
-#define LONG_MAX _POSIX_OPEN_MAX 16
+#define _POSIX_OPEN_MAX 16
 
 #endif // ! WITH_GLIBC
 

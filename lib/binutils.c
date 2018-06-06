@@ -20,6 +20,7 @@
 
 #include <libmes.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 int
 abs (int x)
@@ -117,15 +118,6 @@ perror (char const *message)
   fprintf (stderr, "%s: %s\n", strerror (errno), message);
 }
 
-void*
-sbrk (ptrdiff_t delta)
-{
-  void *p = malloc (delta);
-  if (p <= 0)
-    return 0;
-  return p+delta;
-}
-
 int
 setitimer (int which, struct itimerval const *new,
            struct itimerval *old)
@@ -208,4 +200,49 @@ utime (int x)
 {
   eputs ("utime stub\n");
   return 0;
+}
+
+// binutils-2.10.1
+int
+fscanf (FILE *stream, char const *template, ...)
+{
+  eputs ("fscan stub\n");
+  return 0;
+}
+
+int
+isascii (int c)
+{
+  return c >= 0 && c <= 127;
+}
+
+void *
+#if __MESC__
+bsearch (void const *key, void const *array, size_t count, size_t size, void (*compare) ())
+#else
+bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare)
+#endif
+{
+  eputs ("bsearch stub\n");
+  return 0;
+}
+
+struct tm *
+gmtime (time_t const *time)
+{
+  eputs ("gmtime stub\n");
+  return localtime (time);
+}
+
+#if __SBRK_CHAR_PTRDIFF
+char *
+sbrk (ptrdiff_t)
+#else
+void *
+sbrk (intptr_t delta)
+#endif
+{
+  if (delta >= 0)
+    return malloc (delta);
+  return g_brk;
 }

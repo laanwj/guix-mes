@@ -63,13 +63,22 @@ typedef long long int64_t;
 typedef unsigned long size_t;
 #endif
 
+#ifndef __MES_INTPTR_T
+#define __MES_INTPTR_T
+#undef intptr_t
+typedef long intptr_t;
+#endif
+
 // FIXME
 typedef int intmax_t;
 typedef unsigned uintmax_t;
-typedef int* intptr_t;
 typedef unsigned* uintptr_t;
 
-typedef unsigned ptrdiff_t;
+#ifndef __MES_PTRDIFF_T
+#define __MES_PTRDIFF_T
+#undef ptrdiff_t
+typedef long ptrdiff_t;
+#endif
 
 #endif // ! WITH_GLIBC
 

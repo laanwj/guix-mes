@@ -54,9 +54,17 @@ unsigned long long strtoull (char const *nptr, char **endptr, int base);
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
+
+#if __MESC__
+typedef int (*comparison_fn_t) (void const *, void const *);
+#else
+typedef void (*comparison_fn_t) ();
+#endif
+
+void * bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare);
+
 #include <endian.h>
 
 #endif // ! WITH_GLIBC
 
 #endif // __MES_STDLIB_H
-

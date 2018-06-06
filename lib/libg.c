@@ -48,3 +48,24 @@ __cleanup ()
   eputs ("__cleanup stub\n");
   return 0;
 }
+
+int
+__libc_subinit ()
+{
+  eputs ("__libc_subinit stub\n");
+  return 0;
+}
+
+int
+__syscall_error ()
+{
+  eputs ("__syscall_error stub\n");
+  return 0;
+}
+
+int
+__fpu_control ()
+{
+  eputs ("__fpu_control stub\n");
+  return 0;
+}

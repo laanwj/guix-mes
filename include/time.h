@@ -43,6 +43,8 @@ struct tm {
 };
 
 struct tm *localtime (time_t const *timep);
+struct tm *gmtime (time_t const *time);
+
 time_t time (time_t *tloc);
 
 #ifndef __MES_STRUCT_TIMESPEC
