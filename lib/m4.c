@@ -161,13 +161,6 @@ setbuf (int x)
 }
 
 int
-signal (int x)
-{
-  eputs ("signal stub\n");
-  return 0;
-}
-
-int
 system (int x)
 {
   eputs ("system stub\n");

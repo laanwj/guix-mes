@@ -99,13 +99,6 @@ getgid (int x)
 }
 
 int
-getpid (int x)
-{
-  eputs ("getpid stub\n");
-  return 0;
-}
-
-int
 getuid (int x)
 {
   eputs ("getuid stub\n");

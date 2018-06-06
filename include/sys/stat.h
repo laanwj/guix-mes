@@ -59,6 +59,7 @@ int chmod (char const *file_name, mode_t mode);
 int mkdir (char const *file_name, mode_t mode);
 int chown (char const *file_name, uid_t owner, gid_t group);
 int rmdir (char const *file_name);
+int stat (char const *file_name, struct stat *buf);
 
 #define S_IFCHR 0020000
 #define S_IFDIR 0040000

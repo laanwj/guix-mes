@@ -39,6 +39,12 @@
 #define	STDERR_FILENO 2
 #endif // STDIN_FILENO
 
+#ifndef STDIN_FILE_NO
+#define	STDIN_FILE_NO  0
+#define	STDOUT_FILE_NO 1
+#define	STDERR_FILE_NO 2
+#endif // STDIN_FILE_NO
+
 #ifndef __MES_OFF_T
 #define __MES_OFF_T
 #undef off_t
@@ -67,6 +73,12 @@ typedef long intptr_t;
 #define __MES_PTRDIFF_T
 #undef ptrdiff_t
 typedef long ptrdiff_t;
+#endif
+
+#ifndef __MES_PID_T
+#define __MES_PID_T
+#undef pid_t
+typedef int pid_t;
 #endif
 
 #ifndef R_OK
@@ -98,6 +110,8 @@ void * sbrk (intptr_t delta);
 #endif
 int unlink (char const *file_name);
 ssize_t write (int filedes, void const *buffer, size_t size);
+pid_t getpid (void);
+
 #endif // ! WITH_GLIBC
 
 #endif // __MES_UNISTD_H
