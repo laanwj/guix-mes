@@ -49,11 +49,18 @@ eputs (char const* s)
 }
 
 int
-puts (char const* s)
+oputs (char const* s)
 {
   int i = strlen (s);
   write (1, s, i);
   return 0;
+}
+
+int
+puts (char const* s)
+{
+  oputs (s);
+  return oputs ("\n");
 }
 
 #if __MESC__

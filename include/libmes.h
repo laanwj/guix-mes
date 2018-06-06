@@ -36,5 +36,6 @@ int fdungetc (int c, int fd);
 int isdigit (int c);
 int isspace (int c);
 int isxdigit (int c);
+int oputs (char const* s);
 
 #endif //__MES_LIBMES_H
