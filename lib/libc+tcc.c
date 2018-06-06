@@ -576,9 +576,13 @@ vfprintf (FILE* f, char const* format, va_list ap)
 {
   int fd = (int)f;
   char const *p = format;
+  int count = 0;
   while (*p)
     if (*p != '%')
-      fputc (*p++, fd);
+      {
+        count++;
+        fputc (*p++, fd);
+      }
     else
       {
         p++;
@@ -618,7 +622,7 @@ vfprintf (FILE* f, char const* format, va_list ap)
           c = *++p;
         switch (c)
           {
-          case '%': {fputc (*p, fd); break;}
+          case '%': {fputc (*p, fd); count++; break;}
           case 'c': {char c; c = va_arg (ap, int); fputc (c, fd); break;}
           case 'd':
           case 'i':
@@ -638,15 +642,22 @@ vfprintf (FILE* f, char const* format, va_list ap)
                 width = width - strlen (s);
               if (!left_p && !precision_p)
                 while (!precision_p && width-- > 0)
-                  fputc (pad, f);
+                  {
+                    fputc (pad, f);
+                    count++;
+                  }
               while (*s)
                 {
                   if (precision_p && width-- == 0)
                     break;
                   fputc (*s++, f);
+                  count++;
                 }
               while (!precision_p && width-- > 0)
-                fputc (pad, f);
+                {
+                  fputc (pad, f);
+                  count++;
+                }
               break;
             }
           case 's':
@@ -656,15 +667,28 @@ vfprintf (FILE* f, char const* format, va_list ap)
                 width = width - strlen (s);
               if (!left_p && !precision_p)
                 while (!precision_p && width-- > 0)
-                  fputc (pad, f);
+                  {
+                    fputc (pad, f);
+                    count++;
+                  }
               while (*s)
                 {
                   if (precision_p && width-- == 0)
                     break;
                   fputc (*s++, f);
+                  count++;
                 }
               while (!precision_p && width-- > 0)
-                fputc (pad, f);
+                {
+                  fputc (pad, f);
+                  count++;
+                }
+              break;
+            }
+          case 'n':
+            {
+              int *n = va_arg (ap, int *);
+              *n = count;
               break;
             }
           default:
@@ -741,9 +765,13 @@ int
 vsprintf (char *str, char const* format, va_list ap)
 {
   char const *p = format;
+  int count = 0;
   while (*p)
     if (*p != '%')
-      *str++ = *p++;
+      {
+        *str++ = *p++;
+        count++;
+      }
     else
       {
         p++;
@@ -783,8 +811,8 @@ vsprintf (char *str, char const* format, va_list ap)
           c = *++p;
         switch (c)
           {
-          case '%': {*str++ = *p; break;}
-          case 'c': {c = va_arg (ap, int); *str++ = c; break;}
+          case '%': {*str++ = *p; count++; break;}
+          case 'c': {c = va_arg (ap, int); *str++ = c; count++; break;}
           case 'd':
           case 'i':
           case 'o':
@@ -803,15 +831,22 @@ vsprintf (char *str, char const* format, va_list ap)
                 width = width - strlen (s);
               if (!left_p && !precision_p)
                 while (!precision_p && width-- > 0)
-                  *str++ = pad;
+                  {
+                    *str++ = pad;
+                    count++;
+                  }
               while (*s)
                 {
                   if (precision_p && width-- == 0)
                     break;
                   *str++ = *s++;
+                  count++;
                 }
               while (!precision_p && width-- > 0)
-                *str++ = pad;
+                {
+                  *str++ = pad;
+                  count++;
+                }
               break;
             }
           case 's':
@@ -821,15 +856,28 @@ vsprintf (char *str, char const* format, va_list ap)
                 width = width - strlen (s);
               if (!left_p && !precision_p)
                 while (!precision_p && width-- > 0)
-                  *str++ = pad;
+                  {
+                    *str++ = pad;
+                    count++;
+                  }
               while (*s)
                 {
                   if (precision_p && width-- == 0)
                     break;
                   *str++ = *s++;
+                  count++;
                 }
               while (!precision_p && width-- > 0)
-                *str++ = pad;
+                {
+                  *str++ = pad;
+                  count++;
+                }
+              break;
+            }
+          case 'n':
+            {
+              int *n = va_arg (ap, int *);
+              *n = count;
               break;
             }
           default:

@@ -134,5 +134,17 @@ test ()
   if (strcmp (buf, ">>C<<\n"))
     return 19;
 
+  int n;
+  fprintf (stderr, "foo bar\n%n", &n);
+  if (n != 8)
+    return 20;
+
+  sprintf (buf, "foo%nbar\n", &n);
+  eputs ("buf="); eputs (buf); eputs ("\n");
+  if (strcmp (buf, "foobar\n"))
+    return 21;
+  if (n != 3)
+    return 22;
+
   return 0;
 }
