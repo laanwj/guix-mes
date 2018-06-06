@@ -49,13 +49,13 @@ void unsetenv (char const *name);
 void *malloc (size_t);
 void qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *));
 void *realloc (void *p, size_t size);
-double strtod (char const *nptr, char **endptr);
-float strtof (char const *nptr, char **endptr);
-long double strtold (char const *nptr, char **endptr);
-long strtol (char const *nptr, char **endptr, int base);
-long long strtoll (char const *nptr, char **endptr, int base);
-unsigned long strtoul (char const *nptr, char **endptr, int base);
-unsigned long long strtoull (char const *nptr, char **endptr, int base);
+double strtod (char const *string, char **tailptr);
+float strtof (char const *string, char **tailptr);
+long double strtold (char const *string, char **tailptr);
+long strtol (char const *string, char **tailptr, int base);
+long long strtoll (char const *string, char **tailptr, int base);
+unsigned long strtoul (char const *string, char **tailptr, int base);
+unsigned long long strtoull (char const *string, char **tailptr, int base);
 
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0

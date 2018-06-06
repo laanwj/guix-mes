@@ -218,6 +218,7 @@ fseek (FILE *stream, long offset, int whence)
 int
 gettimeofday (struct timeval *tv, struct timezone *tz)
 {
+  eputs ("gettimeofday stub\n");
   return 0;
 }
 
@@ -450,57 +451,91 @@ strstr (char const *haystack, char const *needle)
 }
 
 double
-strtod (char const *nptr, char **endptr)
+strtod (char const *string, char **tailptr)
 {
   eputs ("strtod stub\n");
 }
 
 float
-strtof (char const *nptr, char **endptr)
+strtof (char const *string, char **tailptr)
 {
-  return strtod (nptr, endptr);
+  return strtod (string, tailptr);
 }
 
 long double
-strtold (char const *nptr, char **endptr)
+strtold (char const *string, char **tailptr)
 {
-  return strtod (nptr, endptr);
+  return strtod (string, tailptr);
 }
 
 long
-strtol (char const *nptr, char **endptr, int base)
+strtol (char const *string, char **tailptr, int base)
 {
-  if (!strncmp (nptr, "0x", 2))
+  if (!strncmp (string, "0x", 2))
     {
-      char const *p = nptr + 2;
-      return abtoi (&p, 16);
+      string += 2;
+      base = 16;
     }
-  return abtoi (&nptr, base);
+  if (tailptr)
+    {
+      *tailptr = string;
+      return abtoi (tailptr, base);
+    }
+  char **p = &string;
+  return abtoi (p, base);
 }
 
+#if 1
+
 long long int
-strtoll (char const *nptr, char **endptr, int base)
+strtoll (char const *string, char **tailptr, int base)
+{
+  return strtol (string, tailptr, base);
+}
+
+unsigned long
+strtoul (char const *string, char **tailptr, int base)
+{
+  return strtol (string, tailptr, base);
+}
+
+unsigned long long
+strtoull (char const *string, char **tailptr, int base)
+{
+  return strtol (string, tailptr, base);
+}
+
+#else
+
+long long int
+strtoll (char const *string, char **tailptr, int base)
 {
   eputs ("strtoll stub\n");
   return 0;
 }
 
 unsigned long
-strtoul (char const *nptr, char **endptr, int base)
+strtoul (char const *string, char **tailptr, int base)
 {
   eputs ("strtoul stub\n");
   return 0;
 }
 
 unsigned long long
-strtoull (char const *p, char **endptr, int base)
+strtoull (char const *string, char **tailptr, int base)
 {
-  *endptr = p;
-  return abtoi (endptr, base);
+  // *endptr = p;
+  // return abtoi (endptr, base);
+  eputs ("strtoull stub\n");
+  return 0;
 }
 
-time_t time (time_t *tloc)
+#endif
+
+time_t
+time (time_t *tloc)
 {
+  eputs ("time stub\n");
   return 0;
 }
 
@@ -519,12 +554,12 @@ calloc (size_t nmemb, size_t size)
   return p;
 }
 
-
 int
 islower (int c)
 {
   return c >= 'a' && c <= 'z';
 }
+
 int
 isupper (int c)
 {
