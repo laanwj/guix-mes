@@ -23,4 +23,5 @@
 #include <m4.c>
 #include <binutils.c>
 #include <gcc.c>
+#include <alloca.c>
 #include <glibc.c>

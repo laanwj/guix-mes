@@ -19,7 +19,7 @@
  */
 
 int
-abort (int x)
+abort ()
 {
   eputs ("abort stub\n");
   return 0;

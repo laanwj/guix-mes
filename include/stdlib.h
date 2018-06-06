@@ -34,6 +34,11 @@
 typedef unsigned long size_t;
 #endif
 
+#if _ALLOCA_UNSIGNED
+void * alloca (unsigned size);
+#else
+void * alloca (size_t size);
+#endif
 int atoi (char const *s);
 void * calloc (size_t nmemb, size_t size);
 void exit (int);
@@ -55,6 +60,9 @@ unsigned long long strtoull (char const *nptr, char **endptr, int base);
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
+#ifndef NULL
+#define NULL 0
+#endif
 
 #if __MESC__
 typedef int (*comparison_fn_t) (void const *, void const *);
