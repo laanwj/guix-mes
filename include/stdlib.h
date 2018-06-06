@@ -40,6 +40,7 @@ void exit (int);
 void free (void *ptr);
 char* getenv (char const* s);
 int setenv (char const* s, char const* v, int overwrite_p);
+void unsetenv (char const *name);
 void *malloc (size_t);
 void qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *));
 void *realloc (void *p, size_t size);

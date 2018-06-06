@@ -138,6 +138,7 @@ t
 91-fseek
 92-stat
 93-fread-fwrite
+94-unsetenv
 "
 
 # 90: needs GNU, fails for mescc, passes for tcc

@@ -61,3 +61,22 @@ __moddi3 (double a, double b)
   eputs ("__moddi3 stub\n");
   return ((int) a %(int)b);
 }
+
+// gcc-3.4
+void
+unsetenv (char const *name)
+{
+  int length = strlen (name);
+  char **p = environ;
+  while (*p)
+    {
+      if (!strncmp (name, *p, length) && *(*p + length) == '=')
+        {
+          char **q = p;
+          q[0] = q[1];
+          while (*q++)
+            q[0] = q[1];
+        }
+      p++;
+    }
+}
