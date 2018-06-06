@@ -46,3 +46,18 @@ sleep (unsigned int seconds)
   requested_time.tv_nsec = 0;
   return nanosleep (&requested_time, &remaining);
 }
+
+// gcc-3.2
+double
+__divdi3 (double a, double b)
+{
+  eputs ("__divdi3 stub\n");
+  return ((int)a / (int)b);
+}
+
+double
+__moddi3 (double a, double b)
+{
+  eputs ("__moddi3 stub\n");
+  return ((int) a %(int)b);
+}
