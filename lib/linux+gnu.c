@@ -28,6 +28,9 @@
 #define SYS_pipe      0x2a
 #define SYS_getgid    0x2f
 #define SYS_signal    0x30
+#define SYS_fcntl     0x37
+#define SYS_dup2      0x3f
+#define SYS_getrusage 0x4d
 #define SYS_lstat     0x6b
 #define SYS_fstat     0x6c
 #define SYS_nanosleep 0xa2
@@ -93,9 +96,32 @@ signal (int signum, sighandler_t action)
 }
 
 int
+fcntl (int filedes, int command, ...)
+{
+  va_list ap;
+  va_start (ap, command);
+  int data = va_arg (ap, int);
+  int r = _sys_call3 (SYS_fcntl, (int)filedes, (int)command, (int)data);
+  va_end (ap);
+  return r;
+}
+
+int
 pipe (int filedes[2])
 {
   return _sys_call1 (SYS_pipe, (int)filedes);
+}
+
+int
+dup2 (int old, int new)
+{
+  return _sys_call2 (SYS_dup2, (int)old, (int)new);
+}
+
+int
+getrusage (int processes, struct rusage *rusage)
+{
+  return _sys_call2 (SYS_getrusage, (int)processes, (int)rusage);
 }
 
 int

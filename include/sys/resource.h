@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -17,35 +17,40 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_FCNTL_H
-#define __MES_FCNTL_H 1
+#ifndef __MES_SYS_RESOURCE_H
+#define __MES_SYS_RESOURCE_H 1
 
 #if WITH_GLIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_FCNTL_H
-#include_next <fcntl.h>
+#undef __MES_SYS_RESOURCE_H
+#include_next <sys/resource.h>
 
 #else // ! WITH_GLIBC
-#define O_RDONLY 0
-#define O_WRONLY 1
-#define O_RDWR 2
-#define O_CREAT 64
-#define O_EXCL 128
-#define O_TRUNC 512
 
-#define F_DUPFD 0
-#define F_GETFD 1
-#define F_SETFD 2
-#define F_GETFL 3
-#define F_SETFL 4
+struct rusage
+{
+  struct timeval ru_utime;
+  struct timeval ru_stime;
+  long int ru_maxrss;
+  long int ru_ixrss;
+  long int ru_idrss;
+  long int ru_isrss;
+  long int ru_minflt;
+  long int ru_majflt;
+  long int ru_nswap;
+  long int ru_inblock;
+  long int ru_oublock;
+  long int ru_msgsnd;
+  long int ru_msgrcv;
+  long int ru_nsignals;
+  long int ru_nvcsw;
+  long int ru_nivcsw;
+};
 
-int dup (int old);
-int dup2 (int old, int new);
-int fcntl (int filedes, int command, ...);
-int open (char const *s, int flags, ...);
+#define RUSAGE_SELF 0
+#define RUSAGE_CHILDREN -1
+
+int getrusage (int processes, struct rusage *rusage);
 
 #endif // ! WITH_GLIBC
 
-#endif // __MES_FCNTL_H
+#endif // __MES_SYS_RESOURCE_H

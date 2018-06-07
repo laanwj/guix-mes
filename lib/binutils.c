@@ -44,13 +44,6 @@ ctime (int x)
   return 0;
 }
 
-int
-fcntl (int x)
-{
-  eputs ("fcntl stub\n");
-  return 0;
-}
-
 char *
 fdgets (char *s, int count, int fd)
 {
