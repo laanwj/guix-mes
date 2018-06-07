@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <sys/times.h>
+#include <sys/time.h>
 
 FILE *
 freopen (char const *file_name, char const *opentype, FILE *stream)
@@ -86,5 +87,21 @@ int
 atexit (void (*function) (void))
 {
   __call_at_exit = function;
+}
+
+unsigned int
+alarm (unsigned int seconds)
+{
+#if !__MESC__
+  struct itimerval old;
+  struct itimerval new;
+  new.it_interval.tv_usec = 0;
+  new.it_interval.tv_sec = 0;
+  new.it_value.tv_usec = 0;
+  new.it_value.tv_sec = (long int) seconds;
+  if (setitimer (ITIMER_REAL, &new, &old) < 0)
+    return 0;
+  return old.it_value.tv_sec;
+#endif
 }
 

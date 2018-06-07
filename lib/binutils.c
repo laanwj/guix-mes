@@ -91,14 +91,6 @@ perror (char const *message)
 }
 
 int
-setitimer (int which, struct itimerval const *new,
-           struct itimerval *old)
-{
-  eputs ("setitimer stub\n");
-  return 0;
-}
-
-int
 sigsetmask (int x)
 {
   eputs ("sigsetmask stub\n");

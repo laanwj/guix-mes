@@ -32,6 +32,7 @@
 #define SYS_dup2      0x3f
 #define SYS_getrusage 0x4d
 #define SYS_lstat     0x6b
+#define SYS_setitimer 0x68
 #define SYS_fstat     0x6c
 #define SYS_nanosleep 0xa2
 
@@ -135,6 +136,13 @@ nanosleep (const struct timespec *requested_time,
            struct timespec *remaining)
 {
   return _sys_call2 (SYS_nanosleep, (int)requested_time, (int)remaining);
+}
+
+int
+setitimer (int which, struct itimerval const *new,
+          struct itimerval *old)
+{
+  return _sys_call3 (SYS_setitimer, (int)which, (int)new, (int)old);
 }
 
 int
