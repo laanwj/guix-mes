@@ -105,3 +105,11 @@ alarm (unsigned int seconds)
 #endif
 }
 
+// gcc-2.95.3
+
+struct passwd *
+getpwnam (const char *NAME)
+{
+  eputs ("getpwnam stub\n");
+  return 0;
+}
