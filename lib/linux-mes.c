@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -21,14 +21,14 @@
 #include <errno.h>
 
 int
-_sys_call (int sys_call)
+__sys_call (int sys_call)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("int____$0x80");
 }
 
 int
-_sys_call1 (int sys_call, int one)
+__sys_call1 (int sys_call, int one)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
@@ -36,7 +36,7 @@ _sys_call1 (int sys_call, int one)
 }
 
 int
-_sys_call2 (int sys_call, int one, int two)
+__sys_call2 (int sys_call, int one, int two)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
@@ -45,11 +45,55 @@ _sys_call2 (int sys_call, int one, int two)
 }
 
 int
-_sys_call3 (int sys_call, int one, int two, int three)
+__sys_call3 (int sys_call, int one, int two, int three)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
   asm ("mov____0x8(%ebp),%ecx !16");
   asm ("mov____0x8(%ebp),%edx !20");
   asm ("int____$0x80");
+}
+
+int
+_sys_call (int sys_call)
+{
+  int r = __sys_call (sys_call);
+  if (r < 0)
+    errno = -r;
+  else
+    errno = 0
+  return r;
+}
+
+int
+_sys_call1 (int sys_call, int one)
+{
+  int r = __sys_call1 (sys_call, one);
+  if (r < 0)
+    errno = -r;
+  else
+    errno = 0
+  return r;
+}
+
+int
+_sys_call2 (int sys_call, int one, int two)
+{
+  int r = __sys_call2 (sys_call, one, two);
+  if (r < 0)
+    errno = -r;
+  else
+    errno = 0
+  return r;
+}
+
+int
+_sys_call3 (int sys_call, int one, int two, int three)
+{
+  int r = __sys_call3 (sys_call, one, two, three);
+  if (r < 0)
+    errno = -r;
+  else
+    errno = 0
+  return r;
 }

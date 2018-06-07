@@ -35,6 +35,8 @@ _sys_call (int sys_call)
        );
   if (r < 0)
     errno = -r;
+  else
+    errno = 0
   return r;
 #endif
 }
@@ -55,6 +57,8 @@ _sys_call1 (int sys_call, int one)
        );
   if (r < 0)
     errno = -r;
+  else
+    errno = 0
   return r;
 #endif
 }
@@ -76,6 +80,8 @@ _sys_call2 (int sys_call, int one, int two)
        );
   if (r < 0)
     errno = -r;
+  else
+    errno = 0
   return r;
 #endif
 }
@@ -98,6 +104,8 @@ _sys_call3 (int sys_call, int one, int two, int three)
        );
     if (r < 0)
       errno = -r;
+  else
+    errno = 0
   return r;
 #endif
 }
