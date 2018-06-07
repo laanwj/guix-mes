@@ -19,11 +19,21 @@
  */
 
 void
-exit ()
+_exit ()
 {
   asm ("mov____$i32,%eax SYS_exit");
   asm ("mov____0x8(%ebp),%ebx !8");
   asm ("int____$0x80");
+}
+
+void (*__call_at_exit) (void);
+
+void
+exit (int code)
+{
+  if (__call_at_exit)
+    (*__call_at_exit) ();
+  _exit (code);
 }
 
 void

@@ -80,3 +80,11 @@ unsetenv (char const *name)
       p++;
     }
 }
+
+// gcc-3.0
+int
+atexit (void (*function) (void))
+{
+  __call_at_exit = function;
+}
+

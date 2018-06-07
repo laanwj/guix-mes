@@ -90,9 +90,6 @@ typedef int pid_t;
 
 int access (char const *s, int mode);
 unsigned int alarm (unsigned int seconds);
-#define alarm(x) {eputs ("alarm x="); eputs (itoa (x)); eputs ("\n"); kill (getpid (), 14);}
-#define atexit(x) eputs ("atexit\n")
-
 int close (int fd);
 int execv (char const *file_name, char *const argv[]);
 int execve (char const *file, char *const argv[], char *const env[]);

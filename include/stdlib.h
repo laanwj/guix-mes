@@ -40,8 +40,10 @@ void * alloca (unsigned size);
 void * alloca (size_t size);
 #endif
 int atoi (char const *s);
+int atexit (void (*function) (void));
 void * calloc (size_t nmemb, size_t size);
-void exit (int);
+void _exit (int status);
+void exit (int status);
 void free (void *ptr);
 char* getenv (char const* s);
 int setenv (char const* s, char const* v, int overwrite_p);

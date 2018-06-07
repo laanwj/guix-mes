@@ -22,7 +22,7 @@
 #define SYS_write  "0x04"
 
 void
-exit (int code)
+_exit (int code)
 {
 #if !__TINYC__
   asm (
@@ -42,7 +42,17 @@ exit (int code)
        );
 #endif // __TINYC__
   // not reached
-  exit (0);
+  _exit (0);
+}
+
+void (*__call_at_exit) (void);
+
+void
+exit (int code)
+{
+  if (__call_at_exit)
+    (*__call_at_exit) ();
+  _exit (code);
 }
 
 ssize_t
