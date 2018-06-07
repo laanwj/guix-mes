@@ -91,20 +91,6 @@ frexp (int x)
   return 0;
 }
 
-int
-getgid (int x)
-{
-  eputs ("getgid stub\n");
-  return 0;
-}
-
-int
-getuid (int x)
-{
-  eputs ("getuid stub\n");
-  return 0;
-}
-
 void
 perror (char const *message)
 {

@@ -20,15 +20,18 @@
 
 #define SYS_link      0x09
 #define SYS_getpid    0x14
+#define SYS_getuid    0x18
 #define SYS_kill      0x25
 #define SYS_rename    0x26
 #define SYS_mkdir     0x27
 #define SYS_dup       0x29
 #define SYS_pipe      0x2a
+#define SYS_getgid    0x2f
 #define SYS_signal    0x30
 #define SYS_lstat     0x6b
 #define SYS_fstat     0x6c
 #define SYS_nanosleep 0xa2
+
 
 int
 link (char const *old_name, char const *new_name)
@@ -40,6 +43,12 @@ pid_t
 getpid ()
 {
   return _sys_call (SYS_getpid);
+}
+
+uid_t
+getuid ()
+{
+  return _sys_call (SYS_getuid);
 }
 
 int
@@ -64,6 +73,12 @@ int
 dup (int old)
 {
   return _sys_call1 (SYS_dup, (int)old);
+}
+
+gid_t
+getgid ()
+{
+  return _sys_call (SYS_getgid);
 }
 
 #if __MESC__
