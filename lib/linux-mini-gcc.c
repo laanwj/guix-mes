@@ -45,18 +45,8 @@ _exit (int code)
   _exit (0);
 }
 
-void (*__call_at_exit) (void);
-
-void
-exit (int code)
-{
-  if (__call_at_exit)
-    (*__call_at_exit) ();
-  _exit (code);
-}
-
 ssize_t
-write (int filedes, void const *buffer, size_t size)
+_write (int filedes, void const *buffer, size_t size)
 {
   int r;
 #if __GNUC__

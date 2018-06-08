@@ -34,7 +34,10 @@ _sys_call (int sys_call)
        : "eax"
        );
   if (r < 0)
-    errno = -r;
+    {
+      errno = -r;
+      r = -1;
+    }
   else
     errno = 0;
   return r;
@@ -56,7 +59,10 @@ _sys_call1 (int sys_call, int one)
        : "eax", "ebx"
        );
   if (r < 0)
-    errno = -r;
+    {
+      errno = -r;
+      r = -1;
+    }
   else
     errno = 0;
   return r;
@@ -79,7 +85,10 @@ _sys_call2 (int sys_call, int one, int two)
        : "eax", "ebx", "ecx"
        );
   if (r < 0)
-    errno = -r;
+    {
+      errno = -r;
+      r = -1;
+    }
   else
     errno = 0;
   return r;
@@ -102,8 +111,11 @@ _sys_call3 (int sys_call, int one, int two, int three)
        : "" (sys_call), "" (one), "" (two), "" (three)
        : "eax", "ebx", "ecx", "edx"
        );
-    if (r < 0)
+  if (r < 0)
+    {
       errno = -r;
+      r = -1;
+    }
   else
     errno = 0;
   return r;

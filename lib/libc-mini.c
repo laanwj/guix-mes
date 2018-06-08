@@ -18,6 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
 #undef size_t
@@ -72,3 +74,27 @@ puts (char const* s)
 #include <linux-mini-gcc.c>
 
 #endif // !__MESC__
+
+void (*__call_at_exit) (void);
+
+void
+exit (int code)
+{
+  if (__call_at_exit)
+    (*__call_at_exit) ();
+  _exit (code);
+}
+
+ssize_t
+write (int filedes, void const *buffer, size_t size)
+{
+  int r = _write (filedes, buffer, size);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
