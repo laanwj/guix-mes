@@ -34,6 +34,7 @@ int
 chown (char const *file_name, uid_t owner, gid_t group)
 {
   eputs ("chown stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -43,6 +44,7 @@ ctime (int x)
 #if NOISY_TIMES
   eputs ("ctime stub\n");
 #endif
+  errno = 0;
   return 0;
 }
 
@@ -96,6 +98,7 @@ int
 sigsetmask (int x)
 {
   eputs ("sigsetmask stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -151,6 +154,7 @@ int
 sys_siglist (int x)
 {
   eputs ("sys_siglist stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -158,6 +162,7 @@ int
 umask (int x)
 {
   eputs ("umask stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -167,6 +172,7 @@ utime (int x)
 #if NOISY_TIMES
   eputs ("utime stub\n");
 #endif
+  errno = 0;
   return 0;
 }
 
@@ -201,6 +207,7 @@ gmtime (time_t const *time)
 #if NOISY_TIMES
   eputs ("gmtime stub\n");
 #endif
+  errno = 0;
   return localtime (time);
 }
 

@@ -113,5 +113,6 @@ struct passwd *
 getpwnam (const char *NAME)
 {
   eputs ("getpwnam stub\n");
+  errno = 0;
   return 0;
 }

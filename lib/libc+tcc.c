@@ -246,6 +246,7 @@ gettimeofday (struct timeval *tv, struct timezone *tz)
 #if NOISY_TIMES
   eputs ("gettimeofday stub\n");
 #endif
+  errno = 0;
   return 0;
 }
 
@@ -262,6 +263,7 @@ localtime (time_t const *timep)
 #if NOISY_TIMES
   eputs ("localtime stub\n");
 #endif
+  errno = 0;
   return 0;
 }
 
@@ -570,6 +572,7 @@ time (time_t *tloc)
 #if NOISY_TIMES
   eputs ("time stub\n");
 #endif
+  errno = 0;
   return 0;
 }
 

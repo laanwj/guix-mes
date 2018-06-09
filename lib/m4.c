@@ -66,6 +66,7 @@ int
 fpurge (FILE *stream)
 {
   eputs ("fpurge stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -73,6 +74,7 @@ size_t
 freadahead (FILE *fp)
 {
   eputs ("freadahead stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -130,6 +132,7 @@ int
 pclose (int x)
 {
   eputs ("pclose stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -137,6 +140,7 @@ int
 popen (int x)
 {
   eputs ("popen stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -150,6 +154,7 @@ int
 rewind (int x)
 {
   eputs ("rewind stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -157,6 +162,7 @@ int
 setbuf (int x)
 {
   eputs ("setbuf stub\n");
+  errno = 0;
   return 0;
 }
 
@@ -164,6 +170,7 @@ int
 system (int x)
 {
   eputs ("system stub\n");
+  errno = 0;
   return 0;
 }
 
