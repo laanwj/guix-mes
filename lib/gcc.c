@@ -34,7 +34,9 @@ freopen (char const *file_name, char const *opentype, FILE *stream)
 clock_t
 times (struct tms *buffer)
 {
+#if NOISY_TIMES
   eputs ("times stub\n");
+#endif
   return 0;
 }
 

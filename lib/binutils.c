@@ -40,7 +40,9 @@ chown (char const *file_name, uid_t owner, gid_t group)
 int
 ctime (int x)
 {
+#if NOISY_TIMES
   eputs ("ctime stub\n");
+#endif
   return 0;
 }
 
@@ -162,7 +164,9 @@ umask (int x)
 int
 utime (int x)
 {
+#if NOISY_TIMES
   eputs ("utime stub\n");
+#endif
   return 0;
 }
 
@@ -194,7 +198,9 @@ bsearch (void const *key, void const *array, size_t count, size_t size, comparis
 struct tm *
 gmtime (time_t const *time)
 {
+#if NOISY_TIMES
   eputs ("gmtime stub\n");
+#endif
   return localtime (time);
 }
 

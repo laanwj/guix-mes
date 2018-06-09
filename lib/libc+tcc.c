@@ -243,7 +243,9 @@ fseek (FILE *stream, long offset, int whence)
 int
 gettimeofday (struct timeval *tv, struct timezone *tz)
 {
+#if NOISY_TIMES
   eputs ("gettimeofday stub\n");
+#endif
   return 0;
 }
 
@@ -257,7 +259,9 @@ ldexp (double x, int exp)
 struct tm *
 localtime (time_t const *timep)
 {
+#if NOISY_TIMES
   eputs ("localtime stub\n");
+#endif
   return 0;
 }
 
@@ -478,7 +482,10 @@ strstr (char const *haystack, char const *needle)
 double
 strtod (char const *string, char **tailptr)
 {
+#if NOISY_FLOATS
   eputs ("strtod stub\n");
+#endif
+  return 0;
 }
 
 float
@@ -560,7 +567,9 @@ strtoull (char const *string, char **tailptr, int base)
 time_t
 time (time_t *tloc)
 {
+#if NOISY_TIMES
   eputs ("time stub\n");
+#endif
   return 0;
 }
 
