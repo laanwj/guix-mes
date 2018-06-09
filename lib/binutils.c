@@ -223,3 +223,55 @@ sbrk (intptr_t delta)
     return malloc (delta);
   return g_brk;
 }
+
+// binutils 2.30
+char *
+strdup (char const *s)
+{
+  size_t length = strlen (s) + 1;
+  char *p = (char*)malloc (length);
+  if (p)
+    return memcpy (p, s, length);
+  return 0;
+}
+
+int
+raise (int signum)
+{
+  kill (getpid (), signum);
+}
+
+size_t
+strftime (char *s, size_t size, char const *template,
+          struct tm const *brokentime)
+{
+   eputs ("strftime stub\n");
+   return template;
+}
+
+#if !__MESC__
+typedef char wchar_t[];
+
+size_t
+mbstowcs (wchar_t *wstring, char const *string,
+          size_t size)
+{
+  eputs ("mbstowcs stub\n");
+  strcpy (wstring, string);
+  return strlen (string);
+}
+#endif
+
+void
+clearerr (FILE *stream)
+{
+  errno = 0;
+}
+
+double
+fabs (double number)
+{
+  if (number < 0)
+    return -number;
+  return number;
+}

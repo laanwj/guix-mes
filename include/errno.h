@@ -29,6 +29,7 @@
 #else // ! WITH_GLIBC
 int errno;
 #define ENOENT   2
+#define EINTR    4
 #define EIO      5
 #define EBADF    9
 #define EAGAIN  11

@@ -26,6 +26,8 @@
 
 #else // ! WITH_GLIBC
 
+#include <sys/time.h>
+
 struct rusage
 {
   struct timeval ru_utime;
