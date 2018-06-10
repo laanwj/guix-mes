@@ -170,9 +170,21 @@ fread (void *data, size_t size, size_t count, FILE *stream)
 size_t
 fwrite (void const *data, size_t size, size_t count, FILE *stream)
 {
+  if (getenv ("MESC_DEBUG"))
+    {
+      eputs ("fwrite "); eputs (itoa ((int)stream));
+      eputs ("  "); eputs (itoa (size)); eputs ("\n");
+    }
+
   if (! size || !count)
     return 0;
   int bytes = write ((int)stream, data, size * count);
+
+  if (getenv ("MESC_DEBUG"))
+    {
+      eputs (" => "); eputs (itoa (bytes)); eputs ("\n");
+    }
+
   if (bytes > 0)
     return bytes/size;
   return 0;
@@ -187,6 +199,12 @@ ftell (FILE *stream)
 FILE*
 fopen (char const *file_name, char const *opentype)
 {
+  if (getenv ("MESC_DEBUG"))
+    {
+      eputs ("fopen "); eputs (file_name);
+      eputs (" "); eputs (opentype); eputs ("\n");
+    }
+
   int fd;
   int mode = 0600;
   if ((opentype[0] == 'a' || !strcmp (opentype, "r+"))
@@ -204,6 +222,11 @@ fopen (char const *file_name, char const *opentype)
     }
   else
     fd = open (file_name, 0, 0);
+
+  if (getenv ("MESC_DEBUG"))
+    {
+      eputs (" => fd="); eputs (itoa (fd)); eputs ("\n");
+    }
 
   return (FILE*)fd;
 }
