@@ -97,7 +97,10 @@ if [ -d "$MES_SEED" ]; then
 fi
 
 PREPROCESS=1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crt0
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crti
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crtn
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libgetopt

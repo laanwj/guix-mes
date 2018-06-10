@@ -64,6 +64,8 @@ C32FLAGS=${C32FLAGS-"
 
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crt0
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crt1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crti
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crtn
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libgetopt
