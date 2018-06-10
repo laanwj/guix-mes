@@ -58,7 +58,7 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 
 (define *shell* "sh")
 (define PACKAGE "mes")
-(define VERSION "0.14")
+(define VERSION "0.15")
 (define PREFIX "/usr/local")
 (define GUILE_EFFECTIVE_VERSION (effective-version))
 (define GUILE (or (getenv "guile") "guile"))
