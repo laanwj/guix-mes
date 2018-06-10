@@ -189,12 +189,14 @@ fopen (char const *file_name, char const *opentype)
 {
   int fd;
   int mode = 0600;
-  if (opentype[0] == 'a' && !access (file_name, O_RDONLY))
+  if ((opentype[0] == 'a' || !strcmp (opentype, "r+"))
+      && !access (file_name, O_RDONLY))
     {
       fd = open (file_name, O_RDWR, mode);
-      lseek (fd, 0, SEEK_END);
+      if (opentype[0] == 'a')
+        lseek (fd, 0, SEEK_END);
     }
-  else if (opentype[0] == 'w' || opentype[0] == 'a')
+  else if (opentype[0] == 'w' || opentype[0] == 'a' || !strcmp (opentype, "r+"))
     {
       char *plus_p = strchr (opentype, '+');
       int flags = plus_p ? O_RDWR | O_CREAT : O_WRONLY | O_CREAT | O_TRUNC;
