@@ -45,27 +45,39 @@
 int
 __cleanup ()
 {
-  eputs ("__cleanup stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__cleanup stub\n");
+  stub = 1;
   return 0;
 }
 
 int
 __libc_subinit ()
 {
-  eputs ("__libc_subinit stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__libc_subinit stub\n");
+  stub = 1;
   return 0;
 }
 
 int
 __syscall_error ()
 {
-  eputs ("__syscall_error stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__syscall_error stub\n");
+  stub = 1;
   return 0;
 }
 
 int
 __fpu_control ()
 {
-  eputs ("__fpu_control stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__fpu_control stub\n");
+  stub = 1;
   return 0;
 }

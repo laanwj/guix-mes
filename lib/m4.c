@@ -21,14 +21,20 @@
 int
 abort ()
 {
-  eputs ("abort stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("abort stub\n");
+  stub = 1;
   return 0;
 }
 
 int
 atof (int x)
 {
-  eputs ("atof stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("atof stub\n");
+  stub = 1;
   return 0;
 }
 
@@ -65,7 +71,10 @@ fileno (FILE *stream)
 int
 fpurge (FILE *stream)
 {
-  eputs ("fpurge stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("fpurge stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -73,7 +82,10 @@ fpurge (FILE *stream)
 size_t
 freadahead (FILE *fp)
 {
-  eputs ("freadahead stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("freadahead stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -131,7 +143,10 @@ mktemp (char *template)
 int
 pclose (int x)
 {
-  eputs ("pclose stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("pclose stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -139,7 +154,10 @@ pclose (int x)
 int
 popen (int x)
 {
-  eputs ("popen stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("popen stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -153,7 +171,10 @@ rindex (char const *s, int c)
 int
 rewind (int x)
 {
-  eputs ("rewind stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("rewind stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -161,7 +182,10 @@ rewind (int x)
 int
 setbuf (int x)
 {
-  eputs ("setbuf stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("setbuf stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -169,12 +193,14 @@ setbuf (int x)
 int
 system (int x)
 {
-  eputs ("system stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("system stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
 
-//char const *const sys_errlist[40] = {
 char *sys_errlist[] = {
   "error 00",
   "error 01",
@@ -223,7 +249,10 @@ int sys_nerr = 39;
 char *
 strerror (int errnum)
 {
-  eputs ("strerror errnum="); eputs (itoa (errnum)); eputs ("\n");
+  if (__mes_debug ())
+    {
+      eputs ("strerror errnum="); eputs (itoa (errnum)); eputs ("\n");
+    }
   if (errnum > 0 && errnum <= sys_nerr)
     return sys_errlist[errnum];
   return "sterror: unknown error";

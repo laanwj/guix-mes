@@ -49,6 +49,20 @@ int g_stdin = 0;
 
 void _env ();
 
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+int
+__mes_debug ()
+{
+  static int __mes_debug = -1;
+  if (__mes_debug == -1)
+    {
+      char *p = getenv ("MES_DEBUG");
+      __mes_debug = p ? MAX (itoa (p), 1) : 0;
+    }
+  return __mes_debug;
+}
+
 int
 getchar ()
 {

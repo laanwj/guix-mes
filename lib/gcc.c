@@ -34,9 +34,10 @@ freopen (char const *file_name, char const *opentype, FILE *stream)
 clock_t
 times (struct tms *buffer)
 {
-#if NOISY_TIMES
-  eputs ("times stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("times stub\n");
+  stub = 1;
   return 0;
 }
 
@@ -54,14 +55,20 @@ sleep (unsigned int seconds)
 double
 __divdi3 (double a, double b)
 {
-  eputs ("__divdi3 stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__divdi3 stub\n");
+  stub = 1;
   return ((int)a / (int)b);
 }
 
 double
 __moddi3 (double a, double b)
 {
-  eputs ("__moddi3 stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__moddi3 stub\n");
+  stub = 1;
   return ((int) a %(int)b);
 }
 
@@ -112,7 +119,10 @@ alarm (unsigned int seconds)
 struct passwd *
 getpwnam (const char *NAME)
 {
-  eputs ("getpwnam stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("getpwnam stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }

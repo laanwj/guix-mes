@@ -21,7 +21,10 @@
 int
 __cleanup ()
 {
-  eputs ("__cleanup stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__cleanup stub\n");
+  stub = 1;
   return 0;
 }
 

@@ -33,7 +33,10 @@ abs (int x)
 int
 chown (char const *file_name, uid_t owner, gid_t group)
 {
-  eputs ("chown stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("chown stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -41,9 +44,10 @@ chown (char const *file_name, uid_t owner, gid_t group)
 int
 ctime (int x)
 {
-#if NOISY_TIMES
-  eputs ("ctime stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("ctime stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -84,7 +88,10 @@ fgets (char *s, int count, FILE *stream)
 int
 frexp (int x)
 {
-  eputs ("frexp stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("frexp stub\n");
+  stub = 1;
   return 0;
 }
 
@@ -97,7 +104,10 @@ perror (char const *message)
 int
 sigsetmask (int x)
 {
-  eputs ("sigsetmask stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("sigsetmask stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -153,7 +163,10 @@ strspn (char const *string, char const *skipset)
 int
 sys_siglist (int x)
 {
-  eputs ("sys_siglist stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("sys_siglist stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -161,7 +174,10 @@ sys_siglist (int x)
 int
 umask (int x)
 {
-  eputs ("umask stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("umask stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -169,9 +185,9 @@ umask (int x)
 int
 utime (int x)
 {
-#if NOISY_TIMES
-  eputs ("utime stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("utime stub\n");
   errno = 0;
   return 0;
 }
@@ -180,7 +196,10 @@ utime (int x)
 int
 fscanf (FILE *stream, char const *template, ...)
 {
-  eputs ("fscan stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("fscan stub\n");
+  stub = 1;
   return 0;
 }
 
@@ -197,16 +216,20 @@ bsearch (void const *key, void const *array, size_t count, size_t size, void (*c
 bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare)
 #endif
 {
-  eputs ("bsearch stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("bsearch stub\n");
+  stub = 1;
   return 0;
 }
 
 struct tm *
 gmtime (time_t const *time)
 {
-#if NOISY_TIMES
-  eputs ("gmtime stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("gmtime stub\n");
+  stub = 1;
   errno = 0;
   return localtime (time);
 }
@@ -245,8 +268,11 @@ size_t
 strftime (char *s, size_t size, char const *template,
           struct tm const *brokentime)
 {
-   eputs ("strftime stub\n");
-   return template;
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("strftime stub\n");
+  stub = 1;
+  return template;
 }
 
 #if !__MESC__
@@ -256,7 +282,10 @@ size_t
 mbstowcs (wchar_t *wstring, char const *string,
           size_t size)
 {
-  eputs ("mbstowcs stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("mbstowcs stub\n");
+  stub = 1;
   strcpy (wstring, string);
   return strlen (string);
 }

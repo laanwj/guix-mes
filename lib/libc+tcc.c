@@ -64,7 +64,7 @@ search_path (char const *file_name)
 {
   static char buf[256];
   char *path = getenv ("PATH");
-  if (getenv ("MESC_DEBUG"))
+  if (__mes_debug ())
     {
       eputs ("\n search-path: "); eputs (file_name); eputs ("\n");
     }
@@ -75,7 +75,7 @@ search_path (char const *file_name)
         end = strchr (path, '\0');
       strncpy (buf, path, end - path);
       buf[end - path] = 0;
-      if (getenv ("MESC_DEBUG"))
+      if (__mes_debug ())
         {
           eputs (" dir: "); eputs (buf); eputs ("\n");
         }
@@ -84,7 +84,7 @@ search_path (char const *file_name)
       strcat (buf, file_name);
       if (!access (buf, X_OK))
         {
-          if (getenv ("MESC_DEBUG"))
+          if (__mes_debug ())
             {
               eputs (" found: "); eputs (buf); eputs ("\n");
             }
@@ -105,7 +105,7 @@ execvp (char const *file_name, char *const argv[])
       errno = ENOENT;
       return -1;
     }
-  if (getenv ("MESC_DEBUG"))
+  if (__mes_debug ())
     {
       eputs (" EXEC: "); eputs (file_name); eputs ("\n");
       int i = 0;
@@ -170,7 +170,7 @@ fread (void *data, size_t size, size_t count, FILE *stream)
 size_t
 fwrite (void const *data, size_t size, size_t count, FILE *stream)
 {
-  if (getenv ("MESC_DEBUG"))
+  if (__mes_debug ())
     {
       eputs ("fwrite "); eputs (itoa ((int)stream));
       eputs ("  "); eputs (itoa (size)); eputs ("\n");
@@ -180,7 +180,7 @@ fwrite (void const *data, size_t size, size_t count, FILE *stream)
     return 0;
   int bytes = write ((int)stream, data, size * count);
 
-  if (getenv ("MESC_DEBUG"))
+  if (__mes_debug ())
     {
       eputs (" => "); eputs (itoa (bytes)); eputs ("\n");
     }
@@ -199,7 +199,7 @@ ftell (FILE *stream)
 FILE*
 fopen (char const *file_name, char const *opentype)
 {
-  if (getenv ("MESC_DEBUG"))
+  if (__mes_debug ())
     {
       eputs ("fopen "); eputs (file_name);
       eputs (" "); eputs (opentype); eputs ("\n");
@@ -224,7 +224,7 @@ fopen (char const *file_name, char const *opentype)
   else
     fd = open (file_name, 0, 0);
 
-  if (getenv ("MESC_DEBUG"))
+  if (__mes_debug ())
     {
       eputs (" => fd="); eputs (itoa (fd)); eputs ("\n");
     }
@@ -244,9 +244,10 @@ fseek (FILE *stream, long offset, int whence)
 int
 gettimeofday (struct timeval *tv, struct timezone *tz)
 {
-#if NOISY_TIMES
-  eputs ("gettimeofday stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("gettimeofday stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -254,16 +255,20 @@ gettimeofday (struct timeval *tv, struct timezone *tz)
 double
 ldexp (double x, int exp)
 {
-  eputs ("ldexp stub\n");
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("ldexp stub\n");
+  stub = 1;
   return 0;
 }
 
 struct tm *
 localtime (time_t const *timep)
 {
-#if NOISY_TIMES
-  eputs ("localtime stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("localtime stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }
@@ -485,9 +490,10 @@ strstr (char const *haystack, char const *needle)
 double
 strtod (char const *string, char **tailptr)
 {
-#if NOISY_FLOATS
-  eputs ("strtod stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("strtod stub\n");
+  stub = 1;
   return 0;
 }
 
@@ -520,8 +526,6 @@ strtol (char const *string, char **tailptr, int base)
   return abtoi (p, base);
 }
 
-#if 1
-
 long long int
 strtoll (char const *string, char **tailptr, int base)
 {
@@ -539,40 +543,14 @@ strtoull (char const *string, char **tailptr, int base)
 {
   return strtol (string, tailptr, base);
 }
-
-#else
-
-long long int
-strtoll (char const *string, char **tailptr, int base)
-{
-  eputs ("strtoll stub\n");
-  return 0;
-}
-
-unsigned long
-strtoul (char const *string, char **tailptr, int base)
-{
-  eputs ("strtoul stub\n");
-  return 0;
-}
-
-unsigned long long
-strtoull (char const *string, char **tailptr, int base)
-{
-  // *endptr = p;
-  // return abtoi (endptr, base);
-  eputs ("strtoull stub\n");
-  return 0;
-}
-
-#endif
 
 time_t
 time (time_t *tloc)
 {
-#if NOISY_TIMES
-  eputs ("time stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("time stub\n");
+  stub = 1;
   errno = 0;
   return 0;
 }

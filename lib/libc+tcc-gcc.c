@@ -112,44 +112,49 @@ __ashrdi3 (long long a, int b)
 long double
 __floatundixf (unsigned long long a)
 {
-#if NOISY_FLOATS
-  eputs ("__floatundix stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__floatundix stub\n");
+  stub = 1;
   return 0;
 }
 
 unsigned long long
 __fixunsxfdi (double a1)
 {
-#if NOISY_FLOATS
-  eputs ("__fixunsxfdi stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__fixunsxfdi stub\n");
+  stub = 1;
   return 0;
 }
 
 unsigned long long
 __fixdfdi (double a1)
 {
-#if NOISY_FLOATS
-  eputs ("__fixdfdi stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__fixdfdi stub\n");
+  stub = 1;
   return 0;
 }
 
 unsigned long long
 __fixxfdi (double a1)
 {
-#if NOISY_FLOATS
-  eputs ("__fixxfdi stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__fixxfdi stub\n");
+  stub = 1;
   return 0;
 }
 
 unsigned long long
 __fixsfdi (double a1)
 {
-#if NOISY_FLOATS
-  eputs ("__fixsfdi stub\n");
-#endif
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__fixsfdi stub\n");
+  stub = 1;
   return 0;
 }
