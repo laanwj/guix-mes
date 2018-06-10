@@ -210,9 +210,10 @@ fopen (char const *file_name, char const *opentype)
   if ((opentype[0] == 'a' || !strcmp (opentype, "r+"))
       && !access (file_name, O_RDONLY))
     {
-      fd = open (file_name, O_RDWR, mode);
+      int flags = O_RDWR;
       if (opentype[0] == 'a')
-        lseek (fd, 0, SEEK_END);
+        flags |= O_APPEND;
+      fd = open (file_name, flags, mode);
     }
   else if (opentype[0] == 'w' || opentype[0] == 'a' || !strcmp (opentype, "r+"))
     {
