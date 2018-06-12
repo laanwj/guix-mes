@@ -159,9 +159,7 @@ hex2 linker.")
                '())
          ("perl" ,perl)))               ;build-aux/gitlog-to-changelog
       (arguments
-       `(#:make-flags (list
-                       (string-append "PREFIX=" (assoc-ref %outputs "out")))
-         #:phases
+       `(#:phases
          (modify-phases %standard-phases
            (add-before 'build 'make-git-source-writable
            (lambda* (#:key outputs #:allow-other-keys)

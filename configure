@@ -191,7 +191,7 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
             (with-courage)
             ;;ignore
             (enable-fast-install))))
-    (getopt-long args option-spec #:stop-at-first-non-option #t)))
+    (getopt-long args option-spec)))
 
 (define* (print-help #:optional (port (current-output-port)))
   (format port "\

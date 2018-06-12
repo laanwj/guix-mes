@@ -23,8 +23,10 @@ if [ -n "$BUILD_DEBUG" ]; then
 fi
 
 export GUILE
+export GUILE_AUTO_COMPILE
 GUILE=${GUILE-$(command -v guile)}
 GUILE_TOOLS=${GUILE_TOOLS-$(command -v guile-tools)}
+GUILE_AUTO_COMPILE=0
 
 set -e
 

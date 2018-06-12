@@ -52,7 +52,7 @@ sed \
     -e "s,@VERSION@,$VERSION,g" \
     module/mes/boot-0.scm > $MODULEDIR/mes/boot-0.scm
 
-cp scripts/diff.scm $PREFIX/bin/diff.scm
 sed \
     -e "s,^#! /bin/sh,#! $SHELL," \
     scripts/diff.scm > $PREFIX/bin/diff.scm
+chmod -w+x $PREFIX/bin/diff.scm
