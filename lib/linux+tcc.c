@@ -28,6 +28,11 @@
 int
 close (int filedes)
 {
+  if (_ungetc_fd == filedes)
+    {
+      _ungetc_pos = -1;
+      _ungetc_fd = -1;
+    }
   return _sys_call1 (SYS_close, (int)filedes);
 }
 

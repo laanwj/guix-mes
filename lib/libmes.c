@@ -130,6 +130,7 @@ utoa (unsigned x)
 }
 
 int _ungetc_pos = -1;
+int _ungetc_fd = -1;
 char _ungetc_buf[10];
 
 int
@@ -146,8 +147,19 @@ fdgetc (int fd)
    }
   else
     {
+      if (_ungetc_fd != fd)
+        {
+          eputs (" ***MES LIB C*** fdgetc ungetc conflict unget-fd=");
+          eputs (itoa (_ungetc_fd));
+          eputs (", fdgetc-fd=");
+          eputs (itoa (fd));
+          eputs ("\n");
+          exit (1);
+        }
       i = _ungetc_buf[_ungetc_pos];
       _ungetc_pos -= 1;
+      if (_ungetc_pos == -1)
+        _ungetc_fd = -1;
      }
   if (i < 0)
     i += 256;
@@ -173,9 +185,26 @@ fdputs (char const* s, int fd)
 int
 fdungetc (int c, int fd)
 {
+  if (_ungetc_pos == -1)
+    _ungetc_fd = fd;
+  else if (_ungetc_fd != fd)
+    {
+      eputs (" ***MES LIB C*** fdungetc ungetc conflict unget-fd=");
+      eputs (itoa (_ungetc_fd));
+      eputs (", fdungetc-fd=");
+      eputs (itoa (fd));
+      eputs ("\n");
+      exit (1);
+    }
   _ungetc_pos++;
   _ungetc_buf[_ungetc_pos] = c;
   return c;
+}
+
+int
+_fdungetc_p (int fd)
+{
+  return _ungetc_pos > -1;
 }
 
 #if POSIX || __x86_64__

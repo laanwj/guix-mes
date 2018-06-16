@@ -18,6 +18,7 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <libmes.h>
@@ -55,6 +56,13 @@ open (char const *file_name, int flags, ...)
   va_list ap;
   va_start (ap, flags);
   int mask = va_arg (ap, int);
+#if !MES_BOOTSTRAP
+  if (!flags)
+    {
+      _ungetc_pos = -1;
+      _ungetc_fd = -1;
+    }
+#endif
   int r = _sys_call3 (SYS_open, (int)file_name, (int)flags, (int)mask);
   va_end (ap);
   return r;
