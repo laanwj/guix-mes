@@ -48,6 +48,14 @@ seed: all-go
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
 	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
+	cp lib/x86-mes/elf32-header.hex2\
+           lib/x86-mes/x86.M1\
+           lib/x86-mes/libc+tcc.S\
+           lib/x86-mes/libc.S\
+           lib/x86-mes/crt1.S\
+           lib/x86-mes/libgetopt.S\
+           $(MESCC_TOOLS_SEED)/libs
+	cd $(MESCC_TOOLS_SEED) && MES_PREFIX=$(PWD) ./bootstrap.sh
 
 define HELP_TOP
 Usage: make [OPTION]... [TARGET]...
@@ -134,6 +142,10 @@ endif
 
 ifdef MES_SEED
 export MES_SEED
+endif
+
+ifdef MESCC_TOOLS_SEED
+export MESCC_TOOLS_SEED
 endif
 
 ifdef TINYCC_SEED

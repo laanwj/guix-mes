@@ -216,14 +216,15 @@ Installation directories:
   --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
 
 Some influential environment variables:
-  CC          C compiler command
-  CFLAGS      C compiler flags
-  CC32        x86 C compiler command
-  C32FLAGS    x86 C compiler flags
-  GUILE       guile command
-  GUILE_TOOLS guile-tools command
-  MES_SEED    location of mes-seed
-  TINYCC_SEED location of tinycc-seed
+  CC                C compiler command
+  CFLAGS            C compiler flags
+  CC32              x86 C compiler command
+  C32FLAGS          x86 C compiler flags
+  GUILE             guile command
+  GUILE_TOOLS       guile-tools command
+  MES_SEED          location of mes-seed
+  MESCC_TOOLS_SEED  location of mescc-tools-seed
+  TINYCC_SEED       location of tinycc-seed
 " PACKAGE VERSION (getenv "PREFIX")))
 
 (define (main args)
@@ -254,6 +255,7 @@ Some influential environment variables:
           (M1FLAGS (getenv "M1FLAGS"))
           (MESCCFLAGS (getenv "MESCCFLAGS"))
           (MES_SEED (or (getenv "MES_SEED") "../mes-seed"))
+          (MESCC_TOOLS_SEED (or (getenv "MESCC_TOOLS_SEED") "../mescc-tools-seed"))
           (TINYCC_SEED (or (getenv "TINYCC_SEED") "../tinycc-seed")))
       (when help?
         (print-help)
@@ -298,6 +300,7 @@ Some influential environment variables:
           (stdout "CC32:=~a\n" (or CC32 ""))
           (stdout "BLOOD_ELF:=~a\n" (or BLOOD_ELF ""))
           (stdout "MES_SEED:=~a\n" (or MES_SEED ""))
+          (stdout "MESCC_TOOLS_SEED:=~a\n" (or MESCC_TOOLS_SEED ""))
           (stdout "TINYCC_SEED:=~a\n" (or TINYCC_SEED ""))
           (stdout "HEX2:=~a\n" (or HEX2 ""))
           (stdout "M1:=~a\n" (or M1 ""))
