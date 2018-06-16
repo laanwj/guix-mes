@@ -141,6 +141,7 @@ t
 94-unsetenv
 95-signal
 96-strto
+97-fopen
 "
 
 # 90: needs GNU, fails for mescc, passes for tcc

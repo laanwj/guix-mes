@@ -97,6 +97,7 @@ int execvp (char const *file, char *const argv[]);
 int fork ();
 char *getcwd (char *buf, size_t size);
 int isatty (int fd);
+int link (char const *oldname, char const *newname);
 off_t lseek (int fd, off_t offset, int whence);
 ssize_t read (int fd, void *buffer, size_t size);
 #if __SBRK_CHAR_PTRDIFF
