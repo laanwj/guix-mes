@@ -229,6 +229,13 @@ fopen (char const *file_name, char const *opentype)
       eputs (" => fd="); eputs (itoa (fd)); eputs ("\n");
     }
 
+  if (!fd)
+    {
+      eputs (" ***MES LIB C*** fopen of stdin: signal me in band\n");
+      exit (1);
+    }
+  if (fd < 0)
+    fd = 0;
   return (FILE*)fd;
 }
 
