@@ -68,12 +68,12 @@ MESCCLAGS=${MESCCFLAGS-"
 "}
 M1FLAGS=${M1FLAGS-"
 --LittleEndian
---Architecture=1
+--Architecture 1
 "}
 HEX2FLAGS=${HEX2FLAGS-"
 --LittleEndian
---Architecture=1
---BaseAddress=0x1000000
+--Architecture 1
+--BaseAddress 0x1000000
 "}
 
 if [ -n "$GUILE" ]; then

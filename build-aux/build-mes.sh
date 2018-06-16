@@ -44,12 +44,12 @@ set -e
 
 M1FLAGS=${M1FLAGS-"
 --LittleEndian
---Architecture=1
+--Architecture 1
 "}
 HEX2FLAGS=${HEX2FLAGS-"
 --LittleEndian
---Architecture=1
---BaseAddress=0x1000000
+--Architecture 1
+--BaseAddress 0x1000000
 "}
 
 if [ -d "$MES_SEED" ]; then
@@ -65,7 +65,7 @@ if [ -d "$MES_SEED" ]; then
         -o lib/x86-mes/libc.o
     $M1\
         --LittleEndian\
-        --Architecture=1\
+        --Architecture 1\
         -f lib/x86-mes/x86.M1\
         -f $MES_SEED/x86-mes/mes.S\
         -o src/mes.o
@@ -76,7 +76,7 @@ if [ -d "$MES_SEED" ]; then
         -o src/mes.S.blood-elf
     $M1\
         --LittleEndian\
-        --Architecture=1\
+        --Architecture 1\
         -f src/mes.S.blood-elf\
         -o src/mes.o.blood-elf
     $HEX2\

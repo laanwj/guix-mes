@@ -154,7 +154,7 @@
          (M1 (or (getenv "M1") "M1"))
          (command `(,M1
                     "--LittleEndian"
-                    "--Architecture=1"
+                    "--Architecture" "1"
                     "-f" ,(arch-find options "x86.M1")
                     ,@(append-map (cut list "-f" <>) M1-files)
                     "-o" ,hex2-file-name)))
@@ -172,8 +172,8 @@
          (hex2 (or (getenv "HEX2") "hex2"))
          (command `(,hex2
                     "--LittleEndian"
-                    "--Architecture=1"
-                    "--BaseAddress=0x1000000"
+                    "--Architecture" "1"
+                    "--BaseAddress" "0x1000000"
                     "-f" ,(arch-find options "elf32-header.hex2")
                     "-f" ,(arch-find options "crt1.o")
                     ,@(append-map (cut list "-f" <>) hex2-files)
