@@ -142,6 +142,7 @@ t
 95-signal
 96-strto
 97-fopen
+98-fopen
 "
 
 # 90: needs GNU, fails for mescc, passes for tcc
