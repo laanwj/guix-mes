@@ -58,7 +58,7 @@ __mes_debug ()
   if (__mes_debug == -1)
     {
       char *p = getenv ("MES_DEBUG");
-      __mes_debug = p ? MAX (itoa (p), 1) : 0;
+      __mes_debug = p ? MAX (atoi (p), 1) : 0;
     }
   return __mes_debug;
 }
