@@ -819,6 +819,8 @@ vsscanf (char const *s, char const *template, va_list ap)
       {
         t++;
         char c = *t;
+        if (c == 'l')
+          c = *++t;
         switch (c)
           {
           case '%': {p++; break;}
