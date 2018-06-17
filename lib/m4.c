@@ -53,7 +53,7 @@ bcmp (void const *s1, void const *s2, size_t size)
 void
 bcopy (void const *src, void *dest, size_t n)
 {
-  return memmove (dest, src, n);
+  memmove (dest, src, n);
 }
 
 int
