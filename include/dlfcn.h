@@ -34,6 +34,7 @@
 #define RTLD_GLOBAL	0x00100
 #define RTLD_LOCAL	0
 #define RTLD_NODELETE	0x01000
+#define RTLD_DEFAULT    0
 
 void *dlopen (char const *filename, int flags);
 int dlclose (void *handle);
@@ -41,4 +42,3 @@ int dlclose (void *handle);
 #endif // ! WITH_GLIBC
 
 #endif // __MES_DLFCN_H
-

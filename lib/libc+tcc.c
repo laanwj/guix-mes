@@ -47,18 +47,6 @@
 
 #endif // !__MESC__
 
-int
-dlclose (void *handle)
-{
-  return 0;
-}
-
-void *
-dlopen (char const *filename, int flags)
-{
-  return 0;
-}
-
 char *
 search_path (char const *file_name)
 {
