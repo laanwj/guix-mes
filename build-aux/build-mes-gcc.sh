@@ -24,6 +24,7 @@ if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 
+MODULEDIR=${MODULEDIR-${DATADIR}${DATADIR:+/}module}
 export CC32 CPPFLAGS C32FLAGS
 
 CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}

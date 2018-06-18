@@ -2286,7 +2286,7 @@ SCM
 bload_env (SCM a) ///((internal))
 {
 #if !_POSIX_SOURCE
-  char *mo = "mes/read-0-32.mo";
+  char *mo = "mes/boot-0.32-mo";
   g_stdin = open ("module/mes/boot-0.32-mo", O_RDONLY);
   char *read0 = MODULEDIR "/mes/boot-0.32-mo";
   g_stdin = g_stdin >= 0 ? g_stdin : open (read0, O_RDONLY);
