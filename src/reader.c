@@ -458,6 +458,8 @@ reader_read_string ()
   return MAKE_STRING (lst);
 }
 
+int g_tiny = 0;
+
 int
 dump ()
 {
@@ -472,7 +474,38 @@ dump ()
   putchar (g_stack >> 8);
   putchar (g_stack % 256);
   eputs ("dumping\n");
-  if (g_debug > 1)
+  // See HACKING, simple crafted dump for tiny-mes.c
+  if (g_tiny || getenv ("MES_TINY"))
+    {
+      eputs ("dumping TINY\n");
+
+      TYPE (9) = 0x2d2d2d2d;
+      CAR (9) = 0x2d2d2d2d;
+      CDR (9) = 0x3e3e3e3e;
+
+      TYPE (10) = TPAIR;
+      CAR (10) = 11;
+      CDR (10) = 12;
+
+      TYPE (11) = TCHAR;
+      CAR (11) = 0x58585858;
+      CDR (11) = 65;
+
+      TYPE (12) = TPAIR;
+      CAR (12) = 13;
+      CDR (12) = 1;
+
+      TYPE (13) = TCHAR;
+      CAR (11) = 0x58585858;
+      CDR (13) = 66;
+
+      TYPE (14) = 0x3c3c3c3c;
+      CAR (14) = 0x2d2d2d2d;
+      CDR (14) = 0x2d2d2d2d;
+
+      g_free = 15;
+    }
+  else if (g_debug > 1)
     {
       eputs ("program r2=");
       display_error_ (r2);

@@ -2391,6 +2391,7 @@ main (int argc, char *argv[])
 
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
     ? bload_env (r0) : load_env (r0);
+  g_tiny = argc > 2 && !strcmp (argv[2], "--tiny");
   if (argc > 1 && !strcmp (argv[1], "--dump"))
     return dump ();
 
