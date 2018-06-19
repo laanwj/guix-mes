@@ -29,6 +29,7 @@
 
 #else // ! WITH_GLIBC
 
+#include <sys/types.h>
 #ifndef NULL
 #define NULL 0
 #endif
@@ -45,42 +46,6 @@
 #define	STDERR_FILE_NO 2
 #endif // STDIN_FILE_NO
 
-#ifndef __MES_OFF_T
-#define __MES_OFF_T
-#undef off_t
-typedef unsigned long off_t;
-#endif
-
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-#undef size_t
-typedef unsigned long size_t;
-#endif
-
-#ifndef __MES_SSIZE_T
-#define __MES_SSIZE_T
-#undef ssize_t
-typedef long ssize_t;
-#endif
-
-#ifndef __MES_INTPTR_T
-#define __MES_INTPTR_T
-#undef intptr_t
-typedef long intptr_t;
-#endif
-
-#ifndef __MES_PTRDIFF_T
-#define __MES_PTRDIFF_T
-#undef ptrdiff_t
-typedef long ptrdiff_t;
-#endif
-
-#ifndef __MES_PID_T
-#define __MES_PID_T
-#undef pid_t
-typedef int pid_t;
-#endif
-
 #ifndef R_OK
 #define F_OK 0
 #define X_OK 1
@@ -94,8 +59,10 @@ int close (int fd);
 int execv (char const *file_name, char *const argv[]);
 int execve (char const *file, char *const argv[], char *const env[]);
 int execvp (char const *file, char *const argv[]);
-int fork ();
+int fork (void);
 char *getcwd (char *buf, size_t size);
+uid_t getgid (void);
+uid_t getuid (void);
 int isatty (int fd);
 int link (char const *oldname, char const *newname);
 off_t lseek (int fd, off_t offset, int whence);

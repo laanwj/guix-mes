@@ -24,31 +24,12 @@
 #undef __MES_SIGNAL_H
 #include_next <signal.h>
 #else //! WITH_GLIBC
-typedef int sigset_t;
 
+
+typedef int sigset_t;
 typedef int stack_t;
 
-#ifndef __MES_PID_T
-#define __MES_PID_T
-typedef int pid_t;
-#endif
-
-#ifndef __MES_UID_T
-#define __MES_UID_T
-typedef int uid_t;
-#endif
-
-#ifndef __MES_CLOCK_T
-#define __MES_CLOCK_T
-#undef clock_t
-typedef long clock_t;
-#endif
-
-#ifndef __MES_SIGVAL_T
-#define __MES_SIGVAL_T
-#undef clock_t
-typedef int sigval_t;
-#endif
+#include <sys/types.h>
 
 #define NSIG 30
 #define SIGHUP     1

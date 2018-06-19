@@ -28,11 +28,7 @@
 #include_next <stdlib.h>
 #else  // ! WITH_GLIBC
 
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-#undef size_t
-typedef unsigned long size_t;
-#endif
+#include <sys/types.h>
 
 #if _ALLOCA_UNSIGNED
 void * alloca (unsigned size);
@@ -62,19 +58,12 @@ unsigned long long strtoull (char const *string, char **tailptr, int base);
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
-#ifndef NULL
-#define NULL 0
-#endif
-
-#if __MESC__
+#ifndef __MES_COMPARISON_FN_T
+#define __MES_COMPARISON_FN_T
 typedef int (*comparison_fn_t) (void const *, void const *);
-#else
-typedef void (*comparison_fn_t) ();
 #endif
 
 void * bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare);
-
-#include <endian.h>
 
 #endif // ! WITH_GLIBC
 

@@ -24,12 +24,37 @@
 #undef __MES_SYS_TYPES_H
 #include_next <sys/types.h>
 #else // ! WITH_GLIBC
+
 #include <endian.h>
+
+#ifndef __MESCCLIB__
+#define __MESCCLIB__ 15
+#endif
+
+#ifndef EOF
+#define EOF -1
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef __MES_CLOCK_T
+#define __MES_CLOCK_T
+#undef clock_t
+typedef long clock_t;
+#endif
 
 #ifndef __MES_DEV_T
 #define __MES_DEV_T
 #undef dev_t
 typedef int dev_t;
+#endif
+
+#if !defined (__MES_FILE_T) && ! defined (_FILE_T)
+#define __MES_FILE_T
+#define _FILE_T
+typedef int FILE;
 #endif
 
 #ifndef __MES_GID_T
@@ -44,16 +69,46 @@ typedef int gid_t;
 typedef unsigned ino_t;
 #endif
 
+#ifndef __MES_INTPTR_T
+#define __MES_INTPTR_T
+#undef intptr_t
+typedef long intptr_t;
+#endif
+
+#ifndef __MES_OFF_T
+#define __MES_OFF_T
+#undef off_t
+typedef unsigned long off_t;
+#endif
+
 #ifndef __MES_PID_T
 #define __MES_PID_T
 #undef pid_t
 typedef int pid_t;
 #endif
 
+#ifndef __MES_PTRDIFF_T
+#define __MES_PTRDIFF_T
+#undef ptrdiff_t
+typedef long ptrdiff_t;
+#endif
+
+#ifndef __MES_SIGVAL_T
+#define __MES_SIGVAL_T
+#undef clock_t
+typedef int sigval_t;
+#endif
+
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
 #undef size_t
 typedef unsigned long size_t;
+#endif
+
+#ifndef __MES_SSIZE_T
+#define __MES_SSIZE_T
+#undef ssize_t
+typedef long ssize_t;
 #endif
 
 #ifndef __MES_UID_T

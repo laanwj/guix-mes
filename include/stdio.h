@@ -45,18 +45,6 @@ int g_stdout;
 
 #else // ! WITH_GLIBC
 
-#ifndef __MESCCLIB__
-#define __MESCCLIB__ 15
-#endif
-
-#ifndef EOF
-#define EOF -1
-#endif
-
-#ifndef NULL
-#define NULL 0
-#endif
-
 #ifndef BUFSIZ
 #define BUFSIZ 256
 #endif
@@ -65,11 +53,7 @@ int g_stdout;
 #define L_tmpnam 100
 #endif
 
-#if !defined (__MES_FILE_T) && ! defined (_FILE_T)
-#define __MES_FILE_T
-#define _FILE_T
-typedef int FILE;
-#endif
+#include <sys/types.h>
 
 #define stdin (FILE*)0
 #define stdout (FILE*)1
@@ -78,12 +62,6 @@ typedef int FILE;
 #define SEEK_SET 0
 #define SEEK_CUR 1
 #define SEEK_END 2
-
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-#undef size_t
-typedef unsigned long size_t;
-#endif
 
 FILE *fdopen (int fd, char const *mode);
 FILE *fopen (char const *file_name, char const *mode);
@@ -101,7 +79,7 @@ int fputc (int c, FILE *stream);
 int fputs (char const* s, FILE *stream);
 int fseek (FILE *stream, long offset, int whence);
 int getc (FILE *stream);
-int getchar ();
+int getchar (void);
 int printf (char const* format, ...);
 int putc (int c, FILE* stream);
 int putchar (int c);

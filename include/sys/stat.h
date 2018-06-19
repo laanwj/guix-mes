@@ -26,6 +26,7 @@
 
 #else // ! WITH_GLIBC
 
+#include <time.h>
 #include <sys/types.h>
 
 #ifndef __MES_MODE_T
@@ -45,11 +46,11 @@ struct stat
   long           st_size;
   unsigned int   st_blksize;
   unsigned int   st_blocks;
-  long           st_atime;
+  time_t         st_atime;
   unsigned long  st_atime_usec;
-  long           st_mtime;
+  time_t         st_mtime;
   unsigned long  st_mtime_usec;
-  long           st_ctime;
+  time_t         st_ctime;
   unsigned long  st_ctime_usec;
   unsigned int   __foo0;
   unsigned int   __foo1;
