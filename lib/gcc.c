@@ -51,27 +51,6 @@ sleep (unsigned int seconds)
   return nanosleep (&requested_time, &remaining);
 }
 
-// gcc-3.2
-double
-__divdi3 (double a, double b)
-{
-  static int stub = 0;
-  if (__mes_debug () && !stub)
-    eputs ("__divdi3 stub\n");
-  stub = 1;
-  return ((int)a / (int)b);
-}
-
-double
-__moddi3 (double a, double b)
-{
-  static int stub = 0;
-  if (__mes_debug () && !stub)
-    eputs ("__moddi3 stub\n");
-  stub = 1;
-  return ((int) a %(int)b);
-}
-
 // gcc-3.4
 void
 unsetenv (char const *name)

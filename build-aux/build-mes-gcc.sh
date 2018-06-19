@@ -71,6 +71,7 @@ ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libgetopt
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc+tcc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libtcc1
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc+gnu
 ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libg
 
