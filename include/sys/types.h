@@ -87,10 +87,13 @@ typedef unsigned long off_t;
 typedef int pid_t;
 #endif
 
+#ifndef __PTRDIFF_T
+#define __PTRDIFF_T
 #ifndef __MES_PTRDIFF_T
 #define __MES_PTRDIFF_T
 #undef ptrdiff_t
 typedef long ptrdiff_t;
+#endif
 #endif
 
 #ifndef __MES_SIGVAL_T
@@ -99,10 +102,13 @@ typedef long ptrdiff_t;
 typedef int sigval_t;
 #endif
 
+#ifndef __SIZE_T
+#define __SIZE_T
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
 #undef size_t
 typedef unsigned long size_t;
+#endif
 #endif
 
 #ifndef __MES_SSIZE_T

@@ -28,7 +28,21 @@
 #include_next <alloca.h>
 
 #else // ! WITH_GLIBC
-void* alloca (size_t);
+
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+#undef size_t
+typedef unsigned long size_t;
+#endif
+
+#if _ALLOCA_UNSIGNED
+void * alloca (unsigned size);
+#elif _ALLOCA_CHAR
+char * alloca (int);
+#else
+void * alloca (size_t size);
+#endif
+
 #endif // ! WITH_GLIBC
 
 #endif // __MES_ALLOCA_H

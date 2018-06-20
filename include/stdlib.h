@@ -29,12 +29,8 @@
 #else  // ! WITH_GLIBC
 
 #include <sys/types.h>
+#include <alloca.h>
 
-#if _ALLOCA_UNSIGNED
-void * alloca (unsigned size);
-#else
-void * alloca (size_t size);
-#endif
 int atoi (char const *s);
 int atexit (void (*function) (void));
 void * calloc (size_t nmemb, size_t size);
