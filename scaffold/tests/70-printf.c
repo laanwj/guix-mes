@@ -135,9 +135,11 @@ test ()
     return 19;
 
   int n;
+#if !__x86_64__
   fprintf (stderr, "foo bar\n%n", &n);
   if (n != 8)
     return 20;
+#endif
 
   sprintf (buf, "foo%nbar\n", &n);
   eputs ("buf="); eputs (buf); eputs ("\n");
@@ -145,6 +147,15 @@ test ()
     return 21;
   if (n != 3)
     return 22;
+
+#if !__x86_64__
+  fprintf (stdout, "%12.8d\n", 12345);
+#endif
+
+  sprintf (buf, "%12.8d\n", 12345);
+  eputs ("buf="); eputs (buf); eputs ("\n");
+  if (strcmp (buf, "    00012345\n"))
+    return 23;
 
   return 0;
 }

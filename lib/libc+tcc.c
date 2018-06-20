@@ -22,6 +22,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -679,18 +680,13 @@ vfprintf (FILE* f, char const* format, va_list ap)
         p++;
         char c = *p;
         int left_p = 0;
-        int precision_p = 0;
+        int precision = -1;
         int width = -1;
         if (c == 'l')
           c = *++p;
         if (c == '-')
           {
             left_p = 1;
-            c = *++p;
-          }
-        if (c == '.')
-          {
-            precision_p = 1;
             c = *++p;
           }
         char pad = ' ';
@@ -708,6 +704,20 @@ vfprintf (FILE* f, char const* format, va_list ap)
           {
             width = va_arg (ap, int);
             c = *++p;
+          }
+        if (c == '.')
+          {
+            c = *++p;
+            if (c >= '0' && c <= '9')
+              {
+                precision = abtoi (&p, 10);
+                c = *p;
+              }
+            else if (c == '*')
+              {
+                precision = va_arg (ap, int);
+                c = *++p;
+              }
           }
         if (c == 'l')
           c = *++p;
@@ -729,23 +739,35 @@ vfprintf (FILE* f, char const* format, va_list ap)
               char const *s = number_to_ascii (d, base, c != 'u' && c != 'x' && c != 'X');
               if (c == 'X')
                 strupr (s);
-              if (!precision_p && width >= 0)
-                width = width - strlen (s);
-              if (!left_p && !precision_p)
-                while (!precision_p && width-- > 0)
-                  {
-                    fputc (pad, f);
-                    count++;
-                  }
+              int length = strlen (s);
+              if (precision == -1)
+                precision = length;
+              if (!left_p)
+                {
+                  while (width-- > precision)
+                    {
+                      fputc (pad, f);
+                      count++;
+                    }
+                  while (precision > length)
+                    {
+                      fputc ('0', f);
+                      precision--;
+                      width--;
+                      count++;
+                    }
+                }
               while (*s)
                 {
-                  if (precision_p && width-- == 0)
+                  if (precision-- <= 0)
                     break;
+                  width--;
                   fputc (*s++, f);
                   count++;
                 }
-              while (!precision_p && width-- > 0)
+              while (width > 0)
                 {
+                  width--;
                   fputc (pad, f);
                   count++;
                 }
@@ -754,23 +776,35 @@ vfprintf (FILE* f, char const* format, va_list ap)
           case 's':
             {
               char *s = va_arg (ap, char *);
-              if (!precision_p && width >= 0)
-                width = width - strlen (s);
-              if (!left_p && !precision_p)
-                while (!precision_p && width-- > 0)
-                  {
-                    fputc (pad, f);
-                    count++;
-                  }
+              int length = strlen (s);
+              if (precision == -1)
+                precision = length;
+              if (!left_p)
+                {
+                  while (width-- > precision)
+                    {
+                      fputc (pad, f);
+                      count++;
+                    }
+                  while (precision > length)
+                    {
+                      fputc (' ', f);
+                      precision--;
+                      width--;
+                      count++;
+                    }
+                }
               while (*s)
                 {
-                  if (precision_p && width-- == 0)
+                  if (precision-- <= 0)
                     break;
+                  width--;
                   fputc (*s++, f);
                   count++;
                 }
-              while (!precision_p && width-- > 0)
+              while (width > 0)
                 {
+                  width--;
                   fputc (pad, f);
                   count++;
                 }
@@ -784,7 +818,7 @@ vfprintf (FILE* f, char const* format, va_list ap)
             }
           default:
             {
-              eputs ("vfprintf: not supported: %");
+              eputs ("vfprintf: not supported: %:");
               eputc (c);
               eputs ("\n");
               p++;
@@ -841,7 +875,7 @@ vsscanf (char const *s, char const *template, va_list ap)
             }
           default:
             {
-              eputs ("vsscanf: not supported: %");
+              eputs ("vsscanf: not supported: %:");
               eputc (c);
               eputs ("\n");
               t++;
@@ -870,18 +904,13 @@ vsprintf (char *str, char const* format, va_list ap)
         p++;
         char c = *p;
         int left_p = 0;
-        int precision_p = 0;
+        int precision = -1;
         int width = -1;
         if (c == 'l')
           c = *++p;
         if (c == '-')
           {
             left_p = 1;
-            c = *++p;
-          }
-        if (c == '.')
-          {
-            precision_p = 1;
             c = *++p;
           }
         char pad = ' ';
@@ -899,6 +928,20 @@ vsprintf (char *str, char const* format, va_list ap)
           {
             width = va_arg (ap, int);
             c = *++p;
+          }
+        if (c == '.')
+          {
+            c = *++p;
+            if (c >= '0' && c <= '9')
+              {
+                precision = abtoi (&p, 10);
+                c = *p;
+              }
+            else if (c == '*')
+              {
+                precision = va_arg (ap, int);
+                c = *++p;
+              }
           }
         if (c == 'l')
           c = *++p;
@@ -920,23 +963,35 @@ vsprintf (char *str, char const* format, va_list ap)
               char const *s = number_to_ascii (d, base, c != 'u' && c != 'x' && c != 'X');
               if (c == 'X')
                 strupr (s);
-              if (!precision_p && width >= 0)
-                width = width - strlen (s);
-              if (!left_p && !precision_p)
-                while (!precision_p && width-- > 0)
-                  {
-                    *str++ = pad;
-                    count++;
-                  }
+              int length = strlen (s);
+              if (precision == -1)
+                precision = length;
+              if (!left_p)
+                {
+                  while (width-- > precision)
+                    {
+                      *str++ = pad;
+                      count++;
+                    }
+                  while (precision > length)
+                    {
+                      *str++ = '0';
+                      precision--;
+                      width--;
+                      count++;
+                    }
+                }
               while (*s)
                 {
-                  if (precision_p && width-- == 0)
+                  if (precision-- <= 0)
                     break;
+                  width--;
                   *str++ = *s++;
                   count++;
                 }
-              while (!precision_p && width-- > 0)
+              while (width > 0)
                 {
+                  width--;
                   *str++ = pad;
                   count++;
                 }
@@ -945,23 +1000,35 @@ vsprintf (char *str, char const* format, va_list ap)
           case 's':
             {
               char *s = va_arg (ap, char *);
-              if (!precision_p && width >= 0)
-                width = width - strlen (s);
-              if (!left_p && !precision_p)
-                while (!precision_p && width-- > 0)
-                  {
-                    *str++ = pad;
-                    count++;
-                  }
+              int length = strlen (s);
+              if (precision == -1)
+                precision = length;
+              if (!left_p)
+                {
+                  while (width-- > precision)
+                    {
+                      *str++ = pad;
+                      count++;
+                    }
+                  while (width > length)
+                    {
+                      *str++ = ' ';
+                      precision--;
+                      width--;
+                      count++;
+                    }
+                }
               while (*s)
                 {
-                  if (precision_p && width-- == 0)
+                  if (precision-- <= 0)
                     break;
+                  width--;
                   *str++ = *s++;
                   count++;
                 }
-              while (!precision_p && width-- > 0)
+              while (width > 0)
                 {
+                  width--;
                   *str++ = pad;
                   count++;
                 }
@@ -975,7 +1042,7 @@ vsprintf (char *str, char const* format, va_list ap)
             }
           default:
             {
-              eputs ("vsprintf: not supported: %");
+              eputs ("vsprintf: not supported: %:");
               eputc (c);
               eputs ("\n");
               p++;
