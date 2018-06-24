@@ -18,7 +18,10 @@ cc:
 	build-aux/build-cc.sh
 
 mes-gcc:
-	build-aux/build-mes-gcc.sh
+	build-aux/build-cc32.sh
+
+mes-tcc:
+	CC32=$(TCC) build-aux/build-cc32.sh
 
 mes:
 	build-aux/build-mes.sh
@@ -41,8 +44,7 @@ install:
 
 .config.make: ./configure
 
-seed: all-go
-	build-aux/build-mes-gcc.sh
+seed: all-go mes-gcc mes-tcc
 	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 	cd $(MES_SEED) && git reset --hard HEAD
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 build-aux/build-mes.sh
@@ -65,6 +67,7 @@ Targets:
   all-go          update .go files
   cc              update src/mes.gcc-out
   mes-gcc         update src/mes.mes-gcc-out
+  mes-tcc         update src/mes.mes-tcc-out
   mes             update src/mes
   check           run unit tests
   clean           run git clean -dfx
@@ -110,6 +113,10 @@ endif
 
 ifdef GUILE_TOOLS
 export GUILE_TOOLS
+endif
+
+ifdef TCC
+export TCC
 endif
 
 ifdef GUILE_LOAD_PATH

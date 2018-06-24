@@ -23,7 +23,7 @@ if [ -n "$BUILD_DEBUG" ]; then
 fi
 
 # dash does not export foo=${foo-bar} for some values
-export CC CC32 GUILE MESCC MES_SEED
+export CC CC32 TCC GUILE MESCC MES_SEED
 export MES_ARENA MES_DEBUG
 export PREFIX DATADIR MODULEDIR
 export CPPFLAGS CFLAGS C32FLAGS MESCCFLAGS
@@ -86,8 +86,13 @@ if [ -n "$CC" ]; then
 fi
 
 if [ -n "$CC32" ]; then
-    sh build-aux/build-mes-gcc.sh
+    sh build-aux/build-cc32.sh
     cp src/mes.mes-gcc-out src/mes
+fi
+
+if [ -n "$TCC" ]; then
+    CC32=$TCC sh build-aux/build-cc32.sh
+    cp src/mes.mes-tcc-out src/mes
 fi
 
 sh build-aux/build-mes.sh

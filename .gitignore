@@ -18,6 +18,11 @@
 *.mes-gcc-out
 *.mes-gcc-out
 *.mes-gcc-stdout
+*.mes-tcc
+*.mes-tcc-o
+*.mes-tcc-out
+*.mes-tcc-out
+*.mes-tcc-stdout
 *.mes-o
 *.mes-out
 *.mes-stdout
@@ -29,6 +34,8 @@
 *.stderr
 *.stdout
 
+/lib/x86-mes-gcc
+/lib/x86-mes-tcc
 /src/*.h
 /src/*.i
 /src/mes

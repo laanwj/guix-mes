@@ -54,7 +54,7 @@ fi
 
 rm -f "$t".mes-gcc-out
 if [ -n "$CC32" ]; then
-    sh build-aux/cc-mes-gcc.sh "$t"
+    sh build-aux/cc32-mes.sh "$t"
 
     r=0
     [ -f "$t".exit ] && r=$(cat "$t".exit)

@@ -224,6 +224,7 @@ Some influential environment variables:
   GUILE_TOOLS       guile-tools command
   MES_SEED          location of mes-seed
   MESCC_TOOLS_SEED  location of mescc-tools-seed
+  TCC               tcc C compiler command
   TINYCC_SEED       location of tinycc-seed
 " PACKAGE VERSION (getenv "PREFIX")))
 
@@ -245,6 +246,7 @@ Some influential environment variables:
     (let ((CC32 (or (getenv "CC32")
                     (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
                         "i686-unknown-linux-gnu-gcc")))
+          (TCC (or (getenv "TCC") "tcc"))
           (GUILE_TOOLS (or (getenv "GUILE_TOOLS") "guile-tools"))
           (BLOOD_ELF (or (getenv "BLOOD_ELF") "blood-elf"))
           (HEX2 (or (getenv "HEX2") "hex2"))
@@ -281,6 +283,8 @@ Some influential environment variables:
         (check-header-c "limits.h" "linux-headers"))
       (if (not (check-version CC32 '(4 8) #:optional? #t))
           (set! CC32 #f))
+      (if (not (check-version TCC '(0 9 26) #:optional? #t #:version-option "-v"))
+          (set! TCC #f))
       (set! make? (check-version "make" '(4 0) #:optional? #t))
       (check-version "perl" '(5))
 
@@ -298,6 +302,7 @@ Some influential environment variables:
           (stdout "ARCH:=~a\n" ARCH)
           (stdout "CC:=~a\n" (or CC ""))
           (stdout "CC32:=~a\n" (or CC32 ""))
+          (stdout "TCC:=~a\n" (or TCC ""))
           (stdout "BLOOD_ELF:=~a\n" (or BLOOD_ELF ""))
           (stdout "MES_SEED:=~a\n" (or MES_SEED ""))
           (stdout "MESCC_TOOLS_SEED:=~a\n" (or MESCC_TOOLS_SEED ""))

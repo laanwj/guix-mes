@@ -24,23 +24,13 @@
 void
 _exit (int code)
 {
-#if !__TINYC__
   asm (
        "mov    $"SYS_exit",%%eax\n\t"
        "mov    %0,%%ebx\n\t"
        "int    $0x80\n\t"
        : // no outputs "=" (r)
-       : "" (code)
+       : "rm" (code)
        );
-#else // __TINYC__
-  asm (
-       "mov    $"SYS_exit",%%eax\n\t"
-       "mov    %0,%%ebx\n\t"
-       "int    $128\n\t"
-       : // no outputs "=" (r)
-       : "Ir" (code)
-       );
-#endif // __TINYC__
   // not reached
   _exit (0);
 }
@@ -49,7 +39,6 @@ ssize_t
 _write (int filedes, void const *buffer, size_t size)
 {
   int r;
-#if __GNUC__
   asm (
        "mov    $"SYS_write",%%eax\n\t"
        "mov    %1,%%ebx\n\t"
@@ -58,21 +47,8 @@ _write (int filedes, void const *buffer, size_t size)
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
-       : "" (filedes), "" (buffer), "" (size)
+       : "rm" (filedes), "rm" (buffer), "rm" (size)
        : "eax", "ebx", "ecx", "edx"
        );
-#elif __TINYC__
-  asm (
-       "mov    $"SYS_write",%%eax\n\t"
-       "mov    %1,%%ebx\n\t"
-       "mov    %2,%%ecx\n\t"
-       "mov    %3,%%edx\n\t"
-       "int    $128\n\t"
-       "mov    %%eax,%0\n\t"
-       : "=r" (r)
-       : "Ir" (filedes), "Ir" (buffer), "Ir" (size)
-       : "eax", "ebx", "ecx"//, "edx"
-       );
-#endif
   return r;
 }

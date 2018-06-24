@@ -34,7 +34,7 @@ CPPFLAGS=${CPPFLAGS-"
 "}
 
 C32FLAGS=${C32FLAGS-"
---std=gnu99
+-std=gnu99
 -O0
 -fno-builtin
 -fno-stack-protector
@@ -44,20 +44,28 @@ C32FLAGS=${C32FLAGS-"
 -nostdlib
 "}
 LIBC=${LIBC-c}
+
+a=mes-gcc
+if [ "$CC32" = "$TCC" ]; then
+    a=mes-tcc
+    LIBC=c+tcc # tcc bug with undefined symbols
+fi
+arch=x86-$a
+
 if [ -n "$LIBC" ]; then
-    CC32LIBS="lib/x86-mes-gcc/lib$LIBC.o"
+    CC32LIBS="lib/$arch/lib$LIBC.o"
 fi
 
 c=$1
 
 if [ -z "$ARCHDIR" ]; then
     o="$c"
-    p="mes-gcc-"
+    p="$a-"
 else
     b=${c##*/}
     d=${c%/*}
-    o="$d/x86-mes-gcc/$b"
-    mkdir -p $d/x86-mes-gcc
+    o="$d/$arch/$b"
+    mkdir -p $d/$arch
 fi
 
 $CC32\
@@ -71,7 +79,7 @@ if [ -z "$NOLINK" ]; then
     $CC32\
         $C32FLAGS\
         -o "$o".${p}out\
-        lib/x86-mes-gcc/crt1.o\
+        lib/$arch/crt1.o\
         "$o".${p}o\
         $CC32LIBS
 fi

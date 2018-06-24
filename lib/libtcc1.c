@@ -112,7 +112,15 @@ __fixunsxfdi (double a1)
   return 0;
 }
 
-unsigned long long
+#if __TINYC__ == 9227
+int
+#if __TINYC__ == 9226
+long
+#else
+long long
+int
+#endif // __TINYC__ == 9226
+#endif // __TINYC__ == 9227
 __fixdfdi (double a1)
 {
   static int stub = 0;
@@ -132,7 +140,7 @@ __fixxfdi (double a1)
   return 0;
 }
 
-unsigned long long
+long long
 __fixsfdi (double a1)
 {
   static int stub = 0;

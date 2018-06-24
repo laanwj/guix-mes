@@ -23,14 +23,13 @@
 int
 _sys_call (int sys_call)
 {
-#if !__TINYC__
   int r;
   asm (
        "mov    %1,%%eax\n\t"
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
-       : "" (sys_call)
+       : "rm" (sys_call)
        : "eax"
        );
   if (r < 0)
@@ -41,13 +40,11 @@ _sys_call (int sys_call)
   else
     errno = 0;
   return r;
-#endif
 }
 
 int
 _sys_call1 (int sys_call, int one)
 {
-#if !__TINYC__
   int r;
   asm (
        "mov    %1,%%eax\n\t"
@@ -55,7 +52,7 @@ _sys_call1 (int sys_call, int one)
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
-       : "" (sys_call), "" (one)
+       : "rm" (sys_call), "rm" (one)
        : "eax", "ebx"
        );
   if (r < 0)
@@ -66,13 +63,11 @@ _sys_call1 (int sys_call, int one)
   else
     errno = 0;
   return r;
-#endif
 }
 
 int
 _sys_call2 (int sys_call, int one, int two)
 {
-#if !__TINYC__
   int r;
   asm (
        "mov    %1,%%eax\n\t"
@@ -81,7 +76,7 @@ _sys_call2 (int sys_call, int one, int two)
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
-       : "" (sys_call), "" (one), "" (two)
+       : "rm" (sys_call), "rm" (one), "rm" (two)
        : "eax", "ebx", "ecx"
        );
   if (r < 0)
@@ -92,13 +87,11 @@ _sys_call2 (int sys_call, int one, int two)
   else
     errno = 0;
   return r;
-#endif
 }
 
 int
 _sys_call3 (int sys_call, int one, int two, int three)
 {
-#if !__TINYC__
   int r;
   asm (
        "mov    %2,%%ebx\n\t"
@@ -108,7 +101,7 @@ _sys_call3 (int sys_call, int one, int two, int three)
        "int    $0x80\n\t"
        "mov    %%eax,%0\n\t"
        : "=r" (r)
-       : "" (sys_call), "" (one), "" (two), "" (three)
+       : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three)
        : "eax", "ebx", "ecx", "edx"
        );
   if (r < 0)
@@ -119,5 +112,4 @@ _sys_call3 (int sys_call, int one, int two, int three)
   else
     errno = 0;
   return r;
-#endif
 }

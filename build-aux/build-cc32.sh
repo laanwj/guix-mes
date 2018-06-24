@@ -25,7 +25,7 @@ if [ -n "$BUILD_DEBUG" ]; then
 fi
 
 MODULEDIR=${MODULEDIR-${DATADIR}${DATADIR:+/}module}
-export CC32 CPPFLAGS C32FLAGS
+export CC32 TCC CPPFLAGS C32FLAGS
 
 CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 build-aux/mes-snarf.scm --mes src/gc.c
@@ -54,7 +54,7 @@ CPPFLAGS=${CPPFLAGS-"
 "}
 
 C32FLAGS=${C32FLAGS-"
---std=gnu99
+-std=gnu99
 -O0
 -fno-stack-protector
 -g
@@ -63,24 +63,24 @@ C32FLAGS=${C32FLAGS-"
 -nostdlib
 "}
 
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crt0
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crt1
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crti
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/crtn
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc-mini
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libgetopt
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc+tcc
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libtcc1
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libc+gnu
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes-gcc.sh lib/libg
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crt0
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crt1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crti
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crtn
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libc-mini
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libgetopt
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libc+tcc
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libtcc1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libc+gnu
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libg
 
-sh build-aux/cc-mes-gcc.sh scaffold/main
-sh build-aux/cc-mes-gcc.sh scaffold/hello
-sh build-aux/cc-mes-gcc.sh scaffold/argv
-sh build-aux/cc-mes-gcc.sh scaffold/malloc
-sh build-aux/cc-mes-gcc.sh scaffold/micro-mes
-sh build-aux/cc-mes-gcc.sh scaffold/tiny-mes
-sh build-aux/cc-mes-gcc.sh scaffold/mini-mes
+sh build-aux/cc32-mes.sh scaffold/main
+sh build-aux/cc32-mes.sh scaffold/hello
+sh build-aux/cc32-mes.sh scaffold/argv
+sh build-aux/cc32-mes.sh scaffold/malloc
+sh build-aux/cc32-mes.sh scaffold/micro-mes
+sh build-aux/cc32-mes.sh scaffold/tiny-mes
+sh build-aux/cc32-mes.sh scaffold/mini-mes
 
-sh build-aux/cc-mes-gcc.sh src/mes
+sh build-aux/cc32-mes.sh src/mes
