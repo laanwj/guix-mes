@@ -134,6 +134,7 @@ t
 85-sizeof
 86-strncpy
 87-sscanf
+88-strrchr
 90-strpbrk
 91-fseek
 92-stat

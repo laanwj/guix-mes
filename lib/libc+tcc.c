@@ -448,7 +448,7 @@ strchr (char const *s, int c)
     {
       if (c == *p)
         return p;
-      *p++;
+      p++;
     }
   return 0;
 }
@@ -472,12 +472,17 @@ char *
 strrchr (char const *s, int c)
 {
   int n = strlen (s);
-  if (!n) return 0;
-  char const *p = s + n - 1;
-  while (*p || !c)
+  if (!n)
+    return 0;
+  char const *p = s + n;
+  if (!*p && !c)
+    return p;
+  p--;
+  while (n-- && (*p || !c))
     {
-      if (c == *p) return p;
-      *p--;
+      if (c == *p)
+        return p;
+      p--;
     }
   return 0;
 }
