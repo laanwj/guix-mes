@@ -10,6 +10,24 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.16 since 0.15
+** Core
+*** Support building with tcc, including Mes Lib C in-line assembly.
+*** core:execl now supports 1000 arguments.
+** MesCC
+*** Mes Lib C now bootstraps glibc-2.2.5, binutils-2.20.1, gcc-4.1.0.
+*** MesCC binaries now run on Linux 4.17 too, i.e. survive Linus' new `sane mmap limits.'
+*** MesCC now runs with mescc-tools 0.5 (no = in long options).
+**** 3 new C test
+88-strrchrc, 97-fopen.c, 98-fopen.c.
+** Noteworthy bug fixes
+*** strrchr now stops when it reaches start of string.
+*** fopen now return 0 upon failure.  Supports binutils' hack: fd=-2 means `cached'.
+*** vfprintf, vsprintf now support precision and width on integers strings better.
+*** fread now produces ungetc'd chars too.
+*** memcmp now supports comparing 0 bytes, supporting binutils.
+
+*** The unused ELF header data section, identical to the text section, has been removed.
 * Changes in 0.15 since 0.14
 ** Core
 *** Support fork, exec, waitpid.

@@ -1,53 +1,64 @@
                                                               -*- org -*-
 Building and Installing Mes
 
-* Get it
+Mes can be built in two modes: as a regulare package build or as
+a bootstrap package.
 
+After bootstrapping Mes, it can be used to bootstrap TinyCC (tcc) in a
+similar way.
+
+* Get it
    git clone https://gitlab.com/janneke/mes
 
-* Prerequisites
-** Bootstrapping
-For bootstrapping, the M1 macro assembler and hex2 linker and Nyacc
-*** [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.4 is known to work.
-*** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][patched Nyacc]] 0.80.42 is known to work.
-For development
-** Development
-For development, there are some more dependencies.
+* Regular build
+** Prerequisites
 *** Guix
-
     guix environment -l guix.scm     #64 bit + 32bit
     guix environment --system=i686-linux -l guix.scm #32 bit only
 
 *** Other GNU/Linux
-**** [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.4 is known to work.
-**** [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][patched Nyacc]] 0.80.42 is known to work.
-**** GNU Gcc, 4.9.3 is known to work.
-The idea is to drop this requirement, of course.
+  - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.4 is known to work.
+  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][patched Nyacc]] 0.80.42 is known to work.
+  - GNU Gcc, 4.9.3 is known to work.
+  - GNU Guile, version 2.0.12 or is know to work.
+  - SH, /bin/sh, GNU Bash 4.3 is known to work.
+  - GNU coreutils
+  - sed, GNU sed 4.2 is known to work.
+  - git, 2.10 is known to work.
+  - Perl, 5.22 is known to work.
 
-**** GNU Guile, version 2.0.12 or is know to work.
-Guile is not strictly necessary but it is used by the configure script
-and in development.
-
-**** /bin/sh, GNU Bash 4.3 is known to work.
-Let's just say for now that it gets awkward without a shell.
-
-**** GNU coreutils
-**** sed, GNU sed 4.2 is known to work.
-**** git, 2.10 is known to work.
-**** Perl, 5.22 is known to work.
-
-* Build it
-
+** Build it
    ./configure
    make
 
-* Check it
-
+** Check it
    make check
 
-* Install it
-
+** Install it
    make install
-* Guix it...
 
+* Guix it
    guix package -f guix.scm
+
+* Bootstrap build
+
+The bootstrap build is being prototyped in GuixSD, see
+https://gitlab.com/janneke/guix/blob/wip-bootstrap/gnu/packages/mes.scm
+
+** Prerequisites
+  - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.4 is known to work.
+  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][patched Nyacc]] 0.80.42 is known to work.
+  - [[https://github.com/oriansj/mescc-tools][mes-seed]], 0.15 is known to work.
+
+** Build it
+   <setup environment, e.g. PREFIX, MES_SEED>
+
+   ./build.sh
+
+** Check it
+
+   ./check.sh
+
+** Install it
+
+   ./install.sh

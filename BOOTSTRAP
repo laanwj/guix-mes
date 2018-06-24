@@ -103,6 +103,7 @@ be source.
 ** x86_64, arm, the Hurd
 
 * DONE
+** bootstrap gcc+glibc-built binutils-20.1, gcc-4.1.0.
 ** have tcc-boot compile gnutools triplet: binutils-2.14, gcc-2.95.3, glibc-2.2.5.
 ** have tcc-boot's mes-tcc compile a fully functional tcc
 ** hex.0, hex.1, M0

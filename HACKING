@@ -62,10 +62,14 @@ mes.c.
   - upstream mes-boot to GuixSD.
   - add full source gcc-4.7 package build.
   - replace GuixSD bootstrap for x86.
-  - tcc: remove or upstream patches from tcc-boot
-  - mes: prepare src/mes.c for M2-Planet transpiler.
+  - replace bootstrap utils (with gash?): flex, bash, bzip2,
+    coreutils, diffutils, gawk, grep, gzip, make, sed, tar.
+  - tcc: remove or upstream patches from tcc-boot.
+  - tcc: build 0.9.27 directly instead of via 0.9.26,
+    see tinycc wip-bootstrappable@0.9.27 branch
+  - mes: prepare src/mes.c for M2-Planet transpiler,
+    Jeremiah branched-out from mes; see https://github.com/oriansj/mes-m2.
   - mes: real module support, bonus for supporting Guile's define-module/define-public syntax.
-  - mes: produce functional mes from mes.M1 transpiled by M2-Planet.
   - mes: we're a full Scheme now, drop .MES suffix, use .SCM.
     + find a way to fix foo.mes/foo.scm trickery (full Guile-like module support?)
     + how about setting `guile' or even `guile-2' cond-expand features
@@ -89,8 +93,9 @@ mes.c.
 *** release 1.0
   - replace GuixSD's bootstrap binaries for x86.
   - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
-  - more architectures?
+  - more architectures (does GuixSD require this, i.e. before 1.0?).
 ** DONE
+*** 0.16 Mes Lib C now bootstraps glibc-2.2.5, binutils-2.20.1, gcc-4.1.0.
 *** 0.15: MesCC now has a libc+gnu that supports compiling binutils-2.14, gcc-2.95.3 and glibc-2.2.5.
 *** 0.14: Mes+MesCC now compiles a slightly patched self-hosting tcc.
 *** 0.13: Mes+MesCC now compiles a modified, functional tcc.c (~25,000LOC) in 1h30'.
@@ -100,7 +105,7 @@ mes.c.
 *** 0.9: Mescc now writes M1 macro assembly files and compiles tcc.
 *** 0.8: Mescc now writes object files in stage0's labeled hex2 format.
 *** 0.7: Mescc supports -E, -c, -o options, include more complete set of header files,
-eenough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
+enough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 *** 0.6: Work with unmodified, unbundled Nyacc; compile 33/55 tinycc's tests/test2 suite.
 *** 0.5: Mutual self-hosting Scheme interpreter and C compiler: mes.c and mescc,
          Support call-with-current-continuation, refactor catch/throw
@@ -130,6 +135,7 @@ eenough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 
 
 * Bugs
+** tcc: tcc-built lib/libc+tcc.c segfaults with mes, with tcc.
 ** mes: remove pmatch-car/pmatch-cdr hack.
 ** mescc: softcode stack frame size, now hardcoded and very large
 ** mes+mescc: parse tcc.c->tcc.E works, compile tcc.E -> tcc.M1 segfaults.
