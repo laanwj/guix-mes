@@ -682,8 +682,6 @@ vfprintf (FILE* f, char const* format, va_list ap)
         int left_p = 0;
         int precision = -1;
         int width = -1;
-        if (c == 'l')
-          c = *++p;
         if (c == '-')
           {
             left_p = 1;
@@ -721,6 +719,11 @@ vfprintf (FILE* f, char const* format, va_list ap)
           }
         if (c == 'l')
           c = *++p;
+        if (c == 'l')
+          {
+            eputs ("vfprintf: skipping second: l\n");
+            c = *++p;
+          }
         switch (c)
           {
           case '%': {fputc (*p, fd); count++; break;}
@@ -906,8 +909,6 @@ vsprintf (char *str, char const* format, va_list ap)
         int left_p = 0;
         int precision = -1;
         int width = -1;
-        if (c == 'l')
-          c = *++p;
         if (c == '-')
           {
             left_p = 1;
@@ -945,6 +946,13 @@ vsprintf (char *str, char const* format, va_list ap)
           }
         if (c == 'l')
           c = *++p;
+        if (c == 'l')
+          c = *++p;
+        if (c == 'l')
+          {
+            eputs ("vfprintf: skipping second: l\n");
+            c = *++p;
+          }
         switch (c)
           {
           case '%': {*str++ = *p; count++; break;}
