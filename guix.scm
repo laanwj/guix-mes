@@ -107,13 +107,12 @@
               (file-name (string-append name "-" version ".tar.gz"))
               (sha256
                (base32
-                "11wr4pl68rd2xmp06b03c6i43g2r8gm61vbv3s86ax1h6j2bn26j"))))
+                "0rsxbjc3bg0jl3h7ai4hndxx2iyyk8bvwj9nd3xv2vgz3bmypnah"))))
     (build-system gnu-build-system)
     (supported-systems '("i686-linux" "x86_64-linux"))
     (arguments
      `(#:make-flags (list (string-append "PREFIX=" (assoc-ref %outputs "out")))
        #:test-target "test"
-       #:tests? #f ; test/results/test9-binary: FAILED
        #:phases (modify-phases %standard-phases
                   (delete 'configure))))
     (synopsis "Tools for the full source bootstrapping process")
