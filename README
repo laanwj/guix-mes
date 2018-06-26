@@ -1,12 +1,15 @@
                                                               -*- org -*-
 Mes -- Maxwell Equations of Software
 
-[[https://gitlab.com/janneke/mes][Mes]] aims to help create full source bootstrapping for [[https://www.gnu.org/software/guix][GuixSD]] as part
-of the [[http://bootstrappable.org][bootstrappable builds]] effort.
+[[http://gitlab.comog/janneke/mes][Mes]] aims to help create full
+source bootstrapping for GNU/Linux distributions such as
+[[https://www.gnu.org/software/guix][GuixSD]] as part of the
+[[http://bootstrappable.org][bootstrappable builds]] effort.
 
 It currently consists of a mutual self-hosting Scheme interpreter
-prototype written in C and a Nyacc-based C compiler written in Scheme.
-This C prototype is [[https://github.com/oriansj/mes-m2][being simplified]] to be transpiled by [[https://github.com/oriansj/m2-planet][M2-Planet]].
+written in ~5,000 LOC of simple C and a Nyacc-based C compiler written
+in Scheme.  This mes.c is [[https://github.com/oriansj/mes-m2][being simplified]] to be transpiled by
+[[https://github.com/oriansj/m2-planet][M2-Planet]].
 
 The Scheme interpreter prototype (mes.c) has a Garbage Collector, a
 library of loadable Scheme modules-- notably Dominique Boucher's [[https://github.com/schemeway/lalr-scm][LALR]],
@@ -14,7 +17,7 @@ Pre-R6RS [[https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html][p
 Guile's [[https://www.gnu.org/software/guile/docs/master/guile.html/PEG-Parsing.html][PEG]] --and test suite just barely enough to support a simple
 REPL and simple C-compiler: MesCC.
 
-Mes+MesCC can compile an only [[https://gitlab.com/janneke/tinycc][lightly patched TinyCC]] that is
+Mes+MesCC can compile an only [[http://gitlab.com/janneke/tinycc][lightly patched TinyCC]] that is
 self-hosting.  Using this tcc and the Mes C library we now have a
 reduced-binary-seed bootstrap for the gnutools triplet: glibc-2.2.5,
 binutils-2.20.1, gcc-4.1.0.
@@ -28,7 +31,7 @@ General Public Licence version 3 or later.  See the file COPYING.
 
 * Get it
 
-   git clone https://gitlab.com/janneke/mes
+   git clone http://gitlab.com/janneke/mes
 
 * Build it (see INSTALL for full instructions)
 
@@ -50,7 +53,7 @@ General Public Licence version 3 or later.  See the file COPYING.
 
     Please send Mes bug reports to janneke@gnu.org.
 
-[0] https://gitlab.com/janneke/mes
+[0] http://gitlab.com/janneke/mes
 [1] https://www.gnu.org/software/guix
 [2] http://bootstrappable.org
 [3] https://github.com/oriansj/mes-m2
@@ -59,6 +62,6 @@ General Public Licence version 3 or later.  See the file COPYING.
 [6] https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html
 [7] https://www.nongnu.org/nyacc
 [8] https://www.gnu.org/software/guile/docs/master/guile.html/PEG-Parsing.html
-[9] https://gitlab.com/janneke/tinycc
+[9] http://gitlab.com/janneke/tinycc
 [10] http://www.softwarepreservation.org/projects/LISP/book/LISP%25201.5%2520Programmers%2520Manual.pdf
 [11] https://github.com/oriansj/stage0

@@ -95,6 +95,7 @@ mes.c.
   - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
   - more architectures (does GuixSD require this, i.e. before 1.0?).
 ** DONE
+*** 0.16.1 Mes now has info docs and installs ootb on Debian buster/testing.
 *** 0.16 Mes Lib C now bootstraps glibc-2.2.5, binutils-2.20.1, gcc-4.1.0.
 *** 0.15: MesCC now has a libc+gnu that supports compiling binutils-2.14, gcc-2.95.3 and glibc-2.2.5.
 *** 0.14: Mes+MesCC now compiles a slightly patched self-hosting tcc.

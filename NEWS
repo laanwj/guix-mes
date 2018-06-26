@@ -10,6 +10,13 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to janneke@gnu.org.
 
+* Changes in 0.16.1 since 0.16
+** Core
+*** Mes now builds out of the box on Debian buster/testing.
+*** Mes now comes with a generic build recipe: build-aux/setup-mes.sh.
+*** Mes now comes with INFO documentation.
+** MesCC
+*** MesCC now exits if spawning BLOOD_ELF, M1, or HEX2 fails.
 * Changes in 0.16 since 0.15
 ** Core
 *** Support building with tcc, including Mes Lib C in-line assembly.

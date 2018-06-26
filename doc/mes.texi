@@ -501,14 +501,15 @@ binutils-source + binutils0 + gcc + glibc => binutils
 gcc-source + binutils + gcc-core + glibc => gcc
 @end verbatim
 
-@c FIXME: ./pre-inst-env guix graph --type=references gcc-mesboot@4.1.0
-@c | dot -T png > gcc-mesboot-4.1.0.png
+@c This graph is generated from wip-bootstrap, doing:
 
-@c Using anything else (e.g. --type=package, --type=bag) produces an
-@c unreadable image with *many* duplicates.
+@c sed -i s,package-with-bootstrap-guile,identity, gnu/packages/{commencement,mes}.scm
 
-Here's a generated dependency diagram to give you impression, it is
-not complete or correct.
+@c ./pre-inst-env guix graph gcc-mesboot | dot -T png >
+@c gcc-mesboot-graph.png
+
+Here's a generated dependency diagram to give you impression, it is not
+complete or correct.
 
 @image{images/gcc-mesboot-graph,2in,,Reference graph of the gcc-mesboot}
 
