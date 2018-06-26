@@ -270,15 +270,20 @@ primitive_fork ()
 SCM
 execl_ (SCM file_name, SCM args) ///((name . "execl"))
 {
-  char *c_argv[100];
+  char *c_argv[1000];           // POSIX minimum 4096
   int i = 0;
-  int n = 0;
+  int n = n;
+
+  if (length__ (args) > 1000)
+    error (cell_symbol_system_error,
+           cons (file_name,
+                 cons (MAKE_STRING (cstring_to_list ("too many arguments")),
+                       cons (file_name, args))));
   c_argv[i++] = string_to_cstring_ (file_name, string_to_cstring_buf+n);
   n += length__ (STRING (file_name)) + 1;
   while (args != cell_nil)
     {
       assert (TYPE (CAR (args)) == TSTRING);
-      assert (i < 20);
       c_argv[i++] = string_to_cstring_ (CAR (args), string_to_cstring_buf+n);
       n += length__ (STRING (CAR (args))) + 1;
       args = CDR (args);
