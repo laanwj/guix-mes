@@ -279,14 +279,18 @@ execl_ (SCM file_name, SCM args) ///((name . "execl"))
            cons (file_name,
                  cons (MAKE_STRING (cstring_to_list ("too many arguments")),
                        cons (file_name, args))));
-  c_argv[i++] = string_to_cstring_ (file_name, string_to_cstring_buf+n);
+  c_argv[i++] = (char*)string_to_cstring_ (file_name, string_to_cstring_buf+n);
   n += length__ (STRING (file_name)) + 1;
   while (args != cell_nil)
     {
       assert (TYPE (CAR (args)) == TSTRING);
-      c_argv[i++] = string_to_cstring_ (CAR (args), string_to_cstring_buf+n);
+      c_argv[i++] = (char*)string_to_cstring_ (CAR (args), string_to_cstring_buf+n);
       n += length__ (STRING (CAR (args))) + 1;
       args = CDR (args);
+      if (g_debug > 2)
+        {
+          eputs ("arg["); eputs (itoa (i)); eputs ("]: "); eputs (c_argv[i-1]); eputs ("\n");
+        }
     }
   c_argv[i] = 0;
   return MAKE_NUMBER (execv (c_argv[0], c_argv));
