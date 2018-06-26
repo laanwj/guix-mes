@@ -92,12 +92,12 @@
                                     "/nyacc-" version ".tar.gz"))
                 (sha256
                  (base32
-                  "101k3hy4jk5p109k6w4dpx3bjm0g53zwb1yxvvad8khfq00wb8hd"))))))
+                  "0c8c8kxir0h2d4nxr131xbkfs7c80haipmkp2g6677sh14wn0b3y"))))))
 
 (define-public mescc-tools
   (package
     (name "mescc-tools")
-    (version "0.5")
+    (version "0.5.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
