@@ -34,6 +34,8 @@
                (exports (matches-in-string "^[+] export \\(.*\\)" output)))
           (mapcar (lambda (line) (apply #'setenv (split-string line "="))) exports )))
 ))))
+ (makefile-mode
+  (indent-tabs-mode . t))
  (scheme-mode
   .
   ((geiser-active-implementations . (guile))
@@ -46,4 +48,6 @@
        (lambda (dir) (add-to-list 'geiser-guile-load-path dir))
        (mapcar
         #'prefix-dir-locals-dir
-        '("scripts" "guile"))))))))
+        '("scripts" "guile")))))))
+  (texinfo-mode    . ((indent-tabs-mode . nil)
+                     (fill-column . 72))))

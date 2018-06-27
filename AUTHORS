@@ -57,3 +57,6 @@ module/srfi/srfi-26.scm
 
 Sxml bits from Guile
 module/sxml/xpath.scm
+
+GNU FDL in texinfo from GNU
+doc/fdl-1.3.texi

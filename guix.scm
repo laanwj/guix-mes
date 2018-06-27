@@ -53,6 +53,7 @@
              (gnu packages mes)
              (gnu packages package-management)
              (gnu packages perl)
+             (gnu packages texinfo)
              ((guix build utils) #:select (with-directory-excursion))
              (guix build-system gnu)
              (guix build-system trivial)
@@ -153,7 +154,9 @@ hex2 linker.")
                `(("i686-linux-binutils" ,(cross-binutils triplet))
                  ("i686-linux-gcc" ,(cross-gcc triplet)))
                '())
-         ("perl" ,perl)))               ;build-aux/gitlog-to-changelog
+         ("help2man" ,help2man)
+         ("perl" ,perl)                ; build-aux/gitlog-to-changelog
+         ("texinfo" ,texinfo)))
       (arguments
        `(#:phases
          (modify-phases %standard-phases

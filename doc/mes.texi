@@ -1,0 +1,911 @@
+\input texinfo
+@c -*- mode: texinfo; -*-
+
+@c %**start of header
+@setfilename mes.info
+@documentencoding UTF-8
+@settitle Mes Reference Manual
+@c %**end of header
+
+@include version.texi
+
+@c Identifier of the OpenPGP key used to sign tarballs and such.
+@set OPENPGP-SIGNING-KEY-ID 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+@copying
+Copyright @copyright{} 2018 Jan (janneke) Nieuwenhuizen@*
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License''.
+@end copying
+
+@dircategory Bootstrapping
+@direntry
+* mes: (mes)Invoking mes.       Running Mes, a minimalist Guile lookalike.
+* mescc: (mes)Invoking MesCC.   Running the MesCC bootstrap compiler.
+@end direntry
+
+@titlepage
+@title Mes Reference Manual
+@subtitle Full Source Bootstrapping of the GNU GuixSD Operating System
+@author Jan (janneke) Nieuwenhuizen
+
+@page
+@vskip 0pt plus 1filll
+Edition @value{EDITION} @*
+@value{UPDATED} @*
+
+@insertcopying
+@end titlepage
+
+@contents
+
+@c *********************************************************************
+@node Top
+@top Mes
+
+This document describes Mes version @value{VERSION}, a bootstrappable
+Scheme interpreter and C compiler written for bootstrapping the GNU system.
+
+@menu
+* Introduction::                What is Mes about?
+* Installation::                Installing Mes.
+* Bootstrapping::               Would you strap my boots?
+* Contributing::                Your help needed!
+* Acknowledgments::             Thanks!
+* GNU Free Documentation License::  The license of this manual.
+* Concept Index::               Concepts.
+* Programming Index::           Data types, functions, and variables.
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Software Freedom
+
+* Reproducible Builds::         Reproducibility and free software.
+* Bootstrappable Builds::       The freedom to build a software without binary seed.
+* Full Source Bootstrap::       Software dependencies worthy of GNU.
+
+Installation
+
+* Regular Requirements::        Software needed to build and run Mes.
+* Bootstrap Requirements::      Software needed to bootstrap Mes.
+* Running the Test Suites::     Testing Mes.
+
+Bootstrapping
+
+* The Mes Bootstrap Process::   How Mes will make you yogurt from pure milk.
+* Invoking Mes::                Running Mes, a minimalist Guile lookalike.
+* Invoking MesCC::              Running the MesCC bootstrap compiler.
+
+Invoking Mes
+
+* Environment Variables::       If the bits won't change, change their habitat.
+
+Invoking MesCC
+
+* MesCC Environment Variables::  There's no NIX like POSIX.
+
+Contributing
+
+* Building from Git::           The latest and greatest.
+* Running Mes From the Source Tree::  Hacker tricks.
+* The Perfect Setup::           The right tools.
+* Coding Style::                Hygiene of the contributor.
+* Submitting Patches::          Share your work.
+
+@end detailmenu
+@end menu
+
+@c *********************************************************************
+@node Introduction
+@chapter Introduction
+
+@quotation
+These were “Maxwell’s Equations of Software!”
+
+@author Alan Kay
+@end quotation
+
+Mes@footnote{``Mes'' is an acronym for the Maxwell Equations of
+Software.} consists of a mutual self-hosting Scheme interpreter
+prototype written in C and a Nyacc-based (see @pxref{NYACC User's
+Guide,,, nyacc-ug, NYACC User's Guide}) C compiler written in Scheme.
+
+The Scheme interpreter @file{mes.c} is about 5000LOC of restricted C and
+intended to be bootstrappable using a very simple C compiler.
+
+@section Software Freedom
+@cindex purpose
+The four essential Freedoms of Software are at the core of our GNU
+community.  Quoting the first freedom from
+@url{https://www.gnu.org/philosophy/free-sw.html}
+
+@quotation
+The freedom to study how the program works, and change it so it does
+your computing as you wish (freedom 1).  Access to the source code is a
+precondition for this.
+@end quotation
+
+So we have access to the software, we have studied it, possibly modified
+it, we built it and we installed it on a computer or some device.  How
+can we trust that when we run the program we are indeed running the
+untainted product of the source code that we studied?
+
+@menu
+* Reproducible Builds::         Reproducibility and free software.
+* Bootstrappable Builds::       The freedom to build a software without binary seed.
+* Full Source Bootstrap::       Software dependencies worthy of GNU.
+@end menu
+
+@node Reproducible Builds
+@section Reproducible Builds
+
+The current Reproducible Builds effort incubated in the Debian
+project@footnote{http://debian.org} and was organized by Lunar.  Quoting
+the @url{https://reproducible-builds.org/} website
+
+@quotation
+A build is reproducible if given the same source code, build environment
+and build instructions, any party can recreate bit-by-bit identical
+copies of all specified artifacts.
+@end quotation
+
+@subsection Can we trust our freedom?
+
+Now consider the opposite, that a second build of a piece of source code
+produces a different binary program.  Upon further investigation we
+might find that the only difference is a timestamp that was embedded in
+the binary, or perhaps the name of the directory it was built in.  Such
+investigations can be nontrivial and are highly unpractical.  And what
+if the binary difference is not so trivial, cannot be easily accounted
+for?
+
+A piece of software that cannot be built bit-by-bit reproducible is
+probably not a good community member in the world of software freedom.
+We think the importance of reproducibility should not be underestimated
+largely because failing that precondition makes justifable trust in
+binaries provided suspect at best and downright dangerous in reality.
+
+It becomes clear that a bit-by-bit reproducible build of all our
+sofwares is essential if we value our Freedom #1.
+
+@subsection An Old Idea
+
+The idea of reproducible builds is not very new.  It was implemented for
+GNU tools in the early 1990s (which we learned, much later in 2017).  In
+the Debian world it was mentioned first in 2000 and then more explicitly
+in 2007 on
+debian-devel@footnote{@url{https://lists.debian.org/debian-devel/2007/09/msg00746.html}}
+
+@quotation
+I think it would be really cool if the Debian policy required that
+packages could be rebuild bit-identical from source.
+
+@author Martin Uecker
+@end quotation
+
+@node Bootstrappable Builds
+@section Bootstrappable Builds
+
+Software distributions that take reproducible builds seriously are
+currently shipping well over 90% reproducible packages.
+
+That a package builds bit-by-bit reproducibly however is not enough to
+guarantee Freedom #1.  There is another factor that is often overlooked:
+opaque ascii or binary @emph{seeds} that are injected dnuring build
+time.  Yes, a package may build reproduciblly from all inspectable
+sourcess...but what functionality is programmed in the opaque seed?
+
+@subsection Bootstrap Binaries
+Possibly one of the most harmless, but certainly by far the biggest
+binary seed that all software distributions inject are the so called
+@emph{bootstrap binaries}.  Bootstrap binaries are the initial binary
+seeds that are used to start building the distribution.
+
+The GNU GuixSD operating system has a relatively small closure of
+bootstrap binaries: GNU binutils, GNU gcc, GNU Libc, GNU Guile, and
+``Static binaries'' (think: bash, coreutils, diffutils, findutils,
+gawk, grep, gzip, make, sed, tar)
+
+@example
+$ du -schx $(readlink $(guix build bootstrap-tarballs)/*)
+2.1M	/gnu/store/9623n4bq6iq5c8cwwdq99qb7d0xj93ym-binutils-static-stripped-tarball-2.28.1/binutils-static-stripped-2.28.1-x86_64-linux.tar.xz
+18M	/gnu/store/437xwygmmwwpkddcyy1qvjcv4hak89pb-gcc-stripped-tarball-5.5.0/gcc-stripped-5.5.0-x86_64-linux.tar.xz
+1.8M	/gnu/store/55ccx18a0d1x5y6a575jf1yr0ywizvdg-glibc-stripped-tarball-2.26.105-g0890d5379c/glibc-stripped-2.26.105-g0890d5379c-x86_64-linux.tar.xz
+5.7M	/gnu/store/bqf0ajclbvnbm0a46819f30804y3ilx0-guile-static-stripped-tarball-2.2.3/guile-static-stripped-2.2.3-x86_64-linux.tar.xz
+5.8M	/gnu/store/j8yzjmh9sy4gbdfwjrhw46zca43aah6x-static-binaries-tarball-0/static-binaries-0-x86_64-linux.tar.xz
+33M	total
+@end example
+
+only a 33MB download that unpacks to 252BM of opaque binaries, that we
+most probably have the source of, shall we review these together? ;-)
+
+@example
+$ for i in $(readlink $(guix build bootstrap-tarballs)/*);\
+  do sudo tar xf $i; done
+$ du -schx *
+130M	bin
+13M	include
+54M	lib
+51M	libexec
+5.2M	share
+252M	total
+@end example
+
+@node Full Source Bootstrap
+@section  Full Source Bootstrap
+
+There is an obvious solution: we cannot allow any binary seeds in our
+software stack.  Not even in the bootstrap binaries.  Maybe that is a
+bit too strong: want to have the absolute minimum of binary seeds and
+all binary seeds need to be inspectable and need to be reviewed.
+
+@subsection The Magical Self Hosting Hex Assembler
+
+June 2016 I learnt about
+@url{https://github.com/oriansj/stage0/,Stage0}.  Jeremiah Orians
+created `hex0' a ~500 byte self-hosting hex assembler.  The source code
+is well documented and the binary is the exact mirror of the source
+code.  I was inspired: what if we could bootstrap a whole GNU
+distribution from source, using only an initial 500 byte binary seed?
+
+@subsection LISP as Maxwell's Equations of Software
+
+As fate would have it, I stumbled upon this
+@url{https://queue.acm.org/detail.cfm?id=1039523, interview with Alan
+Kay}, where he shares a revelation he had when reading John McCarthy's
+@url{http://www.softwarepreservation.org/projects/LISP/book/LISP%25201.5%2520Programmers%2520Manual.pdf,
+LISP-1.5} manual:
+
+@quotation
+that was the big revelation to me @dots{} when I finally understood that
+the half page of code on the bottom of page 13 of the Lisp 1.5 manual
+was Lisp in itself.  These were “Maxwell’s Equations of Software!”  This
+is the whole world of programming in a few lines that I can put my hand
+over.
+
+@author Alan Kay
+@end quotation
+
+Our starting point is @file{hex0}, a 500 byte hex assembler and we need
+to somehow close the gap to building the bootstrap binaries, esp. GNU
+Gcc and GNU Libc.  What better way to do that than by leveraging the
+powers of LISP?
+
+Mes is a Scheme@footnote{Scheme is a modern LISP} interpreter that will
+be indirectly bootstrapped from @file{hex0} and that wields the magical
+powers of LISP to close the bootstrap gap, asserting we can enjoy
+software Freedom #1.
+
+@c *********************************************************************
+@node Installation
+@chapter Installation
+
+@cindex installing Mes
+Mes is available for download from
+@url{http://gitlab.com/janneke/mes/}.  This section describes the
+software requirements of Mes, as well as how to install it and get ready
+to use it.
+
+
+@menu
+* Regular Requirements::        Software needed to build and run Mes.
+* Bootstrap Requirements::      Software needed to bootstrap Mes.
+* Running the Test Suites::     Testing Mes.
+@end menu
+
+@node Regular Requirements
+@section Regular Requirements
+
+This section lists requirements when building Mes from source.  The
+build procedure for Mes is the same as for other GNU software, and is
+not covered here.  Please see the files @file{README} and @file{INSTALL}
+in the Mes source tree for additional details.
+
+Mes depends on the following packages:
+
+@itemize
+@item @url{http://gnu.org/software/guile/, GNU Guile}, version 2.0.13 or
+later, including 2.2.x;
+@item @url{http://www.gnu.org/software/make/, GNU Make}.
+@item @url{https://savannah.gnu.org/projects/nyacc/, NYACC}, currently only the patched
+  version 0.80.42 from @url{http://gitlab.com/janneke/nyacc/, patched
+  NYACC} is known to work.
+@item @url{http://gcc.gnu.org, GCC's gcc}, version 3.0.0 or later.
+@end itemize
+
+The following dependencies are optional:
+
+@itemize
+@item
+Installing @url{https://github.com/oriansj/mescc-tools/, mescc-tools},
+version 0.5 or later, will allow you to have MesCC assemble and link.
+@end itemize
+
+@cindex Guile, compatibility
+Mes is compatible with GNU Guile, so it is possible to share the same
+Scheme code between both.  Of course, Mes only supports the minimal
+subset of R5RS and Guile extensions to run MesCC.
+
+@node Bootstrap Requirements
+@section Bootstrap Requirements
+
+This section lists requirements when building Mes as a bootstrap
+package.  The bootstrap build procedure for Mes is similar to building
+GNU software and goes like this
+
+@example
+export PREFIX=/usr/local # for example
+export MES_SEED=../mes   # for example
+# optionally set some other environment variables
+sh build.sh
+sh check.sh
+sh install.sh
+@end example
+
+See @file{build.sh} for inspiration on what environment variables to
+set.
+
+Bootstrapping Mes depends on the following packages:
+
+@itemize
+@item a POSIX-compatible shell
+@item @url{https://github.com/oriansj/mescc-tools/, mescc-tools}, version 0.5 or later.
+@item @url{http://gitlab.com/janneke/mes-seed/, mes-seed}, version 0.16 or later.
+@end itemize
+
+@node Running the Test Suites
+@section Running the Test Suites
+
+@cindex test suites
+After a successful @command{configure} and @code{make} run, it is a good
+idea to run the test suites.
+
+@example
+make check
+@end example
+
+Run Mes Scheme language semantics tests (@file{scaffold/boot}) only
+
+@example
+build-aux/check-boot.sh
+@end example
+
+Run a single Mes boot test
+
+@example
+MES_BOOT=scaffold/boot/00-zero.scm src/mes
+@end example
+
+Run a single Mes Scheme test
+
+@example
+tests/boot.test
+tests/boot.test-guile
+@end example
+
+Run MesCC tests only
+
+@example
+build-aux/check-mescc.sh
+@end example
+
+Run a single MesCC test
+
+@example
+CC=gcc CC32=i686-unknown-linux-gnu-gcc MES=guile build-aux/test.sh
+@end example
+
+@node Bootstrapping
+@chapter Bootstrapping
+
+@quotation
+Recipe for yogurt: Add yogurt to milk.
+
+@author Anonymous
+@end quotation
+
+The bootstrap problem we have set out to solve is that none of our
+modern software distributions, and GuixSD in particular, can be created
+all from source code.  In addition to the carefully signed source code
+of all the programs (the `milk') an opaque binary seed (the `yogurt') is
+injected as an essential dependency.
+
+Why would this a problem, I hear you ask?  This is how it is done, we
+always did it this way, everyone does it like this!  Indeed, a popular
+way of handling the bootstrapping issue is by ignoring it.
+
+@quotation
+Your compiler becoming self-hosting@dots{}a language creator's wet
+dream.
+
+@author Paul Hoogendijk
+@end quotation
+
+It seems that writing a self-hosting compiler is considered to be a
+language creator's ultimate goal.  It means that their language and
+compiler have become powerful enough to not depend on a pre-exising
+language that possibly is---but certainly was until now---more
+powerful; it feels like passing the rite to adulthood.
+
+When you see the irony, you grasp what our bootstrapping effort means in
+practice.  Creating bootstrappable software is not hard; actually most
+softwares' first releases are bootstrappable.  The problem of
+bootstrapping is not a technical one, it is a lack of awareness and
+responsibility.
+
+@menu
+* The Mes Bootstrap Process::   How Mes will make you yogurt from pure milk.
+* Invoking Mes::                Running Mes, a minimalist Guile lookalike.
+* Invoking MesCC::              Running the MesCC bootstrap compiler.
+@end menu
+
+@node The Mes Bootstrap Process
+@section The Mes Bootstrap Process
+
+The Mes full source bootstrap process@footnote{TBH, the current state of
+affairs demands to label this the reduced binary seed bootstrap} is
+currently being developed in GuixSD@footnote{See
+@file{gnu/packages/mes.scm} in the @var{wip-bootstrap} branch in Guix
+git
+@url{http://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/mes.scm?h=wip-bootstrap}}.
+In it's intiial form it is only available for x86-linux.
+
+Currently, it goes like this:
+
+@verbatim
+mescc-tools-source + mescc-tools-seed => mescc-tools
+
+mes-source + mescc-tools + mescc-seed => mes
+
+tcc-source + mes + tinycc-seed => tcc
+
+binutils-source + mes + tcc => binutils0
+
+gcc-source + tcc + binutils0 => gcc-core
+
+glibc-source + kernel-headers-source + binutils0 + gcc => glibc
+
+binutils-source + binutils0 + gcc + glibc => binutils
+
+gcc-source + binutils + gcc-core + glibc => gcc
+@end verbatim
+
+Work is ongoing to remove these binary seeds that were intentionally
+injected by our own doing as temporary shortcut
+@example
+mescc-tools-seed, mes-seed, tinycc-seed
+@end example
+
+These additional non-bootstrapped dependencies (i.e., binary seeds) are
+taken for granted
+
+@example
+BOOTSTRAP-GUILE, flex, bash,
+bzip2, coreutils, diffutils, gawk, grep, gzip, make, sed, tar
+@end example
+
+Although we think these are less essential and thus less interesting
+than the GNU toolchain triplet that we focussed on initially, our next
+priority is to eleminate these one by one.
+
+@node Invoking Mes
+@section Invoking Mes
+
+@cindex repl
+The @command{mes} command is the Scheme interpreter whose prime
+directive is to run the @command{MesCC} program.
+
+For convenience and testing purposes, @command{mes} tries to mimic
+Guile.
+
+@example
+mes @var{option}@dots{} @file{FILE}@dots{}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item -s @var{script} @var{arg}@dots{}
+@cindex script mode
+By default, Mes will read a file named on the command line as a script.
+Any command-line arguments @var{arg}@dots{} following @var{script}
+become the script's arguments; the @code{command-line} function returns
+a list of strings of the form @code{(@var{script} @var{arg}@dots{})}.
+
+Scripts are read and evaluated as Scheme source code just as the
+@code{load} function would.  After loading @var{script}, Mes exits.
+
+@item -c @var{expr} @var{arg}@dots{}
+@cindex evaluate expression, command-line argument
+Evaluate @var{expr} as Scheme code, and then exit.  Any command-line
+arguments @var{arg}@dots{}) following @var{expr} become command-line
+arguments; the @code{command-line} function returns a list of strings of
+the form @code{(@var{guile} @var{arg}@dots{})}, where @var{mes} is the
+path of the Mes executable.
+
+@item -- @var{arg}@dots{}
+Run interactively, prompting the user for expressions and evaluating
+them.  Any command-line arguments @var{arg}@dots{} following the
+@option{--} become command-line arguments for the interactive session;
+the @code{command-line} function returns a list of strings of the form
+@code{(@var{guile} @var{arg}@dots{})}, where @var{mes} is the path of the
+Mes executable.
+
+@item -L,--load-path=@var{directory}
+Add @var{directory} to the front of Mes module load path.  The given
+directories are searched in the order given on the command line and
+before any directories in the @env{GUILE_LOAD_PATH} environment
+variable.
+
+@item -C,--compiled-path=@var{directory}
+Accepted and ignored for Guile compatibility.
+
+@item ---dump
+dump binary program to stdout
+
+@item -l @var{file}
+Load Scheme source code from @var{file}, and continue processing the
+command line.
+
+@item -e,--main=@var{function}
+Make @var{function} the @dfn{entry point} of the script.  After loading
+the script file (with @option{-s}) or evaluating the expression (with
+@option{-c}), apply @var{function} to a list containing the program name
+and the command-line arguments---the list provided by the
+@code{command-line} function.
+
+@item -h@r{, }--help
+Display help on invoking Mes, and then exit.
+
+@item ---load
+load binary program [module/mes/boot-0.32-mo]
+
+@item -v@r{, }--version
+Display the current version of Mes, and then exit.
+
+@end table
+
+@menu
+* Environment Variables::       If the bits won't change, change their habitat.
+@end menu
+
+@node Environment Variables
+@subsection Environment Variables
+@cindex environment variables
+@cindex shell
+@cindex initialization
+
+@c Hmm, I expected this paragraph in the Guix manual?
+Here are the environment variables (see @pxref{Environment Variables,,,
+guile, Guile Reference}) that affect the run-time behavior of
+Mes:
+
+@table @env
+@item MES_BOOT
+@vindex MES_BOOT
+
+Set @env{MES_BOOT} to change the initial Scheme program that Mes runs.
+
+@item MES_ARENA
+@vindex MES_ARENA
+
+The initial size of the arena @pxref{5.3,,, sicp, SICP} in cells.  Default: 20,000.
+
+@item MES_MAX_ARENA
+@vindex MES_MAX_ARENA
+
+The maximum size of the arena in cells.  Default: 100,000,000.
+
+@item MES_DEBUG
+@vindex MES_DEBUG
+
+@enumerate
+@item
+  Informational:
+@itemize
+@item MODULEDIR
+@item included SCM modules and sources
+@item result of program
+@item gc stats at exit
+@end itemize
+@item
+opened files
+
+@item
+runtime gc stats
+
+@item
+detailed info
+@itemize
+@item parsed, expanded program
+@item list of builtins
+@item list of symbol
+@item opened input strings
+@item gc details
+@end itemize
+
+@item
+usage of opened input strings
+@end enumerate
+
+
+@item GUILE_LOAD_PATH
+@vindex GUILE_LOAD_PATH
+This variable may be used to augment the path that is searched for
+Scheme files when loading.  Its value should be a colon-separated list
+of directories.  If it contains the special path component @code{...}
+(ellipsis), then the default path is put in place of the ellipsis,
+otherwise the default path is placed at the end.  The result is stored
+in @code{%load-path}.
+
+Mes uses @var{@strong{GUILE}_LOAD_PATH} for compatibility with Guile.
+
+@end table
+
+@node Invoking MesCC
+@section Invoking MesCC
+
+@example
+mescc @var{option}@dots{} @file{FILE}@dots{}
+@end example
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item -c
+@cindex compile
+preprocess, compile and assemble only; do not link
+
+@item -D @var{DEFINE}[=@var{VALUE}]
+@cindex define DEFINE [VALUE=1]
+
+@item -E
+preprocess only; do not compile, assemble or link
+
+@item -g
+add @command{blood-elf} debug info
+
+This enables GDB setting breakpoints on function names, and to have the
+GDB backtrace command to show the function call stack.
+
+@item -h, --help
+display this help and exit
+
+@item -I DIR
+append DIR to include path
+
+@item -L DIR
+append DIR to library path
+
+@item -l LIBNAME
+link with LIBNAME
+
+@item -o FILE
+write output to FILE
+
+@item -S
+preprocess and compile only; do not assemble or link
+
+@item -v, --version
+display version and exit
+
+@item -w,--write=TYPE
+dump Nyacc AST using TYPE @{pretty-print,write@}
+
+@end table
+
+@menu
+* MesCC Environment Variables::  There's no NIX like POSIX.
+@end menu
+
+@node MesCC Environment Variables
+@subsection MesCC Environment Variables
+
+@table @env
+@item MES
+@vindex MES
+
+Setting @env{MES} to a mes-compatible Scheme will run MesCC using that
+@example
+MES=guile mescc -c scaffold/main.c
+@end example
+
+See, now Guile has become compatible with Mes, instead of the other way
+around ;-)
+
+@item C_INCLUDE_PATH
+@vindex C_INCLUDE_PATH
+
+@item LIBRARY_PATH
+@vindex LIBRARY_PATH
+
+@item NYACC_DEBUG
+@vindex NYACC_DEBUG
+
+Setting @env{NYACC_DEBUG} makes nyacc print names of function
+during the parsing phase.
+
+@end table
+
+
+@c *********************************************************************
+@node Contributing
+@chapter Contributing
+
+@menu
+* Building from Git::           The latest and greatest.
+* Running Mes From the Source Tree::  Hacker tricks.
+* The Perfect Setup::           The right tools.
+* Coding Style::                Hygiene of the contributor.
+* Submitting Patches::          Share your work.
+@end menu
+
+@node Building from Git
+@section Building from Git
+
+If you want to hack Mes itself, it is recommended to use the latest
+version from the Git repository:
+
+@example
+git clone https://gitlab.com/janneke/mes.git
+@end example
+
+The easiest way to set up a development environment for Mes is, of
+course, by using Guix!  The following command starts a new shell where
+all the dependencies and appropriate environment variables are set up to
+hack on Mes:
+
+@example
+guix environment -l guix.scm
+@end example
+
+Finally, you have to invoke @code{make check} to run tests
+(@pxref{Running the Test Suites}).  If anything fails, take a look at
+installation instructions (@pxref{Installation}) or send a message to
+@email{janneke@@gnu.org, janneke} or to the @email{guix-devel@@gnu.org}
+mailing list.
+
+@node Running Mes From the Source Tree
+@section Running Mes From the Source Tree
+
+Running Mes from the source tree is supported out of the box.  This has
+been accomplished by using some magic and heuristics.  These should be
+removed and if necessary replaced by a @file{./pre-inst-env} trick.
+
+@node The Perfect Setup
+@section The Perfect Setup
+
+The Perfect Setup to hack on Mes is basically the perfect setup used
+for Guile hacking (@pxref{Using Guile in Emacs,,, guile, Guile Reference
+Manual}).  First, you need more than an editor, you need
+@url{http://www.gnu.org/software/emacs, Emacs}, empowered by the
+wonderful @url{http://nongnu.org/geiser/, Geiser}.
+
+Geiser allows for interactive and incremental development from within
+Emacs: code compilation and evaluation from within buffers, access to
+on-line documentation (docstrings), context-sensitive completion,
+@kbd{M-.} to jump to an object definition, a REPL to try out your code,
+and more (@pxref{Introduction,,, geiser, Geiser User Manual}).
+
+@node Coding Style
+@section Coding Style
+
+In general our code follows the GNU Coding Standards (@pxref{Top,,,
+standards, GNU Coding Standards}).  However, they do not say much about
+Scheme, so here are some additional rules.
+
+@subsection Programming Paradigm
+
+Scheme code in Mes is written in a purely functional style.
+
+@subsection Formatting Code
+
+@cindex formatting code
+@cindex coding style
+When writing Scheme code, we follow common wisdom among Scheme
+programmers.  In general, we follow the
+@url{http://mumble.net/~campbell/scheme/style.txt, Riastradh's Lisp
+Style Rules}.  This document happens to describe the conventions mostly
+used in Guile’s code too.  It is very thoughtful and well written, so
+please do read it.
+
+@cindex indentation, of code
+@cindex formatting, of code
+If you do not use Emacs, please make sure to let your editor knows these
+rules.
+
+Additionally, in Mes we prefer to format @code{if} statements like this
+@example
+(if foo? trivial-then
+    (let ((bar (the-longer @dots{})))
+      more-complicated
+      @dots{}
+      else))
+@end example
+
+@node Submitting Patches
+@section Submitting Patches
+
+Development is done using the Git distributed version control system.
+Thus, access to the repository is not strictly necessary.  We welcome
+contributions in the form of patches as produced by @code{git
+format-patch} sent to @email{janneke@@gnu.org, janneke} or to the
+@email{guix-devel@@gnu.org} mailing list.
+
+Please write commit logs in the ChangeLog format (@pxref{Change Logs,,,
+standards, GNU Coding Standards}); you can check the commit history for
+examples.
+
+@subsection Reporting Bugs
+
+Encountering a problem or bug can be very frustrating for you as a user
+or potential contributor.  For us as Mes maintainers, the preferred bug
+report includes a beautiful and tested patch that we can integrate
+without any effort.
+
+However, please don't let our preference stop you from reporting a bug.
+There's one thing @emph{much} worse for us than getting a bug report
+without a patch: Reading a complaint or rant online about your pain and
+how our work sucks, without having heard directly what you experienced.
+
+So if you report a problem, will it be fixed?  And @strong{when}?  The
+most honest answer is: It depends.  Let's curry that informationless
+honesty with a more helpful and more blunt reminder of a mantra of Free
+Software:
+
+@quotation
+When@dots{}?
+
+@dots{}sooner if you help.
+
+@author Eric Raymond
+@end quotation
+
+@cindex contact, irc, mailing list
+@cindex bug, bug report, reporting a bug
+Join us on @code{#bootstrappable} on the Freenode IRC network or on
+@file{guix-devel@@gnu.org} to share your experience---good or bad.
+
+
+@c *********************************************************************
+@node Acknowledgments
+@chapter Acknowledgments
+
+We would like to thank the following people for their help: Jeremiah
+Orians, pdewacht, rain1, Ricardo Wurmus, Rutger van Beusekom.
+
+We also thank Ludovic Courtès for creating GuixSD and making the
+bootstrap problem so painfully visible, John McCarthy for creating
+LISP-1.5 and Alan Kay for their observation that Page 13
+@url{https://queue.acm.org/detail.cfm?id=1039523, Page 13}.
+
+@c *********************************************************************
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+@cindex license, GNU Free Documentation License
+@include fdl-1.3.texi
+
+@c *********************************************************************
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
+
+@node Programming Index
+@unnumbered Programming Index
+@syncodeindex tp fn
+@syncodeindex vr fn
+@printindex fn
+
+@bye
+
+@c Local Variables:
+@c ispell-local-dictionary: "american";
+@c End:

@@ -247,6 +247,7 @@ Some influential environment variables:
                     (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
                         "i686-unknown-linux-gnu-gcc")))
           (TCC (or (getenv "TCC") "tcc"))
+          (MAKEINFO (or (getenv "MAKEINFO") "makeinfo"))
           (GUILE_TOOLS (or (getenv "GUILE_TOOLS") "guile-tools"))
           (BLOOD_ELF (or (getenv "BLOOD_ELF") "blood-elf"))
           (HEX2 (or (getenv "HEX2") "hex2"))
@@ -287,6 +288,8 @@ Some influential environment variables:
           (set! TCC #f))
       (set! make? (check-version "make" '(4 0) #:optional? #t))
       (check-version "perl" '(5))
+      (if (not (check-version "makeinfo" '(6) #:optional? #t))
+          (set! MAKEINFO #f))
 
       (when (pair? required)
         (stderr "\nMissing dependencies [~a], run\n\n" ((->string ", ") required))

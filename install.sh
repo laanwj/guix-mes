@@ -1,6 +1,7 @@
 #! /bin/sh
 
 set -e
+set -o pipefail
 
 export PREFIX
 SHELL=${SHELL-$(command -v sh)}
@@ -56,3 +57,9 @@ sed \
     -e "s,^#! /bin/sh,#! $SHELL," \
     scripts/diff.scm > $PREFIX/bin/diff.scm
 chmod -w+x $PREFIX/bin/diff.scm
+
+if [ -f doc/mes.info ]; then
+    mkdir -p $PREFIX/share/info
+    install-info --info-dir=$PREFIX/share/info doc/mes.info
+    tar -cf- doc/mes.info* | tar -xf- --strip-components=1 -C $PREFIX/share/info
+fi

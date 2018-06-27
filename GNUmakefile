@@ -1,3 +1,5 @@
+.PHONY: doc
+
 GUILE:=guile
 GUILE_FLAGS:=--no-auto-compile -L . -L guile -C . -C guile
 
@@ -11,7 +13,9 @@ PHONY_TARGETS:= all all-go check clean clean-go default help install
 
 default: all
 
-all:
+all: build doc
+
+build:
 	./build.sh
 
 cc:
@@ -59,6 +63,22 @@ seed: all-go mes-gcc mes-tcc
            $(MESCC_TOOLS_SEED)/libs
 	cd $(MESCC_TOOLS_SEED) && MES_PREFIX=$(PWD) ./bootstrap.sh
 
+doc/version.texi: doc/mes.texi GNUmakefile
+	(set `LANG= date -r $< +'%d %B %Y'`;\
+	echo "@set UPDATED $$1 $$2 $$3"; \
+	echo "@set UPDATED-MONTH $$2 $$3"; \
+	echo "@set EDITION $(VERSION)"; \
+	echo "@set VERSION $(VERSION)") > $@
+
+doc: info
+
+info: doc/mes.info
+
+doc/mes.info: doc/mes.texi doc/version.texi GNUmakefile
+	$(MAKEINFO) -o $@ -I doc $<
+
+install-info: info
+
 define HELP_TOP
 Usage: make [OPTION]... [TARGET]...
 
@@ -66,13 +86,16 @@ Targets:
   all             update everything
   all-go          update .go files
   cc              update src/mes.gcc-out
+  doc             update documentation
   mes-gcc         update src/mes.mes-gcc-out
   mes-tcc         update src/mes.mes-tcc-out
   mes             update src/mes
   check           run unit tests
   clean           run git clean -dfx
   clean-go        clean .go files
+  info            update info documentation
   install         install in $(PREFIX)
+  install-info    install info docs in $(PREFIX)/share/info
   seed            update mes-seed in $(MES_SEED)
 endef
 export HELP_TOP
