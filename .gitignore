@@ -52,8 +52,6 @@
 ?
 ?.mes
 \#*#
-/doc/mes.info
-/doc/version.texi
 /doc/fosdem/fosdem.aux
 /doc/fosdem/fosdem.log
 /doc/fosdem/fosdem.nav
@@ -62,3 +60,7 @@
 /doc/fosdem/fosdem.tex
 /doc/fosdem/fosdem.toc
 /doc/fosdem/fosdem.*vrb
+/doc/mes.1
+/doc/mes.info
+/doc/mescc.1
+/doc/version.texi

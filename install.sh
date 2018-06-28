@@ -3,7 +3,10 @@
 set -e
 set -o pipefail
 
-export PREFIX
+if [ -n "$BUILD_DEBUG" ]; then
+    set -x
+fi
+
 SHELL=${SHELL-$(command -v sh)}
 PREFIX=${PREFIX-/usr/local}
 MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
@@ -62,4 +65,14 @@ if [ -f doc/mes.info ]; then
     mkdir -p $PREFIX/share/info
     install-info --info-dir=$PREFIX/share/info doc/mes.info
     tar -cf- doc/mes.info* | tar -xf- --strip-components=1 -C $PREFIX/share/info
+fi
+
+if [ -f doc/mes.1 ]; then
+    mkdir -p $PREFIX/man/man1
+    cp doc/mes.1 $PREFIX/man/man1/
+fi
+
+if [ -f doc/mescc.1 ]; then
+    mkdir -p $PREFIX/man/man1
+    cp doc/mescc.1 $PREFIX/man/man1/
 fi

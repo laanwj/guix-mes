@@ -50,6 +50,7 @@
              (gnu packages cross-base)
              (gnu packages gcc)
              (gnu packages guile)
+             (gnu packages man)
              (gnu packages mes)
              (gnu packages package-management)
              (gnu packages perl)
