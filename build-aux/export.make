@@ -1,3 +1,7 @@
+ifdef DESTDIR
+export DESTDIR
+endif
+
 ifdef PREFIX
 export PREFIX
 endif
