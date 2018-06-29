@@ -66,8 +66,8 @@ chmod -w+x $DESTDIR$prefix/bin/diff.scm
 
 if [ -f doc/mes.info ]; then
     mkdir -p $DESTDIR$prefix/share/info
+    tar -cf- doc/mes.info* doc/images | tar -xf- --strip-components=1 -C $DESTDIR$prefix/share/info
     install-info --info-dir=$DESTDIR$prefix/share/info doc/mes.info
-    tar -cf- doc/mes.info* | tar -xf- --strip-components=1 -C $DESTDIR$prefix/share/info
 fi
 
 if [ -f doc/mes.1 ]; then

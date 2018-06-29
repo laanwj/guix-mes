@@ -25,6 +25,9 @@ Documentation License''.
 
 @dircategory Bootstrapping
 @direntry
+* Mes: (mes).       A system bootstrap worthy of GNU.
+
+
 * mes: (mes)Invoking mes.       Running Mes, a minimalist Guile lookalike.
 * mescc: (mes)Invoking MesCC.   Running the MesCC bootstrap compiler.
 @end direntry
@@ -122,8 +125,8 @@ intended to be bootstrappable using a very simple C compiler.
 @section Software Freedom
 @cindex purpose
 The four essential Freedoms of Software are at the core of our GNU
-community.  Quoting the first freedom from
-@url{https://www.gnu.org/philosophy/free-sw.html}
+community.  Quoting@footnote{The four essential freedoms
+@url{https://www.gnu.org/philosophy/free-sw.html}} freedom #1
 
 @quotation
 The freedom to study how the program works, and change it so it does
@@ -146,8 +149,8 @@ untainted product of the source code that we studied?
 @section Reproducible Builds
 
 The current Reproducible Builds effort incubated in the Debian
-project@footnote{http://debian.org} and was organized by Lunar.  Quoting
-the @url{https://reproducible-builds.org/} website
+project@footnote{@url{http://debian.org, The Debian Project}} and was organized by Lunar.  Quoting
+the Reproducible Builds website@footnote{@url{https://reproducible-builds.org/,Reproducible Builds}}
 
 @quotation
 A build is reproducible if given the same source code, build environment
@@ -180,7 +183,7 @@ The idea of reproducible builds is not very new.  It was implemented for
 GNU tools in the early 1990s (which we learned, much later in 2017).  In
 the Debian world it was mentioned first in 2000 and then more explicitly
 in 2007 on
-debian-devel@footnote{@url{https://lists.debian.org/debian-devel/2007/09/msg00746.html}}
+debian-devel@footnote{@url{https://lists.debian.org/debian-devel/2007/09/msg00746.html,Martin Uecker on debian-devel on bit-reproducibility}}
 
 @quotation
 I think it would be really cool if the Debian policy required that
@@ -398,7 +401,8 @@ build-aux/check-mescc.sh
 Run a single MesCC test
 
 @example
-CC=gcc CC32=i686-unknown-linux-gnu-gcc MES=guile build-aux/test.sh
+CC=gcc CC32=i686-unknown-linux-gnu-gcc MES=guile \
+  build-aux/test.sh scaffold/tests/00-exit-0
 @end example
 
 @node Bootstrapping
@@ -416,7 +420,7 @@ all from source code.  In addition to the carefully signed source code
 of all the programs (the `milk') an opaque binary seed (the `yogurt') is
 injected as an essential dependency.
 
-Why would this a problem, I hear you ask?  This is how it is done, we
+Why would this be a problem, I hear you ask?  This is how it is done, we
 always did it this way, everyone does it like this!  Indeed, a popular
 way of handling the bootstrapping issue is by ignoring it.
 
@@ -424,7 +428,7 @@ way of handling the bootstrapping issue is by ignoring it.
 Your compiler becoming self-hosting@dots{}a language creator's wet
 dream.
 
-@author Paul Hoogendijk
+@author PFH
 @end quotation
 
 It seems that writing a self-hosting compiler is considered to be a
@@ -449,7 +453,7 @@ responsibility.
 @section The Mes Bootstrap Process
 
 The Mes full source bootstrap process@footnote{TBH, the current state of
-affairs demands to label this the reduced binary seed bootstrap} is
+affairs demands to label this a `reduced binary seed bootstrap'} is
 currently being developed in GuixSD@footnote{See
 @file{gnu/packages/mes.scm} in the @var{wip-bootstrap} branch in Guix
 git
@@ -475,6 +479,8 @@ binutils-source + binutils0 + gcc + glibc => binutils
 
 gcc-source + binutils + gcc-core + glibc => gcc
 @end verbatim
+
+@image{images/gcc-mesboot-graph,2in,,Reference graph of the gcc-mesboot}
 
 Work is ongoing to remove these binary seeds that were intentionally
 injected by our own doing as temporary shortcut
@@ -770,8 +776,7 @@ guix environment -l guix.scm
 Finally, you have to invoke @code{make check} to run tests
 (@pxref{Running the Test Suites}).  If anything fails, take a look at
 installation instructions (@pxref{Installation}) or send a message to
-@email{janneke@@gnu.org, janneke} or to the @email{guix-devel@@gnu.org}
-mailing list.
+the @email{guix-devel@@gnu.org} mailing list.
 
 @node Running Mes From the Source Tree
 @section Running Mes From the Source Tree
@@ -837,8 +842,7 @@ Additionally, in Mes we prefer to format @code{if} statements like this
 Development is done using the Git distributed version control system.
 Thus, access to the repository is not strictly necessary.  We welcome
 contributions in the form of patches as produced by @code{git
-format-patch} sent to @email{janneke@@gnu.org, janneke} or to the
-@email{guix-devel@@gnu.org} mailing list.
+format-patch} sent to the @email{guix-patches@@gnu.org} mailing list.
 
 Please write commit logs in the ChangeLog format (@pxref{Change Logs,,,
 standards, GNU Coding Standards}); you can check the commit history for
@@ -862,9 +866,13 @@ honesty with a more helpful and more blunt reminder of a mantra of Free
 Software:
 
 @quotation
+@table @strong
+@item Q:
 When@dots{}?
 
+@item A:
 @dots{}sooner if you help.
+@end table
 
 @author Eric Raymond
 @end quotation
@@ -884,7 +892,7 @@ Orians, pdewacht, rain1, Ricardo Wurmus, Rutger van Beusekom.
 
 We also thank Ludovic Courtès for creating GuixSD and making the
 bootstrap problem so painfully visible, John McCarthy for creating
-LISP-1.5 and Alan Kay for their observation that Page 13
+LISP-1.5 and Alan Kay for their inspiring comment on
 @url{https://queue.acm.org/detail.cfm?id=1039523, Page 13}.
 
 @c *********************************************************************
