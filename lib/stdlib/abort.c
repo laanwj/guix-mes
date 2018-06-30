@@ -18,20 +18,12 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libc+tcc.c>
-
-#if __GNU__
-#include <linux/gnu.c>
-#elif __linux__
-#include <linux/gnu.c>
+void
+abort (void)
+{
+#if __i386__
+  asm ("hlt");
 #else
-#error both __GNU__ and _linux__ are undefined, choose one
+  asm ("break  0");
 #endif
-
-#include <m4.c>
-#include <binutils.c>
-#include <gcc.c>
-#if !__GNU__
-#include <stdlib/alloca.c>
-#endif
-#include <glibc.c>
+}

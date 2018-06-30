@@ -37,7 +37,15 @@
 #define sscanf _sscanf
 
 #include <libc+tcc.c>
-#include <linux+gnu.c>
+
+#if __GNU__
+#include <linux/gnu.c>
+#elif __linux__
+#include <linux/gnu.c>
+#else
+#error both __GNU__ and _linux__ are undefined, choose one
+#endif
+
 #include <m4.c>
 #include <binutils.c>
 #include <gcc.c>

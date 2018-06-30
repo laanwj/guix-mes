@@ -71,10 +71,10 @@ CC32_CFLAGS=${CC32_CFLAGS-"
 -Wno-incompatible-pointer-types
 "}
 
-ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crt0
-ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crt1
-ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crti
-ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crtn
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/linux/crt0
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/linux/crt1
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/linux/crti
+ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/linux/crtn
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libgetopt

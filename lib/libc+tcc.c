@@ -36,7 +36,14 @@
 #include <unistd.h>
 
 #include <libc.c>
-#include <linux+tcc.c>
+
+#if __GNU__
+#include <hurd/tcc.c>
+#elif __linux__
+#include <linux/tcc.c>
+#else
+#error both __GNU__ and _linux__ are undefined, choose one
+#endif
 
 #if __MESC__
 

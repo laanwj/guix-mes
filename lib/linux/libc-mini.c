@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -17,45 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_ERRNO_H
-#define __MES_ERRNO_H 1
 
-#if WITH_GLIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_ERRNO_H
-#include_next <errno.h>
-#else // ! WITH_GLIBC
+#if __MESC__
 
-typedef int error_t;
+#include <linux/mini-mes.c>
 
-int errno;
-#define ENOENT   2
-#define EINTR    4
-#define EIO      5
-#define E2BIG    7
-#define EBADF    9
-#define EAGAIN  11
-#define ENOMEM  12
-#define EEXIST  17
-#define ENOTDIR 20
-#define EISDIR  21
-#define EINVAL  22
-#define EMFILE  24
-#define EPIPE   32
-#define ERANGE  34
+#else // !__MESC__
 
-#define ENAMETOOLONG 36
-#define ENOSYS 38
-#define ELOOP  40
+#include <linux/mini-gcc.c>
 
-#if !__MESC__
-//extern char const *const sys_errlist[];
-extern char *sys_errlist[];
-extern int sys_nerr;
 #endif // !__MESC__
 
-#endif // ! WITH_GLIBC
-
-#endif // __MES_ERRNO_H
+ssize_t
+write (int filedes, void const *buffer, size_t size)
+{
+  int r = _write (filedes, buffer, size);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}

@@ -29,21 +29,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#if __MESC__
-
-#include <linux-mes.c>
-
-#else // !__MESC__
-
-#include <assert.h>
-
-#include <linux-gcc.c>
-
-#endif // !__MESC__
-
 #include <libc-mini.c>
 #include <libmes.c>
-#include <linux.c>
+
+#if __GNU__
+#include <hurd/libc.c>
+#elif __linux__
+#include <linux/libc.c>
+#else
+#error both __GNU__ and _linux__ are undefined, choose one
+#endif
 
 int g_stdin = 0;
 
@@ -62,6 +57,13 @@ __mes_debug ()
     }
   return __mes_debug;
 }
+
+
+#if !___GNU__
+#include <string/memcpy.c>
+#include <stdlib/malloc.c>
+#include <assert/assert.c>
+#endif
 
 int
 getchar ()
@@ -92,17 +94,6 @@ int
 putc (int c, FILE* stream)
 {
   return fdputc (c, (int)stream);
-}
-
-void
-assert_fail (char* s)
-{
-  eputs ("assert fail: ");
-  eputs (s);
-  eputs ("\n");
-  char *fail = s;
-  fail = 0;
-  *fail = 0;
 }
 
 int
@@ -144,29 +135,6 @@ strcpy (char *dest, char const *src)
   char *p = dest;
   while (*src) *p++ = *src++;
   *p = 0;
-  return dest;
-}
-
-char *g_brk = 0;
-
-void *
-malloc (size_t size)
-{
-  if (!g_brk)
-    g_brk = brk (0);
-  if (brk (g_brk + size) == (void*)-1)
-    return 0;
-  char *p = g_brk;
-  g_brk += size;
-  return p;
-}
-
-void *
-memcpy (void *dest, void const *src, size_t n)
-{
-  char* p = dest;
-  char const* q = src;
-  while (n--) *p++ = *q++;
   return dest;
 }
 

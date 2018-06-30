@@ -38,6 +38,18 @@
 #define SYS_ioctl   0x36
 #define SYS_fsync   0x76
 
+#if __MESC__
+
+#include <linux/mes.c>
+
+#else // !__MESC__
+
+#include <assert.h>
+
+#include <linux/gcc.c>
+
+#endif // !__MESC__
+
 int
 fork ()
 {

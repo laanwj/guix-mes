@@ -3,7 +3,7 @@ Main author
 All files except the imported files listed below
 
 Jeremiah Orians <jeremiah@pdp10.guru>
-lib/libc.c (fopen)
+lib/libc+tcc.c (fopen)
 scaffold/tests/98-fopen.c
 
 Han-Wen Nienhuys <hanwen@xs4all.nl>

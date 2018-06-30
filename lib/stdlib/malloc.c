@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of Mes.
  *
@@ -18,20 +18,16 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libc+tcc.c>
+char *__brk = 0;
 
-#if __GNU__
-#include <linux/gnu.c>
-#elif __linux__
-#include <linux/gnu.c>
-#else
-#error both __GNU__ and _linux__ are undefined, choose one
-#endif
-
-#include <m4.c>
-#include <binutils.c>
-#include <gcc.c>
-#if !__GNU__
-#include <stdlib/alloca.c>
-#endif
-#include <glibc.c>
+void *
+malloc (size_t size)
+{
+  if (!__brk)
+    __brk = brk (0);
+  if (brk (__brk + size) == (void*)-1)
+    return 0;
+  char *p = __brk;
+  __brk += size;
+  return p;
+}

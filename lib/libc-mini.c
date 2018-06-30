@@ -20,16 +20,28 @@
 
 #include <errno.h>
 
+#ifndef _SIZE_T
+#define _SIZE_T
+#ifndef __SIZE_T
+#define __SIZE_T
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
 #undef size_t
 typedef unsigned long size_t;
 #endif
+#endif
+#endif
 
+#ifndef _SSIZE_T
+#define _SSIZE_T
+#ifndef __SSIZE_T
+#define __SSIZE_T
 #ifndef __MES_SSIZE_T
 #define __MES_SSIZE_T
 #undef ssize_t
 typedef long ssize_t;
+#endif
+#endif
 #endif
 
 ssize_t write (int filedes, void const *buffer, size_t size);
@@ -65,15 +77,13 @@ puts (char const* s)
   return oputs ("\n");
 }
 
-#if __MESC__
-
-#include <linux-mini-mes.c>
-
-#else // !__MESC__
-
-#include <linux-mini-gcc.c>
-
-#endif // !__MESC__
+#if __GNU__
+#include <hurd/libc-mini.c>
+#elif __linux__
+#include <linux/libc-mini.c>
+#else
+#error both __GNU__ and _linux__ are undefined, choose one
+#endif
 
 void (*__call_at_exit) (void);
 
@@ -83,18 +93,4 @@ exit (int code)
   if (__call_at_exit)
     (*__call_at_exit) ();
   _exit (code);
-}
-
-ssize_t
-write (int filedes, void const *buffer, size_t size)
-{
-  int r = _write (filedes, buffer, size);
-  if (r < 0)
-    {
-      errno = -r;
-      r = -1;
-    }
-  else
-    errno = 0;
-  return r;
 }

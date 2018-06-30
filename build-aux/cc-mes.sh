@@ -57,7 +57,7 @@ if [ -z "$ARCHDIR" ]; then
     p="mes-"
 else
     b=${c##*/}
-    d=${c%/*}
+    d=${c%%/*}
     o="$d/x86-mes/$b"
     mkdir -p $d/x86-mes
 fi

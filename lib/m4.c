@@ -20,15 +20,7 @@
 
 #include <ctype.h>
 
-int
-abort ()
-{
-  static int stub = 0;
-  if (__mes_debug () && !stub)
-    eputs ("abort stub\n");
-  stub = 1;
-  return 0;
-}
+#include "stdlib/abort.c"
 
 int
 atof (int x)

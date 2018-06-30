@@ -105,10 +105,10 @@ if [ ! -d "$MES_SEED" ] \
 fi
 
 MES_ARENA=100000000
-ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crt0
-ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crt1
-ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crti
-ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crtn
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/linux/crt0
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/linux/crt1
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/linux/crti
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/linux/crtn
 ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libgetopt

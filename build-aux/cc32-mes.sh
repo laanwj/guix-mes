@@ -63,7 +63,7 @@ if [ -z "$ARCHDIR" ]; then
     p="$a-"
 else
     b=${c##*/}
-    d=${c%/*}
+    d=${c%%/*}
     o="$d/$arch/$b"
     mkdir -p $d/$arch
 fi

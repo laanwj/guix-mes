@@ -244,7 +244,7 @@ sbrk (intptr_t delta)
 {
   if (delta >= 0)
     return malloc (delta);
-  return g_brk;
+  return __brk;
 }
 
 // binutils 2.30
