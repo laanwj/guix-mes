@@ -18,10 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+export BASH
 export CC32
 export GUILE MES MES_ARENA
 export BUILD_DEBUG
 
+BASH=${BASH-bash}
 CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
@@ -95,4 +97,4 @@ else
     echo PASS: $total
 fi
 
-sh build-aux/check-mescc.sh
+$BASH build-aux/check-mescc.sh

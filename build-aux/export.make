@@ -10,6 +10,10 @@ ifdef VERSION
 export VERSION
 endif
 
+ifdef ARCH
+export ARCH
+endif
+
 ifdef CC
 export CC
 endif

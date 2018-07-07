@@ -47,13 +47,17 @@ guile/mescc/preprocess.scm
 export srcdir=.
 export host=$($GUILE -c "(display %host-type)")
 
+if [ "$GUILE_EFFECTIVE_VERSION" = "2.0" ]; then
+    abs=$PWD/
+fi
+
 #$GUILE --no-auto-compile -L guile -C guile -s build-aux/compile-all.scm $SCM_FILES
 
 for i in $SCM_FILES; do
     go=${i%%.scm}.go
     if [ $i -nt $go ]; then
         echo "  GUILEC $i"
-        $GUILE_TOOLS compile -L guile -L scripts -o $go $i
+        $GUILE_TOOLS compile -L ${abs}guile -L ${abs}scripts -o $go $i
     fi
 done
 
@@ -65,6 +69,6 @@ for i in $SCRIPTS; do
     go=${i%%.scm}.go
     if [ $i -nt $go ]; then
         echo "  GUILEC $i"
-        $GUILE_TOOLS compile -L guile -L scripts -o $go $i
+        $GUILE_TOOLS compile -L ${abs}guile -L ${abs}scripts -o $go $i
     fi
 done

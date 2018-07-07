@@ -228,10 +228,10 @@
       (if (string-null? prefix) o (string-append prefix "/" o)))
     (prefix-file file-name)))
 
-(define (assert-system* . commands)
-  (let ((status (apply system* commands)))
+(define (assert-system* . args)
+  (let ((status (apply system* args)))
     (when (not (zero? status))
-      (stderr "mescc: failed: ~a\n" (string-join command))
+      (stderr "mescc: failed: ~a\n" (string-join args))
       (exit status))
     status))
 

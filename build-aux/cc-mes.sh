@@ -63,20 +63,20 @@ else
 fi
 
 if [ -n "$PREPROCESS" ]; then
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -E -o "$o.E" "$c".c
-    sh $MESCC $MESCCFLAGS -S "$o".E
-    sh $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
+    bash $MESCC $MESCCFLAGS $CPPFLAGS -E -o "$o.E" "$c".c
+    bash $MESCC $MESCCFLAGS -S "$o".E
+    bash $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        sh $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
+        bash $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
     fi
 elif [ -n "$COMPILE" ]; then
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -S -o "$o.S" "$c".c
-    sh $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
+    bash $MESCC $MESCCFLAGS $CPPFLAGS -S -o "$o.S" "$c".c
+    bash $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        sh $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
+        bash $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
     fi
 elif [ -z "$NOLINK" ]; then
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -o "$o".${p}out "$c".c $MESCCLIBS
+    bash $MESCC $MESCCFLAGS $CPPFLAGS -o "$o".${p}out "$c".c $MESCCLIBS
 else
-    sh $MESCC $MESCCFLAGS $CPPFLAGS -c -o "$o".${p}out "$c".c
+    bash $MESCC $MESCCFLAGS $CPPFLAGS -c -o "$o".${p}o "$c".c
 fi

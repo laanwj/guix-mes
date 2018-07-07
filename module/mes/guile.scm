@@ -89,22 +89,7 @@
 
 (cond-expand
  (guile-2.2)
- (guile-2
-  (eval-when (compile load eval)
-    (define-syntax include-from-path
-      (lambda (x)
-        (syntax-case x ()
-          ((k filename)
-           (let ((fn (syntax->datum #'filename)))
-             (with-syntax ((fn (datum->syntax
-                                #'filename
-                                (canonicalize-path
-                                 (or (%search-load-path fn)
-                                     (syntax-violation 'include-from-path
-                                                       "file not found in path"
-                                                       x #'filename))))))
-               #'(include fn))))))))
-  (export include-from-path))
+ (guile-2)
  (guile
   (use-modules (ice-9 syncase))
   (define (compose proc . rest)

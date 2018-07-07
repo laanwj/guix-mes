@@ -148,12 +148,23 @@ fdgetc (int fd)
    }
   else
     {
-      if (_ungetc_fd != fd)
+      i = _ungetc_buf[_ungetc_pos];
+      if (_ungetc_fd != fd && i == 10)
+        {
+          // FIXME: Nyacc's ungetc exposes harmless libmec.c bug
+          // we need one unget position per FD
+          _ungetc_pos = -1;
+          _ungetc_fd = -1;
+          return fdgetc (fd);
+        }
+      else if (_ungetc_fd != fd)
         {
           eputs (" ***MES LIB C*** fdgetc ungetc conflict unget-fd=");
           eputs (itoa (_ungetc_fd));
           eputs (", fdgetc-fd=");
           eputs (itoa (fd));
+          eputs (", c=");
+          eputs (itoa ( _ungetc_buf[_ungetc_pos]));
           eputs ("\n");
           exit (1);
         }
@@ -186,6 +197,8 @@ fdputs (char const* s, int fd)
 int
 fdungetc (int c, int fd)
 {
+  if (c == -1)
+    return c;
   if (_ungetc_pos == -1)
     _ungetc_fd = fd;
   else if (_ungetc_fd != fd)

@@ -4,7 +4,7 @@ if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 PREFIX=${PREFIX-@PREFIX@}
-if [ "$PREFIX" = @PREFIX""@ -o ! -d "$PREFIX" ]
+if [ "@PREFIX@" = @PREFIX""@ -o ! -d "$PREFIX/share/mes/module" ]
 then
     MES_PREFIX=${MES_PREFIX-$(cd $(dirname $0)/.. && pwd)}
 else
@@ -22,8 +22,6 @@ if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile
     exec ${GUILE-guile} -L $GUILEDIR -e '(mescc)' -s "$0" "$@"
 else
     MES=${MES-$(dirname $0)/mes}
-    MES_MODULEDIR=${MES_MODULEDIR-$MES_PREFIX/"module"}
-    export MES_MODULEDIR
     exec ${MES-mes} -e '(mescc)' -s $0 "$@"
 fi
 !#

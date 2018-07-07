@@ -1,11 +1,12 @@
 #! /bin/sh
 
 set -e
-set -o pipefail
-
 if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
+
+# use bash or lose if pipes fail
+[ -n "$BASH" ] && set -o pipefail
 
 SHELL=${SHELL-$(command -v sh)}
 PREFIX=${PREFIX-/usr/local}

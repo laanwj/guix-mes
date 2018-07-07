@@ -97,34 +97,44 @@ if [ -d "$MES_SEED" ]; then
 fi
 
 PREPROCESS=1
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crt0
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crt1
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crti
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/crtn
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc-mini
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libgetopt
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc+tcc
-ARCHDIR=1 NOLINK=1 sh build-aux/cc-mes.sh lib/libc+gnu
+if [ ! -d "$MES_SEED" ] \
+       && [ "$ARCH" = "i386" \
+            -o "$ARCH" = "i586" \
+            -o "$ARCH" = "i686" ]; then
+    MES_ARENA=100000000
+fi
+
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crt0
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crt1
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crt1
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crti
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/crtn
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libc-mini
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libc
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libgetopt
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libc+tcc
+ARCHDIR=1 NOLINK=1 bash build-aux/cc-mes.sh lib/libc+gnu
 
 [ -n "$SEED" ] && exit 0
 
-MES_ARENA=${MES_ARENA-10000000}
-sh build-aux/mes-snarf.scm --mes src/gc.c
-sh build-aux/mes-snarf.scm --mes src/lib.c
-sh build-aux/mes-snarf.scm --mes src/math.c
-sh build-aux/mes-snarf.scm --mes src/mes.c
-sh build-aux/mes-snarf.scm --mes src/posix.c
-sh build-aux/mes-snarf.scm --mes src/reader.c
-sh build-aux/mes-snarf.scm --mes src/vector.c
+MES_ARENA=${MES_ARENA-100000000}
+bash build-aux/mes-snarf.scm --mes src/gc.c
+bash build-aux/mes-snarf.scm --mes src/lib.c
+bash build-aux/mes-snarf.scm --mes src/math.c
+bash build-aux/mes-snarf.scm --mes src/mes.c
+bash build-aux/mes-snarf.scm --mes src/posix.c
+bash build-aux/mes-snarf.scm --mes src/reader.c
+bash build-aux/mes-snarf.scm --mes src/vector.c
 
-sh build-aux/cc-mes.sh scaffold/main
-sh build-aux/cc-mes.sh scaffold/hello
-sh build-aux/cc-mes.sh scaffold/argv
-sh build-aux/cc-mes.sh scaffold/malloc
+echo MES_ARENA=$MES_ARENA
+bash build-aux/cc-mes.sh scaffold/main
+
+bash build-aux/cc-mes.sh scaffold/main
+bash build-aux/cc-mes.sh scaffold/hello
+bash build-aux/cc-mes.sh scaffold/argv
+bash build-aux/cc-mes.sh scaffold/malloc
 ##sh build-aux/cc-mes.sh scaffold/micro-mes
 ##sh build-aux/cc-mes.sh scaffold/tiny-mes
-# sh build-aux/cc-mes.sh scaffold/mini-mes
-
-sh build-aux/cc-mes.sh src/mes
+# bash build-aux/cc-mes.sh scaffold/mini-mes
+bash build-aux/cc-mes.sh src/mes
 cp src/mes.mes-out src/mes
