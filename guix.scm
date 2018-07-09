@@ -53,6 +53,7 @@
              (gnu packages man)
              (gnu packages mes)
              (gnu packages package-management)
+             (gnu packages version-control)
              (gnu packages perl)
              (gnu packages texinfo)
              ((guix build utils) #:select (with-directory-excursion))
@@ -147,7 +148,8 @@ hex2 linker.")
        `(("mescc-tools" ,mescc-tools)
          ("nyacc" ,nyacc-for-mes)))
       (native-inputs
-       `(("guile" ,guile-2.2)
+       `(("git" ,git)
+         ("guile" ,guile-2.2)
          ,@(if (string-prefix? "x86_64-linux" (or (%current-target-system)
                                                   (%current-system)))
                ;; Use cross-compiler rather than #:system "i686-linux" to get

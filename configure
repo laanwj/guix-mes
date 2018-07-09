@@ -20,7 +20,7 @@ cat <<EOF
 not found
 Missing dependencies, run
 
-    sudo apt-get install guile-2.2
+    sudo apt-get install guile-2.2-dev
 EOF
     exit 1
 fi
@@ -309,6 +309,12 @@ Some influential environment variables:
       (check-version "nyacc" '(0 80 41) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
 
       (check-version "bash" '(4 0))
+      (when (and (check-version "git" '(2 0) #:optional? #t)
+                 (not (file-exists? ".git")))
+        ;; Debian wants to run `make clean' from a tarball
+        (and (zero? (system* "git" "init"))
+             (zero? (system* "git" "add" "."))
+             (zero? (system* "git" "commit" "-m" "Import mes"))))
       (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
         (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
         (exit 1))
