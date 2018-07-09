@@ -125,6 +125,16 @@ src/mes.gcc-out:
 doc/mescc.1: src/mes.gcc-out scripts/mescc
 	MES_ARENA=10000000 $(HELP2MAN) $< > $@
 
+html: mes/index.html
+
+mes/index.html: doc/mes.texi
+	$(MAKEINFO) --html -o doc/mes $<
+
+pdf: doc/mes.pdf
+
+doc/mes.pdf: doc/mes.texi
+	$(MAKEINFO) --pdf -o doc/mes.pdf $<
+
 define HELP_TOP
 Usage: make [OPTION]... [TARGET]...
 
