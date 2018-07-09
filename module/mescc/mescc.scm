@@ -160,7 +160,7 @@
                     "-o" ,hex2-file-name)))
     (when verbose?
       (stderr "~a\n" (string-join command)))
-    (and (zero? (apply system* command))
+    (and (zero? (apply assert-system* command))
          hex2-file-name)))
 
 (define* (hex2->elf options hex2-files #:key elf-footer)
@@ -182,7 +182,7 @@
                     "-o" ,elf-file-name)))
     (when verbose?
       (stderr "~a\n" (string-join command)))
-    (and (zero? (apply system* command))
+    (and (zero? (apply assert-system* command))
          elf-file-name)))
 
 (define (M1->blood-elf options M1-files)
@@ -198,7 +198,7 @@
                       "-o" ,M1-blood-elf-footer)))
     (when verbose?
         (format (current-error-port) "~a\n" (string-join command)))
-    (and (zero? (apply system* command))
+    (and (zero? (apply assert-system* command))
          (let* ((options (acons 'compile #t options)) ; ugh
                 (options (acons 'output blood-elf-footer options)))
            (M1->hex2 options (list M1-blood-elf-footer))))))
@@ -228,6 +228,12 @@
       (if (string-null? prefix) o (string-append prefix "/" o)))
     (prefix-file file-name)))
 
+(define (assert-system* . commands)
+  (let ((status (apply system* commands)))
+    (when (not (zero? status))
+      (stderr "mescc: failed: ~a\n" (string-join command))
+      (exit status))
+    status))
 
 (define (multi-opt option-name) (lambda (o) (and (eq? (car o) option-name) (cdr o))))
 
