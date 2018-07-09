@@ -58,7 +58,7 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 
 (define *shell* "sh")
 (define PACKAGE "mes")
-(define VERSION "0.16")
+(define VERSION "0.16.1")
 (define GUILE (or (getenv "guile") "guile"))
 (define GUILE_EFFECTIVE_VERSION (effective-version))
 
@@ -302,7 +302,7 @@ Some influential environment variables:
       (set! *verbose?* verbose?)
       (check-version "guile" '(2 0))
       (check-version "guile-tools" '(2 0))
-      (check-version "mes-seed" '(0 16) #:optional? #t #:command (string-append MES_SEED "/refresh.sh"))
+      (check-version "mes-seed" '(0 16 1) #:optional? #t #:command (string-append MES_SEED "/refresh.sh"))
       (check-version "tinycc-seed" '(0 16) #:optional? #t #:command (string-append TINYCC_SEED "/refresh.sh"))
       (check-version BLOOD_ELF '(0 1))
       (check-version HEX2 '(0 3))
