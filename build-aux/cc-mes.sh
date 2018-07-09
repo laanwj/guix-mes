@@ -35,8 +35,8 @@ MES=${MES-$(command -v mes)}
 
 CPPFLAGS=${CPPFLAGS-"
 -D VERSION=\"$VERSION\"
--D MODULEDIR=\"$MODULEDIR\"
--D PREFIX=\"$PREFIX\"
+-D MODULEDIR=\"$moduledir\"
+-D PREFIX=\"$prefix\"
 -I src
 -I lib
 -I include

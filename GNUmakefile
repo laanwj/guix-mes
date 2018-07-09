@@ -21,7 +21,7 @@ GUILE_FLAGS:=--no-auto-compile -L . -L guile -C . -C guile
 include .config.make
 
 .config.make:
-	./configure --prefix=$(PREFIX)
+	./configure --prefix=$(prefix)
 
 PHONY_TARGETS:= all all-go build check clean clean-go default doc help install install-info man\
 cc mes mes-gcc mes-tcc
@@ -140,8 +140,8 @@ Targets:
   clean           run git clean -dfx
   clean-go        clean .go files
   info            update info documentation
-  install         install in $(PREFIX)
-  install-info    install info docs in $(PREFIX)/share/info
+  install         install in $(prefix)
+  install-info    install info docs in $(prefix)/share/info
   seed            update mes-seed in $(MES_SEED)
 endef
 export HELP_TOP

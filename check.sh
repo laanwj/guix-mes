@@ -28,7 +28,7 @@ CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
 MES_ARENA=${MES_ARENA-100000000}
-PREFIX=
+prefix=
 
 if ! command -v $GUILE > /dev/null; then
     GUILE=true

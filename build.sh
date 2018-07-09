@@ -23,9 +23,9 @@ if [ -n "$BUILD_DEBUG" ]; then
 fi
 
 # dash does not export foo=${foo-bar} for some values
+export prefix datadir moduledir
 export CC CC32 TCC GUILE MESCC MES_SEED
 export MES_ARENA MES_DEBUG
-export PREFIX DATADIR MODULEDIR
 export CPPFLAGS CFLAGS C32FLAGS MESCCFLAGS
 export BUILD_DEBUG
 
@@ -37,15 +37,15 @@ GUILE=${GUILE-$(command -v guile)}
 MES_ARENA=${MES_ARENA-100000000}
 MES_DEBUG=${MES_DEBUG-1}
 
-PREFIX=${PREFIX-/usr/local}
-DATADIR=${DATADIR-$PREFIX/share/mes}
-MODULEDIR=${MODULEDIR-${DATADIR}${DATADIR:+/}module}
+prefix=${prefix-/usr/local}
+datadir=${datadir-$prefix/share/mes}
+moduledir=${moduledir-${datadir}${datadir:+/}module}
 set -e
 
 CPPFLAGS=${CPPFLAGS-"
 -D VERSION=\"$VERSION\"
--D MODULEDIR=\"$MODULEDIR\"
--D PREFIX=\"$PREFIX\"
+-D MODULEDIR=\"$moduledir\"
+-D PREFIX=\"$prefix\"
 -I src
 -I lib
 -I include

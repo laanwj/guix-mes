@@ -9,71 +9,73 @@ fi
 [ -n "$BASH" ] && set -o pipefail
 
 SHELL=${SHELL-$(command -v sh)}
-PREFIX=${PREFIX-/usr/local}
-MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
-MES_SEED=${MES_SEED-../mes-seed}
-TINYCC_SEED=${TINYCC_SEED-../tinycc-seed}
+prefix=${prefix-/usr/local}
 
-mkdir -p $DESTDIR$PREFIX/bin
-cp src/mes $DESTDIR$PREFIX/bin/mes
+MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
+MES_SEED=${MES_SEED-../MES-SEED}
+TINYCC_SEED=${TINYCC_SEED-../TINYCC-SEED}
 
-mkdir -p $DESTDIR$PREFIX/lib
+mkdir -p $DESTDIR$prefix/bin
+cp src/mes $DESTDIR$prefix/bin/mes
+
+mkdir -p $DESTDIR$prefix/lib
 mkdir -p $DESTDIR$MES_PREFIX/lib
-cp scripts/mescc $DESTDIR$PREFIX/bin/mescc
+cp scripts/mescc $DESTDIR$prefix/bin/mescc
 
 mkdir -p $DESTDIR$MES_PREFIX
 tar -cf- doc guile include lib module scaffold | tar -xf- -C $DESTDIR$MES_PREFIX
 
 GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
-DATADIR=${MODULEDIR-$PREFIX/share/mes}
-DOCDIR=${MODULEDIR-$PREFIX/share/doc/mes}
-MODULEDIR=${MODULEDIR-$DATADIR/module}
-GUILEDIR=${MODULEDIR-$PREFIX/share/guile/site/$GUILE_EFFECTIVE_VERSION}
-GODIR=${GODIR-$PREFIX/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
-DOCDIR=${MODULEDIR-$PREFIX/share/doc/mes}
+datadir=${moduledir-$prefix/share/mes}
+docdir=${moduledir-$prefix/share/doc/mes}
+mandir=${mandir-$prefix/share/man}
+moduledir=${moduledir-$datadir/module}
+guile_site_dir=${moduledir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
+guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
+docdir=${moduledir-$prefix/share/doc/mes}
 
-chmod +w $DESTDIR$PREFIX/bin/mescc
+chmod +w $DESTDIR$prefix/bin/mescc
 sed \
     -e "s,^#! /bin/sh,#! $SHELL," \
-    -e "s,module/,$MODULEDIR/," \
-    -e "s,@DATADIR@,$DATADIR,g" \
-    -e "s,@DOCDIR@,$DOCDIR,g" \
-    -e "s,@GODIR@,$GODIR,g" \
-    -e "s,@GUILEDIR@,$GUILEDIR,g" \
-    -e "s,@MODULEDIR@,$MODULEDIR,g" \
-    -e "s,@PREFIX@,$PREFIX,g" \
+    -e "s,module/,$moduledir/," \
+    -e "s,@datadir@,$datadir,g" \
+    -e "s,@docdir@,$docdir,g" \
+    -e "s,@guile_site_ccache_dir@,$guile_site_ccache_dir,g" \
+    -e "s,@guile_site_dir@,$guile_site_dir,g" \
+    -e "s,@moduledir@,$moduledir,g" \
+    -e "s,@prefix@,$prefix,g" \
     -e "s,@VERSION@,$VERSION,g" \
-    scripts/mescc > $DESTDIR$PREFIX/bin/mescc
-chmod +w $DESTDIR$MODULEDIR/mes/boot-0.scm
+    scripts/mescc > $DESTDIR$prefix/bin/mescc
+chmod +w $DESTDIR$moduledir/mes/boot-0.scm
 sed \
     -e "s,^#! /bin/sh,#! $SHELL," \
-    -e "s,module/,$MODULEDIR/," \
-    -e "s,@DATADIR@,$DATADIR,g" \
-    -e "s,@DOCDIR@,$DOCDIR,g" \
-    -e "s,@GODIR@,$GODIR,g" \
-    -e "s,@GUILEDIR@,$GUILEDIR,g" \
-    -e "s,@MODULEDIR@,$MODULEDIR,g" \
-    -e "s,@PREFIX@,$PREFIX,g" \
+    -e "s,module/,$moduledir/," \
+    -e "s,@datadir@,$datadir,g" \
+    -e "s,@docdir@,$docdir,g" \
+    -e "s,@guile_site_ccache_dir@,$guile_site_ccache_dir,g" \
+    -e "s,@guile_site_dir@,$guile_site_dir,g" \
+    -e "s,@moduledir@,$moduledir,g" \
+    -e "s,@prefix@,$prefix,g" \
     -e "s,@VERSION@,$VERSION,g" \
-    module/mes/boot-0.scm > $DESTDIR$MODULEDIR/mes/boot-0.scm
+    module/mes/boot-0.scm > $DESTDIR$moduledir/mes/boot-0.scm
 
 sed \
     -e "s,^#! /bin/sh,#! $SHELL," \
-    scripts/diff.scm > $DESTDIR$PREFIX/bin/diff.scm
-chmod -w+x $DESTDIR$PREFIX/bin/diff.scm
+    scripts/diff.scm > $DESTDIR$prefix/bin/diff.scm
+chmod -w+x $DESTDIR$prefix/bin/diff.scm
 
 if [ -f doc/mes.info ]; then
-    mkdir -p $DESTDIR$PREFIX/share/info
-    install-info --info-dir=$DESTDIR$PREFIX/share/info doc/mes.info
-    tar -cf- doc/mes.info* | tar -xf- --strip-components=1 -C $DESTDIR$PREFIX/share/info
+    mkdir -p $DESTDIR$prefix/share/info
+    install-info --info-dir=$DESTDIR$prefix/share/info doc/mes.info
+    tar -cf- doc/mes.info* | tar -xf- --strip-components=1 -C $DESTDIR$prefix/share/info
 fi
 
 if [ -f doc/mes.1 ]; then
-    mkdir -p $DESTDIR$PREFIX/man/man1
-    cp doc/mes.1 $DESTDIR$PREFIX/man/man1/
+    mkdir -p $DESTDIR$mandir/man1
+    cp doc/mes.1 $DESTDIR$mandir/man1/
 fi
 
 if [ -f doc/mescc.1 ]; then
-    mkdir -p $DESTDIR$PREFIX/man/man1
-    cp doc/mescc.1 $DESTDIR$PREFIX/man/man1/
+    mkdir -p $DESTDIR$mandir/man1
+    cp doc/mescc.1 $DESTDIR$mandir/man1/
 fi

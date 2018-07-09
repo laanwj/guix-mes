@@ -59,10 +59,13 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define *shell* "sh")
 (define PACKAGE "mes")
 (define VERSION "0.16")
-(define PREFIX "/usr/local")
-(define GUILE_EFFECTIVE_VERSION (effective-version))
 (define GUILE (or (getenv "guile") "guile"))
-(define SYSCONFDIR "$(PREFIX)/etc")
+(define GUILE_EFFECTIVE_VERSION (effective-version))
+
+(define prefix "/usr/local")
+(define infodir "${prefix}/share/info")
+(define mandir "${prefix}/share/man")
+(define sysconfdir "${prefix}/etc")
 
 ;;; Utility
 (define (logf port string . rest)
@@ -189,8 +192,21 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
             (sysconfdir (value #t))
             (verbose (single-char #\v))
             (with-courage)
-            ;;ignore
-            (enable-fast-install))))
+            (infodir (value #t))
+            (mandir (value #t))
+            (disable-silent-rules)
+
+            (enable-fast-install)       ; Ignored for Guix
+            (includedir (value #t))     ; Ignored for Debian
+            (mandir (value #t))         ; Ignored for Debian
+            (localstatedir (value #t))  ; Ignored for Debian
+            (libdir (value #t))         ; Ignored for Debian
+            (libexecdir (value #t))     ; Ignored for Debian
+            (runstatedir (value #t))    ; Ignored for Debian
+            (disable-maintainer-mode)   ; Ignored for Debian
+            (disable-dependency-tracking) ; Ignored for Debian
+            )))
+
     (getopt-long args option-spec)))
 
 (define* (print-help #:optional (port (current-output-port)))
@@ -207,13 +223,29 @@ Defaults for the options are specified in brackets.
 Options:
   -h, --help           display this help
       --build=BUILD    configure for building on BUILD [guessed]
+      --disable-silent-rules
+                       verbose build output [BUILD_DEBUG=1]
       --host=HOST      cross-compile to build programs to run on HOST [BUILD]
   -v, --verbose        be verbose
   --with-courage       assert being courageous to configure for unsupported platform
 
 Installation directories:
-  --prefix=DIR         install in PREFIX [~a]
-  --sysconfdir=DIR     read-only single-machine data [PREFIX/etc]
+  --prefix=DIR         install in prefix DIR [~a]
+  --infodir=DIR        info documentation [PREFIX/share/info]
+  --mandir=DIR         man pages [PREFIX/share/man]
+
+Ignored for Guix:
+  --enable-fast-install
+
+Ignored for Debian:
+  --disable-dependency-tracking
+  --disable-maintainer-mode
+  --includedir=DIR
+  --libdir=DIR
+  --libexecdir=DIR
+  --localstatedir=DIR
+  --mandir=DIR
+  --runstatedir=DIR
 
 Some influential environment variables:
   CC                C compiler command
@@ -226,7 +258,7 @@ Some influential environment variables:
   MESCC_TOOLS_SEED  location of mescc-tools-seed
   TCC               tcc C compiler command
   TINYCC_SEED       location of tinycc-seed
-" PACKAGE VERSION (getenv "PREFIX")))
+" PACKAGE VERSION (getenv "prefix")))
 
 (define (main args)
   (let* ((CC (or (getenv "CC") "gcc"))
@@ -235,10 +267,12 @@ Some influential environment variables:
          (options (parse-opts args))
          (build-triplet (option-ref options 'build BUILD_TRIPLET))
          (host-triplet (option-ref options 'host BUILD_TRIPLET))
-         (prefix (option-ref options 'prefix PREFIX))
-         (sysconfdir (option-ref options 'sysconfdir SYSCONFDIR))
+         (prefix (option-ref options 'prefix prefix))
+         (infodir (option-ref options 'infodir infodir))
+         (sysconfdir (option-ref options 'sysconfdir sysconfdir))
          (verbose? (option-ref options 'verbose #f))
          (with-courage? (option-ref options 'with-courage #f))
+         (disable-silent-rules? (option-ref options 'disable-silent-rules #f))
          (make? #f)
          (vars (filter (cut string-index <> #\=) (option-ref options '() '())))
          (help? (option-ref options 'help #f)))
@@ -305,6 +339,11 @@ Some influential environment variables:
           (stdout "build:=~a\n" build-triplet)
           (stdout "host:=~a\n" host-triplet)
           (stdout "srcdir:=.\n")
+          (stdout "prefix:=~a\n" (gulp-pipe (string-append "echo " prefix)))
+          (stdout "infodir:=~a\n" infodir)
+          (stdout "mandir:=~a\n" mandir)
+          (stdout "sysconfdir:=~a\n" sysconfdir)
+
           (stdout "ARCH:=~a\n" ARCH)
           (stdout "CC:=~a\n" (or CC ""))
           (stdout "CC32:=~a\n" (or CC32 ""))
@@ -324,8 +363,8 @@ Some influential environment variables:
           (stdout "HEX2:=~a\n" (or HEX2 ""))
           (stdout "PACKAGE:=~a\n" PACKAGE)
           (stdout "VERSION:=~a\n" VERSION)
-          (stdout "PREFIX:=~a\n" (gulp-pipe (string-append "echo " prefix)))
-          (stdout "SYSCONFDIR:=~a\n" sysconfdir)
+          (when disable-silent-rules?
+            (stdout "BUILD_DEBUG:=1\n"))
           (when CFLAGS (stdout "CFLAGS:=~a\n" CFLAGS))
           (when C32FLAGS (stdout "C32FLAGS:=~a\n" C32FLAGS))
           (when HEX2FLAGS (stdout "HEX2FLAGS:=~a\n" HEX2FLAGS))

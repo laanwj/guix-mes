@@ -25,7 +25,7 @@ To help development we assume ./configure sets these variables for make
    HEX2   -- hex2
    MES    -- unset
    M1     -- M1
-   PREFIX -- ""
+   prefix -- ""
 
 Mes is supposed to serve as a full equivalent for Guile, however Mes
 ~30 times slower than Guile.  That's why we usually don't use Mes

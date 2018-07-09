@@ -3,23 +3,24 @@
 if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
-PREFIX=${PREFIX-@PREFIX@}
-if [ "@PREFIX@" = @PREFIX""@ -o ! -d "$PREFIX/share/mes/module" ]
+prefix=${prefix-@prefix@}
+if [ "@prefix@" = @prefix""@ -o ! -d "$prefix/share/mes/module" ]
 then
     MES_PREFIX=${MES_PREFIX-$(cd $(dirname $0)/.. && pwd)}
 else
-    MES_PREFIX=${MES_PREFIX-$PREFIX/share/mes}
+    MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
 fi
 export MES_PREFIX
 mes_p=$(command -v mes)
 if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile" ]; then
-    GODIR=${GODIR-@GODIR@}
-    GUILEDIR=${GUILEDIR-@GUILEDIR@}
-    [ "$GODIR" = @"GODIR"@ ] && GODIR=$(dirname $0)/../guile
-    [ "$GUILEDIR" = @"GUILEDIR"@ ] && GUILEDIR=$(dirname $0)/../guile
-    export GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
-    GUILE_LOAD_COMPILED_PATH=$GODIR:$GUILE_LOAD_COMPILED_PATH
-    exec ${GUILE-guile} -L $GUILEDIR -e '(mescc)' -s "$0" "$@"
+    guile_site_ccache_dir=${guile_site_ccache_dir-@guile_site_ccache_dir@}
+    guile_site_dir=${guile_site_dir-@guile_site_dir@}
+    [ "$guile_site_ccache_dir" = @"guile_site_ccache_dir"@ ] && guile_site_ccache_dir=$(dirname $0)/../guile
+    [ "$guile_site_dir" = @"guile_site_dir"@ ] && guile_site_dir=$(dirname $0)/../guile
+    GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
+    export GUILE_AUTO_COMPILE
+    GUILE_LOAD_COMPILED_PATH=$guile_site_ccache_dir:$GUILE_LOAD_COMPILED_PATH
+    exec ${GUILE-guile} -L $guile_site_dir -e '(mescc)' -s "$0" "$@"
 else
     MES=${MES-$(dirname $0)/mes}
     exec ${MES-mes} -e '(mescc)' -s $0 "$@"
@@ -51,9 +52,9 @@ fi
   #:export (main))
 
 (define %prefix (or (getenv "MES_PREFIX")
-                    (if (string-prefix? "@PREFIX" "@PREFIX@")
+                    (if (string-prefix? "@prefix" "@prefix@")
                         ""
-                        "@PREFIX@/share/mes")))
+                        "@prefix@/share/mes")))
 
 (define %version (if (string-prefix? "@VERSION" "@VERSION@") "git"
                      "@VERSION@"))

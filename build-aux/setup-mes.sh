@@ -10,10 +10,10 @@ mkdir -p src
 cd src
 
 GUILE_EFFECTIVE_VERSION=2.2
-GUILE_SITE_DIR=/usr/local/share/guile/site/$GUILE_EFFECTIVE_VERSION
-GUILE_SITE_CCACHE_DIR=/usr/local/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache
-GUILE_LOAD_PATH=$GUILE_SITE_DIR
-GUILE_LOAD_COMPILED_PATH=$GUILE_SITE_CCACHE_DIR
+guile_site_dir=/usr/local/share/guile/site/$GUILE_EFFECTIVE_VERSION
+guile_site_ccache_dir=/usr/local/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache
+GUILE_LOAD_PATH=$guile_site_dir
+GUILE_LOAD_COMPILED_PATH=$guile_site_ccache_dir
 export GUILE_LOAD_PATH
 export GUILE_LOAD_COMPILED_PATH
 

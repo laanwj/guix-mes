@@ -24,7 +24,7 @@ if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 
-MODULEDIR=${MODULEDIR-${DATADIR}${DATADIR:+/}module}
+moduledir=${moduledir-${datadir}${datadir:+/}module}
 export CC32 TCC CPPFLAGS C32FLAGS
 
 CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
@@ -46,8 +46,8 @@ build-aux/mes-snarf.scm src/vector.c
 
 CPPFLAGS=${CPPFLAGS-"
 -D VERSION=\"$VERSION\"
--D MODULEDIR=\"$MODULEDIR\"
--D PREFIX=\"$PREFIX\"
+-D MODULEDIR=\"$moduledir\"
+-D PREFIX=\"$prefix\"
 -I src
 -I lib
 -I include

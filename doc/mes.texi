@@ -340,7 +340,7 @@ package.  The bootstrap build procedure for Mes is similar to building
 GNU software and goes like this
 
 @example
-export PREFIX=/usr/local # for example
+export prefix=/usr/local # for example
 export MES_SEED=../mes   # for example
 # optionally set some other environment variables
 sh build.sh

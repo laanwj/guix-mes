@@ -1,9 +1,21 @@
+ifdef BUILD_DEBUG
+export BUILD_DEBUG
+endif
+
 ifdef DESTDIR
 export DESTDIR
 endif
 
-ifdef PREFIX
-export PREFIX
+ifdef prefix
+export prefix
+endif
+
+ifdef infodir
+export infodir
+endif
+
+ifdef mandir
+export mandir
 endif
 
 ifdef VERSION

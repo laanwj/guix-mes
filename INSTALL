@@ -51,7 +51,7 @@ https://gitlab.com/janneke/guix/blob/wip-bootstrap/gnu/packages/mes.scm
   - [[https://github.com/oriansj/mescc-tools][mes-seed]], 0.15 is known to work.
 
 ** Build it
-   <setup environment, e.g. PREFIX, MES_SEED>
+   <setup environment, e.g. prefix, MES_SEED>
 
    ./build.sh
 
