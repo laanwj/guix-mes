@@ -60,6 +60,7 @@ Scheme interpreter and C compiler written for bootstrapping the GNU system.
 * Bootstrapping::               Would you strap my boots?
 * Contributing::                Your help needed!
 * Acknowledgments::             Thanks!
+* Resources::
 * GNU Free Documentation License::  The license of this manual.
 * Concept Index::               Concepts.
 * Programming Index::           Data types, functions, and variables.
@@ -115,9 +116,9 @@ These were “Maxwell’s Equations of Software!”
 @end quotation
 
 Mes@footnote{``Mes'' is an acronym for the Maxwell Equations of
-Software.} consists of a mutual self-hosting Scheme interpreter
-prototype written in C and a Nyacc-based (see @pxref{NYACC User's
-Guide,,, nyacc-ug, NYACC User's Guide}) C compiler written in Scheme.
+Software.} consists of a mutual self-hosting Scheme interpreter written
+in C and a Nyacc-based (see @pxref{NYACC User's Guide,,, nyacc-ug, NYACC
+User's Guide}) C compiler written in Scheme.
 
 The Scheme interpreter @file{mes.c} is about 5000LOC of restricted C and
 intended to be bootstrappable using a very simple C compiler.
@@ -125,19 +126,39 @@ intended to be bootstrappable using a very simple C compiler.
 @section Software Freedom
 @cindex purpose
 The four essential Freedoms of Software are at the core of our GNU
-community.  Quoting@footnote{The four essential freedoms
-@url{https://www.gnu.org/philosophy/free-sw.html}} freedom #1
+community.  Quoting the GNU philosophy@footnote{The four essential
+freedoms @url{https://www.gnu.org/philosophy/free-sw.html}}
 
 @quotation
-The freedom to study how the program works, and change it so it does
-your computing as you wish (freedom 1).  Access to the source code is a
-precondition for this.
+A program is free software if the program's users have the four
+essential freedoms:
+
+@enumerate 0
+@item
+    The freedom to run the program as you wish, for any purpose (freedom 0).
+
+@item
+    The freedom to study how the program works, and change it so it does
+    your computing as you wish (freedom 1). Access to the source code is
+    a precondition for this.
+
+@item
+    The freedom to redistribute copies so you can help others (freedom
+    2).
+
+@item
+    The freedom to distribute copies of your modified versions to others
+    (freedom 3). By doing this you can give the whole community a chance
+    to benefit from your changes. Access to the source code is a
+    precondition for this.
+@end enumerate
 @end quotation
 
 So we have access to the software, we have studied it, possibly modified
 it, we built it and we installed it on a computer or some device.  How
 can we trust that when we run the program we are indeed running the
-untainted product of the source code that we studied?
+untainted product of the source code that we studied?  Unless we are
+certain of this we cannot really enjoy freedom 1.
 
 @menu
 * Reproducible Builds::         Reproducibility and free software.
@@ -175,7 +196,7 @@ largely because failing that precondition makes justifable trust in
 binaries provided suspect at best and downright dangerous in reality.
 
 It becomes clear that a bit-by-bit reproducible build of all our
-sofwares is essential if we value our Freedom #1.
+sofwares is essential if we value our Freedom 1.
 
 @subsection An Old Idea
 
@@ -199,8 +220,8 @@ Software distributions that take reproducible builds seriously are
 currently shipping well over 90% reproducible packages.
 
 That a package builds bit-by-bit reproducibly however is not enough to
-guarantee Freedom #1.  There is another factor that is often overlooked:
-opaque ascii or binary @emph{seeds} that are injected dnuring build
+guarantee Freedom 1.  There is another factor that is often overlooked:
+opaque ascii or binary @emph{seeds} that are injected during build
 time.  Yes, a package may build reproduciblly from all inspectable
 sourcess...but what functionality is programmed in the opaque seed?
 
@@ -245,10 +266,10 @@ $ du -schx *
 
 There is an obvious solution: we cannot allow any binary seeds in our
 software stack.  Not even in the bootstrap binaries.  Maybe that is a
-bit too strong: want to have the absolute minimum of binary seeds and
-all binary seeds need to be inspectable and need to be reviewed.
+bit too strong: we want to have the absolute minimum of binary seeds and
+all binary seeds need to be inspectable and must be reviewed.
 
-@subsection The Magical Self Hosting Hex Assembler
+@subsection The Magical Self-Hosting Hex Assembler
 
 June 2016 I learnt about
 @url{https://github.com/oriansj/stage0/,Stage0}.  Jeremiah Orians
@@ -283,7 +304,7 @@ powers of LISP?
 Mes is a Scheme@footnote{Scheme is a modern LISP} interpreter that will
 be indirectly bootstrapped from @file{hex0} and that wields the magical
 powers of LISP to close the bootstrap gap, asserting we can enjoy
-software Freedom #1.
+software Freedom 1.
 
 @c *********************************************************************
 @node Installation
@@ -479,6 +500,15 @@ binutils-source + binutils0 + gcc + glibc => binutils
 
 gcc-source + binutils + gcc-core + glibc => gcc
 @end verbatim
+
+@c FIXME: ./pre-inst-env guix graph --type=references gcc-mesboot@4.1.0
+@c | dot -T png > gcc-mesboot-4.1.0.png
+
+@c Using anything else (e.g. --type=package, --type=bag) produces an
+@c unreadable image with *many* duplicates.
+
+Here's a generated dependency diagram to give you impression, it is
+not complete or correct.
 
 @image{images/gcc-mesboot-graph,2in,,Reference graph of the gcc-mesboot}
 
@@ -889,11 +919,45 @@ Join us on @code{#bootstrappable} on the Freenode IRC network or on
 
 We would like to thank the following people for their help: Jeremiah
 Orians, pdewacht, rain1, Ricardo Wurmus, Rutger van Beusekom.
-
+w
 We also thank Ludovic Courtès for creating GuixSD and making the
 bootstrap problem so painfully visible, John McCarthy for creating
 LISP-1.5 and Alan Kay for their inspiring comment on
 @url{https://queue.acm.org/detail.cfm?id=1039523, Page 13}.
+
+@c *********************************************************************
+@node Resources
+@chapter Resources
+
+@itemize
+
+@item
+@url{https://bootstrappable.org, Bootstrappable Builds} Minimize the
+amount and size of opaque binary seeds we need to swallow.
+
+@item
+@url{https://reproducible-builds.org, Reproducible Builds}
+Provide a verifiable path from source code to binary.
+
+@item
+@url{https://gitlab.com/oriansj/stage0, Stage0}
+If we want, it could all start with a ~500 byte self-hosting hex
+assembler.
+
+@item
+@url{https://bootstrapping.miraheze.org, Bootstrapping wiki} An amazing
+collection of small/bootstrappable compilers, operating systems,
+anything you need.
+
+@item
+@url{irc.freenode.net, #bootstrappable} The bootstrapping community home
+at the freenode IRC network.
+
+@item
+@file{guix-devel@@gnu.org} The Guix mailing list, where it all started.
+@url{https://lists.gnu.org/archive/html/guix-devel/, guix-devel archives}.
+
+@end itemize
 
 @c *********************************************************************
 @node GNU Free Documentation License
