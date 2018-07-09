@@ -33,7 +33,7 @@ MESCC=${MESCC-$(command -v mescc)}
 MES=${MES-$(command -v mes)}
 [ -z "$MES" ] && MES=src/mes
 
-CPPFLAGS=${CPPFLAGS-"
+MES_CPPFLAGS=${MES_CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$moduledir\"
 -D PREFIX=\"$prefix\"
@@ -41,11 +41,11 @@ CPPFLAGS=${CPPFLAGS-"
 -I lib
 -I include
 "}
-MESCCFLAGS=${MESCCFLAGS-"
+MES_CCFLAGS=${MES_CCFLAGS-"
 "}
 
 if [ -n "$BUILD_DEBUG" ]; then
-    MESCCFLAGS="$MESCCFLAGS -v"
+    MES_CFLAGS="$MES_CFLAGS -v"
 fi
 
 c=$1
@@ -63,20 +63,20 @@ else
 fi
 
 if [ -n "$PREPROCESS" ]; then
-    bash $MESCC $MESCCFLAGS $CPPFLAGS -E -o "$o.E" "$c".c
-    bash $MESCC $MESCCFLAGS -S "$o".E
-    bash $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
+    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -E -o "$o.E" "$c".c
+    bash $MESCC $MES_CFLAGS -S "$o".E
+    bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        bash $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
+        bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -n "$COMPILE" ]; then
-    bash $MESCC $MESCCFLAGS $CPPFLAGS -S -o "$o.S" "$c".c
-    bash $MESCC $MESCCFLAGS -c -o "$o".${p}o "$o".S
+    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -S -o "$o.S" "$c".c
+    bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        bash $MESCC $MESCCFLAGS -o "$o".${p}out "$o".${p}o $MESCCLIBS
+        bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -z "$NOLINK" ]; then
-    bash $MESCC $MESCCFLAGS $CPPFLAGS -o "$o".${p}out "$c".c $MESCCLIBS
+    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "$c".c $MES_LIBS
 else
-    bash $MESCC $MESCCFLAGS $CPPFLAGS -c -o "$o".${p}o "$c".c
+    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "$c".c
 fi

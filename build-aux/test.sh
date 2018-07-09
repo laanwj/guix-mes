@@ -22,7 +22,7 @@ if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 
-export LIBC MESCCLIBS
+export LIBC MES_LIBS
 
 GUILE=${GUILE-$MES}
 DIFF=${DIFF-$(command -v diff)}

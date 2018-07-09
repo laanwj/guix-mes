@@ -25,15 +25,16 @@ if [ -n "$BUILD_DEBUG" ]; then
 fi
 
 export CC CFLAGS CPPFLAGS
+export CC_CFLAGS CC_CPPFLAGS
 
 CC=${CC-gcc}
-CFLAGS=${CFLAGS-"
+CC_CFLAGS=${CC_CFLAGS-"
 --std=gnu99
 -O0
 -g
 "}
 
-CPPFLAGS=${CPPFLAGS-"
+CC_CPPFLAGS=${CC_CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$moduledir\"
 -D PREFIX=\"$prefix\"

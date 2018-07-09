@@ -251,9 +251,10 @@ Some influential environment variables:
   CC                C compiler command
   CFLAGS            C compiler flags
   CC32              x86 C compiler command
-  C32FLAGS          x86 C compiler flags
+  CC32_CFLAGS       x86 C compiler flags
   GUILE             guile command
   GUILE_TOOLS       guile-tools command
+  MES_CFLAGS        MesCC flags
   MES_SEED          location of mes-seed
   MESCC_TOOLS_SEED  location of mescc-tools-seed
   TCC               tcc C compiler command
@@ -288,10 +289,10 @@ Some influential environment variables:
           (HEX2 (or (getenv "HEX2") "hex2"))
           (M1 (or (getenv "M1") "M1"))
           (CFLAGS (getenv "CFLAGS"))
-          (C32FLAGS (getenv "C32FLAGS"))
+          (CC32_CFLAGS (getenv "CC32_CFLAGS"))
           (HEX2FLAGS (getenv "HEX2FLAGS"))
           (M1FLAGS (getenv "M1FLAGS"))
-          (MESCCFLAGS (getenv "MESCCFLAGS"))
+          (MES_CFLAGS (getenv "MES_CFLAGS"))
           (MES_SEED (or (getenv "MES_SEED") "../mes-seed"))
           (MESCC_TOOLS_SEED (or (getenv "MESCC_TOOLS_SEED") "../mescc-tools-seed"))
           (TINYCC_SEED (or (getenv "TINYCC_SEED") "../tinycc-seed")))
@@ -372,10 +373,10 @@ Some influential environment variables:
           (when disable-silent-rules?
             (stdout "BUILD_DEBUG:=1\n"))
           (when CFLAGS (stdout "CFLAGS:=~a\n" CFLAGS))
-          (when C32FLAGS (stdout "C32FLAGS:=~a\n" C32FLAGS))
+          (when CC32_CFLAGS (stdout "CC32_CFLAGS:=~a\n" CC32_CFLAGS))
           (when HEX2FLAGS (stdout "HEX2FLAGS:=~a\n" HEX2FLAGS))
           (when M1FLAGS (stdout "M1FLAGS:=~a\n" M1FLAGS))
-          (when MESCCFLAGS (stdout "MESCCFLAGS:=~a\n" MESCCFLAGS))))
+          (when MES_CFLAGS (stdout "MES_CFLAGS:=~a\n" MES_CFLAGS))))
       (format (current-output-port)
               "\nRun:
   ~a            to build mes

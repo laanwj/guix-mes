@@ -24,7 +24,7 @@ if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 
-CPPFLAGS=${CPPFLAGS-"
+CC32_CPPFLAGS=${CC32_CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$moduledir\"
 -D PREFIX=\"$prefix\"
@@ -33,7 +33,7 @@ CPPFLAGS=${CPPFLAGS-"
 -I include
 "}
 
-C32FLAGS=${C32FLAGS-"
+CC32_CFLAGS=${CC32_CFLAGS-"
 -std=gnu99
 -O0
 -fno-builtin
@@ -70,14 +70,15 @@ fi
 
 $CC32\
     -c\
-    $CPPFLAGS\
-    $C32FLAGS\
+    $CC32_CPPFLAGS\
+    $CC32_CFLAGS\
     -o "$o".${p}o\
     "$c".c
 
 if [ -z "$NOLINK" ]; then
     $CC32\
-        $C32FLAGS\
+        $CC32_CPPFLAGS\
+        $CC32_CFLAGS\
         -o "$o".${p}out\
         lib/$arch/crt1.o\
         "$o".${p}o\

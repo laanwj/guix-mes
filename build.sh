@@ -42,7 +42,7 @@ datadir=${datadir-$prefix/share/mes}
 moduledir=${moduledir-${datadir}${datadir:+/}module}
 set -e
 
-CPPFLAGS=${CPPFLAGS-"
+CC_CPPFLAGS=${CC_CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$moduledir\"
 -D PREFIX=\"$prefix\"
@@ -50,12 +50,13 @@ CPPFLAGS=${CPPFLAGS-"
 -I lib
 -I include
 "}
-CFLAGS=${CFLAGS-"
+CC32_CPPFLAGS=${CC_CPPFLAGS-CC32_CPPFLAGS}
+CC_CFLAGS=${CC_CFLAGS-"
 --std=gnu99
 -O0
 -g
 "}
-C32FLAGS=${C32FLAGS-"
+CC32_FLAGS=${CC32_FLAGS-"
 --std=gnu99
 -O0
 -fno-stack-protector
@@ -64,7 +65,7 @@ C32FLAGS=${C32FLAGS-"
 -nostdinc
 -nostdlib
 "}
-MESCCLAGS=${MESCCFLAGS-"
+MES_CFLAGS=${MES_CFLAGS-"
 "}
 M1FLAGS=${M1FLAGS-"
 --LittleEndian

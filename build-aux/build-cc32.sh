@@ -25,7 +25,8 @@ if [ -n "$BUILD_DEBUG" ]; then
 fi
 
 moduledir=${moduledir-${datadir}${datadir:+/}module}
-export CC32 TCC CPPFLAGS C32FLAGS
+export CC32 TCC CPPFLAGS
+export CC32 TCC CC32_CPPFLAGS CC32_CFLAGS
 
 CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 build-aux/mes-snarf.scm --mes src/gc.c
@@ -44,7 +45,7 @@ build-aux/mes-snarf.scm src/posix.c
 build-aux/mes-snarf.scm src/reader.c
 build-aux/mes-snarf.scm src/vector.c
 
-CPPFLAGS=${CPPFLAGS-"
+CC32_CPPFLAGS=${CC32_CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$moduledir\"
 -D PREFIX=\"$prefix\"
@@ -53,7 +54,7 @@ CPPFLAGS=${CPPFLAGS-"
 -I include
 "}
 
-C32FLAGS=${C32FLAGS-"
+CC32_CFLAGS=${CC32_CFLAGS-"
 -std=gnu99
 -O0
 -fno-stack-protector

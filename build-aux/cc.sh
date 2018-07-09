@@ -24,7 +24,7 @@ if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 
-CPPFLAGS=${CPPFLAGS-"
+CC_CPPFLAGS=${CC_CPPFLAGS-"
 -D VERSION=\"$VERSION\"
 -D MODULEDIR=\"$moduledir\"
 -D PREFIX=\"$prefix\"
@@ -33,7 +33,7 @@ CPPFLAGS=${CPPFLAGS-"
 -I include
 "}
 
-CFLAGS=${CFLAGS-"
+CC_CFLAGS=${CC_CFLAGS-"
 --std=gnu99
 -O0
 -g
@@ -53,7 +53,9 @@ fi
 
 $CC\
     -c\
+    $CC_CPPFLAGS\
     $CPPFLAGS\
+    $CC_CFLAGS\
     $CFLAGS\
     -D WITH_GLIBC=1\
     -D POSIX=1\
@@ -62,6 +64,9 @@ $CC\
 
 if [ -z "$NOLINK" ]; then
     $CC\
+        $CC_CPPFLAGS\
+        $CPPFLAGS\
+        $CC_CFLAGS\
         $CFLAGS\
         -o "$o".${p}out\
         "$o".${p}o\

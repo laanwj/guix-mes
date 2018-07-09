@@ -70,8 +70,12 @@ ifdef CFLAGS
 export CFLAGS
 endif
 
-ifdef C32FLAGS
-export C32FLAGS
+ifdef CPPFLAGS
+export CPPFLAGS
+endif
+
+ifdef CC32_CFLAGS
+export CC32_CFLAGS
 endif
 
 ifdef HEX2FLAGS
@@ -82,8 +86,8 @@ ifdef M1FLAGS
 export M1FLAGS
 endif
 
-ifdef MESCCFLAGS
-export MESCCFLAGS
+ifdef MES_CFLAGS
+export MES_CFLAGS
 endif
 
 ifdef MES_SEED
