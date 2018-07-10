@@ -9,7 +9,13 @@ fi
 mkdir -p src
 cd src
 
-GUILE_EFFECTIVE_VERSION=2.2
+
+for GUILE_EFFECTIVE_VERSION in 2.2 2.0; do
+    if sudo apt-get install --no-install-recommends guile-$GUILE_EFFECTIVE_VERSION-dev; then
+        break
+    fi
+done
+
 guile_site_dir=/usr/local/share/guile/site/$GUILE_EFFECTIVE_VERSION
 guile_site_ccache_dir=/usr/local/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache
 GUILE_LOAD_PATH=$guile_site_dir
@@ -17,7 +23,11 @@ GUILE_LOAD_COMPILED_PATH=$guile_site_ccache_dir
 export GUILE_LOAD_PATH
 export GUILE_LOAD_COMPILED_PATH
 
-sudo apt-get install --no-install-recommends build-essential ca-certificates gcc-i686-linux-gnu guile-$GUILE_EFFECTIVE_VERSION-dev help2man texinfo
+sudo apt-get install --no-install-recommends build-essential ca-certificates help2man texinfo
+
+# Nice to have
+sudo apt-get install --no-install-recommends gcc-i686-linux-gnu || true
+
 echo checking for M1
 if ! command -v M1; then
     if sudo apt-get install mescc-tools; then
