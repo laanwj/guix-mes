@@ -272,7 +272,7 @@ execl_ (SCM file_name, SCM args) ///((name . "execl"))
 {
   char *c_argv[1000];           // POSIX minimum 4096
   int i = 0;
-  int n = n;
+  int n = 0;
 
   if (length__ (args) > 1000)
     error (cell_symbol_system_error,
