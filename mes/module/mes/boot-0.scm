@@ -173,14 +173,12 @@
 
 (define %prefix (getenv "MES_PREFIX"))
 (define %moduledir
-  (if (not %prefix) "module/"
+  (if (not %prefix) "mes/module/"
       (list->string
-       (append (string->list %prefix)
-               (string->list "/module") ; `module/' gets replaced upon install
-               (string->list "/")))))
+       (append (string->list %prefix) (string->list "/module/" )))))
 
 (include (list->string
-          (append2 (string->list %moduledir) (string->list "/mes/type-0.mes"))))
+          (append2 (string->list %moduledir) (string->list "mes/type-0.mes"))))
 
 (define (symbol->string s)
   (apply string (symbol->list s)))
@@ -211,19 +209,25 @@
 (include-from-path "mes/module.mes")
 
 (mes-use-module (mes base))
-;; ;; (mes-use-module (srfi srfi-0))
 (mes-use-module (mes quasiquote))
 (mes-use-module (mes let))
-
 (mes-use-module (mes scm))
-
-(mes-use-module (srfi srfi-1)) ;; FIXME: module read order
+(mes-use-module (srfi srfi-1))
 (mes-use-module (srfi srfi-13))
-
-(mes-use-module (mes fluids)) ;; FIXME: module read order
+(mes-use-module (mes fluids))
 (mes-use-module (mes catch))
-
 (mes-use-module (mes posix))
+
+(define-macro (include-from-path file)
+  (let loop ((path (cons* %moduledir "module" (string-split (or (getenv "GUILE_LOAD_PATH")) #\:))))
+    (cond ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 2)) string->number))
+           (core:display-error (string-append "include-from-path: " file " [PATH:" (string-join path ":") "]\n")))
+          ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 1)) string->number))
+           (core:display-error (string-append "include-from-path: " file "\n"))))
+    (if (null? path) (error "include-from-path: not found: " file)
+        (let ((file (string-append (car path) "/" file)))
+          (if (access? file R_OK) `(load ,file)
+              (loop (cdr path)))))))
 
 (define-macro (define-module module . rest)
   `(if ,(and (pair? module)
@@ -232,8 +236,6 @@
        (define (,(car module) . arguments) (main (command-line)))))
 
 (define-macro (use-modules . rest) #t)
-
-;; ;; end boot-0.scm
 
 (mes-use-module (mes getopt-long))
 

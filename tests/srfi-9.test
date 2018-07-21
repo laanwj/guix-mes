@@ -33,8 +33,7 @@ exit $?
   (mes-use-module (mes test)))
  (guile
   (use-modules (srfi srfi-9))
-  (use-modules (srfi srfi-9 gnu))
-  (use-modules (mes test))))
+  (use-modules (srfi srfi-9 gnu))))
 
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)

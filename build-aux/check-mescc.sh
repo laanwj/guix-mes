@@ -31,7 +31,7 @@ export LIBC CC32LIBS MES_LIBS
 MES=${MES-src/mes}
 MESCC=${MESCC-scripts/mescc}
 GUILE=${GUILE-guile}
-MES_PREFIX=${MES_PREFIX-.}
+MES_PREFIX=${MES_PREFIX-mes}
 
 HEX2=${HEX2-hex2}
 M1=${M1-M1}

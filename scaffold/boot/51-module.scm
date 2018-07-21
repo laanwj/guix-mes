@@ -17,7 +17,8 @@
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (cond-expand
- (guile)
+ (guile
+  (set! %load-path (append %load-path '("mes/module"))))
  (mes
   (define (cons* . rest)
     (if (null? (cdr rest)) (car rest)
@@ -63,11 +64,9 @@
     (core:make-cell <cell:string> lst 0))
 
   (define %moduledir
-    (if (not %prefix ) "module/"
+    (if (not %prefix ) "mes/module/"
         (list->string
-         (append (string->list %prefix)
-                 (string->list "/module") ; `module/' gets replaced upon install
-                 (string->list "/")))))
+         (append (string->list %prefix) (string->list "/module/")))))
 
   (define-macro (load file)
     (list 'begin

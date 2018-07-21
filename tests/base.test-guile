@@ -20,4 +20,4 @@
 
 test=$(dirname $0)/$(basename $0 -guile)
 GUILE=${GUILE-guile}
-cat guile/mes-0.scm module/mes/test.mes $test | exec $GUILE -L guile -s /dev/stdin
+cat module/mes/mes-0.scm module/mes/test.scm $test | exec $GUILE --no-auto-compile -L module-guile -C module-guile -L module -C module -s /dev/stdin

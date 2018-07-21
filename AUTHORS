@@ -15,48 +15,45 @@ List of imported files
 D A Gwyn
 lib/alloca.c
 
-Based on Guile ECMAScript
-module/language/c/lexer.mes
-
 Included verbatim from gnulib
 build-aux/gitlog-to-changelog
 
 Portable hygienic pattern matcher
-module/mes/match.scm
+mes/module/mes/match.scm
 
 Portable LALR(1) parser generator
-module/mes/lalr.scm
+mes/module/mes/lalr.scm
 
 Portable syntax-case from Chez Scheme; patches from Guile
-module/mes/psyntax.ss
-module/mes/psyntax.pp [generated]
+mes/module/mes/psyntax.ss
+mes/module/mes/psyntax.pp [generated]
 
 Getopt-long from Guile
 module/mes/getopt-long.scm
 
 Optargs from Guile
-module/mes/optargs.scm
+mes/module/mes/optargs.scm
 
 PEG from Guile
-module/mes/peg/
+mes/module/mes/peg/
 
 Pmatch from Guile
-module/mes/pmatch.scm
+mes/module/mes/pmatch.scm
 
 Pretty-print from Guile
-module/mes/pretty-print.scm
+mes/module/mes/pretty-print.scm
 
 Srfi-1 bits from Guile
-module/srfi/srfi-1.scm
+mes/module/srfi/srfi-1.scm
 
 Srfi-16 from Guile
-module/srfi/srfi-16.scm
+mes/module/srfi/srfi-16.scm
 
 Srfi-26 from Guile
-module/srfi/srfi-26.scm
+mes/module/srfi/srfi-26.scm
 
 Sxml bits from Guile
-module/sxml/xpath.scm
+mes/module/sxml/xpath.scm
 
 GNU FDL in texinfo from GNU
 doc/fdl-1.3.texi

@@ -110,6 +110,10 @@
 
 (define-macro (mes-use-module module)
   #t)
+
+(define-macro (define-module module . rest)
+  #t)
+
 ;; end boot-02.scm
 
 (primitive-load 0)

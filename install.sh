@@ -15,6 +15,15 @@ MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
 MES_SEED=${MES_SEED-../MES-SEED}
 TINYCC_SEED=${TINYCC_SEED-../TINYCC-SEED}
 
+GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
+datadir=${moduledir-$prefix/share/mes}
+docdir=${moduledir-$prefix/share/doc/mes}
+mandir=${mandir-$prefix/share/man}
+moduledir=${moduledir-$datadir/module}
+guile_site_dir=${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
+guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
+docdir=${moduledir-$prefix/share/doc/mes}
+
 mkdir -p $DESTDIR$prefix/bin
 cp src/mes $DESTDIR$prefix/bin/mes
 
@@ -23,21 +32,18 @@ mkdir -p $DESTDIR$MES_PREFIX/lib
 cp scripts/mescc $DESTDIR$prefix/bin/mescc
 
 mkdir -p $DESTDIR$MES_PREFIX
-tar -cf- doc guile include lib module scaffold | tar -xf- -C $DESTDIR$MES_PREFIX
+tar -cf- doc include lib scaffold | tar -xf- -C $DESTDIR$MES_PREFIX
+tar -cf- --exclude='*.go' module | tar -xf- -C $DESTDIR$MES_PREFIX
+tar -cf- -C mes module | tar -xf- -C $DESTDIR$MES_PREFIX
 
-GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
-datadir=${moduledir-$prefix/share/mes}
-docdir=${moduledir-$prefix/share/doc/mes}
-mandir=${mandir-$prefix/share/man}
-moduledir=${moduledir-$datadir/module}
-guile_site_dir=${moduledir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
-guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
-docdir=${moduledir-$prefix/share/doc/mes}
+mkdir -p $DESTDIR$guile_site_dir
+mkdir -p $DESTDIR$guile_site_ccache_dir
+tar -cf- -C module --exclude='*.go' . | tar -xf- -C $DESTDIR$guile_site_dir
+tar -cf- -C module --exclude='*.scm' . | tar -xf- -C $DESTDIR$guile_site_ccache_dir
 
 chmod +w $DESTDIR$prefix/bin/mescc
 sed \
     -e "s,^#! /bin/sh,#! $SHELL," \
-    -e "s,module/,$moduledir/," \
     -e "s,@datadir@,$datadir,g" \
     -e "s,@docdir@,$docdir,g" \
     -e "s,@guile_site_ccache_dir@,$guile_site_ccache_dir,g" \
@@ -49,7 +55,7 @@ sed \
 chmod +w $DESTDIR$moduledir/mes/boot-0.scm
 sed \
     -e "s,^#! /bin/sh,#! $SHELL," \
-    -e "s,module/,$moduledir/," \
+    -e "s,mes/module/,$moduledir/," \
     -e "s,@datadir@,$datadir,g" \
     -e "s,@docdir@,$docdir,g" \
     -e "s,@guile_site_ccache_dir@,$guile_site_ccache_dir,g" \
@@ -57,7 +63,7 @@ sed \
     -e "s,@moduledir@,$moduledir,g" \
     -e "s,@prefix@,$prefix,g" \
     -e "s,@VERSION@,$VERSION,g" \
-    module/mes/boot-0.scm > $DESTDIR$moduledir/mes/boot-0.scm
+    mes/module/mes/boot-0.scm > $DESTDIR$moduledir/mes/boot-0.scm
 
 sed \
     -e "s,^#! /bin/sh,#! $SHELL," \

@@ -83,5 +83,5 @@
   ))
 
 (define %moduledir "./")
-(primitive-load "module/mes/module.mes")
+(primitive-load "mes/module/mes/module.mes")
 (mes-use-module (scaffold boot data bar))

@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-GUILE_FLAGS:=--no-auto-compile -L . -L guile -C . -C guile
+GUILE_FLAGS:=--no-auto-compile -L . -L module -C . -C module
 
 include .config.make
 
@@ -24,7 +24,7 @@ include .config.make
 	./configure --prefix=$(prefix)
 
 PHONY_TARGETS:= all all-go build check clean clean-go default doc help install install-info man\
-cc mes mes-gcc mes-tcc
+gcc mes src/mes mes-gcc mes-tcc
 
 .PHONY: $(PHONY_TARGETS)
 
@@ -116,14 +116,13 @@ install-info: info
 
 man: doc/mes.1 doc/mescc.1
 
-doc/mes.1: src/mes.gcc-out
-	MES_ARENA=10000000 $(HELP2MAN) $< > $@
+src/mes: build
 
-src/mes.gcc-out:
-	$(MAKE) cc
+doc/mes.1: src/mes
+	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $< > $@
 
-doc/mescc.1: src/mes.gcc-out scripts/mescc
-	MES_ARENA=10000000 $(HELP2MAN) $< > $@
+doc/mescc.1: src/mes scripts/mescc
+	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $< > $@
 
 html: mes/index.html
 

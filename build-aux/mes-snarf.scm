@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-exec ${GUILE-guile} -L $(dirname 0) -e '(mes-snarf)' -s "$0" "$@"
+exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes-snarf)' -s "$0" "$@"
 !#
 
 ;;; Mes --- Maxwell Equations of Software
@@ -218,7 +218,7 @@ exec ${GUILE-guile} -L $(dirname 0) -e '(mes-snarf)' -s "$0" "$@"
                   (string-join (map function->header functions (iota (length functions) (+ %start (length symbols)))) "")))
          (source (make-file
                   (string-append base-name ".i")
-                  (string-join (map function->source (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) ""))) 
+                  (string-join (map function->source (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))
          (environment (make-file
                        (string-append base-name ".environment.i")
                        (string-join (map function->environment (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))

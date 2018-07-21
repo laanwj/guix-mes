@@ -22,6 +22,8 @@ if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 
+MES_ARENA=100000000
+
 export LIBC MES_LIBS
 
 GUILE=${GUILE-$MES}

@@ -2259,7 +2259,7 @@ load_env (SCM a) ///((internal))
     }
   if (g_stdin < 0)
     {
-      strcpy (prefix, "module/mes/");
+      strcpy (prefix, "mes/module/mes/");
       g_stdin = load_boot (prefix, boot, ".");
     }
   if (g_stdin < 0)

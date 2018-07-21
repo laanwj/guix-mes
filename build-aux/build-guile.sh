@@ -31,17 +31,18 @@ GUILE_AUTO_COMPILE=0
 set -e
 
 SCM_FILES="
-guile/mes/guile.scm
-guile/mes/misc.scm
-guile/mes/test.scm
-guile/mescc/M1.scm
-guile/mescc/as.scm
-guile/mescc/bytevectors.scm
-guile/mescc/compile.scm
-guile/mescc/i386/as.scm
-guile/mescc/info.scm
-guile/mescc/mescc.scm
-guile/mescc/preprocess.scm
+module/mes/getopt-long.scm
+module/mes/guile.scm
+module/mes/misc.scm
+module/mes/test.scm
+module/mescc/M1.scm
+module/mescc/as.scm
+module/mescc/bytevectors.scm
+module/mescc/compile.scm
+module/mescc/i386/as.scm
+module/mescc/info.scm
+module/mescc/mescc.scm
+module/mescc/preprocess.scm
 "
 
 export srcdir=.
@@ -57,7 +58,7 @@ for i in $SCM_FILES; do
     go=${i%%.scm}.go
     if [ $i -nt $go ]; then
         echo "  GUILEC $i"
-        $GUILE_TOOLS compile -L ${abs}guile -L ${abs}scripts -o $go $i
+        $GUILE_TOOLS compile -L ${abs}module -L ${abs}scripts -o $go $i
     fi
 done
 
@@ -69,6 +70,6 @@ for i in $SCRIPTS; do
     go=${i%%.scm}.go
     if [ $i -nt $go ]; then
         echo "  GUILEC $i"
-        $GUILE_TOOLS compile -L ${abs}guile -L ${abs}scripts -o $go $i
+        $GUILE_TOOLS compile -L ${abs}module -L ${abs}scripts -o $go $i
     fi
 done

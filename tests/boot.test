@@ -27,8 +27,7 @@ exit $?
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (begin
-  (primitive-load "module/mes/test.mes"))
-;;(mes-use-module (mes test))
+  (primitive-load "module/mes/test.scm"))
 
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
