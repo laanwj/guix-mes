@@ -1,30 +1,23 @@
 #! /bin/sh
 # -*- scheme -*-
 unset LANG LC_ALL
-echo -n "checking for guile..."
-GUILE=$(command -v ${GUILE-guile})
-GUIX=$(command -v ${GUIX-guix})
-export GUILE GUIX
-if [ -x "$GUILE" ]; then
-    echo " $GUILE"
-elif [ -x "$GUIX" ]; then
-    cat <<EOF
-not found
-Missing dependencies, run
-
-    guix environment -l guix.scm
-EOF
-    exit 1
+guile=$(command -v ${GUILE-guile})
+if $(command -v ${GUIX-guix}); then
+    install="guix environment -l guix.scm"
 else
-cat <<EOF
-not found
-Missing dependencies, run
-
-    sudo apt-get install guile-2.2-dev
-EOF
-    exit 1
+    install="sudo apt-get install guile-2.2-dev"
 fi
-exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
+if [ -z "$guile" ]; then
+    cat <<EOF
+
+Missing dependencies: ${GUILE-guile}, please install Guile 2.2 or later; run
+    $install
+EOF
+exit 1
+fi
+GUILE=$guile
+export GUILE
+exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 !#
 
 ;;; Mes --- Maxwell Equations of Software
@@ -47,6 +40,8 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 
 (define-module (configure)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
@@ -66,13 +61,6 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define *shell* "sh")
 (define PACKAGE "mes")
 (define VERSION "0.16.1")
-(define GUILE (PATH-search-path (or (getenv "guile") "guile")))
-(define GUILE_EFFECTIVE_VERSION (effective-version))
-
-(define prefix "/usr/local")
-(define infodir "${prefix}/share/info")
-(define mandir "${prefix}/share/man")
-(define sysconfdir "${prefix}/etc")
 
 ;;; Utility
 (define (logf port string . rest)
@@ -86,10 +74,10 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define (stdout string . rest)
   (apply logf (cons* (current-output-port) string rest)))
 
-(define *verbose?* #f)
+(define %verbose? #f)
 
 (define (verbose string . rest)
-  (if *verbose?* (apply stderr (cons string rest))))
+  (if %verbose? (apply stderr (cons string rest))))
 
 (define (gulp-pipe command)
   (let* ((port (open-pipe* OPEN_READ *shell* "-c" command))
@@ -121,7 +109,44 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define (tuple<= a b)
   (or (equal? a b) (tuple< a b)))
 
+(define (conjoin . predicates)
+  (lambda (. arguments)
+    (every (cut apply <> arguments) predicates)))
+
+(define (char->char from to char)
+  (if (eq? char from) to char))
+
+(define (string-replace-char string from to)
+  (string-map (cut char->char from to <>) string))
+
 ;;; Configure
+
+(define-immutable-record-type <dependency>
+  (make-depedency name version-expected optional? version-option commands file-name)
+  dependency?
+  (name dependency-name)
+  (version-expected dependency-version-expected)
+  (version-option dependency-version-option)
+  (optional? dependency-optional?)
+  (commands dependency-commands)
+  (file-name dependency-file-name)
+  (version-found dependency-version-found))
+
+(define* (make-dep name #:optional (version '(0))
+                   #:key optional? (version-option "--version") (commands (list name)) file-name)
+  (make-depedency name version optional? version-option commands file-name))
+
+(define (find-dep name deps)
+  (find (compose (cut equal? <> name) dependency-name) deps))
+
+(define (file-name name deps)
+  (and=> (find-dep name deps) dependency-file-name))
+
+(define (variable-name dependency)
+  (and=>
+   (dependency-name dependency)
+   (compose string-upcase (cut string-replace-char <> #\- #\_))))
+
 (define (version->string version)
   ((->string '.) version))
 
@@ -135,55 +160,45 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
                                        (char-set-complement (char-set #\.)))))
             (map string->number version)))
 
-(define optional '())
-(define required '())
-(define* (check-version name expected
-                        #:key
-                        optional?
-                        (deb #f)
-                        (version-option '--version)
-                        (compare tuple<=)
-                        (command name))
-  (stderr "checking for ~a~a..." (basename name)
-          (if (null? expected) ""
-              (format #f " [~a]" (version->string expected))))
-  (let* ((output (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
-         (actual (string->version output))
-         (pass? (and actual (compare expected actual)))
-         ;(pass? (PATH-search-path command))
-         )
-    (stderr "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
-                          (if actual " no, found" "")) (version->string actual))
-    (or pass?
-        (if (not (pair? name)) (begin (if optional? (set! optional (cons (or deb name) optional))
-                                          (set! required (cons (or deb name) required)))
-                                      pass?)
-            (check-version (cdr name) expected deb version-option compare)))))
+(define (check-program-version dependency)
+  (let ((name (dependency-name dependency))
+        (expected (dependency-version-expected dependency))
+        (version-option (dependency-version-option dependency))
+        (commands (dependency-commands dependency)))
+    (let loop ((commands commands))
+      (if (null? commands) dependency
+          (let ((command (car commands)))
+            (stdout "checking for ~a~a... " command
+                    (if (null? expected) ""
+                        (format #f " [~a]" (version->string expected))))
+            (let* ((output (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
+                   (actual (string->version output))
+                   (pass? (and actual (tuple< expected actual)))
+                   (dependency (set-field dependency (dependency-version-found) actual)))
+              (stdout "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
+                                    (if actual " no, found" "no")) (version->string actual))
+              (if pass? (let ((file-name (or (PATH-search-path command)
+                                             (dependency-file-name dependency))))
+                          (set-field dependency (dependency-file-name) file-name))
+                  (loop (cdr commands)))))))))
 
-(define* (check-pkg-config package expected #:optional (deb #f))
-  (check-version (format #f "pkg-config --modversion ~a" package) expected deb))
+(define (check-file dependency)
+  (stdout "checking for ~a... " (dependency-name dependency))
+  (let ((file-name (and (file-exists? (dependency-file-name dependency))
+                        (dependency-file-name dependency))))
+    (stdout "~a\n" (or file-name ""))
+    (set-field dependency (dependency-file-name) file-name)))
+
+(define* (check-header-c dependency  #:optional (check check-compile-header-c))
+  (let ((name (dependency-name dependency)))
+    (stderr "checking for ~a..." name)
+    (let ((result (check name)))
+      (stderr " ~a\n" (if result "yes" "no"))
+      (if result (set-field dependency (dependency-file-name) name)
+          dependency-file-name))))
 
 (define (check-compile-header-c header)
-  (and (= 0 (system (format #f "echo '#include ~s' | gcc -E - > /dev/null 2>&1" header)))
-       'yes))
-
-(define (check-compile-header-c++ header)
-  (and (= 0 (system (format #f "echo '#include ~s' | gcc --language=c++ --std=c++11 -E - > /dev/null 2>&1" header)))
-       'yes))
-
-(define* (check-header-c header deb #:optional (check check-compile-header-c))
-  (stderr "checking for ~a..." header)
-  (let ((result (check header)))
-    (stderr " ~a\n" (if result result "no"))
-    (if (not result)
-        (set! required (cons deb required)))))
-
-(define* (check-header-c++ header deb #:optional (check check-compile-header-c++))
-  (check-header-c header deb check))
-
-(define guix?
-  (and (zero? (system "guix --version 1>/dev/null 2>/dev/null")) 1))
-;;;
+  (zero? (system (format #f "echo '#include ~s' | gcc -E - > /dev/null 2>&1" header))))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -274,104 +289,102 @@ Some influential environment variables:
              (with-input-from-file file-name read-string) pairs)))))
 
 (define (main args)
-  (let* ((CC (or (getenv "CC") "gcc"))
+  (let* ((prefix "/usr/local")
+         (infodir "${prefix}/share/info")
+         (mandir "${prefix}/share/man")
+         (sysconfdir "${prefix}/etc")
+
          (srcdir (dirname (car (command-line))))
          (abs-top-srcdir (canonicalize-path srcdir))
          (builddir (getcwd))
          (abs-top-builddir (canonicalize-path builddir))
-         (BUILD_TRIPLET %host-type)
-         (ARCH (car (string-split BUILD_TRIPLET #\-)))
+
+
          (options (parse-opts args))
-         (build-triplet (option-ref options 'build BUILD_TRIPLET))
-         (host-triplet (option-ref options 'host BUILD_TRIPLET))
+
+         (build-type (option-ref options 'build %host-type))
+         (arch (car (string-split build-type #\-)))
+         (host-type (option-ref options 'host %host-type))
+
          (prefix (option-ref options 'prefix prefix))
          (infodir (option-ref options 'infodir infodir))
          (sysconfdir (option-ref options 'sysconfdir sysconfdir))
          (datadir (string-append prefix "/share/mes"))
-         (moduledir (string-append datadir"module"))
+         (moduledir (string-append datadir "/module"))
          (guile-effective-version (effective-version))
          (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
                              (string-append prefix "/share/guile/site/" guile-effective-version)))
          (guile-site-ccache-dir (if (equal? prefix ".") (canonicalize-path ".")
                                     (string-append prefix "/lib/guile/" guile-effective-version "/site-ccache")))
-         (verbose? (option-ref options 'verbose #f))
          (with-courage? (option-ref options 'with-courage #f))
          (disable-silent-rules? (option-ref options 'disable-silent-rules #f))
-         (make? #f)
          (vars (filter (cut string-index <> #\=) (option-ref options '() '())))
          (help? (option-ref options 'help #f)))
+    (when help?
+      (print-help)
+      (exit 0))
+    (set! %verbose? (option-ref options 'verbose #f))
     (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
-    (let ((CC32 (or (getenv "CC32")
-                    (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
-                        "i686-unknown-linux-gnu-gcc")))
-          (BASH (or (getenv "BASH") "bash"))
-          (HELP2MAN (or (getenv "HELP2MAN") "help2man"))
-          (TCC (or (getenv "TCC") "tcc"))
-          (MAKEINFO (or (getenv "MAKEINFO") "makeinfo"))
-          (GUILE_TOOLS (or (getenv "GUILE_TOOLS") "guile-tools"))
-          (BLOOD_ELF (or (getenv "BLOOD_ELF") "blood-elf"))
-          (HEX2 (or (getenv "HEX2") "hex2"))
-          (M1 (or (getenv "M1") "M1"))
-          (CFLAGS (getenv "CFLAGS"))
-          (CC32_CFLAGS (getenv "CC32_CFLAGS"))
-          (HEX2FLAGS (getenv "HEX2FLAGS"))
-          (M1FLAGS (getenv "M1FLAGS"))
-          (MES_CFLAGS (getenv "MES_CFLAGS"))
-          (MES_SEED (or (getenv "MES_SEED") "../mes-seed"))
-          (MESCC_TOOLS_SEED (or (getenv "MESCC_TOOLS_SEED") "../mescc-tools-seed"))
-          (TINYCC_SEED (or (getenv "TINYCC_SEED") "../tinycc-seed")))
-      (when help?
-        (print-help)
-        (exit 0))
-      (set! *verbose?* verbose?)
-      (check-version "guile" '(2 0))
-      (check-version "guile-tools" '(2 0))
-      (check-version "mes-seed" '(0 16 1) #:optional? #t #:command (string-append MES_SEED "/refresh.sh"))
-      (check-version "tinycc-seed" '(0 16) #:optional? #t #:command (string-append TINYCC_SEED "/refresh.sh"))
-      (check-version BLOOD_ELF '(0 1))
-      (check-version HEX2 '(0 3))
-      (check-version M1 '(0 3))
-      (check-version "nyacc" '(0 80 41) #:command (string-append GUILE " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'"))
-
-      (check-version "bash" '(4 0))
-      (when (and (check-version "git" '(2 0) #:optional? #t)
-                 (not (file-exists? ".git")))
-        ;; Debian wants to run `make clean' from a tarball
-        (and (zero? (system* "git" "init"))
-             (zero? (system* "git" "add" "."))
-             (zero? (system* "git" "commit" "-m" "Import mes"))))
-      (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
-        (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
+    (let* ((mes-seed (or (getenv "MES_SEED") "../mes-seed"))
+           (tinycc-seed (or (getenv "TINYCC_SEED") "../tinycc-seed"))
+           (mescc-tools-seed (or (getenv "MESCC_TOOLS_SEED") "../mescc-tools-seed"))
+           (deps (fold (lambda (program results)
+                         (cons (check-program-version program) results))
+                       '()
+                       (list (make-dep "guile" '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile"))
+                             (make-dep "bash" '(2 0) #:optional? #t)
+                             (make-dep "guile-tools" '(2 0))
+                             (make-dep "mes-seed" '(0 16 1) #:optional? #t
+                                       #:commands (list (string-append mes-seed "/refresh.sh"))
+                                       #:file-name mes-seed)
+                             (make-dep "tinycc-seed" '(0 16) #:optional? #t
+                                       #:commands (list (string-append tinycc-seed "/refresh.sh"))
+                                       #:file-name tinycc-seed)
+                             (make-dep "cc" '(2 95) #:commands '("gcc"))
+                             (make-dep "make" '(4))
+                             (make-dep "cc32" '(2 95)
+                                       #:optional? #t
+                                       #:commands '("i686-unknown-linux-gnu-gcc"))
+                             (make-dep "M1" '(0 3))
+                             (make-dep "blood-elf" '(0 1))
+                             (make-dep "hex2" '(0 3))
+                             (make-dep "tcc" '(0 9 26) #:optional? #t)
+                             (make-dep "makeinfo" '(5) #:optional? #t)
+                             (make-dep "help2man" '(1 47) #:optional? #t)
+                             (make-dep "perl" '(5) #:optional? #t)
+                             (make-dep "git" '(2) #:optional? #t))))
+           (deps (cons (check-program-version (make-dep "nyacc" '(0 80 41) #:commands (list (string-append (file-name "guile" deps) " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t))
+                       deps))
+           (deps (if (file-name "cc" deps)
+                     (cons* (check-header-c (make-dep "stdio.h"))
+                            (check-header-c (make-dep "limits.h"))
+                            deps)
+                     deps))
+           (deps (cons (check-file (make-dep "mescc-tools-seed" '(0) #:optional? #t
+                                             #:file-name mescc-tools-seed))
+                       deps))
+           (missing (filter (conjoin (negate dependency-file-name)
+                                     (negate dependency-optional?)) deps)))
+      (when (and (not (member arch '("i686" "x86_64"))) (not with-courage?))
+        (stderr "platform not supported: ~a, try --with-courage\n" arch)
         (exit 1))
-      (if (check-version "bash" '(2))
-          (set! BASH (PATH-search-path BASH))
-          (set! BASH #f))
-      (if (not (check-version CC '(4 8) #:optional? #t))
-          (set! CC #f))
-      (when CC
-        (check-header-c "stdio.h" "libc-dev")
-        (check-header-c "limits.h" "linux-headers"))
-      (if (not (check-version CC32 '(4 8) #:optional? #t))
-          (set! CC32 #f))
-      (if (not (check-version TCC '(0 9 26) #:optional? #t #:version-option "-v"))
-          (set! TCC #f))
-      (set! make? (check-version "make" '(4 0) #:optional? #t))
-      (check-version "perl" '(5))
-      (if (not (check-version "makeinfo" '(6) #:optional? #t))
-          (set! MAKEINFO #f))
-      (if (not (check-version "help2man" '(1 47) #:optional? #t))
-          (set! HELP2MAN #f))
-
-      (when (pair? required)
-        (stderr "\nMissing dependencies [~a], run\n\n" ((->string ", ") required))
-        (if guix?
-            (stderr "    guix environment -l guix.scm\n")
-            (stderr "    sudo apt-get install ~a\n" ((->string " ") required)))
+      (when (pair? missing)
+        (stderr "\nMissing dependencies: ~a\n" (string-join (map dependency-name missing)))
         (exit 1))
+      (let ((git (find-dep "git" deps)))
+        (when (and git
+                   (not (file-exists? ".git")))
+          ;; Debian wants to run `make clean' from a tarball
+          (and (zero? (system* "git" "init"))
+               (zero? (system* "git" "add" "."))
+               (zero? (system* "git" "commit" "-m" "Import mes")))))
       (with-output-to-file ".config.make"
-        (lambda ()
-          (stdout "build:=~a\n" build-triplet)
-          (stdout "host:=~a\n" host-triplet)
+        (lambda _
+          (stdout "PACKAGE:=~a\n" PACKAGE)
+          (stdout "VERSION:=~a\n" VERSION)
+
+          (stdout "build:=~a\n" build-type)
+          (stdout "host:=~a\n" host-type)
           (stdout "srcdir:=.\n")
           (stdout "prefix:=~a\n" (gulp-pipe (string-append "echo " prefix)))
           (stdout "infodir:=~a\n" infodir)
@@ -380,37 +393,34 @@ Some influential environment variables:
           (stdout "moduledir:=~a\n" moduledir)
           (stdout "sysconfdir:=~a\n" sysconfdir)
 
-          (stdout "ARCH:=~a\n" ARCH)
-          (stdout "CC:=~a\n" (or CC ""))
-          (stdout "CC32:=~a\n" (or CC32 ""))
-          (stdout "HELP2MAN:=~a\n" (or HELP2MAN ""))
-          (stdout "MAKEINFO:=~a\n" (or MAKEINFO ""))
-          (stdout "TCC:=~a\n" (or TCC ""))
-          (stdout "BLOOD_ELF:=~a\n" (or BLOOD_ELF ""))
-          (stdout "MES_SEED:=~a\n" (or MES_SEED ""))
-          (stdout "MESCC_TOOLS_SEED:=~a\n" (or MESCC_TOOLS_SEED ""))
-          (stdout "TINYCC_SEED:=~a\n" (or TINYCC_SEED ""))
-          (stdout "HEX2:=~a\n" (or HEX2 ""))
-          (stdout "M1:=~a\n" (or M1 ""))
-          (stdout "GUILE:=~a\n" GUILE)
-          (stdout "GUILE_TOOLS:=~a\n" GUILE_TOOLS)
-          (stdout "GUILE_FOR_BUILD:=~a\n" GUILE)
-          (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" GUILE_EFFECTIVE_VERSION)
-          (stdout "GUIX_P:=~a\n" (if guix? guix? ""))
-          (stdout "HEX2:=~a\n" (or HEX2 ""))
-          (stdout "PACKAGE:=~a\n" PACKAGE)
-          (stdout "VERSION:=~a\n" VERSION)
+          (stdout "build:=~a\n" build-type)
+          (stdout "ARCH:=~a\n" arch)
+          (stdout "host:=~a\n" %host-type)
+          (stdout "build:=~a\n" build-type)
+
+          (for-each (lambda (o)
+                      (stdout "~a:=~a\n" (variable-name o) (or (dependency-file-name o) "")))
+                    deps)
+          (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" (effective-version))
+
           (when disable-silent-rules?
             (stdout "BUILD_DEBUG:=1\n"))
-          (when CFLAGS (stdout "CFLAGS:=~a\n" CFLAGS))
-          (when CC32_CFLAGS (stdout "CC32_CFLAGS:=~a\n" CC32_CFLAGS))
-          (when HEX2FLAGS (stdout "HEX2FLAGS:=~a\n" HEX2FLAGS))
-          (when M1FLAGS (stdout "M1FLAGS:=~a\n" M1FLAGS))
-          (when MES_CFLAGS (stdout "MES_CFLAGS:=~a\n" MES_CFLAGS))))
+
+          (for-each (lambda (o)
+                      (stdout "~a:=~a\n" o (or (getenv o) "")))
+                    '(
+                      "CFLAGS"
+                      "CC32_CFLAGS"
+                      "HEX2FLAGS"
+                      "M1FLAGS"
+                      "CC32_CFLAGS"
+                      "MES_CFLAGS"
+                      ))))
+
       (let ((pairs `(("@abs_top_srcdir@" . ,abs-top-srcdir)
                      ("@abs_top_builddir@" . ,abs-top-builddir)
-                     ("@BASH@" . ,BASH)
-                     ("@GUILE@" . ,GUILE)
+                     ("@BASH@" . ,(file-name "bash" deps))
+                     ("@GUILE@" . ,(file-name "guile" deps))
                      ("@guile_site_dir@" . ,guile-site-dir)
                      ("@guile_site_ccache_dir@" . ,guile-site-ccache-dir)
                      ("@VERSION@" . ,VERSION)
@@ -426,9 +436,10 @@ Some influential environment variables:
       (chmod "build-aux/pre-inst-env" #o755)
       (rename-file "build-aux/pre-inst-env" "pre-inst-env")
       (chmod "scripts/mescc" #o755)
-      (format (current-output-port)
-              "\nRun:
+      (let ((make (and=> (file-name "make" deps) basename)))
+        (format (current-output-port)
+               "\nRun:
   ~a            to build mes
   ~a help       for help on other targets\n"
-              (if make? "make" "./build.sh")
-              (if make? "make" "./build.sh")))))
+               (or make "./build.sh")
+               (or make "./build.sh"))))))
