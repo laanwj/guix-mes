@@ -24,7 +24,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#undef __MES_ALLOCA_H 1
+#undef __MES_ALLOCA_H
 #include_next <alloca.h>
 
 #else // ! WITH_GLIBC
