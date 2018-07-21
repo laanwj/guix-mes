@@ -63,6 +63,12 @@ CC32_CFLAGS=${CC32_CFLAGS-"
 -m32
 -nostdinc
 -nostdlib
+-Wno-discarded-qualifiers
+-Wno-int-to-pointer-cast
+-Wno-pointer-to-int-cast
+-Wno-pointer-sign
+-Wno-int-conversion
+-Wno-incompatible-pointer-types
 "}
 
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/crt0
