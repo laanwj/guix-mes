@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ -n "$BUILD_DEBUG" ]; then
+if [ "$V" = 2 ]; then
     set -x
 fi
 
@@ -45,6 +45,11 @@ module/mescc/mescc.scm
 module/mescc/preprocess.scm
 "
 
+SCRIPTS="
+build-aux/mes-snarf.scm
+scripts/mescc
+"
+
 export srcdir=.
 export host=$($GUILE -c "(display %host-type)")
 
@@ -52,24 +57,15 @@ if [ "$GUILE_EFFECTIVE_VERSION" = "2.0" ]; then
     abs=$PWD/
 fi
 
-#$GUILE --no-auto-compile -L guile -C guile -s build-aux/compile-all.scm $SCM_FILES
+GUILE_AUTO_COMPILE=0
+[ -z "$V" -o "$V" = 1 ] && LOG='build.log' || LOG=/dev/stdout
 
-for i in $SCM_FILES; do
+for i in $SCM_FILES $SCRIPTS; do
     go=${i%%.scm}.go
     if [ $i -nt $go ]; then
-        echo "  GUILEC $i"
-        $GUILE_TOOLS compile -L ${abs}module -L ${abs}scripts -o $go $i
-    fi
-done
-
-SCRIPTS="
-scripts/mescc
-"
-
-for i in $SCRIPTS; do
-    go=${i%%.scm}.go
-    if [ $i -nt $go ]; then
-        echo "  GUILEC $i"
-        $GUILE_TOOLS compile -L ${abs}module -L ${abs}scripts -o $go $i
+        [ -z "$V" -o "$V" = 1 ] && echo "  GUILEC $i" || true
+        [ "$V" = 1 ] && set -x
+        $GUILE_TOOLS compile -L ${abs}module -L ${abs}/build-aux -L ${abs}scripts -o $go $i >>$LOG
+        { [ "$V" = 1 ] && set +x || true; } > /dev/null 2>&1
     fi
 done

@@ -35,7 +35,7 @@ all: build doc
 build:
 	./build.sh
 
-cc:
+gcc:
 	build-aux/build-cc.sh
 
 mes-gcc:
