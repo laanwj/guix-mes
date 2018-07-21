@@ -2,7 +2,8 @@
 # -*- scheme -*-
 unset LANG LC_ALL
 guile=$(command -v ${GUILE-guile})
-if $(command -v ${GUIX-guix}); then
+guix=$(command -v ${GUIX-guix})
+if [ -n "$guix" ] ; then
     install="guix environment -l guix.scm"
 else
     install="sudo apt-get install guile-2.2-dev"
@@ -134,7 +135,9 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 
 (define* (make-dep name #:optional (version '(0))
                    #:key optional? (version-option "--version") (commands (list name)) file-name)
-  (make-depedency name version optional? version-option commands file-name))
+  (let* ((env-var (getenv (name->shell-name name)))
+         (commands (if env-var (cons env-var commands) commands)))
+   (make-depedency name version optional? version-option commands file-name)))
 
 (define (find-dep name deps)
   (find (compose (cut equal? <> name) dependency-name) deps))
@@ -145,7 +148,10 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define (variable-name dependency)
   (and=>
    (dependency-name dependency)
-   (compose string-upcase (cut string-replace-char <> #\- #\_))))
+   name->shell-name))
+
+(define (name->shell-name name)
+  (string-upcase (string-replace-char name #\- #\_)))
 
 (define (version->string version)
   ((->string '.) version))
@@ -278,16 +284,6 @@ Some influential environment variables:
   TINYCC_SEED       location of tinycc-seed
 " PACKAGE VERSION (getenv "prefix")))
 
-(define* (substitute file-name pairs
-                     #:key (target (if (string-suffix? ".in" file-name)
-                                       (string-drop-right file-name 3) target)))
-  (with-output-to-file target
-    (lambda _
-      (display
-       (fold (lambda (o result)
-               (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
-             (with-input-from-file file-name read-string) pairs)))))
-
 (define (main args)
   (let* ((prefix "/usr/local")
          (infodir "${prefix}/share/info")
@@ -296,9 +292,11 @@ Some influential environment variables:
 
          (srcdir (dirname (car (command-line))))
          (abs-top-srcdir (canonicalize-path srcdir))
-         (builddir (getcwd))
-         (abs-top-builddir (canonicalize-path builddir))
-
+         (abs-top-builddir (canonicalize-path (getcwd)))
+         (top-builddir (if (equal? srcdir ".") "."
+                           abs-top-builddir))
+         (top-builddest (if (equal? srcdir ".") ""
+                        (string-append abs-top-builddir "/")))
 
          (options (parse-opts args))
 
@@ -320,14 +318,20 @@ Some influential environment variables:
          (disable-silent-rules? (option-ref options 'disable-silent-rules #f))
          (vars (filter (cut string-index <> #\=) (option-ref options '() '())))
          (help? (option-ref options 'help #f)))
+    (define (srcdir-relative file-name)
+      (if (equal? srcdir ".") file-name
+          (string-append srcdir "/" file-name)))
     (when help?
       (print-help)
       (exit 0))
     (set! %verbose? (option-ref options 'verbose #f))
     (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
-    (let* ((mes-seed (or (getenv "MES_SEED") "../mes-seed"))
-           (tinycc-seed (or (getenv "TINYCC_SEED") "../tinycc-seed"))
-           (mescc-tools-seed (or (getenv "MESCC_TOOLS_SEED") "../mescc-tools-seed"))
+    (let* ((mes-seed (or (getenv "MES_SEED")
+                         (srcdir-relative "../mes-seed")))
+           (tinycc-seed (or (getenv "TINYCC_SEED")
+                            (srcdir-relative "../tinycc-seed")))
+           (mescc-tools-seed (or (getenv "MESCC_TOOLS_SEED")
+                                 (srcdir-relative "../mescc-tools-seed")))
            (deps (fold (lambda (program results)
                          (cons (check-program-version program) results))
                        '()
@@ -348,7 +352,7 @@ Some influential environment variables:
                              (make-dep "M1" '(0 3))
                              (make-dep "blood-elf" '(0 1))
                              (make-dep "hex2" '(0 3))
-                             (make-dep "tcc" '(0 9 26) #:optional? #t)
+                             (make-dep "tcc" '(0 9 26) #:optional? #t #:version-option "-v")
                              (make-dep "makeinfo" '(5) #:optional? #t)
                              (make-dep "help2man" '(1 47) #:optional? #t)
                              (make-dep "perl" '(5) #:optional? #t)
@@ -365,6 +369,18 @@ Some influential environment variables:
                        deps))
            (missing (filter (conjoin (negate dependency-file-name)
                                      (negate dependency-optional?)) deps)))
+
+      (define* (substitute file-name pairs
+                           #:key (target (if (string-suffix? ".in" file-name)
+                                             (string-drop-right file-name 3) file-name)))
+        (system* "mkdir" "-p" (dirname target))
+        (with-output-to-file target
+          (lambda _
+            (display
+             (fold (lambda (o result)
+                     (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
+                   (with-input-from-file file-name read-string) pairs)))))
+
       (when (and (not (member arch '("i686" "x86_64"))) (not with-courage?))
         (stderr "platform not supported: ~a, try --with-courage\n" arch)
         (exit 1))
@@ -377,7 +393,7 @@ Some influential environment variables:
           ;; Debian wants to run `make clean' from a tarball
           (and (zero? (system* "git" "init"))
                (zero? (system* "git" "add" "."))
-               (zero? (system* "git" "commit" "-m" "Import mes")))))
+               (zero? (system* "git" "commit" "--allow-empty" "-m" "Import mes")))))
       (with-output-to-file ".config.make"
         (lambda _
           (stdout "PACKAGE:=~a\n" PACKAGE)
@@ -385,7 +401,12 @@ Some influential environment variables:
 
           (stdout "build:=~a\n" build-type)
           (stdout "host:=~a\n" host-type)
-          (stdout "srcdir:=.\n")
+          (stdout "srcdir:=~a\n" srcdir)
+          (stdout "top_builddest:=~a\n" top-builddest)
+          (stdout "top_builddir:=~a\n" top-builddir)
+          (stdout "abs_top_builddir:=~a\n" abs-top-builddir)
+          (stdout "abs_top_srcdir:=~a\n" abs-top-srcdir)
+          (stdout "srcdir:=~a\n" srcdir)
           (stdout "prefix:=~a\n" (gulp-pipe (string-append "echo " prefix)))
           (stdout "infodir:=~a\n" infodir)
           (stdout "mandir:=~a\n" mandir)
@@ -417,8 +438,11 @@ Some influential environment variables:
                       "MES_CFLAGS"
                       ))))
 
-      (let ((pairs `(("@abs_top_srcdir@" . ,abs-top-srcdir)
+      (let ((pairs `(("@srcdir@" . ,abs-top-srcdir)
+                     ("@abs_top_srcdir@" . ,abs-top-srcdir)
                      ("@abs_top_builddir@" . ,abs-top-builddir)
+                     ("@top_builddir@" . ,top-builddir)
+                     ("@top_builddest@" . ,top-builddest)
                      ("@BASH@" . ,(file-name "bash" deps))
                      ("@GUILE@" . ,(file-name "guile" deps))
                      ("@guile_site_dir@" . ,guile-site-dir)
@@ -426,20 +450,27 @@ Some influential environment variables:
                      ("@VERSION@" . ,VERSION)
                      ("mes/module/" . ,(string-append moduledir "/")))))
         (for-each (lambda (o)
-                    (substitute o pairs)
-                    (chmod (string-drop-right o 3) #o755))
+                    (let* ((src (srcdir-relative o))
+                           (target (string-drop-right o 3))
+                           (target (if (not (string-prefix? "build-aux/" target)) target
+                                       (string-drop target (string-length "build-aux/")))))
+                      (substitute src pairs #:target target)))
                   '(
                     "build-aux/pre-inst-env.in"
                     "mes/module/mes/boot-0.scm.in"
                     "scripts/mescc.in"
-                    )))
-      (chmod "build-aux/pre-inst-env" #o755)
-      (rename-file "build-aux/pre-inst-env" "pre-inst-env")
+                    ))
+        (when (not (equal? srcdir "."))
+          (substitute (string-append srcdir "/build-aux/GNUmakefile.in")
+                      pairs
+                      #:target "GNUmakefile")
+          (system (string-append "cd mes/module/mes && ln -sf " abs-top-srcdir "/mes/module/mes/*.mes ."))))
+      (chmod "pre-inst-env" #o755)
       (chmod "scripts/mescc" #o755)
       (let ((make (and=> (file-name "make" deps) basename)))
         (format (current-output-port)
-               "\nRun:
+                "\nRun:
   ~a            to build mes
   ~a help       for help on other targets\n"
-               (or make "./build.sh")
-               (or make "./build.sh"))))))
+                (or make "./build.sh")
+                (or make "./build.sh"))))))

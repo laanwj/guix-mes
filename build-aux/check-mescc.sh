@@ -18,18 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ -n "$BUILD_DEBUG" ]; then
-    set -x
-fi
-
-export BLOOD_ELF GUILE HEX2 M1 MES MESCC
-export M1FLAGS HEX2FLAGS PREPROCESS
-export MES_ARENA MES_PREFIX MES_SEED
-export BUILD_DEBUG
-export LIBC CC32LIBS MES_LIBS
+set -e
+. build-aux/config.sh
+. build-aux/trace.sh
 
 MES=${MES-src/mes}
-MESCC=${MESCC-scripts/mescc}
+[ -z "$MESCC" ] && MESCC=${top_builddest}scripts/mescc
 GUILE=${GUILE-guile}
 MES_PREFIX=${MES_PREFIX-mes}
 
@@ -38,9 +32,9 @@ M1=${M1-M1}
 BLOOD_ELF=${BLOOD_ELF-blood-elf}
 MES_SEED=${MES_SEED-../mes-seed}
 MESCC=${MESCC-$(command -v mescc)}
-[ -z "$MESCC" ] && MESCC=scripts/mescc
+[ -z "$MESCC" ] && MESCC=${top_builddest}scripts/mescc
 MES=${MES-$(command -v mes)}
-[ -z "$MES" ] && MES=src/mes
+[ -z "$MES" ] && MES=${top_builddest}src/mes
 
 if ! command -v $GUILE > /dev/null; then
     GUILE=true
@@ -158,6 +152,7 @@ expect=$(echo $broken | wc -w)
 pass=0
 fail=0
 total=0
+mkdir -p ${top_builddest}scaffold/tests
 for t in $tests; do
     if [ -z "${t/[012][0-9]-*/}" ]; then
         LIBC=c-mini
@@ -172,7 +167,7 @@ for t in $tests; do
         LIBC=c
         MES_LIBS=
     fi
-    sh build-aux/test.sh "scaffold/tests/$t" &> scaffold/tests/"$t".log
+    sh build-aux/test.sh "scaffold/tests/$t" &> ${top_builddest}scaffold/tests/"$t".log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then
@@ -278,18 +273,20 @@ broken="$broken
 #42_function_pointer     ; f* functions
 #49_bracket_evaluation   ; float
 
+
 LIBC=c+gnu
 MES_LIBS="-l c+gnu"
 
 expect=$(echo $broken | wc -w)
 ARGS="arg1 arg2 arg3 arg4 arg5"
 export ARGS
+mkdir -p ${top_builddest}scaffold/tinycc
 for t in $tests; do
     if [ ! -f scaffold/tinycc/"$t.c" ]; then
         echo ' [SKIP]'
         continue;
     fi
-    sh build-aux/test.sh "scaffold/tinycc/$t" &> scaffold/tinycc/"$t".log
+    sh build-aux/test.sh "scaffold/tinycc/$t" &> ${top_builddest}scaffold/tinycc/"$t".log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then

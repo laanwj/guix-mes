@@ -18,9 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ "$V" = 2 ]; then
-    set -x
-fi
+. build-aux/trace.sh
 
 export GUILE
 export GUILE_AUTO_COMPILE
@@ -58,14 +56,10 @@ if [ "$GUILE_EFFECTIVE_VERSION" = "2.0" ]; then
 fi
 
 GUILE_AUTO_COMPILE=0
-[ -z "$V" -o "$V" = 1 ] && LOG='build.log' || LOG=/dev/stdout
 
 for i in $SCM_FILES $SCRIPTS; do
-    go=${i%%.scm}.go
+    go=${top_builddest}${i%%.scm}.go
     if [ $i -nt $go ]; then
-        [ -z "$V" -o "$V" = 1 ] && echo "  GUILEC $i" || true
-        [ "$V" = 1 ] && set -x
-        $GUILE_TOOLS compile -L ${abs}module -L ${abs}/build-aux -L ${abs}scripts -o $go $i >>$LOG
-        { [ "$V" = 1 ] && set +x || true; } > /dev/null 2>&1
+        trace "GUILEC $i" $GUILE_TOOLS compile -L ${abs}module -L ${abs}/build-aux -L ${abs}scripts -o $go $i
     fi
 done

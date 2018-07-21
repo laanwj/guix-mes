@@ -18,6 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+set -e
+
+. build-aux/config.sh
+. build-aux/trace.sh
 
 export GUILE MES
 MES=${MES-./src/mes}
@@ -26,8 +30,6 @@ GUILE=${GUILE-guile}
 if ! command -v $GUILE > /dev/null; then
     GUILE=true
 fi
-
-set -e
 
 tests="
 
@@ -116,16 +118,18 @@ for i in $tests; do
         echo ' [SKIP]'
         continue;
     fi
-    $GUILE -L module -C module -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i) >& /dev/null
+    trace "TEST $i.guile" $GUILE -L module -C ${builddest}/module -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i)
     x=$(
-        if [ -z "${i/5[0-9]-*/}" ]; then
-            cat scaffold/boot/$i | MES_BOOT=boot-00.scm $MES 2>&1;
+        if [ "$MES" = guile ]; then
+            true
+        elif [ -z "${i/5[0-9]-*/}" ]; then
+            cat scaffold/boot/$i | MES_BOOT=${srcdir}/boot-00.scm $MES 2>&1;
         elif [ -z "${i/6[0-9]-*/}" ]; then
-            cat scaffold/boot/$i | MES_BOOT=boot-01.scm $MES 2>&1;
+            cat scaffold/boot/$i | MES_BOOT=${srcdir}/boot-01.scm $MES 2>&1;
         else
-            MES_BOOT=scaffold/boot/$i $MES 2>&1;
+            MES_BOOT=${srcdir}/scaffold/boot/$i $MES 2>&1;
         fi
      ) \
         && echo ' [PASS]' \
-        || (r=$?; echo ' [FAIL]'; echo -e "$x"; echo scaffold/boot/$i; exit $r)
+        || (r=$?; echo ' [FAIL]'; echo -e "$x"; echo ${top_builddest}scaffold/boot/$i; exit $r)
 done

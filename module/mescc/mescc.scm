@@ -212,8 +212,11 @@
   (arch-find options (string-append "lib" o ext)))
 
 (define* (arch-find options file-name)
-  (let* ((path (cons (prefix-file options "lib")
-                     (filter-map (multi-opt 'library-dir) options)))
+  (let* ((top-builddest (or (getenv "top_builddest") ""))
+         (builddir-lib (string-append top-builddest "lib"))
+         (path (cons* builddir-lib
+                      (prefix-file options "lib")
+                      (filter-map (multi-opt 'library-dir) options)))
          (arch-file-name (string-append "x86-mes/" file-name))
          (verbose? (option-ref options 'verbose #f)))
     (when verbose?

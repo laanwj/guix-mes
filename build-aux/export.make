@@ -1,5 +1,16 @@
-ifdef BUILD_DEBUG
-export BUILD_DEBUG
+export PACKAGE
+export VERSION
+
+export abs_top_builddir
+export abs_top_srcdir
+export top_builddest
+export top_builddir
+export config.make
+export srcdir
+
+
+ifdef V
+export V
 endif
 
 ifdef DESTDIR
@@ -16,10 +27,6 @@ endif
 
 ifdef mandir
 export mandir
-endif
-
-ifdef VERSION
-export VERSION
 endif
 
 ifdef ARCH

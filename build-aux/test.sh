@@ -18,39 +18,38 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ -n "$BUILD_DEBUG" ]; then
-    set -x
-fi
+set -e
+. build-aux/config.sh
+. build-aux/trace.sh
 
 MES_ARENA=100000000
 
-export LIBC MES_LIBS
-
 GUILE=${GUILE-$MES}
 DIFF=${DIFF-$(command -v diff)}
-[ -z "$DIFF" ] && DIFF="sh scripts/diff.scm"
+[ -z "$DIFF" ] && DIFF="sh ${top_builddest}scripts/diff.scm"
 
 t=${1-scaffold/tests/t}
-rm -f "$t".mes-out
+o="${top_builddest}$t"
+rm -f "$o".mes-out
 shift
 
 set -e
 
-rm -f "$t".gcc-out
+rm -f "$o".gcc-out
 if [ -n "$CC" ]; then
     sh build-aux/cc.sh "$t"
 
     r=0
     [ -f "$t".exit ] && r=$(cat "$t".exit)
     set +e
-    "$t".gcc-out $ARGS > "$t".gcc-stdout
+    "$o".gcc-out $ARGS > "$o".gcc-stdout
     m=$?
-    cat "$t".gcc-stdout
+    cat "$o".gcc-stdout
     set -e
 
     [ $m = $r ]
     if [ -f "$t".expect ]; then
-        $DIFF -ub "$t".expect "$t".gcc-stdout;
+        $DIFF -ub "$t".expect "$o".gcc-stdout;
     fi
 fi
 
@@ -61,29 +60,29 @@ if [ -n "$CC32" ]; then
     r=0
     [ -f "$t".exit ] && r=$(cat "$t".exit)
     set +e
-    "$t".mes-gcc-out $ARGS > "$t".mes-gcc-stdout
+    "$o".mes-gcc-out $ARGS > "$o".mes-gcc-stdout
     m=$?
     cat "$t".mes-gcc-stdout
     set -e
 
     [ $m = $r ]
     if [ -f "$t".expect ]; then
-        $DIFF -ub "$t".expect "$t".mes-gcc-stdout;
+        $DIFF -ub "$t".expect "$o".mes-gcc-stdout;
     fi
 fi
 
-rm -f "$t".mes-out
+rm -f "$o".mes-out
 sh build-aux/cc-mes.sh "$t"
 
 r=0
 [ -f "$t".exit ] && r=$(cat "$t".exit)
 set +e
-"$t".mes-out $ARGS > "$t".mes-stdout
+"$o".mes-out $ARGS > "$o".mes-stdout
 m=$?
-cat "$t".mes-stdout
+cat "$o".mes-stdout
 set -e
 
 [ $m = $r ]
 if [ -f "$t".expect ]; then
-    $DIFF -ub "$t".expect "$t".mes-stdout;
+    $DIFF -ub "$t".expect "$o".mes-stdout;
 fi

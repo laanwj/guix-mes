@@ -20,30 +20,8 @@
 
 set -e
 
-if [ -n "$BUILD_DEBUG" ]; then
-    set -x
-fi
-
-CC32_CPPFLAGS=${CC32_CPPFLAGS-"
--D VERSION=\"$VERSION\"
--D MODULEDIR=\"$moduledir\"
--D PREFIX=\"$prefix\"
--I src
--I lib
--I include
-"}
-
-CC32_CFLAGS=${CC32_CFLAGS-"
--std=gnu99
--O0
--fno-builtin
--fno-stack-protector
--g
--m32
--nostdinc
--nostdlib
-"}
-LIBC=${LIBC-c}
+. build-aux/config.sh
+. build-aux/trace.sh
 
 a=mes-gcc
 if [ "$CC32" = "$TCC" ]; then
@@ -53,22 +31,23 @@ fi
 arch=x86-$a
 
 if [ -n "$LIBC" ]; then
-    CC32LIBS="lib/$arch/lib$LIBC.o"
+    CC32LIBS="${top_builddest}lib/$arch/lib$LIBC.o"
 fi
 
 c=$1
 
 if [ -z "$ARCHDIR" ]; then
-    o="$c"
+    o="${top_builddest}$c"
+    d=${top_builddest}${c%%/*}
     p="$a-"
 else
     b=${c##*/}
-    d=${c%%/*}
-    o="$d/$arch/$b"
-    mkdir -p $d/$arch
+    d=${top_builddest}${c%%/*}/$arch
+    o="$d/$b"
 fi
+mkdir -p $d
 
-$CC32\
+trace "CC32 $c.c" $CC32\
     -c\
     $CC32_CPPFLAGS\
     $CC32_CFLAGS\
@@ -76,11 +55,11 @@ $CC32\
     "$c".c
 
 if [ -z "$NOLINK" ]; then
-    $CC32\
+    trace "CCLD32 $c.c" $CC32\
         $CC32_CPPFLAGS\
         $CC32_CFLAGS\
         -o "$o".${p}out\
-        lib/$arch/crt1.o\
+        ${top_builddest}lib/$arch/crt1.o\
         "$o".${p}o\
         $CC32LIBS
 fi

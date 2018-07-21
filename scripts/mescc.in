@@ -1,12 +1,13 @@
 #! @BASH@
 # -*-scheme-*-
-if [ -n "$BUILD_DEBUG" ]; then
+if [ "$V" = 2 ]; then
     set -x
 fi
 prefix=${prefix-@prefix@}
 MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
 export MES_PREFIX
 mes_p=$(command -v mes)
+mescc=$(command -v $0)
 
 guile_site_dir=${guile_site_dir-@guile_site_dir@}
 GUILE_LOAD_PATH=$guile_site_dir:$GUILE_LOAD_PATH
@@ -16,10 +17,10 @@ if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile
     GUILE_LOAD_COMPILED_PATH=$guile_site_ccache_dir:$GUILE_LOAD_COMPILED_PATH
     GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
     export GUILE_AUTO_COMPILE
-    exec ${GUILE-guile} -L $guile_site_dir -e '(mescc)' -s "$0" "$@"
+    exec ${GUILE-guile} -L $guile_site_dir -e '(mescc)' -s "$mescc" "$@"
 else
     MES=${MES-$(dirname $0)/mes}
-    exec ${MES-mes} -e '(mescc)' -s $0 "$@"
+    exec ${MES-${top_builddest}mes} -e '(mescc)' -s "$mescc" "$@"
 fi
 !#
 
@@ -66,7 +67,8 @@ fi
  (guile
   (define-macro (mes-use-module . rest) #t)))
 
-(format (current-error-port) "mescc[~a]...\n" %scheme)
+(when (and=> (getenv "V") (lambda (v) (> (string->number v) 1)))
+  (format (current-error-port) "mescc[~a]...\n" %scheme))
 
 (define (parse-opts args)
   (let* ((option-spec

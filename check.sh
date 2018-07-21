@@ -18,9 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-export CC32
-export GUILE MES MES_ARENA
-export BUILD_DEBUG
+set -e
+
+. build-aux/config.sh
+. build-aux/trace.sh
 
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
@@ -33,6 +34,6 @@ fi
 set -e
 
 [ "$GUILE" != true ] && MES=guile bash build-aux/check-mes.sh
-bash build-aux/check-mes.sh
+[ "$MES" != guile ] && bash build-aux/check-mes.sh
 bash build-aux/check-boot.sh
 bash build-aux/check-mescc.sh

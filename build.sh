@@ -18,82 +18,30 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ -n "$BUILD_DEBUG" ]; then
-    set -x
-fi
+. build-aux/config.sh
+. build-aux/trace.sh
 
-# dash does not export foo=${foo-bar} for some values
-export prefix datadir moduledir
-export CC CC32 TCC GUILE MESCC MES_SEED
-export MES_ARENA MES_DEBUG
-export CPPFLAGS CFLAGS C32FLAGS MESCCFLAGS
-export BUILD_DEBUG
-
-CC=${CC-$(command -v gcc)}
-CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
-MESCC=${MESCC-$(command -v mescc)}
 MES_SEED=${MES_SEED-../mes-seed}
 GUILE=${GUILE-$(command -v guile)}
 MES_ARENA=${MES_ARENA-100000000}
-MES_DEBUG=${MES_DEBUG-1}
 
-prefix=${prefix-/usr/local}
-datadir=${datadir-$prefix/share/mes}
-moduledir=${moduledir-${datadir}${datadir:+/}module}
-set -e
-
-CC_CPPFLAGS=${CC_CPPFLAGS-"
--D VERSION=\"$VERSION\"
--D MODULEDIR=\"$moduledir\"
--D PREFIX=\"$prefix\"
--I src
--I lib
--I include
-"}
-CC32_CPPFLAGS=${CC_CPPFLAGS-CC32_CPPFLAGS}
-CC_CFLAGS=${CC_CFLAGS-"
---std=gnu99
--O0
--g
-"}
-CC32_FLAGS=${CC32_FLAGS-"
---std=gnu99
--O0
--fno-stack-protector
--g
--m32
--nostdinc
--nostdlib
-"}
-MES_CFLAGS=${MES_CFLAGS-"
-"}
-M1FLAGS=${M1FLAGS-"
---LittleEndian
---Architecture 1
-"}
-HEX2FLAGS=${HEX2FLAGS-"
---LittleEndian
---Architecture 1
---BaseAddress 0x1000000
-"}
-
-if [ -n "$GUILE" ]; then
+if [ -n "$GUILE" -a "$GUILE" != true ]; then
     sh build-aux/build-guile.sh
 fi
 
 if [ -n "$CC" ]; then
     sh build-aux/build-cc.sh
-    cp src/mes.gcc-out src/mes
+    cp ${top_builddest}src/mes.gcc-out ${top_builddest}src/mes
 fi
 
 if [ -n "$CC32" ]; then
     sh build-aux/build-cc32.sh
-    cp src/mes.mes-gcc-out src/mes
+    cp ${top_builddest}src/mes.mes-gcc-out ${top_builddest}src/mes
 fi
 
 if [ -n "$TCC" ]; then
     CC32=$TCC sh build-aux/build-cc32.sh
-    cp src/mes.mes-tcc-out src/mes
+    cp ${top_builddest}src/mes.mes-tcc-out ${top_builddest}src/mes
 fi
 
 sh build-aux/build-mes.sh

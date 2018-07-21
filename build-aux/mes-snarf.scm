@@ -46,7 +46,8 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
 (mes-use-module (srfi srfi-9))
 (mes-use-module (srfi srfi-26))
 
-(format (current-error-port) "mes-snarf[~a]...\n" %scheme)
+(when (and=> (getenv "V") (lambda (v) (> (string->number v) 1)))
+  (format (current-error-port) "mes-snarf[~a]...\n" %scheme))
 
 (define (char->char from to char)
   (if (eq? char from) to char))
@@ -209,7 +210,7 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
          (functions (filter (negate internal?) functions))
          (symbols (snarf-symbols string))
          (base-name (basename file-name ".c"))
-         (dir (or (getenv "OUT") (dirname file-name)))
+         (dir (string-append (or (getenv "top_builddest") "") (dirname file-name)))
          (base-name (string-append dir "/" base-name))
          (base-name (if %gcc? base-name
                         (string-append base-name ".mes")))
@@ -234,6 +235,7 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
     (list header source environment symbols.h symbols.i symbol-names.i)))
 
 (define (file-write file)
+  (system* "mkdir" "-p" (dirname (file.name file)))
   (with-output-to-file (file.name file) (lambda () (display (file.content file)))))
 
 (define (main args)

@@ -20,38 +20,23 @@
 
 set -e
 
-if [ -n "$BUILD_DEBUG" ]; then
-    set -x
-fi
-
-CC_CPPFLAGS=${CC_CPPFLAGS-"
--D VERSION=\"$VERSION\"
--D MODULEDIR=\"$moduledir\"
--D PREFIX=\"$prefix\"
--I src
--I lib
--I include
-"}
-
-CC_CFLAGS=${CC_CFLAGS-"
---std=gnu99
--O0
--g
-"}
+. build-aux/trace.sh
+. build-aux/config.sh
 
 c=$1
 
 if [ -z "$ARCHDIR" ]; then
-    o="$c"
+    o="${top_builddest}$c"
+    d=${top_builddest}${c%%/*}
     p="gcc-"
 else
     b=${c##*/}
-    d=${c%/*}
-    o="$d/gcc/$b"
-    mkdir -p $d/gcc
+    d=${top_builddest}${c%/*}/gcc
+    o="$d/$b"
 fi
+mkdir -p $d
 
-$CC\
+trace "CC $c.c" $CC\
     -c\
     $CC_CPPFLAGS\
     $CPPFLAGS\
@@ -63,12 +48,12 @@ $CC\
     "$c".c
 
 if [ -z "$NOLINK" ]; then
-    $CC\
+    trace "CCLD "$o".${p}out" $CC\
         $CC_CPPFLAGS\
         $CPPFLAGS\
         $CC_CFLAGS\
         $CFLAGS\
         -o "$o".${p}out\
         "$o".${p}o\
-        lib/gcc/libmes.o
+        ${top_builddest}lib/gcc/libmes.o
 fi

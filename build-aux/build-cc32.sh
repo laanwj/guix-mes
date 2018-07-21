@@ -20,56 +20,28 @@
 
 set -e
 
-if [ -n "$BUILD_DEBUG" ]; then
-    set -x
-fi
+. build-aux/config.sh
+. build-aux/trace.sh
 
-moduledir=${moduledir-${datadir}${datadir:+/}module}
-export CC32 TCC CPPFLAGS
-export CC32 TCC CC32_CPPFLAGS CC32_CFLAGS
+LIBC=${LIBC-c}
 
-CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
-build-aux/mes-snarf.scm --mes src/gc.c
-build-aux/mes-snarf.scm --mes src/lib.c
-build-aux/mes-snarf.scm --mes src/math.c
-build-aux/mes-snarf.scm --mes src/mes.c
-build-aux/mes-snarf.scm --mes src/posix.c
-build-aux/mes-snarf.scm --mes src/reader.c
-build-aux/mes-snarf.scm --mes src/vector.c
+##moduledir=${moduledir-${datadir}${datadir:+/}module}
 
-build-aux/mes-snarf.scm src/gc.c
-build-aux/mes-snarf.scm src/lib.c
-build-aux/mes-snarf.scm src/math.c
-build-aux/mes-snarf.scm src/mes.c
-build-aux/mes-snarf.scm src/posix.c
-build-aux/mes-snarf.scm src/reader.c
-build-aux/mes-snarf.scm src/vector.c
+# trace "SNARF gc.c"     build-aux/mes-snarf.scm src/gc.c
+# trace "SNARF lib.c"    build-aux/mes-snarf.scm src/lib.c
+# trace "SNARF math.c"   build-aux/mes-snarf.scm src/math.c
+# trace "SNARF mes.c"    build-aux/mes-snarf.scm src/mes.c
+# trace "SNARF posix.c"  build-aux/mes-snarf.scm src/posix.c
+# trace "SNARF reader.c" build-aux/mes-snarf.scm src/reader.c
+# trace "SNARF vector.c" build-aux/mes-snarf.scm src/vector.c
 
-CC32_CPPFLAGS=${CC32_CPPFLAGS-"
--D VERSION=\"$VERSION\"
--D MODULEDIR=\"$moduledir\"
--D PREFIX=\"$prefix\"
--I src
--I lib
--I include
-"}
-
-CC32_CFLAGS=${CC32_CFLAGS-"
--std=gnu99
--O0
--fno-builtin
--fno-stack-protector
--g
--m32
--nostdinc
--nostdlib
--Wno-discarded-qualifiers
--Wno-int-to-pointer-cast
--Wno-pointer-to-int-cast
--Wno-pointer-sign
--Wno-int-conversion
--Wno-incompatible-pointer-types
-"}
+trace "MSNARF gc.c"     build-aux/mes-snarf.scm --mes src/gc.c
+trace "MSNARF lib.c"    build-aux/mes-snarf.scm --mes src/lib.c
+trace "MSNARF math.c"   build-aux/mes-snarf.scm --mes src/math.c
+trace "MSNARF mes.c"    build-aux/mes-snarf.scm --mes src/mes.c
+trace "MSNARF posix.c"  build-aux/mes-snarf.scm --mes src/posix.c
+trace "MSNARF reader.c" build-aux/mes-snarf.scm --mes src/reader.c
+trace "MSNARF vector.c" build-aux/mes-snarf.scm --mes src/vector.c
 
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/linux/crt0
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/linux/crt1
@@ -83,12 +55,12 @@ ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libtcc1
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libc+gnu
 ARCHDIR=1 NOLINK=1 sh build-aux/cc32-mes.sh lib/libg
 
-sh build-aux/cc32-mes.sh scaffold/main
-sh build-aux/cc32-mes.sh scaffold/hello
-sh build-aux/cc32-mes.sh scaffold/argv
-sh build-aux/cc32-mes.sh scaffold/malloc
-sh build-aux/cc32-mes.sh scaffold/micro-mes
-sh build-aux/cc32-mes.sh scaffold/tiny-mes
-sh build-aux/cc32-mes.sh scaffold/mini-mes
+# sh build-aux/cc32-mes.sh scaffold/main
+# sh build-aux/cc32-mes.sh scaffold/hello
+# sh build-aux/cc32-mes.sh scaffold/argv
+# sh build-aux/cc32-mes.sh scaffold/malloc
+# sh build-aux/cc32-mes.sh scaffold/micro-mes
+# sh build-aux/cc32-mes.sh scaffold/tiny-mes
+# sh build-aux/cc32-mes.sh scaffold/mini-mes
 
 sh build-aux/cc32-mes.sh src/mes

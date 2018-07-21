@@ -18,13 +18,19 @@
 
 GUILE_FLAGS:=--no-auto-compile -L . -L module -C . -C module
 
-include .config.make
+cleaning_p:=$(filter clean%, $(MAKECMDGOALS))
 
-.config.make:
+ifndef cleaning_p
+ifndef config.make
+config.make:=.config.make
+include $(config.make)
+$(config.make):
 	./configure --prefix=$(prefix)
+endif
+endif
 
-PHONY_TARGETS:= all all-go build check clean clean-go default doc help install install-info man\
-gcc mes src/mes mes-gcc mes-tcc
+PHONY_TARGETS:= all all-go build check clean clean-go default dist doc help install\
+install-info man gcc mes ${top_builddest}src/mes mes-gcc mes-tcc generate-ChangeLog
 
 .PHONY: $(PHONY_TARGETS)
 
@@ -64,10 +70,10 @@ clean-go:
 check:
 	./check.sh
 
-install: src/mes
+install: ${top_builddest}src/mes
 	./install.sh
 
-.config.make: ./configure
+$(config.make): configure
 
 seed: all-go mes-gcc mes-tcc
 ifdef TCC
@@ -86,14 +92,15 @@ endif
            $(MESCC_TOOLS_SEED)/libs
 	cd $(MESCC_TOOLS_SEED) && MES_PREFIX=$(PWD) ./bootstrap.sh
 
-doc/version.texi: doc/mes.texi GNUmakefile
+${top_builddest}doc/version.texi: doc/mes.texi GNUmakefile
+	@mkdir -p $(@D)
 	(set `LANG= date -r $< +'%d %B %Y'`;\
 	echo "@set UPDATED $$1 $$2 $$3"; \
 	echo "@set UPDATED-MONTH $$2 $$3"; \
 	echo "@set EDITION $(VERSION)"; \
 	echo "@set VERSION $(VERSION)") > $@
 
-doc: doc/version.texi
+doc: ${top_builddest}doc/version.texi
 ifdef MAKEINFO
 doc: info
 else
@@ -106,32 +113,66 @@ else
 $(warning skipping man: no help2man)
 endif
 
-info: doc/mes.info
+info: ${top_builddest}doc/mes.info
 
-doc/mes.info: doc/mes.texi doc/version.texi GNUmakefile
-	$(MAKEINFO) -o $@ -I doc $<
+${top_builddest}doc/mes.info: doc/mes.texi ${top_builddest}doc/version.texi GNUmakefile
+	$(MAKEINFO) -o $@ -I ${top_builddest}doc -I doc $<
 
 install-info: info
 
-man: doc/mes.1 doc/mescc.1
+man: ${top_builddest}doc/mes.1 ${top_builddest}doc/mescc.1
 
-src/mes: build
+${top_builddest}src/mes: build
 
-doc/mes.1: src/mes
-	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $< > $@
+${top_builddest}doc/mes.1: ${top_builddest}src/mes
+	MES_ARENA=10000000 ${top_builddir}/pre-inst-env $(HELP2MAN) $(<F) > $@
 
-doc/mescc.1: src/mes scripts/mescc
-	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $< > $@
+${top_builddest}doc/mescc.1: ${top_builddest}src/mes ${top_builddest}scripts/mescc
+	MES_ARENA=10000000 ${top_builddir}/pre-inst-env $(HELP2MAN) $(<F) > $@
 
-html: mes/index.html
+html: ${top_builddest}mes/index.html
 
-mes/index.html: doc/mes.texi
-	$(MAKEINFO) --html -o doc/mes $<
+${top_builddest}mes/index.html: doc/mes.texi
+	$(MAKEINFO) --html -o ${top_builddest}doc/mes $<
 
-pdf: doc/mes.pdf
+pdf: ${top_builddest}doc/mes.pdf
 
-doc/mes.pdf: doc/mes.texi
-	$(MAKEINFO) --pdf -o doc/mes.pdf $<
+${top_builddest}doc/mes.pdf: doc/mes.texi
+	$(MAKEINFO) --pdf -I ${top_builddest}/doc -o doc/mes.pdf $<
+
+###  dist
+COMMIT=$(shell test -d .git && (git describe --dirty 2>/dev/null) || cat .tarball-version)
+TARBALL_VERSION=$(COMMIT:v%=%)
+TARBALL_DIR:=$(PACKAGE)-$(TARBALL_VERSION)
+TARBALL:=${top_builddest}$(TARBALL_DIR).tar.gz
+
+${top_builddest}.tarball-version:
+	echo $(COMMIT) > $@
+
+GIT_ARCHIVE_HEAD:=git archive HEAD --
+GIT_LS_FILES:=git ls-files
+ifeq ($(wildcard .git),)
+GIT_ARCHIVE_HEAD:=tar -cf-
+GIT_LS_FILES:=find
+endif
+
+dist: $(TARBALL)
+
+tree-clean-p:
+	test ! -d .git || git diff --exit-code > /dev/null
+	test ! -d .git || git diff --cached --exit-code > /dev/null
+	@echo commit:$(COMMIT)
+
+generate-ChangeLog:
+	$(PERL) build-aux/gitlog-to-changelog --srcdir=${srcdir} > ChangeLog
+
+$(TARBALL): ${top_builddest}.tarball-version | generate-ChangeLog
+	($(GIT_LS_FILES)\
+	    --exclude=$(TARBALL_DIR);\
+	    echo $^ | tr ' ' '\n')\
+	    | GZIP=-n tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner\
+	    --transform=s,^,$(TARBALL_DIR)/,S -T- -czf $@
+	git checkout ChangeLog
 
 define HELP_TOP
 Usage: make [OPTION]... [TARGET]...
@@ -139,7 +180,8 @@ Usage: make [OPTION]... [TARGET]...
 Targets:
   all             update everything
   all-go          update .go files
-  cc              update src/mes.gcc-out
+  gcc             update src/mes.gcc-out
+  dist            update $(TARBALL)
   doc             update documentation
   mes-gcc         update src/mes.mes-gcc-out
   mes-tcc         update src/mes.mes-tcc-out

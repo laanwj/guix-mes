@@ -18,9 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-export BASH
-export GUILE MES MES_ARENA
-export BUILD_DEBUG
+set -e
+
+. build-aux/config.sh
+. build-aux/trace.sh
 
 if [ "$MES" = guile ]; then
     mes=guile-
@@ -29,8 +30,6 @@ BASH=${BASH-bash}
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
 MES_ARENA=${MES_ARENA-100000000}
-
-set -e
 
 tests="
 tests/boot.test
@@ -61,10 +60,7 @@ tests/match.test
 tests/psyntax.test
 "
 
-slow_or_broken="
-tests/peg.test
-"
-
+mkdir -p ${top_builddest}tests
 set +e
 fail=0
 total=0
@@ -73,7 +69,7 @@ for t in $tests; do
         echo $t: [SKIP];
         continue
     fi
-    ./pre-inst-env sh "$t" &> $t.${mes}log
+    ${top_builddir}/pre-inst-env sh "$t" &> ${top_builddest}$t.${mes}log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then
