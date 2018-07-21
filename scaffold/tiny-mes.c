@@ -22,8 +22,11 @@
 #error "POSIX not supported"
 #endif
 
-#include <stdio.h>
 #include <libmes.h>
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 char arena[300];
 

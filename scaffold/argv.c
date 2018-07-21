@@ -18,7 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#include <libmes.h>
+#include <string.h>
 
 int
 main (int argc, char *argv[])
@@ -27,7 +28,7 @@ main (int argc, char *argv[])
 #if __MESC_MES__
   eputs ("MESC.MES\n");
 #else
-  puts ("MESC.GUILE\n");
+  eputs ("MESC.GUILE\n");
 #endif
   if (argc > 1 && !strcmp (argv[1], "--help"))
     {

@@ -24,11 +24,13 @@
 #error "POSIX not supported"
 #endif
 
+#include <libmes.h>
+
 #include <stdio.h>
 #include <assert.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libmes.h>
 
 int ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
 int MAX_ARENA_SIZE = 300000000;
@@ -213,6 +215,8 @@ int g_function = 0;
 #include "math.mes.h"
 #endif
 #include "mes.mes.h"
+
+SCM gc_init_news ();
 
 // #if !MES_MINI
 // #include "posix.mes.h"
@@ -893,7 +897,7 @@ bload_env (SCM a) ///((internal))
 {
   char *mo = "module/mes/read-0-32.mo";
   g_stdin = open (mo, 0);
-  if (g_stdin < 0) {eputs ("no such file: ");eputs (mo);eputs ("\n");return 1;} 
+  if (g_stdin < 0) {eputs ("no such file: ");eputs (mo);eputs ("\n");return 1;}
   assert (getchar () == 'M');
   assert (getchar () == 'E');
   assert (getchar () == 'S');
