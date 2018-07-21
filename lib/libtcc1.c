@@ -18,6 +18,8 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <libmes.h>
+
 double
 __divdi3 (double a, double b)
 {
@@ -112,15 +114,13 @@ __fixunsxfdi (double a1)
   return 0;
 }
 
-#if __TINYC__ == 9227
-int
 #if __TINYC__ == 9226
 long
-#else
-long long
+#elif __TINYC__
 int
-#endif // __TINYC__ == 9226
-#endif // __TINYC__ == 9227
+#else // !__TINYCC_
+long long
+#endif // !__TINYCC_
 __fixdfdi (double a1)
 {
   static int stub = 0;

@@ -36,6 +36,7 @@
 #define SYS_fstat     0x6c
 #define SYS_nanosleep 0xa2
 
+#include <sys/resource.h>
 
 int
 link (char const *old_name, char const *new_name)

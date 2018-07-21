@@ -21,6 +21,7 @@
 #ifndef __MES_LIBMES_H
 #define __MES_LIBMES_H
 
+int __mes_debug ();
 char const* number_to_ascii (int number, int base, int signed_p);
 char const* itoa (int number);
 char const* utoa (unsigned number);
