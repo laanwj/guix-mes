@@ -90,7 +90,6 @@
     ;; FIXME sign
     ("unsigned char" . ,(make-type 'unsigned 1 #f))
     ("unsigned short" . ,(make-type 'unsigned 2 #f))
-    ("unsigned short int" . ,(make-type 'unsigned 2 #f))
     ("unsigned" . ,(make-type 'unsigned 4 #f))
     ("unsigned int" . ,(make-type 'unsigned 4 #f))
     ("unsigned long" . ,(make-type 'unsigned 4 #f))
@@ -102,7 +101,13 @@
 
     ("float" . ,(make-type 'float 4 #f))
     ("double" . ,(make-type 'float 8 #f))
-    ("long double" . ,(make-type 'float 16 #f))))
+    ("long double" . ,(make-type 'float 16 #f))
+
+    ;;
+    ("short int" . ,(make-type 'signed 2 #f))
+    ("unsigned short int" . ,(make-type 'unsigned 2 #f))
+    ("long int" . ,(make-type 'signed 4 #f))
+    ("unsigned long int" . ,(make-type 'unsigned 4 #f))))
 
 (define (signed? o)
   (eq? ((compose type:type ->type) o) 'signed))
