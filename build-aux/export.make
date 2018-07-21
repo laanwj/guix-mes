@@ -54,6 +54,10 @@ ifdef GUILE_TOOLS
 export GUILE_TOOLS
 endif
 
+ifdef PERL
+export PERL
+endif
+
 ifdef TCC
 export TCC
 endif

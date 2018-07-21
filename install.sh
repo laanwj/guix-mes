@@ -36,10 +36,18 @@ chmod -w+x $DESTDIR$bindir/diff.scm
 
 
 mkdir -p $docdir
+
+if [ -n "$PERL" -a -n "$GIT" ]\
+       && $PERL -v > /dev/null\
+       && $GIT --status > /dev/null; then
+    $PERL build-aux/gitlog-to-changelog --srcdir=. > ChangeLog
+fi
+
 cp\
     AUTHORS\
     BOOTSTRAP\
     COPYING\
+    ChangeLog\
     HACKING\
     INSTALL\
     NEWS\

@@ -44,7 +44,6 @@
 /.config.make
 /.store
 /.tarball-version
-/ChangeLog
 
 #keep this: bootstrap
 #/mes.mes
