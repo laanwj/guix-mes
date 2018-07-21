@@ -25,6 +25,17 @@
 
 ;;; Code:
 
+(define-module (mes test)
+  #:export (
+            pass-if
+            pass-if-equal
+            pass-if-not
+            pass-if-eq
+            result
+            seq? ; deprecated
+            sequal? ; deprecated
+            ))
+
 (cond-expand
  (mes
   (define mes? #t)

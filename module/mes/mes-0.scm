@@ -25,7 +25,23 @@
 
 ;;; Code:
 
+(define-module (mes mes-0)
+  #:export (
+            builtin?
+            mes-use-module
+            EOF
+            append2
+            mes?
+            guile?
+            guile-1.8?
+            guile-2?
+            ))
+
 (define-macro (mes-use-module . rest) #t)
 (define builtin? procedure?) ; not strictly true, but ok for tests/*.test
+(define mes? #f)
+(define guile? #t)
+(define guile-1.8? (equal? (effective-version) "1.8"))
+(define guile-2? (equal? (major-version) "2"))
 (define EOF (if #f #f))
 (define append2 append)

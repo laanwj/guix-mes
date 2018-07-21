@@ -18,83 +18,21 @@
 # You should have received a copy of the GNU General Public License
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-export BASH
 export CC32
 export GUILE MES MES_ARENA
 export BUILD_DEBUG
 
-BASH=${BASH-bash}
-CC32=${CC32-$(command -v i686-unknown-linux-gnu-gcc)}
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
 MES_ARENA=${MES_ARENA-100000000}
-prefix=
 
 if ! command -v $GUILE > /dev/null; then
     GUILE=true
 fi
 
 set -e
+
+[ "$GUILE" != true ] && MES=guile bash build-aux/check-mes.sh
+bash build-aux/check-mes.sh
 bash build-aux/check-boot.sh
-
-tests="
-tests/boot.test
-tests/read.test
-tests/base.test
-tests/quasiquote.test
-tests/let.test
-tests/closure.test
-tests/scm.test
-tests/display.test
-tests/cwv.test
-tests/math.test
-tests/vector.test
-tests/srfi-1.test
-tests/srfi-9.test
-tests/srfi-13.test
-tests/srfi-14.test
-tests/srfi-43.test
-tests/optargs.test
-tests/fluids.test
-tests/catch.test
-tests/getopt-long.test
-tests/guile.test
-tests/syntax.test
-tests/let-syntax.test
-tests/pmatch.test
-tests/match.test
-tests/psyntax.test
-"
-
-slow_or_broken="
-tests/peg.test
-"
-
-tests=$(for t in $tests; do echo $t-guile; echo $t; done)
-
-set +e
-fail=0
-total=0
-for t in $tests; do
-    if [ ! -f $t ]; then
-        echo $t: [SKIP];
-        continue
-    fi
-    sh "$t" &> $t.log
-    r=$?
-    total=$((total+1))
-    if [ $r = 0 ]; then
-        echo $t: [OK]
-    else
-        echo $t: [FAIL]
-        fail=$((fail+1))
-    fi
-done
-if [ $fail != 0 ]; then
-    echo FAILED: $fail/$total
-    exit 1
-else
-    echo PASS: $total
-fi
-
-$BASH build-aux/check-mescc.sh
+bash build-aux/check-mescc.sh

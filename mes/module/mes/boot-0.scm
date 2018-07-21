@@ -244,7 +244,8 @@
 (let ((tty? (isatty? 0)))
   (define (parse-opts args)
     (let* ((option-spec
-            '((compiled-path (single-char #\C) (value #t))
+            '((no-auto-compile)
+              (compiled-path (single-char #\C) (value #t))
               (dump)
               (help (single-char #\h))
               (load)
@@ -279,14 +280,18 @@ Evaluate code with Mes, interactively or from a script.
 The above switches stop argument processing, and pass all
 remaining arguments as the value of (command-line).
 
-  -C,--compiled-path=DIR
-                      ignored for Guile compatibility
   --dump              dump binary program to stdout
   -e,--main=MAIN      after reading script, apply MAIN to command-line arguments
   -h, --help          display this help and exit
   --load              load binary program [module/mes/boot-0.32-mo]
   -L,--load-path=DIR  add DIR to the front of the module load path
   -v, --version       display version information and exit
+
+Ignored for Guile compatibility:
+  --auto-compile
+  --fresh-auto-compile
+  --no-auto-compile
+  -C,--compiled-path=DIR
 " (or (and usage? (current-error-port)) (current-output-port)))
           (exit (or (and usage? 2) 0)))
      options)

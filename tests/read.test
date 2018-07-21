@@ -2,8 +2,7 @@
 # -*-scheme-*-
 # ***REMOVE THIS BLOCK COMMENT INITIALLY***
 MES=${MES-$(dirname $0)/../src/mes}
-$MES -s $0
-exit $?
+exec $MES -s $0
 !#
 
 0

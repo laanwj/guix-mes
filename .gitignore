@@ -12,6 +12,7 @@
 *.gcc-stdout
 *.go
 *.guile
+*.guile-log
 *.log
 *.mes-gcc
 *.mes-gcc-o
