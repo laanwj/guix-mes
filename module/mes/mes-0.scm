@@ -35,6 +35,8 @@
             guile?
             guile-1.8?
             guile-2?
+            %arch
+            %compiler
             ))
 
 (define-macro (mes-use-module . rest) #t)
@@ -45,3 +47,5 @@
 (define guile-2? (equal? (major-version) "2"))
 (define EOF (if #f #f))
 (define append2 append)
+(define %arch (car (string-split %host-type #\-)))
+(define %compiler "gcc")

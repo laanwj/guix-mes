@@ -136,6 +136,10 @@ enough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 
 
 * Bugs
+** mes: gcc-x86 compiled, tests/srfi-13.test number->string INT-MIN fails:
+test: number->string INT-MIN: fail
+expected: -2147483648
+actual: -./,),(-*,(
 ** tcc: tcc-built lib/libc+tcc.c segfaults with mes, with tcc.
 ** mes: remove pmatch-car/pmatch-cdr hack.
 ** mescc: softcode stack frame size, now hardcoded and very large

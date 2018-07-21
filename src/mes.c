@@ -235,10 +235,10 @@ struct scm scm_type_variable = {TSYMBOL, "<cell:variable>",0};
 struct scm scm_type_vector = {TSYMBOL, "<cell:vector>",0};
 struct scm scm_type_broken_heart = {TSYMBOL, "<cell:broken-heart>",0};
 
-struct scm scm_symbol_gnuc = {TSYMBOL, "%gnuc",0};
-struct scm scm_symbol_mesc = {TSYMBOL, "%mesc",0};
+struct scm scm_symbol_compiler = {TSYMBOL, "%compiler",0};
+struct scm scm_symbol_arch = {TSYMBOL, "%arch",0};
 
-struct scm scm_test = {TSYMBOL, "test",0};
+struct scm scm_test = {TSYMBOL, "%%test",0};
 
 #if !_POSIX_SOURCE
 #include "mes.mes.symbols.h"
@@ -1830,10 +1830,10 @@ g_free++;
 g_cells[cell_vm_return] = scm_vm_return;
 
 g_free++;
-g_cells[cell_symbol_gnuc] = scm_symbol_gnuc;
+g_cells[cell_symbol_compiler] = scm_symbol_compiler;
 
 g_free++;
-g_cells[cell_symbol_mesc] = scm_symbol_mesc;
+g_cells[cell_symbol_arch] = scm_symbol_arch;
 
 g_free++;
 g_cells[cell_test] = scm_test;
@@ -1948,8 +1948,8 @@ g_cells[cell_vm_call_with_values2].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_call_with_current_continuation2].car = g_cells[cell_vm_evlis].car;
 g_cells[cell_vm_return].car = g_cells[cell_vm_evlis].car;
 
-g_cells[cell_symbol_gnuc].car = cstring_to_list (scm_symbol_gnuc.name);
-g_cells[cell_symbol_mesc].car = cstring_to_list (scm_symbol_mesc.name);
+g_cells[cell_symbol_compiler].car = cstring_to_list (scm_symbol_compiler.name);
+g_cells[cell_symbol_arch].car = cstring_to_list (scm_symbol_arch.name);
 g_cells[cell_test].car = cstring_to_list (scm_test.name);
 ////////////////// gc
 
@@ -1967,13 +1967,20 @@ g_cells[cell_test].car = cstring_to_list (scm_test.name);
   a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
   a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
 
-#if __GNUC__
-  a = acons (cell_symbol_gnuc, cell_t, a);
-  a = acons (cell_symbol_mesc, cell_f, a);
-#else
-  a = acons (cell_symbol_gnuc, cell_f, a);
-
+  char *compiler = "gcc";
+#if __MESC__
+  compiler = "mescc";
+#elif __TINYC__
+  compiler = "tcc";
 #endif
+  a = acons (cell_symbol_compiler, MAKE_STRING (cstring_to_list (compiler)), a);
+
+  char *arch = "x86";
+#if __x86_64__
+  arch = "x86_64";
+#endif
+  a = acons (cell_symbol_arch, MAKE_STRING (cstring_to_list (arch)), a);
+
 #endif // !MES_MINI
 
   a = acons (cell_type_char, MAKE_NUMBER (TCHAR), a);
@@ -2329,13 +2336,19 @@ bload_env (SCM a) ///((internal))
   g_stdin = STDIN;
   r0 = mes_builtins (r0);
 
-#if __GNUC__
-  set_env_x (cell_symbol_gnuc, cell_t, r0);
-  set_env_x (cell_symbol_mesc, cell_f, r0);
-#else
-  set_env_x (cell_symbol_gnuc, cell_f, r0);
-  set_env_x (cell_symbol_mesc, cell_t, r0);
+  char *compiler = "gcc";
+#if __MESC__
+  compiler = "mescc";
+#elif __TINYC__
+  compiler = "tcc";
 #endif
+  a = acons (cell_symbol_compiler, MAKE_STRING (cstring_to_list (compiler)), a);
+
+  char *arch = "x86";
+#if __x86_64__
+  arch = "x86_64";
+#endif
+  a = acons (cell_symbol_arch, MAKE_STRING (cstring_to_list (arch)), a);
 
   if (g_debug > 3)
     {
