@@ -25,7 +25,11 @@
 #include <libmes.h>
 
 //#define MES_MINI 1
+#if POSIX
+int ARENA_SIZE = 100000000; // 64b: 4GiB
+#else
 int ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
+#endif
 int MAX_ARENA_SIZE = 100000000;
 
 int JAM_SIZE = 20000;
