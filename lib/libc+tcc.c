@@ -193,7 +193,7 @@ fread (void *data, size_t size, size_t count, FILE *stream)
 size_t
 fwrite (void const *data, size_t size, size_t count, FILE *stream)
 {
-  if (__mes_debug ())
+  if (__mes_debug () > 1)
     {
       eputs ("fwrite "); eputs (itoa ((int)stream));
       eputs ("  "); eputs (itoa (size)); eputs ("\n");
@@ -203,7 +203,7 @@ fwrite (void const *data, size_t size, size_t count, FILE *stream)
     return 0;
   int bytes = write ((int)stream, data, size * count);
 
-  if (__mes_debug ())
+  if (__mes_debug () > 2)
     {
       eputs (" => "); eputs (itoa (bytes)); eputs ("\n");
     }
