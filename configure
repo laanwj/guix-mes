@@ -355,6 +355,7 @@ Some influential environment variables:
           (stdout "CC:=~a\n" (or CC ""))
           (stdout "CC32:=~a\n" (or CC32 ""))
           (stdout "HELP2MAN:=~a\n" (or HELP2MAN ""))
+          (stdout "MAKEINFO:=~a\n" (or MAKEINFO ""))
           (stdout "TCC:=~a\n" (or TCC ""))
           (stdout "BLOOD_ELF:=~a\n" (or BLOOD_ELF ""))
           (stdout "MES_SEED:=~a\n" (or MES_SEED ""))
