@@ -63,20 +63,20 @@ else
 fi
 
 if [ -n "$PREPROCESS" ]; then
-    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -E -o "$o.E" "$c".c
-    bash $MESCC $MES_CFLAGS -S "$o".E
-    bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
+    ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -E -o "$o.E" "$c".c
+    ./pre-inst-env bash $MESCC $MES_CFLAGS -S "$o".E
+    ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
+        ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -n "$COMPILE" ]; then
-    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -S -o "$o.S" "$c".c
-    bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
+    ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -S -o "$o.S" "$c".c
+    ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
+        ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -z "$NOLINK" ]; then
-    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "$c".c $MES_LIBS
+    ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "$c".c $MES_LIBS
 else
-    bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "$c".c
+    ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "$c".c
 fi

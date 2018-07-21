@@ -67,3 +67,7 @@
 /doc/mes.pdf
 /doc/mescc.1
 /doc/version.texi
+
+/pre-inst-env
+/mes/module/mes/boot-0.scm
+/scripts/mescc

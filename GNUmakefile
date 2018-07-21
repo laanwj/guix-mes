@@ -64,8 +64,7 @@ clean-go:
 check:
 	./check.sh
 
-
-install:
+install: src/mes
 	./install.sh
 
 .config.make: ./configure

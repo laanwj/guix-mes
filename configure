@@ -46,6 +46,7 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (configure)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 and-let-star)
   #:use-module (ice-9 curried-definitions)
@@ -54,12 +55,18 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 regex)
   #:export (main))
+
+(define* (PATH-search-path name #:key (default name) warn?)
+  (or (search-path (string-split (getenv "PATH") #\:) name)
+      (and (and warn? (format (current-error-port) "warning: not found: ~a\n" name))
+           default)))
 
 (define *shell* "sh")
 (define PACKAGE "mes")
 (define VERSION "0.16.1")
-(define GUILE (or (getenv "guile") "guile"))
+(define GUILE (PATH-search-path (or (getenv "guile") "guile")))
 (define GUILE_EFFECTIVE_VERSION (effective-version))
 
 (define prefix "/usr/local")
@@ -127,11 +134,6 @@ exec ${GUILE-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
              (version (string-tokenize version
                                        (char-set-complement (char-set #\.)))))
             (map string->number version)))
-
-(define* (PATH-search-path name #:key (default name) warn?)
-  (or (search-path (string-split (getenv "PATH") #\:) name)
-      (and (and warn? (format (current-error-port) "warning: not found: ~a\n" name))
-           default)))
 
 (define optional '())
 (define required '())
@@ -261,8 +263,22 @@ Some influential environment variables:
   TINYCC_SEED       location of tinycc-seed
 " PACKAGE VERSION (getenv "prefix")))
 
+(define* (substitute file-name pairs
+                     #:key (target (if (string-suffix? ".in" file-name)
+                                       (string-drop-right file-name 3) target)))
+  (with-output-to-file target
+    (lambda _
+      (display
+       (fold (lambda (o result)
+               (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
+             (with-input-from-file file-name read-string) pairs)))))
+
 (define (main args)
   (let* ((CC (or (getenv "CC") "gcc"))
+         (srcdir (dirname (car (command-line))))
+         (abs-top-srcdir (canonicalize-path srcdir))
+         (builddir (getcwd))
+         (abs-top-builddir (canonicalize-path builddir))
          (BUILD_TRIPLET %host-type)
          (ARCH (car (string-split BUILD_TRIPLET #\-)))
          (options (parse-opts args))
@@ -271,6 +287,13 @@ Some influential environment variables:
          (prefix (option-ref options 'prefix prefix))
          (infodir (option-ref options 'infodir infodir))
          (sysconfdir (option-ref options 'sysconfdir sysconfdir))
+         (datadir (string-append prefix "/share/mes"))
+         (moduledir (string-append datadir"module"))
+         (guile-effective-version (effective-version))
+         (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
+                             (string-append prefix "/share/guile/site/" guile-effective-version)))
+         (guile-site-ccache-dir (if (equal? prefix ".") (canonicalize-path ".")
+                                    (string-append prefix "/lib/guile/" guile-effective-version "/site-ccache")))
          (verbose? (option-ref options 'verbose #f))
          (with-courage? (option-ref options 'with-courage #f))
          (disable-silent-rules? (option-ref options 'disable-silent-rules #f))
@@ -281,6 +304,7 @@ Some influential environment variables:
     (let ((CC32 (or (getenv "CC32")
                     (if (member ARCH '("i686" "arm")) (string-append BUILD_TRIPLET "-" CC)
                         "i686-unknown-linux-gnu-gcc")))
+          (BASH (or (getenv "BASH") "bash"))
           (HELP2MAN (or (getenv "HELP2MAN") "help2man"))
           (TCC (or (getenv "TCC") "tcc"))
           (MAKEINFO (or (getenv "MAKEINFO") "makeinfo"))
@@ -319,6 +343,9 @@ Some influential environment variables:
       (when (and (not (member ARCH '("i686" "x86_64"))) (not with-courage?))
         (stderr "platform not supported: ~a, try --with-courage\n" ARCH)
         (exit 1))
+      (if (check-version "bash" '(2))
+          (set! BASH (PATH-search-path BASH))
+          (set! BASH #f))
       (if (not (check-version CC '(4 8) #:optional? #t))
           (set! CC #f))
       (when CC
@@ -349,6 +376,8 @@ Some influential environment variables:
           (stdout "prefix:=~a\n" (gulp-pipe (string-append "echo " prefix)))
           (stdout "infodir:=~a\n" infodir)
           (stdout "mandir:=~a\n" mandir)
+          (stdout "datadir:=~a\n" datadir)
+          (stdout "moduledir:=~a\n" moduledir)
           (stdout "sysconfdir:=~a\n" sysconfdir)
 
           (stdout "ARCH:=~a\n" ARCH)
@@ -378,6 +407,25 @@ Some influential environment variables:
           (when HEX2FLAGS (stdout "HEX2FLAGS:=~a\n" HEX2FLAGS))
           (when M1FLAGS (stdout "M1FLAGS:=~a\n" M1FLAGS))
           (when MES_CFLAGS (stdout "MES_CFLAGS:=~a\n" MES_CFLAGS))))
+      (let ((pairs `(("@abs_top_srcdir@" . ,abs-top-srcdir)
+                     ("@abs_top_builddir@" . ,abs-top-builddir)
+                     ("@BASH@" . ,BASH)
+                     ("@GUILE@" . ,GUILE)
+                     ("@guile_site_dir@" . ,guile-site-dir)
+                     ("@guile_site_ccache_dir@" . ,guile-site-ccache-dir)
+                     ("@VERSION@" . ,VERSION)
+                     ("mes/module/" . ,(string-append moduledir "/")))))
+        (for-each (lambda (o)
+                    (substitute o pairs)
+                    (chmod (string-drop-right o 3) #o755))
+                  '(
+                    "build-aux/pre-inst-env.in"
+                    "mes/module/mes/boot-0.scm.in"
+                    "scripts/mescc.in"
+                    )))
+      (chmod "build-aux/pre-inst-env" #o755)
+      (rename-file "build-aux/pre-inst-env" "pre-inst-env")
+      (chmod "scripts/mescc" #o755)
       (format (current-output-port)
               "\nRun:
   ~a            to build mes

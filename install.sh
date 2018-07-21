@@ -15,24 +15,45 @@ MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
 MES_SEED=${MES_SEED-../MES-SEED}
 TINYCC_SEED=${TINYCC_SEED-../TINYCC-SEED}
 
-GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
-datadir=${moduledir-$prefix/share/mes}
-docdir=${moduledir-$prefix/share/doc/mes}
+GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-$(guile -c '(display (effective-version))')}
+bindir=${bindir-$prefix/bin}
+datadir=${datadir-$prefix/share/mes}
+docdir=${docdir-$prefix/share/doc/mes}
+infodir=${infodir-$prefix/share/info}
 mandir=${mandir-$prefix/share/man}
 moduledir=${moduledir-$datadir/module}
 guile_site_dir=${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
 guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
-docdir=${moduledir-$prefix/share/doc/mes}
 
-mkdir -p $DESTDIR$prefix/bin
-cp src/mes $DESTDIR$prefix/bin/mes
+mkdir -p $DESTDIR$bindir
+cp src/mes $DESTDIR$bindir/mes
+cp scripts/mescc $DESTDIR$bindir/mescc
 
-mkdir -p $DESTDIR$prefix/lib
-mkdir -p $DESTDIR$MES_PREFIX/lib
-cp scripts/mescc $DESTDIR$prefix/bin/mescc
+sed \
+    -e "s,^#! /bin/sh,#! $SHELL," \
+    scripts/diff.scm > $DESTDIR$bindir/diff.scm
+chmod -w+x $DESTDIR$bindir/diff.scm
 
-mkdir -p $DESTDIR$MES_PREFIX
-tar -cf- doc include lib scaffold | tar -xf- -C $DESTDIR$MES_PREFIX
+
+mkdir -p $docdir
+cp\
+    AUTHORS\
+    BOOTSTRAP\
+    COPYING\
+    HACKING\
+    INSTALL\
+    NEWS\
+    README\
+    $DESTDIR$docdir
+
+if [ -f ${top_builddest}ChangeLog ]; then
+    cp ${top_builddest}ChangeLog $DESTDIR$docdir
+else
+    cp ChangeLog $DESTDIR$docdir
+fi
+
+tar -cf- include lib | tar -xf- -C $DESTDIR$MES_PREFIX
+tar -cf- scaffold --exclude='*.gcc*' --exclude='*.mes*' | tar -xf- -C $DESTDIR$MES_PREFIX
 tar -cf- --exclude='*.go' module | tar -xf- -C $DESTDIR$MES_PREFIX
 tar -cf- -C mes module | tar -xf- -C $DESTDIR$MES_PREFIX
 
@@ -41,38 +62,9 @@ mkdir -p $DESTDIR$guile_site_ccache_dir
 tar -cf- -C module --exclude='*.go' . | tar -xf- -C $DESTDIR$guile_site_dir
 tar -cf- -C module --exclude='*.scm' . | tar -xf- -C $DESTDIR$guile_site_ccache_dir
 
-chmod +w $DESTDIR$prefix/bin/mescc
-sed \
-    -e "s,^#! /bin/sh,#! $SHELL," \
-    -e "s,@datadir@,$datadir,g" \
-    -e "s,@docdir@,$docdir,g" \
-    -e "s,@guile_site_ccache_dir@,$guile_site_ccache_dir,g" \
-    -e "s,@guile_site_dir@,$guile_site_dir,g" \
-    -e "s,@moduledir@,$moduledir,g" \
-    -e "s,@prefix@,$prefix,g" \
-    -e "s,@VERSION@,$VERSION,g" \
-    scripts/mescc > $DESTDIR$prefix/bin/mescc
-chmod +w $DESTDIR$moduledir/mes/boot-0.scm
-sed \
-    -e "s,^#! /bin/sh,#! $SHELL," \
-    -e "s,mes/module/,$moduledir/," \
-    -e "s,@datadir@,$datadir,g" \
-    -e "s,@docdir@,$docdir,g" \
-    -e "s,@guile_site_ccache_dir@,$guile_site_ccache_dir,g" \
-    -e "s,@guile_site_dir@,$guile_site_dir,g" \
-    -e "s,@moduledir@,$moduledir,g" \
-    -e "s,@prefix@,$prefix,g" \
-    -e "s,@VERSION@,$VERSION,g" \
-    mes/module/mes/boot-0.scm > $DESTDIR$moduledir/mes/boot-0.scm
-
-sed \
-    -e "s,^#! /bin/sh,#! $SHELL," \
-    scripts/diff.scm > $DESTDIR$prefix/bin/diff.scm
-chmod -w+x $DESTDIR$prefix/bin/diff.scm
-
 if [ -f doc/mes.info ]; then
     mkdir -p $DESTDIR$prefix/share/info
-    tar -cf- doc/mes.info* doc/images | tar -xf- --strip-components=1 -C $DESTDIR$prefix/share/info
+    tar -cf- doc/mes.info* doc/images | tar -xf- --strip-components=1 -C $DESTDIR$infodir
     install-info --info-dir=$DESTDIR$prefix/share/info doc/mes.info
 fi
 

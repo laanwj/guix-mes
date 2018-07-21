@@ -1,25 +1,18 @@
-#! /bin/sh
+#! @BASH@
 # -*-scheme-*-
 if [ -n "$BUILD_DEBUG" ]; then
     set -x
 fi
 prefix=${prefix-@prefix@}
-if [ "@prefix@" = @prefix""@ -o ! -d "$prefix/share/mes/module" ]
-then
-    MES_PREFIX=${MES_PREFIX-$(cd $(dirname $0)/.. && pwd)/mes}
-else
-    MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
-fi
+MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
 export MES_PREFIX
 mes_p=$(command -v mes)
 
 guile_site_dir=${guile_site_dir-@guile_site_dir@}
-[ "$guile_site_dir" = @"guile_site_dir"@ ] && guile_site_dir=$(dirname $0)/../module
 GUILE_LOAD_PATH=$guile_site_dir:$GUILE_LOAD_PATH
 
 if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile" ]; then
     guile_site_ccache_dir=${guile_site_ccache_dir-@guile_site_ccache_dir@}
-    [ "$guile_site_ccache_dir" = @"guile_site_ccache_dir"@ ] && guile_site_ccache_dir=$(dirname $0)/../module
     GUILE_LOAD_COMPILED_PATH=$guile_site_ccache_dir:$GUILE_LOAD_COMPILED_PATH
     GUILE_AUTO_COMPILE=${GUILE_AUTO_COMPILE-0}
     export GUILE_AUTO_COMPILE

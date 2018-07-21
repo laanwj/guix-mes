@@ -73,7 +73,7 @@ for t in $tests; do
         echo $t: [SKIP];
         continue
     fi
-    sh "$t" &> $t.${mes}log
+    ./pre-inst-env sh "$t" &> $t.${mes}log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then
