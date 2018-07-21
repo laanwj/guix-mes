@@ -57,6 +57,7 @@ CC32_CPPFLAGS=${CC32_CPPFLAGS-"
 CC32_CFLAGS=${CC32_CFLAGS-"
 -std=gnu99
 -O0
+-fno-builtin
 -fno-stack-protector
 -g
 -m32
