@@ -300,8 +300,19 @@ else
 $(warning update-hash: no guix)
 endif
 
-release: update-hash
+tag:
+	git tag -s v$(VERSION) -m "GNU Mes $(VERSION)."
+
+# Release process
+#  0. doc: Release update, Release commit, make seed, test guix bootstrap
+#  1. make tag
+#  2. make dist
+#  3. make release
+
+guix-build:
 	./pre-inst-env $(GUIX) build mes@$(VERSION) --with-source=$(TARBALL)
+
+release: update-hash | gen-announce guix-build
 
 GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 gen-announce:

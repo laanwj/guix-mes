@@ -67,7 +67,6 @@ mes.c.
 ** TODO
 *** release 0.x, unsorted
   - upstream mes-boot to GuixSD.
-  - add full source gcc-4.7 package build.
   - replace GuixSD bootstrap for x86.
   - replace bootstrap utils (with gash?): flex, bash, bzip2,
     coreutils, diffutils, gawk, grep, gzip, make, sed, tar.
@@ -102,6 +101,7 @@ mes.c.
   - add x86_64, replace GuixSD's bootstrap binaries for x86_64.
   - more architectures (does GuixSD require this, i.e. before 1.0?).
 ** DONE
+*** 0.17 GNU Mes is now an official GNU project and bootstraps gcc-4.7.4.
 *** 0.16.1 Mes now has info docs and installs ootb on Debian buster/testing.
 *** 0.16 Mes Lib C now bootstraps glibc-2.2.5, binutils-2.20.1, gcc-4.1.0.
 *** 0.15: MesCC now has a libc+gnu that supports compiling binutils-2.14, gcc-2.95.3 and glibc-2.2.5.

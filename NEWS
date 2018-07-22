@@ -10,6 +10,14 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to bug-mes@gnu.org.
 
+* Changes in 0.17 since 0.16.1
+** Core
+*** GNU Mes is now an official GNU package.
+*** MesCC is now installed as a regular Guile package.
+*** Support --srcdir build.
+*** Support all standard GNU make targets.
+** MesCC
+*** Mes C Lib now bootstraps glibc-2.2.5, binutils-2.20.1, gcc-4.7.4.
 * Changes in 0.16.1 since 0.16
 ** Core
 *** Mes now builds out of the box on Debian buster/testing.
@@ -19,10 +27,10 @@ Please send Mes bug reports to bug-mes@gnu.org.
 *** MesCC now exits if spawning BLOOD_ELF, M1, or HEX2 fails.
 * Changes in 0.16 since 0.15
 ** Core
-*** Support building with tcc, including Mes Lib C in-line assembly.
+*** Support building with tcc, including Mes C Lib in-line assembly.
 *** core:execl now supports 1000 arguments.
 ** MesCC
-*** Mes Lib C now bootstraps glibc-2.2.5, binutils-2.20.1, gcc-4.1.0.
+*** Mes C Lib now bootstraps glibc-2.2.5, binutils-2.20.1, gcc-4.1.0.
 *** MesCC binaries now run on Linux 4.17 too, i.e. survive Linus' new `sane mmap limits.'
 *** MesCC now runs with mescc-tools 0.5 (no = in long options).
 **** 3 new C test
@@ -44,13 +52,13 @@ Please send Mes bug reports to bug-mes@gnu.org.
 *** 2 new functions
 drop, drop-right.
 ** MesCC
-*** MesCC and Mes Lib C can now build binutils-2.30, gcc-2.95.3 and glibc-2.2.5.
+*** MesCC and Mes C Lib can now build binutils-2.30, gcc-2.95.3 and glibc-2.2.5.
 *** MesCC now provides dummy crti.o, crtn.o so that tcc needs not be patched for those.
-*** Mes Lib C now supports compiling glibc-2.2.25.
-*** Mes Lib C now supports compiling gcc-2.95.3
-*** Mes Lib C now supports compiling binutils-2.30.
-*** Mes Lib C now supports compiling m4-1.4.
-*** Mes Lib C has been split into archs: gcc, x86-mes-gcc and x86-mes.
+*** Mes C Lib now supports compiling glibc-2.2.25.
+*** Mes C Lib now supports compiling gcc-2.95.3
+*** Mes C Lib now supports compiling binutils-2.30.
+*** Mes C Lib now supports compiling m4-1.4.
+*** Mes C Lib has been split into archs: gcc, x86-mes-gcc and x86-mes.
 *** MesCC now has a posixy command line interface.
 **** 70 new functions
 abs, access, alarm, alloca, atexit, atol, bcmp, bcopy, brk, bzero,

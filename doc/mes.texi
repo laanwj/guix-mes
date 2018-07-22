@@ -283,7 +283,7 @@ distribution from source, using only an initial 500 byte binary seed?
 As fate would have it, I stumbled upon this
 @url{https://queue.acm.org/detail.cfm?id=1039523, interview with Alan
 Kay}, where he shares a revelation he had when reading John McCarthy's
-@url{http://www.softwarepreservation.org/projects/LISP/book/LISP%25201.5%2520Programmers%2520Manual.pdf,
+@url{http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf,
 LISP-1.5} manual:
 
 @quotation
