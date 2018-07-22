@@ -1,4 +1,4 @@
 Normally a ChangeLog is generated at "make dist" time and available in
 source tarballs.
 
-If not, see the Git commit log at <http://gitlab.com/janneke/mes/>.
+If not, see the Git commit log at <http://git.savannah.gnu.org/cgit/mes.git/>

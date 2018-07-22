@@ -4,7 +4,7 @@
 @c %**start of header
 @setfilename mes.info
 @documentencoding UTF-8
-@settitle Mes Reference Manual
+@settitle GNU Mes Reference Manual
 @c %**end of header
 
 @include version.texi
@@ -51,7 +51,7 @@ Edition @value{EDITION} @*
 @node Top
 @top Mes
 
-This document describes Mes version @value{VERSION}, a bootstrappable
+This document describes GNU Mes version @value{VERSION}, a bootstrappable
 Scheme interpreter and C compiler written for bootstrapping the GNU system.
 
 @menu
@@ -115,7 +115,7 @@ These were “Maxwell’s Equations of Software!”
 @author Alan Kay
 @end quotation
 
-Mes@footnote{``Mes'' is an acronym for the Maxwell Equations of
+GNU Mes@footnote{``Mes'' is an acronym for the Maxwell Equations of
 Software.} consists of a mutual self-hosting Scheme interpreter written
 in C and a Nyacc-based (see @pxref{NYACC User's Guide,,, nyacc-ug, NYACC
 User's Guide}) C compiler written in Scheme.
@@ -301,18 +301,18 @@ to somehow close the gap to building the bootstrap binaries, esp. GNU
 Gcc and GNU Libc.  What better way to do that than by leveraging the
 powers of LISP?
 
-Mes is a Scheme@footnote{Scheme is a modern LISP} interpreter that will
-be indirectly bootstrapped from @file{hex0} and that wields the magical
-powers of LISP to close the bootstrap gap, asserting we can enjoy
-software Freedom 1.
+GNU Mes is a Scheme@footnote{Scheme is a modern LISP} interpreter that
+will be indirectly bootstrapped from @file{hex0} and that wields the
+magical powers of LISP to close the bootstrap gap, asserting we can
+enjoy software Freedom 1.
 
 @c *********************************************************************
 @node Installation
 @chapter Installation
 
 @cindex installing Mes
-Mes is available for download from
-@url{http://gitlab.com/janneke/mes/}.  This section describes the
+Mes is available for download from its website at
+@url{http://www.gnu.org/pub/gnu/mes/}.  This section describes the
 software requirements of Mes, as well as how to install it and get ready
 to use it.
 
@@ -331,7 +331,7 @@ build procedure for Mes is the same as for other GNU software, and is
 not covered here.  Please see the files @file{README} and @file{INSTALL}
 in the Mes source tree for additional details.
 
-Mes depends on the following packages:
+GNU Mes depends on the following packages:
 
 @itemize
 @item @url{http://gnu.org/software/guile/, GNU Guile}, version 2.0.13 or
@@ -380,7 +380,7 @@ Bootstrapping Mes depends on the following packages:
 @itemize
 @item a POSIX-compatible shell
 @item @url{https://github.com/oriansj/mescc-tools/, mescc-tools}, version 0.5 or later.
-@item @url{http://gitlab.com/janneke/mes-seed/, mes-seed}, version 0.16 or later.
+@item @url{http://gitlab.com/janneke/mes-seed/, mes-seed}, version 0.17 or later.
 @end itemize
 
 @node Running the Test Suites
@@ -788,11 +788,11 @@ during the parsing phase.
 @node Building from Git
 @section Building from Git
 
-If you want to hack Mes itself, it is recommended to use the latest
+If you want to hack GNU Mes itself, it is recommended to use the latest
 version from the Git repository:
 
 @example
-git clone https://gitlab.com/janneke/mes.git
+git clone git://git.savannah.gnu.org/mes.git
 @end example
 
 The easiest way to set up a development environment for Mes is, of
@@ -812,9 +812,10 @@ the @email{guix-devel@@gnu.org} mailing list.
 @node Running Mes From the Source Tree
 @section Running Mes From the Source Tree
 
-Running Mes from the source tree is supported out of the box.  This has
-been accomplished by using some magic and heuristics.  These should be
-removed and if necessary replaced by a @file{./pre-inst-env} trick.
+First, you need to have an environment with all the dependencies
+available (@pxref{Building from Git}), and then simply prefix each
+command by @command{./pre-inst-env} (the @file{pre-inst-env} script
+lives in the top build tree of Mes).
 
 @node The Perfect Setup
 @section The Perfect Setup

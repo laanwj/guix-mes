@@ -1,5 +1,7 @@
 -*-mode:org-*-
 
+#+TITLE: Hacking GNU Mes
+
 * SETUP
     guix environment -l .guix.scm     #64 bit + 32bit
 

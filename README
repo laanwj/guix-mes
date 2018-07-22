@@ -1,7 +1,7 @@
                                                               -*- org -*-
-Mes -- Maxwell Equations of Software
+GNU Mes --- Maxwell Equations of Software
 
-[[http://gitlab.comog/janneke/mes][Mes]] aims to help create full
+[[https://www.gnu.org/software/mes][GNU Mes]] aims to help create full
 source bootstrapping for GNU/Linux distributions such as
 [[https://www.gnu.org/software/guix][GuixSD]] as part of the
 [[http://bootstrappable.org][bootstrappable builds]] effort.
@@ -22,16 +22,16 @@ self-hosting.  Using this tcc and the Mes C library we now have a
 reduced-binary-seed bootstrap for the gnutools triplet: glibc-2.2.5,
 binutils-2.20.1, gcc-4.1.0.
 
-Mes is inspired by The Maxwell Equations of Software: [[http://www.softwarepreservation.org/projects/LISP/book/LISP%2525201.5%252520Programmers%252520Manual.pdf][LISP-1.5]] -- John
-McCarthy page 13, GNU Guix's source/binary packaging transparency and
-Jeremiah Orians's [[https://github.com/oriansj/stage0][stage0]] ~500 byte self-hosting hex assembler.
+GNU Mes is inspired by The Maxwell Equations of Software: [[http://www.softwarepreservation.org/projects/LISP/book/LISP%2525201.5%252520Programmers%252520Manual.pdf][LISP-1.5]] --
+John McCarthy page 13, GNU Guix's source/binary packaging transparency
+and Jeremiah Orians's [[https://github.com/oriansj/stage0][stage0]] ~500 byte self-hosting hex assembler.
 
 Mes is free software, it is distributed under the terms of the GNU
 General Public Licence version 3 or later.  See the file COPYING.
 
 * Get it
 
-   git clone http://gitlab.com/janneke/mes
+   git clone [[git://git.savannah.gnu.org][git://git.savannah.gnu.org/mes.git]]
 
 * Build it (see INSTALL for full instructions)
 
@@ -51,9 +51,9 @@ General Public Licence version 3 or later.  See the file COPYING.
 
 * Bugs
 
-    Please send Mes bug reports to janneke@gnu.org.
+    Please send Mes bug reports to guix-devel@gnu.org.
 
-[0] http://gitlab.com/janneke/mes
+[0] https://www.gnu.org/software/mes
 [1] https://www.gnu.org/software/guix
 [2] http://bootstrappable.org
 [3] https://github.com/oriansj/mes-m2

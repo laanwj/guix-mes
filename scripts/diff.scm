@@ -7,23 +7,23 @@ fi
 exec ${MES-mes} -L ${0%/*} -e '(diff)' -s "$0" "$@"
 !#
 
-;;; Mes --- Maxwell Equations of Software
+;;; GNU Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; mes-snarf.scm: This file is part of Mes.
+;;; mes-snarf.scm: This file is part of GNU Mes.
 ;;;
-;;; Mes is free software; you can redistribute it and/or modify it
+;;; GNU Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
 ;;; the Free Software Foundation; either version 3 of the License, or (at
 ;;; your option) any later version.
 ;;;
-;;; Mes is distributed in the hope that it will be useful, but
+;;; GNU Mes is distributed in the hope that it will be useful, but
 ;;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;; GNU General Public License for more details.
 ;;;
 ;;; You should have received a copy of the GNU General Public License
-;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (diff)
   #:use-module (srfi srfi-1)

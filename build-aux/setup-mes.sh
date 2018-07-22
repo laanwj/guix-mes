@@ -62,7 +62,7 @@ fi
 echo checking for mes
 if ! command -v mes; then
     sudo apt-get install --no-install-recommends git
-    git clone http://gitlab.com/janneke/mes
+    git clone git://git.savannah.gnu.org/mes.git
     cd mes
     git checkout wip-gnu
     ./configure

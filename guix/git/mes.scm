@@ -1,24 +1,24 @@
-;;; Mes --- Maxwell Equations of Software
+;;; GNU Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
-;;; This file is part of Mes.
+;;; This file is part of GNU Mes.
 ;;;
 ;;; Also borrowing code from:
 ;;; guile-sdl2 --- FFI bindings for SDL2
 ;;; Copyright © 2015 David Thompson <davet@gnu.org>
 ;;;
-;;; Mes is free software; you can redistribute it and/or modify it
+;;; GNU Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
 ;;; the Free Software Foundation; either version 3 of the License, or (at
 ;;; your option) any later version.
 ;;;
-;;; Mes is distributed in the hope that it will be useful, but
+;;; GNU Mes is distributed in the hope that it will be useful, but
 ;;; WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;;; GNU General Public License for more details.
 ;;;
 ;;; You should have received a copy of the GNU General Public License
-;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
+;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (git mes)
   #:use-module (srfi srfi-1)
@@ -150,11 +150,11 @@ hex2 linker.")
            (delete 'strip)))) ; binutil's strip b0rkes Mescc/M1/hex2 binaries
       (synopsis "Scheme interpreter and C compiler for full source bootstrapping")
       (description
-       "Mes [Maxwell Equations of Software] aims to create full source
+       "GNU Mes [Maxwell Equations of Software] aims to create full source
 bootstrapping for GuixSD.  It consists of a mutual self-hosting [close to
 Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
 [Guile] Scheme.")
-      (home-page "https://gitlab.com/janneke/mes")
+      (home-page "https://www.gnu.org/software/mes")
       (license gpl3+))))
 
 (define-public mes.git

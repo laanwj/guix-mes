@@ -1,5 +1,5 @@
                                                               -*- org -*-
-Building and Installing Mes
+Building and Installing GNU Mes
 
 Mes can be built in two modes: as a regulare package build or as
 a bootstrap package.
@@ -8,13 +8,13 @@ After bootstrapping Mes, it can be used to bootstrap TinyCC (tcc) in a
 similar way.
 
 * Get it
-   git clone https://gitlab.com/janneke/mes
+   git clone [[git://git.savannah.gnu.org][git://git.savannah.gnu.org/mes.git]]
 
 * Regular build
 ** Prerequisites
 *** Guix
-    guix environment -l guix.scm     #64 bit + 32bit
-    guix environment --system=i686-linux -l guix.scm #32 bit only
+    guix environment -l .guix.scm     #64 bit + 32bit
+    guix environment --system=i686-linux -l .guix.scm #32 bit only
 
 *** Other GNU/Linux
   - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.5 is known to work.
@@ -38,7 +38,7 @@ similar way.
    make install
 
 * Guix it
-   guix package -f guix.scm
+   guix package -f .guix.scm
 
 * Bootstrap build
 
