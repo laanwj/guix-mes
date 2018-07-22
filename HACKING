@@ -1,11 +1,11 @@
 -*-mode:org-*-
 
 * SETUP
-    guix environment -l guix.scm     #64 bit + 32bit
+    guix environment -l .guix.scm     #64 bit + 32bit
 
 or
 
-    guix environment --system=i686-linux -l guix.scm #32 bit only
+    guix environment --system=i686-linux -l .guix.scm #32 bit only
 
 or
 

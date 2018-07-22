@@ -1,6 +1,8 @@
+;;; .guix.scm -- Guix package definition
+
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-
+;;;
 ;;; This file is part of Mes.
 ;;;
 ;;; Mes is free software; you can redistribute it and/or modify it
@@ -16,5 +18,24 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(include "../.guix.scm")
-(packages->manifest (map cadr (package-direct-inputs mes)))
+;;; Commentary:
+;;
+;; GNU Guix development package.  To build and install, run:
+;;
+;;   guix package -f .guix.scm
+;;
+;; To build it, but not install it, run:
+;;
+;;   guix build -f .guix.scm
+;;
+;; To use as the basis for a development environment, run:
+;;
+;;   guix environment -l .guix.scm
+;;
+;;; Code:
+
+(set! %load-path (cons "guix" %load-path))
+(use-modules (git mes))
+
+;; Return it here so `guix build/environment/package' can consume it directly.
+mes.git

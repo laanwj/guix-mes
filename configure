@@ -4,7 +4,7 @@ unset LANG LC_ALL
 guile=$(command -v ${GUILE-guile})
 guix=$(command -v ${GUIX-guix})
 if [ -n "$guix" ] ; then
-    install="guix environment -l guix.scm"
+    install="guix environment -l .guix.scm"
 else
     install="sudo apt-get install guile-2.2-dev"
 fi
@@ -344,6 +344,7 @@ Some influential environment variables:
                          (cons (check-program-version program) results))
                        '()
                        (list (make-dep "guile" '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile"))
+                             (make-dep "guix" '(0 13) #:optional? #t)
                              (make-dep "bash" '(2 0) #:optional? #t)
                              (make-dep "guile-tools" '(2 0))
                              (make-dep "mes-seed" '(0 16 1) #:optional? #t

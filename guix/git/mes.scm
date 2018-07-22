@@ -1,14 +1,11 @@
-;;; guix.scm -- Guix package definition
-
 ;;; Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-
+;;;
+;;; This file is part of Mes.
+;;;
 ;;; Also borrowing code from:
 ;;; guile-sdl2 --- FFI bindings for SDL2
 ;;; Copyright © 2015 David Thompson <davet@gnu.org>
-
-;;;
-;;; guix.scm: This file is part of Mes.
 ;;;
 ;;; Mes is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -23,49 +20,34 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary:
-;;
-;; GNU Guix development package.  To build and install, run:
-;;
-;;   guix package -f guix.scm
-;;
-;; To build it, but not install it, run:
-;;
-;;   guix build -f guix.scm
-;;
-;; To use as the basis for a development environment, run:
-;;
-;;   guix environment -l guix.scm
-;;
-;;; Code:
+(define-module (git mes)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim)
+  #:use-module (gnu packages)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages commencement)
+  #:use-module (gnu packages cross-base)
+  #:use-module (gnu packages gcc)
+  #:use-module (gnu packages guile)
+  #:use-module (gnu packages man)
+  #:use-module (gnu packages mes)
+  #:use-module (gnu packages package-management)
+  #:use-module (gnu packages version-control)
+  #:use-module (gnu packages perl)
+  #:use-module (gnu packages texinfo)
+  #:use-module ((guix build utils) #:select (with-directory-excursion))
+  #:use-module (guix build-system gnu)
+  #:use-module (guix build-system trivial)
+  #:use-module (guix gexp)
+  #:use-module (guix download)
+  #:use-module (guix git-download)
+  #:use-module (guix licenses)
+  #:use-module (guix packages))
 
-(use-modules (srfi srfi-1)
-             (srfi srfi-26)
-             (ice-9 match)
-             (ice-9 popen)
-             (ice-9 rdelim)
-             (gnu packages)
-             (gnu packages base)
-             (gnu packages commencement)
-             (gnu packages cross-base)
-             (gnu packages gcc)
-             (gnu packages guile)
-             (gnu packages man)
-             (gnu packages mes)
-             (gnu packages package-management)
-             (gnu packages version-control)
-             (gnu packages perl)
-             (gnu packages texinfo)
-             ((guix build utils) #:select (with-directory-excursion))
-             (guix build-system gnu)
-             (guix build-system trivial)
-             (guix gexp)
-             (guix download)
-             (guix git-download)
-             (guix licenses)
-             (guix packages))
-
-(define %source-dir (dirname (current-filename)))
+(define %source-dir (getcwd))
 
 (define git-file?
   (let* ((pipe (with-directory-excursion %source-dir
@@ -127,21 +109,17 @@ hex2 linker.")
     (license gpl3+)))
 
 (define-public mes
-  (let ((commit "6a48f4a81431d4357057ff928a7df880e3f3e6b4")
-        (revision "0")
-        (triplet "i686-unknown-linux-gnu")
+  (let ((triplet "i686-unknown-linux-gnu")
         (version "0.16.1"))
     (package
       (name "mes")
-      (version (string-append version "-" revision "." (string-take commit 7)))
+      (version version)
       (source (origin
-                (method git-fetch)
-                (uri (git-reference
-                      (url "https://gitlab.com/janneke/mes")
-                      (commit commit)))
-                (file-name (string-append name "-" version))
+                (method url-fetch)
+                (uri (string-append
+                      "https://alpha.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
                 (sha256
-                 (base32 "011bcqafbjq63rq0b2p2qzp8w8kql75nfyx9k56gnhwj6rzw4bcb"))))
+                 (base32 #!mes!# "171bwanlnvwy406i5s0a6806iffcdz086njk8wbhgrc33n6jr8ir"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
@@ -167,13 +145,6 @@ hex2 linker.")
            (lambda* (#:key outputs #:allow-other-keys)
              (for-each make-file-writable
                        (find-files "." ".*\\.M1"))))
-           (add-before 'install 'generate-changelog
-             (lambda _
-               (with-output-to-file "ChangeLog"
-                 (lambda ()
-                   (display "Please run
-    build-aux/gitlog-to-changelog --srcdir=<git-checkout> > ChangeLog\n")))
-               #t))
            (delete 'strip)))) ; binutil's strip b0rkes Mescc/M1/hex2 binaries
       (synopsis "Scheme interpreter and C compiler for full source bootstrapping")
       (description
@@ -193,6 +164,3 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (name "mes.git")
       (version (string-append version "-" revision "." (string-take commit 7)))
       (source (local-file %source-dir #:recursive? #t #:select? git-file?)))))
-
-;; Return it here so `guix build/environment/package' can consume it directly.
-mes.git

@@ -174,6 +174,18 @@ $(TARBALL): ${top_builddest}.tarball-version | generate-ChangeLog
 	    --transform=s,^,$(TARBALL_DIR)/,S -T- -czf $@
 	git checkout ChangeLog
 
+ifdef GUIX
+update-hash: $(TARBALL)
+	$(GUIX) download file://$(PWD)/$<
+	sed -i -e 's,(base32 #!mes!# "[^"]*"),(base32 #!mes!# "$(shell $(GUIX) hash $<)"),' guix/git/mes.scm
+
+else
+$(warning update-hash: no guix)
+endif
+
+release: update-hash
+	./pre-inst-env $(GUIX) build mes@$(VERSION) --with-source=$(TARBALL)
+
 define HELP_TOP
 Usage: make [OPTION]... [TARGET]...
 
