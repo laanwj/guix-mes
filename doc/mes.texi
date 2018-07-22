@@ -505,8 +505,8 @@ gcc-source + binutils + gcc-core + glibc => gcc
 
 @c sed -i s,package-with-bootstrap-guile,identity, gnu/packages/{commencement,mes}.scm
 
-@c ./pre-inst-env guix graph gcc-mesboot | dot -T png >
-@c gcc-mesboot-graph.png
+@c ~/src/guix-bootstrap/pre-inst-env guix graph gcc-mesboot > doc/images/gcc-mesboot-graph.dot
+@c dot -T png doc/images/gcc-mesboot-graph.dot > doc/images/gcc-mesboot-graph.png
 
 Here's a generated dependency diagram to give you impression, it is not
 complete or correct.

@@ -70,3 +70,4 @@
 /pre-inst-env
 /mes/module/mes/boot-0.scm
 /scripts/mescc
+/doc/images/gcc-mesboot-graph.png

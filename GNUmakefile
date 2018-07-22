@@ -115,8 +115,16 @@ endif
 
 info: ${top_builddest}doc/mes.info
 
-${top_builddest}doc/mes.info: doc/mes.texi ${top_builddest}doc/version.texi GNUmakefile
+${top_builddest}doc/mes.info: doc/mes.texi ${top_builddest}doc/version.texi doc/images/gcc-mesboot-graph.dot GNUmakefile
 	$(MAKEINFO) -o $@ -I ${top_builddest}doc -I doc $<
+
+${top_builddest}doc/images/gcc-mesboot-graph.png: doc/images/gcc-mesboot-graph.dot
+ifdef DOT
+	$(DOT) -T png $< > $@
+else
+	touch $@
+$(warning info: graphvis missing: no images)
+endif
 
 install-info: info
 
@@ -132,7 +140,7 @@ ${top_builddest}doc/mescc.1: ${top_builddest}src/mes ${top_builddest}scripts/mes
 
 html: ${top_builddest}mes/index.html
 
-${top_builddest}mes/index.html: doc/mes.texi
+${top_builddest}mes/index.html: doc/mes.texi ${top_builddest}doc/images/gcc-mesboot-graph.png
 	$(MAKEINFO) --html -o ${top_builddest}doc/mes $<
 
 pdf: ${top_builddest}doc/mes.pdf

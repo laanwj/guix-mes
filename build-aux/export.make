@@ -46,6 +46,10 @@ ifdef BLOOD_ELF
 export BLOOD_ELF
 endif
 
+ifdef DOT
+export DOT
+endif
+
 ifdef M1
 export M1
 endif

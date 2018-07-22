@@ -16,5 +16,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+(use-modules (guix packages))
+(set! %load-path (cons "guix" %load-path))
 (include "../.guix.scm")
 (packages->manifest (map cadr (package-direct-inputs mes)))
