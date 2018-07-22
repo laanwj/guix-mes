@@ -61,7 +61,7 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 
 (define *shell* "sh")
 (define PACKAGE "mes")
-(define VERSION "0.16.1")
+(define VERSION "0.17")
 
 ;;; Utility
 (define (logf port string . rest)
@@ -353,10 +353,10 @@ Some influential environment variables:
                              (make-dep "guix" '(0 13) #:optional? #t)
                              (make-dep "bash" '(2 0) #:optional? #t)
                              (make-dep "guile-tools" '(2 0))
-                             (make-dep "mes-seed" '(0 16 1) #:optional? #t
+                             (make-dep "mes-seed" '(0 17) #:optional? #t
                                        #:commands (list (string-append mes-seed "/refresh.sh"))
                                        #:file-name mes-seed)
-                             (make-dep "tinycc-seed" '(0 16) #:optional? #t
+                             (make-dep "tinycc-seed" '(0 17) #:optional? #t
                                        #:commands (list (string-append tinycc-seed "/refresh.sh"))
                                        #:file-name tinycc-seed)
                              (make-dep "cc" '(2 95) #:commands '("gcc"))

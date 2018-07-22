@@ -111,7 +111,7 @@ hex2 linker.")
 
 (define-public mes
   (let ((triplet "i686-unknown-linux-gnu")
-        (version "0.16.1"))
+        (version "0.17"))
     (package
       (name "mes")
       (version version)
@@ -158,7 +158,7 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.16.1")
+ (let ((version "0.17")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
