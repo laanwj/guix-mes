@@ -17,7 +17,7 @@
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 PHONY_TARGETS:= all all-go build check clean clean-go default dist doc help install\
-install-info man gcc mes src/mes mes-gcc mes-tcc
+install-info man gcc mes src/mes mes-gcc mes-tcc uninstall
 .PHONY: $(PHONY_TARGETS)
 
 default: all

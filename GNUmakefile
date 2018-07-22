@@ -30,7 +30,8 @@ endif
 endif
 
 PHONY_TARGETS:= all all-go build check clean clean-go default dist doc help install\
-install-info man gcc mes ${top_builddest}src/mes mes-gcc mes-tcc generate-ChangeLog
+install-info man gcc mes ${top_builddest}src/mes mes-gcc mes-tcc generate-ChangeLog\
+uninstall
 
 .PHONY: $(PHONY_TARGETS)
 
@@ -72,6 +73,9 @@ check:
 
 install: ${top_builddest}src/mes
 	./install.sh
+
+uninstall:
+	./uninstall.sh
 
 $(config.make): configure
 
@@ -213,6 +217,7 @@ Targets:
   install         install in $(prefix)
   install-info    install info docs in $(prefix)/share/info
   seed            update mes-seed in $(MES_SEED)
+  uninstall       uninstall from $(prefix)
 endef
 export HELP_TOP
 help:
