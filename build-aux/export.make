@@ -8,6 +8,19 @@ export top_builddir
 export config.make
 export srcdir
 
+export prefix
+
+export datadir
+export docdir
+
+export bindir
+export guile_site_ccache_dir
+export guile_site_dir
+export infodir
+export libdir
+export mandir
+export moduledir
+export sysconfdir
 
 ifdef V
 export V
@@ -15,18 +28,6 @@ endif
 
 ifdef DESTDIR
 export DESTDIR
-endif
-
-ifdef prefix
-export prefix
-endif
-
-ifdef infodir
-export infodir
-endif
-
-ifdef mandir
-export mandir
 endif
 
 ifdef ARCH
@@ -51,6 +52,10 @@ endif
 
 ifdef HEX2
 export HEX2
+endif
+
+ifdef HELP2MAN
+export HELP2MAN
 endif
 
 ifdef GUILE

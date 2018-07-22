@@ -212,6 +212,10 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
             (host (value #t))
             (help (single-char #\h))
             (prefix (value #t))
+            (bindir (value #t))
+            (datadir (value #t))
+            (docdir (value #t))
+            (libdir (value #t))
             (sysconfdir (value #t))
             (verbose (single-char #\v))
             (with-courage)
@@ -267,7 +271,6 @@ Ignored for Debian:
   --libdir=DIR
   --libexecdir=DIR
   --localstatedir=DIR
-  --mandir=DIR
   --runstatedir=DIR
 
 Some influential environment variables:
@@ -285,10 +288,28 @@ Some influential environment variables:
 " PACKAGE VERSION (getenv "prefix")))
 
 (define (main args)
-  (let* ((prefix "/usr/local")
-         (infodir "${prefix}/share/info")
-         (mandir "${prefix}/share/man")
-         (sysconfdir "${prefix}/etc")
+  (let* ((options (parse-opts args))
+         (build-type (option-ref options 'build %host-type))
+
+         (arch (car (string-split build-type #\-)))
+         (host-type (option-ref options 'host %host-type))(prefix "/usr/local")
+
+         (prefix "/usr/local")
+         (prefix (option-ref options 'prefix prefix))
+         (infodir (option-ref options 'infodir "${prefix}/share/info"))
+         (mandir (option-ref options 'infodir "${prefix}/share/man"))
+         (sysconfdir (option-ref options 'sysconfdir "${prefix}/etc"))
+
+         (bindir (option-ref options 'bindir "${prefix}/etc"))
+         (datadir (option-ref options 'datadir "${prefix}/share"))
+         (docdir (option-ref options 'docdir "${datadir}/doc/mes-${VERSION}"))
+         (libdir (option-ref options 'libdir "${prefix}/lib"))
+         (moduledir "${datadir}/mes/module")
+         (guile-effective-version (effective-version))
+         (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
+                             (string-append "${prefix}/share/guile/site/" guile-effective-version)))
+         (guile-site-ccache-dir (if (equal? prefix ".") (canonicalize-path ".")
+                                    (string-append "${prefix}/lib/guile/" guile-effective-version "/site-ccache")))
 
          (srcdir (dirname (car (command-line))))
          (abs-top-srcdir (canonicalize-path srcdir))
@@ -298,22 +319,7 @@ Some influential environment variables:
          (top-builddest (if (equal? srcdir ".") ""
                         (string-append abs-top-builddir "/")))
 
-         (options (parse-opts args))
 
-         (build-type (option-ref options 'build %host-type))
-         (arch (car (string-split build-type #\-)))
-         (host-type (option-ref options 'host %host-type))
-
-         (prefix (option-ref options 'prefix prefix))
-         (infodir (option-ref options 'infodir infodir))
-         (sysconfdir (option-ref options 'sysconfdir sysconfdir))
-         (datadir (string-append prefix "/share/mes"))
-         (moduledir (string-append datadir "/module"))
-         (guile-effective-version (effective-version))
-         (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
-                             (string-append prefix "/share/guile/site/" guile-effective-version)))
-         (guile-site-ccache-dir (if (equal? prefix ".") (canonicalize-path ".")
-                                    (string-append prefix "/lib/guile/" guile-effective-version "/site-ccache")))
          (with-courage? (option-ref options 'with-courage #f))
          (disable-silent-rules? (option-ref options 'disable-silent-rules #f))
          (vars (filter (cut string-index <> #\=) (option-ref options '() '())))
@@ -325,6 +331,8 @@ Some influential environment variables:
       (print-help)
       (exit 0))
     (set! %verbose? (option-ref options 'verbose #f))
+    (when %verbose?
+      (stderr "configure args=~s\n" args))
     (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
     (let* ((mes-seed (or (getenv "MES_SEED")
                          (srcdir-relative "../mes-seed")))
@@ -399,25 +407,29 @@ Some influential environment variables:
           (stdout "PACKAGE:=~a\n" PACKAGE)
           (stdout "VERSION:=~a\n" VERSION)
 
+          (stdout "ARCH:=~a\n" arch)
           (stdout "build:=~a\n" build-type)
           (stdout "host:=~a\n" host-type)
-          (stdout "srcdir:=~a\n" srcdir)
+
           (stdout "top_builddest:=~a\n" top-builddest)
           (stdout "top_builddir:=~a\n" top-builddir)
           (stdout "abs_top_builddir:=~a\n" abs-top-builddir)
           (stdout "abs_top_srcdir:=~a\n" abs-top-srcdir)
+
           (stdout "srcdir:=~a\n" srcdir)
+
           (stdout "prefix:=~a\n" (gulp-pipe (string-append "echo " prefix)))
-          (stdout "infodir:=~a\n" infodir)
-          (stdout "mandir:=~a\n" mandir)
           (stdout "datadir:=~a\n" datadir)
+          (stdout "docdir:=~a\n" docdir)
+
+          (stdout "bindir:=~a\n" bindir)
+          (stdout "guile_site_ccache_dir:=~a\n" guile-site-ccache-dir)
+          (stdout "guile_site_dir:=~a\n" guile-site-dir)
+          (stdout "infodir:=~a\n" infodir)
+          (stdout "libdir:=~a\n" libdir)
+          (stdout "mandir:=~a\n" mandir)
           (stdout "moduledir:=~a\n" moduledir)
           (stdout "sysconfdir:=~a\n" sysconfdir)
-
-          (stdout "build:=~a\n" build-type)
-          (stdout "ARCH:=~a\n" arch)
-          (stdout "host:=~a\n" %host-type)
-          (stdout "build:=~a\n" build-type)
 
           (for-each (lambda (o)
                       (stdout "~a:=~a\n" (variable-name o) (or (dependency-file-name o) "")))

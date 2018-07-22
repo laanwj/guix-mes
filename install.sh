@@ -25,11 +25,11 @@ else
     GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-$(guile -c '(display (effective-version))')}
 fi
 bindir=${bindir-$prefix/bin}
-datadir=${datadir-$prefix/share/mes}
-docdir=${docdir-$prefix/share/doc/mes}
-infodir=${infodir-$prefix/share/info}
-mandir=${mandir-$prefix/share/man}
-moduledir=${moduledir-$datadir/module}
+datadir=${datadir-$prefix/share}
+docdir=${docdir-$datadir/doc/mes-$VERSION}
+infodir=${infodir-$datadir/info}
+mandir=${mandir-$datadir/man}
+moduledir=${moduledir-$datadir/mes/module}
 guile_site_dir=${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
 guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
 
