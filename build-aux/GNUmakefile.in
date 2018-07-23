@@ -16,14 +16,58 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-PHONY_TARGETS:= all all-go build check clean clean-go default dist doc help install\
-install-info man gcc mes src/mes mes-gcc mes-tcc uninstall
+PHONY_TARGETS:=\
+ ${top_builddest}src/mes\
+ TAGS\
+ all-go\
+ all\
+ build\
+ check\
+ clean-go\
+ clean\
+ default\
+ dist\
+ distclean\
+ doc\
+ dvi\
+ gcc\
+ generate-ChangeLog\
+ help\
+ html\
+ info\
+ install-dvi\
+ install-html\
+ install-pdf\
+ install-ps\
+ install-strip\
+ install\
+ installcheck\
+ installdirs\
+ maintainer-clean\
+ man\
+ mes-gcc\
+ mes-tcc\
+ mes\
+ mostlyclean\
+ pdf\
+ ps\
+ uninstall\
+#
+
 .PHONY: $(PHONY_TARGETS)
 
 default: all
 
+cleaning-p:=$(filter clean%, $(MAKECMDGOALS))$(filter %clean, $(MAKECMDGOALS))
+
+ifndef cleaning-p
 $(PHONY_TARGETS):
 	$(MAKE) -C $(srcdir) $@
+endif
+
+clean:
+	git clean -dfx
+
 
 include .config.make
 config.make:=$(PWD)/.config.make

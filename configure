@@ -216,6 +216,7 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
             (datadir (value #t))
             (docdir (value #t))
             (libdir (value #t))
+            (srcdir (value #t))
             (sysconfdir (value #t))
             (verbose (single-char #\v))
             (with-courage)

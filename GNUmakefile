@@ -18,9 +18,9 @@
 
 GUILE_FLAGS:=--no-auto-compile -L . -L module -C . -C module
 
-cleaning_p:=$(filter clean%, $(MAKECMDGOALS))
+cleaning-p:=$(filter clean%, $(MAKECMDGOALS))$(filter %clean, $(MAKECMDGOALS))
 
-ifndef cleaning_p
+ifndef cleaning-p
 ifndef config.make
 config.make:=.config.make
 include $(config.make)
@@ -29,9 +29,43 @@ $(config.make):
 endif
 endif
 
-PHONY_TARGETS:= all all-go build check clean clean-go default dist doc help install\
-install-info man gcc mes ${top_builddest}src/mes mes-gcc mes-tcc generate-ChangeLog\
-uninstall
+PHONY_TARGETS:=\
+ ${top_builddest}src/mes\
+ TAGS\
+ all-go\
+ all\
+ build\
+ check\
+ clean-go\
+ clean\
+ default\
+ dist\
+ distclean\
+ doc\
+ dvi\
+ gcc\
+ generate-ChangeLog\
+ help\
+ html\
+ info\
+ install-dvi\
+ install-html\
+ install-pdf\
+ install-ps\
+ install-strip\
+ install\
+ installcheck\
+ installdirs\
+ maintainer-clean\
+ man\
+ mes-gcc\
+ mes-tcc\
+ mes\
+ mostlyclean\
+ pdf\
+ ps\
+ uninstall\
+#
 
 .PHONY: $(PHONY_TARGETS)
 
@@ -62,6 +96,14 @@ mes:
 clean:
 	git clean -dfx
 
+# Mes does not cache anything on the file system; therefore clean
+distclean: clean
+mostlyclean: clean
+maintainer-clean: clean
+
+TAGS:
+	etags lib/*.c lib/*/*.c src/*.c include/*.h include/sys/*.h
+
 all-go:
 	build-aux/build-guile.sh
 
@@ -70,6 +112,10 @@ clean-go:
 
 check:
 	./check.sh
+
+# Mes does not feature post-install checks yet, so we're great!
+installcheck:
+	true
 
 install: ${top_builddest}src/mes
 	./install.sh
@@ -130,8 +176,6 @@ else
 $(warning info: graphvis missing: no images)
 endif
 
-install-info: info
-
 man: ${top_builddest}doc/mes.1 ${top_builddest}doc/mescc.1
 
 ${top_builddest}src/mes: build
@@ -142,15 +186,25 @@ ${top_builddest}doc/mes.1: ${top_builddest}src/mes
 ${top_builddest}doc/mescc.1: ${top_builddest}src/mes ${top_builddest}scripts/mescc
 	MES_ARENA=10000000 ${top_builddir}/pre-inst-env $(HELP2MAN) $(<F) > $@
 
-html: ${top_builddest}mes/index.html
+html: ${top_builddest}doc/html/index.html
 
-${top_builddest}mes/index.html: doc/mes.texi ${top_builddest}doc/images/gcc-mesboot-graph.png
-	$(MAKEINFO) --html -o ${top_builddest}doc/mes $<
+${top_builddest}doc/html/index.html: doc/mes.texi ${top_builddest}doc/version.texi ${top_builddest}doc/images/gcc-mesboot-graph.png
+	$(MAKEINFO) --html -o $(@D) -I ${top_builddest}doc -I doc $<
+
+dvi: ${top_builddest}doc/mes.dvi
+
+${top_builddest}doc/mes.dvi: doc/mes.texi
+	$(MAKEINFO) --dvi -I ${top_builddest}/doc -I doc -o doc/mes.dvi $<
 
 pdf: ${top_builddest}doc/mes.pdf
 
 ${top_builddest}doc/mes.pdf: doc/mes.texi
-	$(MAKEINFO) --pdf -I ${top_builddest}/doc -o doc/mes.pdf $<
+	$(MAKEINFO) --pdf -I ${top_builddest}/doc -I doc -o doc/mes.pdf $<
+
+ps: ${top_builddest}doc/mes.ps
+
+${top_builddest}doc/mes.ps: doc/mes.texi
+	$(MAKEINFO) --ps -I ${top_builddest}/doc -I doc -o doc/mes.ps $<
 
 ###  dist
 COMMIT=$(shell test -d .git && (git describe --dirty 2>/dev/null) || cat .tarball-version)
@@ -198,10 +252,38 @@ endif
 release: update-hash
 	./pre-inst-env $(GUIX) build mes@$(VERSION) --with-source=$(TARBALL)
 
+installdirs: mkinstalldirs
+	mkdir -p\
+	    $(DESTDIR)$(bindir)\
+	    $(DESTDIR)$(datadir)\
+	    $(DESTDIR)$(libdir)\
+	    $(DESTDIR)$(infodir)\
+	    $(DESTDIR)$(mandir)
+
+install-dvi: dvi
+	mkdir -p $(DESTDIR)${docdir}
+	cp ${top_builddest}doc/mes.dvi $(DESTDIR)${docdir}
+
+install-html: html
+	mkdir -p $(DESTDIR)${docdir}
+	tar -cf- -C ${top_builddest}doc html | tar -xf- -C $(DESTDIR)${docdir}
+
+install-pdf: pdf
+	mkdir -p $(DESTDIR)${docdir}
+	cp ${top_builddest}doc/mes.pdf $(DESTDIR)${docdir}
+
+install-ps: ps
+	mkdir -p $(DESTDIR)${docdir}
+	cp ${top_builddest}doc/mes.ps $(DESTDIR)${docdir}
+
+# We do not strip binaries, binutils' strip corrupts M1+hex2-generated ELFs
+install-strip: install
+
+
 define HELP_TOP
 Usage: make [OPTION]... [TARGET]...
 
-Targets:
+Main and non-standard targets:
   all             update everything
   all-go          update .go files
   gcc             update src/mes.gcc-out
@@ -216,6 +298,7 @@ Targets:
   info            update info documentation
   install         install in $(prefix)
   install-info    install info docs in $(prefix)/share/info
+  release         dist and tag
   seed            update mes-seed in $(MES_SEED)
   uninstall       uninstall from $(prefix)
 endef
