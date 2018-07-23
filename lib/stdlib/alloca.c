@@ -1,6 +1,10 @@
 /* alloca.c -- allocate automatically reclaimed memory
    (Mostly) portable public-domain implementation -- D A Gwyn
 
+   Taken from GNU binutils 2.10.1.
+   Minor changes
+   Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
    This implementation of the PWB library alloca function,
    which is used to allocate space off the run-time stack so
    that it is automatically reclaimed upon procedure exit,
