@@ -1,10 +1,16 @@
                                                               -*- org -*-
-Building and Installing GNU Mes
+#+TITLE: Building and Installing GNU Mes
 
-Mes can be built in two modes: as a regulare package build or as
-a bootstrap package.
+Copyright © 2016, 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
-After bootstrapping Mes, it can be used to bootstrap TinyCC (tcc) in a
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+Mes can be built in two modes: as a regulare package build or as a
+bootstrap package.
+
+After bootstrapping Mes it can be used to bootstrap TinyCC (tcc) in a
 similar way.
 
 * Get it

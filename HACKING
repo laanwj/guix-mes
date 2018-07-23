@@ -1,6 +1,11 @@
--*-mode:org-*-
-
+                                                              -*- org -*-
 #+TITLE: Hacking GNU Mes
+
+Copyright © 2016, 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
 
 * SETUP
     guix environment -l .guix.scm     #64 bit + 32bit

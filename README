@@ -1,4 +1,13 @@
                                                               -*- org -*-
+
+#+TITLE: About GNU Mes
+
+Copyright © 2016, 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
 GNU Mes --- Maxwell Equations of Software
 
 [[https://www.gnu.org/software/mes][GNU Mes]] aims to help create full
