@@ -20,13 +20,13 @@
 
 set -e
 
-. build-aux/config.sh
-. build-aux/trace.sh
+. ${srcdest}build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
 
 MESCC=${MESCC-$(command -v mescc)}
 [ -z "$MESCC" ] && MESCC=scripts/mescc
 MES=${MES-$(command -v mes)}
-[ -z "$MES" ] && MES=${top_builddest}src/mes
+[ -z "$MES" ] && MES=src/mes
 
 if [ "$V" = 2 ]; then
     MES_CFLAGS="$MES_CFLAGS -v"
@@ -37,31 +37,31 @@ c=$1
 set -e
 
 if [ -z "$ARCHDIR" ]; then
-    o="${top_builddest}$c"
-    d=${top_builddest}${c%%/*}
+    o="$c"
+    d=${c%%/*}
     p="mes-"
 else
     b=${c##*/}
-    d=${top_builddest}${c%%/*}/x86-mes
+    d=${c%%/*}/x86-mes
     o="$d/$b"
 fi
 mkdir -p $d
 
 if [ -n "$PREPROCESS" ]; then
-    trace "MESCPP $c.c" ${top_builddir}/pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -E -o "$o.E" "$c".c
-    trace "MESCC $c.E" ${top_builddir}/pre-inst-env bash $MESCC $MES_CFLAGS -S "$o".E
-    trace "MESAS $c.S" ${top_builddir}/pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
+    trace "MESCPP $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -E -o "$o.E" "${srcdest}$c".c
+    trace "MESCC $c.E" ./pre-inst-env bash $MESCC $MES_CFLAGS -S "$o".E
+    trace "MESAS $c.S" ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        trace "MESLD $c.o" ${top_builddir}/pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
+        trace "MESLD $c.o" ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -n "$COMPILE" ]; then
-    trace "MESCC $c.c" trace "MESCC $c.c" ${top_builddir}/pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -S -o "$o.S" "$c".c
-    trace "MESAS $c.S" ${top_builddir}/pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
+    trace "MESCC $c.c" trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -S -o "$o.S" "${srcdest}$c".c
+    trace "MESAS $c.S" ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        trace "MESLD $c.o" ${top_builddir}/pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
+        trace "MESLD $c.o" ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -z "$NOLINK" ]; then
-    trace "MESLD $c.c" ${top_builddir}/pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "$c".c $MES_LIBS
+    trace "MESLD $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "${srcdest}$c".c $MES_LIBS
 else
-   trace "MESCC $c.c" ${top_builddir}/pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "$c".c
+   trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "${srcdest}$c".c
 fi

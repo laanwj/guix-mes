@@ -21,9 +21,9 @@ export VERSION
 
 export abs_top_builddir
 export abs_top_srcdir
-export top_builddest
 export top_builddir
 export config.make
+export srcdest
 export srcdir
 
 export prefix
@@ -70,6 +70,10 @@ endif
 
 ifdef M1
 export M1
+endif
+
+ifdef MES
+export MES
 endif
 
 ifdef HEX2

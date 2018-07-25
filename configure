@@ -219,10 +219,12 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
             (srcdir (value #t))
             (sysconfdir (value #t))
             (verbose (single-char #\v))
+            (with-cheating)
             (with-courage)
             (infodir (value #t))
             (mandir (value #t))
             (disable-silent-rules)
+            (enable-silent-rules)
 
             (enable-fast-install)       ; Ignored for Guix
             (includedir (value #t))     ; Ignored for Debian
@@ -256,6 +258,7 @@ Options:
       --host=HOST      cross-compile to build programs to run on HOST [BUILD]
   -v, --verbose        be verbose
   --with-courage       assert being courageous to configure for unsupported platform
+  --with-cheating      cheat using Guile instead of Mes
 
 Installation directories:
   --prefix=DIR         install in prefix DIR [~a]
@@ -313,21 +316,19 @@ Some influential environment variables:
                                     (string-append "${prefix}/lib/guile/" guile-effective-version "/site-ccache")))
 
          (srcdir (dirname (car (command-line))))
+         (srcdest (if (equal? srcdir ".") ""
+                      (string-append srcdir "/")))
          (abs-top-srcdir (canonicalize-path srcdir))
          (abs-top-builddir (canonicalize-path (getcwd)))
          (top-builddir (if (equal? srcdir ".") "."
                            abs-top-builddir))
-         (top-builddest (if (equal? srcdir ".") ""
-                        (string-append abs-top-builddir "/")))
 
-
+         (with-cheating? (option-ref options 'with-cheating #f))
          (with-courage? (option-ref options 'with-courage #f))
          (disable-silent-rules? (option-ref options 'disable-silent-rules #f))
+         (enable-silent-rules? (option-ref options 'enable-silent-rules #f))
          (vars (filter (cut string-index <> #\=) (option-ref options '() '())))
          (help? (option-ref options 'help #f)))
-    (define (srcdir-relative file-name)
-      (if (equal? srcdir ".") file-name
-          (string-append srcdir "/" file-name)))
     (when help?
       (print-help)
       (exit 0))
@@ -336,11 +337,11 @@ Some influential environment variables:
       (stderr "configure args=~s\n" args))
     (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
     (let* ((mes-seed (or (getenv "MES_SEED")
-                         (srcdir-relative "../mes-seed")))
+                         (string-append srcdest "../mes-seed")))
            (tinycc-seed (or (getenv "TINYCC_SEED")
-                            (srcdir-relative "../tinycc-seed")))
+                            (string-append srcdest "../tinycc-seed")))
            (mescc-tools-seed (or (getenv "MESCC_TOOLS_SEED")
-                                 (srcdir-relative "../mescc-tools-seed")))
+                                 (string-append srcdest "../mescc-tools-seed")))
            (deps (fold (lambda (program results)
                          (cons (check-program-version program) results))
                        '()
@@ -414,11 +415,11 @@ Some influential environment variables:
           (stdout "build:=~a\n" build-type)
           (stdout "host:=~a\n" host-type)
 
-          (stdout "top_builddest:=~a\n" top-builddest)
           (stdout "top_builddir:=~a\n" top-builddir)
           (stdout "abs_top_builddir:=~a\n" abs-top-builddir)
           (stdout "abs_top_srcdir:=~a\n" abs-top-srcdir)
 
+          (stdout "srcdest:=~a\n" srcdest)
           (stdout "srcdir:=~a\n" srcdir)
 
           (stdout "prefix:=~a\n" (gulp-pipe (string-append "echo " prefix)))
@@ -440,7 +441,10 @@ Some influential environment variables:
           (stdout "GUILE_EFFECTIVE_VERSION:=~a\n" (effective-version))
 
           (when disable-silent-rules?
-            (stdout "BUILD_DEBUG:=1\n"))
+            (stdout "V:=1\n"))
+
+          (when with-cheating?
+            (stdout "MES:=guile\n"))
 
           (for-each (lambda (o)
                       (stdout "~a:=~a\n" o (or (getenv o) "")))
@@ -453,34 +457,39 @@ Some influential environment variables:
                       "MES_CFLAGS"
                       ))))
 
-      (let ((pairs `(("@srcdir@" . ,abs-top-srcdir)
+      (let ((pairs `(("@srcdest@" . ,srcdest)
+                     ("@srcdir@" . ,srcdir)
                      ("@abs_top_srcdir@" . ,abs-top-srcdir)
                      ("@abs_top_builddir@" . ,abs-top-builddir)
                      ("@top_builddir@" . ,top-builddir)
-                     ("@top_builddest@" . ,top-builddest)
                      ("@BASH@" . ,(file-name "bash" deps))
                      ("@GUILE@" . ,(file-name "guile" deps))
+                     ("@MES@" . ,(file-name "guile" deps))
                      ("@guile_site_dir@" . ,guile-site-dir)
                      ("@guile_site_ccache_dir@" . ,guile-site-ccache-dir)
                      ("@VERSION@" . ,VERSION)
                      ("mes/module/" . ,(string-append moduledir "/")))))
         (for-each (lambda (o)
-                    (let* ((src (srcdir-relative o))
+                    (let* ((src (string-append srcdest o))
                            (target (string-drop-right o 3))
                            (target (if (not (string-prefix? "build-aux/" target)) target
                                        (string-drop target (string-length "build-aux/")))))
                       (substitute src pairs #:target target)))
                   '(
+                    "build-aux/GNUmakefile.in"
+                    "build-aux/build.sh.in"
+                    "build-aux/check.sh.in"
+                    "build-aux/install.sh.in"
                     "build-aux/pre-inst-env.in"
+                    "build-aux/uninstall.sh.in"
                     "mes/module/mes/boot-0.scm.in"
                     "scripts/mescc.in"
-                    ))
-        (when (not (equal? srcdir "."))
-          (substitute (string-append srcdir "/build-aux/GNUmakefile.in")
-                      pairs
-                      #:target "GNUmakefile")
-          (system (string-append "cd mes/module/mes && ln -sf " abs-top-srcdir "/mes/module/mes/*.mes ."))))
+                    )))
+      (chmod "build.sh" #o755)
+      (chmod "check.sh" #o755)
+      (chmod "install.sh" #o755)
       (chmod "pre-inst-env" #o755)
+      (chmod "uninstall.sh" #o755)
       (chmod "scripts/mescc" #o755)
       (let ((make (and=> (file-name "make" deps) basename)))
         (format (current-output-port)

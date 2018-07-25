@@ -20,18 +20,18 @@
 
 set -e
 
-. build-aux/trace.sh
-. build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
+. ${srcdest}build-aux/config.sh
 
 c=$1
 
 if [ -z "$ARCHDIR" ]; then
-    o="${top_builddest}$c"
-    d=${top_builddest}${c%%/*}
+    o="$c"
+    d=${c%%/*}
     p="gcc-"
 else
     b=${c##*/}
-    d=${top_builddest}${c%/*}/gcc
+    d=${c%/*}/gcc
     o="$d/$b"
 fi
 mkdir -p $d
@@ -45,7 +45,7 @@ trace "CC $c.c" $CC\
     -D WITH_GLIBC=1\
     -D POSIX=1\
     -o "$o".${p}o\
-    "$c".c
+    "${srcdest}$c".c
 
 if [ -z "$NOLINK" ]; then
     trace "CCLD "$o".${p}out" $CC\
@@ -55,5 +55,5 @@ if [ -z "$NOLINK" ]; then
         $CFLAGS\
         -o "$o".${p}out\
         "$o".${p}o\
-        ${top_builddest}lib/gcc/libmes.o
+        lib/gcc/libmes.o
 fi

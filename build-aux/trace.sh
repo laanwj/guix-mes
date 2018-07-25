@@ -22,7 +22,7 @@ if [ -z "$V" -o "$V0" = 0 ]; then
         shift
         eval "$@" $LOG
     }
-    LOG=" >>${top_builddest}build.log 2>&1"
+    LOG=" >>build.log 2>&1"
 fi
 if [ "$V" = 1 ]; then
     function trace () {
@@ -30,7 +30,7 @@ if [ "$V" = 1 ]; then
         echo "$@"
         eval "$@ $LOG"
     }
-    LOG=" >>${top_builddest}build.log 2>&1"
+    LOG=" >>build.log 2>&1"
 fi
 if [ "$V" = 2 ]; then
     set -x

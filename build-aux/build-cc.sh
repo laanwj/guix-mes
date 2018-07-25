@@ -20,16 +20,16 @@
 
 set -e
 
-. build-aux/config.sh
-. build-aux/trace.sh
+. ${srcdest}build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
 
-trace "SNARF gc.c"     build-aux/mes-snarf.scm src/gc.c
-trace "SNARF lib.c"    build-aux/mes-snarf.scm src/lib.c
-trace "SNARF math.c"   build-aux/mes-snarf.scm src/math.c
-trace "SNARF mes.c"    build-aux/mes-snarf.scm src/mes.c
-trace "SNARF posix.c"  build-aux/mes-snarf.scm src/posix.c
-trace "SNARF reader.c" build-aux/mes-snarf.scm src/reader.c
-trace "SNARF vector.c" build-aux/mes-snarf.scm src/vector.c
+trace "SNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
+trace "SNARF lib.c"    ${srcdest}build-aux/mes-snarf.scm src/lib.c
+trace "SNARF math.c"   ${srcdest}build-aux/mes-snarf.scm src/math.c
+trace "SNARF mes.c"    ${srcdest}build-aux/mes-snarf.scm src/mes.c
+trace "SNARF posix.c"  ${srcdest}build-aux/mes-snarf.scm src/posix.c
+trace "SNARF reader.c" ${srcdest}build-aux/mes-snarf.scm src/reader.c
+trace "SNARF vector.c" ${srcdest}build-aux/mes-snarf.scm src/vector.c
 
-ARCHDIR=1 NOLINK=1 sh build-aux/cc.sh lib/libmes
-sh build-aux/cc.sh src/mes
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc.sh lib/libmes
+sh ${srcdest}build-aux/cc.sh src/mes

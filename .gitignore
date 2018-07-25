@@ -71,3 +71,9 @@
 /mes/module/mes/boot-0.scm
 /scripts/mescc
 /doc/images/gcc-mesboot-graph.png
+/GNUmakefile
+/build.sh
+/check.sh
+/install.sh
+/pre-inst-env
+/uninstall.sh

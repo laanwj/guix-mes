@@ -19,11 +19,11 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
-. build-aux/config.sh
-. build-aux/trace.sh
+. ${srcdest}build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
 
 MES=${MES-src/mes}
-[ -z "$MESCC" ] && MESCC=${top_builddest}scripts/mescc
+[ -z "$MESCC" ] && MESCC=scripts/mescc
 GUILE=${GUILE-guile}
 MES_PREFIX=${MES_PREFIX-mes}
 
@@ -32,9 +32,9 @@ M1=${M1-M1}
 BLOOD_ELF=${BLOOD_ELF-blood-elf}
 MES_SEED=${MES_SEED-../mes-seed}
 MESCC=${MESCC-$(command -v mescc)}
-[ -z "$MESCC" ] && MESCC=${top_builddest}scripts/mescc
+[ -z "$MESCC" ] && MESCC=scripts/mescc
 MES=${MES-$(command -v mes)}
-[ -z "$MES" ] && MES=${top_builddest}src/mes
+[ -z "$MES" ] && MES=src/mes
 
 if ! command -v $GUILE > /dev/null; then
     GUILE=true
@@ -152,7 +152,7 @@ expect=$(echo $broken | wc -w)
 pass=0
 fail=0
 total=0
-mkdir -p ${top_builddest}scaffold/tests
+mkdir -p scaffold/tests
 for t in $tests; do
     if [ -z "${t/[012][0-9]-*/}" ]; then
         LIBC=c-mini
@@ -167,7 +167,7 @@ for t in $tests; do
         LIBC=c
         MES_LIBS=
     fi
-    sh build-aux/test.sh "scaffold/tests/$t" &> ${top_builddest}scaffold/tests/"$t".log
+    sh ${srcdest}build-aux/test.sh "scaffold/tests/$t" &> scaffold/tests/"$t".log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then
@@ -280,13 +280,13 @@ MES_LIBS="-l c+gnu"
 expect=$(echo $broken | wc -w)
 ARGS="arg1 arg2 arg3 arg4 arg5"
 export ARGS
-mkdir -p ${top_builddest}scaffold/tinycc
+mkdir -p scaffold/tinycc
 for t in $tests; do
     if [ ! -f scaffold/tinycc/"$t.c" ]; then
         echo ' [SKIP]'
         continue;
     fi
-    sh build-aux/test.sh "scaffold/tinycc/$t" &> ${top_builddest}scaffold/tinycc/"$t".log
+    sh ${srcdest}build-aux/test.sh "scaffold/tinycc/$t" &> scaffold/tinycc/"$t".log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then

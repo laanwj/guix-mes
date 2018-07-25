@@ -16,11 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-top_builddir=${top_builddir-.}
-
 if [ "$V" = 2 ]; then
     echo $0
-    echo top_builddest=${top_builddest}
+    echo srcdest=${srcdest}
     echo top_builddir=${top_builddir}
 fi
 
@@ -57,8 +55,8 @@ export abs_top_srcdir
 export datadir
 export moduledir
 export prefix
+export srcdest
 export srcdir
-export top_builddest
 export top_builddir
 
 MESCC=${MESCC-mescc}
@@ -70,11 +68,10 @@ CC_CPPFLAGS=${CC_CPPFLAGS-"
 -D 'VERSION=\"$VERSION\"'
 -D 'MODULEDIR=\"$moduledir\"'
 -D 'PREFIX=\"$prefix\"'
--D boo
--I ${top_builddest}src
 -I src
--I lib
--I include
+-I ${srcdest}src
+-I ${srcdest}lib
+-I ${srcdest}include
 "}
 
 CC_CFLAGS=${CC_CFLAGS-"
@@ -87,10 +84,10 @@ CC32_CPPFLAGS=${CC32_CPPFLAGS-"
 -D 'VERSION=\"$VERSION\"'
 -D 'MODULEDIR=\"$moduledir\"'
 -D 'PREFIX=\"$prefix\"'
--I ${top_builddest}src
 -I src
--I lib
--I include
+-I ${srcdest}src
+-I ${srcdest}lib
+-I ${srcdest}include
 "}
 
 CC32_CFLAGS=${CC32_CFLAGS-"
@@ -114,10 +111,10 @@ MES_CPPFLAGS=${MES_CPPFLAGS-"
 -D 'VERSION=\"$VERSION\"'
 -D 'MODULEDIR=\"$moduledir\"'
 -D 'PREFIX=\"$prefix\"'
--I ${top_builddest}src
 -I src
--I lib
--I include
+-I ${srcdest}src
+-I ${srcdest}lib
+-I ${srcdest}include
 "}
 
 MES_CFLAGS=${MES_CFLAGS-"

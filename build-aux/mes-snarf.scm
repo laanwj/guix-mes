@@ -204,13 +204,14 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
   ((compose (cut assoc-ref <> 'no-environment) function.annotation) f))
 
 (define (generate-includes file-name)
-  (let* ((string (with-input-from-file file-name read-string))
+  (let* ((srcdest (or (getenv "srcdest") ""))
+         (string (with-input-from-file (string-append srcdest file-name) read-string))
          (functions (snarf-functions string))
          (functions (delete-duplicates functions (lambda (a b) (equal? (function.name a) (function.name b)))))
          (functions (filter (negate internal?) functions))
          (symbols (snarf-symbols string))
          (base-name (basename file-name ".c"))
-         (dir (string-append (or (getenv "top_builddest") "") (dirname file-name)))
+         (dir (string-append (dirname file-name)))
          (base-name (string-append dir "/" base-name))
          (base-name (if %gcc? base-name
                         (string-append base-name ".mes")))

@@ -20,7 +20,7 @@ if [ '(' -z "$mes_p" -a -z "$MES" ')' -o "$MES" = "guile" -o "$MES" = "mes.guile
     exec ${GUILE-guile} -L $guile_site_dir -e '(mescc)' -s "$mescc" "$@"
 else
     MES=${MES-$(dirname $0)/mes}
-    exec ${MES-${top_builddest}mes} -e '(mescc)' -s "$mescc" "$@"
+    exec ${MES-mes} -e '(mescc)' -s "$mescc" "$@"
 fi
 !#
 

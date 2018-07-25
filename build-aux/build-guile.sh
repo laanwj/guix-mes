@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-. build-aux/trace.sh
+. ${srcdest}build-aux/trace.sh
 
 export GUILE
 export GUILE_AUTO_COMPILE
@@ -29,37 +29,38 @@ GUILE_AUTO_COMPILE=0
 set -e
 
 SCM_FILES="
-module/mes/getopt-long.scm
-module/mes/guile.scm
-module/mes/misc.scm
-module/mes/test.scm
-module/mescc/M1.scm
-module/mescc/as.scm
-module/mescc/bytevectors.scm
-module/mescc/compile.scm
-module/mescc/i386/as.scm
-module/mescc/info.scm
-module/mescc/mescc.scm
-module/mescc/preprocess.scm
+${srcdest}module/mes/getopt-long.scm
+${srcdest}module/mes/guile.scm
+${srcdest}module/mes/misc.scm
+${srcdest}module/mes/test.scm
+${srcdest}module/mescc/M1.scm
+${srcdest}module/mescc/as.scm
+${srcdest}module/mescc/bytevectors.scm
+${srcdest}module/mescc/compile.scm
+${srcdest}module/mescc/i386/as.scm
+${srcdest}module/mescc/info.scm
+${srcdest}module/mescc/mescc.scm
+${srcdest}module/mescc/preprocess.scm
 "
 
 SCRIPTS="
-build-aux/mes-snarf.scm
-scripts/mescc
+${srcdest}build-aux/mes-snarf.scm
+${srcdest}scripts/mescc
 "
 
-export srcdir=.
 export host=$($GUILE -c "(display %host-type)")
 
+abs=$srcdest
 if [ "$GUILE_EFFECTIVE_VERSION" = "2.0" ]; then
-    abs=$PWD/
+    srcdest=$abs_top_srcdir/
 fi
 
 GUILE_AUTO_COMPILE=0
 
 for i in $SCM_FILES $SCRIPTS; do
-    go=${top_builddest}${i%%.scm}.go
+    b=$(basename $i)
+    go=${i%%.scm}.go
     if [ $i -nt $go ]; then
-        trace "GUILEC $i" $GUILE_TOOLS compile -L ${abs}module -L ${abs}/build-aux -L ${abs}scripts -o $go $i
+        trace "GUILEC $b" $GUILE_TOOLS compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $i
     fi
 done

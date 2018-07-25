@@ -20,8 +20,8 @@
 
 set -e
 
-. build-aux/config.sh
-. build-aux/trace.sh
+. ${srcdest}build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
 
 if [ "$MES" = guile ]; then
     mes=guile-
@@ -60,7 +60,7 @@ tests/match.test
 tests/psyntax.test
 "
 
-mkdir -p ${top_builddest}tests
+mkdir -p tests
 set +e
 fail=0
 total=0
@@ -69,7 +69,7 @@ for t in $tests; do
         echo $t: [SKIP];
         continue
     fi
-    ${top_builddir}/pre-inst-env sh "$t" &> ${top_builddest}$t.${mes}log
+    ${top_builddir}/pre-inst-env sh "$t" &> $t.${mes}log
     r=$?
     total=$((total+1))
     if [ $r = 0 ]; then

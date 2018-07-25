@@ -2268,10 +2268,9 @@ load_env (SCM a) ///((internal))
       strcpy (prefix, p);
       g_stdin = load_boot (prefix, boot, "MODULEDIR");
     }
-  if (g_stdin < 0 && getenv ("top_builddest"))
+  if (g_stdin < 0)
     {
-      strcpy (prefix, getenv ("top_builddest"));
-      strcpy (prefix + strlen (prefix), "mes/module/mes/");
+      strcpy (prefix, "mes/module/mes/");
       g_stdin = load_boot (prefix, boot, ".");
     }
   if (g_stdin < 0)

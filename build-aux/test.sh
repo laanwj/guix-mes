@@ -19,17 +19,17 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
-. build-aux/config.sh
-. build-aux/trace.sh
+. ${srcdest}build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
 
 MES_ARENA=100000000
 
 GUILE=${GUILE-$MES}
 DIFF=${DIFF-$(command -v diff)}
-[ -z "$DIFF" ] && DIFF="sh ${top_builddest}scripts/diff.scm"
+[ -z "$DIFF" ] && DIFF="sh scripts/diff.scm"
 
 t=${1-scaffold/tests/t}
-o="${top_builddest}$t"
+o="$t"
 rm -f "$o".mes-out
 shift
 
@@ -37,7 +37,7 @@ set -e
 
 rm -f "$o".gcc-out
 if [ -n "$CC" ]; then
-    sh build-aux/cc.sh "$t"
+    sh ${srcdest}build-aux/cc.sh "$t"
 
     r=0
     [ -f "$t".exit ] && r=$(cat "$t".exit)
@@ -55,7 +55,7 @@ fi
 
 rm -f "$t".mes-gcc-out
 if [ -n "$CC32" ]; then
-    sh build-aux/cc32-mes.sh "$t"
+    sh ${srcdest}build-aux/cc32-mes.sh "$t"
 
     r=0
     [ -f "$t".exit ] && r=$(cat "$t".exit)
@@ -72,7 +72,7 @@ if [ -n "$CC32" ]; then
 fi
 
 rm -f "$o".mes-out
-sh build-aux/cc-mes.sh "$t"
+sh ${srcdest}build-aux/cc-mes.sh "$t"
 
 r=0
 [ -f "$t".exit ] && r=$(cat "$t".exit)

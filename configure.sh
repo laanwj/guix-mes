@@ -27,21 +27,25 @@ cmdline=$(echo "$@")
 p=${cmdline##*--prefix=}
 p=${p% *}
 p=${p% -*}
-prefix=${p-${prefix}}
-if [ -z "$prefix" ]; then
-   prefix=/usr/local
+if [ -z "$p" ]; then
+    p=${prefix-/usr/local}
 fi
+prefix=$p
 
-. build-aux/trace.sh
+srcdir=${srcdir-$(dirname $0)}
+. ${srcdest}build-aux/trace.sh
 
 BASH=${BASH-$(command -v bash)}
 GUILE=${GUILE-$(command -v guile)} || true
 
-srcdir=${srcdir-.}
-top_builddest=${top_builddest-}
-top_builddir=${top_builddest-.}
-abs_top_srcdir=${abs_top_srcdir-$PWD}
-abs_top_builddir=${abs_top_srcdir-$abs_top_builddir}
+if [ "$srcdir" = . ]; then
+    top_builddir=.
+else
+    srcdest=${srcdest}
+    top_builddir=$PWD
+fi
+abs_top_srcdir=${abs_top_srcdir-$(cd ${srcdir} && pwd)}
+abs_top_builddir=$PWD
 
 if [ -z "$GUILE" -o "$GUILE" = true ]; then
     GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
@@ -56,63 +60,38 @@ moduledir=${moduledir-$datadir/mes/module}
 guile_site_dir=${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
 guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
 
-sed \
+subst () {
+    sed \
+    -e s,"@srcdest@,$srcdest,"\
     -e s,"@srcdir@,$srcdir,"\
     -e s,"@abs_top_srcdir@,$abs_top_srcdir,"\
     -e s,"@abs_top_builddir@,$abs_top_builddir,"\
     -e s,"@top_builddir@,$top_builddir,"\
-    -e s,"@top_builddest@,$top_builddest,"\
     -e s,"@BASH@,$BASH,"\
     -e s,"@GUILE@,$GUILE,"\
     -e s,"@guile_site_dir@,$guile_site_dir,"\
     -e s,"@guile_site_ccache_dir@,$guile_site_ccache_dir,"\
     -e s,"@VERSION@,$VERSION,"\
     -e s,"mes/module/,$moduledir,"\
-    build-aux/pre-inst-env.in\
-    > pre-inst-env
+    $1 > $2
+}
 
+subst ${srcdest}build-aux/pre-inst-env.in pre-inst-env
 chmod +x pre-inst-env
+subst ${srcdest}mes/module/mes/boot-0.scm.in mes/module/mes/boot-0.scm
+subst ${srcdest}scripts/mescc.in scripts/mescc
 
-sed \
-    -e s,"@srcdir@,$srcdir,"\
-    -e s,"@abs_top_srcdir@,$abs_top_srcdir,"\
-    -e s,"@abs_top_builddir@,$abs_top_builddir,"\
-    -e s,"@top_builddir@,$top_builddir,"\
-    -e s,"@top_builddest@,$top_builddest,"\
-    -e s,"@BASH@,$BASH,"\
-    -e s,"@GUILE@,$GUILE,"\
-    -e s,"@guile_site_dir@,$guile_site_dir,"\
-    -e s,"@guile_site_ccache_dir@,$guile_site_ccache_dir,"\
-    -e s,"@VERSION@,$VERSION,"\
-    -e s,"mes/module/,$moduledir,"\
-    mes/module/mes/boot-0.scm.in\
-    > mes/module/mes/boot-0.scm
-
-sed \
-    -e s,"@srcdir@,$srcdir,"\
-    -e s,"@abs_top_srcdir@,$abs_top_srcdir,"\
-    -e s,"@abs_top_builddir@,$abs_top_builddir,"\
-    -e s,"@top_builddir@,$top_builddir,"\
-    -e s,"@top_builddest@,$top_builddest,"\
-    -e s,"@BASH@,$BASH,"\
-    -e s,"@GUILE@,$GUILE,"\
-    -e s,"@guile_site_dir@,$guile_site_dir,"\
-    -e s,"@guile_site_ccache_dir@,$guile_site_ccache_dir,"\
-    -e s,"@VERSION@,$VERSION,"\
-    -e s,"mes/module/,$moduledir,"\
-    scripts/mescc.in\
-    > scripts/mescc
+subst ${srcdest}build-aux/GNUmakefile.in GNUmakefile
+subst ${srcdest}build-aux/build.sh.in build.sh
+subst ${srcdest}build-aux/check.sh.in check.sh
+subst ${srcdest}build-aux/install.sh.in install.sh
+subst ${srcdest}build-aux/uninstall.sh.in uninstall.sh
 
 chmod +x scripts/mescc
 
-if [ "$srcdir" != . ]; then
-    mkdir -p mes/module/mes
-    { cd mes/module/mes; ln -sf $abs_top_srcdir/mes/module/mes/*.mes .; }
-fi
-
 cat <<EOF
 Run:
-  prefix=$prefix ./build.sh      to build mes
-  prefix=$prefix ./check.sh      to check mes
-  prefix=$prefix ./install.sh    to install mes
+  ./build.sh      to build mes
+  ./check.sh      to check mes
+  ./install.sh    to install mes
 EOF

@@ -20,8 +20,8 @@
 
 set -e
 
-. build-aux/config.sh
-. build-aux/trace.sh
+. ${srcdest}build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
 
 a=mes-gcc
 if [ "$CC32" = "$TCC" ]; then
@@ -31,18 +31,18 @@ fi
 arch=x86-$a
 
 if [ -n "$LIBC" ]; then
-    CC32LIBS="${top_builddest}lib/$arch/lib$LIBC.o"
+    CC32LIBS="lib/$arch/lib$LIBC.o"
 fi
 
 c=$1
 
 if [ -z "$ARCHDIR" ]; then
-    o="${top_builddest}$c"
-    d=${top_builddest}${c%%/*}
+    o="$c"
+    d=${c%%/*}
     p="$a-"
 else
     b=${c##*/}
-    d=${top_builddest}${c%%/*}/$arch
+    d=${c%%/*}/$arch
     o="$d/$b"
 fi
 mkdir -p $d
@@ -52,14 +52,14 @@ trace "CC32 $c.c" $CC32\
     $CC32_CPPFLAGS\
     $CC32_CFLAGS\
     -o "$o".${p}o\
-    "$c".c
+    "${srcdest}$c".c
 
 if [ -z "$NOLINK" ]; then
     trace "CCLD32 $c.c" $CC32\
         $CC32_CPPFLAGS\
         $CC32_CFLAGS\
         -o "$o".${p}out\
-        ${top_builddest}lib/$arch/crt1.o\
+        lib/$arch/crt1.o\
         "$o".${p}o\
         $CC32LIBS
 fi
