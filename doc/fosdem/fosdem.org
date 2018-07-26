@@ -1,8 +1,10 @@
-#+TITLE: Mes
+#+TITLE: GNU Mes
 #+TITLE: \\\smaller[2]{Maxwell Equations of Software}
 #+DATE:2017-02-05
 #+EMAIL: janneke@gnu.org
 #+AUTHOR: janneke@gnu.org
+#+COPYRIGHT: Jan (janneke) Nieuwenhuizen <janneke@gn.org>
+#+LICENSE: GNU Free Documentation License, version 1.3 or later.
 #+LATEX_HEADER:\institute{FOSDEM'17}
 #+LATEX_HEADER:\def\ahref#1#2{\htmladdnormallink{#2}{#1}}
 #+OPTIONS: H:2
@@ -69,7 +71,7 @@
    * NOT an alternative for Guile -- reuse Guile modules
 
 * Mes, WHY?
- 
+
 ** Inspiration: what do you want?
 
 *** Meaning, Autonomy, Co-Creation, Self-Realization
@@ -500,11 +502,11 @@ int main ()
 *** December 25: \ahref{https://lists.gnu.org/archive/html/guile-user/2016-12/msg00041.html}{Mes 0.4 released}
 # https://gnunet.org/bot/log/guile/2016-12-25
   * run Nyacc, PEG, reduced core
-  
+
 ** Status
 
 *** core C prototype: 1150 lines
-*** non-essential C sources: 
+*** non-essential C sources:
 #+BEGIN_SRC bash
   210 lib.c
   157 math.c
@@ -546,10 +548,10 @@ program[10]: (cons(0(1)))
 
 ** Status
 
-*** 
+***
 
 #+BEGIN_SRC bash
-01:16:51 janneke@dundal:~/src/mes 
+01:16:51 janneke@dundal:~/src/mes
 $ guix package -f guix.scm
 The following package will be upgraded:
    mes	0.4.f84e97fc -> 0.4.f84e97fc	/gnu/store/2fsy1cd24pnwkv7a1zd0anzk3zz8ysdn-mes-0.4.f84e97fc
@@ -646,3 +648,18 @@ R5RS to x86 Assembly
 
 # C-c C-e l b     (org-beamer-export-to-latex)
 # C-c C-e l P     (org-beamer-export-to-pdf)
+
+* Legalese
+  :PROPERTIES:
+  :COPYING: t
+  :END:
+
+  Copyright \copy 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  #+BEGIN_QUOTE
+  Permission is granted to copy, distribute and/or modify this
+  document under the terms of the GNU Free Documentation License,
+  Version 1.3 or any later version published by the Free Software
+  Foundation; with no Invariant Sections, with no Front-Cover Texts,
+  and with no Back-Cover Texts.
+  #+END_QUOTE

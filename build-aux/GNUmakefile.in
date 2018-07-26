@@ -242,7 +242,9 @@ tree-clean-p:
 	@echo commit:$(COMMIT)
 
 generate-ChangeLog:
-	$(PERL) ${srcdest}build-aux/gitlog-to-changelog --srcdir=${srcdir} > ChangeLog
+	$(PERL) ${srcdest}build-aux/gitlog-to-changelog --srcdir=${srcdir} > $@
+	cat ChangeLog >> generate-ChangeLog
+	mv generate-ChangeLog ChangeLog
 
 $(TARBALL): .tarball-version | generate-ChangeLog
 	($(GIT_LS_FILES)\

@@ -103,6 +103,7 @@ tests="
 4c-quasiquote.scm
 4d-let-map.scm
 4e-let-global.scm
+4f-string-split.scm
 
 50-primitive-load.scm
 51-module.scm

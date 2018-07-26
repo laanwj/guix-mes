@@ -1,4 +1,11 @@
-bootstrappable.org project                                           -*- org -*-
+                                                              -*- org -*-
+#+TITLE: bootstrappable.org project
+
+Copyright © 2016, 2017, 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
 
 * What?
 ** Full source bootstrapping for GuixSD
@@ -93,7 +100,6 @@ be source.
 
 * TODO
 ** upstream mes-boot to GuixSD.
-** add full source gcc-4.7 package build.
 ** replace GuixSD bootstrap for x86.
 ** remove or upstream patches from tcc-boot
 ** prepare src/mes.c for M2-Planet transpiler.
@@ -103,6 +109,7 @@ be source.
 ** x86_64, arm, the Hurd
 
 * DONE
+** add full source gcc-4.7 package build.
 ** bootstrap gcc+glibc-built binutils-20.1, gcc-4.1.0.
 ** have tcc-boot compile gnutools triplet: binutils-2.14, gcc-2.95.3, glibc-2.2.5.
 ** have tcc-boot's mes-tcc compile a fully functional tcc

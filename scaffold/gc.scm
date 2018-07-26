@@ -1,3 +1,20 @@
+;;; GNU Mes --- Maxwell Equations of Software
+;;; Copyright © 2016,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;;
+;;; This file is part of GNU Mes.
+;;;
+;;; GNU Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; GNU Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guile gc))
 
@@ -212,7 +229,7 @@
   (if (eq? scan gc-free) (gc-flip)
       (let ((old (vector-ref new-cars scan)))
         (let ((new (gc-relocate old)))
-          (let ((old (gc-update-car scan new))) 
+          (let ((old (gc-update-car scan new)))
             (let ((new (gc-relocate old)))
               (let ((scan (gc-update-cdr scan new)))
                 (gc-loop scan))))))))
@@ -230,7 +247,7 @@
 (define (gc-relocate old) ; old -> new
   (display "gc-relocate old=") (display old) (newline)
   (display "gc-relocate old is pair?=") (display (gc-pair? old)) (newline)
-  
+
   (if (not (gc-pair? old)) old
       (let ((oldcr (vector-ref the-cars (cell-index old))))
         (display "gc-relocate oldcr=") (display oldcr) (newline)

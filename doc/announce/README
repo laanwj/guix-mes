@@ -1,12 +1,11 @@
                                                               -*- org -*-
+#+TITLE: GNU Mes Announcements
 
-#+TITLE: ChangeLog
-
-Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016, 2017, 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
-Normally a ChangeLog is generated at "make dist" time and available in
-source tarballs.
+Files are emails sent to public mailing lists.  The notice above
+applies to these files too.

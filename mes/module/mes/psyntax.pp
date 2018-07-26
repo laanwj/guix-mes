@@ -1,3 +1,27 @@
+;;; -*-scheme-*-
+;;; GNU Mes --- Maxwell Equations of Software
+;;; Copyright (C) 2016, 2017, 2018 Free Software Foundation, Inc.
+;;;
+;;; This file is part of GNU Mes.
+;;;
+;;; GNU Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; GNU Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; This file is generated from psyntax.ss.
+
+;;; Code:
 (letrec ((syntmp-lambda-var-list-167
            (lambda (syntmp-vars-552)
              (let syntmp-lvl-553 ((syntmp-vars-554 syntmp-vars-552)
@@ -9626,4 +9650,3 @@
           syntmp-tmp-2044
           '(any any))))
      syntmp-x-2043)))
-
