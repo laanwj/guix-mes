@@ -48,6 +48,7 @@ export MES_SEED
 export MES_ARENA
 export COMPILE
 export PREPROCESS
+export TINYCC_PREFIX
 export V
 
 export abs_top_builddir

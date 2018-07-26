@@ -288,6 +288,7 @@ Some influential environment variables:
   MES_SEED          location of mes-seed
   MESCC_TOOLS_SEED  location of mescc-tools-seed
   TCC               tcc C compiler command
+  TINYCC_PREFIX     location of tinycc [for tests/test2]
   TINYCC_SEED       location of tinycc-seed
 " PACKAGE VERSION (getenv "prefix")))
 
@@ -338,6 +339,8 @@ Some influential environment variables:
     (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
     (let* ((mes-seed (or (getenv "MES_SEED")
                          (string-append srcdest "../mes-seed")))
+           (tinycc-prefix (or (getenv "TINYCC_PREFIX")
+                              (string-append srcdest "../tinycc-prefix")))
            (tinycc-seed (or (getenv "TINYCC_SEED")
                             (string-append srcdest "../tinycc-seed")))
            (mescc-tools-seed (or (getenv "MESCC_TOOLS_SEED")
@@ -378,6 +381,9 @@ Some influential environment variables:
                      deps))
            (deps (cons (check-file (make-dep "mescc-tools-seed" '(0) #:optional? #t
                                              #:file-name mescc-tools-seed))
+                       deps))
+           (deps (cons (check-file (make-dep "tinycc-prefix" '(0) #:optional? #t
+                                             #:file-name tinycc-prefix))
                        deps))
            (missing (filter (conjoin (negate dependency-file-name)
                                      (negate dependency-optional?)) deps)))

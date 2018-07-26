@@ -32,6 +32,7 @@ prefix=${prefix-@prefix@}
 GUILE=${GUILE-guile}
 MES=${MES-src/mes}
 MES_ARENA=${MES_ARENA-100000000}
+TCC_PREFIX=${TCC_PREFIX-${srcdest}../tinycc}
 
 if ! command -v $GUILE > /dev/null; then
     GUILE=true
@@ -43,3 +44,4 @@ set -e
 [ "$MES" != guile ] && bash ${srcdest}build-aux/check-mes.sh
 bash ${srcdest}build-aux/check-boot.sh
 bash ${srcdest}build-aux/check-mescc.sh
+[ -d $TINYCC_PREFIX/tests/tests2 ] && bash ${srcdest}build-aux/check-tcc.sh

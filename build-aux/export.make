@@ -147,3 +147,7 @@ endif
 ifdef TINYCC_SEED
 export TINYCC_SEED
 endif
+
+ifdef TINYCC_PREFIX
+export TINYCC_PREFIX
+endif
