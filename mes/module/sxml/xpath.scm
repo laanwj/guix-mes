@@ -1,23 +1,26 @@
-;;;; (sxml xpath) -- SXPath
-;;;;
-;;;; 	Copyright (C) 2009  Free Software Foundation, Inc.
-;;;;    Modified 2004 by Andy Wingo <wingo at pobox dot com>.
-;;;;    Written 2001 by Oleg Kiselyov <oleg at pobox dot com> SXPath.scm.
-;;;; 
-;;;; This library is free software; you can redistribute it and/or
-;;;; modify it under the terms of the GNU Lesser General Public
-;;;; License as published by the Free Software Foundation; either
-;;;; version 3 of the License, or (at your option) any later version.
-;;;; 
-;;;; This library is distributed in the hope that it will be useful,
-;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;;;; Lesser General Public License for more details.
-;;;; 
-;;;; You should have received a copy of the GNU Lesser General Public
-;;;; License along with this library; if not, write to the Free Software
-;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-;;;; 
+;;; GNU Mes --- Maxwell Equations of Software
+;;; Copyright (C) 2009  Free Software Foundation, Inc.
+;;;   Modified 2004 by Andy Wingo <wingo at pobox dot com>.
+;;;   Written 2001 by Oleg Kiselyov <oleg at pobox dot com> SXPath.scm.
+;;;
+;;; This file is part of GNU Mes.
+;;;
+;;; GNU Mes is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; GNU Mes is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Taken from GNU Guile
+
+;;; (sxml xpath) -- SXPath
 
 ;;; Commentary:
 ;;
@@ -205,7 +208,7 @@
 ; take-until is a variation of the xpath:filter above: take-until passes
 ; elements of an ordered input set till (but not including) the first
 ; element that satisfies the predicate.
-; The nodeset returned by ((take-until (not pred)) nset) is a subset -- 
+; The nodeset returned by ((take-until (not pred)) nset) is a subset --
 ; to be more precise, a prefix -- of the nodeset returned by
 ; ((xpath:filter pred) nset)
 
@@ -258,7 +261,7 @@
 ; Reverses the order of nodes in the nodeset
 ; This basic converter is needed to implement a reverse document order
 ; (see the XPath Recommendation).
-(define node-reverse 
+(define node-reverse
   (lambda (node-or-nodeset)
     (if (not (nodeset? node-or-nodeset)) (list node-or-nodeset)
 	(reverse node-or-nodeset))))
@@ -306,7 +309,7 @@
 
 (define (select-kids test-pred?)
   (lambda (node)		; node or node-set
-    (cond 
+    (cond
      ((null? node) node)
      ((not (pair? node)) '())   ; No children
      ((symbol? (car node))
@@ -330,7 +333,7 @@
   (lambda (nodeset)		; Nodeset or node
     (let loop ((nodeset nodeset) (selectors selectors))
       (if (null? selectors) nodeset
-	  (loop 
+	  (loop
 	   (if (nodeset? nodeset)
 	       (map-union (car selectors) nodeset)
 	       ((car selectors) nodeset))
@@ -361,7 +364,7 @@
 ; (define (node-or . converters)
 ;   (lambda (node-or-nodeset)
 ;     (if (null? converters) node-or-nodeset
-; 	(append 
+; 	(append
 ; 	 ((car converters) node-or-nodeset)
 ; 	 ((apply node-or (cdr converters)) node-or-nodeset)))))
 ; More optimal implementation follows
@@ -389,7 +392,7 @@
 ; this point further iterations will no longer affect the result and
 ; can be stopped.
 
-(define (node-closure test-pred?)	    
+(define (node-closure test-pred?)
   (lambda (node)		; Nodeset or node
     (let loop ((parent node) (result '()))
       (if (null? parent) result
@@ -436,7 +439,7 @@
 ; (sxpath '()) -> (node-join)
 ; (sxpath '(path-component ...)) ->
 ;		(node-join (sxpath1 path-component) (sxpath '(...)))
-; (sxpath1 '//) -> (node-or 
+; (sxpath1 '//) -> (node-or
 ;		     (node-self (node-typeof? '*any*))
 ;		      (node-closure (node-typeof? '*any*)))
 ; (sxpath1 '(equal? x)) -> (select-kids (node-equal? x))
@@ -473,7 +476,7 @@
       (loop ((select-kids (apply node-eq? (cdar path))) nodeset)
 	    (cdr path)))
      ((pair? (car path))
-      (let reducer ((nodeset 
+      (let reducer ((nodeset
 		     (if (symbol? (caar path))
 			 ((select-kids (node-typeof? (caar path))) nodeset)
 			 (loop nodeset (caar path))))
