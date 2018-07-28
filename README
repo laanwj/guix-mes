@@ -1,14 +1,7 @@
-                                                              -*- org -*-
-
+#+COMMENT:                                                            -*- org -*-
 #+TITLE: About GNU Mes
 
-Copyright © 2016, 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-
-  Copying and distribution of this file, with or without modification,
-  are permitted in any medium without royalty provided the copyright
-  notice and this notice are preserved.
-
-GNU Mes --- Maxwell Equations of Software
+#+SUBTITLE: Maxwell Equations of Software
 
 [[https://www.gnu.org/software/mes][GNU Mes]] aims to help create full
 source bootstrapping for GNU/Linux distributions such as
@@ -35,42 +28,57 @@ GNU Mes is inspired by The Maxwell Equations of Software: [[http://www.softwarep
 John McCarthy page 13, GNU Guix's source/binary packaging transparency
 and Jeremiah Orians's [[https://github.com/oriansj/stage0][stage0]] ~500 byte self-hosting hex assembler.
 
-Mes is free software, it is distributed under the terms of the GNU
-General Public Licence version 3 or later.  See the file COPYING.
+GNU Mes is free software, it is distributed under the terms of the GNU
+General Public Licence version 3 or later.  See the file [[file:COPYING][COPYING]].
 
 * Get it
 
-   git clone [[git://git.savannah.gnu.org][git://git.savannah.gnu.org/mes.git]]
+   #+BEGIN_SRC bash
+   git clone git://git.savannah.gnu.org/mes.git
+   #+END_SRC
 
-* Build it (see INSTALL for full instructions)
+* Build it (see [[file:INSTALL][INSTALL]] for full instructions)
 
+   #+BEGIN_SRC bash
    ./configure
    make all
    make check
+   #+END_SRC
 
 * REPL it
 
+   #+BEGIN_SRC bash
    src/mes.gcc        # default (64 bit) gcc-compiled
    src/mes.mlibc-gcc  # 32 bit, gcc -nostdlib
    src/mes            # 32 bit, bootstrapped, mes.M1+MesCC-compiled
+   #+END_SRC
 
 * MesCC compiler
 
+   #+BEGIN_SRC bash
    scripts/mescc -c scaffold/main.c
+   #+END_SRC
 
 * Bugs
 
-    Please send Mes bug reports to guix-devel@gnu.org.
+    Please send Mes bug reports to [[mailto:bug-mes@gnu.org][bug-mes@gnu.org]].
 
-[0] https://www.gnu.org/software/mes
-[1] https://www.gnu.org/software/guix
-[2] http://bootstrappable.org
-[3] https://github.com/oriansj/mes-m2
-[4] https://github.com/oriansj/m2-planet
-[5] https://github.com/schemeway/lalr-scm
-[6] https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html
-[7] https://www.nongnu.org/nyacc
-[8] https://www.gnu.org/software/guile/docs/master/guile.html/PEG-Parsing.html
-[9] http://gitlab.com/janneke/tinycc
-[10] http://www.softwarepreservation.org/projects/LISP/book/LISP%25201.5%2520Programmers%2520Manual.pdf
-[11] https://github.com/oriansj/stage0
+* Links
+  [0] https://www.gnu.org/software/mes
+  [1] https://www.gnu.org/software/guix
+  [2] http://bootstrappable.org
+  [3] https://github.com/oriansj/mes-m2
+  [4] https://github.com/oriansj/m2-planet
+  [5] https://github.com/schemeway/lalr-scm
+  [6] https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html
+  [7] https://www.nongnu.org/nyacc
+  [8] http://gitlab.com/janneke/tinycc
+  [9] [[http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf]]
+  [10] https://github.com/oriansj/stage0
+
+* Legalese
+Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <[[mailto:janneke@gnu.org][janneke@gnu.org]]>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.

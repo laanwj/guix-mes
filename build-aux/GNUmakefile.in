@@ -67,7 +67,9 @@ PHONY_TARGETS:=\
  mostlyclean\
  pdf\
  ps\
+ sign\
  uninstall\
+ web\
 #
 
 .PHONY: $(PHONY_TARGETS)
@@ -180,7 +182,21 @@ info: doc/mes.info
 doc/mes.info: ${srcdest}doc/mes.texi doc/version.texi ${srcdest}doc/images/gcc-mesboot-graph.dot GNUmakefile
 	$(MAKEINFO) -o $@ -I doc -I doc $<
 
-doc/images/gcc-mesboot-graph.png: ${srcdest}doc/images/gcc-mesboot-graph.dot
+doc/images/%.eps: ${srcdest}doc/images/%.dot
+ifdef DOT
+	$(DOT) -T eps $< > $@
+else
+	touch $@
+endif
+
+doc/images/%.pdf: ${srcdest}doc/images/%.dot
+ifdef DOT
+	$(DOT) -T pdf $< > $@
+else
+	touch $@
+endif
+
+doc/images/%.png: ${srcdest}doc/images/%.dot
 ifdef DOT
 	$(DOT) -T png $< > $@
 else
@@ -218,6 +234,14 @@ ps: doc/mes.ps
 doc/mes.ps: ${srcdest}doc/mes.texi
 	$(MAKEINFO) --ps -I ${srcdest}doc -I doc -o doc/mes.ps $<
 
+WEB_IMAGES:=\
+ doc/images/gcc-mesboot-graph.eps\
+ doc/images/gcc-mesboot-graph.pdf\
+ doc/images/gcc-mesboot-graph.png
+
+web: info $(WEB_IMAGES)
+	GENDOCS_TEMPLATE_DIR=doc build-aux/gendocs.sh -I doc -s doc/mes.texi -o doc/web/manual --email bug-mes@gnu.org mes "GNU Mes manual"
+
 ###  dist
 COMMIT=$(shell test -d ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2>/dev/null) || cat ${srcdest}.tarball-version)
 TARBALL_VERSION=$(COMMIT:v%=%)
@@ -235,6 +259,9 @@ GIT_LS_FILES:=find
 endif
 
 dist: $(TARBALL)
+
+sign: $(TARBALL)
+	gpg --detach-sign $<
 
 tree-clean-p:
 	test ! -d .git || git diff --exit-code > /dev/null

@@ -77,3 +77,6 @@
 /install.sh
 /pre-inst-env
 /uninstall.sh
+/doc/images/gcc-mesboot-graph.eps
+/doc/images/gcc-mesboot-graph.pdf
+/doc/web/

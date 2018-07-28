@@ -807,7 +807,7 @@ guix environment -l guix.scm
 Finally, you have to invoke @code{make check} to run tests
 (@pxref{Running the Test Suites}).  If anything fails, take a look at
 installation instructions (@pxref{Installation}) or send a message to
-the @email{guix-devel@@gnu.org} mailing list.
+the @email{bug-mes@@gnu.org} mailing list.
 
 @node Running Mes From the Source Tree
 @section Running Mes From the Source Tree
@@ -910,10 +910,11 @@ When@dots{}?
 @end quotation
 
 @cindex contact, irc, mailing list
-@cindex bug, bug report, reporting a bug
 Join us on @code{#bootstrappable} on the Freenode IRC network or on
-@file{guix-devel@@gnu.org} to share your experience---good or bad.
+@email{guix-devel@@gnu.org} to share your experience---good or bad.
 
+@cindex bug, bug report, reporting a bug
+Please send bug reports with full details to @email{bug-mes@@gnu.org}.
 
 @c *********************************************************************
 @node Acknowledgments
