@@ -34,11 +34,13 @@
 
             append2
             core:apply
+            core:car
             core:display
             core:display-error
             core:display-port
             core:exit
             core:macro-expand
+            core:make-cell
             core:write
             core:write-error
             core:write-port
@@ -62,6 +64,7 @@
   (define core:write-port write)
   (define core:macro-expand identity)
   (define (core:apply f a . m) (apply f a))
+  (define (core:car f a . m) (apply f a))
   (define append2 append)
 
   (define guile:keyword? keyword?)
@@ -83,8 +86,11 @@
           ((guile:number? x) <cell:number>)
           ((guile:pair? x) <cell:pair>)
           ((guile:string? x) <cell:string>)
-          ((guile:symbol? x) <cell:symbol>))))
-
+          ((guile:symbol? x) <cell:symbol>)))
+  (define (core:car x)
+    (cond ((guile:string? x) (string->list x))))
+  (define (core:make-cell type car cdr)
+    (cond ((eq? type <cell:string>) (list->string car)))))
  (mes))
 
 (cond-expand
