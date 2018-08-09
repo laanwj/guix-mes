@@ -52,13 +52,14 @@ if [ -z "$GUILE" -o "$GUILE" = true ]; then
 else
     GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-$(guile -c '(display (effective-version))')}
 fi
-datadir=${datadir-$prefix/share}
-docdir=${docdir-$datadir/doc/mes-$VERSION}
-infodir=${infodir-$datadir/info}
-mandir=${mandir-$datadir/man}
-moduledir=${moduledir-$datadir/mes/module}
-guile_site_dir=${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
-guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
+datadir=$(eval echo ${datadir-$prefix/share})
+docdir=$(eval echo ${docdir-$datadir/doc/mes-$VERSION})
+infodir=$(eval echo ${infodir-$datadir/info})
+mandir=$(eval echo ${mandir-$datadir/man})
+moduledir=$(eval echo ${moduledir-$datadir/mes/module})
+moduledir_="$moduledir/"
+guile_site_dir=$(eval echo ${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION})
+guile_site_ccache_dir=$(eval echo ${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache})
 
 subst () {
     sed \
@@ -73,7 +74,7 @@ subst () {
     -e s,"@guile_site_dir@,$guile_site_dir,"\
     -e s,"@guile_site_ccache_dir@,$guile_site_ccache_dir,"\
     -e s,"@VERSION@,$VERSION,"\
-    -e s,"mes/module/,$moduledir,"\
+    -e s,"mes/module/,$moduledir/,"\
     $1 > $2
 }
 

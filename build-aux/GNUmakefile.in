@@ -33,7 +33,6 @@ include .config.make
 endif
 
 PHONY_TARGETS:=\
- src/mes\
  TAGS\
  all-go\
  all\
@@ -76,10 +75,14 @@ PHONY_TARGETS:=\
 
 default: all
 
-all: build doc
+all: doc
+
+doc: build
 
 build:
 	./build.sh
+
+src/mes: build
 
 gcc:
 	${srcdest}build-aux/build-cc.sh
@@ -133,7 +136,7 @@ check:
 installcheck:
 	true
 
-install: src/mes
+install:
 	./install.sh
 
 uninstall:
@@ -156,7 +159,7 @@ endif
            $(MESCC_TOOLS_SEED)/libs
 	cd $(MESCC_TOOLS_SEED) && MES_PREFIX=$(PWD) ./bootstrap.sh
 
-doc/version.texi: doc/mes.texi GNUmakefile
+doc/version.texi: ${srcdest}doc/mes.texi GNUmakefile
 	@mkdir -p $(@D)
 	(set `LANG= date -r $< +'%d %B %Y'`;\
 	echo "@set UPDATED $$1 $$2 $$3"; \
@@ -206,12 +209,19 @@ endif
 
 man: doc/mes.1 doc/mescc.1
 
-src/mes: build
+# disable builtin-rules
+%.o: %.s
+%.s: %.S
+%.o: %.S
+%.o: %.c
+%: %.S
+%: %.o
+%: %.c
 
-doc/mes.1: src/mes
+doc/mes.1: src/mes | build
 	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
 
-doc/mescc.1: src/mes scripts/mescc
+doc/mescc.1: src/mes scripts/mescc | build
 	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
 
 html: doc/html/index.html
@@ -240,7 +250,7 @@ WEB_IMAGES:=\
  doc/images/gcc-mesboot-graph.png
 
 web: info $(WEB_IMAGES)
-	GENDOCS_TEMPLATE_DIR=doc build-aux/gendocs.sh -I doc -s doc/mes.texi -o doc/web/manual --email bug-mes@gnu.org mes "GNU Mes manual"
+	GENDOCS_TEMPLATE_DIR=doc build-aux/gendocs.sh -I doc -s ${srcdest}doc/mes.texi -o doc/web/manual --email bug-mes@gnu.org mes "GNU Mes manual"
 
 ###  dist
 COMMIT=$(shell test -d ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2>/dev/null) || cat ${srcdest}.tarball-version)
@@ -292,6 +302,19 @@ endif
 
 release: update-hash
 	./pre-inst-env $(GUIX) build mes@$(VERSION) --with-source=$(TARBALL)
+
+GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+gen-announce:
+	../gnulib/build-aux/announce-gen\
+	    --release-type=alpha\
+	    --package-name=mes\
+	    --previous-version='0.16 '\
+            --current-version=$(VERSION)\
+	    --gpg-key-id=$(GPG_KEY_ID)\
+	    --url-directory=https://alpha.gnu.org/gnu/mes\
+	    --news=NEWS\
+            > doc/announce/ANNOUNCE-$(VERSION)-
+
 
 installdirs: mkinstalldirs
 	mkdir -p\
