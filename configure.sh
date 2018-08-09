@@ -69,6 +69,7 @@ subst () {
     -e s,"@top_builddir@,$top_builddir,"\
     -e s,"@BASH@,$BASH,"\
     -e s,"@GUILE@,$GUILE,"\
+    -e s,"@prefix@,$prefix,"\
     -e s,"@guile_site_dir@,$guile_site_dir,"\
     -e s,"@guile_site_ccache_dir@,$guile_site_ccache_dir,"\
     -e s,"@VERSION@,$VERSION,"\

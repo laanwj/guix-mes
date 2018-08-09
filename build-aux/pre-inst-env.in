@@ -23,7 +23,7 @@ abs_top_srcdir="@abs_top_srcdir@"
 abs_top_builddir="@abs_top_builddir@"
 prefix=${prefix-@prefix@}
 
-MES_PREFIX=${srcdest}mes
+MES_PREFIX=${MES_PREFIX-${srcdest}mes}
 export MES_PREFIX
 
 GUILE_LOAD_COMPILED_PATH="$abs_top_builddir/module${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"

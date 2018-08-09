@@ -471,6 +471,7 @@ Some influential environment variables:
                      ("@BASH@" . ,(file-name "bash" deps))
                      ("@GUILE@" . ,(file-name "guile" deps))
                      ("@MES@" . ,(file-name "guile" deps))
+                     ("@prefix@" . ,prefix)
                      ("@guile_site_dir@" . ,guile-site-dir)
                      ("@guile_site_ccache_dir@" . ,guile-site-ccache-dir)
                      ("@VERSION@" . ,VERSION)
