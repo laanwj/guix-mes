@@ -10,6 +10,21 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to bug-mes@gnu.org.
 
+* Changes in 0.17.1 since 0.17
+** Core
+** MesCC
+*** Mes C Library has now been exploded into a separate C f per function.
+*** Mes C Library now bootstraps glibc-2.16.0, binutils-2.20.1, gcc-4.7.4.
+*** Mes C Library now supports compiling make-3.82.
+*** Mes C Library now supports compiling diffutils-2.7.
+*** Mes C Library now supports x86_64.
+**** 7 new functions
+chdir, clock_gettime, closedir, execl, opendir, readdir, time.
+**** 5 new stubs
+getlogin, setlocale, setvbuf, sigaddset, sigblock.
+** Noteworthy bug fixes
+*** qsort can now handle lists with duplicate entries.
+
 * Changes in 0.17 since 0.16.1
 ** Core
 *** GNU Mes is now an official GNU package.

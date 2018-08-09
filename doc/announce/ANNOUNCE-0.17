@@ -1,9 +1,8 @@
-Subject: GNU Mes 0.17 released [alpha]
+Subject: GNU Mes 0.17 released
 
 <#secure method=pgpmime mode=sign>
-
 We are delighted to announce the release of GNU Mes 0.17, representing
-55 commits over 5 weeks.
+64 commits over 6 weeks.
 
 Mes is now an official GNU package and we have bootstrapped gcc-4.7.4
 for x86-linux with a reduced binary seed (i.e., without regular toolchain).
@@ -49,16 +48,16 @@ and Jeremiah Orians's stage0[10] ~500 byte self-hosting hex assembler.
   git clone git://git.savannah.gnu.org/mes.git
 
   Here are the compressed sources and a GPG detached signature[*]:
-    https://alpha.gnu.org/gnu/mes/mes-0.17.tar.gz
-    https://alpha.gnu.org/gnu/mes/mes-0.17.tar.gz.sig
+    https://ftp.gnu.org/gnu/mes/mes-0.17.tar.gz
+    https://ftp.gnu.org/gnu/mes/mes-0.17.tar.gz.sig
 
   Use a mirror for higher download bandwidth:
     https://www.gnu.org/order/ftp.html
 
   Here are the MD5 and SHA1 checksums:
 
-  5e571c2f5ddaefbfe3dd618d69c40038  mes-0.17.tar.gz
-  1fbebe64ab330aec4c7ffbca88ea04b7be17458d  mes-0.17.tar.gz
+  93ca82612e203fd667dfbdfb83c06549  mes-0.17.tar.gz
+  d38ec93ab6dc2c92a5c5e96fef7f9295972772c2  mes-0.17.tar.gz
 
   [*] Use a .sig file to verify that the corresponding file (without the
   .sig suffix) is intact.  First, be sure to download both the .sig file

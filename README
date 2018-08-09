@@ -20,8 +20,9 @@ C-compiler: MesCC.
 
 Mes+MesCC can compile an only [[http://gitlab.com/janneke/tinycc][lightly patched TinyCC]] that is
 self-hosting.  Using this tcc and the Mes C library we now have a
-reduced-binary-seed bootstrap for the gnutools triplet: glibc-2.2.5,
-binutils-2.20.1, gcc-4.7.4.
+reduced-binary-seed bootstrap for the gnutools triplet: glibc-2.16.0,
+binutils-2.20.1, gcc-4.7.4.  This is enough to replace the GuixSD
+boostrap for i686-linux.
 
 Mes is inspired by The Maxwell Equations of Software: [[http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf][LISP-1.5]] -- John
 McCarthy page 13, GNU Guix's source/binary packaging transparency and
