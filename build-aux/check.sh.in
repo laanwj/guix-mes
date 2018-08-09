@@ -40,8 +40,14 @@ fi
 
 set -e
 
-[ "$GUILE" != true ] && MES=guile bash ${srcdest}build-aux/check-mes.sh
-[ "$MES" != guile ] && bash ${srcdest}build-aux/check-mes.sh
+if [ "$GUILE" != true ]; then
+    MES=guile bash ${srcdest}build-aux/check-mes.sh
+fi
+if [ "$MES" != guile ]; then
+    bash ${srcdest}build-aux/check-mes.sh
+fi
 bash ${srcdest}build-aux/check-boot.sh
 bash ${srcdest}build-aux/check-mescc.sh
-[ -d $TINYCC_PREFIX/tests/tests2 ] && bash ${srcdest}build-aux/check-tcc.sh
+if [ -d $TINYCC_PREFIX/tests/tests2 ] ;then
+    bash ${srcdest}build-aux/check-tcc.sh
+fi

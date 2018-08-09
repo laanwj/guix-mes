@@ -141,6 +141,9 @@ MES_LIBS="-l c+gnu"
 expect=$(echo $broken | wc -w)
 ARGS="arg1 arg2 arg3 arg4 arg5"
 export ARGS
+pass=0
+fail=0
+total=0
 mkdir -p scaffold/tinycc
 for t in $tests; do
     if [ ! -f $TINYCC_PREFIX/"$t.c" ]; then
