@@ -32,6 +32,34 @@ MES=${MES-$(command -v mes)}
 
 set -e
 
+trace "HEX2 0exit-42" $HEX2\
+    --LittleEndian\
+    --Architecture 1\
+    --BaseAddress 0x1000000\
+    -f ${srcdest}lib/x86-mes/elf32-0header.hex2\
+    -f ${srcdest}lib/x86-mes/elf32-body-exit-42.hex2\
+    -f ${srcdest}lib/x86-mes/elf-0footer.hex2\
+    --exec_enable\
+    -o lib/x86-mes/0exit-42.x86-out
+
+trace "TEST 0exit-42"
+{ set +e; lib/x86-mes/0exit-42.x86-out; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r" && exit 1
+
+trace "HEX2 0exit-42" $HEX2\
+    --LittleEndian\
+    --Architecture 1\
+    --BaseAddress 0x1000000\
+    -f ${srcdest}lib/x86-mes/elf32-header.hex2\
+    -f ${srcdest}lib/x86-mes/elf32-body-exit-42.hex2\
+    -f ${srcdest}lib/x86-mes/elf32-footer-single-main.hex2\
+    --exec_enable\
+    -o lib/x86-mes/exit-42.x86-out
+
+trace "TEST exit-42"
+{ set +e; lib/x86-mes/exit-42.x86-out; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r" && exit 1
+
 if [ -d "$MES_SEED" ]; then
     mkdir -p lib/x86-mes
     trace "M1 crt1.S" $M1\
@@ -87,14 +115,23 @@ fi
 
 MES_ARENA=100000000
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crt0
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc-mini
+
+PREPROCESS= bash ${srcdest}build-aux/cc-mes.sh lib/x86-mes/exit-42
+
+trace "TEST exit-42.out"
+{ set +e; lib/x86-mes/exit-42.mes-out; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r" && exit 1
+
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crt1
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crti
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crtn
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc-mini
+
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libgetopt
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+tcc
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+gnu
+
 
 [ -n "$SEED" ] && exit 0
 

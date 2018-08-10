@@ -39,7 +39,7 @@
 00 00 00 00 00 00 00           # e_ident[EI_PAD]
 
 02 00                          # e_type Indicating Executable
-03 00                          # e_machine Indicating AMD64
+03 00                          # e_machine Indicating 32bit x86
 01 00 00 00                    # e_version Indicating original elf
 
 &ELF_text                      # e_entry Address of the entry point

@@ -1,5 +1,5 @@
 ### Copyright (C) 2016 Jeremiah Orians
-### Copyright (C) 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright (C) 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ### This file is part of stage0.
 ###
 ### stage0 is free software: you an redistribute it and/or modify
@@ -15,7 +15,7 @@
 ### You should have received a copy of the GNU General Public License
 ### along with stage0.  If not, see <http://www.gnu.org/licenses/>.
 
-### stage0's hex2 format for x86
+### stage0's hex2 format for x86_64
 ###    !<label>          1 byte relative
 ###    $<label>          2 byte address
 ###    @<label>          2 byte relative
@@ -24,12 +24,10 @@
 ###    local_<label>     function-local
 ###    string_<index>    string #<index>
 
-### elf32-header-exit-42.hex2: 32 bit elf header in hex2 for `exit 42'
-
 :ELF_base
 7F 45 4C 46                    # e_ident[EI_MAG0-3] ELF's magic number
 
-01                             # e_ident[EI_CLASS] Indicating 32 bit
+02                             # e_ident[EI_CLASS] Indicating 64 bit
 01                             # e_ident[EI_DATA] Indicating little endianness
 01                             # e_ident[EI_VERSION] Indicating original elf
 
@@ -39,18 +37,20 @@
 00 00 00 00 00 00 00           # e_ident[EI_PAD]
 
 02 00                          # e_type Indicating Executable
-03 00                          # e_machine Indicating 32bit x86
+3E 00                          # e_machine Indicating AMD64
 01 00 00 00                    # e_version Indicating original elf
 
-&ELF_text                      # e_entry Address of the entry point
+&ELF_text 00 00 00 00          # e_entry Address of the entry point
 %ELF_program_headers>ELF_base  # e_phoff Address of program header table
-00 00 00 00                    # e_shoff Address of section header table
+  00 00 00 00
+
+00 00 00 00 00 00 00 00        # e_shoff Address of section header table
 
 00 00 00 00                    # e_flags
 
-34 00                          # e_ehsize Indicating our 52 Byte header
+40 00                          # e_ehsize Indicating our 64 Byte header
 
-20 00                          # e_phentsize size of a program header table
+38 00                          # e_phentsize size of a program header table
 01 00                          # e_phnum number of entries in program table
 
 00 00                          # e_shentsize size of a section header table
@@ -67,12 +67,12 @@
 :ELF_program_headers
 :ELF_program_header__text
 01 00 00 00                    # ph_type: PT-LOAD = 1
-00 00 00 00                    # ph_offset
-&ELF_base                      # ph_vaddr
-&ELF_base                      # ph_physaddr
-%ELF_end>ELF_base              # ph_filesz
-%ELF_end>ELF_base              # ph_memsz
 07 00 00 00                    # ph_flags: PF-X|PF-W|PF-R = 7
-01 00 00 00                    # ph_align
+00 00 00 00 00 00 00 00        # p_offset
+&ELF_base 00 00 00 00          # ph_vaddr
+&ELF_base 00 00 00 00          # ph_physaddr
+%ELF_end>ELF_base 00 00 00 00  # ph_filesz
+%ELF_end>ELF_base 00 00 00 00  # ph_memsz
+01 00 00 00 00 00 00 00        # ph_align
 
 :ELF_text

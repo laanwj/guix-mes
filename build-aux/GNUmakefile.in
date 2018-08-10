@@ -101,6 +101,9 @@ endif
 mes:
 	${srcdest}build-aux/build-mes.sh
 
+x86_64-mes:
+	${srcdest}build-aux/build-x86_64-mes.sh
+
 clean:
 	git clean -dfx\
 	    -e GNUmakefile\

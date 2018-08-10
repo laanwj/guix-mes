@@ -1,4 +1,4 @@
-### Copyright (C) 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright (C) 2017, 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ### This file is part of stage0.
 ###
 ### stage0 is free software: you an redistribute it and/or modify
@@ -14,7 +14,7 @@
 ### You should have received a copy of the GNU General Public License
 ### along with stage0.  If not, see <http://www.gnu.org/licenses/>.
 
-### stage0's hex2 format for x86
+### stage0's hex2 format for x86_64
 ###    !<label>          1 byte relative
 ###    $<label>          2 byte address
 ###    @<label>          2 byte relative
@@ -23,22 +23,22 @@
 ###    local_<label>     function-local
 ###    string_<index>    string #<index>
 
-### elf32-body-exit-42.hex2: 32 bit elf body in hex2 for `exit 42'
+### elf64-body-exit-42.hex2: 64 bit elf body in hex2 for `exit 42'
 
 # @200
 :ELF_text
 :_start
 # exit(42)
-e8 %main                       # call   +11 <main>
+e8 %main                       # callq  +11 <main>
 00 00 00
 00 00 00 00
 00 00 00 00
 
 # @210
 :main
-bb 2a 00 00 00                 # mov    $42,%ebx
-b8 01 00 00 00                 # mov    $0x1,%eax
-cd 80                          # int    $0x80
+48 c7 c7 2a 00 00 00           # mov    $42,%rdi
+48 c7 c0 3c 00 00 00           # mov    $0x3c,%rax
+0f 05                          # syscall
 
 00 00 00 00
 

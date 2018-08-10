@@ -19,14 +19,14 @@
 *.mes-gcc-out
 *.mes-gcc-out
 *.mes-gcc-stdout
+*.mes-o
+*.mes-out
+*.mes-stdout
 *.mes-tcc
 *.mes-tcc-o
 *.mes-tcc-out
 *.mes-tcc-out
 *.mes-tcc-stdout
-*.mes-o
-*.mes-out
-*.mes-stdout
 *.mini-M1
 *.mini-guile
 *.mini-hex2
@@ -34,6 +34,9 @@
 *.seed-out
 *.stderr
 *.stdout
+*.x86-out
+*.x86_64-mes-out
+*.x86_64-out
 
 /lib/x86-mes-gcc
 /lib/x86-mes-tcc

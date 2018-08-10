@@ -61,7 +61,7 @@ elif [ -n "$COMPILE" ]; then
         trace "MESLD $c.o" ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -z "$NOLINK" ]; then
-    trace "MESLD $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "${srcdest}$c".c $MES_LIBS
+    trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "${srcdest}$c".c $MES_LIBS
 else
    trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "${srcdest}$c".c
 fi
