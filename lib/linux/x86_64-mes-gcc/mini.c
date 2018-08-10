@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,16 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define SYS_exit   "0x01"
-#define SYS_write  "0x04"
+#define SYS_exit   "0x3c"
+#define SYS_write  "0x01"
 
 void
 _exit (int code)
 {
   asm (
-       "mov    $"SYS_exit",%%eax\n\t"
-       "mov    %0,%%ebx\n\t"
-       "int    $0x80\n\t"
+       "mov     $"SYS_exit",%%rax\n\t"
+       "mov     %0,%%rdi\n\t"
+       "syscall \n\t"
        : // no outputs "=" (r)
        : "rm" (code)
        );
@@ -38,17 +38,17 @@ _exit (int code)
 ssize_t
 _write (int filedes, void const *buffer, size_t size)
 {
-  int r;
+  long r;
   asm (
-       "mov    $"SYS_write",%%eax\n\t"
-       "mov    %1,%%ebx\n\t"
-       "mov    %2,%%ecx\n\t"
-       "mov    %3,%%edx\n\t"
-       "int    $0x80\n\t"
-       "mov    %%eax,%0\n\t"
+       "mov     $"SYS_write",%%rax\n\t"
+       "mov     %1,%%rdi\n\t"
+       "mov     %2,%%rsi\n\t"
+       "mov     %3,%%rdx\n\t"
+       "syscall \n\t"
+       "mov     %%rax,%0\n\t"
        : "=r" (r)
        : "rm" (filedes), "rm" (buffer), "rm" (size)
-       : "eax", "ebx", "ecx", "edx"
+       : "rax", "rdi", "rsi", "rdx"
        );
   return r;
 }

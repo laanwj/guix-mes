@@ -281,6 +281,8 @@ Some influential environment variables:
   CC                C compiler command
   CFLAGS            C compiler flags
   CC32              x86 C compiler command
+  CC64_CFLAGS       x86_64 C compiler flags
+  CC64              x86_64 C compiler command
   CC32_CFLAGS       x86 C compiler flags
   GUILE             guile command
   GUILE_TOOLS       guile-tools command
@@ -364,6 +366,9 @@ Some influential environment variables:
                              (make-dep "cc32" '(2 95)
                                        #:optional? #t
                                        #:commands '("i686-unknown-linux-gnu-gcc"))
+                             (make-dep "cc64" '(2 95)
+                                       #:optional? #t
+                                       #:commands '("gcc"))
                              (make-dep "M1" '(0 3))
                              (make-dep "blood-elf" '(0 1))
                              (make-dep "hex2" '(0 3))
@@ -458,9 +463,9 @@ Some influential environment variables:
                     '(
                       "CFLAGS"
                       "CC32_CFLAGS"
+                      "CC64_CFLAGS"
                       "HEX2FLAGS"
                       "M1FLAGS"
-                      "CC32_CFLAGS"
                       "MES_CFLAGS"
                       ))))
 

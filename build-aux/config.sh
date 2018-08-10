@@ -26,6 +26,7 @@ fi
 export CC
 export CC CFLAGS
 export CC32
+export CC64
 export CC_CFLAGS
 export CC_CFLAGS
 export CC_CPPFLAGS
@@ -80,6 +81,33 @@ CC_CFLAGS=${CC_CFLAGS-"
 --std=gnu99
 -O0
 -g
+"}
+
+CC64_CPPFLAGS=${CC64_CPPFLAGS-"
+-D 'VERSION=\"$VERSION\"'
+-D 'MODULEDIR=\"$moduledir\"'
+-D 'PREFIX=\"$prefix\"'
+-I src
+-I ${srcdest}src
+-I ${srcdest}lib
+-I ${srcdest}include
+"}
+
+CC64_CFLAGS=${CC64_CFLAGS-"
+-std=gnu99
+-O0
+-fno-builtin
+-fno-stack-protector
+-g
+-m64
+-nostdinc
+-nostdlib
+-Wno-discarded-qualifiers
+-Wno-int-to-pointer-cast
+-Wno-pointer-to-int-cast
+-Wno-pointer-sign
+-Wno-int-conversion
+-Wno-incompatible-pointer-types
 "}
 
 CC32_CPPFLAGS=${CC32_CPPFLAGS-"

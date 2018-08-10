@@ -23,6 +23,10 @@ set -e
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
 
+# cc64
+LIBC=${LIBC-c-mini}
+
+# native
 trace "SNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
 trace "SNARF lib.c"    ${srcdest}build-aux/mes-snarf.scm src/lib.c
 trace "SNARF math.c"   ${srcdest}build-aux/mes-snarf.scm src/math.c
@@ -31,5 +35,37 @@ trace "SNARF posix.c"  ${srcdest}build-aux/mes-snarf.scm src/posix.c
 trace "SNARF reader.c" ${srcdest}build-aux/mes-snarf.scm src/reader.c
 trace "SNARF vector.c" ${srcdest}build-aux/mes-snarf.scm src/vector.c
 
+# cc64-mes
+trace "MSNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
+trace "MSNARF lib.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
+trace "MSNARF math.c"   ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
+trace "MSNARF mes.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
+trace "MSNARF posix.c"  ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
+trace "MSNARF reader.c" ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
+trace "MSNARF vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
+
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc.sh lib/libmes
 sh ${srcdest}build-aux/cc.sh src/mes
+
+#ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crt0
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crt1
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crti
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crtn
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc-mini
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libgetopt
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc+tcc
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libtcc1
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc+gnu
+# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libg
+
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/main
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/hello
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/argv
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/malloc
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/micro-mes
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/tiny-mes
+# sh ${srcdest}build-aux/cc64-mes.sh scaffold/cons-mes
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/mini-mes
+
+sh ${srcdest}build-aux/cc64-mes.sh src/mes

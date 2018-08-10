@@ -191,6 +191,9 @@ b *0x804a79d
 ** Create memory dump with 32 bit Gcc compiled Mes
 make out/i686-unknown-linux-gnu-mes
 out/i686-unknown-linux-gnu-mes --dump < module/mes/read-0.mes > module/mes/read-0-32.mo
+
+x/s *((char **)($rsp+8))
+
 ** C parser/compiler
 *** [[https://savannah.gnu.org/projects/nyacc][nyacc]]
 *** PEG: [[http://piumarta.com/software/peg/][parse C using PEG]]

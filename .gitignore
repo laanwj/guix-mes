@@ -35,8 +35,11 @@
 *.stderr
 *.stdout
 *.x86-out
+*.x86_64-mes-gcc-o
+*.x86_64-mes-gcc-out
 *.x86_64-mes-out
 *.x86_64-out
+
 
 /lib/x86-mes-gcc
 /lib/x86-mes-tcc

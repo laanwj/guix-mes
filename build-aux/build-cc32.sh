@@ -27,6 +27,7 @@ LIBC=${LIBC-c}
 
 ##moduledir=${moduledir-${datadir}${datadir:+/}module}
 
+# native
 # trace "SNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
 # trace "SNARF lib.c"    ${srcdest}build-aux/mes-snarf.scm src/lib.c
 # trace "SNARF math.c"   ${srcdest}build-aux/mes-snarf.scm src/math.c
@@ -35,6 +36,7 @@ LIBC=${LIBC-c}
 # trace "SNARF reader.c" ${srcdest}build-aux/mes-snarf.scm src/reader.c
 # trace "SNARF vector.c" ${srcdest}build-aux/mes-snarf.scm src/vector.c
 
+# cc32-mes
 trace "MSNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
 trace "MSNARF lib.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
 trace "MSNARF math.c"   ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
@@ -55,12 +57,12 @@ ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libtcc1
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libc+gnu
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libg
 
-# sh ${srcdest}build-aux/cc32-mes.sh scaffold/main
-# sh ${srcdest}build-aux/cc32-mes.sh scaffold/hello
-# sh ${srcdest}build-aux/cc32-mes.sh scaffold/argv
-# sh ${srcdest}build-aux/cc32-mes.sh scaffold/malloc
-# sh ${srcdest}build-aux/cc32-mes.sh scaffold/micro-mes
-# sh ${srcdest}build-aux/cc32-mes.sh scaffold/tiny-mes
-# sh ${srcdest}build-aux/cc32-mes.sh scaffold/mini-mes
+sh ${srcdest}build-aux/cc32-mes.sh scaffold/main
+sh ${srcdest}build-aux/cc32-mes.sh scaffold/hello
+sh ${srcdest}build-aux/cc32-mes.sh scaffold/argv
+sh ${srcdest}build-aux/cc32-mes.sh scaffold/malloc
+sh ${srcdest}build-aux/cc32-mes.sh scaffold/micro-mes
+sh ${srcdest}build-aux/cc32-mes.sh scaffold/tiny-mes
+sh ${srcdest}build-aux/cc32-mes.sh scaffold/mini-mes
 
 sh ${srcdest}build-aux/cc32-mes.sh src/mes

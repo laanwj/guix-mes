@@ -60,6 +60,10 @@ ifdef CC32
 export CC32
 endif
 
+ifdef CC64
+export CC64
+endif
+
 ifdef BLOOD_ELF
 export BLOOD_ELF
 endif
@@ -122,6 +126,10 @@ endif
 
 ifdef CC32_CFLAGS
 export CC32_CFLAGS
+endif
+
+ifdef CC64_CFLAGS
+export CC64_CFLAGS
 endif
 
 ifdef HEX2FLAGS

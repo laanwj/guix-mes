@@ -38,7 +38,7 @@ int JAM_SIZE = 20000;
 int GC_SAFETY = 2000;
 
 char *g_arena = 0;
-typedef int SCM;
+typedef long SCM;
 
 int g_debug = 0;
 int g_free = 0;
