@@ -21,7 +21,7 @@
 int
 main (int argc, char *argv[])
 {
-#if 1
+#if 0
   asm ("mov $00,%rdi");
   asm ("mov $0x3c,%rax");
   asm ("syscall");

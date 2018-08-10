@@ -46,19 +46,19 @@ trace "TEST 0exit-42"
 { set +e; lib/x86_64-mes/0exit-42.x86_64-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-# trace "HEX2 0exit-42" $HEX2\
-#     --LittleEndian\
-#     --Architecture 2\
-#     --BaseAddress 0x1000000\
-#     -f ${srcdest}lib/x86_64-mes/elf64-header.hex2\
-#     -f ${srcdest}lib/x86_64-mes/elf64-body-exit-42.hex2\
-#     -f ${srcdest}lib/x86_64-mes/elf64-footer-single-main.hex2\
-#     --exec_enable\
-#     -o lib/x86_64-mes/exit-42.x86_64-out
+trace "HEX2 0exit-42" $HEX2\
+    --LittleEndian\
+    --Architecture 2\
+    --BaseAddress 0x1000000\
+    -f ${srcdest}lib/x86_64-mes/elf64-header.hex2\
+    -f ${srcdest}lib/x86_64-mes/elf64-body-exit-42.hex2\
+    -f ${srcdest}lib/x86_64-mes/elf64-footer-single-main.hex2\
+    --exec_enable\
+    -o lib/x86_64-mes/exit-42.x86_64-out
 
-# trace "TEST exit-42"
-# { set +e; lib/x86_64-mes/exit-42.x86_64-out; r=$?; set -e; }
-# [ $r != 42 ] && echo "  => $r" && exit 1
+trace "TEST exit-42"
+{ set +e; lib/x86_64-mes/exit-42.x86_64-out; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r" && exit 1
 
 # if [ -d "$MES_SEED" ]; then
 #     mkdir -p lib/x86_64-mes
