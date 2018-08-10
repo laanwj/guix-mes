@@ -221,7 +221,7 @@ man: doc/mes.1 doc/mescc.1
 doc/mes.1: src/mes | build
 	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
 
-doc/mescc.1: src/mes scripts/mescc | build
+doc/mescc.1: scripts/mescc src/mes | build
 	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
 
 html: doc/html/index.html
