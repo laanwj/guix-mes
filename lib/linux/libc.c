@@ -27,28 +27,23 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#define SYS_fork    0x02
-#define SYS_read    0x03
-#define SYS_open    0x05
-#define SYS_waitpid 0x07
-#define SYS_execve  0x0b
-#define SYS_chmod   0x0f
-#define SYS_access  0x21
-#define SYS_brk     0x2d
-#define SYS_ioctl   0x36
-#define SYS_fsync   0x76
-
 #if __MESC__
 
-#include <linux/mes.c>
+#include <linux/x86-mes/mes.c>
 
-#else // !__MESC__
+#elif __i386__
 
-#include <assert.h>
+#include <linux/x86-mes-gcc/mes.c>
 
-#include <linux/gcc.c>
+#elif __x86_64__
 
-#endif // !__MESC__
+#include <linux/x86_64-mes-gcc/mes.c>
+
+#else
+
+#error arch not supported
+
+#endif
 
 int
 fork ()
@@ -59,7 +54,20 @@ fork ()
 ssize_t
 read (int filedes, void *buffer, size_t size)
 {
-  return _sys_call3 (SYS_read, (int)filedes, (int)buffer, (int)size);
+  ssize_t bytes = _sys_call3 (SYS_read, (long)filedes, (long)buffer, (long)size);
+  if (__mes_debug () > 3)
+    {
+      if (bytes == 1)
+        {
+          eputs ("read fd="); eputs (itoa ((int)filedes)); eputs (" c="); eputc (*(char*)buffer); eputs ("\n");
+        }
+      else
+        {
+          eputs ("read fd="); eputs (itoa ((int)filedes));
+          eputs (" bytes="); eputs (itoa (bytes)); eputs ("\n");
+        }
+    }
+  return bytes;
 }
 
 int
@@ -75,7 +83,7 @@ open (char const *file_name, int flags, ...)
       _ungetc_fd = -1;
     }
 #endif
-  int r = _sys_call3 (SYS_open, (int)file_name, (int)flags, (int)mask);
+  int r = _sys_call3 (SYS_open, (long)file_name, (long)flags, (long)mask);
   va_end (ap);
   return r;
 }
@@ -83,31 +91,37 @@ open (char const *file_name, int flags, ...)
 pid_t
 waitpid (pid_t pid, int *status_ptr, int options)
 {
-  return _sys_call3 (SYS_waitpid, (int)pid, (int)status_ptr, (int)options);
+#if __i386__
+  return _sys_call3 (SYS_waitpid, (long)pid, (long)status_ptr, (long)options);
+#elif __x86_64__
+  return _sys_call4 (SYS_wait4, (long)pid, (long)status_ptr, (long)options, 0);
+#else
+#error arch not supported
+#endif
 }
 
 int
 execve (char const* file_name, char *const argv[], char *const env[])
 {
-  return _sys_call3 (SYS_execve, (int)file_name, (int)argv, (int)env);
+  return _sys_call3 (SYS_execve, (long)file_name, (long)argv, (long)env);
 }
 
 int
 chmod (char const *file_name, mode_t mask)
 {
-  return _sys_call2 (SYS_chmod, (int)file_name, (int)mask);
+  return _sys_call2 (SYS_chmod, (long)file_name, (long)mask);
 }
 
 int
 access (char const *file_name, int how)
 {
-  return _sys_call2 (SYS_access, (int)file_name, (int)how);
+  return _sys_call2 (SYS_access, (long)file_name, (long)how);
 }
 
-int
+long
 brk (void *addr)
 {
-  return _sys_call1 (SYS_brk, (int)addr);
+  return _sys_call1 (SYS_brk, (long)addr);
 }
 
 int
@@ -116,7 +130,7 @@ ioctl (int filedes, unsigned long command, ...)
   va_list ap;
   va_start (ap, command);
   int data = va_arg (ap, int);
-  int r = _sys_call3 (SYS_ioctl, (int)filedes, (int)command, (int)data);
+  int r = _sys_call3 (SYS_ioctl, (long)filedes, (long)command, (long)data);
   va_end (ap);
   return r;
 }
@@ -124,5 +138,5 @@ ioctl (int filedes, unsigned long command, ...)
 int
 fsync (int filedes)
 {
-  return _sys_call1 (SYS_fsync, (int)filedes);
+  return _sys_call1 (SYS_fsync, (long)filedes);
 }

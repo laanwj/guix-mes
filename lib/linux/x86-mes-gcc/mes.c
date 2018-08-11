@@ -19,11 +19,12 @@
  */
 
 #include <errno.h>
+#include <linux/x86/syscall.h>
 
-int
-_sys_call (int sys_call)
+long
+_sys_call (long sys_call)
 {
-  int r;
+  long r;
   asm (
        "mov    %1,%%eax\n\t"
        "int    $0x80\n\t"
@@ -42,10 +43,10 @@ _sys_call (int sys_call)
   return r;
 }
 
-int
-_sys_call1 (int sys_call, int one)
+long
+_sys_call1 (long sys_call, long one)
 {
-  int r;
+  long r;
   asm (
        "mov    %1,%%eax\n\t"
        "mov    %2,%%ebx\n\t"
@@ -65,10 +66,10 @@ _sys_call1 (int sys_call, int one)
   return r;
 }
 
-int
-_sys_call2 (int sys_call, int one, int two)
+long
+_sys_call2 (long sys_call, long one, long two)
 {
-  int r;
+  long r;
   asm (
        "mov    %1,%%eax\n\t"
        "mov    %2,%%ebx\n\t"
@@ -89,10 +90,10 @@ _sys_call2 (int sys_call, int one, int two)
   return r;
 }
 
-int
-_sys_call3 (int sys_call, int one, int two, int three)
+long
+_sys_call3 (long sys_call, long one, long two, long three)
 {
-  int r;
+  long r;
   asm (
        "mov    %2,%%ebx\n\t"
        "mov    %3,%%ecx\n\t"
@@ -103,6 +104,32 @@ _sys_call3 (int sys_call, int one, int two, int three)
        : "=r" (r)
        : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three)
        : "eax", "ebx", "ecx", "edx"
+       );
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+
+long
+_sys_call4 (long sys_call, long one, long two, long three, long four)
+{
+  long r;
+  asm (
+       "mov    %2,%%ebx\n\t"
+       "mov    %3,%%ecx\n\t"
+       "mov    %4,%%edx\n\t"
+       "mov    %5,%%esi\n\t"
+       "mov    %1,%%eax\n\t"
+       "int    $0x80\n\t"
+       "mov    %%eax,%0\n\t"
+       : "=r" (r)
+       : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three), "rm" (four)
+       : "eax", "ebx", "ecx", "edx", "esi"
        );
   if (r < 0)
     {

@@ -33,35 +33,35 @@ close (int filedes)
       _ungetc_pos = -1;
       _ungetc_fd = -1;
     }
-  return _sys_call1 (SYS_close, (int)filedes);
+  return _sys_call1 (SYS_close, (long)filedes);
 }
 
 off_t
 lseek (int filedes, off_t offset, int whence)
 {
-  return _sys_call3 (SYS_lseek, (int)filedes, (int)offset, (int)whence);
+  return _sys_call3 (SYS_lseek, (long)filedes, (long)offset, (long)whence);
 }
 
 int
 unlink (char const *file_name)
 {
-  return _sys_call1 (SYS_unlink, (int)file_name);
+  return _sys_call1 (SYS_unlink, (long)file_name);
 }
 
 int
 rmdir (char const *file_name)
 {
-  return _sys_call1 (SYS_rmdir, (int)file_name);
+  return _sys_call1 (SYS_rmdir, (long)file_name);
 }
 
 int
 stat (char const *file_name, struct stat *statbuf)
 {
-  return _sys_call2 (SYS_stat, (int)file_name, (int)statbuf);
+  return _sys_call2 (SYS_stat, (long)file_name, (long)statbuf);
 }
 
 char *
 getcwd (char *buffer, size_t size)
 {
-  return _sys_call2 (SYS_getcwd, (int)buffer, (int)size);
+  return _sys_call2 (SYS_getcwd, (long)buffer, (long)size);
 }

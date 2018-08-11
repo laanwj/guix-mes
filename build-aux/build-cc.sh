@@ -24,7 +24,7 @@ set -e
 . ${srcdest}build-aux/trace.sh
 
 # cc64
-LIBC=${LIBC-c-mini}
+LIBC=${LIBC-c}
 
 # native
 trace "SNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
@@ -52,7 +52,7 @@ ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/c
 # ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crti
 # ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crtn
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc-mini
-# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc
 # ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libgetopt
 # ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc+tcc
 # ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libtcc1

@@ -41,7 +41,7 @@
 int
 link (char const *old_name, char const *new_name)
 {
-  return _sys_call2 (SYS_link, (int)old_name, (int)new_name);
+  return _sys_call2 (SYS_link, (long)old_name, (long)new_name);
 }
 
 pid_t
@@ -59,25 +59,25 @@ getuid ()
 int
 kill (pid_t pid, int signum)
 {
-  return _sys_call2 (SYS_kill, (int)pid, (int)signum);
+  return _sys_call2 (SYS_kill, (long)pid, (long)signum);
 }
 
 int
 rename (char const *old_name, char const *new_name)
 {
-  return _sys_call2 (SYS_rename, (int)old_name, (int)new_name);
+  return _sys_call2 (SYS_rename, (long)old_name, (long)new_name);
 }
 
 int
 mkdir (char const *file_name, mode_t mode)
 {
-  return _sys_call2 (SYS_mkdir, (int)file_name, (int)mode);
+  return _sys_call2 (SYS_mkdir, (long)file_name, (long)mode);
 }
 
 int
 dup (int old)
 {
-  return _sys_call1 (SYS_dup, (int)old);
+  return _sys_call1 (SYS_dup, (long)old);
 }
 
 gid_t
@@ -103,7 +103,7 @@ fcntl (int filedes, int command, ...)
   va_list ap;
   va_start (ap, command);
   int data = va_arg (ap, int);
-  int r = _sys_call3 (SYS_fcntl, (int)filedes, (int)command, (int)data);
+  int r = _sys_call3 (SYS_fcntl, (long)filedes, (long)command, (long)data);
   va_end (ap);
   return r;
 }
@@ -111,43 +111,43 @@ fcntl (int filedes, int command, ...)
 int
 pipe (int filedes[2])
 {
-  return _sys_call1 (SYS_pipe, (int)filedes);
+  return _sys_call1 (SYS_pipe, (long)filedes);
 }
 
 int
 dup2 (int old, int new)
 {
-  return _sys_call2 (SYS_dup2, (int)old, (int)new);
+  return _sys_call2 (SYS_dup2, (long)old, (long)new);
 }
 
 int
 getrusage (int processes, struct rusage *rusage)
 {
-  return _sys_call2 (SYS_getrusage, (int)processes, (int)rusage);
+  return _sys_call2 (SYS_getrusage, (long)processes, (long)rusage);
 }
 
 int
 lstat (char const *file_name, struct stat *statbuf)
 {
-  return _sys_call2 (SYS_lstat, (int)file_name, (int)statbuf);
+  return _sys_call2 (SYS_lstat, (long)file_name, (long)statbuf);
 }
 
 int
 nanosleep (const struct timespec *requested_time,
            struct timespec *remaining)
 {
-  return _sys_call2 (SYS_nanosleep, (int)requested_time, (int)remaining);
+  return _sys_call2 (SYS_nanosleep, (long)requested_time, (long)remaining);
 }
 
 int
 setitimer (int which, struct itimerval const *new,
           struct itimerval *old)
 {
-  return _sys_call3 (SYS_setitimer, (int)which, (int)new, (int)old);
+  return _sys_call3 (SYS_setitimer, (long)which, (long)new, (long)old);
 }
 
 int
 fstat (int fd, struct stat *statbuf)
 {
-  return _sys_call2 (SYS_fstat, (int)fd, (int)statbuf);
+  return _sys_call2 (SYS_fstat, (long)fd, (long)statbuf);
 }

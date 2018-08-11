@@ -26,14 +26,14 @@
 
 //#define MES_MINI 1
 #if POSIX
-int ARENA_SIZE = 100000000; // 64b: 4GiB
+long ARENA_SIZE = 100000000; // 64b: 4GiB
 #else
-int ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
+long ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
 #endif
-int MAX_ARENA_SIZE = 100000000;
+long MAX_ARENA_SIZE = 100000000;
 
-int JAM_SIZE = 20000;
-int GC_SAFETY = 2000;
+long JAM_SIZE = 20000;
+long GC_SAFETY = 2000;
 
 char *g_arena = 0;
 typedef long SCM;
@@ -66,8 +66,8 @@ struct scm {
   SCM cdr;
 };
 struct function {
-  int (*function) (void);
-  int arity;
+  long (*function) (void);
+  long arity;
   char *name;
 };
 #else
@@ -84,7 +84,7 @@ struct function {
     function3_t function3;
     functionn_t functionn;
   };
-  int arity;
+  long arity;
   char const *name;
 };
 struct scm {
@@ -95,12 +95,12 @@ struct scm {
     SCM ref;
     SCM string;
     SCM variable;
-    int length;
+    long length;
   };
   union {
-    int value;
-    int function;
-    int port;
+    long value;
+    long function;
+    long port;
     SCM cdr;
     SCM closure;
     SCM continuation;
@@ -337,7 +337,7 @@ int g_function = 0;
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 
 SCM
-alloc (int n)
+alloc (long n)
 {
   SCM x = g_free;
   g_free += n;
@@ -345,7 +345,7 @@ alloc (int n)
 }
 
 SCM
-make_cell__ (int type, SCM car, SCM cdr)
+make_cell__ (long type, SCM car, SCM cdr)
 {
   SCM x = alloc (1);
   TYPE (x) = type;
@@ -358,7 +358,7 @@ SCM
 make_cell_ (SCM type, SCM car, SCM cdr)
 {
   assert (TYPE (type) == TNUMBER);
-  int t = VALUE (type);
+  long t = VALUE (type);
   if (t == TCHAR || t == TNUMBER)
     return make_cell__ (t, car ? CAR (car) : 0, cdr ? CDR (cdr) : 0);
   return make_cell__ (t, car, cdr);
@@ -503,10 +503,10 @@ acons (SCM key, SCM value, SCM alist)
   return cons (cons (key, value), alist);
 }
 
-int
+long
 length__ (SCM x) ///((internal))
 {
-  int n = 0;
+  long n = 0;
   while (x != cell_nil)
     {
       n++;
@@ -541,7 +541,7 @@ error (SCM key, SCM x)
 }
 
 SCM
-string_to_list (char const* s, int i)
+string_to_list (char const* s, long i)
 {
   SCM p = cell_nil;
   while (i--)
@@ -567,8 +567,8 @@ assert_defined (SCM x, SCM e) ///((internal))
 SCM
 check_formals (SCM f, SCM formals, SCM args) ///((internal))
 {
-  int flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : length__ (formals);
-  int alen = length__ (args);
+  long flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : length__ (formals);
+  long alen = length__ (args);
   if (alen != flen && alen != -1 && flen != -1)
     {
       char *s = "apply: wrong number of arguments; expected: ";

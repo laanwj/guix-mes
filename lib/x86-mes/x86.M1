@@ -16,7 +16,6 @@
 ### You should have received a copy of the GNU General Public License
 ### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-
 DEFINE add____$i32,%eax 05
 DEFINE add____$i32,%ecx 81c1
 DEFINE add____$i32,%edx 81c2
@@ -140,6 +139,7 @@ DEFINE mov____0x8(%ebp),%ebp 8b6d
 DEFINE mov____0x8(%ebp),%ebx 8b5d
 DEFINE mov____0x8(%ebp),%ecx 8b4d
 DEFINE mov____0x8(%ebp),%edx 8b55
+DEFINE mov____0x8(%ebp),%esi 8b75
 DEFINE mov____0x8(%ebp),%esp 8b65
 DEFINE movsbl_%al,%eax 0fbec0
 DEFINE movswl_%ax,%eax 0fbfc0
@@ -203,16 +203,6 @@ DEFINE xor____%ebx,%ebx 31db
 DEFINE xor____%ecx,%ecx 31c9
 DEFINE xor____%edx,%eax 31d0
 DEFINE xor____%edx,%edx 31d2
-
-# Deprecated.  Remove after 0.14 release.
-DEFINE mov____%al,0x32(%ebp) 8885
-DEFINE mov____%al,0x8(%ebp) 8845
-DEFINE mov____%ax,0x32(%ebp) 668985
-DEFINE mov____%ax,0x8(%ebp) 668945
-DEFINE movzbl_0x32(%ebp),%eax 0fb685
-DEFINE movzbl_0x8(%ebp),%edx 0fb655
-DEFINE movzwl_0x8(%ebp),%eax 0fb745
-DEFINE movzwl_0x8(%ebp),%eax 0fb745
 
 DEFINE SYS_exit   01000000
 DEFINE SYS_fork   02000000

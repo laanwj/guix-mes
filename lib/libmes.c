@@ -221,7 +221,7 @@ _fdungetc_p (int fd)
   return _ungetc_pos > -1;
 }
 
-#if POSIX || __x86_64__
+#if POSIX
 #define STDERR 2
 int
 eputs (char const* s)
