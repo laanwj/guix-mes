@@ -41,8 +41,6 @@
 *.x86_64-out
 
 
-/lib/x86-mes-gcc
-/lib/x86-mes-tcc
 /src/*.h
 /src/*.i
 /src/mes

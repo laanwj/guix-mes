@@ -18,13 +18,6 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define SYS_close  0x06
-#define SYS_lseek  0x13
-#define SYS_unlink 0x0a
-#define SYS_rmdir  0x28
-#define SYS_stat   0x6a
-#define SYS_getcwd 0xb7
-
 int
 close (int filedes)
 {

@@ -20,9 +20,11 @@
 #ifndef __MES_LINUX_X86_SYSCALL_H
 #define __MES_LINUX_X86_SYSCALL_H 1
 
+// libc-mini
 // #define SYS_exit    0x01
 // #define SYS_write   0x04
 
+// libc
 #define SYS_fork    0x02
 #define SYS_read    0x03
 #define SYS_open    0x05
@@ -34,5 +36,13 @@
 #define SYS_brk     0x2d
 #define SYS_ioctl   0x36
 #define SYS_fsync   0x76
+
+// libc+tcc
+#define SYS_close  0x06
+#define SYS_lseek  0x13
+#define SYS_unlink 0x0a
+#define SYS_rmdir  0x28
+#define SYS_stat   0x6a
+#define SYS_getcwd 0xb7
 
 #endif // __MES_LINUX_X86_SYSCALL_H

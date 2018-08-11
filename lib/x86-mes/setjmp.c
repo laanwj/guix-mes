@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -70,6 +70,6 @@ setjmp (__jmp_buf *env)
   int *p = (int*)&env;
   env[0].__bp = p[-2];
   env[0].__pc = p[-1];
-  env[0].__sp = (int)&env;
+  env[0].__sp = (long)&env;
   return 0;
 }

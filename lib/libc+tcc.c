@@ -46,14 +46,14 @@
 #endif
 
 #if __MESC__
-
-#include <libc+tcc-mes.c>
-
-#else // !__MESC__
-
-#include <libc+tcc-gcc.c>
-
-#endif // !__MESC__
+#include <x86-mes/setjmp.c>
+#elif __i386__
+#include <x86-mes-gcc/setjmp.c>
+#elif __x86_64__
+#include <x86_64-mes-gcc/setjmp.c>
+#else
+#error arch not supported
+#endif
 
 char *
 search_path (char const *file_name)
