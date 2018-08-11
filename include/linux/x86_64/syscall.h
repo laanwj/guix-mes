@@ -45,4 +45,23 @@
 #define SYS_stat   0x04
 #define SYS_getcwd 0x4f
 
+// libc+gnu
+#define SYS_link      0x56
+#define SYS_getpid    0x27
+#define SYS_getuid    0x66
+#define SYS_kill      0x3e
+#define SYS_rename    0x52
+#define SYS_mkdir     0x53
+#define SYS_dup       0x20
+#define SYS_pipe      0x16
+#define SYS_getgid    0x68
+#define SYS_rt_sigaction 0x0d
+#define SYS_fcntl     0x48
+#define SYS_dup2      0x21
+#define SYS_getrusage 0x62
+#define SYS_lstat     0x06
+#define SYS_setitimer 0x26
+#define SYS_fstat     0x05
+#define SYS_nanosleep 0x33
+
 #endif // __MES_LINUX_X86_64_SYSCALL_H

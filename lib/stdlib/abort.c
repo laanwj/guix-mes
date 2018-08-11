@@ -21,9 +21,5 @@
 void
 abort (void)
 {
-#if __i386__
   asm ("hlt");
-#else
-  asm ("break  0");
-#endif
 }

@@ -18,24 +18,6 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define SYS_link      0x09
-#define SYS_getpid    0x14
-#define SYS_getuid    0x18
-#define SYS_kill      0x25
-#define SYS_rename    0x26
-#define SYS_mkdir     0x27
-#define SYS_dup       0x29
-#define SYS_pipe      0x2a
-#define SYS_getgid    0x2f
-#define SYS_signal    0x30
-#define SYS_fcntl     0x37
-#define SYS_dup2      0x3f
-#define SYS_getrusage 0x4d
-#define SYS_lstat     0x6b
-#define SYS_setitimer 0x68
-#define SYS_fstat     0x6c
-#define SYS_nanosleep 0xa2
-
 #include <sys/resource.h>
 
 int
@@ -86,6 +68,7 @@ getgid ()
   return _sys_call (SYS_getgid);
 }
 
+#if __i386__
 #if __MESC__
 void *
 signal (int signum, void * action)
@@ -96,6 +79,17 @@ signal (int signum, sighandler_t action)
 {
   return _sys_call2 (SYS_signal, signum, action);
 }
+#elif __x86_64__
+sighandler_t
+signal (int signum, sighandler_t action)
+{
+  sighandler_t old;
+  _sys_call3 (SYS_rt_sigaction, signum, action, &old);
+  return old;
+}
+#else
+#error arch not supported
+#endif
 
 int
 fcntl (int filedes, int command, ...)
