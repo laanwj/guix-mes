@@ -230,6 +230,15 @@ eputs (char const* s)
   write (STDERR, s, i);
   return 0;
 }
+
+#define STDOUT 1
+int
+oputs (char const* s)
+{
+  int i = strlen (s);
+  write (STDOUT, s, i);
+  return 0;
+}
 #endif
 
 int
