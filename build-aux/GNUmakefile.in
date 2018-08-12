@@ -143,9 +143,6 @@ uninstall:
 	./uninstall.sh
 
 seed: all-go mes-gcc mes-tcc
-ifdef TCC
-	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
-endif
 	cd $(MES_SEED) && git reset --hard HEAD
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 ${srcdest}build-aux/build-mes.sh
 	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
@@ -158,6 +155,9 @@ endif
            lib/x86-mes/libgetopt.S\
            $(MESCC_TOOLS_SEED)/libs
 	cd $(MESCC_TOOLS_SEED) && MES_PREFIX=$(PWD) ./bootstrap.sh
+ifdef TCC
+	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
+endif
 
 doc/version.texi: ${srcdest}doc/mes.texi GNUmakefile
 	@mkdir -p $(@D)
