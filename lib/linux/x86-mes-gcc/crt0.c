@@ -18,40 +18,43 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-char **environ = 0;
-int main (int argc, char *argv[]);
+// no clue what crt0.o is and why gcc-2.6.3 needs it
 
-// gcc x86_64 calling convention:
-// rdi, rsi, rdx, rcx, r8, r9, <stack0>, <stack1>
+// instead of calling main, it seems to call either _main or ___main,
+// let's try _main first
+
+char **environ = 0;
+int _main (int argc, char *argv[]);
 
 void
 _start ()
 {
   asm (
-       "movq    %%rbp,%%rax\n\t"
-       "add     $8,%%rax\n\t"
-       "movq    (%%rax),%%rax\n\t"
-       "add     $3,%%rax\n\t"
-       "shl     $3,%%rax\n\t"
-       "add     %%rbp,%%rax\n\t"
-       "mov     %%rax,%0\n\t"
+       "mov     %%ebp,%%eax\n\t"
+       "add     $4,%%eax\n\t"
+       "movzbl  (%%eax),%%eax\n\t"
+       "add     $3,%%eax\n\t"
+       "shl     $2,%%eax\n\t"
+       "add     %%ebp,%%eax\n\t"
+       "mov     %%eax,%0\n\t"
        : "=r" (environ)
        : //no inputs ""
        );
   asm (
-       "mov     %rbp,%rax\n\t"
-       "add     $16,%rax\n\t"
-       "mov     %rax,%rsi\n\t"
+       "mov     %ebp,%eax\n\t"
+       "add     $8,%eax\n\t"
+       "push    %eax\n\t"
 
-       "mov     %rbp,%rax\n\t"
-       "add     $8,%rax\n\t"
-       "mov     (%rax),%rax\n\t"
-       "mov     %rax,%rdi\n\t"
-       "call    main\n\t"
+       "mov     %ebp,%eax\n\t"
+       "add     $4,%eax\n\t"
+       "movzbl  (%eax),%eax\n\t"
+       "push    %eax\n\t"
 
-       "mov     %rax,%rdi\n\t"
-       "mov     $0x3c,%rax\n\t"
-       "syscall \n\t"
+       "call    _main\n\t"
+
+       "mov     %eax,%ebx\n\t"
+       "mov     $1,%eax\n\t"
+       "int     $0x80\n\t"
        "hlt     \n\t"
        );
 }

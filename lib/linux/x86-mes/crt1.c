@@ -21,37 +21,32 @@
 char **environ = 0;
 int main (int argc, char *argv[]);
 
-// gcc x86_64 calling convention:
-// rdi, rsi, rdx, rcx, r8, r9, <stack0>, <stack1>
-
-void
+int
 _start ()
 {
-  asm (
-       "movq    %%rbp,%%rax\n\t"
-       "add     $8,%%rax\n\t"
-       "movq    (%%rax),%%rax\n\t"
-       "add     $3,%%rax\n\t"
-       "shl     $3,%%rax\n\t"
-       "add     %%rbp,%%rax\n\t"
-       "mov     %%rax,%0\n\t"
-       : "=r" (environ)
-       : //no inputs ""
-       );
-  asm (
-       "mov     %rbp,%rax\n\t"
-       "add     $16,%rax\n\t"
-       "mov     %rax,%rsi\n\t"
+  asm ("mov____%ebp,%eax");
+  asm ("add____$i8,%eax !4");
 
-       "mov     %rbp,%rax\n\t"
-       "add     $8,%rax\n\t"
-       "mov     (%rax),%rax\n\t"
-       "mov     %rax,%rdi\n\t"
-       "call    main\n\t"
+  asm ("movzbl_(%eax),%eax");
+  asm ("add____$i8,%eax !3");
 
-       "mov     %rax,%rdi\n\t"
-       "mov     $0x3c,%rax\n\t"
-       "syscall \n\t"
-       "hlt     \n\t"
-       );
+  asm ("shl____$i8,%eax !0x02");
+  asm ("add____%ebp,%eax");
+  asm ("mov____%eax,0x32 &environ");
+
+  asm ("mov____%ebp,%eax");
+  asm ("add____$i8,%eax !8");
+  asm ("push___%eax");
+
+  asm ("mov____%ebp,%eax");
+  asm ("add____$i8,%eax !4");
+  asm ("movzbl_(%eax),%eax");
+  asm ("push___%eax");
+
+  main ();
+
+  asm ("mov____%eax,%ebx");
+  asm ("mov____$i32,%eax %1");
+  asm ("int____$0x80");
+  asm ("hlt");
 }

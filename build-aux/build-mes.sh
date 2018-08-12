@@ -114,7 +114,7 @@ if [ ! -d "$MES_SEED" ] \
 fi
 
 MES_ARENA=100000000
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crt0
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crt1
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc-mini
 
 PREPROCESS= bash ${srcdest}build-aux/cc-mes.sh lib/x86-mes/exit-42
@@ -123,9 +123,9 @@ trace "TEST exit-42.out"
 { set +e; lib/x86-mes/exit-42.mes-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crt1
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crti
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crtn
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crt0
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crti
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crtn
 
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libgetopt

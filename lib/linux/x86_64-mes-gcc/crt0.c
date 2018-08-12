@@ -18,6 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// no clue what crt0.o is and why gcc-2.6.3 needs it
+
+// instead of calling main, it seems to call either _main or ___main,
+// let's try _main first
+
 char **environ = 0;
 int main (int argc, char *argv[]);
 
@@ -47,7 +52,7 @@ _start ()
        "add     $8,%rax\n\t"
        "mov     (%rax),%rax\n\t"
        "mov     %rax,%rdi\n\t"
-       "call    main\n\t"
+       "call    _main\n\t"
 
        "mov     %rax,%rdi\n\t"
        "mov     $0x3c,%rax\n\t"

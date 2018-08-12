@@ -21,40 +21,6 @@
 char **environ = 0;
 int main (int argc, char *argv[]);
 
-#if __MESC__
-
-int
-_start ()
-{
-  asm ("mov____%ebp,%eax");
-  asm ("add____$i8,%eax !4");
-
-  asm ("movzbl_(%eax),%eax");
-  asm ("add____$i8,%eax !3");
-
-  asm ("shl____$i8,%eax !0x02");
-  asm ("add____%ebp,%eax");
-  asm ("mov____%eax,0x32 &environ");
-
-  asm ("mov____%ebp,%eax");
-  asm ("add____$i8,%eax !8");
-  asm ("push___%eax");
-
-  asm ("mov____%ebp,%eax");
-  asm ("add____$i8,%eax !4");
-  asm ("movzbl_(%eax),%eax");
-  asm ("push___%eax");
-
-  main ();
-
-  asm ("mov____%eax,%ebx");
-  asm ("mov____$i32,%eax %1");
-  asm ("int____$0x80");
-  asm ("hlt");
-}
-
-#else // !__MESC__
-
 void
 _start ()
 {
@@ -84,8 +50,6 @@ _start ()
        "mov     %eax,%ebx\n\t"
        "mov     $1,%eax\n\t"
        "int     $0x80\n\t"
-       "hlt      \n\t"
+       "hlt     \n\t"
        );
 }
-
-#endif // !__MESC__

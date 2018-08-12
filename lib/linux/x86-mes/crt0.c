@@ -26,44 +26,6 @@
 char **environ = 0;
 int _main (int argc, char *argv[]);
 
-#if __GNUC__
-
-void
-_start ()
-{
-  asm (
-       "mov     %%ebp,%%eax\n\t"
-       "addl    $4,%%eax\n\t"
-       "movzbl  (%%eax),%%eax\n\t"
-       "addl    $3,%%eax\n\t"
-       "shl     $2,%%eax\n\t"
-       "add     %%ebp,%%eax\n\t"
-       "movl    %%eax,%0\n\t"
-       : "=environ" (environ)
-       : //no inputs ""
-       );
-  asm (
-       "mov     %%ebp,%%eax\n\t"
-       "addl    $8,%%eax\n\t"
-       "push    %%eax\n\t"
-
-       "mov     %%ebp,%%eax\n\t"
-       "addl    $4,%%eax\n\t"
-       "movzbl  (%%eax),%%eax\n\t"
-       "push    %%eax\n\t"
-
-       "call    _main\n\t"
-
-       "mov     %%eax,%%ebx\n\t"
-       "mov     $1,%%eax\n\t"
-       "int     $0x80\n\t"
-       "hlt      \n\t"
-       :
-       );
-}
-
-#elif __MESC__
-
 int
 _start ()
 {
@@ -93,5 +55,3 @@ _start ()
   asm ("int____$0x80");
   asm ("hlt");
 }
-
-#endif

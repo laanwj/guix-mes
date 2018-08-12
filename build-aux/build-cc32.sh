@@ -45,10 +45,10 @@ trace "MSNARF posix.c"  ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
 trace "MSNARF reader.c" ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
 trace "MSNARF vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
 
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/crt0
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/crt1
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/crti
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/crtn
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crt0
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crt1
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crti
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crtn
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libgetopt

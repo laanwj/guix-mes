@@ -47,10 +47,10 @@ trace "MSNARF vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc.sh lib/libmes
 sh ${srcdest}build-aux/cc.sh src/mes
 
-#ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crt0
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crt0
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crt1
-# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crti
-# ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64/crtn
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crti
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crtn
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libgetopt
