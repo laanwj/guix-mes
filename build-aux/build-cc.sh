@@ -69,3 +69,4 @@ sh ${srcdest}build-aux/cc64-mes.sh scaffold/tiny-mes
 sh ${srcdest}build-aux/cc64-mes.sh scaffold/mini-mes
 
 sh ${srcdest}build-aux/cc64-mes.sh src/mes
+cp src/mes.gcc-out src/mes

@@ -66,3 +66,9 @@ sh ${srcdest}build-aux/cc32-mes.sh scaffold/tiny-mes
 sh ${srcdest}build-aux/cc32-mes.sh scaffold/mini-mes
 
 sh ${srcdest}build-aux/cc32-mes.sh src/mes
+
+if [ "$CC32" = "$TCC" ]; then
+    cp src/mes.mes-tcc-out src/mes
+else
+    cp src/mes.mes-gcc-out src/mes
+fi

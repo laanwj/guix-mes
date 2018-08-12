@@ -37,17 +37,14 @@ fi
 
 if [ -n "$CC" ]; then
     sh ${srcdest}build-aux/build-cc.sh
-    cp src/mes.gcc-out src/mes
 fi
 
 if [ -n "$CC32" ]; then
     sh ${srcdest}build-aux/build-cc32.sh
-    cp src/mes.mes-gcc-out src/mes
 fi
 
 if [ -n "$TCC" ]; then
     CC32=$TCC sh ${srcdest}build-aux/build-cc32.sh
-    cp src/mes.mes-tcc-out src/mes
 fi
 
 sh ${srcdest}build-aux/build-mes.sh

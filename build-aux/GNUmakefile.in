@@ -145,7 +145,7 @@ install:
 uninstall:
 	./uninstall.sh
 
-seed: all-go mes-gcc mes-tcc
+seed: all-go gcc mes-gcc mes-tcc
 	cd $(MES_SEED) && git reset --hard HEAD
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 ${srcdest}build-aux/build-mes.sh
 	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
