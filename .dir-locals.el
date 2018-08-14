@@ -66,6 +66,6 @@
        (lambda (dir) (add-to-list 'geiser-guile-load-path dir))
        (mapcar
         #'prefix-dir-locals-dir
-        '("scripts" "guile")))))))
+        '("scripts" "module")))))))
   (texinfo-mode    . ((indent-tabs-mode . nil)
                      (fill-column . 72))))
