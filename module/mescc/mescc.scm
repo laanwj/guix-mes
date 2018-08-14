@@ -32,6 +32,11 @@
             mescc:assemble
             mescc:link))
 
+(define GUILE-with-output-to-file with-output-to-file)
+(define (with-output-to-file file-name thunk)
+  (if (equal? file-name "-") (thunk)
+      (GUILE-with-output-to-file file-name thunk)))
+
 (define (mescc:preprocess options)
   (let* ((defines (reverse (filter-map (multi-opt 'define) options)))
          (includes (reverse (filter-map (multi-opt 'include) options)))
