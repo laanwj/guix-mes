@@ -81,7 +81,6 @@
      #:cpp-defs `(
                   "NULL=0"
                   "__linux__=1"
-                  "__i386__=1"
                   "POSIX=0"
                   "_POSIX_SOURCE=0"
                   "__STDC__=1"

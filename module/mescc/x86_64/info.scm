@@ -22,27 +22,27 @@
 
 ;;; Code:
 
-(define-module (mescc i386 info)
+(define-module (mescc x86_64 info)
   #:use-module (mescc info)
-  #:use-module (mescc i386 as)
-  #:export (x86-info))
+  #:use-module (mescc x86_64 as)
+  #:export (x86_64-info))
 
-(define (x86-info)
-  (make <info> #:types i386:type-alist #:registers i386:registers #:instructions i386:instructions))
+(define (x86_64-info)
+  (make <info> #:types x86_64:type-alist #:registers x86_64:registers #:instructions x86_64:instructions))
 
 ;; FIXME: use abstract, unlimited R0...RN and make concrete in second pass?
-(define i386:registers '("eax" "ebx" "ecx" "edx" "esi"))
-(define i386:type-alist
+(define x86_64:registers '("rax" "rdi" "rsi" "rdx" "rcx" "r8" "r9"))
+(define x86_64:type-alist
   `(("char" . ,(make-type 'signed 1 #f))
     ("short" . ,(make-type 'signed 2 #f))
     ("int" . ,(make-type 'signed 4 #f))
-    ("long" . ,(make-type 'signed 4 #f))
+    ("long" . ,(make-type 'signed 8 #f))
     ("default" . ,(make-type 'signed 4 #f))
     ;;("long long" . ,(make-type 'signed 8 #f))
     ;;("long long int" . ,(make-type 'signed 8 #f))
 
-    ("long long" . ,(make-type 'signed 4 #f))  ;; FIXME
-    ("long long int" . ,(make-type 'signed 4 #f))
+    ("long long" . ,(make-type 'signed 8 #f))  ;; FIXME
+    ("long long int" . ,(make-type 'signed 8 #f))
 
     ("void" . ,(make-type 'void 1 #f))
     ;; FIXME sign
@@ -50,12 +50,12 @@
     ("unsigned short" . ,(make-type 'unsigned 2 #f))
     ("unsigned" . ,(make-type 'unsigned 4 #f))
     ("unsigned int" . ,(make-type 'unsigned 4 #f))
-    ("unsigned long" . ,(make-type 'unsigned 4 #f))
+    ("unsigned long" . ,(make-type 'unsigned 8 #f))
 
     ;; ("unsigned long long" . ,(make-type 'builtin 8 #f))
     ;; ("unsigned long long int" . ,(make-type 'builtin 8 #f))
-    ("unsigned long long" . ,(make-type 'unsigned 4 #f)) ;; FIXME
-    ("unsigned long long int" . ,(make-type 'unsigned 4 #f))
+    ("unsigned long long" . ,(make-type 'unsigned 8 #f)) ;; FIXME
+    ("unsigned long long int" . ,(make-type 'unsigned 8 #f))
 
     ("float" . ,(make-type 'float 4 #f))
     ("double" . ,(make-type 'float 8 #f))
@@ -64,5 +64,5 @@
     ;;
     ("short int" . ,(make-type 'signed 2 #f))
     ("unsigned short int" . ,(make-type 'unsigned 2 #f))
-    ("long int" . ,(make-type 'signed 4 #f))
-    ("unsigned long int" . ,(make-type 'unsigned 4 #f))))
+    ("long int" . ,(make-type 'signed 8 #f))
+    ("unsigned long int" . ,(make-type 'unsigned 8 #f))))

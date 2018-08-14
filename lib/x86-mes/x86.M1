@@ -186,13 +186,13 @@ DEFINE setne__%al 0f95c0
 DEFINE shl____$i8,%eax c1e0
 DEFINE shl____%cl,%eax d3e0
 DEFINE shr____%cl,%eax d3e8
+DEFINE sub____$8,%esp 83ec
+DEFINE sub____$i32,%esp 81ec
 DEFINE sub____%al,%dl 28d0
 DEFINE sub____%dl,%al 28c2
 DEFINE sub____%eax,%edx 29c2
 DEFINE sub____%edx,%eax 29d0
 DEFINE sub____%edx,%eax 29d0
-DEFINE sub____%esp,$i32 81ec
-DEFINE sub____%esp,$i8 83ec
 DEFINE test___%al,%al 84c0
 DEFINE test___%eax,%eax 85c0
 DEFINE xchg___%eax,(%esp) 870424
@@ -203,6 +203,10 @@ DEFINE xor____%ebx,%ebx 31db
 DEFINE xor____%ecx,%ecx 31c9
 DEFINE xor____%edx,%eax 31d0
 DEFINE xor____%edx,%edx 31d2
+
+# deprecated, remove after 0.18
+DEFINE sub____%esp,$i32 81ec
+DEFINE sub____%esp,$i8 83ec
 
 DEFINE SYS_exit   01000000
 DEFINE SYS_fork   02000000

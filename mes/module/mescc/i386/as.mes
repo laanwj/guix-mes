@@ -19,4 +19,5 @@
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (mes-use-module (mescc as))
+(mes-use-module (mescc info))
 (include-from-path "mescc/i386/as.scm")

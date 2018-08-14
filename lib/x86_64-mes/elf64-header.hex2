@@ -36,10 +36,12 @@
 
 00 00 00 00 00 00 00           # e_ident[EI_PAD]
 
+# 0x10
 02 00                          # e_type Indicating Executable
 3e 00                          # e_machine Indicating AMD64
 01 00 00 00                    # e_version Indicating original elf
 
+# 0x18
 &ELF_text 00 00 00 00          # e_entry Address of the entry point
 %ELF_program_headers>ELF_base  # e_phoff Address of program header table
   00 00 00 00
@@ -126,7 +128,7 @@
 00 00 00 00 00 00 00 00         # sh_length
 00 00 00 00                     # sh_link
 00 00 00 00                     # sh_info
-01 00 00 00 00 00 00 00         # sh_1?
+00 00 00 00 00 00 00 00         # sh_1?
 00 00 00 00 00 00 00 00         # sh_entsize
 
 ## FIXME: M0 for calculations?
@@ -180,9 +182,6 @@
 
 :ELF_section_header_sym
 %ELF_shstr__sym>ELF_shstr      # sh_name
-## FIXME: using type 03 (strtab) makes objdump -d happier
-## using type 02 make readelf complain but display valid symbol table
-# 03 00 00 00                    # sh_type: str-sht-symtab
 02 00 00 00                    # sh_type: str-sht-symtab
 00 00 00 00 00 00 00 00        # sh_flags
 &ELF_sym 00 00 00 00           # sh_addr
@@ -190,8 +189,8 @@
 %ELF_end>ELF_sym 00 00 00 00   # sh_length
 06 00 00 00                    # sh_link:6
 00 00 00 00                    # sh_info
-00 00 00 00 00 00 00 00        # sh_1?
-40 00 00 00 00 00 00 00        # sh_entsize
+01 00 00 00 00 00 00 00        # sh_1?
+18 00 00 00 00 00 00 00        # sh_entsize
 
 :ELF_section_header_str
 %ELF_shstr__str>ELF_shstr      # sh_name

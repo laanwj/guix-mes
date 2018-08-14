@@ -28,9 +28,9 @@ void
 _start ()
 {
   asm (
-       "movq    %%rbp,%%rax\n\t"
+       "mov     %%rbp,%%rax\n\t"
        "add     $8,%%rax\n\t"
-       "movq    (%%rax),%%rax\n\t"
+       "mov     (%%rax),%%rax\n\t"
        "add     $3,%%rax\n\t"
        "shl     $3,%%rax\n\t"
        "add     %%rbp,%%rax\n\t"

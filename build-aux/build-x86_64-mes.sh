@@ -105,27 +105,28 @@ trace "TEST       lib/x86_64-mes/exit-42.x86_64-out" echo lib/x86_64-mes/exit-42
 #         -o lib/x86_64-mes/libc+tcc.o
 # fi
 
-# PREPROCESS=1
-# if [ ! -d "$MES_SEED" ] \
-#        && [ "$ARCH" = "i386" \
-#             -o "$ARCH" = "i586" \
-#             -o "$ARCH" = "i686" ]; then
-#     MES_ARENA=100000000
-# fi
 
-# MES_ARENA=100000000
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crt0
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc-mini
+PREPROCESS=1
+if [ ! -d "$MES_SEED" ] \
+       && [ "$ARCH" = "i386" \
+            -o "$ARCH" = "i586" \
+            -o "$ARCH" = "i686" ]; then
+    MES_ARENA=100000000
+fi
 
-# PREPROCESS= bash ${srcdest}build-aux/cc-mes.sh lib/x86_64-mes/exit-42
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crt1
 
-# trace "TEST exit-42.x86_64-mes-out"
-# { set +e; lib/x86_64-mes/exit-42.x86_64-mes-out; r=$?; set -e; }
-# [ $r != 42 ] && echo "  => $r" && exit 1
+MES_LIBS='-l none' PREPROCESS= bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/x86_64-mes/exit-42
 
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crt1
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crti
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/crtn
+trace "TEST       lib/x86_64-mes/exit-42.x86_64-mes-out" echo lib/x86_64-mes/exit-42.x86_64-mes-out
+{ set +e; lib/x86_64-mes/exit-42.x86_64-mes-out; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r" && exit 1
+
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc-mini
+
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86_64-mes/crt0
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86_64-mes/crti
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86_64-mes/crtn
 
 # ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc
 # ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libgetopt
@@ -147,13 +148,18 @@ trace "TEST       lib/x86_64-mes/exit-42.x86_64-out" echo lib/x86_64-mes/exit-42
 # echo MES_ARENA=$MES_ARENA
 # bash ${srcdest}build-aux/cc-mes.sh scaffold/main
 
-# bash ${srcdest}build-aux/cc-mes.sh scaffold/main
-# bash ${srcdest}build-aux/cc-mes.sh scaffold/hello
-# bash ${srcdest}build-aux/cc-mes.sh scaffold/argv
-# bash ${srcdest}build-aux/cc-mes.sh scaffold/malloc
-# ##sh ${srcdest}build-aux/cc-mes.sh scaffold/micro-mes
-# ##sh ${srcdest}build-aux/cc-mes.sh scaffold/tiny-mes
-# # bash ${srcdest}build-aux/cc-mes.sh scaffold/mini-mes
-# bash ${srcdest}build-aux/cc-mes.sh src/mes
+MES_LIBS='-l none' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/main
+
+trace "TEST       scaffold/main.x86_64-mes-out" echo scaffold/main.x86_64-mes-out
+{ set +e; scaffold/main.x86_64-mes-out; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r" && exit 1
+
+# MES_LIBS='-l mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/hello
+# MES_LIBS='-l mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/argv
+# bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/malloc
+# ##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/micro-mes
+# ##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/tiny-mes
+# # bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/mini-mes
+# bash ${srcdest}build-aux/cc-x86_64-mes.sh src/mes
 # cp src/mes.mes-out src/mes
 true

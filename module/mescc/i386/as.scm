@@ -25,6 +25,7 @@
 (define-module (mescc i386 as)
   #:use-module (mes guile)
   #:use-module (mescc as)
+  #:use-module (mescc info)
   #:export (
             i386:accu%base
             i386:accu*base
@@ -86,8 +87,6 @@
             i386:call-accu
             i386:call-label
             i386:formal
-            i386:function-locals
-            i386:function-preamble
             i386:jump
             i386:jump
             i386:jump-a
@@ -134,7 +133,6 @@
             i386:push-local
             i386:push-local-address
             i386:push-local-de-ref
-            i386:ret
             i386:ret-local
             i386:sub-base
             i386:test-base
@@ -159,17 +157,19 @@
             i386:signed-byte-accu
             i386:word-accu
             i386:signed-word-accu
+
+            i386:instructions
             ))
 
 (define (i386:nop)
   '(("nop")))
 
-(define (i386:function-preamble)
+(define (i386:function-preamble . rest)
   '(("push___%ebp")
     ("mov____%esp,%ebp")))
 
-(define (i386:function-locals)
-  `(("sub____%esp,$i32" (#:immediate ,(+ (* 4 1025) (* 20 4)))))) ; sub %esp,xxx 4*1024 buf, 20 local vars
+(define (i386:function-locals . rest)
+  `(("sub____$i32,%esp" (#:immediate ,(+ (* 4 1025) (* 20 4)))))) ; 4*1024 buf, 20 local vars
 
 (define (i386:push-label label)
   `(("push___$i32" (#:address ,label)))) ; push  $0x<label>
@@ -330,9 +330,9 @@
 (define (i386:push-base)
   '(("push___%edx")))                   ; push %edx
 
-(define (i386:ret)
-  '(("leave")                           ; leave
-    ("ret")))                           ; ret
+(define (i386:ret . rest)
+  '(("leave")
+    ("ret")))
 
 (define (i386:accu->base)
   '(("mov____%eax,%edx")))              ; mov    %eax,%edx
@@ -503,7 +503,7 @@
 
 (define (i386:value->accu v)
   (or v (error "invalid value: i386:value->accu: " v))
-  `(("mov____$i32,%eax" (#:immediate ,v)))) ; mov    $<v>,%eax
+  `(("mov____$i32,%eax" (#:immediate ,v))))
 
 (define (i386:value->accu-mem v)
   `(("mov____$i32,(%eax)" (#:immediate ,v)))) ; movl   $0x<v>,(%eax)
@@ -545,7 +545,7 @@
   `(("mov____$i32,0x32" (#:address ,label)
      (#:immediate ,v))))
 
-(define (i386:call-label label n)
+(define (i386:call-label info label n)
   `((call32 (#:offset ,label))
     ("add____$i8,%esp" (#:immediate1 ,(* n 4)))))
 
@@ -689,3 +689,41 @@
 
 (define (i386:signed-word-accu)
   '(("movswl_%ax,%eax")))
+
+
+
+;;;;;;;;;;;;
+(define (i386:r0->local info n)
+  (or n (error "invalid value: i386:r0->local: " n))
+  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info))))
+        (n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `(,(string-append "mov____%" r0 ",0x8(%ebp)") (#:immediate1 ,n))
+           `(,(string-append "mov____%" r0 ",0x32(%ebp)") (#:immediate ,n))))))
+
+(define (i386:value->r0 info v)
+  (or v (error "invalid value: i386:value->r0: " v))
+  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info)))))
+    `((,(string-append "mov____$i32,%" r0) (#:immediate ,v)))))
+
+(define (i386:r0-zero? info)
+  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info)))))
+    `((,(string-append "test___%" r0 "," "%" r0)))))
+
+(define (i386:local->r0 info n)
+  (or n (error "invalid value: i386:local->r0: " n))
+  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info))))
+        (n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `(,(string-append "mov____0x8(%ebp),%" r0) (#:immediate1 ,n))
+           `(,(string-append "mov____0x32(%ebp),%" r0) (#:immediate ,n))))))
+
+(define i386:instructions
+  `(
+    (call-label . ,i386:call-label)
+    (function-preamble . ,i386:function-preamble)
+    (function-locals . ,i386:function-locals)
+    (local->r0 . ,i386:local->r0)
+    (r0->local . ,i386:r0->local)
+    (r0-zero? . ,i386:r0-zero?)
+    (ret . ,i386:ret)
+    (value->r0 . ,i386:value->r0)
+    ))

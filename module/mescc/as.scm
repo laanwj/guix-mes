@@ -20,7 +20,9 @@
   #:use-module (srfi srfi-1)
   #:use-module (mes guile)
   #:use-module (mescc bytevectors)
-  #:export (dec->hex
+  #:use-module (mescc info)
+  #:export (as
+            dec->hex
             int->bv8
             int->bv16
             int->bv32))
@@ -44,3 +46,7 @@
   (cond ((number? o) (number->string o 16))
         ((char? o) (number->string (char->integer o) 16))
         (else (format #f "~s" o))))
+
+(define (as info instruction . rest)
+  (let ((proc (assoc-ref (.instructions info) instruction)))
+    (apply proc info rest)))

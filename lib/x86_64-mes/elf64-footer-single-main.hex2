@@ -34,7 +34,7 @@
 
 00 00 00
 
-# @240
+# @370
 :ELF_sym
 00 00 00 00                    # st-name
 00                             # st-info = stt-func= 2

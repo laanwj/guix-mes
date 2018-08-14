@@ -73,6 +73,7 @@ fi
 (define (parse-opts args)
   (let* ((option-spec
           '((assemble (single-char #\c))
+            (base-address (value #t))
             (compile (single-char #\S))
             (define (single-char #\D) (value #t))
             (debug-info (single-char #\g))
@@ -80,6 +81,7 @@ fi
             (include (single-char #\I) (value #t))
             (library-dir (single-char #\L) (value #t))
             (library (single-char #\l) (value #t))
+            (machine (single-char #\m) (value #t))
             (preprocess (single-char #\E))
             (output (single-char #\o) (value #t))
             (version (single-char #\V))
@@ -97,6 +99,8 @@ fi
           (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
   -c                 preprocess, compile and assemble only; do not link
+  --base-address=ADRRESS
+                     use BaseAddress ADDRESS [0x1000000]
   -D DEFINE[=VALUE]  define DEFINE [VALUE=1]
   -E                 preprocess only; do not compile, assemble or link
   -g                 add debug info [GDB, objdump] TODO: hex2 footer
@@ -104,6 +108,7 @@ Usage: mescc [OPTION]... FILE...
   -I DIR             append DIR to include path
   -L DIR             append DIR to library path
   -l LIBNAME         link with LIBNAME
+  -m BITS            compile for BITS bits [32]
   -o FILE            write output to FILE
   -S                 preprocess and compile only; do not assemble or link
   -v, --version      display version and exit

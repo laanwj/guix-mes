@@ -25,6 +25,7 @@
   #:use-module (mes misc)
 
   #:use-module (mescc i386 info)
+  #:use-module (mescc x86_64 info)
   #:use-module (mescc preprocess)
   #:use-module (mescc compile)
   #:use-module (mescc M1)
@@ -32,8 +33,6 @@
             mescc:compile
             mescc:assemble
             mescc:link))
-
-(define %info (x86-info))
 
 (define GUILE-with-output-to-file with-output-to-file)
 (define (with-output-to-file file-name thunk)
@@ -52,7 +51,10 @@
          (defines (reverse (filter-map (multi-opt 'define) options)))
          (includes (reverse (filter-map (multi-opt 'include) options)))
          (includes (cons dir includes))
-         (prefix (option-ref options 'prefix "")))
+         (prefix (option-ref options 'prefix ""))
+         (machine (option-ref options 'machine "32"))
+         (arch (if (equal? machine "32") "__i386__=1" "__x86_64__=1"))
+         (defines (cons arch defines)))
     (with-output-to-file ast-file-name
       (lambda _ (for-each (cut c->ast prefix defines includes write <>) files)))))
 
@@ -83,13 +85,19 @@
          (includes (reverse (filter-map (multi-opt 'include) options)))
          (dir (dirname file-name))
          (includes (cons dir includes))
-         (prefix (option-ref options 'prefix "")))
+         (prefix (option-ref options 'prefix ""))
+         (machine (option-ref options 'machine "32"))
+         (info (if (equal? machine "32") (x86-info)  (x86_64-info)))
+         (arch (if (equal? machine "32") "__i386__=1" "__x86_64__=1"))
+         (defines (cons arch defines)))
     (with-input-from-file file-name
-      (cut c99-input->info %info #:prefix prefix #:defines defines #:includes includes))))
+      (cut c99-input->info info #:prefix prefix #:defines defines #:includes includes))))
 
 (define (E->info options file-name)
-  (let ((ast (with-input-from-file file-name read)))
-    (c99-ast->info %info ast)))
+  (let* ((ast (with-input-from-file file-name read))
+         (machine (option-ref options 'machine "32"))
+         (info (if (equal? machine "32") (x86-info)  (x86_64-info))))
+    (c99-ast->info info ast)))
 
 (define (mescc:assemble options)
   (let* ((files (option-ref options '() '("a.c")))
@@ -161,12 +169,21 @@
                                ((option-ref options 'assemble #f)
                                 (replace-suffix input-file-name ".o"))
                                (else (replace-suffix M1-file-name ".o"))))
+         (machine (option-ref options 'machine "32"))
+         (architecture (cond
+                        ((equal? machine "32") "1")
+                        ((equal? machine "64") "2")
+                        (else "1")))
+         (m1-macros (cond
+                     ((equal? machine "32") "x86.M1")
+                     ((equal? machine "64") "x86_64.M1")
+                     (else "x86.M1")))
          (verbose? (option-ref options 'verbose #f))
          (M1 (or (getenv "M1") "M1"))
          (command `(,M1
                     "--LittleEndian"
-                    "--Architecture" "1"
-                    "-f" ,(arch-find options "x86.M1")
+                    "--Architecture" ,architecture
+                    "-f" ,(arch-find options m1-macros)
                     ,@(append-map (cut list "-f" <>) M1-files)
                     "-o" ,hex2-file-name)))
     (when verbose?
@@ -179,13 +196,19 @@
          (elf-file-name (cond ((option-ref options 'output #f))
                               (else (replace-suffix input-file-name ""))))
          (verbose? (option-ref options 'verbose #f))
-         (elf-footer (or elf-footer (arch-find options "elf32-footer-single-main.hex2")))
          (hex2 (or (getenv "HEX2") "hex2"))
+         (machine (option-ref options 'machine "32"))
+         (architecture (cond
+                         ((equal? machine "32") "1")
+                         ((equal? machine "64") "2")
+                         (else "1")))
+         (base-address (option-ref options 'base-address "0x1000000"))
+         (elf-footer (or elf-footer (arch-find options (string-append"elf" machine "-footer-single-main.hex2"))))
          (command `(,hex2
                     "--LittleEndian"
-                    "--Architecture" "1"
-                    "--BaseAddress" "0x1000000"
-                    "-f" ,(arch-find options "elf32-header.hex2")
+                    "--Architecture" ,architecture
+                    "--BaseAddress" ,base-address
+                    "-f" ,(arch-find options (string-append "elf" machine "-header.hex2"))
                     "-f" ,(arch-find options "crt1.o")
                     ,@(append-map (cut list "-f" <>) hex2-files)
                     "-f" ,elf-footer
@@ -203,8 +226,13 @@
          (blood-elf-footer (string-append hex2-file-name ".blood-elf"))
          (verbose? (option-ref options 'verbose #f))
          (blood-elf (or (getenv "BLOOD_ELF") "blood-elf"))
+         (machine (option-ref options 'machine "32"))
+         (m1-macros (cond
+                     ((equal? machine "32") "x86.M1")
+                     ((equal? machine "64") "x86_64.M1")
+                     (else "x86.M1")))
          (command `(,blood-elf
-                      "-f" ,(arch-find options "x86.M1")
+                      "-f" ,(arch-find options m1-macros)
                       ,@(append-map (cut list "-f" <>) M1-files)
                       "-o" ,M1-blood-elf-footer)))
     (when verbose?
@@ -225,10 +253,15 @@
 (define* (arch-find options file-name)
   (let* ((srcdest (or (getenv "srcdest") ""))
          (srcdir-lib (string-append srcdest "lib"))
+         (machine (option-ref options 'machine "32"))
+         (arch (cond
+                ((equal? machine "32") "x86-mes")
+                ((equal? machine "64") "x86_64-mes")
+                (else "x86-mes")))
          (path (cons* srcdir-lib
                       (prefix-file options "lib")
                       (filter-map (multi-opt 'library-dir) options)))
-         (arch-file-name (string-append "x86-mes/" file-name))
+         (arch-file-name (string-append arch "/" file-name))
          (verbose? (option-ref options 'verbose #f)))
     (when verbose?
       (stderr "arch-find=~s\n" arch-file-name)
