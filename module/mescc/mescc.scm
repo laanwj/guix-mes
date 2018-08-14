@@ -24,6 +24,7 @@
   #:use-module (mes guile)
   #:use-module (mes misc)
 
+  #:use-module (mescc i386 info)
   #:use-module (mescc preprocess)
   #:use-module (mescc compile)
   #:use-module (mescc M1)
@@ -31,6 +32,8 @@
             mescc:compile
             mescc:assemble
             mescc:link))
+
+(define %info (x86-info))
 
 (define GUILE-with-output-to-file with-output-to-file)
 (define (with-output-to-file file-name thunk)
@@ -82,11 +85,11 @@
          (includes (cons dir includes))
          (prefix (option-ref options 'prefix "")))
     (with-input-from-file file-name
-      (cut c99-input->info #:prefix prefix #:defines defines #:includes includes))))
+      (cut c99-input->info %info #:prefix prefix #:defines defines #:includes includes))))
 
 (define (E->info options file-name)
   (let ((ast (with-input-from-file file-name read)))
-    (c99-ast->info ast)))
+    (c99-ast->info %info ast)))
 
 (define (mescc:assemble options)
   (let* ((files (option-ref options '() '("a.c")))

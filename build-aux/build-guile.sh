@@ -38,6 +38,7 @@ ${srcdest}module/mescc/as.scm
 ${srcdest}module/mescc/bytevectors.scm
 ${srcdest}module/mescc/compile.scm
 ${srcdest}module/mescc/i386/as.scm
+${srcdest}module/mescc/i386/info.scm
 ${srcdest}module/mescc/info.scm
 ${srcdest}module/mescc/mescc.scm
 ${srcdest}module/mescc/preprocess.scm

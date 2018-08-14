@@ -43,13 +43,13 @@
 
 (define mes? (pair? (current-module)))
 
-(define* (c99-input->info #:key (prefix "") (defines '()) (includes '()))
+(define* (c99-input->info info #:key (prefix "") (defines '()) (includes '()))
   (let ((ast (c99-input->ast #:prefix prefix #:defines defines #:includes includes)))
-    (c99-ast->info ast)))
+    (c99-ast->info info ast)))
 
-(define* (c99-ast->info o)
+(define* (c99-ast->info info o)
   (stderr "compiling: input\n")
-  (let ((info (ast->info o (make <info> #:types i386:type-alist))))
+  (let ((info (ast->info o info)))
     (clean-info info)))
 
 (define (clean-info o)
@@ -73,41 +73,6 @@
 (define (union->type-entry name fields)
   (let ((size (apply max (map (compose ->size cdr) fields))))
     (cons `(tag ,name) (make-type 'union size fields))))
-
-(define i386:type-alist
-  `(("char" . ,(make-type 'signed 1 #f))
-    ("short" . ,(make-type 'signed 2 #f))
-    ("int" . ,(make-type 'signed 4 #f))
-    ("long" . ,(make-type 'signed 4 #f))
-    ("default" . ,(make-type 'signed 4 #f))
-    ;;("long long" . ,(make-type 'signed 8 #f))
-    ;;("long long int" . ,(make-type 'signed 8 #f))
-
-    ("long long" . ,(make-type 'signed 4 #f))  ;; FIXME
-    ("long long int" . ,(make-type 'signed 4 #f))
-
-    ("void" . ,(make-type 'void 1 #f))
-    ;; FIXME sign
-    ("unsigned char" . ,(make-type 'unsigned 1 #f))
-    ("unsigned short" . ,(make-type 'unsigned 2 #f))
-    ("unsigned" . ,(make-type 'unsigned 4 #f))
-    ("unsigned int" . ,(make-type 'unsigned 4 #f))
-    ("unsigned long" . ,(make-type 'unsigned 4 #f))
-
-    ;; ("unsigned long long" . ,(make-type 'builtin 8 #f))
-    ;; ("unsigned long long int" . ,(make-type 'builtin 8 #f))
-    ("unsigned long long" . ,(make-type 'unsigned 4 #f)) ;; FIXME
-    ("unsigned long long int" . ,(make-type 'unsigned 4 #f))
-
-    ("float" . ,(make-type 'float 4 #f))
-    ("double" . ,(make-type 'float 8 #f))
-    ("long double" . ,(make-type 'float 16 #f))
-
-    ;;
-    ("short int" . ,(make-type 'signed 2 #f))
-    ("unsigned short int" . ,(make-type 'unsigned 2 #f))
-    ("long int" . ,(make-type 'signed 4 #f))
-    ("unsigned long int" . ,(make-type 'unsigned 4 #f))))
 
 (define (signed? o)
   (eq? ((compose type:type ->type) o) 'signed))
@@ -552,7 +517,7 @@
        (let* ((globals ((globals:add-string (.globals info)) string))
               (info (clone info #:globals globals)))
          (append-text info ((push-global-address info) `(#:string ,string)))))
-      (_ (let ((info (expr->accu o info)))
+      (_ (let ((info (expr->register o info)))
            (append-text info (wrap-as (i386:push-accu))))))))
 
 (define (globals:add-string globals)
@@ -739,43 +704,55 @@
 (define (accu->base-mem*n info n)
   (append-text info (accu->base-mem*n- info n)))
 
-(define (expr->accu* o info)
+(define (alloc-register info)
+  (let ((registers (.registers info)))
+    (stderr " =>register: ~a\n" (car registers))
+    (clone info #:allocated (cons (car registers) (.allocated info)) #:registers (cdr registers))))
+
+(define (free-register info)
+  (let ((allocated (.allocated info)))
+    (stderr " <=register: ~a\n" (car allocated))
+   (clone info #:allocated (cdr allocated) #:registers (cons (car allocated) (.registers info)))))
+
+(define (expr->register* o info)
+
   (pmatch o
 
     ((p-expr (ident ,name))
-     (append-text info ((ident-address->accu info) name)))
+     (let ((info (alloc-register info)))
+       (append-text info ((ident-address->accu info) name))))
 
     ((de-ref ,expr)
-     (expr->accu expr info))
+     (expr->register expr info))
 
     ((d-sel (ident ,field) ,struct)
      (let* ((type (ast->basic-type struct info))
             (offset (field-offset info type field))
-            (info (expr->accu* struct info)))
+            (info (expr->register* struct info)))
        (append-text info (wrap-as (i386:accu+value offset)))))
 
     ((i-sel (ident ,field) (fctn-call (p-expr (ident ,function)) . ,rest))
      (let* ((type (ast->basic-type `(fctn-call (p-expr (ident ,function)) ,@rest) info))
             (offset (field-offset info type field))
-            (info (expr->accu `(fctn-call (p-expr (ident ,function)) ,@rest) info)))
+            (info (expr->register `(fctn-call (p-expr (ident ,function)) ,@rest) info)))
        (append-text info (wrap-as (i386:accu+value offset)))))
 
     ((i-sel (ident ,field) ,struct)
      (let* ((type (ast->basic-type struct info))
             (offset (field-offset info type field))
-            (info (expr->accu* struct info)))
+            (info (expr->register* struct info)))
        (append-text info (append (wrap-as (i386:mem->accu))
                                  (wrap-as (i386:accu+value offset))))))
 
     ((array-ref ,index ,array)
-     (let* ((info (expr->accu index info))
+     (let* ((info (expr->register index info))
             (size (ast->size o info))
             (info (accu*n info size))
             (info (expr->base array info)))
        (append-text info (wrap-as (i386:accu+base)))))
 
     ((cast ,type ,expr)
-     (expr->accu `(ref-to ,expr) info))
+     (expr->register `(ref-to ,expr) info))
 
     ((add ,a ,b)
      (let* ((rank (expr->rank info a))
@@ -787,11 +764,11 @@
                         ((and struct? (= rank 2)) 4)
                         (else 1))))
        (if (or (= size 1)) ((binop->accu* info) a b (i386:accu+base))
-           (let* ((info (expr->accu b info))
+           (let* ((info (expr->register b info))
                   (info (append-text info (wrap-as (append (i386:value->base size)
                                                            (i386:accu*base)
                                                            (i386:accu->base)))))
-                  (info (expr->accu* a info)))
+                  (info (expr->register* a info)))
              (append-text info (wrap-as (i386:accu+base)))))))
 
     ((sub ,a ,b)
@@ -809,11 +786,11 @@
              (if (and (not (= rank-b 2)) (not (= rank-b 1))) info
                  (append-text info (wrap-as (append (i386:value->base size)
                                                     (i386:accu/base))))))
-           (let* ((info (expr->accu* b info))
+           (let* ((info (expr->register* b info))
                   (info (append-text info (wrap-as (append (i386:value->base size)
                                                            (i386:accu*base)
                                                            (i386:accu->base)))))
-                  (info (expr->accu* a info)))
+                  (info (expr->register* a info)))
              (append-text info (wrap-as (i386:accu-base)))))))
 
     ((pre-dec ,expr)
@@ -822,7 +799,7 @@
                         ((> rank 1) 4)
                         (else 1)))
             (info ((expr-add info) expr (- size)))
-            (info (append (expr->accu* expr info))))
+            (info (append (expr->register* expr info))))
        info))
 
     ((pre-inc ,expr)
@@ -831,11 +808,11 @@
                         ((> rank 1) 4)
                         (else 1)))
             (info ((expr-add info) expr size))
-            (info (append (expr->accu* expr info))))
+            (info (append (expr->register* expr info))))
        info))
 
     ((post-dec ,expr)
-     (let* ((info (expr->accu* expr info))
+     (let* ((info (expr->register* expr info))
             (info (append-text info (wrap-as (i386:push-accu))))
             (post (clone info #:text '()))
             (post (append-text post (ast->comment o)))
@@ -851,7 +828,7 @@
        (clone info #:post (.text post))))
 
     ((post-inc ,expr)
-     (let* ((info (expr->accu* expr info))
+     (let* ((info (expr->register* expr info))
             (info (append-text info (wrap-as (i386:push-accu))))
             (post (clone info #:text '()))
             (post (append-text post (ast->comment o)))
@@ -866,18 +843,21 @@
             (post (append-text post (wrap-as (i386:pop-accu)))))
        (clone info #:post (.text post))))
 
-    (_ (error "expr->accu*: not supported: " o))))
+    (_ (error "expr->register*: not supported: " o))))
 
 (define (expr-add info)
   (lambda (o n)
-    (let* ((info (expr->accu* o info))
+    (let* ((info (expr->register* o info))
            (info (append-text info (wrap-as (i386:accu-mem-add n)))))
       info)))
 
-(define (expr->accu o info)
+(define (expr->register o info)
+  (stderr "expr->register o=~s\n" o)
+
   (let ((locals (.locals info))
         (text (.text info))
         (globals (.globals info)))
+
     (define (helper)
       (pmatch o
         ((expr) info)
@@ -885,8 +865,8 @@
         ((comma-expr) info)
 
         ((comma-expr ,a . ,rest)
-         (let ((info (expr->accu a info)))
-           (expr->accu `(comma-expr ,@rest) info)))
+         (let ((info (expr->register a info)))
+           (expr->register `(comma-expr ,@rest) info)))
 
         ((p-expr (string ,string))
          (let* ((globals ((globals:add-string globals) string))
@@ -900,7 +880,8 @@
            (append-text info (list (i386:label->accu `(#:string ,string))))))
 
         ((p-expr (fixed ,value))
-         (let ((value (cstring->int value)))
+         (let ((value (cstring->int value))
+               (info (alloc-register info)))
            (append-text info (wrap-as (i386:value->accu value)))))
 
         ((p-expr (float ,value))
@@ -921,10 +902,10 @@
          (append-text info ((ident->accu info) name)))
 
         ((initzer ,initzer)
-         (expr->accu initzer info))
+         (expr->register initzer info))
 
         (((initzer ,initzer))
-         (expr->accu initzer info))
+         (expr->register initzer info))
 
         ;; offsetoff
         ((ref-to (i-sel (ident ,field) (cast (type-name (decl-spec-list ,struct) (abs-declr (pointer))) (p-expr (fixed ,base)))))
@@ -939,10 +920,10 @@
 
         ;; &*foo
         ((ref-to (de-ref ,expr))
-         (expr->accu expr info))
+         (expr->register expr info))
 
         ((ref-to ,expr)
-         (expr->accu* expr info))
+         (expr->register* expr info))
 
         ((sizeof-expr ,expr)
          (append-text info (wrap-as (i386:value->accu (ast->size expr info)))))
@@ -951,12 +932,12 @@
          (append-text info (wrap-as (i386:value->accu (ast->size type info)))))
 
         ((array-ref ,index ,array)
-         (let* ((info (expr->accu* o info))
+         (let* ((info (expr->register* o info))
                 (type (ast->type o info)))
            (append-text info (mem->accu type))))
 
         ((d-sel ,field ,struct)
-         (let* ((info (expr->accu* o info))
+         (let* ((info (expr->register* o info))
                 (info (append-text info (ast->comment o)))
                 (type (ast->type o info))
                 (size (->size type))
@@ -965,7 +946,7 @@
                (append-text info (mem->accu type)))))
 
         ((i-sel ,field ,struct)
-         (let* ((info (expr->accu* o info))
+         (let* ((info (expr->register* o info))
                 (info (append-text info (ast->comment o)))
                 (type (ast->type o info))
                 (size (->size type))
@@ -974,7 +955,7 @@
                (append-text info (mem->accu type)))))
 
         ((de-ref ,expr)
-         (let* ((info (expr->accu expr info))
+         (let* ((info (expr->register expr info))
                 (type (ast->type o info)))
            (append-text info (mem->accu type))))
 
@@ -994,7 +975,7 @@
                          (stderr "warning: undeclared function: ~a\n" name))
                      (append-text args-info (list (i386:call-label name n))))
                    (let* ((empty (clone info #:text '()))
-                          (accu (expr->accu `(p-expr (ident ,name)) empty)))
+                          (accu (expr->register `(p-expr (ident ,name)) empty)))
                      (append-text args-info (append (.text accu)
                                                     (list (i386:call-accu n)))))))))
 
@@ -1005,7 +986,7 @@
                                  (loop (cdr expressions) ((expr->arg info) (car expressions))))))
                 (n (length expr-list))
                 (empty (clone info #:text '()))
-                (accu (expr->accu function empty)))
+                (accu (expr->register function empty)))
            (append-text args-info (append (.text accu)
                                           (list (i386:call-accu n))))))
 
@@ -1013,7 +994,7 @@
          (ast->info `(expr-stmt ,o) info))
 
         ((post-inc ,expr)
-         (let* ((info (append (expr->accu expr info)))
+         (let* ((info (append (expr->register expr info)))
                 (info (append-text info (wrap-as (i386:push-accu))))
                 (rank (expr->rank info expr))
                 (size (cond ((= rank 1) (ast-type->size info expr))
@@ -1024,7 +1005,7 @@
            info))
 
         ((post-dec ,expr)
-         (let* ((info (append (expr->accu expr info)))
+         (let* ((info (append (expr->register expr info)))
                 (info (append-text info (wrap-as (i386:push-accu))))
                 (rank (expr->rank info expr))
                 (size (cond ((= rank 1) (ast-type->size info expr))
@@ -1040,7 +1021,7 @@
                             ((> rank 1) 4)
                             (else 1)))
                 (info ((expr-add info) expr size))
-                (info (append (expr->accu expr info))))
+                (info (append (expr->register expr info))))
            info))
 
         ((pre-dec ,expr)
@@ -1049,7 +1030,7 @@
                             ((> rank 1) 4)
                             (else 1)))
                 (info ((expr-add info) expr (- size)))
-                (info (append (expr->accu expr info))))
+                (info (append (expr->register expr info))))
            info))
 
 
@@ -1062,7 +1043,7 @@
                             ((> rank 1) 4)
                             ((and struct? (= rank 2)) 4)
                             (else 1)))
-                (info (expr->accu a info))
+                (info (expr->register a info))
                 (value (cstring->int value))
                 (value (* size value)))
            (append-text info (wrap-as (i386:accu+value value)))))
@@ -1077,11 +1058,11 @@
                             ((and struct? (= rank 2)) 4)
                             (else 1))))
            (if (or (= size 1)) ((binop->accu info) a b (i386:accu+base))
-               (let* ((info (expr->accu b info))
+               (let* ((info (expr->register b info))
                       (info (append-text info (wrap-as (append (i386:value->base size)
                                                                (i386:accu*base)
                                                                (i386:accu->base)))))
-                      (info (expr->accu a info)))
+                      (info (expr->register a info)))
                  (append-text info (wrap-as (i386:accu+base)))))))
 
         ((sub ,a (p-expr (fixed ,value)))
@@ -1093,7 +1074,7 @@
                             ((> rank 1) 4)
                             ((and struct? (= rank 2)) 4)
                             (else 1)))
-                (info (expr->accu a info))
+                (info (expr->register a info))
                 (value (cstring->int value))
                 (value (* size value)))
            (append-text info (wrap-as (i386:accu+value (- value))))))
@@ -1113,11 +1094,11 @@
                  (if (and (not (= rank-b 2)) (not (= rank-b 1))) info
                      (append-text info (wrap-as (append (i386:value->base size)
                                                         (i386:accu/base))))))
-               (let* ((info (expr->accu b info))
+               (let* ((info (expr->register b info))
                       (info (append-text info (wrap-as (append (i386:value->base size)
                                                                (i386:accu*base)
                                                                (i386:accu->base)))))
-                      (info (expr->accu a info)))
+                      (info (expr->register a info)))
                  (append-text info (wrap-as (i386:accu-base)))))))
 
         ((bitwise-and ,a ,b) ((binop->accu info) a b (i386:accu-and-base)))
@@ -1182,49 +1163,50 @@
            ((binop->accu info) a b (append (i386:sub-base) (test->accu) (i386:accu-test)))))
 
         ((or ,a ,b)
-         (let* ((info (expr->accu a info))
+         (let* ((info (expr->register a info))
                 (here (number->string (length (.text info))))
                 (skip-b-label (string-append "_" (.function info) "_" here "_or_skip_b"))
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info (append-text info (wrap-as (i386:jump-nz skip-b-label))))
                 (info (append-text info (wrap-as (i386:accu-test))))
-                (info (expr->accu b info))
+                (info (expr->register b info))
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info (append-text info (wrap-as `((#:label ,skip-b-label))))))
            info))
 
         ((and ,a ,b)
-         (let* ((info (expr->accu a info))
+         (let* ((info (expr->register a info))
                 (here (number->string (length (.text info))))
                 (skip-b-label (string-append "_" (.function info) "_" here "_and_skip_b"))
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info (append-text info (wrap-as (i386:jump-z skip-b-label))))
                 (info (append-text info (wrap-as (i386:accu-test))))
-                (info (expr->accu b info))
+                (info (expr->register b info))
                 (info (append-text info (wrap-as (i386:accu-test))))
                 (info (append-text info (wrap-as `((#:label ,skip-b-label))))))
            info))
 
         ((cast ,type ,expr)
-         (let ((info (expr->accu expr info))
+         (let ((info (expr->register expr info))
                (type (ast->type o info)))
            (append-text info (convert-accu type))))
 
         ((assn-expr (de-ref (post-inc (p-expr (ident ,name)))) (op ,op) ,b)
-         (let* ((info (expr->accu `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b) info))
+         (let* ((info (expr->register `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b) info))
                 (type (ident->type info name))
                 (rank (ident->rank info name))
                 (size (if (> rank 1) 4 1)))
            (append-text info ((ident-add info) name size))))
 
         ((assn-expr (de-ref (post-dec (p-expr (ident ,name)))) (op ,op) ,b)
-         (let* ((info (expr->accu `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b) info))
+         (let* ((info (expr->register `(assn-expr (de-ref (p-expr (ident ,name))) (op ,op) ,b) info))
                 (type (ident->type info name))
                 (rank (ident->rank info name))
                 (size (if (> rank 1) 4 1)))
            (append-text info ((ident-add info) name (- size)))))
 
         ((assn-expr ,a (op ,op) ,b)
+         (stderr "ASSN!\n")
          (let* ((info (append-text info (ast->comment o)))
                 (type (ast->type a info))
                 (rank (->rank type))
@@ -1232,7 +1214,7 @@
                 (rank-b (->rank type-b))
                 (size (if (zero? rank) (->size type) 4))
                 (size-b (if (zero? rank-b) (->size type-b) 4))
-                (info (expr->accu b info))
+                (info (expr->register b info))
                 (info (if (equal? op "=") info
                           (let* ((struct? (structured-type? type))
                                  (size (cond ((= rank 1) (ast-type->size info a))
@@ -1243,7 +1225,7 @@
                                            (let ((info (append-text info (wrap-as (i386:value->base size)))))
                                              (append-text info (wrap-as (i386:accu*base))))))
                                  (info (append-text info (wrap-as (i386:push-accu))))
-                                 (info (expr->accu a info))
+                                 (info (expr->register a info))
                                  (info (append-text info (wrap-as (i386:pop-base))))
                                  (info (append-text info (cond ((equal? op "+=") (wrap-as (i386:accu+base)))
                                                                ((equal? op "-=") (wrap-as (i386:accu-base)))
@@ -1270,12 +1252,15 @@
                                 (or (= size-b 1) (= size-b 2)))))
              (stderr "ERROR assign: ~a" (with-output-to-string (lambda () (pretty-print-c99 o))))
              (stderr "   size[~a]:~a != size[~a]:~a\n"  rank size rank-b size-b))
+           (stderr "   assign a=~s\n" a)
            (pmatch a
              ((p-expr (ident ,name))
               (if (or (<= size 4) ;; FIXME: long long = int
                       (<= size-b 4)) (append-text info ((accu->ident info) name))
-                      (let ((info (expr->base* a info)))
-                        (accu->base-mem*n info size))))
+                      (let* ((info (expr->base* a info))
+                             (info (accu->base-mem*n info size)))
+                        ;;???
+                        (free-register info))))
              (_ (let* ((info (expr->base* a info))
                        (info (if (not (bit-field? type)) info
                                  (let* ((bit (bit-field:bit type))
@@ -1299,7 +1284,7 @@
                                    info))))
                   (accu->base-mem*n info (min size (max 4 size-b)))))))) ;; FIXME: long long = int
 
-        (_ (error "expr->accu: not supported: " o))))
+        (_ (error "expr->register: not supported: " o))))
 
     (let ((info (helper)))
       (if (null? (.post info)) info
@@ -1329,19 +1314,19 @@
 
 (define (expr->base o info)
   (let* ((info (append-text info (wrap-as (i386:push-accu))))
-         (info (expr->accu o info))
+         (info (expr->register o info))
          (info (append-text info (wrap-as (append (i386:accu->base) (i386:pop-accu))))))
     info))
 
 (define (binop->accu info)
   (lambda (a b c)
-    (let* ((info (expr->accu a info))
+    (let* ((info (expr->register a info))
            (info (expr->base b info)))
       (append-text info (wrap-as c)))))
 
 (define (binop->accu* info)
   (lambda (a b c)
-    (let* ((info (expr->accu* a info))
+    (let* ((info (expr->register* a info))
            (info (expr->base b info)))
       (append-text info (wrap-as c)))))
 
@@ -1350,7 +1335,7 @@
 
 (define (expr->base* o info)
   (let* ((info (append-text info (wrap-as (i386:push-accu))))
-         (info (expr->accu* o info))
+         (info (expr->register* o info))
          (info (append-text info (wrap-as (i386:accu->base))))
          (info (append-text info (wrap-as (i386:pop-accu)))))
     info))
@@ -1538,6 +1523,7 @@
     (_ (error "ptr-declr->rank not supported: " o))))
 
 (define (ast->info o info)
+  (stderr "ast->info o=~s\n" o)
   (let ((functions (.functions info))
         (globals (.globals info))
         (locals (.locals info))
@@ -1576,7 +1562,7 @@
        (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list))))
                                  (append-text info (wrap-as (asm->m1 arg0))))
            (let* ((info (append-text info (ast->comment o)))
-                  (info (expr->accu `(fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)) info)))
+                  (info (expr->register `(fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)) info)))
              (append-text info (wrap-as (i386:accu-zero?))))))
 
       ((if ,test ,then)
@@ -1640,7 +1626,7 @@
               (here (number->string (length text)))
               (label (string-append "_" (.function info) "_" here "_"))
               (break-label (string-append label "break"))
-              (info (expr->accu expr info))
+              (info (expr->register expr info))
               (info (clone info #:break (cons break-label (.break info))))
               (count (length (filter clause? statements)))
               (default? (find (cut eq? <> 'default) (map clause? statements)))
@@ -1673,7 +1659,7 @@
               (info (append-text info (wrap-as `((#:label ,loop-label)))))
               (info (ast->info body info))
               (info (append-text info (wrap-as `((#:label ,continue-label)))))
-              (info (expr->accu step info))
+              (info (expr->register step info))
               (info (append-text info (wrap-as `((#:label ,initial-skip-label)))))
               (info ((test-jump-label->info info break-label) test))
               (info (append-text info (wrap-as (i386:jump loop-label))))
@@ -1732,7 +1718,7 @@
        (append-text info (wrap-as (i386:jump (string-append "_" (.function info) "_label_" label)))))
 
       ((return ,expr)
-       (let ((info (expr->accu expr info)))
+       (let ((info (expr->register expr info)))
          (append-text info (append (wrap-as (i386:ret))))))
 
       ((decl . ,decl)
@@ -1742,23 +1728,24 @@
              )
          (decl->info info decl)))
       ;; ...
-      ((gt . _) (expr->accu o info))
-      ((ge . _) (expr->accu o info))
-      ((ne . _) (expr->accu o info))
-      ((eq . _) (expr->accu o info))
-      ((le . _) (expr->accu o info))
-      ((lt . _) (expr->accu o info))
-      ((lshift . _) (expr->accu o info))
-      ((rshift . _) (expr->accu o info))
+      ((gt . _) (expr->register o info))
+      ((ge . _) (expr->register o info))
+      ((ne . _) (expr->register o info))
+      ((eq . _) (expr->register o info))
+      ((le . _) (expr->register o info))
+      ((lt . _) (expr->register o info))
+      ((lshift . _) (expr->register o info))
+      ((rshift . _) (expr->register o info))
 
       ;; EXPR
       ((expr-stmt ,expression)
-       (let ((info (expr->accu expression info)))
-         (append-text info (wrap-as (i386:accu-zero?)))))
+       (let* ((info (expr->register expression info))
+              (info (append-text info (wrap-as (i386:accu-zero?)))))
+         (free-register info)))
 
       ;; FIXME: why do we get (post-inc ...) here
       ;; (array-ref
-      (_ (let ((info (expr->accu o info)))
+      (_ (let ((info (expr->register o info)))
            (append-text info (wrap-as (i386:accu-zero?))))))))
 
 (define (ast-list->info o info)
@@ -1912,13 +1899,13 @@
 
 (define (init->accu o info)
   (pmatch o
-    ((initzer-list (initzer ,expr)) (expr->accu expr info))
+    ((initzer-list (initzer ,expr)) (expr->register expr info))
     (((#:string ,string))
      (append-text info (list (i386:label->accu `(#:string ,string)))))
     ((,number . _) (guard (number? number))
      (append-text info (wrap-as (i386:value->accu 0))))
     ((,c . ,_) (guard (char? c)) info)
-    (_ (expr->accu o info))))
+    (_ (expr->register o info))))
 
 (define (init-struct-field local field init info)
   (let* ((offset (field-offset info (local:type local) (car field)))
@@ -1930,7 +1917,7 @@
             (local->accu local)
             (wrap-as (append (i386:accu->base)))
             (wrap-as (append (i386:push-base)))
-            (.text (expr->accu init empty))
+            (.text (expr->register init empty))
             (wrap-as (append (i386:pop-base)))
             (wrap-as (case size
                        ((1) (i386:byte-accu->base-mem+n offset))
@@ -1951,7 +1938,7 @@
             (local->accu local)
             (wrap-as (append (i386:accu->base)))
             (wrap-as (append (i386:push-base)))
-            (.text (expr->accu init empty))
+            (.text (expr->register init empty))
             (wrap-as (append (i386:pop-base)))
             (wrap-as (case size
                        ((1) (i386:byte-accu->base-mem+n offset))

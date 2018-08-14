@@ -44,6 +44,8 @@
             .post
             .break
             .continue
+            .allocated
+            .registers
 
             <type>
             make-type
@@ -115,7 +117,7 @@
             structured-type?))
 
 (define-immutable-record-type <info>
-  (make-<info> types constants functions globals locals statics function text post break continue)
+  (make-<info> types constants functions globals locals statics function text post break continue allocated registers)
   info?
   (types .types)
   (constants .constants)
@@ -127,11 +129,13 @@
   (text .text)
   (post .post)
   (break .break)
-  (continue .continue))
+  (continue .continue)
+  (registers .registers)
+  (allocated .allocated))
 
-(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (statics '()) (function #f) (text '()) (post '()) (break '()) (continue '()))
+(define* (make o #:key (types '()) (constants '()) (functions '()) (globals '()) (locals '()) (statics '()) (function #f) (text '()) (post '()) (break '()) (continue '()) (allocated '()) (registers '()))
   (cond ((eq? o <info>)
-         (make-<info> types constants functions globals locals statics function text post break continue))))
+         (make-<info> types constants functions globals locals statics function text post break continue allocated  registers))))
 
 (define (clone o . rest)
   (cond ((info? o)
@@ -145,7 +149,9 @@
                (text (.text o))
                (post (.post o))
                (break (.break o))
-               (continue (.continue o)))
+               (continue (.continue o))
+               (allocated (.allocated o))
+               (registers (.registers o)))
            (let-keywords rest
                          #f
                          ((types types)
@@ -158,8 +164,10 @@
                           (text text)
                           (post post)
                           (break break)
-                          (continue continue))
-                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:statics statics #:function function #:text text #:post post #:break break #:continue continue))))))
+                          (continue continue)
+                          (allocated allocated)
+                          (registers registers))
+                         (make <info> #:types types #:constants constants #:functions functions #:globals globals  #:locals locals #:statics statics #:function function #:text text #:post post #:break break #:continue continue #:allocated allocated #:registers registers))))))
 
 ;; ("int" . ,(make-type 'builtin 4 #f 0 #f))
 ;;           (make-type 'enum 4 0 fields)

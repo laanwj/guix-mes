@@ -18,18 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int
-test ()
-{
-  return 2;
-}
+//V=2 CC64=gcc build-aux/cc64-mes.sh scaffold/main
 
 int
 main (int argc, char *argv[])
 {
-  if (argc == 6) return 42;
-  int a = 39;
-  if (argc > 1) a+=argc;
-  else a++;
-  return a + test ();
+  argc = 42;
+  return argc;
 }
