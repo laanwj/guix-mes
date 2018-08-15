@@ -21,6 +21,7 @@ DEFINE add____%rbp,%rax 4801e8
 DEFINE call32 e8
 DEFINE hlt f4
 DEFINE mov____$i32,%rax 48c7c0
+DEFINE mov____$i32,%rdi 48c7c7
 DEFINE mov____$i32,0x8(%rbp) c745
 DEFINE mov____$i64,%rax 48a1
 DEFINE mov____%edi,0x8(%rbp) 897d
@@ -48,3 +49,5 @@ DEFINE shl____$i8,%rax 48c1e0
 DEFINE sub____$i32,%rsp 4881ec
 DEFINE syscall 0f05
 DEFINE test___%rax,%rax 4885c0
+
+DEFINE SYS_exit 3c000000

@@ -37,8 +37,10 @@
 *.x86-out
 *.x86_64-mes-gcc-o
 *.x86_64-mes-gcc-out
+*.x86_64-mes-gcc-stdout
 *.x86_64-mes-o
 *.x86_64-mes-out
+*.x86_64-mes-stdout
 *.x86_64-out
 
 /src/*.h

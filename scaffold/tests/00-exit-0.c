@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -21,17 +21,37 @@
 int
 main ()
 {
+#if __i386__
+
 #if __MESC__
   asm ("mov____$i32,%ebx %0");
   asm ("mov____$i32,%eax SYS_exit");
   asm ("int____$0x80");
-#else // !__MESC__
+#elif __TINYC__
   asm ("mov    $0,%ebx");
   asm ("mov    $1,%eax");
-#if !__TINYC__
-  asm ("int    $0x80");
-#else
   asm ("int    $128");
-#endif
-#endif
+#else // !__TINYC__
+  asm ("mov    $0,%ebx");
+  asm ("mov    $1,%eax");
+  asm ("int    $0x80");
+#endif // !__TINYC__
+
+#elif __x86_64__
+
+#if __MESC__
+  asm ("mov____$i32,%rdi %0");
+  asm ("mov____$i32,%rax SYS_exit");
+  asm ("syscall");
+#elif __TINYC__
+  asm ("mov    $0,%rdi");
+  asm ("mov    $0x3c,%rax");
+  asm ("syscall");
+#else // !__TINYC__
+  asm ("mov    $0,%rdi");
+  asm ("mov    $60,%rax");
+  asm ("syscall");
+#endif // !__TINYC__
+
+#endif // ! __x86_64__
 }
