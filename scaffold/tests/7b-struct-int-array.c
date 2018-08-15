@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 struct foo {
   int a;
@@ -37,7 +37,7 @@ typedef struct bar bar_struct;
 typedef struct bar foo_struct;
 
 int
-test ()
+main ()
 {
   if (g_foo[0].a != 0) return 1;
   if (g_foo[0].b != 1) return 2;

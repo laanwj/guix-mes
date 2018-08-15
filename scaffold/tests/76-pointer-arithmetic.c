@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 char *list[2] = {"foo\n", "bar\n"};
@@ -31,7 +31,7 @@ struct foo {
 };
 
 int
-test ()
+main ()
 {
   char *pc = 0;
   void *pv = 0;

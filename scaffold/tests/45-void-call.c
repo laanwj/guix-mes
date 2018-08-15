@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 void
@@ -27,7 +27,7 @@ void_func ()
 }
 
 int
-test ()
+main ()
 {
   puts ("\n");
   puts ("void_func ()\n");

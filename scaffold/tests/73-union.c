@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 typedef union foo
@@ -37,7 +37,7 @@ typedef union
 
 
 int
-test ()
+main ()
 {
   union foo f = {48};
   printf ("f.i=%d\n", f.i);

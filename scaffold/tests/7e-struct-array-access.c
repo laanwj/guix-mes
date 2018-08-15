@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,7 +69,7 @@ find2 ()
 }
 
 int
-test ()
+main ()
 {
   char *s = find0 ();
   eputs (s); eputs ("\n");

@@ -18,13 +18,13 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
 int
-test ()
+main ()
 {
   char *s = "mes";
   char c = 'm';

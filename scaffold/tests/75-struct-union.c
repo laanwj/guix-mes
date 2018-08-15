@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 union u {
@@ -41,7 +41,7 @@ struct anon
 
 
 int
-test ()
+main ()
 {
   struct foo f = {2};
   printf ("f.u.bar=%d\n", f.u.bar);

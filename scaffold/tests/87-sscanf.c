@@ -18,11 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 int
-test ()
+main ()
 {
   int i;
   int r = sscanf ("42", "%d", &i);

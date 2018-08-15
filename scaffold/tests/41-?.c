@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 union foo
@@ -27,7 +27,7 @@ union foo
 };
 
 int
-test ()
+main ()
 {
   int f;
   int t = 1;

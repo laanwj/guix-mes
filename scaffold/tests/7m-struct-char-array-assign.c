@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 struct file {
   char *ptr;
@@ -26,7 +26,7 @@ struct file {
 };
 
 int
-test ()
+main ()
 {
   struct file f;
   f.ptr = f.buffer;

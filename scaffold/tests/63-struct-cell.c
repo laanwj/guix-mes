@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 // #include <stdio.h>
 #include <stdlib.h>
@@ -88,7 +88,7 @@ int g_function = 0;
 
 
 int
-test ()
+main ()
 {
  //  puts ("\n");
  //  puts ("t: g_cells[0] = g_cells[1]\n");

@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -49,7 +49,7 @@ typedef struct baz
 } baz;
 
 int
-test ()
+main ()
 {
   foo_struct f;
   f.bar[0] = 0x22;

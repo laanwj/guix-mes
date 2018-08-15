@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <string.h>
 
 struct string {
@@ -43,7 +43,7 @@ struct string g_t;
 struct biggie tab[2];
 
 int
-test ()
+main ()
 {
   struct string s = {"hallo"};
   s.len = strlen (s.str);

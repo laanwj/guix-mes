@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -40,7 +40,7 @@ strncmp (char const* a, char const* b, size_t size)
 #endif
 
 int
-test ()
+main ()
 {
   char *p = "mes";
 

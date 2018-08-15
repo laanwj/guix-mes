@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #include <stdint.h>
 
@@ -34,7 +34,7 @@ union bar {
 union bar bar;
 
 int
-test ()
+main ()
 {
   bar.foo.i = 2;
   bar.foo.p = "hallo";

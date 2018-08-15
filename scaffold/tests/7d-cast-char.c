@@ -18,10 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 int
-test ()
+main ()
 {
   char *s = "int";
   char c = s[0];

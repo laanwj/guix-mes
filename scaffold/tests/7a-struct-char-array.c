@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -37,7 +37,7 @@ char *buffer = "aaaaaaaaaaaa";
 char *bufzor = "bbbbbbbbbbbb";
 
 int
-test ()
+main ()
 {
   char *p;
 

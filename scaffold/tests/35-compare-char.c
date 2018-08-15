@@ -18,14 +18,14 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 char g_arena[10];
 char *g_chars = g_arena;
 
 int
-test ()
+main ()
 {
   int i = 0;
   char c = 'C';

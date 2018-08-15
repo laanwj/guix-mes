@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <string.h>
 
 
@@ -31,7 +31,7 @@ compare_int (void *a, void *b)
 }
 
 int
-test ()
+main ()
 {
   int lst[6] = {0, 5, 4, 3, 2, -1};
   qsort (lst, 6, sizeof (int), compare_int);

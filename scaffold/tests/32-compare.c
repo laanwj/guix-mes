@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 int isid(char c) {
@@ -26,7 +26,7 @@ int isid(char c) {
 }
 
 int
-test ()
+main ()
 {
   int f = 0;
   int t = 1;

@@ -18,10 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 int
-test ()
+main ()
 {
   if (strlen ("mes") == 3) goto ok;
   return 1;

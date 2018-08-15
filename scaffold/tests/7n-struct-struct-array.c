@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #include <libmes.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@ struct state {
 };
 
 int
-test ()
+main ()
 {
   struct state s;
   struct state *ps;

@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -81,7 +81,7 @@ char* LittleEndian(unsigned value, char* c, int Number_of_bytes)
 }
 
 int
-test ()
+main ()
 {
   char table[3] = {'0', '1', '2'};
 

@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 int
@@ -32,7 +32,7 @@ label (int c)
 }
 
 int
-test ()
+main ()
 {
   int f;
   int t = 1;

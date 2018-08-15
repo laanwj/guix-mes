@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 #include <stdio.h>
 
 typedef struct foo
@@ -47,7 +47,7 @@ bar *list[2];
 #endif
 
 int
-test ()
+main ()
 {
   foo f = {1};
   printf ("f.i=%d\n", f.i);

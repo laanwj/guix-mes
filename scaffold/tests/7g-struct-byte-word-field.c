@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #include <inttypes.h>
 #include <string.h>
@@ -31,7 +31,7 @@ struct option {
 };
 
 int
-test ()
+main ()
 {
   struct option h = {"help", 0, 10, 1};
   struct option o = {"output", 1, 11, 1};

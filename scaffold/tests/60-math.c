@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "30-test.i"
+#include <libmes.h>
 
 int
 add (int a, int b)
@@ -37,7 +37,7 @@ inc (int i)
 }
 
 int
-test ()
+main ()
 {
   int i;
 

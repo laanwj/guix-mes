@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #if __MESC__
 #define  __attribute__(x)
@@ -46,7 +46,7 @@ struct foo13 tab14[3];
 struct foo16 tab16[3];
 
 int
-test ()
+main ()
 {
   unsigned char *p;
 

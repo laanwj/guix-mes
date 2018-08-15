@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#include "30-test.i"
+#include <libmes.h>
 
 struct baz {
   int i;
@@ -58,7 +58,7 @@ add2 (void *ptab)
 struct foo *hash_ident[10];
 
 int
-test ()
+main ()
 {
   int i = 1;
   int *p = &i;

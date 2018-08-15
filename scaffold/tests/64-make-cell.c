@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -120,7 +120,7 @@ make_tmps_test (struct scm* cells)
 }
 
 int
-test ()
+main ()
 {
   puts ("\n");
   make_tmps_test (g_cells);

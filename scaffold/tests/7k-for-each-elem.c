@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 struct section {
   unsigned char *data;
@@ -44,7 +44,7 @@ struct section section;
   for (;elem < ((type *) (sec->data + sec->offset)); elem++)
 
 int
-test ()
+main ()
 {
   struct sym* p;
   p = tab3;

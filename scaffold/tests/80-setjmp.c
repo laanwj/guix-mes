@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "30-test.i"
+#include <libmes.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,7 +44,7 @@ first ()
 }
 
 int
-test ()
+main ()
 {
   if (!setjmp (buf))
     first ();               // when executed, setjmp returned 0
