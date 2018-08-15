@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,17 +18,19 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "00-test.i"
-
 int
-test ()
+main ()
 {
   char *s = "mes";
-  if (!s[0]) return 1;
+  if (!s[0])
+    return 1;
   int f;
   int v = 3;
-  if (!s[f]) return 1;
-  if (s[3]) return 1;
-  if (s[v]) return 1;
+  if (!s[f])
+    return 1;
+  if (s[3])
+    return 1;
+  if (s[v])
+    return 1;
   return 0;
 }

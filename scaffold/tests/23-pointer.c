@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,8 +18,6 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "00-test.i"
-
 char *g_hello = "hello";
 char g_arena[4] = "XXX";
 char *g_chars = g_arena;
@@ -31,7 +29,7 @@ struct foo {
 struct foo *file;
 
 int
-test ()
+main ()
 {
   if (*g_hello != 'h') return 1;
   if (g_hello[0] != 'h') return 2;

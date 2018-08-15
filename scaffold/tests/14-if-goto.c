@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,15 +18,15 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "00-test.i"
-
 int
-test ()
+main ()
 {
-  if (0 == 0) goto ok;
+  if (0 == 0)
+    goto ok;
   return 1;
  ok:
-  if (0 != 1) goto ok1;
+  if (0 != 1)
+    goto ok1;
   return 1;
  ok1:
   return 0;
