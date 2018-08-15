@@ -59,9 +59,10 @@ ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libtcc1
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc+gnu
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libg
 
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/main
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/hello
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/argv
+LIBC= sh ${srcdest}build-aux/cc64-mes.sh scaffold/main
+LIBC=c-mini sh ${srcdest}build-aux/cc64-mes.sh scaffold/hello
+LIBC=c-mini sh ${srcdest}build-aux/cc64-mes.sh scaffold/argv
+sh ${srcdest}build-aux/cc64-mes.sh scaffold/read
 sh ${srcdest}build-aux/cc64-mes.sh scaffold/malloc
 sh ${srcdest}build-aux/cc64-mes.sh scaffold/micro-mes
 sh ${srcdest}build-aux/cc64-mes.sh scaffold/tiny-mes

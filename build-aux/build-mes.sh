@@ -116,8 +116,7 @@ fi
 MES_ARENA=100000000
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crt1
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc-mini
-
-PREPROCESS= bash ${srcdest}build-aux/cc-mes.sh lib/x86-mes/exit-42
+MES_LIBS='-l c-mini' PREPROCESS= bash ${srcdest}build-aux/cc-mes.sh lib/x86-mes/exit-42
 
 trace "TEST       lib/x86-mes/exit-42.mes-out" echo lib/x86-mes/exit-42.mes-out
 { set +e; lib/x86-mes/exit-42.mes-out; r=$?; set -e; }
@@ -147,9 +146,14 @@ trace "SNARF.mes  vector.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.sc
 echo MES_ARENA=$MES_ARENA
 bash ${srcdest}build-aux/cc-mes.sh scaffold/main
 
-bash ${srcdest}build-aux/cc-mes.sh scaffold/main
-bash ${srcdest}build-aux/cc-mes.sh scaffold/hello
-bash ${srcdest}build-aux/cc-mes.sh scaffold/argv
+MES_LIBS='-l none' bash ${srcdest}build-aux/cc-mes.sh scaffold/main
+
+trace "TEST       scaffold/main.mes-out" echo scaffold/main.mes-out
+{ set +e; scaffold/main.mes-out; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r" && exit 1
+
+MES_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-mes.sh scaffold/hello
+MES_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-mes.sh scaffold/argv
 bash ${srcdest}build-aux/cc-mes.sh scaffold/malloc
 ##sh ${srcdest}build-aux/cc-mes.sh scaffold/micro-mes
 ##sh ${srcdest}build-aux/cc-mes.sh scaffold/tiny-mes

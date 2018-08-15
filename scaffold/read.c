@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -25,12 +25,12 @@
 int
 main (int argc, char *argv[])
 {
-  g_stdin = open ("scaffold/mesmes", 0);
+  g_stdin = open ("scaffold/read.data", 0);
   int c = getchar ();
-  if (c != 'm') return c;
+  if (c != 'm')
+    return 1;
   while (c != EOF) {
     putchar (c);
     c = getchar ();
   }
-  return c;
 }

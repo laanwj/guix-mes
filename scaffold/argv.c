@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,6 +20,17 @@
 
 #include <libmes.h>
 #include <string.h>
+
+int
+strcmp (char const* a, char const* b)
+{
+  while (*a && *b && *a == *b)
+    {
+      a++;
+      b++;
+    }
+  return *a - *b;
+}
 
 int
 main (int argc, char *argv[])
