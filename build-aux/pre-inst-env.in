@@ -26,7 +26,7 @@ prefix=${prefix-@prefix@}
 MES_PREFIX=${MES_PREFIX-${srcdest}mes}
 export MES_PREFIX
 
-GUILE_LOAD_COMPILED_PATH="$abs_top_builddir/module${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"
+GUILE_LOAD_COMPILED_PATH="$abs_top_builddir/scripts:$abs_top_builddir/module${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"
 GUILE_LOAD_PATH="module:mes:$abs_top_srcdir/guix${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
 if [ -n "$srcdest" ]; then
     GUILE_LOAD_PATH="${srcdest}module:${srcdest}mes:$GUILE_LOAD_PATH"

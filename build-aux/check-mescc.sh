@@ -49,6 +49,8 @@ t
 04-call-0
 05-call-1
 06-call-!1
+07-include
+08-assign
 10-if-0
 11-if-1
 12-if-==

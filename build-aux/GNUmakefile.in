@@ -135,6 +135,9 @@ clean-go:
 check:
 	./check.sh
 
+check-mescc:
+	./pre-inst-env build-aux/check-mescc.sh
+
 # Mes does not feature post-install checks yet, so we're great!
 installcheck:
 	true

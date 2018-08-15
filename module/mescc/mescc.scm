@@ -38,15 +38,17 @@
       (GUILE-with-output-to-file file-name thunk)))
 
 (define (mescc:preprocess options)
-  (let* ((defines (reverse (filter-map (multi-opt 'define) options)))
-         (includes (reverse (filter-map (multi-opt 'include) options)))
-         (pretty-print/write (string->symbol (option-ref options 'write (if guile? "pretty-print" "write"))))
+  (let* ((pretty-print/write (string->symbol (option-ref options 'write (if guile? "pretty-print" "write"))))
          (pretty-print/write (if (eq? pretty-print/write 'pretty-print) pretty-print write))
          (files (option-ref options '() '("a.c")))
          (input-file-name (car files))
          (ast-file-name (cond ((and (option-ref options 'preprocess #f)
                                     (option-ref options 'output #f)))
                               (else (replace-suffix input-file-name ".E"))))
+         (dir (dirname input-file-name))
+         (defines (reverse (filter-map (multi-opt 'define) options)))
+         (includes (reverse (filter-map (multi-opt 'include) options)))
+         (includes (cons dir includes))
          (prefix (option-ref options 'prefix "")))
     (with-output-to-file ast-file-name
       (lambda _ (for-each (cut c->ast prefix defines includes write <>) files)))))
@@ -74,9 +76,11 @@
         ((.E? file-name) (E->info options file-name))))
 
 (define (c->info options file-name)
-  (let ((defines (reverse (filter-map (multi-opt 'define) options)))
-        (includes (reverse (filter-map (multi-opt 'include) options)))
-        (prefix (option-ref options 'prefix "")))
+  (let* ((defines (reverse (filter-map (multi-opt 'define) options)))
+         (includes (reverse (filter-map (multi-opt 'include) options)))
+         (dir (dirname file-name))
+         (includes (cons dir includes))
+         (prefix (option-ref options 'prefix "")))
     (with-input-from-file file-name
       (cut c99-input->info #:prefix prefix #:defines defines #:includes includes))))
 

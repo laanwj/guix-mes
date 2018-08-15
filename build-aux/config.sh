@@ -26,15 +26,16 @@ fi
 export CC
 export CC CFLAGS
 export CC32
+export CC32_CPPFLAGS
 export CC64
+export CC64_CPPFLAGS
 export CC_CFLAGS
-export CC_CFLAGS
-export CC_CPPFLAGS
 export CC_CPPFLAGS
 export CFLAGS
 export CPPFLAGS
-export CPPFLAGS
 export GUILE
+export GUILE_LOAD_COMPILED_PATH
+export GUILE_LOAD_PATH
 export HEX2
 export HEX2FLAGS
 export LIBC
@@ -42,6 +43,7 @@ export M1
 export M1FLAGS
 export MES
 export MES_CFLAGS
+export MES_CPPFLAGS
 export MES_LIBS
 export TCC
 
