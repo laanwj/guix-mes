@@ -24,7 +24,8 @@ int
 label (int c)
 {
  label:
-  if (c == 0) return c;
+  if (c == 0)
+    return c;
   c--;
   goto label;
   return 1;
@@ -37,9 +38,10 @@ main ()
   int t = 1;
   int one = t;
 
-  puts ("\n");
-  puts ("t: goto label\n");
-  if (label (1) != 0) return 1;
+  oputs ("\n");
+  oputs ("t: goto label\n");
+  if (label (1) != 0)
+    return 1;
 
   return 0;
 }

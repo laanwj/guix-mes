@@ -22,6 +22,12 @@
 #include <libmes.h>
 #include <stdio.h>
 
+//#if __GNUC__ && __x86_64__
+#if __x86_64__
+#undef open
+#define open _open3
+#endif
+
 FILE*
 fopen (char const *file_name, char const *opentype)
 {
@@ -64,3 +70,5 @@ fopen (char const *file_name, char const *opentype)
     fd = 0;
   return (FILE*)fd;
 }
+
+#undef open

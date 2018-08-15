@@ -18,6 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//V=2 CC32=i686-unknown-linux-gnu-gcc build-aux/cc32-mes.sh scaffold/main
 //V=2 CC64=gcc build-aux/cc64-mes.sh scaffold/main
 
 int

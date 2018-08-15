@@ -22,12 +22,28 @@
 
 (define-module (mescc bytevectors)
   #:use-module (mes guile)
-  #:export (bytevector-u32-native-set!
+  #:export (bytevector-u64-native-set!
+            bytevector-u32-native-set!
             bytevector-u16-native-set!
             bytevector-u8-set!
             make-bytevector))
 
 ;; rnrs compatibility
+(define (bytevector-u64-native-set! bv index value)
+  (when (not (= 0 index)) (error "bytevector-u64-native-set! index not zero: " index " value: " value))
+  (let ((x (list
+            (modulo value #x100)
+            (modulo (ash value -8) #x100)
+            (modulo (ash value -16) #x100)
+            (modulo (ash value -24) #x100)
+            (modulo (ash value -32) #x100)
+            (modulo (ash value -40) #x100)
+            (modulo (ash value -48) #x100)
+            (modulo (ash value -56) #x100))))
+    (set-car! bv (car x))
+    (set-cdr! bv (cdr x))
+    x))
+
 (define (bytevector-u32-native-set! bv index value)
   (when (not (= 0 index)) (error "bytevector-u32-native-set! index not zero: " index " value: " value))
   (let ((x (list

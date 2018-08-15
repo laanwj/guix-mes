@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,7 +20,8 @@
 
 #include <libmes.h>
 
-struct foo {
+struct foo
+{
   int a;
   int b;
 };
@@ -39,49 +40,63 @@ typedef struct bar foo_struct;
 int
 main ()
 {
-  if (g_foo[0].a != 0) return 1;
-  if (g_foo[0].b != 1) return 2;
-  if (g_foo[1].a != 2) return 3;
-  if (g_foo[1].b != 3) return 4;
+  if (g_foo[0].a != 0)
+    return 1;
+  if (g_foo[0].b != 1)
+    return 2;
+  if (g_foo[1].a != 2)
+    return 3;
+  if (g_foo[1].b != 3)
+    return 4;
 
   void *p = &g_foo;
   struct foo* pfoo = (((struct foo *)p) + 1);
-  if (pfoo->a != 2) return 5;
-  if (pfoo->b != 3) return 6;
+  if (pfoo->a != 2)
+    return 5;
+  if (pfoo->b != 3)
+    return 6;
 
   int *pi = &g_foo;
-  if (*pi != 0) return 5;
+  if (*pi != 0)
+    return 7;
 
   pi = &g_bar;
-  if (*pi != 101) return 6;
+  if (*pi != 101)
+    return 8;
 
   struct bar bar = {0x22, 0x33};
   pi = &bar;
-  if (*pi != 0x22) return 6;
+  if (*pi != 0x22)
+    return 9;
 
   bar_struct bs;
   bs.bar[0] = 102;
   pi = &bs;
-  if (*pi != 102) return 7;
+  if (*pi != 102)
+    return 10;
 
   foo_struct fs;
   fs.bar[0] = 0x22;
   fs.bar[1] = 0x33;
 
   pi = &fs;
-  if (*pi != 0x22) return 7;
+  if (*pi != 0x22)
+    return 11;
   pi++;
 
-  if (*pi != 0x33) return 8;
+  if (*pi != 0x33)
+    return 12;
 
   foo_struct *pfs = &fs;
   pfs->bar[3] = 0x44;
   pfs->bar[4] = 0x55;
 
   pi = &fs.bar[3];
-  if (*pi != 0x44) return 9;
+  if (*pi != 0x44)
+    return 13;
   pi++;
-  if (*pi != 0x55) return 10;
+  if (*pi != 0x55)
+    return 14;
 
   return 0;
 }

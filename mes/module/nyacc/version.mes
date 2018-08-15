@@ -23,4 +23,3 @@
 ;;; Code:
 
 (include-from-path "nyacc/version.scm")
-(display "nyacc version\n")

@@ -50,7 +50,7 @@ main ()
 
   char buf[4096];
   fgets (buf, 200, f);
-  eputs (buf);
+  eputs ("buf:"); eputs (buf);
   if (strcmp (buf, "                    GNU GENERAL PUBLIC LICENSE\n"))
     return 6;
 

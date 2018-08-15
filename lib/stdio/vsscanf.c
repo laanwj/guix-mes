@@ -41,7 +41,11 @@ vsscanf (char const *s, char const *template, va_list ap)
           c = *++t;
         switch (c)
           {
-          case '%': {p++; break;}
+          case '%':
+            {
+              p++;
+              break;
+            }
           case 'c':
             {
               char *c = va_arg (ap, char*);

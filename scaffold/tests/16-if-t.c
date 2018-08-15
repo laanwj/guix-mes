@@ -22,6 +22,7 @@ int
 main ()
 {
   int t = 1;
-  if (t) return 0;
+  if (t)
+    return 0;
   return 1;
 }

@@ -53,8 +53,8 @@ main ()
   char *p = (char*)g_chars;
   int i = 0;
 
-  puts ("\n: ");
-  puts ("t: read 0123456789\nt: ");
+  oputs ("\n: ");
+  oputs ("t: read 0123456789\nt: ");
   int c = get ();
   while (i < 10) {
     *p++ = c;
@@ -62,21 +62,21 @@ main ()
     c = get ();
     i++;
   }
-  puts ("\n");
+  oputs ("\n");
   if (strcmp (g_chars, "0123456789")) return 1;
 
-  puts ("t: ungetc ('A') == getchar ()\n");
+  oputs ("t: ungetc ('A') == getchar ()\n");
   ungetc ('A', STDIN);
   if (getchar () != 'A') return 1;
   ungetc (0, STDIN);
   //ungetc ('\1', STDIN);
   ungetc (1, STDIN);
-  puts ("t: ungetc ();ungetc ();getchar ();getchar ()\n");
+  oputs ("t: ungetc ();ungetc ();getchar ();getchar ()\n");
   if (getchar () != 1) return 1;
   //if (getchar () != '\0') return 1;
   if (getchar () != 0) return 1;
 
-  puts ("t: i == 'm'\n");
+  oputs ("t: i == 'm'\n");
   char m = 0x1122336d;
   i = m;
   if (i != 'm') return 1;

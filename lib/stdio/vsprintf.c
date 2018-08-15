@@ -57,7 +57,7 @@ vsprintf (char *str, char const* format, va_list ap)
           }
         else if (c == '*')
           {
-            width = va_arg (ap, int);
+            width = va_arg (ap, long);
             c = *++p;
           }
         if (c == '.')
@@ -70,7 +70,7 @@ vsprintf (char *str, char const* format, va_list ap)
               }
             else if (c == '*')
               {
-                precision = va_arg (ap, int);
+                precision = va_arg (ap, long);
                 c = *++p;
               }
           }
@@ -85,8 +85,19 @@ vsprintf (char *str, char const* format, va_list ap)
           }
         switch (c)
           {
-          case '%': {*str++ = *p; count++; break;}
-          case 'c': {c = va_arg (ap, int); *str++ = c; count++; break;}
+          case '%':
+            {
+              *str++ = *p;
+              count++;
+              break;
+            }
+          case 'c':
+            {
+              c = va_arg (ap, long);
+              *str++ = c;
+              count++;
+              break;
+            }
           case 'd':
           case 'i':
           case 'o':
@@ -94,7 +105,7 @@ vsprintf (char *str, char const* format, va_list ap)
           case 'x':
           case 'X':
             {
-              int d = va_arg (ap, int);
+              long d = va_arg (ap, long);
               int base = c == 'o' ? 8
                 : c == 'x' || c == 'X' ? 16
                 : 10;

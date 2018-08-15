@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,11 +20,11 @@
 
 #include <libmes.h>
 
-#include <libmes.h>
 #include <stdio.h>
 #include <string.h>
 
-struct foo {
+struct foo
+{
   int *bar;
 };
 
@@ -39,10 +39,14 @@ main ()
   f.bar = bla;
   struct foo *pf = &f;
   int *b = pf->bar;
-  if (bla[2] != 11223344) return 1;
-  if (bla[3] != 55667788) return 2;
-  if (b[2] != 11223344) return 3;
-  if (b[3] != 55667788) return 4;
+  if (bla[2] != 11223344)
+    return 1;
+  if (bla[3] != 55667788)
+    return 2;
+  if (b[2] != 11223344)
+    return 3;
+  if (b[3] != 55667788)
+    return 4;
 
   eputs ("g_c[0]="); eputs (itoa (g_c[0])); eputs ("\n");
   eputs ("g_c[1]="); eputs (itoa (g_c[1])); eputs ("\n");
@@ -50,20 +54,25 @@ main ()
   memcpy (&b[2], g_c, 2 * sizeof (int));
   eputs ("b[2]:"); eputs (itoa (b[2])); eputs ("\n");
 
-  if (b[2] != 101) return 5;
+  if (b[2] != 101)
+    return 5;
   eputs ("b[3]:"); eputs (itoa (b[3])); eputs ("\n");
-  if (b[3] != 111) return 6;
+  if (b[3] != 111)
+    return 6;
 
   int c[2] = {201, 211};
   eputs ("c[0]="); eputs (itoa (c[0])); eputs ("\n");
   eputs ("c[1]="); eputs (itoa (c[1])); eputs ("\n");
 
   memcpy (&b[4], c, 2 * sizeof (int));
+
   eputs ("b[4]:"); eputs (itoa (b[4])); eputs ("\n");
 
-  if (b[4] != 201) return 7;
+  if (b[4] != 201)
+    return 7;
   eputs ("b[5]:"); eputs (itoa (b[5])); eputs ("\n");
-  if (b[5] != 211) return 8;
+  if (b[5] != 211)
+    return 8;
 
   return 0;
 }

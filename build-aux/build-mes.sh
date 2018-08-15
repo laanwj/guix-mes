@@ -127,9 +127,9 @@ ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crti
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crtn
 
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libgetopt
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+tcc
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+gnu
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libgetopt
 
 
 [ -n "$SEED" ] && exit 0

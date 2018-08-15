@@ -48,25 +48,25 @@ typedef long clock_t;
 #ifndef __MES_DEV_T
 #define __MES_DEV_T
 #undef dev_t
-typedef int dev_t;
+typedef long dev_t;
 #endif
 
 #if !defined (__MES_FILE_T) && ! defined (_FILE_T)
 #define __MES_FILE_T
 #define _FILE_T
-typedef int FILE;
+typedef long FILE;
 #endif
 
 #ifndef __MES_GID_T
 #define __MES_GID_T
 #undef gid_t
-typedef int gid_t;
+typedef unsigned gid_t;
 #endif
 
 #ifndef __MES_INO_T
 #define __MES_INO_T
 #undef ino_t
-typedef unsigned ino_t;
+typedef unsigned long ino_t;
 #endif
 
 #ifndef __MES_INO64_T
@@ -111,7 +111,7 @@ typedef long ptrdiff_t;
 #ifndef __MES_SIGVAL_T
 #define __MES_SIGVAL_T
 #undef clock_t
-typedef int sigval_t;
+typedef long sigval_t;
 #endif
 
 #ifndef __SIZE_T
@@ -132,7 +132,7 @@ typedef long ssize_t;
 #ifndef __MES_UID_T
 #define __MES_UID_T
 #undef uid_t
-typedef int uid_t;
+typedef unsigned uid_t;
 #endif
 
 #endif // ! WITH_GLIBC

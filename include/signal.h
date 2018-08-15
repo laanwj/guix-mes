@@ -26,8 +26,8 @@
 #else //! WITH_GLIBC
 
 
-typedef int sigset_t;
-typedef int stack_t;
+typedef long sigset_t;
+typedef long stack_t;
 
 #include <sys/types.h>
 
@@ -85,7 +85,8 @@ typedef int stack_t;
 #define SA_ONESHOT SA_RESETHAND
 
 
-typedef struct siginfo_t {
+typedef struct siginfo_t
+{
   int si_signo;
   int si_errno;
   int si_code;
@@ -113,19 +114,29 @@ typedef struct siginfo_t {
 } siginfo_t;
 
 
-typedef void (*sighandler_t)(int);
-
-struct sigaction {
-  union {
-    void (*sa_sigaction) (int signum, siginfo_t *, void *);
 #if __MESC__
-    void (*sa_handler) (int);
+typedef long sighandler_t;
 #else
-  sighandler_t sa_handler;
+typedef void (*sighandler_t)(int);
 #endif
+
+struct sigaction
+{
+  union
+  {
+    sighandler_t sa_handler;
+    void (*sa_sigaction) (int signum, siginfo_t *, void *);
   };
   unsigned long sa_flags;
+#if __x86_64__
+  long _foo0;
+#endif
   sigset_t sa_mask;
+#if __x86_64__
+  long _foo1[15];
+#endif
+  //unsigned long sa_flags; // x86?
+  void (*sa_restorer) (void);
 };
 
 
@@ -198,14 +209,14 @@ typedef struct
 
 /* Userlevel context.  */
 typedef struct ucontext
-  {
-    unsigned long int uc_flags;
-    struct ucontext *uc_link;
-    stack_t uc_stack;
-    mcontext_t uc_mcontext;
-    sigset_t uc_sigmask;
-    struct _libc_fpstate __fpregs_mem;
-  } ucontext_t;
+{
+  unsigned long int uc_flags;
+  struct ucontext *uc_link;
+  stack_t uc_stack;
+  mcontext_t uc_mcontext;
+  sigset_t uc_sigmask;
+  struct _libc_fpstate __fpregs_mem;
+} ucontext_t;
 #endif // !__i386__
 
 int kill (pid_t pid, int signum);

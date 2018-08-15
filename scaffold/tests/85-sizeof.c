@@ -34,15 +34,26 @@ struct bar
   };
 };
 
+#if __i386__
+#define ptr_size 4
+#define foo_size 20
+#define bar_size 12
+#elif __x86_64__
+#define ptr_size 8
+#define foo_size 24
+#define bar_size 12
+#endif
+
+
 int
 main ()
 {
   char **p;
-  if (sizeof (*p) != 4)
+  if (sizeof (*p) != ptr_size)
     return 1;
   if (sizeof (**p) != 1)
     return 2;
-  puts ("size: "); puts (itoa (sizeof (struct foo))); puts ("\n");
+  oputs ("size: "); oputs (itoa (sizeof (struct foo))); oputs ("\n");
   if (sizeof (struct foo) != 20)
     return 3;
   struct foo f;

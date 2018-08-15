@@ -60,7 +60,7 @@ mkdir (char const *file_name, mode_t mode)
 int
 dup (int old)
 {
-  return _sys_call1 (SYS_dup, (long)old);
+  return _sys_call1 (SYS_dup, (int)old);
 }
 
 gid_t
@@ -69,28 +69,43 @@ getgid ()
   return _sys_call (SYS_getgid);
 }
 
+// long _sys_call (long sys_call);
+// long _sys_call4 (long sys_call, long one, long two, long three, long four);
+
+#define SA_SIGINFO 4
+#define SA_RESTORER 0x04000000
+
+#define SYS_rt_sigreturn 15
+
+void
+_restorer (void)
+{
+  _sys_call (SYS_rt_sigreturn);
+}
+
+# define __sigmask(sig) \
+  (((unsigned long int) 1) << (((sig) - 1) % (8 * sizeof (unsigned long int))))
+
+sighandler_t
+signal (int signum, sighandler_t action)
+{
 #if __i386__
-#if __MESC__
-void *
-signal (int signum, void * action)
-#else
-sighandler_t
-signal (int signum, sighandler_t action)
-#endif
-{
   return _sys_call2 (SYS_signal, signum, action);
-}
-#elif __x86_64__
-sighandler_t
-signal (int signum, sighandler_t action)
-{
-  sighandler_t old;
-  _sys_call3 (SYS_rt_sigaction, signum, action, &old);
-  return old;
-}
 #else
-#error arch not supported
+  static struct sigaction setup_action = {-1};
+  static struct sigaction old = {0};
+
+  setup_action.sa_handler = action;
+  setup_action.sa_restorer = _restorer;
+  setup_action.sa_mask = __sigmask (signum);
+  old.sa_handler = SIG_DFL;
+  setup_action.sa_flags = SA_RESTORER | SA_RESTART;
+  int r = _sys_call4 (SYS_rt_sigaction, signum, &setup_action, &old, sizeof (sigset_t));
+  if (r)
+    return 0;
+  return old.sa_handler;
 #endif
+}
 
 int
 fcntl (int filedes, int command, ...)
@@ -98,7 +113,7 @@ fcntl (int filedes, int command, ...)
   va_list ap;
   va_start (ap, command);
   int data = va_arg (ap, int);
-  int r = _sys_call3 (SYS_fcntl, (long)filedes, (long)command, (long)data);
+  int r = _sys_call3 (SYS_fcntl, (int)filedes, (int)command, (int)data);
   va_end (ap);
   return r;
 }
@@ -112,13 +127,13 @@ pipe (int filedes[2])
 int
 dup2 (int old, int new)
 {
-  return _sys_call2 (SYS_dup2, (long)old, (long)new);
+  return _sys_call2 (SYS_dup2, (int)old, (int)new);
 }
 
 int
 getrusage (int processes, struct rusage *rusage)
 {
-  return _sys_call2 (SYS_getrusage, (long)processes, (long)rusage);
+  return _sys_call2 (SYS_getrusage, (int)processes, (long)rusage);
 }
 
 int
@@ -142,15 +157,15 @@ setitimer (int which, struct itimerval const *new,
 }
 
 int
-fstat (int fd, struct stat *statbuf)
+fstat (int filedes, struct stat *statbuf)
 {
-  return _sys_call2 (SYS_fstat, (long)fd, (long)statbuf);
+  return _sys_call2 (SYS_fstat, (int)filedes, (long)statbuf);
 }
 
 int
-getdents (long filedes, char *buffer, size_t nbytes)
+getdents (int filedes, char *buffer, size_t nbytes)
 {
-  return _sys_call3 (SYS_getdents, (long)filedes, (long)buffer, (long)nbytes);
+  return _sys_call3 (SYS_getdents, (int)filedes, (long)buffer, (long)nbytes);
 }
 
 int

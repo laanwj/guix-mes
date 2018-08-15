@@ -35,6 +35,8 @@
 
 #include <libc.c>
 
+int errno;
+
 #if __GNU__
 #include <hurd/tcc.c>
 #elif __linux__
@@ -43,8 +45,10 @@
 #error both __GNU__ and _linux__ are undefined, choose one
 #endif
 
-#if __MESC__
+#if __MESC__ && __i386__
 #include <x86-mes/setjmp.c>
+#elif __MESC__ && __x86_64__
+#include <x86_64-mes/setjmp.c>
 #elif __i386__
 #include <x86-mes-gcc/setjmp.c>
 #elif __x86_64__

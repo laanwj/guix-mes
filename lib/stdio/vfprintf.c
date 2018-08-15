@@ -25,7 +25,7 @@
 int
 vfprintf (FILE* f, char const* format, va_list ap)
 {
-  int fd = (int)f;
+  int fd = (long)f;
   char const *p = format;
   int count = 0;
   while (*p)
@@ -85,8 +85,19 @@ vfprintf (FILE* f, char const* format, va_list ap)
           }
         switch (c)
           {
-          case '%': {fputc (*p, fd); count++; break;}
-          case 'c': {char c; c = va_arg (ap, int); fputc (c, fd); break;}
+          case '%':
+            {
+              fputc (*p, fd);
+              count++;
+              break;
+            }
+          case 'c':
+            {
+              char _c;
+              _c = va_arg (ap, long);
+              fputc (_c, fd);
+              break;
+            }
           case 'd':
           case 'i':
           case 'o':
@@ -94,7 +105,7 @@ vfprintf (FILE* f, char const* format, va_list ap)
           case 'x':
           case 'X':
             {
-              int d = va_arg (ap, int);
+              long d = va_arg (ap, long);
               int base = c == 'o' ? 8
                 : c == 'x' || c == 'X' ? 16
                 : 10;

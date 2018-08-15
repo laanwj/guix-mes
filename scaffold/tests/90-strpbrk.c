@@ -29,7 +29,7 @@ main ()
   strcat (buf, " bar");
   eputs (buf); eputs ("\n");
   if (strcmp (buf, "foo bar"))
-   return 22;
+   return 1;
 
   strncat (buf, " bazzzz", 4);
   eputs (buf); eputs ("\n");

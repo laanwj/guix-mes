@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -32,58 +32,70 @@ main ()
   char *x = g_arena;
   char *y = g_chars;
 
-  puts ("\n");
-  puts ("t: p[0] != 'm'\n");
-  if (p[0] != 'm') return p[0];
+  oputs ("\n");
+  oputs ("t: p[0] != 'm'\n");
+  if (p[0] != 'm')
+    return p[0];
 
-  puts ("t: p[i] != 't'\n");
-  if (p[i] != 'm') return p[i];
+  oputs ("t: p[i] != 't'\n");
+  if (p[i] != 'm')
+    return p[i];
 
-  puts ("t: *g_chars != 'A'\n");
+  oputs ("t: *g_chars != 'A'\n");
   g_arena[0] = 'A';
-  if (*g_chars != 'A') return 1;
+  if (*g_chars != 'A')
+    return 1;
 
-  puts ("t: *x != 'A'\n");
-  if (*x != 'A') return 1;
+  oputs ("t: *x != 'A'\n");
+  if (*x != 'A')
+    return 1;
 
-  puts ("t: *y != 'A'\n");
-  if (*y != 'A') return 1;
+  oputs ("t: *y != 'A'\n");
+  if (*y != 'A')
+    return 1;
 
-  puts ("t: *x != 'Q'\n");
+  oputs ("t: *x != 'Q'\n");
   g_chars[0] = 'Q';
-  if (*x != 'Q') return 1;
+  if (*x != 'Q')
+    return 1;
 
-  puts ("t: *x++ != 'C'\n");
+  oputs ("t: *x++ != 'C'\n");
   *x++ = c;
-  if (*g_chars != 'C') return 1;
+  if (*g_chars != 'C')
+    return 1;
 
-  puts ("t: *g_chars == 'B'\n");
+  oputs ("t: *g_chars == 'B'\n");
   g_arena[0] = 'B';
-  if (*g_chars == 'B') goto ok1;
+  if (*g_chars == 'B')
+    goto ok1;
   return 1;
   ok1:
 
-  puts ("t: *x == 'B'\n");
+  oputs ("t: *x == 'B'\n");
   x = g_arena;
-  if (*x == 'B') goto ok2;
+  if (*x == 'B')
+    goto ok2;
   return 1;
  ok2:
 
-  puts ("t: *y == 'B'\n");
+  oputs ("t: *y == 'B'\n");
   y = g_chars;
-  if (*y == 'B') goto ok3;
+  if (*y == 'B')
+    goto ok3;
   return 1;
  ok3:
 
-  puts ("t: *x == 'R'\n");
+  oputs ("t: *x == 'R'\n");
   g_chars[0] = 'R';
-  if (*x == 'R') goto ok4;
+  if (*x == 'R')
+    goto ok4;
   return 1;
  ok4:
 
-  puts ("t: *x++ == 'C'\n");
+  oputs ("t: *x++ == 'C'\n");
   *x++ = c;
-  if (*g_chars == 'C') goto ok5;
+  if (*g_chars == 'C')
+    goto ok5;
   return 1;
  ok5:
 

@@ -27,15 +27,13 @@
 
 #include <sys/types.h>
 
-#if __GNUC__
-typedef char* va_list;
-#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
-#else // !__GNUC__
-typedef int va_list;
-#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
-#endif // !__GNUC__
+#if __GNUC__ && __x86_64__
+#define __FOO_VARARGS 1
+#endif
 
-#define va_arg(ap, type) (type)(((int*)((ap) = ((ap) + 4)))[-1])
+typedef long va_list;
+#define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
+#define va_arg(ap, type) (type)(((long*)((ap) = ((ap) + sizeof (void*))))[-1])
 #define va_end(ap) (void)((ap) = 0)
 #define va_copy(dest, src) dest = src
 

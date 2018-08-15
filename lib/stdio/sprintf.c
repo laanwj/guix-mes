@@ -25,8 +25,14 @@ int
 sprintf (char *str, char const* format, ...)
 {
   va_list ap;
+  int r;
+#if __GNUC__ && __x86_64__
+#define __FUNCTION_ARGS 2
+  ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
+#undef __FUNCTION_ARGS
+#endif
   va_start (ap, format);
-  int r = vsprintf (str, format, ap);
+  r = vsprintf (str, format, ap);
   va_end (ap);
   return r;
 }

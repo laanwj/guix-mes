@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -29,9 +29,10 @@ int foo;
 void
 second()
 {
-  if (foo++) exit (1);
-  printf ("second\n");      // prints
-  longjmp (buf,1);          // jumps back to where setjmp was called - making setjmp now return 1
+  if (foo++)
+    exit (1);
+  oputs ("second\n");        // prints
+  longjmp (buf, 1);          // jumps back to where setjmp was called - making setjmp now return 1
   exit (1);
 }
 
@@ -39,7 +40,7 @@ void
 first ()
 {
   second ();
-  printf ("first\n");       // does not print
+  oputs ("first\n");         // does not print
   exit (2);
 }
 
@@ -50,7 +51,7 @@ main ()
     first ();               // when executed, setjmp returned 0
   else                      // when longjmp jumps back, setjmp returns 1
     {
-      printf ("main\n");    // prints
+      oputs ("main\n");    // prints
       return 0;
     }
 

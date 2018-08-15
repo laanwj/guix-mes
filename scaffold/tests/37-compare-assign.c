@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -27,18 +27,22 @@ main ()
   int t = 1;
   int one = t;
 
-  puts ("\n");
-  puts ("t: if (f = 0) ?\n");
-  if (f = 0) return 1;
+  oputs ("\n");
+  oputs ("t: if (f = 0) ?\n");
+  if (f = 0)
+    return 1;
 
-  puts ("t: if (!(t = 1)) ?\n");
-  if (!(t = 1)) return 1;
+  oputs ("t: if (!(t = 1)) ?\n");
+  if (!(t = 1))
+    return 1;
 
-  puts ("t: if ((f = 0) != 0) ?\n");
-  if ((f = 0) != 0) return 1;
+  oputs ("t: if ((f = 0) != 0) ?\n");
+  if ((f = 0) != 0)
+    return 1;
 
-  puts ("t: if ((t = 1) != 1) ?\n");
-  if ((t = 1) != 1) return 1;
+  oputs ("t: if ((t = 1) != 1) ?\n");
+  if ((t = 1) != 1)
+    return 1;
 
   return 0;
 }

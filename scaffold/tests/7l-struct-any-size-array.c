@@ -64,10 +64,12 @@ main ()
     }
 
   for (int i = 0; i < sizeof (struct foo13); i++)
-    if (p[i] != 0) return 1 + i;
+    if (p[i] != 0)
+      return 1 + i;
 
   for (int i = sizeof (struct foo13); i < 2 * sizeof (struct foo13); i++)
-    if (p[i] != 255) return 1 + i;
+    if (p[i] != 255)
+      return 1 + i;
 
   tab16[1].a = -1;
   tab16[1].b = -1;
@@ -83,10 +85,12 @@ main ()
     }
 
   for (int i = 0; i < sizeof (struct foo16); i++)
-    if (p[i] != 0) return 1 + i;
+    if (p[i] != 0)
+      return 1 + i;
 
   for (int i = sizeof (struct foo16); i < 2 * sizeof (struct foo16); i++)
-    if (p[i] != 255) return 1 + i;
+    if (p[i] != 255)
+      return 1 + i;
 
   return 0;
 }

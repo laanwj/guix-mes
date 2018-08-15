@@ -19,8 +19,8 @@
  */
 
 #include <libmes.h>
-#include <string.h>
 
+#include <string.h>
 
 int
 compare_int (void *a, void *b)

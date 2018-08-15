@@ -19,11 +19,16 @@
  */
 
 #include <libmes.h>
+
 #include <stdio.h>
+#include <stdarg.h>
 
 int
 main ()
 {
+#if __GNUC__ && __x86_64__ && !POSIX
+  return 0;
+#endif
   int i;
   int r = sscanf ("42", "%d", &i);
   if (r != 1)

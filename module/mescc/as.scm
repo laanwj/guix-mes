@@ -25,7 +25,17 @@
             dec->hex
             int->bv8
             int->bv16
-            int->bv32))
+            int->bv32
+            int->bv64
+            get-r
+            get-r0
+            get-r1
+            get-r-1))
+
+(define (int->bv64 value)
+  (let ((bv (make-bytevector 8)))
+    (bytevector-u64-native-set! bv 0 value)
+    bv))
 
 (define (int->bv32 value)
   (let ((bv (make-bytevector 4)))
@@ -48,5 +58,20 @@
         (else (format #f "~s" o))))
 
 (define (as info instruction . rest)
-  (let ((proc (assoc-ref (.instructions info) instruction)))
-    (apply proc info rest)))
+  (if (pair? instruction)
+      (append-map (lambda (o) (apply as (cons* info o rest))) instruction)
+      (let ((proc (assoc-ref (.instructions info) instruction)))
+        (if (not proc) (error "no such instruction" instruction)
+            (apply proc info rest)))))
+
+(define (get-r info)
+  (car (if (pair? (.allocated info)) (.allocated info) (.registers info))))
+
+(define (get-r0 info)
+  (cadr (.allocated info)))
+
+(define (get-r1 info)
+  (car (.allocated info)))
+
+(define (get-r-1 info)
+  (caddr (.allocated info)))

@@ -29,38 +29,61 @@ main ()
   int one = t;
   char *p = "mes";
 
-  puts ("\n");
+  oputs ("\n");
 
-  puts ("t: for (i=1; i<5; ++i)\n");
-  for (i=1; i<5; ++i);
-  if (i != 5) return i;
+  oputs ("t: for (i=1; i<5; ++i)\n");
+  for (i=1; i<5; ++i)
+    ;
+  if (i != 5)
+    return i;
 
-  puts ("t: while (i<3) i++\n");
+  oputs ("t: while (i<3) i++\n");
   i = 1;
-  while (i<3) i++;
-  if (i != 3) return i;
+  while (i<3)
+    i++;
+  if (i != 3)
+    return i;
 
-  puts ("t: do i-- while (i>0)\n");
-  do i--; while (i>0);
-  if (i != 0) return 1;
+  oputs ("t: do i-- while (i>0)\n");
+  do
+    i--;
+  while (i>0)
+    ;
+  if (i != 0)
+    return 1;
 
-  puts ("t: while (1) break;\n");
-  while (1) break;
+  oputs ("t: while (1) break;\n");
+  while (1)
+    break;
 
-  puts ("t: while (1) ... break;\n");
-  while (1) {f=0;break;}
+  oputs ("t: while (1) ... break;\n");
+  while (1)
+    {
+      f=0;
+      break;
+    }
 
-  puts ("t: while (1) {while (1) break;break;}\n");
-  while (1) {while (1) break;break;}
+  oputs ("t: while (1) {while (1) break;break;}\n");
+  while (1)
+    {
+      while (1)
+        break;
+      break;
+    }
 
-  puts ("t: while () {continue;...}\n");
-  while (one--) {continue;one=1;}
+  oputs ("t: while () {continue;...}\n");
+  while (one--)
+    {
+      continue;
+      one=1;
+    }
   one += 2;
 
-  puts ("t: while (1) { goto label; };\n");
-  while (1) {
-    goto ok1;
-  }
+  oputs ("t: while (1) { goto label; };\n");
+  while (1)
+    {
+      goto ok1;
+    }
  ok1:
 
   return 0;

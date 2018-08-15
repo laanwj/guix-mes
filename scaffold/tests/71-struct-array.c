@@ -33,7 +33,7 @@ struct foo
   int bar[2];
   char name[10];
 };
-  
+
 struct foo g_foo;
 
 int a, b;
@@ -68,24 +68,25 @@ main ()
 
   char *strings[] = { "one\n", "two\n", "three\n", NULL };
   char **p = strings;
-  while (*p) puts (*p++);
+  while (*p)
+    oputs (*p++);
   if (strcmp (strings[1], "two\n"))
     return 3;
 
   strcpy (f.name, "hallo\n");
-  puts (f.name);
+  oputs (f.name);
 
   struct foo fu;
   strcpy (fu.name, "hello\n");
-  puts (fu.name);
+  oputs (fu.name);
 
   strcpy (g_foo.name, "hey\n");
-  puts (g_foo.name);
+  oputs (g_foo.name);
 
   char buf[10];
   struct foo* s = &buf;
   strcpy (s->name, "hi\n");
-  puts (s->name);
+  oputs (s->name);
 
   return 0;
 }

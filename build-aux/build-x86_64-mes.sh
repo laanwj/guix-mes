@@ -122,16 +122,16 @@ trace "TEST       lib/x86_64-mes/exit-42.x86_64-mes-out" echo lib/x86_64-mes/exi
 { set +e; lib/x86_64-mes/exit-42.x86_64-mes-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc-mini
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc-mini
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc
 
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86_64-mes/crt0
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86_64-mes/crti
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86_64-mes/crtn
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crt0
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crti
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crtn
 
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libgetopt
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+tcc
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+gnu
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc+tcc
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc+gnu
+# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libgetopt
 
 
 # [ -n "$SEED" ] && exit 0
@@ -146,7 +146,7 @@ trace "TEST       lib/x86_64-mes/exit-42.x86_64-mes-out" echo lib/x86_64-mes/exi
 # trace "MSNARF vector.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
 
 # echo MES_ARENA=$MES_ARENA
-# bash ${srcdest}build-aux/cc-mes.sh scaffold/main
+# bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/main
 
 MES_LIBS='-l none' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/main
 

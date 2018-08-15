@@ -20,11 +20,6 @@
 
 #include <libmes-mini.h>
 
-union foo
-{
-  int i;
-};
-
 int
 main ()
 {
@@ -32,15 +27,21 @@ main ()
   int t = 1;
   int one = t;
 
-  puts ("\n");
-  puts ("t: (one == 1) ?\n");
+  oputs ("\n");
+  oputs ("t: (one == 1) ?\n");
   (one == 1) ? 1 : exit (1);
 
-  puts ("t: (f) ?\n");
+  oputs ("t: (f) ?\n");
   (f) ? exit (2) : 1;
 
-  union foo fu;
-  fu.i = 1 ? 0 : 1;
+  int r = f ? 3 - 1 : 2 - 2;
+  if (r)
+    return 3;
 
-  return 0;
+  r = t ? 2 + 3 - 1 : 3 + 4 - 5;
+  if (r != 4)
+    return 4;
+
+  oputs ("t: f ? 3 - 1 : 2 - 2\n");
+  return f ? 3 - 1 : 2 - 2;
 }

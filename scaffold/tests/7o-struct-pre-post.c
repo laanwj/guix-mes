@@ -18,8 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// struct foo {int length; char* string; struct foo *next;};
-// struct foo stack[] = {{20, "foo", 0}, {4, "baaz", 0}, {0, 0, 0}};
+#include <libmes.h>
 
 struct info {int flag;};
 struct foo {int length; char* string; struct info info;};
@@ -28,12 +27,24 @@ struct foo stack[] = {{3, "foo", {11}},{4, "baar", {12}}};
 int
 main ()
 {
-  puts (stack[0].string); puts ("\n");
-  puts (stack[1].string); puts ("\n");
+  oputs (stack[0].string); oputs ("\n");
+  oputs (stack[1].string); oputs ("\n");
   struct foo* top = &stack[1];
   int i;
+  int j;
   i = (top--)->info.flag;
   top++;
-  int j = (--top)->info.flag;
-  return i - j - 1;
+  j = (--top)->info.flag;
+
+  if (i - j - 1)
+    return 1;
+
+  i = (top++)->info.flag;
+  top--;
+  j = (++top)->info.flag;
+
+  if (i - j != -1)
+    return 2;
+
+  return 0;
 }

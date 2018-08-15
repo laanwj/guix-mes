@@ -19,7 +19,7 @@
  */
 
 char **environ = 0;
-int main (int argc, char *argv[], char *envp[]);
+//int main (int argc, char *argv[], char *envp[]);
 
 void
 _start ()

@@ -34,6 +34,7 @@
 typedef int mode_t;
 #endif
 
+#if __i386__
 struct stat
 {
   unsigned long  st_dev;
@@ -44,17 +45,40 @@ struct stat
   unsigned short st_gid;
   unsigned long  st_rdev;
   long           st_size;
-  unsigned int   st_blksize;
-  unsigned int   st_blocks;
+  unsigned long  st_blksize;
+  unsigned long  st_blocks;
   time_t         st_atime;
   unsigned long  st_atime_usec;
   time_t         st_mtime;
   unsigned long  st_mtime_usec;
   time_t         st_ctime;
   unsigned long  st_ctime_usec;
-  unsigned int   __foo0;
-  unsigned int   __foo1;
+  unsigned long  __foo0;
+  unsigned long  __foo1;
 };
+#elif __x86_64__
+struct stat
+{
+  unsigned long  st_dev;
+  unsigned long  st_ino;
+  unsigned int   st_mode;
+  unsigned int   st_nlink;
+  unsigned int   st_uid;
+  unsigned int   st_gid;
+  unsigned long  st_rdev;
+  long           st_size;
+  unsigned long  st_blksize;
+  unsigned long  st_blocks;
+  time_t         st_atime;
+  unsigned long  st_atime_usec;
+  time_t         st_mtime;
+  unsigned long  st_mtime_usec;
+  time_t         st_ctime;
+  unsigned long  st_ctime_usec;
+  unsigned long  __foo0;
+  unsigned long  __foo1;
+};
+#endif
 
 int chmod (char const *file_name, mode_t mode);
 int mkdir (char const *file_name, mode_t mode);

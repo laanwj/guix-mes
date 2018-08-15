@@ -19,6 +19,7 @@
  */
 
 #include <libmes.h>
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -45,16 +46,16 @@ main ()
 
   dump (tmp, contents);
 
-
   FILE *t = fopen (tmp, "r+");
-
+  if (t <= 0)
+    return 1;
 
   char buf[80];
   memset (buf, 0, sizeof (buf));
   fread (buf, strlen (line), 1, t);
   eputs ("buf="); eputs (buf); eputs ("\n");
   if (strcmp (buf, line))
-    return 1;
+    return 2;
 
   fwrite (end, strlen (end), 1, t);
 
@@ -63,47 +64,51 @@ main ()
   fread (buf, strlen (line), 1, t);
   eputs ("buf="); eputs (buf); eputs ("\n");
   if (strcmp (buf, line))
-    return 2;
+    return 3;
 
   tmp = "bar";
   dump (tmp, contents);
   t = fopen (tmp, "w+");
-
-  fwrite (end, strlen (end), 1, t);
-  fseek (t, 0, SEEK_SET);
-  memset (buf, 0, sizeof (buf));
-  fread (buf, strlen (end), 1, t);
-  eputs ("buf="); eputs (buf); eputs ("\n");
-  if (strcmp (buf, end))
-    return 3;
-
-  fwrite (end, strlen (end), 1, t);
-
-  fseek (t, 0, SEEK_SET);
-  memset (buf, 0, sizeof (buf));
-  fread (buf, strlen (end), 1, t);
-  if (strcmp (buf, end))
+  if (t <= 0)
     return 4;
 
-  tmp = "baz";
-  dump (tmp, contents);
-  t = fopen (tmp, "a+");
-
   fwrite (end, strlen (end), 1, t);
   fseek (t, 0, SEEK_SET);
   memset (buf, 0, sizeof (buf));
-  fread (buf, strlen (line), 1, t);
+  fread (buf, strlen (end), 1, t);
   eputs ("buf="); eputs (buf); eputs ("\n");
-  if (strcmp (buf, line))
+  if (strcmp (buf, end))
     return 5;
 
   fwrite (end, strlen (end), 1, t);
 
   fseek (t, 0, SEEK_SET);
+  memset (buf, 0, sizeof (buf));
+  fread (buf, strlen (end), 1, t);
+  if (strcmp (buf, end))
+    return 6;
+
+  tmp = "baz";
+  dump (tmp, contents);
+  t = fopen (tmp, "a+");
+  if (t <= 0)
+    return 7;
+
+  fwrite (end, strlen (end), 1, t);
+  fseek (t, 0, SEEK_SET);
+  memset (buf, 0, sizeof (buf));
   fread (buf, strlen (line), 1, t);
   eputs ("buf="); eputs (buf); eputs ("\n");
   if (strcmp (buf, line))
-    return 6;
+    return 8;
+
+  fwrite (end, strlen (end), 1, t);
+
+  fseek (t, 0, SEEK_SET);
+  fread (buf, strlen (line), 1, t);
+  eputs ("buf="); eputs (buf); eputs ("\n");
+  if (strcmp (buf, line))
+    return 9;
 
   return 0;
 }

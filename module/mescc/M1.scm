@@ -69,6 +69,14 @@
   (if hex? (string-append "!0x" (dec->hex o))
       (string-append "!" (number->string o))))
 
+(define (hex2:immediate2 o)
+  (if hex? (string-append "@0x" (dec->hex o))
+      (string-append "@" (number->string o))))
+
+(define (hex2:immediate4 o)
+  (if hex? (string-append "%0x" (dec->hex o))
+      (string-append "%" (number->string o))))
+
 (define* (display-join o #:optional (sep ""))
   (let loop ((o o))
     (when (pair? o)
@@ -87,7 +95,8 @@
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
         (if index
             (string-append "_string_" file-name "_" (number->string index))
-            (error "no such string:" o))))
+            (if (equal? o "%0") o       ; FIXME: 64b
+                (error "no such string:" o)))))
     (define (text->M1 o)
       (cond
        ((char? o) (text->M1 (char->integer o)))
@@ -119,6 +128,8 @@
           ((#:offset1 ,offset1) (hex2:offset1 offset1))
           ((#:immediate ,immediate) (hex2:immediate immediate))
           ((#:immediate1 ,immediate1) (hex2:immediate1 immediate1))
+          ((#:immediate2 ,immediate2) (hex2:immediate2 immediate2))
+          ((#:immediate4 ,immediate4) (hex2:immediate4 immediate4))
           (_ (error "text->M1 no match o" o))))
        ((pair? o) (string-join (map text->M1 o)))))
     (define (write-function o)
@@ -147,6 +158,7 @@
                    (string? (not (equal? string-label "_string_#f"))))
               (cond ((and (pair? o) (global? (cdr o))) (string-append "&" (global->string o)))
                     ((and (not string?) (not function?)) (stderr "warning: unresolved label: ~s\n" label))
+                    ((equal? string-label "%0") o) ;; FIXME: 64b
                     (else (string-append "&" label))))))
       (define (display-align size)
         (let ((alignment (- 4 (modulo size 4))))

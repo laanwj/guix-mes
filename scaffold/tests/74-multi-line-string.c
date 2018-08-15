@@ -34,15 +34,18 @@ int *global_p = &global_i;
 int
 main ()
 {
-  if (printf ("belong to us\n"), strcmp (help, "All your base are")) return 1;
+  if (printf ("belong to us\n"), strcmp (help, "All your base are"))
+    return 1;
 
   int i = 1 | 2 | 4;
-  if (i != 7) return 1;
+  if (i != 7)
+    return 1;
 
   printf ("global_i=%d\n", global_i);
   *global_p = 2;
   printf ("global_i=%d\n", global_i);
-  if (global_i != 2) return global_i;
+  if (global_i != 2)
+    return global_i;
 
   return 2,1,0;
 }

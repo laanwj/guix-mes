@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -26,75 +26,113 @@
 
 char *env[] = {"foo", "bar", "baz", 0};
 
+#if 0//!POSIX
+#define getenv xgetenv
+
+char *
+getenv (char const* s)
+{
+  eputs ("getenv\n");
+  char **p = environ;
+  int length = strlen (s);
+  eputs ("getenv length="); eputs (itoa (length)); eputs ("\n");
+  while (*p)
+    {
+      eputs ("*p="); eputs (*p); eputs ("\n");;
+      eputs (" p="); eputs (itoa ((long)p)); eputs ("\n");
+      if (!strncmp (s, *p, length) && *(*p + length) == '=')
+        return (*p + length + 1);
+      p++;
+    }
+  return 0;
+}
+#endif
+
 int
 test (char **e)
 {
   int i = 0;
 
-  puts ("\n");
-  puts ("a[i] = i-1\n");
+  oputs ("\n");
+  oputs ("a[i] = i-1\n");
   int a[3];
-  for (int i=0; i < 3; i++) a[i] = i-1;
-  for (int i=0; i < 3; i++) if (a[i] != i-1) return 1;
+  for (int i=0; i < 3; i++)
+    a[i] = i-1;
+  for (int i=0; i < 3; i++)
+    if (a[i] != i-1)
+    return 1;
 
-  puts ("env [");
-  puts (itoa ((int)env));
-  puts ("]\n");
+  oputs ("env [");
+  oputs (itoa ((long)env));
+  oputs ("]\n");
 
-  puts ("e [");
-  puts (itoa ((int)e));
-  puts ("]\n");
+  oputs ("e [");
+  oputs (itoa ((int)e));
+  oputs ("]\n");
 
-  puts ("env [0] == \"foo\"\n");
-  if (strcmp (env[0], "foo")) return 2;
+  oputs ("env [0] == \"foo\"\n");
+  if (strcmp (env[0], "foo"))
+    return 2;
 
-  puts ("env [1] == \"bar\"\n");
-  if (strcmp (env[1], "bar")) return 3;
+  oputs ("env [1] == \"bar\"\n");
+  if (strcmp (env[1], "bar"))
+    return 3;
 
-  puts ("t: **p in *env[]\n");
+  oputs ("t: **p in *env[]\n");
 
   char **pp = env;
   while (*pp)
     {
-      puts ("pp [");
-      puts (itoa ((int)pp));
-      puts ("]: ");
-      if (*pp) puts (*pp);
-      puts ("\n");
+      oputs ("pp [");
+      oputs (itoa ((int)pp));
+      oputs ("]: ");
+      if (*pp)
+        oputs (*pp);
+      oputs ("\n");
       pp++;
       i++;
     }
-  if (i != 3) return i;
+  if (i != 3)
+    return i;
 
   pp = env;
-  puts ("t: *pp++ == \"foo\"\n");
-  if (strcmp (*pp++, "foo")) return 4;
+  oputs ("t: *pp++ == \"foo\"\n");
+  if (strcmp (*pp++, "foo"))
+    return 4;
 
-  puts ("t: *pp++ == \"bar\"\n");
-  if (strcmp (*pp++, "bar")) return 5;
+  oputs ("t: *pp++ == \"bar\"\n");
+  if (strcmp (*pp++, "bar"))
+    return 5;
 
   char *buf = "hello";
-  puts ("t: buf[0]\n");
-  if (buf[0] != 'h') return 6;
+  oputs ("t: buf[0]\n");
+  if (buf[0] != 'h')
+    return 6;
 
-  puts ("t: buf + 1\n");
-  if (*(buf+1) != 'e') return 7;
+  oputs ("t: buf + 1\n");
+  if (*(buf+1) != 'e')
+    return 7;
 
   char **p = &buf;
-  puts ("t: **p\n");
-  if (**p != 'h') return 8;
+  oputs ("t: **p\n");
+  if (**p != 'h')
+    return 8;
 
-  puts ("t: *(p + 1)\n");
-  if (*(*p + 1) != 'e') return 9;
+  oputs ("t: *(p + 1)\n");
+  if (*(*p + 1) != 'e')
+    return 9;
 
-  puts ("t: getenv ()");
-  if (!getenv ("PATH")) return 10;
+  oputs ("t: getenv ()\n");
+  if (!getenv ("PATH"))
+    return 10;
 
-  puts ("t: setenv ()");
-  if (setenv ("61-array", "yes", 1)) return 11;
+  oputs ("t: setenv ()\n");
+  if (setenv ("61-array", "yes", 1))
+    return 11;
 
-  puts ("t: getenv2 ()");
-  if (strcmp (getenv ("61-array"), "yes")) return 12;
+  oputs ("t: getenv2 ()\n");
+  if (strcmp (getenv ("61-array"), "yes"))
+    return 12;
 
   return 0;
 }

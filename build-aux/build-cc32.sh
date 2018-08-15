@@ -51,11 +51,11 @@ ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crti
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crtn
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libc
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libgetopt
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libc+tcc
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libtcc1
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libc+gnu
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libg
+ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/libgetopt
 
 LIBC= sh ${srcdest}build-aux/cc32-mes.sh scaffold/main
 LIBC=c-mini sh ${srcdest}build-aux/cc32-mes.sh scaffold/hello

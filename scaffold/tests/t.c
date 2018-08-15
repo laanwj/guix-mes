@@ -135,21 +135,26 @@ main (int argc, char* argv[])
     return 20;
   char *strings[] = { "one\n", "two\n", "three\n", 0 };
   char **p = strings;
-  while (*p) puts (*p++);
+  while (*p)
+    oputs (*p++);
   if (strcmp (strings[1], "two\n"))
     return 21;
   p = list;
   struct anon a = {3,4};
   eputs ("bar:"); eputs (itoa (a.bar)); eputs ("\n");
   eputs ("baz:"); eputs (itoa (a.baz)); eputs ("\n");
-  if (a.bar != 3) return 22;
-  if (a.baz != 4) return 23;
+  if (a.bar != 3)
+    return 22;
+  if (a.baz != 4)
+    return 23;
 
   struct anion u = {3, 4};
   eputs ("u.foo:"); eputs (itoa (u.foo)); eputs ("\n");
   eputs ("u.bla:"); eputs (itoa (u.bla)); eputs ("\n");
-  if (u.foo != 3) return 24;
-  if (u.bla != 4) return 25;
+  if (u.foo != 3)
+    return 24;
+  if (u.bla != 4)
+    return 25;
 
   struct nest n = {0};
   if (n.bar.baz)
@@ -176,12 +181,12 @@ main (int argc, char* argv[])
   int lst[6] = {-1, 1 - 1, i, 2, 3};
   for (int i = 0; i < 4; i++)
     {
-      puts ("i: "); puts (itoa (lst[i])); puts ("\n");
+      oputs ("i: "); oputs (itoa (lst[i])); oputs ("\n");
       if (lst[i+1] != i)
         return 30 + i;
     }
-  puts ("foo"
-        "bar");
+  oputs ("foo"
+         "bar");
 
   return 0;
 }

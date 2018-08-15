@@ -40,7 +40,13 @@ qpart (void *base, size_t count, size_t size, int (*compare)(void const *, void 
       int c = compare (base+j*size, p);
       if (c < 0)
         {
+#if 1 //__x86_64__
           qswap (base+i*size, base+j*size, size);
+#else
+          int p1 = base+i*size;
+          int p2 = base+j*size;
+          qswap (p1, p2, size);
+#endif
           i++;
         }
       else if (c == 0)
@@ -58,6 +64,12 @@ qsort (void *base, size_t count, size_t size, int (*compare)(void const *, void 
     {
       int p = qpart (base, count-1, size, compare);
       qsort (base, p, size, compare);
+#if 1 //__x86_64__
       qsort (base+p*size, count-p, size, compare);
+#else
+      int p1 = base+p*size;
+      int p2 = count-p;
+      qsort (p1, p2, size, compare);
+#endif
     }
 }

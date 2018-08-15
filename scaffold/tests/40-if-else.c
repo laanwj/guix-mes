@@ -25,18 +25,18 @@ main ()
 {
   int i = 0;
 
-  puts ("\n");
+  oputs ("\n");
   if (i)
     return 1;
   else
-    puts ("t: else 1\n");
+    oputs ("t: else 1\n");
 
   if (i)
-    puts ("0");
+    oputs ("0");
   else if (i == 1)
-    puts ("1");
+    oputs ("1");
   else
-    puts ("t: else if 2\n");
+    oputs ("t: else if 2\n");
 
   return 0;
 }

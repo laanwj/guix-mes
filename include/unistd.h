@@ -62,7 +62,7 @@ int execve (char const *file, char *const argv[], char *const env[]);
 int execvp (char const *file, char *const argv[]);
 int fork (void);
 char *getcwd (char *buf, size_t size);
-uid_t getgid (void);
+gid_t getgid (void);
 uid_t getuid (void);
 int isatty (int fd);
 int link (char const *oldname, char const *newname);

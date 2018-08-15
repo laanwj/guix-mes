@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,17 +19,17 @@
  */
 
 #include <libmes.h>
-#include <stdio.h>
 #include <string.h>
 
 int
 main ()
 {
-  puts ("\n");
-  puts ("t: strcpy (buf, \"mes\")\n");
+  oputs ("\n");
+  oputs ("t: strcpy (buf, \"mes\")\n");
   char buf[10];
   strcpy (buf, "mes");
-  if (strcmp (buf, "mes")) return 1;
+  if (strcmp (buf, "mes"))
+    return 1;
 
   return 0;
 }

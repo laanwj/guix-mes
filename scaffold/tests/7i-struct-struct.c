@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,16 +19,19 @@
  */
 
 #include <libmes.h>
+
 #include <stdio.h>
 
 struct s
 {
   int bar;
   int baz;
+  int bla[2];
 };
 
 struct foo
 {
+  int bar;
   struct s s;
 };
 
@@ -44,19 +47,23 @@ struct anon
 int
 main ()
 {
-  struct foo f = {1,2};
-  f.s.baz = 2; // FIXME
-  printf ("f.s.bar=%d\n", f.s.bar);
-  if (f.s.bar != 1) return 1;
-  printf ("f.s.baz=%d\n", f.s.baz);
-  if (f.s.baz != 2) return 2;
+  struct foo f = {0,1,2};
+  f.s.baz = 2;
+  oputs ("f.s.bar="); oputs (itoa (f.s.bar)); oputs ("\n");
+  if (f.s.bar != 1)
+    return 1;
+  oputs ("f.s.baz="); oputs (itoa (f.s.baz)); oputs ("\n");
+  if (f.s.baz != 2)
+    return 2;
 
   struct anon a = {3,4};
-  a.baz = 4; // FIXME
-  printf ("a.bar=%d\n", a.bar);
-  if (a.bar != 3) return 3;
-  printf ("a.baz=%d\n", a.baz);
-  if (a.baz != 4) return 4;
-  
+  a.baz = 4;
+  oputs ("a.bar="); oputs (itoa (a.bar)); oputs ("\n");
+  if (a.bar != 3)
+    return 3;
+  oputs ("a.baz="); oputs (itoa (a.baz)); oputs ("\n");
+  if (a.baz != 4)
+    return 4;
+
   return 0;
 }

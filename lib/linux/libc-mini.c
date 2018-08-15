@@ -20,22 +20,16 @@
 
 #include <errno.h>
 
-#if __MESC__
-
+#if __MESC__ && __i386__
 #include <linux/x86-mes/mini.c>
-
+#elif __MESC__ && __x86_64__
+#include <linux/x86_64-mes/mini.c>
 #elif __i386__
-
 #include <linux/x86-mes-gcc/mini.c>
-
 #elif __x86_64__
-
 #include <linux/x86_64-mes-gcc/mini.c>
-
 #else
-
 #error arch not supported
-
 #endif
 
 ssize_t

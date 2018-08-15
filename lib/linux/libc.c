@@ -18,31 +18,26 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <libmes.h>
+
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <libmes.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#if __MESC__
-
+#if __MESC__ && __i386__
 #include <linux/x86-mes/mes.c>
-
+#elif __MESC__ && __x86_64__
+#include <linux/x86_64-mes/mes.c>
 #elif __i386__
-
 #include <linux/x86-mes-gcc/mes.c>
-
 #elif __x86_64__
-
 #include <linux/x86_64-mes-gcc/mes.c>
-
 #else
-
 #error arch not supported
-
 #endif
 
 int
@@ -54,7 +49,7 @@ fork ()
 ssize_t
 read (int filedes, void *buffer, size_t size)
 {
-  ssize_t bytes = _sys_call3 (SYS_read, (long)filedes, (long)buffer, (long)size);
+  ssize_t bytes = _sys_call3 (SYS_read, (int)filedes, (long)buffer, (long)size);
   if (__mes_debug () > 3)
     {
       if (bytes == 1)
@@ -71,11 +66,8 @@ read (int filedes, void *buffer, size_t size)
 }
 
 int
-open (char const *file_name, int flags, ...)
+_open3 (char const *file_name, int flags, int mask)
 {
-  va_list ap;
-  va_start (ap, flags);
-  int mask = va_arg (ap, int);
 #if !MES_BOOTSTRAP
   if (!flags)
     {
@@ -83,7 +75,24 @@ open (char const *file_name, int flags, ...)
       _ungetc_fd = -1;
     }
 #endif
-  int r = _sys_call3 (SYS_open, (long)file_name, (long)flags, (long)mask);
+  int r = _sys_call3 (SYS_open, (long)file_name, (int)flags, (int)mask);
+  return r;
+}
+
+int
+_open2 (char const *file_name, int flags)
+{
+  int mask = 0777;
+  return _open3 (file_name, flags, mask);
+}
+
+int
+open (char const *file_name, int flags, ...)
+{
+  va_list ap;
+  va_start (ap, flags);
+  int mask = va_arg (ap, int);
+  int r = _open3 (file_name, flags, mask);
   va_end (ap);
   return r;
 }
@@ -92,9 +101,9 @@ pid_t
 waitpid (pid_t pid, int *status_ptr, int options)
 {
 #if __i386__
-  return _sys_call3 (SYS_waitpid, (long)pid, (long)status_ptr, (long)options);
+  return _sys_call3 (SYS_waitpid, (long)pid, (long)status_ptr, (int)options);
 #elif __x86_64__
-  return _sys_call4 (SYS_wait4, (long)pid, (long)status_ptr, (long)options, 0);
+  return _sys_call4 (SYS_wait4, (long)pid, (long)status_ptr, (int)options, 0);
 #else
 #error arch not supported
 #endif
@@ -115,7 +124,7 @@ chmod (char const *file_name, mode_t mask)
 int
 access (char const *file_name, int how)
 {
-  return _sys_call2 (SYS_access, (long)file_name, (long)how);
+  return _sys_call2 (SYS_access, (long)file_name, (int)how);
 }
 
 long
@@ -130,7 +139,7 @@ ioctl (int filedes, unsigned long command, ...)
   va_list ap;
   va_start (ap, command);
   int data = va_arg (ap, int);
-  int r = _sys_call3 (SYS_ioctl, (long)filedes, (long)command, (long)data);
+  int r = _sys_call3 (SYS_ioctl, (int)filedes, (long)command, (int)data);
   va_end (ap);
   return r;
 }
@@ -138,5 +147,5 @@ ioctl (int filedes, unsigned long command, ...)
 int
 fsync (int filedes)
 {
-  return _sys_call1 (SYS_fsync, (long)filedes);
+  return _sys_call1 (SYS_fsync, (int)filedes);
 }

@@ -24,7 +24,7 @@
 int
 fseek (FILE *stream, long offset, int whence)
 {
-  int pos = lseek ((int)stream, offset, whence);
+  off_t pos = lseek ((int)stream, offset, whence);
   if (__mes_debug ())
     {
       eputs ("fread fd="); eputs (itoa ((int)stream));

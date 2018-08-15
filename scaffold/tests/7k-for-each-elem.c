@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,16 +20,17 @@
 
 #include <libmes.h>
 
-struct section {
+struct section
+{
   unsigned char *data;
   int offset;
 };
 
-struct sym {
+struct sym
+{
   char* name;
   int index;
 };
-
 
 struct sym tab3[3] = {"foo", 0, "bar", 1, "baz", 2};
 struct sym tab[] = {"foo", 0, "bar", 1, "baz", 2};
@@ -46,6 +47,14 @@ struct section section;
 int
 main ()
 {
+#if __i386__
+  int sym_size = 8;
+#elif __GNUC__ && __x86_64__
+  int sym_size = 16;
+#elif  __MESC__ && __x86_64__
+  int sym_size = 12;
+#endif
+
   struct sym* p;
   p = tab3;
   section.data = tab;
@@ -53,14 +62,16 @@ main ()
 
   int size = sizeof (struct sym);
   eputs ("size="); eputs (itoa (size)); eputs ("\n");
-  if (size != 8) return 1;
+  if (size != sym_size)
+    return 1;
   struct section* psection = &section;
   p = (struct sym*)psection->data + 1;
   struct sym* q = tab;
   int i = (int)p;
   i -= (int)q;
   eputs ("diff="); eputs (itoa (i)); eputs ("\n");
-  if (i != 8) return 2;
+  if (i != sym_size)
+    return 2;
 
   for_each_elem(psection, 1, p, struct section) {
     eputs ("i="); eputs (itoa (p->index));

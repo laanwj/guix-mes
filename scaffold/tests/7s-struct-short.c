@@ -42,7 +42,7 @@ main ()
 {
   if (global_f.bar != 11)
     return 1;
-  
+
   if (global_f.baz != 22)
     return 2;
 
@@ -50,7 +50,7 @@ main ()
 
   if (f.bar != 44)
     return 3;
-  
+
   if (f.baz != 55)
     return 4;
 

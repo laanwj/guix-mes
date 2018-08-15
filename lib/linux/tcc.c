@@ -28,13 +28,13 @@ close (int filedes)
       _ungetc_pos = -1;
       _ungetc_fd = -1;
     }
-  return _sys_call1 (SYS_close, (long)filedes);
+  return _sys_call1 (SYS_close, (int)filedes);
 }
 
 off_t
 lseek (int filedes, off_t offset, int whence)
 {
-  return _sys_call3 (SYS_lseek, (long)filedes, (long)offset, (long)whence);
+  return _sys_call3 (SYS_lseek, (int)filedes, (long)offset, (int)whence);
 }
 
 int

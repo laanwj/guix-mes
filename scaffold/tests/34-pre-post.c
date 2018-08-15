@@ -28,28 +28,34 @@ main ()
   int one = t;
   int i = 0;
 
-  puts ("\n");
-  puts ("t: if (i++)\n");
-  if (i++) return 1;
+  oputs ("\n");
+  oputs ("t: if (i++)\n");
+  if (i++)
+    return 1;
 
-  puts ("t: if (--i)\n");
-  if (--i) return 1;
+  oputs ("t: if (--i)\n");
+  if (--i)
+    return 1;
 
-  puts ("t: i += 2\n");
+  oputs ("t: i += 2\n");
   i += 2;
-  if (i != 2) return 1;
+  if (i != 2)
+    return 1;
 
-  puts ("t: i -= 2\n");
+  oputs ("t: i -= 2\n");
   i -= 2;
-  if (i != 0) return 1;
+  if (i != 0)
+    return 1;
 
-  puts ("t: if (++i)\n");
-  if (++i) goto ok0;
+  oputs ("t: if (++i)\n");
+  if (++i)
+    goto ok0;
   return 1;
  ok0:
 
-  puts ("t: if (i--)\n");
-  if (i--) goto ok1;
+  oputs ("t: if (i--)\n");
+  if (i--)
+    goto ok1;
   return 1;
  ok1:
 

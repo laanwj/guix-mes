@@ -21,8 +21,8 @@
 int
 main ()
 {
-  int t = 1;
-  if (t)
+  int f = 0;
+  if (!f)
     return 0;
   return 1;
 }

@@ -26,7 +26,8 @@ abtol (char const **p, int base)
   char const *s = *p;
   int i = 0;
   int sign = 1;
-  if (!base) base = 10;
+  if (!base)
+    base = 10;
   if (*s && *s == '-')
     {
       sign = -1;

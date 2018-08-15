@@ -19,6 +19,7 @@
  */
 
 #include <libmes.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -26,6 +27,9 @@
 int
 main ()
 {
+#if __GNUC__ && __x86_64__
+  return 0;
+#endif
   char *s = "mes";
   char c = 'm';
   int i = 3;
@@ -36,7 +40,8 @@ main ()
   if (strcmp (buf, "c=m\n"))
     return 1;
 
-  if (i != 3) return 15;
+  if (i != 3)
+    return 15;
   printf ("i=%d\n", i);
   sprintf (buf, "i=%d\n", i);
   if (strcmp (buf, "i=3\n"))
@@ -81,8 +86,14 @@ main ()
 
   sprintf (buf, "%u", -1);
   eputs ("buf="); eputs (buf); eputs ("\n");
+
+#if __i386__
   if (strcmp (buf, "4294967295"))
     return 9;
+#elif __x86_64__
+  if (strcmp (buf, "18446744073709551615"))
+    return 9;
+#endif
 
   sprintf (buf, ">>%.5s<<\n", "hello, world");
   eputs ("buf="); eputs (buf);

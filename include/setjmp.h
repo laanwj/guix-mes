@@ -27,9 +27,9 @@
 
 typedef struct
 {
-  int __bp;
-  int __pc;
-  int __sp;
+  long __bp;
+  long __pc;
+  long __sp;
 } __jmp_buf;
 typedef __jmp_buf jmp_buf[1];
 
@@ -45,4 +45,3 @@ int setjmp (jmp_buf env);
 #endif // ! WITH_GLIBC
 
 #endif // __MES_SETJMP_H
-

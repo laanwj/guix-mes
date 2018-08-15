@@ -24,6 +24,9 @@ int main (int argc, char *argv[]);
 int
 _start ()
 {
+#if 0 //MES_CCAMD64
+  asm ("add____$i32,%rbp %0x80"); // FIXME: corresponds to x86_64/as.scm function-preamble-fu
+#endif
   asm ("mov____%rbp,%rax");
   asm ("add____$i8,%rax !8");
 
@@ -33,23 +36,32 @@ _start ()
   asm ("shl____$i8,%rax !0x03");
   asm ("add____%rbp,%rax");
 
-  // 40017a:	48 a3 88 77 66 55 44 	movabs %rax,0x1122334455667788
-  // 48 89 05 bd 0e 20 00 	mov    %rax,0x200ebd(%rip)        # 601000 <_GLOBAL_OFFSET_TABLE_>
-  // FIXME: 64-bit addresses...DUNNO!
-  // asm ("mov____%rax,0x32 &environ");
+  // FIXME: 64-bit addresses...
+  asm ("mov____%rax,0x32 &environ");
+#if 0 //MES_CCAMD64
+  asm ("mov____%rax,%rdx");     // amd
+#else
+  asm ("push___%rax");          // bootstrap
+#endif
 
   asm ("mov____%rbp,%rax");
   asm ("add____$i8,%rax !16");
-  asm ("mov____%rax,%rsi");
+#if 0 //MES_CCAMD64
+  asm ("mov____%rax,%rsi");     // amd
+#else
+  asm ("push___%rax");          // bootstrap
+#endif
 
   asm ("mov____%rbp,%rax");
   asm ("add____$i8,%rax !8");
   asm ("mov____(%rax),%rax");
-  asm ("mov____%rax,%rdi");
+#if 0 //MES_CCAMD64
+  asm ("mov____%rax,%rdi");     // amd
+#else
+  asm ("push___%rax");          // bootstrap
+#endif
 
   main ();
-  // FIXME
-  //asm ("call32 &main !00 !00 !00 !00");
 
   asm ("mov____%rax,%rdi");
   asm ("mov____$i32,%rax %0x3c");

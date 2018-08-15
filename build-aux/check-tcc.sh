@@ -145,8 +145,9 @@ pass=0
 fail=0
 total=0
 mkdir -p scaffold/tinycc
+set +e
 for t in $tests; do
-    if [ ! -f $TINYCC_PREFIX/"$t.c" ]; then
+    if [ ! -f $TINYCC_PREFIX/tests/tests2/"$t.c" ]; then
         echo ' [SKIP]'
         continue;
     fi

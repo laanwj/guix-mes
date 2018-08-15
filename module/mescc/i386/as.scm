@@ -27,142 +27,15 @@
   #:use-module (mescc as)
   #:use-module (mescc info)
   #:export (
-            i386:accu%base
-            i386:accu*base
-            i386:accu*n->label
-            i386:accu*n->local
-            i386:accu+accu
-            i386:accu+base
-            i386:accu+value
-            i386:accu->base
-            i386:accu->base-mem
-            i386:byte-accu->base-mem
-            i386:word-accu->base-mem
-            i386:accu->base-mem+n
-            i386:byte-accu->base-mem+n
-            i386:word-accu->base-mem+n
-            i386:accu->label
-            i386:accu->local
-            i386:accu->local+n
-            i386:accu->local+n
-            i386:accu-and
-            i386:accu-and-base
-            i386:accu-and-base-mem
-            i386:accu-base
-            i386:accu-cmp-value
-            i386:accu-mem-add
-            i386:accu-mem->base-mem
-            i386:accu-negate
-            i386:accu-not
-            i386:accu-or-base
-            i386:accu-or-base-mem
-            i386:accu-shl
-            i386:accu-test
-            i386:accu-xor-base
-            i386:accu-zero?
-            i386:accu/base
-            i386:accu<->stack
-            i386:accu<<base
-            i386:accu>>base
-            i386:base+value
-            i386:base->accu
-            i386:base->accu-mem
-            i386:base->label
-            i386:base-mem->accu-mem
-            i386:base-mem+n->accu
-            i386:base-mem->accu
-            i386:base-sub
-            i386:byte-accu->base-mem
-            i386:word-accu->base-mem
-            i386:byte-base->accu-mem
-            i386:byte-base->accu-mem+n
-            i386:byte-base-mem->accu
-            i386:byte-base-sub
-            i386:byte-local->base
-            i386:byte-mem->accu
-            i386:word-mem->accu
-            i386:byte-mem->base
-            i386:byte-sub-base
-            i386:byte-test-base
-            i386:call-accu
-            i386:call-label
-            i386:formal
-            i386:jump
-            i386:jump
-            i386:jump-a
-            i386:jump-ae
-            i386:jump-b
-            i386:jump-be
-            i386:jump-byte-z
-            i386:jump-g
-            i386:jump-ge
-            i386:jump-l
-            i386:jump-le
-            i386:jump-nz
-            i386:jump-z
-            i386:label->accu
-            i386:label->base
-            i386:label-mem->accu
-            i386:label-mem->base
-            i386:label-mem-add
-            i386:local->accu
-            i386:local->base
-            i386:local-add
-            i386:local-address->accu
-            i386:local-address->accu
-            i386:local-address->base
-            i386:local-ptr->accu
-            i386:local-ptr->base
-            i386:local-test
-            i386:mem+n->accu
-            i386:byte-mem+n->accu
-            i386:word-mem+n->accu
-            i386:mem->accu
-            i386:mem->base
-            i386:nop
-            i386:nz->accu
-            i386:pop-accu
-            i386:pop-base
-            i386:push-accu
-            i386:push-base
-            i386:push-byte-local-de-de-ref
-            i386:push-byte-local-de-ref
-            i386:push-word-local-de-ref
-            i386:push-label
-            i386:push-label-mem
-            i386:push-local
-            i386:push-local-address
-            i386:push-local-de-ref
-            i386:ret-local
-            i386:sub-base
-            i386:test-base
-            i386:value->accu
-            i386:value->accu-mem
-            i386:value->accu-mem+n
-            i386:value->base
-            i386:value->label
-            i386:value->local
-            i386:xor-accu
-            i386:xor-zf
-            i386:g?->accu
-            i386:ge?->accu
-            i386:l?->accu
-            i386:le?->accu
-            i386:a?->accu
-            i386:ae?->accu
-            i386:b?->accu
-            i386:be?->accu
-            i386:z->accu
-            i386:byte-accu
-            i386:signed-byte-accu
-            i386:word-accu
-            i386:signed-word-accu
-
             i386:instructions
             ))
 
-(define (i386:nop)
-  '(("nop")))
+(define (e->x o)
+  (string-drop o 1))
+
+(define (e->l o)
+  (string-append (string-drop-right (string-drop o 1) 1) "l"))
+
 
 (define (i386:function-preamble . rest)
   '(("push___%ebp")
@@ -171,559 +44,569 @@
 (define (i386:function-locals . rest)
   `(("sub____$i32,%esp" (#:immediate ,(+ (* 4 1025) (* 20 4)))))) ; 4*1024 buf, 20 local vars
 
-(define (i386:push-label label)
-  `(("push___$i32" (#:address ,label)))) ; push  $0x<label>
+(define (i386:r->local info n)
+  (or n (error "invalid value: i386:r->local: " n))
+  (let ((r (get-r info))
+        (n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `(,(string-append "mov____%" r ",0x8(%ebp)") (#:immediate1 ,n))
+           `(,(string-append "mov____%" r ",0x32(%ebp)") (#:immediate ,n))))))
 
-(define (i386:push-label-mem label)
-  `(("mov____0x32,%eax" (#:address ,label)) ; mov    0x804a000,%eax
-    ("push___%eax")))                       ; push  %eax
-
-
-;;;  locals
-
-(define (i386:push-local n)
-  (or n (error "invalid value: push-local: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("push___0x8(%ebp)" (#:immediate1 ,n))
-           `("push___0x32(%ebp)" (#:immediate ,n))))))
-
-(define (i386:push-local-address n)
-  (or n (error "invalid value: push-local-address: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("lea____0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("lea____0x32(%ebp),%eax" (#:immediate ,n)))
-      ("push___%eax"))))
-
-(define (i386:push-byte-local-de-ref n)
-  (or n (error "invalid value: push-byte-local-de-ref: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
-      ("movzbl_(%eax),%eax")
-      ("push___%eax"))))
-
-(define (i386:push-word-local-de-ref n)
-  (or n (error "invalid value: push-word-local-de-ref: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
-      ("movzwl_(%eax),%eax")
-      ("push___%eax"))))
-
-(define (i386:push-byte-local-de-de-ref n)
-  (or n (error "invalid value: push-byte-local-de-de-ref: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
-      ("mov____(%eax),%eax")
-      ("movzbl_(%eax),%eax")
-      ("push___%eax"))))
-
-(define (i386:push-local-de-ref n)
-  (or n (error "invalid value: push-byte-local-de-ref: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("mov____0x32(%ebp),%eax" (#:immediate ,n)))
-      ("mov____(%eax),%eax")
-      ("push___%eax"))))
-
-(define (i386:local-add n v)
-  (or n (error "invalid value: i386:local-add: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (and (< (abs n) #x80)
-                (< (abs v) #x80)) `("add____$i8,0x8(%ebp)" (#:immediate1 ,n) (#:immediate1 ,v))
-                `("add____$i32,0x32(%ebp)" (#:immediate ,n) (#:immediate ,v))))))
-
-(define (i386:accu->local n)
-  (or n (error "invalid value: accu->local: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%ebp)" (#:immediate1 ,n))
-           `("mov____%eax,0x32(%ebp)" (#:immediate ,n))))))
-
-(define (i386:accu->local+n id n)
-  (let ((n (+ (- 0 (* 4 id)) n)))
-    `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%ebp)" (#:immediate1 ,n))
-           `("mov____%eax,0x32(%ebp)" (#:immediate ,n))))))
-
-(define (i386:accu*n->local i n)
-  (or n (error "invalid value: accu->local: " n))
-  (let ((o (- 0 (* 4 i))))
-    (let loop ((i 0))
-      (if (>= i n) '()  ;; FIXME: byte, word-sized
-          (let ((o (+ o i)))
-            (append
-             (if (< (abs o) #x80) `(("mov____0x8(%eax),%ebx" (#:immediate1 ,i))
-                                    ("mov____%ebx,0x8(%ebp)" (#:immediate1 ,o)))
-                 `(("mov____0x8(%eax),%ebx" (#:immediate1 ,i))
-                   ("mov____%ebx,0x32(%ebp)" (#:immediate ,o))))
-             (loop (+ i 4))))))))
-
-(define (i386:local->accu n)
-  (or n (error "invalid value: local->accu: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("mov____0x32(%ebp),%eax" (#:immediate ,n))))))
-
-(define (i386:local-address->accu n)
-  (or n (error "invalid value: ladd: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("lea____0x8(%ebp),%eax" (#:immediate1 ,n))
-           `("lea____0x32(%ebp),%eax" (#:immediate ,n))))))
-
-(define (i386:local-ptr->accu n)
-  (or n (error "invalid value: local-ptr->accu: " n))
-  (let ((n (- 0 (* 4 n))))
-  `(("mov____%ebp,%eax")                ; mov    %ebp,%eax
-    ,(if (< (abs n) #x80) `("add____$i8,%eax" (#:immediate1 ,n))
-         `("add____$i32,%eax" (#:immediate ,n))))))
-
-(define (i386:byte-local->base n)
-  (or n (error "invalid value: byte-local->base: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("movzbl_0x8(%ebp),%edx" (#:immediate1 ,n))
-           `,@(("mov_0x32(%ebp),%edx" (#:immediate ,n))
-               ("movzbl_%dl,%edx"))))))
-
-(define (i386:local->base n)
-  (or n (error "invalid value: local->base: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____0x8(%ebp),%edx" (#:immediate1 ,n))
-           `("mov____0x32(%ebp),%edx" (#:immediate ,n))))))
-
-(define (i386:local-address->base n) ;; DE-REF
-  (or n (error "invalid value: local-address->base: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("lea____0x8(%ebp),%edx" (#:immediate1 ,n))
-           `("lea____0x32(%ebp),%edx" (#:immediate ,n))))))
-
-(define (i386:local-ptr->base n)
-  (or n (error "invalid value: local-ptr->base: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(("mov____%ebp,%edx")                ; mov    %ebp,%edx
-      ,(if (< (abs n) #x80) `("add____$i8,%edx" (#:immediate1 ,n))
-           `("add____$i32,%edx" (#:immediate ,n))))))
-
-(define (i386:value->local n v)
-  (or n (error "invalid value: value->local: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `("mov____$i32,0x8(%ebp)" (#:immediate1 ,n) (#:immediate ,v))
-           `("mov____$i32,0x32(%ebp)" (#:immediate ,n) (#:immediate ,v))))))
-
-(define (i386:local-test n v)
-  (or n (error "invalid value: local-test: " n))
-  (let ((n (- 0 (* 4 n))))
-    `(,(cond ((and (< (abs n) #x80)
-                   (< (abs v) #x80)) `("cmp____$i8,0x8(%ebp)" (#:immediate1 ,n) (#:immediate1 ,v)))
-             ((< (abs n) #x80) `("cmp____$i32,0x8(%ebp)" (#:immediate1 ,n) (#:immediate ,v)))
-             ((< (abs v) #x80) `("cmp____$i8,0x32(%ebp)" (#:immediate ,n) (#:immediate1 ,v)))
-             (else `("cmp____$i32,0x32(%ebp)" (#:immediate ,n) (#:immediate ,v)))))))
-
-(define (i386:pop-accu)
-  '(("pop____%eax")))                   ; pop %eax
-
-(define (i386:push-accu)
-  '(("push___%eax")))                   ; push %eax
-
-(define (i386:pop-base)
-  '(("pop____%edx")))                   ; pop %edx
-
-(define (i386:push-base)
-  '(("push___%edx")))                   ; push %edx
+(define (i386:value->r info v)
+  (let ((r (get-r info)))
+    `((,(string-append "mov____$i32,%" r) (#:immediate ,v)))))
 
 (define (i386:ret . rest)
   '(("leave")
     ("ret")))
 
-(define (i386:accu->base)
-  '(("mov____%eax,%edx")))              ; mov    %eax,%edx
+(define (i386:r-zero? info)
+  (let ((r (get-r info)))
+    `((,(string-append "test___%" r "," "%" r)))))
 
-(define (i386:accu->base-mem)
-  '(("mov____%eax,(%edx)")))            ; mov    %eax,(%edx)
+(define (i386:local->r info n)
+  (let ((r (get-r info))
+        (n (- 0 (* 4 n))))
+    `(,(if (< (abs n) #x80) `(,(string-append "mov____0x8(%ebp),%" r) (#:immediate1 ,n))
+           `(,(string-append "mov____0x32(%ebp),%" r) (#:immediate ,n))))))
 
-(define (i386:byte-accu->base-mem)
-  '(("mov____%al,(%edx)")))             ; mov    %al,(%edx)
-
-(define (i386:word-accu->base-mem)
-  '(("mov____%ax,(%edx)")))             ; mov    %ax,(%edx)
-
-(define (i386:accu->base-mem+n n)
-  (or n (error "invalid value: accu->base-mem+n: " n))
-  `(,(if (< (abs n) #x80) `("mov____%eax,0x8(%edx)" (#:immediate1 ,n))
-         `("mov____%eax,0x32(%edx)" (#:immediate ,n)))))
-
-(define (i386:byte-accu->base-mem+n n)
-  (or n (error "invalid value: accu->base-mem+n: " n))
-  `(,(if (< (abs n) #x80) `("mov____%al,0x8(%edx)" (#:immediate1 ,n))
-         `("mov____%al,0x32(%edx)" (#:immediate ,n)))))
-
-(define (i386:word-accu->base-mem+n n)
-  (or n (error "invalid value: accu->base-mem+n: " n))
-  `(,(if (< (abs n) #x80) `("mov____%ax,0x8(%edx)" (#:immediate1 ,n))
-         `("mov____%ax,0x32(%edx)" (#:immediate ,n)))))
-
-(define (i386:accu->label label)
-  `(("mov____%eax,0x32" (#:address ,label)))) ; mov    %eax,0x<label>
-
-(define (i386:accu*n->label label n)
-  (append
-   '(("push___%edx"))
-   (let loop ((i 0))
-     (if (>= i n) '() ;; FIXME: byte, word-sized
-         (append
-          `(("mov____$i32,%edx" (#:address ,label))
-            ("mov____0x8(%eax),%ebx" (#:immediate1 ,i))
-            ("mov____%ebx,0x8(%edx)" (#:immediate1 ,i)))
-          (loop (+ i 4)))))
-   '(("pop____%edx"))))
-
-(define (i386:accu-shl n)
-  (or n (error "invalid value: accu:shl n: " n))
-  `(("shl____$i8,%eax" (#:immediate1 ,n)))) ; shl    $0x8,%eax
-
-(define (i386:accu<<base)
-  '(("xor____%ecx,%ecx")                ; xor    %ecx,%ecx
-    ("mov____%edx,%ecx")                ; mov    %edx,%ecx
-    ("shl____%cl,%eax")))               ; shl    %cl,%eax
-
-(define (i386:accu>>base)
-  '(("xor____%ecx,%ecx")                ; xor    %ecx,%ecx
-    ("mov____%edx,%ecx")                ; mov    %edx,%ecx
-    ("shr____%cl,%eax")))               ; shr    %cl,%eax
-
-(define (i386:accu-and-base)
-  '(("and____%edx,%eax")))
-
-(define (i386:accu-and v)
-  `(("and____$i32,%eax" (#:immediate ,v))))
-
-(define (i386:accu-and-base-mem)
-  '(("and____(%edx),%eax")))
-
-(define (i386:accu-or-base-mem)
-  '(("or_____(%edx),%eax")))
-
-(define (i386:accu-not)
-  '(("not____%eax")))                   ; not %eax
-
-(define (i386:accu-or-base)
-  '(("or_____%edx,%eax")))              ; or    %edx,%eax
-
-(define (i386:accu-xor-base)
-  '(("xor____%edx,%eax")))              ; xor    %edx,%eax
-
-(define (i386:accu+accu)
-  '(("add____%eax,%eax")))              ; add    %eax,%eax
-
-(define (i386:accu+base)
-  `(("add____%edx,%eax")))              ; add    %edx,%eax
-
-(define (i386:accu+value v)
-  `(,(if (< (abs v) #x80) `("add____$i8,%eax" (#:immediate1 ,v))
-         `("add____$i32,%eax" (#:immediate ,v)))))
-
-(define (i386:base+value v)
-  `(,(if (< (abs v) #x80) `("add____$i8,%edx" (#:immediate1 ,v))
-         `("add____$i32,%edx" (#:immediate ,v)))))
-
-(define (i386:accu-base)
-  `(("sub____%edx,%eax")))              ; sub    %edx,%eax
-
-(define (i386:accu*base)
-  `(("mul____%edx")))                   ; mul    %edx
-
-(define (i386:accu/base)
-  '(("mov____%edx,%ebx")                ; mov    %edx,%ebx
-    ("xor____%edx,%edx")                ; xor    %edx,%edx
-    ("idiv___%ebx")))                   ; div    %ebx
-
-(define (i386:accu%base)
-  '(("mov____%edx,%ebx")                ; mov    %edx,%ebx
-    ("xor____%edx,%edx")                ; xor    %edx,%edx
-    ("idiv___%ebx")                     ; div    %ebx
-    ("mov____%edx,%eax")))              ; mov    %edx,%eax
-
-(define (i386:base->accu)
-  '(("mov____%edx,%eax")))              ; mov    %edx,%eax
-
-(define (i386:label->accu label)
-  `(("mov____$i32,%eax" (#:address ,label)))) ; mov    $<n>,%eax
-
-(define (i386:label->base label)
-  `(("mov____$i32,%edx" (#:address ,label)))) ; mov   $<n>,%edx
-
-(define (i386:label-mem->accu label)
-  `(("mov____0x32,%eax" (#:address ,label)))) ; mov    0x<n>,%eax
-
-(define (i386:label-mem->base label)
-  `(("mov____0x32,%edx" (#:address ,label)))) ; mov    0x<n>,%edx
-
-(define (i386:label-mem-add label v)
-  `(,(if (< (abs v) #x80) `("add____$i8,0x32" (#:address ,label) (#:immediate1 ,v))
-         `("add____$i32,0x32" (#:address ,label) (#:immediate ,v)))))
-
-(define (i386:byte-base-mem->accu)
-  '(("add____%edx,%eax")                ; add    %edx,%eax
-    ("movzbl_(%eax),%eax")))            ; movzbl (%eax),%eax
-
-(define (i386:byte-mem->accu)
-  '(("movzbl_(%eax),%eax")))            ; movzbl (%eax),%eax
-
-(define (i386:word-mem->accu)
-  '(("movzwl_(%eax),%eax")))
-
-(define (i386:byte-mem->base)
-  '(("movzbl_(%edx),%edx")))            ; movzbl (%edx),%edx
-
-(define (i386:base-mem->accu)
-  '(("mov____(%edx),%eax")))
-
-(define (i386:mem->accu)
-  '(("mov____(%eax),%eax")))
-
-(define (i386:mem->base)
-  '(("mov____(%edx),%edx")))
-
-(define (i386:mem+n->accu n)
-  `(,(if (< (abs n) #x80) `("mov____0x8(%eax),%eax" (#:immediate1 ,n))
-         `("mov____0x32(%eax),%eax" (#:immediate ,n)))))
-
-(define (i386:byte-mem+n->accu n)
-  `(,(if (< (abs n) #x80) `("movzbl_0x8(%eax),%eax" (#:immediate1 ,n))
-         `("movzbl_0x32(%eax),%eax" (#:immediate ,n)))))
-
-(define (i386:word-mem+n->accu n)
-  `(,(if (< (abs n) #x80) `("movzwl_0x8(%eax),%eax" (#:immediate1 ,n))
-         `("movzwl_xb0x32(%eax),%eax" (#:immediate ,n)))))
-
-(define (i386:base-mem+n->accu v)
-  (or v (error "invalid value: base-mem+n->accu: " v))
-  `(("add___%edx,%eax")
-    ,(if (< (abs v) #x80) `("mov____0x8(%eax),%eax" (#:immediate1 ,v))
-         `("mov____0x32(%eax),%eax" (#:immediate ,v)))))
-
-(define (i386:value->accu v)
-  (or v (error "invalid value: i386:value->accu: " v))
-  `(("mov____$i32,%eax" (#:immediate ,v))))
-
-(define (i386:value->accu-mem v)
-  `(("mov____$i32,(%eax)" (#:immediate ,v)))) ; movl   $0x<v>,(%eax)
-
-(define (i386:value->accu-mem+n n v)
-  (or v (error "invalid value: i386:value->accu-mem+n: " v))
-  `(,(if (< (abs v) #x80) `("mov____$i32,0x8(%eax)" (#:immediate1 ,n) (#:immediate ,v))
-         `("mov____$i32,0x32(%eax)" (#:immediate ,n) (#:immediate ,v)))))
-
-(define (i386:base->accu-mem)
-  '(("mov____%edx,(%eax)")))            ; mov    %edx,(%eax)
-
-(define (i386:accu-mem->base-mem)
-  '(("mov____(%eax),%ecx")
-    ("mov____%ecx,(%edx)")))
-
-(define (i386:base-mem->accu-mem)
-  '(("mov____(%edx),%ecx")              ; mov    (%edx),%ecx
-    ("mov____%ecx,(%eax)")))            ; mov    %ecx,(%eax)
-
-(define (i386:byte-base->accu-mem)
-  '(("mov____%dl,(%eax)")))             ; mov    %dl,(%eax)
-
-(define (i386:byte-base->accu-mem+n n)
-  (or n (error "invalid value: byte-base->accu-mem+n: " n))
-  `(,(if (< (abs n) #x80) `("mov____%dl,0x8(%eax)" (#:immediate1 ,n))
-         `("mov____%dl,0x32(%eax)" (#:immediate ,n)))))
-
-(define (i386:value->base v)
-  (or v (error "invalid value: i386:value->base: " v))
-  `(("mov____$i32,%edx" (#:immediate ,v)))) ; mov    $<v>,%edx
-
-(define (i386:accu-mem-add v)
-  `(,(if (< (abs v) #x80) `("add____$i8,(%eax)" (#:immediate1 ,v))
-         `("add____$i32,(%eax)" (#:immediate ,v)))))
-
-(define (i386:value->label label v)
-  (or v (error "invalid value: value->label: " v))
-  `(("mov____$i32,0x32" (#:address ,label)
-     (#:immediate ,v))))
+(define (i386:r0+r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "add____%" r1 ",%" r0)))))
 
 (define (i386:call-label info label n)
   `((call32 (#:offset ,label))
     ("add____$i8,%esp" (#:immediate1 ,(* n 4)))))
 
-(define (i386:call-accu n)
-  `(,@(i386:push-accu)
-    ,@(i386:pop-accu)
-    ("call___*%eax")                    ; call   *%eax
-    ("add____$i8,%esp" (#:immediate1  ,(* n 4))))) ; add    $00,%esp
+(define (i386:r->arg info i)
+  (let ((r (get-r info)))
+    `((,(string-append "push___%" r)))))
 
-(define (i386:accu-zero?)
-  '(("test___%eax,%eax")))
+(define (i386:label->arg info label i)
+  `(("push___$i32" (#:address ,label))))
 
-(define (i386:accu-negate)
-  '(("sete___%al")                      ; sete %al
-    ("movzbl_%al,%eax")))               ; movzbl %al,%eax
+(define (i386:r-negate info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "sete___%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:xor-accu v)
-  (or v (error "invalid value: i386:xor-accu: n: " v))
-  `(("xor___$i32,%eax" (#:immediate ,v)))) ;xor    $0xff,%eax
+(define (i386:r0-r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "sub____%" r1 ",%" r0)))))
 
-(define (i386:xor-zf)
-  '(("lahf")                               ; lahf
-    ("xor____$i8,%ah" (#:immediate1 #x40)) ; xor    $0x40,%ah
-    ("sahf")))                             ; sahf
+(define (i386:zf->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "sete___%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:accu-cmp-value v)
-  `(,(if (< (abs v) #x80) `("cmp____$i8,%eax" (#:immediate1 ,v))
-         `("cmp____$i32,%eax" (#:immediate ,v)))))
+(define (i386:xor-zf info)
+  '(("lahf")
+    ("xor____$i8,%ah" (#:immediate1 #x40))
+    ("sahf")))
 
-(define (i386:accu-test)
-  '(("test___%eax,%eax")))              ; test   %eax,%eax
+(define (i386:r->local+n info id n)
+  (let ((n (+ (- 0 (* 4 id)) n))
+        (r (get-r info)))
+    `(,(if (< (abs n) #x80) `(,(string-append "mov____%" r ",0x8(%ebp)") (#:immediate1 ,n))
+           `(,(string-append "mov____%" r ",0x32(%ebp)") (#:immediate ,n))))))
 
-(define (i386:jump label)
+(define (i386:r-mem-add info v)
+  (let ((r (get-r info)))
+    `(,(if (< (abs v) #x80) `(,(string-append "add____$i8,(%" r ")") (#:immediate1 ,v))
+           `(,(string-append "add____$i32,(%" r ")") (#:immediate ,v))))))
+
+(define (i386:r-byte-mem-add info v)
+  (let ((r (get-r info)))
+    `((,(string-append "addb___$i8,(%" r ")") (#:immediate1 ,v)))))
+
+(define (i386:r-word-mem-add info v)
+  (let ((r (get-r info)))
+    `((,(string-append "addw___$i8,(%" r ")") (#:immediate2 ,v)))))
+
+(define (i386:local-ptr->r info n)
+  (let ((r (get-r info)))
+    (let ((n (- 0 (* 4 n))))
+      `((,(string-append "mov____%ebp,%" r))
+        ,(if (< (abs n) #x80) `(,(string-append "add____$i8,%" r) (#:immediate1 ,n))
+             `(,(string-append "add____$i32,%" r)  (#:immediate ,n)))))))
+
+(define (i386:label->r info label)
+  (let ((r (get-r info)))
+    `((,(string-append "mov____$i32,%" r) (#:address ,label)))))
+
+(define (i386:r0->r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append  "mov____%" r0 ",%" r1)))))
+
+(define (i386:byte-mem->r info)
+  (let ((r (get-r info)))
+    `((,(string-append "movzbl_(%" r "),%" r)))))
+
+(define (i386:byte-r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "movzbl_%" l ",%" r)))))
+
+(define (i386:byte-signed-r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "movsbl_%" l ",%" r)))))
+
+(define (i386:word-r info)
+  (let* ((r (get-r info))
+         (x (e->x r)))
+    `((,(string-append "movzwl_%" x ",%" r)))))
+
+(define (i386:word-signed-r info)
+  (let* ((r (get-r info))
+         (x (e->x r)))
+    `((,(string-append "movswl_%" x ",%" r)))))
+
+(define (i386:jump info label)
   `(("jmp32 " (#:offset ,label))))
 
-(define (i386:jump-z label)
-  `(("je32  " (#:offset ,label))))        ; jz . + <n>
+(define (i386:jump-z info label)
+  `(("je32  " (#:offset ,label))))
 
-(define (i386:jump-byte-z label)
-  `(("test___%al,%al")                  ; test   %al,%al
-    ("je32  " (#:offset ,label))))      ; je <n>
+(define (i386:jump-nz info label)
+  `(("jne32 " (#:offset ,label))))
+
+(define (i386:jump-byte-z info label)
+  `(("test___%al,%al")
+    ("je32  " (#:offset ,label))))
 
 ;; signed
-(define (i386:jump-g label)
+(define (i386:jump-g info label)
   `(("jg32  " (#:offset ,label))))
 
-(define (i386:jump-ge label)
+(define (i386:jump-ge info label)
   `(("jge32 " (#:offset ,label))))
 
-(define (i386:jump-l label)
+(define (i386:jump-l info label)
   `(("jl32  " (#:offset ,label))))
 
-(define (i386:jump-le label)
+(define (i386:jump-le info label)
   `(("jle32 " (#:offset ,label))))
 
-(define (i386:g?->accu)
-  '(("setg___%al")
-    ("movzbl_%al,%eax")))
-
-(define (i386:ge?->accu)
-  '(("setge__%al")
-    ("movzbl_%al,%eax")))
-
-(define (i386:l?->accu)
-  '(("setl___%al")
-    ("movzbl_%al,%eax")))
-
-(define (i386:le?->accu)
-  '(("setle__%al")
-    ("movzbl_%al,%eax")))
-
 ;; unsigned
-(define (i386:jump-a label)
+(define (i386:jump-a info label)
   `(("ja32  " (#:offset ,label))))
 
-(define (i386:jump-ae label)
+(define (i386:jump-ae info label)
   `(("jae32 " (#:offset ,label))))
 
-(define (i386:jump-b label)
+(define (i386:jump-b info label)
   `(("jb32  " (#:offset ,label))))
 
-(define (i386:jump-be label)
+(define (i386:jump-be info label)
   `(("jbe32 " (#:offset ,label))))
 
-(define (i386:a?->accu)
-  '(("seta___%al")
-    ("movzbl_%al,%eax")))
+(define (i386:byte-r0->r1-mem info)
+  (let* ((r0 (get-r0 info))
+         (r1 (get-r1 info))
+         (l0 (e->l r0)))
+    `((,(string-append "mov____%" l0 ",(%" r1 ")")))))
 
-(define (i386:ae?->accu)
-  '(("setae__%al")
-    ("movzbl_%al,%eax")))
+(define (i386:label-mem->r info label)
+  (let ((r (get-r info)))
+    `((,(string-append "mov____0x32,%" r) (#:address ,label)))))
 
-(define (i386:b?->accu)
-  '(("setb___%al")
-    ("movzbl_%al,%eax")))
+(define (i386:word-mem->r info)
+  (let ((r (get-r info)))
+    `((,(string-append "movzwl_(%" r "),%" r)))))
 
-(define (i386:be?->accu)
-  '(("setbe__%al")
-    ("movzbl_%al,%eax")))
+(define (i386:mem->r info)
+  (let ((r (get-r info)))
+    `((,(string-append "mov____(%" r "),%" r)))))
 
-(define (i386:jump-nz label)
-  `(("jne32 " (#:offset ,label))))       ; jnz . + <n>
+(define (i386:local-add info n v)
+  (let ((n (- 0 (* 4 n))))
+    `(,(if (and (< (abs n) #x80)
+                (< (abs v) #x80)) `("add____$i8,0x8(%ebp)" (#:immediate1 ,n) (#:immediate1 ,v))
+                `("add____$i32,0x32(%ebp)" (#:immediate ,n) (#:immediate ,v))))))
 
-(define (i386:byte-test-base)
-  '(("cmp____%al,%dl")))                ; cmp    %al,%dl
+(define (i386:label-mem-add info label v)
+  `(,(if (< (abs v) #x80) `("add____$i8,0x32" (#:address ,label) (#:immediate1 ,v))
+         `("add____$i32,0x32" (#:address ,label) (#:immediate ,v)))))
 
-(define (i386:test-base)
-  (("cmp____%edx,%eax")))               ; cmp    %edx,%eax
+(define (i386:nop info)
+  '(("nop")))
 
-(define (i386:byte-sub-base)
-  '(("sub____%dl,%al")))                ; sub    %dl,%al
+(define (i386:swap-r0-r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "xchg___%" r0 ",%" r1)))))
 
-(define (i386:byte-base-sub)
-  `(("sub____%al,%dl")))                ; sub    %al,%dl
+;; signed
+(define (i386:g?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "setg___%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:sub-base)
-  `(("sub____%edx,%eax")))              ; sub    %edx,%eax
+(define (i386:ge?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "setge__%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:base-sub)
-  `(("sub____%eax,%edx")))              ; sub    %eax,%edx
+(define (i386:l?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "setl___%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:nz->accu)
-  '(("setne__%al")                      ; setne   %al
-    ("movzbl_%al,%eax")))               ; movzbl %al,%eax
+(define (i386:le?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "setle__%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:z->accu)
-  '(("sete___%al")                      ; sete   %al
-    ("movzbl_%al,%eax")))               ; movzbl %al,%eax
+;; unsigned
+(define (i386:a?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "seta___%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:accu<->stack)
-  '(("xchg___%eax,(%esp)")))            ; xchg   %eax,(%esp)
+(define (i386:ae?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "setae__%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:byte-accu)
-  '(("movzbl_%al,%eax")))
+(define (i386:b?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "setb___%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:signed-byte-accu)
-  '(("movsbl_%al,%eax")))
+(define (i386:be?->r info)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "setbe__%" l))
+      (,(string-append "movzbl_%" l ",%" r)))))
 
-(define (i386:word-accu)
-  '(("movzwl_%ax,%eax")))
+(define (i386:test-r info)
+  (let ((r (get-r info)))
+    `((,(string-append "test___%" r ",%" r)))))
 
-(define (i386:signed-word-accu)
-  '(("movswl_%ax,%eax")))
+(define (i386:r->label info label)
+  (let ((r (get-r info)))
+    `((,(string-append "mov____%" r ",0x32") (#:address ,label)))))
 
+(define (i386:call-r info n)
+  (let ((r (get-r info)))
+    `((,(string-append "call___*%" r))
+      ("add____$i8,%esp" (#:immediate1  ,(* n 4))))))
 
+(define (i386:r0*r1 info)
+  (let ((allocated (.allocated info))
+        (r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    (if (not (member "edx" allocated))
+        `(,@(if (equal? r0 "eax") '()
+                `(("push___%eax")
+                  (,(string-append "mov____%" r0 ",%eax"))))
+          (,(string-append "mul____%" r1))
+          ,@(if (equal? r0 "eax") '()
+                `((,(string-append "mov____%eax,%" r0))
+                  ("pop____%eax"))))
+        `(("push___%eax")
+          ("push___%ebx")
+          ("push___%edx")
+          (,(string-append "mov____%" r1 ",%ebx"))
+          (,(string-append "mov____%" r0 ",%eax"))
+          (,(string-append "mul____%" r1))
+          ("pop____%edx")
+          ("pop____%ebx")
+          (,(string-append "mov____%eax,%" r0))
+          ("pop____%eax")))))
 
-;;;;;;;;;;;;
-(define (i386:r0->local info n)
-  (or n (error "invalid value: i386:r0->local: " n))
-  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info))))
-        (n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `(,(string-append "mov____%" r0 ",0x8(%ebp)") (#:immediate1 ,n))
-           `(,(string-append "mov____%" r0 ",0x32(%ebp)") (#:immediate ,n))))))
+(define (i386:r0<<r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "mov____%" r1 ",%ecx"))
+      (,(string-append "shl____%cl,%" r0)))))
+
+(define (i386:r0>>r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "mov____%" r1 ",%ecx"))
+      (,(string-append "shr____%cl,%" r0)))))
+
+(define (i386:r0-and-r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "and____%" r1 ",%" r0)))))
+
+(define (i386:r0/r1 info)
+  (let ((allocated (.allocated info))
+        (r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    (if (not (member "edx" allocated))
+        `(,@(if (equal? r0 "eax") '()
+                `(("push___%eax")
+                  (,(string-append "mov____%" r0 ",%eax"))))
+          ("xor____%edx,%edx")
+          (,(string-append "idiv___%" r1))
+          ,@(if (equal? r0 "eax") '()
+                `((,(string-append "mov____%eax,%" r0))
+                  ("pop____%eax"))))
+        `(("push___%eax")
+          ("push___%ebx")
+          ("push___%edx")
+          (,(string-append "mov____%" r1 ",%ebx"))
+          (,(string-append "mov____%" r0 ",%eax"))
+          ("xor____%edx,%edx")
+          (,(string-append "idiv___%ebx"))
+          ("pop____%edx")
+          ("pop____%ebx")
+          (,(string-append "mov____%eax,%" r0))
+          ("pop____%eax")))))
+
+(define (i386:r0%r1 info)
+  (let ((allocated (.allocated info))
+        (r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    (if (not (member "edx" allocated))
+        `(,@(if (equal? r0 "eax") '()
+                `(("push___%eax")
+                  (,(string-append "mov____%" r0 ",%eax"))))
+          ("xor____%edx,%edx")
+          (,(string-append "idiv___%" r1))
+          (,(string-append "mov____%edx,%" r0)))
+        `(("push___%eax")
+          ("push___%ebx")
+          ("push___%edx")
+          (,(string-append "mov____%" r1 ",%ebx"))
+          (,(string-append "mov____%" r0 ",%eax"))
+          ("xor____%edx,%edx")
+          (,(string-append "idiv___%ebx"))
+          ("pop____%edx")
+          ("pop____%ebx")
+          (,(string-append "mov____%edx,%" r0))
+          ("pop____%eax")))))
+
+(define (i386:r+value info v)
+  (let ((r (get-r info)))
+    `(,(if (< (abs v) #x80) `(,(string-append "add____$i8,%" r) (#:immediate1 ,v))
+           `(,(string-append "add____$i32,%" r) (#:immediate ,v))))))
+
+(define (i386:r0->r1-mem info)
+  (let ((r0 (get-r0 info))
+         (r1 (get-r1 info)))
+    `((,(string-append "mov____%" r0 ",(%" r1 ")")))))
+
+(define (i386:byte-r0->r1-mem info)
+  (let* ((r0 (get-r0 info))
+         (r1 (get-r1 info))
+         (l0 (e->l r0)))
+    `((,(string-append "mov____%" l0 ",(%" r1 ")")))))
+
+(define (i386:word-r0->r1-mem info)
+  (let* ((r0 (get-r0 info))
+         (r1 (get-r1 info))
+         (x0 (e->x r0)))
+    `((,(string-append "mov____%" x0 ",(%" r1 ")")))))
+
+(define (i386:r-cmp-value info v)
+  (let ((r (get-r info)))
+    `(,(if (< (abs v) #x80) `(,(string-append "cmp____$i8,%" r) (#:immediate1 ,v))
+           `(,(string-append "cmp____$i32,%" r) (#:immediate ,v))))))
+
+(define (i386:push-register info r)
+  `((,(string-append "push___%" r))))
+
+(define (i386:pop-register info r)
+  `((,(string-append "pop____%" r))))
+
+(define (i386:return->r info)
+  (let ((r (get-r info)))
+    (if (equal? r "eax") '()
+        `((,(string-append "mov____%eax,%" r))))))
+
+(define (i386:r0-or-r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "or_____%" r1 ",%" r0)))))
+
+(define (i386:shl-r info n)
+  (let ((r (get-r info)))
+    `((,(string-append "shl____$i8,%" r) (#:immediate1 ,n)))))
+
+(define (i386:r+r info)
+  (let ((r (get-r info)))
+    `((,(string-append "add____%" r ",%" r)))))
+
+(define (i386:not-r info)
+  (let ((r (get-r info)))
+    `((,(string-append "not____%" r)))))
+
+(define (i386:r0-xor-r1 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append "xor____%" r1 ",%" r0)))))
+
+(define (i386:r0-mem->r1-mem info)
+  (let* ((registers (.registers info))
+         (r0 (get-r0 info))
+         (r1 (get-r1 info))
+         (r2 (car registers)))
+    `((,(string-append "mov____(%" r0 "),%" r2))
+      (,(string-append "mov____%" r2 ",(%" r1 ")")))))
+
+(define (i386:r0+value info v)
+  (let ((r0 (get-r0 info)))
+    `(,(if (< (abs v) #x80) `(,(string-append "add____$i8,%" r0) (#:immediate1 ,v))
+           `(,(string-append "add____$i32,%" r0) (#:immediate ,v))))))
 
 (define (i386:value->r0 info v)
-  (or v (error "invalid value: i386:value->r0: " v))
-  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info)))))
+  (let ((r0 (get-r0 info)))
     `((,(string-append "mov____$i32,%" r0) (#:immediate ,v)))))
 
-(define (i386:r0-zero? info)
-  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info)))))
-    `((,(string-append "test___%" r0 "," "%" r0)))))
+(define (i386:byte-r->local+n info id n)
+  (let* ((n (+ (- 0 (* 4 id)) n))
+         (r (get-r info))
+         (l (e->l r) ))
+    `(,(if (< (abs n) #x80) `(,(string-append "mov____%" l ",0x8(%ebp)") (#:immediate1 ,n))
+           `(,(string-append "mov____%" l ",0x32(%ebp)") (#:immediate ,n))))))
 
-(define (i386:local->r0 info n)
-  (or n (error "invalid value: i386:local->r0: " n))
-  (let ((r0 (car (if (pair? (.allocated info)) (.allocated info) (.registers info))))
-        (n (- 0 (* 4 n))))
-    `(,(if (< (abs n) #x80) `(,(string-append "mov____0x8(%ebp),%" r0) (#:immediate1 ,n))
-           `(,(string-append "mov____0x32(%ebp),%" r0) (#:immediate ,n))))))
+(define (i386:word-r->local+n info id n)
+  (let* ((n (+ (- 0 (* 4 id)) n))
+         (r (get-r info))
+         (x (e->x r)))
+    `(,(if (< (abs n) #x80) `(,(string-append "mov____%" x ",0x8(%ebp)") (#:immediate1 ,n))
+           `(,(string-append "mov____%" x ",0x32(%ebp)") (#:immediate ,n))))))
+
+(define (i386:r-and info v)
+  (let ((r (get-r info)))
+    `((,(string-append "and____$i32,%" r) (#:immediate ,v)))))
+
+(define (i386:push-r0 info)
+  (let ((r0 (get-r0 info)))
+    `((,(string-append "push___%" r0)))))
+
+(define (i386:r1->r0 info)
+  (let ((r0 (get-r0 info))
+        (r1 (get-r1 info)))
+    `((,(string-append  "mov____%" r1 ",%" r0)))))
+
+(define (i386:pop-r0 info)
+  (let ((r0 (get-r0 info)))
+    `((,(string-append "pop____%" r0)))))
+
+(define (i386:swap-r-stack info)
+  (let ((r (get-r info)))
+    `((,(string-append "xchg___%" r ",(%esp)")))))
+
+(define (i386:swap-r1-stack info)
+  (let ((r0 (get-r0 info)))
+    `((,(string-append "xchg___%" r0 ",(%esp)")))))
+
+(define (i386:r2->r0 info)
+  (let ((r0 (get-r0 info))
+        (allocated (.allocated info)))
+    (if (> (length allocated) 2)
+        (let ((r2 (cadddr allocated)))
+          `((,(string-append  "mov____%" r2 ",%" r1))))
+        `((,(string-append  "pop____%" r0))
+          (,(string-append  "push___%" r0))))))
 
 (define i386:instructions
   `(
+    (a?->r . ,i386:a?->r)
+    (ae?->r . ,i386:ae?->r)
+    (b?->r . ,i386:b?->r)
+    (be?->r . ,i386:be?->r)
+    (byte-mem->r . ,i386:byte-mem->r)
+    (byte-r . ,i386:byte-r)
+    (byte-r->local+n . ,i386:byte-r->local+n)
+    (byte-r0->r1-mem . ,i386:byte-r0->r1-mem)
+    (byte-r0->r1-mem . ,i386:byte-r0->r1-mem)
+    (byte-signed-r . ,i386:byte-signed-r)
     (call-label . ,i386:call-label)
-    (function-preamble . ,i386:function-preamble)
+    (call-r . ,i386:call-r)
     (function-locals . ,i386:function-locals)
-    (local->r0 . ,i386:local->r0)
-    (r0->local . ,i386:r0->local)
-    (r0-zero? . ,i386:r0-zero?)
+    (function-preamble . ,i386:function-preamble)
+    (g?->r . ,i386:g?->r)
+    (ge?->r . ,i386:ge?->r)
+    (jump . ,i386:jump)
+    (jump-a . ,i386:jump-a)
+    (jump-ae . ,i386:jump-ae)
+    (jump-b . ,i386:jump-b)
+    (jump-be . ,i386:jump-be)
+    (jump-byte-z . ,i386:jump-byte-z)
+    (jump-g . , i386:jump-g)
+    (jump-ge . , i386:jump-ge)
+    (jump-l . ,i386:jump-l)
+    (jump-le . ,i386:jump-le)
+    (jump-nz . ,i386:jump-nz)
+    (jump-z . ,i386:jump-z)
+    (l?->r . ,i386:l?->r)
+    (label->arg . ,i386:label->arg)
+    (label->r . ,i386:label->r)
+    (label-mem->r . ,i386:label-mem->r)
+    (label-mem-add . ,i386:label-mem-add)
+    (le?->r . ,i386:le?->r)
+    (local->r . ,i386:local->r)
+    (local-add . ,i386:local-add)
+    (local-ptr->r . ,i386:local-ptr->r)
+    (long-r0->r1-mem . ,i386:r0->r1-mem)
+    (mem->r . ,i386:mem->r)
+    (nop . ,i386:nop)
+    (not-r . ,i386:not-r)
+    (pop-r0 . ,i386:pop-r0)
+    (pop-register . ,i386:pop-register)
+    (push-r0 . ,i386:push-r0)
+    (push-register . ,i386:push-register)
+    (r+r . ,i386:r+r)
+    (r+value . ,i386:r+value)
+    (r->arg . ,i386:r->arg)
+    (r->label . ,i386:r->label)
+    (r->local . ,i386:r->local)
+    (r->local+n . ,i386:r->local+n)
+    (r-and . ,i386:r-and)
+    (r-byte-mem-add . ,i386:r-byte-mem-add)
+    (r-cmp-value . ,i386:r-cmp-value)
+    (r-mem-add . ,i386:r-mem-add)
+    (r-negate . ,i386:r-negate)
+    (r-word-mem-add . ,i386:r-word-mem-add)
+    (r-zero? . ,i386:r-zero?)
+    (r0%r1 . ,i386:r0%r1)
+    (r0*r1 . ,i386:r0*r1)
+    (r0+r1 . ,i386:r0+r1)
+    (r0+value . ,i386:r0+value)
+    (r0->r1 . ,i386:r0->r1)
+    (r0->r1-mem . ,i386:r0->r1-mem)
+    (r0-and-r1 . ,i386:r0-and-r1)
+    (r0-mem->r1-mem . ,i386:r0-mem->r1-mem)
+    (r0-or-r1 . ,i386:r0-or-r1)
+    (r0-r1 . ,i386:r0-r1)
+    (r0-xor-r1 . ,i386:r0-xor-r1)
+    (r0/r1 . ,i386:r0/r1)
+    (r0<<r1 . ,i386:r0<<r1)
+    (r0>>r1 . ,i386:r0>>r1)
+    (r1->r0 . ,i386:r1->r0)
+    (r2->r0 . ,i386:r2->r0)
     (ret . ,i386:ret)
+    (return->r . ,i386:return->r)
+    (shl-r . ,i386:shl-r)
+    (swap-r-stack . ,i386:swap-r-stack)
+    (swap-r0-r1 . ,i386:swap-r0-r1)
+    (swap-r1-stack . ,i386:swap-r1-stack)
+    (test-r . ,i386:test-r)
+    (value->r . ,i386:value->r)
     (value->r0 . ,i386:value->r0)
+    (word-mem->r . ,i386:word-mem->r)
+    (word-r . ,i386:word-r)
+    (word-r->local+n . ,i386:word-r->local+n)
+    (word-r0->r1-mem . ,i386:word-r0->r1-mem)
+    (word-signed-r . ,i386:word-signed-r)
+    (xor-zf . ,i386:xor-zf)
+    (zf->r . ,i386:zf->r)
     ))

@@ -24,7 +24,7 @@ char *
 mktemp (char *template)
 {
   char *p = strchr (template, '\0');
-  int q = (int)template;
+  int q = (long)template;
   *--p = ((unsigned char)(q >> 4)) % 26 + 'a';
   *--p = ((unsigned char)(q >> 8)) % 26 + 'a';
   *--p = ((unsigned char)(q >> 12)) % 26 + 'a';

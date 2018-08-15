@@ -35,8 +35,8 @@ char g_arena[84];
 struct scm *g_cells = (struct scm*)g_arena;
 char *g_chars = g_arena;
 
-int foo () {puts ("t: foo\n"); return 0;};
-int bar (int i) {puts ("t: bar\n"); return 0;};
+int foo () {oputs ("t: foo\n"); return 0;};
+int bar (int i) {oputs ("t: bar\n"); return 0;};
 struct function {
   int (*function) (void);
   int arity;
@@ -73,6 +73,7 @@ SCM cell_fun;
 SCM
 alloc (int n)
 {
+  oputs ("040\n");
   SCM x = g_free;
   g_free += n;
   return x;
@@ -81,6 +82,7 @@ alloc (int n)
 SCM
 make_cell (SCM type, SCM car, SCM cdr)
 {
+  oputs ("030\n");
   SCM x = alloc (1);
   TYPE (x) = VALUE (type);
   if (VALUE (type) == TCHAR || VALUE (type) == TNUMBER) {
@@ -101,20 +103,26 @@ make_cell (SCM type, SCM car, SCM cdr)
 SCM
 make_cell_test ()
 {
+  oputs ("010\n");
   VALUE (tmp_num) = TPAIR;
+  oputs ("011\n");
   make_cell (tmp_num, 0, 1);
+  oputs ("012\n");
   return 0;
 }
 
 SCM
 make_tmps_test (struct scm* cells)
 {
-  puts ("t: tmp = g_free++\n");
+  oputs ("t: tmp = g_free++\n");
   tmp = g_free++;
-  puts ("t: cells[tmp].type = CHAR\n");
+  oputs ("t: cells[tmp].type = CHAR\n");
   cells[tmp].type = TCHAR;
+  oputs ("000\n");
   tmp_num = g_free++;
+  oputs ("001\n");
   cells[tmp_num].type = TNUMBER;
+  oputs ("002\n");
 
   return 0;
 }
@@ -122,8 +130,9 @@ make_tmps_test (struct scm* cells)
 int
 main ()
 {
-  puts ("\n");
+  oputs ("\n");
   make_tmps_test (g_cells);
   make_cell_test ();
+  oputs ("020\n");
   return 0;
 }

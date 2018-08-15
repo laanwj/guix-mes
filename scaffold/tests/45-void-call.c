@@ -28,8 +28,8 @@ void_func ()
 int
 main ()
 {
-  puts ("\n");
-  puts ("void_func ()\n");
+  oputs ("\n");
+  oputs ("void_func ()\n");
   void_func ();
 
   return 0;

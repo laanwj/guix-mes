@@ -50,7 +50,7 @@ if [ -n "$CC" ]; then
     fi
 fi
 
-rm -f "$t".mes-gcc-out
+rm -f "$t".x86_64-mes-gcc-out
 if [ -n "$CC64" ]; then
     sh ${srcdest}build-aux/cc64-mes.sh "$t"
 
@@ -68,7 +68,7 @@ if [ -n "$CC64" ]; then
     fi
 fi
 
-rm -f "$o".mes-out
+rm -f "$o".x86_64-mes-out
 sh ${srcdest}build-aux/cc-x86_64-mes.sh "$t"
 
 r=0

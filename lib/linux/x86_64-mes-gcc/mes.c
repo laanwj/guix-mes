@@ -130,13 +130,15 @@ _sys_call4 (long sys_call, long one, long two, long three, long four)
        "mov     %2,%%rdi\n\t"
        "mov     %3,%%rsi\n\t"
        "mov     %4,%%rdx\n\t"
-       "mov     %5,%%rcx\n\t"
+       "mov     %5,%%r10\n\t"
        "mov     %1,%%rax\n\t"
+  //      );
+  // asm (
        "syscall \n\t"
        "mov     %%rax,%0\n\t"
        : "=r" (r)
        : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three), "rm" (four)
-       : "rax", "rdi", "rsi", "rdx", "rcx"
+       : "rax", "rdi", "rsi", "rdx", "r10"
        );
   if (r < 0)
     {

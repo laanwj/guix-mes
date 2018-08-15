@@ -29,15 +29,22 @@ int g_alarm_handled_p = 0;
 void
 handler (int signum)
 {
+#if __MESC__ && __x86_64__
+  asm ("mov____%rdi,0x8(%rbp) !0x10"); // FIXME: AMDCC
+#endif
   eputs ("handle:"); eputs (itoa (signum)); eputs ("\n");
   if (signum != SIGALRM)
-    exit (1);
+    exit (66);
   g_alarm_handled_p = 1;
+  #if __x86_64__
+  exit (0);
+  #endif
 }
 
 int
 main (void)
 {
+  eputs ("pid_t="); eputs (itoa (sizeof (pid_t))); eputs ("\n");
   signal (SIGALRM, handler);
   kill (getpid (), SIGALRM);
   if (!g_alarm_handled_p)

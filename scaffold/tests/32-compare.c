@@ -20,104 +20,140 @@
 
 #include <libmes-mini.h>
 
-int isid(char c) {
+int
+isid (char c)
+{
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
 
 int
-main ()
+main (int c)
 {
   int f = 0;
   int t = 1;
   int one = t;
 
-  puts ("\n");
-  puts ("t: if (f)\n");
-  if (f) return 1;
+  oputs ("\n");
+  oputs ("t: if (f)\n");
+  if (f)
+    return 1;
 
-  puts ("t: if (one != 1)\n");
-  if (one != 1) return 2;
+  oputs ("t: if (one != 1)\n");
+  if (one != 1)
+    return 2;
 
-  puts ("t: if (1 != one)\n");
-  if (1 != one) return 3;
+  oputs ("t: if (1 != one)\n");
+  if (1 != one)
+    return 3;
 
-  puts ("t: if (one > 1)\n");
-  if (one > 1) return 4;
+  oputs ("t: if (one > 1)\n");
+  if (one > 1)
+    return 4;
 
-  puts ("t: if (one < 0)\n");
-  if (one < 0) return 5;
+  oputs ("t: if (one < 0)\n");
+  if (one < 0)
+    return 5;
 
-  puts ("t: if (one <= 0)\n");
-  if (one <= 0) return 6;
+  oputs ("t: if (one <= 0)\n");
+  if (one <= 0)
+    return 6;
 
-  puts ("t: if (one >= 2)\n");
-  if (one >= 2) return 7;
+  oputs ("t: if (one >= 2)\n");
+  if (one >= 2)
+    return 7;
 
-  puts ("t: if (!1)\n");
-  if (!1) return 8;
+  oputs ("t: if (!1)\n");
+  if (!1)
+    return 8;
 
-  puts ("t: if (one == 0)\n");
-  if (one == 0) return 9;
+  oputs ("t: if (one == 0)\n");
+  if (one == 0)
+    return 9;
 
-  puts ("t: if (f != 0)\n");
-  if (one != 1) return 10;
+  oputs ("t: if (f != 0)\n");
+  if (one != 1)
+    return 10;
 
-  puts ("t: if (1)\n");
-  if (1) goto ok0;
+  oputs ("t: if (1)\n");
+  if (1)
+    goto ok0;
+
   return 111;
  ok0:
 
-  puts ("t: if (0); return 1; else;\n");
-  if (0) return 12; else goto ok1;
+  oputs ("t: if (0); return 1; else;\n");
+  if (0)
+    return 12; else
+    goto ok1;
  ok1:
 
-  puts ("t: if (t)\n");
-  if (t) goto ok2;
+  oputs ("t: if (t)\n");
+  if (t)
+    goto ok2;
+
   return 13;
  ok2:
 
-  puts ("t: if (one > 0)\n");
-  if (one > 0) goto ok3;
+  oputs ("t: if (one > 0)\n");
+  if (one > 0)
+    goto ok3;
+
   return 14;
  ok3:
 
-  puts ("t: if (one < 2)\n");
-  if (one < 2) goto ok4;
+  oputs ("t: if (one < 2)\n");
+  if (one < 2)
+    goto ok4;
+
   return 15;
  ok4:
 
-  puts ("t: if (one >= 0)\n");
-  if (one >= 0) goto ok5;
+  oputs ("t: if (one >= 0)\n");
+  if (one >= 0)
+    goto ok5;
+
   return 16;
  ok5:
 
-  puts ("t: if (one >= 1)\n");
-  if (one >= 0) goto ok6;
+  oputs ("t: if (one >= 1)\n");
+  if (one >= 0)
+    goto ok6;
+
   return 17;
  ok6:
 
-  puts ("t: if (one <= 2)\n");
-  if (one <= 2) goto ok7;
+  oputs ("t: if (one <= 2)\n");
+  if (one <= 2)
+    goto ok7;
+
   return 18;
  ok7:
 
-  puts ("t: if (one <= 1)\n");
-  if (one <= 1) goto ok8;
+  oputs ("t: if (one <= 1)\n");
+  if (one <= 1)
+    goto ok8;
+
   return 19;
  ok8:
 
-  puts ("t: if (!0)\n");
-  if (!0) goto ok9;
+  oputs ("t: if (!0)\n");
+  if (!0)
+    goto ok9;
+
   return 20;
  ok9:
 
-  puts ("t: if (one == 1)\n");
-  if (one == 1) goto ok10;
+  oputs ("t: if (one == 1)\n");
+  if (one == 1)
+    goto ok10;
+
   return 21;
  ok10:
 
-  puts ("t: if (one != 0)\n");
-  if (one != 0) goto ok11;
+  oputs ("t: if (one != 0)\n");
+  if (one != 0)
+    goto ok11;
+
   return 22;
  ok11:
   ;
@@ -125,86 +161,106 @@ main ()
   int m1 = -1;
   int i;
 
-  puts ("t: i = one > 0\n");
+  oputs ("t: i = one > 0\n");
   i = one > 0;
-  if (!i) return 23;
+  if (!i)
+    return 23;
 
-  puts ("t: i = one >= 1\n");
+  oputs ("t: i = one >= 1\n");
   i = one >= 1;
-  if (!i) return 24;
+  if (!i)
+    return 24;
 
-  puts ("t: i = one < 2\n");
+  oputs ("t: i = one < 2\n");
   i = one < 2;
-  if (!i) return 25;
+  if (!i)
+    return 25;
 
-  puts ("t: i = one <= 1\n");
+  oputs ("t: i = one <= 1\n");
   i = one <= 1;
-  if (!i) return 26;
+  if (!i)
+    return 26;
 
 
-  puts ("t: i = 0 > one\n");
+  oputs ("t: i = 0 > one\n");
   i = 0 > one;
-  if (i) return 27;
+  if (i)
+    return 27;
 
-  puts ("t: i = 0 >= one\n");
+  oputs ("t: i = 0 >= one\n");
   i = 0 >= one;
-  if (i) return 28;
+  if (i)
+    return 28;
 
-  puts ("t: i = 1 < one \n");
+  oputs ("t: i = 1 < one \n");
   i = 1 < one;
-  if (i) return 29;
+  if (i)
+    return 29;
 
-  puts ("t: i = 2 <= one\n");
+  oputs ("t: i = 2 <= one\n");
   i = 2 <= one;
-  if (i) return 30;
+  if (i)
+    return 30;
 
 
-  puts ("t: i = m1 > -2\n");
+  oputs ("t: i = m1 > -2\n");
   i = m1 > -2;
-  if (!i) return 31;
+  if (!i)
+    return 31;
 
-  puts ("t: i = m1 >= -1\n");
+  oputs ("t: i = m1 >= -1\n");
   i = m1 >= -1;
-  if (!i) return 32;
+  if (!i)
+    return 32;
 
-  puts ("t: i = m1 < 0\n");
+  oputs ("t: i = m1 < 0\n");
   i = m1 < 0;
-  if (!i) return 33;
+  if (!i)
+    return 33;
 
-  puts ("t: i = m1 <= -1\n");
+  oputs ("t: i = m1 <= -1\n");
   i = m1 <= -1;
-  if (!i) return 34;
+  if (!i)
+    return 34;
 
 
-  puts ("t: i = -1 > m1\n");
+  oputs ("t: i = -1 > m1\n");
   i = -1 > m1;
-  if (i) return 35;
+  if (i)
+    return 35;
 
-  puts ("t: i = -2 >= m1\n");
+  oputs ("t: i = -2 >= m1\n");
   i = -2 >= m1;
-  if (i) return 36;
+  if (i)
+    return 36;
 
-  puts ("t: i = -1 < m1 \n");
+  oputs ("t: i = -1 < m1 \n");
   i = -1 < m1;
-  if (i) return 37;
+  if (i)
+    return 37;
 
-  puts ("t: i = -2 <= m1\n");
+  oputs ("t: i = -2 <= m1\n");
   i = 0 <= m1;
-  if (i) return 38;
+  if (i)
+    return 38;
 
 
-  puts ("t: isid (0)\n");
-  if (isid (0)) return 39;
+  oputs ("t: isid (0)\n");
+  if (isid (0))
+    return 39;
 
-  puts ("t: isid (6)\n");
+  oputs ("t: isid (6)\n");
 
-  if (isid (6)) return 40;
+  if (isid (6))
+    return 40;
 
-  puts ("t: isid (a)\n");
-  if (isid ('a') != 1) return 41;
+  oputs ("t: isid (a)\n");
+  if (isid ('a') != 1)
+    return 41;
 
-  puts ("t: isid ( )\n");
-  if (isid (' ')) return 42;
+  oputs ("t: isid ( )\n");
+  if (isid (' '))
+    return 42;
 
   return 0;
 }

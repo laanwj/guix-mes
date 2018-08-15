@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,33 +18,25 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
-#include <libmes.h>
-#include <stdlib.h>
-#include <string.h>
+#include <libmes-mini.h>
+
+int
+add (int a, int b)
+{
+  return a + b;
+}
+
+int
+inc (int i)
+{
+  return i + 1;
+}
 
 int
 main ()
 {
-  char *p = "mes";
-
-  puts ("\n");
-  puts ("t: itoa (33) == \"33\"\n");
-  if (strcmp (itoa (33), "33"))
+  if (add (inc (0), inc (1)) != 3)
     return 1;
-
-  puts ("strcmp (itoa (-1), \"-1\")\n");
-  puts (itoa (-1));
-  if (strcmp (itoa (-1), "-1"))
-    return 2;
-
-  puts ("strcmp (itoa (0), \"0\")\n");
-  if (strcmp (itoa (0), "0"))
-    return 3;
-
-  puts ("strcmp (itoa (1), \"1\")\n");
-  if (strcmp (itoa (1), "1"))
-    return 4;
 
   return 0;
 }

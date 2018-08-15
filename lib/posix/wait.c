@@ -20,7 +20,7 @@
 
 #include <sys/wait.h>
 
-int
+pid_t
 wait (int *status_ptr)
 {
   return waitpid  (-1, status_ptr, 0);

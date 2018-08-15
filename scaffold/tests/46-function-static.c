@@ -18,7 +18,9 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+int bar;
 static int i = 2;
+int baz;
 
 int
 test ()

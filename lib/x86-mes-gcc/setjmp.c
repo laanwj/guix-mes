@@ -19,24 +19,12 @@
  */
 
 #include <setjmp.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <signal.h>
-#include <sys/mman.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-int errno;
 
 void
 longjmp (jmp_buf env, int val)
 {
   val = val == 0 ? 1 : val;
-  asm ("mov    0xc(%ebp),%eax\n\t"     // val
-       "mov    0x8(%ebp),%ebp\n\t"     // env*
+  asm ("mov    0x8(%ebp),%ebp\n\t"     // env*
 
        "mov    0x4(%ebp),%ebx\n\t"     // env->__pc
        "mov    0x8(%ebp),%esp\n\t"     // env->__sp
@@ -47,30 +35,12 @@ longjmp (jmp_buf env, int val)
   exit (42);
 }
 
-#if 0
-int
-setjmp_debug (jmp_buf env, int val)
-{
-  int i;
-#if 1
-  i = env->__bp;
-  i = env->__pc;
-  i = env->__sp;
-#else
-  i = env[0].__bp;
-  i = env[0].__pc;
-  i = env[0].__sp;
-#endif
-  return val == 0 ? 1 : val;
-}
-#endif
-
 int
 setjmp (jmp_buf env)
 {
-  int *p = (int*)&env;
+  long *p = (long*)&env;
   env[0].__bp = p[-2];
   env[0].__pc = p[-1];
-  env[0].__sp = (int)&env;
+  env[0].__sp = (long)&env;
   return 0;
 }

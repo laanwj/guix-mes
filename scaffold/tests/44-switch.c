@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -29,10 +29,26 @@ swits (int c)
 
   switch (c)
     {
-    case TCHAR: {puts ("TCHAR\n"); goto next;}
-    case 1: {puts ("1\n"); goto next;}
-    case 2: {puts ("2\n"); goto next;}
-    default: {puts ("default\n"); goto next;}
+    case TCHAR:
+      {
+        oputs ("TCHAR\n");
+        goto next;
+      }
+    case 1:
+      {
+        oputs ("1\n");
+        goto next;
+      }
+    case 2:
+      {
+        oputs ("2\n");
+        goto next;
+      }
+    default:
+      {
+        oputs ("default\n");
+        goto next;
+      }
     }
 
   return 1;
@@ -41,7 +57,7 @@ swits (int c)
     {
     case 0:
       {
-        puts ("0\n");
+        oputs ("0\n");
         x = 0;
         c = 34;
         break;
@@ -52,11 +68,11 @@ swits (int c)
     case 2:
     case -1:
     case 1:
-      puts ("5..1, -1\n");
+      oputs ("5..1, -1\n");
       x = 1;
       break;
     default:
-      puts ("default\n");
+      oputs ("default\n");
       x = 2;
       x = 2;
       break;
@@ -89,21 +105,21 @@ default_first (int c)
 int
 main ()
 {
-  puts ("\n");
-  puts ("t: switch 0\n");
+  oputs ("\n");
+  oputs ("t: switch 0\n");
   int i = swits (0);
   if (i != 0)
     return i;
 
-  puts ("t: switch 1\n");
+  oputs ("t: switch 1\n");
   if (swits (1) != 1)
     return 10;
 
-  puts ("t: switch -1\n");
+  oputs ("t: switch -1\n");
   if (swits (-1) != 1)
     return 11;
 
-  puts ("t: switch -1\n");
+  oputs ("t: switch -1\n");
   if (swits (-2) != 2)
     return 12;
 

@@ -20,4 +20,5 @@
 
 (mes-use-module (mescc as))
 (mes-use-module (mescc info))
+(mes-use-module (mescc x86_64 info))
 (include-from-path "mescc/x86_64/as.scm")

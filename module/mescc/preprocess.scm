@@ -31,13 +31,16 @@
   #:use-module (mes guile)
   #:export (c99-input->ast))
 
-(format (current-error-port) "*nyacc-version*=~a\n" *nyacc-version*)
+(when (getenv "MESC_DEBUG")
+  (format (current-error-port) "*nyacc-version*=~a\n" *nyacc-version*))
+
 ;; list of which rules you want progress reported
 (define need-progress
-  (assoc-ref
-   '(("0.85.3" (1 2 3))
-     ("0.86.0" (1 2 3)))
-   *nyacc-version*))
+  (or (assoc-ref
+       '(("0.85.3" (1 2 3))
+         ("0.86.0" (1 2 3)))
+       *nyacc-version*)
+      '(1 2 3)))
 
 (define (progress o)
   (when (and o (getenv "NYACC_DEBUG"))

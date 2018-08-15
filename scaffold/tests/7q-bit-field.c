@@ -37,12 +37,13 @@ int
 main ()
 {
   union foo f;
+  f.i = 1;
   f.b.one = 1;
   if (f.i != 1)
     return 1;
   f.b.two = 1;
   if (f.i != 3)
-    return 2;
+    return f.i;
   f.b.four = 1;
   if (f.i != 7)
     return 3;

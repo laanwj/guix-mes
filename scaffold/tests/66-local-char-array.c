@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -24,11 +24,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#define memset xmemset
+#define calloc xcalloc
+
 void *
 memset (void *s, int c, size_t n)
 {
   char *p = s;
-  while (n--) *p++ = c;
+  while (n--)
+    *p++ = c;
   return s;
 }
 
@@ -42,13 +46,14 @@ calloc (size_t nmemb, size_t size)
 }
 
 /* {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'} */
-char LittleEndian_table[16] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46};
+char little_endian_table[16] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46};
 
-char* LittleEndian(unsigned value, char* c, int Number_of_bytes)
+char*
+little_endian (unsigned value, char* c, int number_of_bytes)
 {
   char table[16] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46};
-  
-  switch(Number_of_bytes)
+
+  switch(number_of_bytes)
     {
     case 4:
       {
@@ -72,10 +77,7 @@ char* LittleEndian(unsigned value, char* c, int Number_of_bytes)
         break;
       }
     default:
-      {
-        //fprintf(stderr, "Recieved invalid number of bytes in LittleEndian %d\n", Number_of_bytes);
-        exit(EXIT_FAILURE);
-      }
+      return "invalid";
     }
   return c;
 }
@@ -87,14 +89,17 @@ main ()
 
   char *s;
   s = calloc (10, sizeof (char));
-  eputs ("2="); eputs (LittleEndian (2, s, 1)); eputs ("\n");
-  if (strcmp (s, "02")) return 1;
+  eputs ("2="); eputs (little_endian (2, s, 1)); eputs ("\n");
+  if (strcmp (s, "02"))
+    return 1;
 
-  eputs ("8="); eputs (LittleEndian (8, s, 2)); eputs ("\n");
-  if (strcmp (s, "0800")) return 1;
-  
-  eputs ("16="); eputs (LittleEndian (16, s, 4)); eputs ("\n");
-  if (strcmp (s, "10000000")) return 1;
+  eputs ("8="); eputs (little_endian (8, s, 2)); eputs ("\n");
+  if (strcmp (s, "0800"))
+    return 2;
+
+  eputs ("16="); eputs (little_endian (16, s, 4)); eputs ("\n");
+  if (strcmp (s, "10000000"))
+    return 3;
 
   return 0;
 }

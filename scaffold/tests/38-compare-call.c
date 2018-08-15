@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -49,47 +49,65 @@ main ()
   int one = t;
   char *p = "mes";
 
-  puts ("\n");
-  puts ("t: if (strlen (\"\"))\n");
-  if (strlen ("")) return 1;
+  oputs ("\n");
+  oputs ("t: if (strlen (\"\"))\n");
+  if (strlen (""))
+    return 1;
 
-  puts ("t: if (strlen (p) != 3)\n");
-  if (strlen (p) != 3) return 1;
+  oputs ("t: if (strlen (p) != 3)\n");
+  if (strlen (p) != 3)
+    return 2;
 
-  puts ("t: if (!strlen (\".\"))\n");
-  if (!strlen (".")) return 1;
+  oputs ("t: if (!strlen (\".\"))\n");
+  if (!strlen ("."))
+    return 3;
 
-  puts ("t: identity (p[i]) != 'm'\n");
-  if (identity (p[i]) != 'm') return identity (p[i]);
+  oputs ("t: identity (p[i]) != 'm'\n");
+  if (identity (p[i]) != 'm')
+    return identity (p[i]);
 
-  puts ("t: inc (0)\n");
-  if (inc (0) != 1) return 1;
+  oputs ("t: inc (0)\n");
+  if (inc (0) != 1)
+    return 4;
 
-  puts ("t: inc (inc (0))\n");
-  if (inc (inc (0)) != 2) return 1;
+  oputs ("t: inc (inc (0))\n");
+  if (inc (inc (0)) != 2)
+    return 5;
 
-  puts ("t: inc (inc (inc (0)))\n");
-  if (inc (inc (inc (0))) != 3) return 1;
+  oputs ("t: inc (inc (inc (0)))\n");
+  if (inc (inc (inc (0))) != 3)
+    return 6;
 
-  puts ("t: add (1, 2)\n");
-  if (add (1, 2) != 3) return 1;
+  oputs ("t: add (1, 2)\n");
+  if (add (1, 2) != 3)
+    return 7;
 
-  puts ("t: add (inc (0), inc (1))\n");
-  if (add (inc (0), inc (1)) != 3) return 1;
+  // broken x86, x86_64
+  oputs ("t: add (inc (0), inc (1))\n");
+  if (add (inc (0), inc (1)) != 3)
+    return 8;
+  // end broken x86, x86_64
 
-  puts ("t: add (TSTRING, 3)\n");
-  if (add (TSTRING, 3) != 13) return 1;
+  oputs ("t: add (TSTRING, 3)\n");
+  if (add (TSTRING, 3) != 13)
+    return 9;
 
-  puts ("t: add (inc (inc (0)), inc (inc (1)))\n");
-  if (add (inc (inc (0)), inc (inc (1))) != 5) return 1;
+  // broken x86_64
+  oputs ("t: add (inc (inc (0)), inc (inc (1)))\n");
+  if (add (inc (inc (0)), inc (inc (1))) != 5)
+    return 10;
+  // end broken x86_64
 
-  puts ("t: if (strlen (\".\"))\n");
-  if (strlen (".")) goto ok1;
-  return 1;
+  oputs ("t: if (strlen (\".\"))\n");
+  if (strlen ("."))
+    goto ok1;
+  return 11;
  ok1:
 
-  puts ("t: if (strlen (p) == 3)\n");
-  if (strlen (p) == 3) goto ok2;
+  oputs ("t: if (strlen (p) == 3)\n");
+  if (strlen (p) == 3)
+    goto ok2;
+  return 12;
  ok2:
 
   return 0;
