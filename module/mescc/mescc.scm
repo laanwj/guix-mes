@@ -121,6 +121,7 @@
                                  (list (infos->hex2 options hex2-file-name infos)))))
          (libraries (filter-map (multi-opt 'library) options))
          (libraries (if (pair? libraries) libraries '("c")))
+         (libraries (if (equal? libraries '("none")) '() libraries))
          (hex2-libraries (map (cut find-library options ".o" <>) libraries))
          (hex2-files (append hex2-files hex2-libraries))
          (S-files (append S-files (map (cut find-library options ".S" <>)  libraries)))
