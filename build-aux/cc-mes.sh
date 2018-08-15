@@ -48,20 +48,20 @@ fi
 mkdir -p $d
 
 if [ -n "$PREPROCESS" ]; then
-    trace "MESCPP $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -E -o "$o.E" "${srcdest}$c".c
-    trace "MESCC $c.E" ./pre-inst-env bash $MESCC $MES_CFLAGS -S "$o".E
-    trace "MESAS $c.S" ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
+    trace "CPP.mes    $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -E -o "$o.E" "${srcdest}$c".c
+    trace "CC.mes     $c.E" ./pre-inst-env bash $MESCC $MES_CFLAGS -S "$o".E
+    trace "AS.mes     $c.S" ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        trace "MESLD $c.o" ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
+        trace "LD.mes     $c.o" ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -n "$COMPILE" ]; then
-    trace "MESCC $c.c" trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -S -o "$o.S" "${srcdest}$c".c
-    trace "MESAS $c.S" ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
+    trace "CC.mes     $c.c" trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -S -o "$o.S" "${srcdest}$c".c
+    trace "AS.mes     $c.S" ./pre-inst-env bash $MESCC $MES_CFLAGS -c -o "$o".${p}o "$o".S
     if [ -z "$NOLINK" ]; then
-        trace "MESLD $c.o" ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
+        trace "LD.mes     $c.o" ./pre-inst-env bash $MESCC $MES_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -z "$NOLINK" ]; then
-    trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "${srcdest}$c".c $MES_LIBS
+    trace "CC.mes     $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -o "$o".${p}out "${srcdest}$c".c $MES_LIBS
 else
-   trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "${srcdest}$c".c
+   trace "CC.mes     $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES_CFLAGS -c -o "$o".${p}o "${srcdest}$c".c
 fi

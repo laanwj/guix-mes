@@ -47,7 +47,7 @@ else
 fi
 mkdir -p $d
 
-trace "CC32 $c.c" $CC32\
+trace "CC.32      $c.c" $CC32\
     -c\
     $CC32_CPPFLAGS\
     $CC32_CFLAGS\
@@ -55,7 +55,7 @@ trace "CC32 $c.c" $CC32\
     "${srcdest}$c".c
 
 if [ -z "$NOLINK" ]; then
-    trace "CCLD32 $c.c" $CC32\
+    trace "CCLD.32    $c.c" $CC32\
         $CC32_CPPFLAGS\
         $CC32_CFLAGS\
         -o "$o".${p}out\

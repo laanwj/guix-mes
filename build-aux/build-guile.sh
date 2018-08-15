@@ -61,6 +61,6 @@ for i in $SCM_FILES $SCRIPTS; do
     b=$(basename $i)
     go=${i%%.scm}.go
     if [ $i -nt $go ]; then
-        trace "GUILEC $b" $GUILE_TOOLS compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $i
+        trace "GUILEC     $b" $GUILE_TOOLS compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $i
     fi
 done

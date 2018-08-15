@@ -119,7 +119,7 @@ for i in $tests; do
         echo ' [SKIP]'
         continue;
     fi
-    trace "TEST $i.guile" $GUILE -L ${srcdest}module -C module -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i)
+    trace "TEST       $i.guile" $GUILE -L ${srcdest}module -C module -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i)
     x=$(
         if [ "$MES" = guile ]; then
             true

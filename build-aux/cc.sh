@@ -36,7 +36,7 @@ else
 fi
 mkdir -p $d
 
-trace "CC $c.c" $CC\
+trace "CC         $c.c" $CC\
     -c\
     $CC_CPPFLAGS\
     $CPPFLAGS\
@@ -48,7 +48,7 @@ trace "CC $c.c" $CC\
     "${srcdest}$c".c
 
 if [ -z "$NOLINK" ]; then
-    trace "CCLD "$o".${p}out" $CC\
+    trace "CCLD       "$o".${p}out" $CC\
         $CC_CPPFLAGS\
         $CPPFLAGS\
         $CC_CFLAGS\

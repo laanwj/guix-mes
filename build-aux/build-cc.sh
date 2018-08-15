@@ -27,22 +27,22 @@ set -e
 LIBC=${LIBC-c}
 
 # native
-trace "SNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
-trace "SNARF lib.c"    ${srcdest}build-aux/mes-snarf.scm src/lib.c
-trace "SNARF math.c"   ${srcdest}build-aux/mes-snarf.scm src/math.c
-trace "SNARF mes.c"    ${srcdest}build-aux/mes-snarf.scm src/mes.c
-trace "SNARF posix.c"  ${srcdest}build-aux/mes-snarf.scm src/posix.c
-trace "SNARF reader.c" ${srcdest}build-aux/mes-snarf.scm src/reader.c
-trace "SNARF vector.c" ${srcdest}build-aux/mes-snarf.scm src/vector.c
+trace "SNARF      gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
+trace "SNARF      lib.c"    ${srcdest}build-aux/mes-snarf.scm src/lib.c
+trace "SNARF      math.c"   ${srcdest}build-aux/mes-snarf.scm src/math.c
+trace "SNARF      mes.c"    ${srcdest}build-aux/mes-snarf.scm src/mes.c
+trace "SNARF      posix.c"  ${srcdest}build-aux/mes-snarf.scm src/posix.c
+trace "SNARF      reader.c" ${srcdest}build-aux/mes-snarf.scm src/reader.c
+trace "SNARF      vector.c" ${srcdest}build-aux/mes-snarf.scm src/vector.c
 
 # cc64-mes
-trace "MSNARF gc.c"     ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
-trace "MSNARF lib.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
-trace "MSNARF math.c"   ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
-trace "MSNARF mes.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
-trace "MSNARF posix.c"  ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
-trace "MSNARF reader.c" ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
-trace "MSNARF vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
+trace "SNARF.mes  gc.c"     ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
+trace "SNARF.mes  lib.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
+trace "SNARF.mes  math.c"   ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
+trace "SNARF.mes  mes.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
+trace "SNARF.mes  posix.c"  ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
+trace "SNARF.mes  reader.c" ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
+trace "SNARF.mes  vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
 
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc.sh lib/libmes
 sh ${srcdest}build-aux/cc.sh src/mes

@@ -32,7 +32,7 @@ MES=${MES-$(command -v mes)}
 
 set -e
 
-trace "HEX2 0exit-42" $HEX2\
+trace "HEX2       0exit-42" $HEX2\
     --LittleEndian\
     --Architecture 2\
     --BaseAddress 0x1000000\
@@ -42,11 +42,11 @@ trace "HEX2 0exit-42" $HEX2\
     --exec_enable\
     -o lib/x86_64-mes/0exit-42.x86_64-out
 
-trace "TEST 0exit-42"
+trace "TEST       lib/x86_64-mes/0exit-42.x86_64-out" echo lib/x86_64-mes/0exit-42.x86_64-out
 { set +e; lib/x86_64-mes/0exit-42.x86_64-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-trace "HEX2 0exit-42" $HEX2\
+trace "HEX2       0exit-42" $HEX2\
     --LittleEndian\
     --Architecture 2\
     --BaseAddress 0x1000000\
@@ -56,39 +56,39 @@ trace "HEX2 0exit-42" $HEX2\
     --exec_enable\
     -o lib/x86_64-mes/exit-42.x86_64-out
 
-trace "TEST exit-42"
+trace "TEST       lib/x86_64-mes/exit-42.x86_64-out" echo lib/x86_64-mes/exit-42.x86_64-out
 { set +e; lib/x86_64-mes/exit-42.x86_64-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
 # if [ -d "$MES_SEED" ]; then
 #     mkdir -p lib/x86_64-mes
-#     trace "M1 crt1.S" $M1\
+#     trace "M1         crt1.S" $M1\
 #         $M1FLAGS\
 #         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
 #         -f $MES_SEED/x86_64-mes/crt1.S\
 #         -o lib/x86_64-mes/crt1.o
-#     trace "M1 libc.S" $M1\
+#     trace "M1         libc.S" $M1\
 #         $M1FLAGS\
 #         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
 #         -f $MES_SEED/x86_64-mes/libc.S\
 #         -o lib/x86_64-mes/libc.o
-#     trace "M1 mes.S" $M1\
+#     trace "M1         mes.S" $M1\
 #         --LittleEndian\
 #         --Architecture 2\
 #         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
 #         -f $MES_SEED/x86_64-mes/mes.S\
 #         -o src/mes.o
-#     trace "BLOOD_ELF mes.S" $BLOOD_ELF\
+#     trace "BLOOD_ELF  mes.S" $BLOOD_ELF\
 #         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
 #         -f $MES_SEED/x86_64-mes/mes.S\
 #         -f $MES_SEED/x86_64-mes/libc.S\
 #         -o src/mes.S.blood-elf
-#     trace "M1 mes.blood-elf" $M1\
+#     trace "M1         mes.blood-elf" $M1\
 #         --LittleEndian\
 #         --Architecture 2\
 #         -f src/mes.S.blood-elf\
 #         -o src/mes.o.blood-elf
-#     trace "HEX2 mes.o" $HEX2\
+#     trace "HEX2       mes.o" $HEX2\
 #         $HEX2FLAGS\
 #         -f ${srcdest}lib/x86_64-mes/elf64-header.hex2\
 #         -f lib/x86_64-mes/crt1.o\
@@ -98,7 +98,7 @@ trace "TEST exit-42"
 #         --exec_enable\
 #         -o src/mes.seed-out
 #     cp src/mes.seed-out src/mes
-#     trace "M1 libc+tcc.S" $M1\
+#     trace "M1         libc+tcc.S" $M1\
 #         $M1FLAGS\
 #         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
 #         -f $MES_SEED/x86_64-mes/libc+tcc.S\

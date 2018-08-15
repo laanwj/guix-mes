@@ -46,7 +46,7 @@ else
 fi
 mkdir -p $d
 
-trace "CC64 $c.c" $CC64\
+trace "CC.64      $c.c" $CC64\
     -c\
     $CC64_CPPFLAGS\
     $CC64_CFLAGS\
@@ -54,7 +54,7 @@ trace "CC64 $c.c" $CC64\
     "${srcdest}$c".c
 
 if [ -z "$NOLINK" ]; then
-    trace "CCLD64 $c.c" $CC64\
+    trace "CCLD.64    $c.c" $CC64\
         $CC64_CPPFLAGS\
         $CC64_CFLAGS\
         -o "$o".${p}out\
