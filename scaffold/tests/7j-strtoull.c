@@ -28,7 +28,7 @@ int
 main ()
 {
   char *p = "42foo\n";
-  int n = abtoi (&p, 0);
+  int n = abtol (&p, 0);
   if (n != 42) return 1;
   eputs (p);
   if (strcmp (p, "foo\n")) return 2;

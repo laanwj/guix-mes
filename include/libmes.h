@@ -45,11 +45,23 @@ typedef long ssize_t;
 #endif
 #endif
 
+#ifndef STDIN
+#define STDIN 0
+#endif
+
+#ifndef STDOUT
+#define STDOUT 1
+#endif
+
+#ifndef STDERR
+#define STDERR 2
+#endif
+
 int __mes_debug ();
-char const* number_to_ascii (long number, int base, int signed_p);
-char const* itoa (long number);
+char const* ntoab (long number, int base, int signed_p);
+char const* itoa (int number);
 char const* utoa (unsigned long number);
-char const* itoab (long x, int base);
+char const* ltoab (long x, int base);
 int _atoi (char const**, int base);
 int atoi (char const *s);
 int eputc (int c);
@@ -58,6 +70,7 @@ int fdgetc (int fd);
 int fdputc (int c, int fd);
 int fdputs (char const* s, int fd);
 int fdungetc (int c, int fd);
+int _fdungetc_p (int fd);
 int isdigit (int c);
 int isspace (int c);
 int isxdigit (int c);

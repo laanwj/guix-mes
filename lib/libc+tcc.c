@@ -573,10 +573,10 @@ strtol (char const *string, char **tailptr, int base)
   if (tailptr)
     {
       *tailptr = string;
-      return abtoi (tailptr, base);
+      return abtol (tailptr, base);
     }
   char **p = &string;
-  return abtoi (p, base);
+  return abtol (p, base);
 }
 
 long long int
@@ -707,7 +707,7 @@ vfprintf (FILE* f, char const* format, va_list ap)
           }
         if (c >= '0' && c <= '9')
           {
-            width = abtoi (&p, 10);
+            width = abtol (&p, 10);
             c = *p;
           }
         else if (c == '*')
@@ -720,7 +720,7 @@ vfprintf (FILE* f, char const* format, va_list ap)
             c = *++p;
             if (c >= '0' && c <= '9')
               {
-                precision = abtoi (&p, 10);
+                precision = abtol (&p, 10);
                 c = *p;
               }
             else if (c == '*')
@@ -751,7 +751,7 @@ vfprintf (FILE* f, char const* format, va_list ap)
               int base = c == 'o' ? 8
                 : c == 'x' || c == 'X' ? 16
                 : 10;
-              char const *s = number_to_ascii (d, base, c != 'u' && c != 'x' && c != 'X');
+              char const *s = ntoab (d, base, c != 'u' && c != 'x' && c != 'X');
               if (c == 'X')
                 strupr (s);
               int length = strlen (s);
@@ -884,7 +884,7 @@ vsscanf (char const *s, char const *template, va_list ap)
           case 'u':
             {
               int *d = va_arg (ap, int*);
-              *d = abtoi (&p, 10);
+              *d = abtol (&p, 10);
               count++;
               break;
             }
@@ -934,7 +934,7 @@ vsprintf (char *str, char const* format, va_list ap)
           }
         if (c >= '0' && c <= '9')
           {
-            width = abtoi (&p, 10);
+            width = abtol (&p, 10);
             c = *p;
           }
         else if (c == '*')
@@ -947,7 +947,7 @@ vsprintf (char *str, char const* format, va_list ap)
             c = *++p;
             if (c >= '0' && c <= '9')
               {
-                precision = abtoi (&p, 10);
+                precision = abtol (&p, 10);
                 c = *p;
               }
             else if (c == '*')
@@ -980,7 +980,7 @@ vsprintf (char *str, char const* format, va_list ap)
               int base = c == 'o' ? 8
                 : c == 'x' || c == 'X' ? 16
                 : 10;
-              char const *s = number_to_ascii (d, base, c != 'u' && c != 'x' && c != 'X');
+              char const *s = ntoab (d, base, c != 'u' && c != 'x' && c != 'X');
               if (c == 'X')
                 strupr (s);
               int length = strlen (s);
