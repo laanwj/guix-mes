@@ -154,10 +154,10 @@ fail=0
 total=0
 mkdir -p scaffold/tests
 for t in $tests; do
-    if [ -z "${t/[01][0-9]-*/}" ]; then
+    if [ -z "${t/[012][0-9]-*/}" ]; then
         LIBC=
         MES_LIBS="-l none"
-    elif [ -z "${t/[2][0-9]-*/}" ]; then
+    elif [ -z "${t/[34][0-9]-*/}" ]; then
         LIBC=c-mini
         MES_LIBS="-l c-mini"
     elif [ -z "${t/[78][0-9a-z]-*/}" ]; then
