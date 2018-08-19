@@ -18,8 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
-#include <stdio.h>
+#include <libmes-mini.h>
 
 int
 main ()
