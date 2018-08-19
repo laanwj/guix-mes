@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,16 +17,45 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_ERRNO_H
-#define __MES_ERRNO_H 1
 
-#if WITH_GLIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
+#ifndef __MES_LIBMES_MINI_H
+#define __MES_LIBMES_MINI_H
+
+#ifndef _SIZE_T
+#define _SIZE_T
+#ifndef __SIZE_T
+#define __SIZE_T
+#ifndef __MES_SIZE_T
+#define __MES_SIZE_T
+#undef size_t
+typedef unsigned long size_t;
 #endif
-#undef __MES_ERRNO_H
-#include_next <errno.h>
-#else // ! WITH_GLIBC
+#endif
+#endif
+
+#ifndef _SSIZE_T
+#define _SSIZE_T
+#ifndef __SSIZE_T
+#define __SSIZE_T
+#ifndef __MES_SSIZE_T
+#define __MES_SSIZE_T
+#undef ssize_t
+typedef long ssize_t;
+#endif
+#endif
+#endif
+
+#ifndef STDIN
+#define STDIN 0
+#endif
+
+#ifndef STDOUT
+#define STDOUT 1
+#endif
+
+#ifndef STDERR
+#define STDERR 2
+#endif
 
 #ifndef __MES_ERRNO_T
 #define __MES_ERRNO_T 1
@@ -34,32 +63,10 @@ typedef int error_t;
 int errno;
 #endif // !__MES_ERRNO_T
 
-int errno;
-#define ENOENT   2
-#define EINTR    4
-#define EIO      5
-#define E2BIG    7
-#define EBADF    9
-#define EAGAIN  11
-#define ENOMEM  12
-#define EEXIST  17
-#define ENOTDIR 20
-#define EISDIR  21
-#define EINVAL  22
-#define EMFILE  24
-#define EPIPE   32
-#define ERANGE  34
+size_t strlen (char const* s);
+ssize_t write (int filedes, void const *buffer, size_t size);
+int eputs (char const* s);
+int puts (char const* s);
+int oputs (char const* s);
 
-#define ENAMETOOLONG 36
-#define ENOSYS 38
-#define ELOOP  40
-
-#if !__MESC__
-//extern char const *const sys_errlist[];
-extern char *sys_errlist[];
-extern int sys_nerr;
-#endif // !__MESC__
-
-#endif // ! WITH_GLIBC
-
-#endif // __MES_ERRNO_H
+#endif //__MES_LIBMES_MINI_H
