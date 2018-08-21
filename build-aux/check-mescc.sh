@@ -84,6 +84,7 @@ t
 4a-char-array
 50-assert
 51-strcmp
+51-strncmp
 52-itoa
 53-strcpy
 54-argv

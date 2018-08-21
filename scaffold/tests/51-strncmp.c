@@ -26,42 +26,14 @@
 int
 main ()
 {
-  char *p = "mes";
-
-  oputs ("\n");
-  oputs ("t: if (strcmp (p, \"foo\"))\n");
-  if (!strcmp (p, "foo"))
+  if (strncmp ("abc", "a", 1))
     return 1;
 
-  oputs ("t: if (strcmp (p, \"t.c\\n\"))\n");
-  if (strcmp (p, "mes"))
+  if (!strncmp ("abc", "x", 1))
     return 2;
 
-  oputs ("t: if (!strcmp (p, \"t.c\\n\"))\n");
-  if (!strcmp (p, "mes")) goto ok1;
-  return 3;
- ok1:
-
-  oputs ("t: if (strcmp (p, \"foo\"))\n");
-  if (strcmp (p, "foo")) goto ok2;
-  return 4;
- ok2:
-
-  oputs ("t: itoa (33) == \"33\"\n");
-  if (strcmp (itoa (33), "33"))
-    return 5;
-
-  oputs ("strcmp (itoa (-1), \"-1\")\n");
-  if (strcmp (itoa (-1), "-1"))
-    return 6;
-
-  oputs ("strcmp (itoa (0), \"0\")\n");
-  if (strcmp (itoa (0), "0"))
-    return 7;
-
-  oputs ("strcmp (itoa (1), \"1\")\n");
-  if (strcmp (itoa (1), "1"))
-    return 8;
+  if (strncmp ("abc", "", 0))
+    return 3;
 
   return 0;
 }
