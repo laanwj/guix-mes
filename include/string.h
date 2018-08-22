@@ -62,6 +62,9 @@ int strncasecmp (char const *s1, char const *s2, size_t size);
 int strncmp (char const*, char const*, size_t);
 char *strrchr (char const *s, int c);
 char *strstr (char const *haystack, char const *needle);
+char * strlwr (char *string);
+char * strupr (char *string);
+
 
 char *strerror (int errnum);
 void perror (char const *message);

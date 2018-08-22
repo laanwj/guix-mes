@@ -76,5 +76,6 @@ int isspace (int c);
 int isxdigit (int c);
 int oputs (char const* s);
 ssize_t write (int filedes, void const *buffer, size_t size);
+char *search_path (char const *file_name);
 
 #endif //__MES_LIBMES_H
