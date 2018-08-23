@@ -25,15 +25,12 @@ set -e
 MES_ARENA=100000000
 
 GUILE=${GUILE-$MES}
-DIFF=${DIFF-$(command -v diff)}
+DIFF=${DIFF-$(command -v diff)} || true
 [ -z "$DIFF" ] && DIFF="sh scripts/diff.scm"
 
 t=${1-scaffold/tests/t}
 o="$t"
 rm -f "$o".mes-out
-shift
-
-set -e
 
 rm -f "$o".gcc-out
 if [ -n "$CC" ]; then

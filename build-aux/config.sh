@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+srcdir=${srcdir-.}
 if [ "$V" = 2 ]; then
     echo $0
     echo srcdest=${srcdest}
