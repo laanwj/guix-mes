@@ -28,10 +28,73 @@
 #error both __GNU__ and _linux__ are undefined, choose one
 #endif
 
-#include <m4.c>
-#include <binutils.c>
-#include <gcc.c>
+// m4
+#include <stdlib/abort.c>
+#include <stdlib/atol.c>
+#include <stub/atof.c>
+#include <string/bcmp.c>
+#include <string/bcopy.c>
+#include <string/bzero.c>
+#include <stdio/fileno.c>
+#include <stub/fpurge.c>
+#include <stub/freadahead.c>
+#include <string/index.c>
+#include <ctype/isalnum.c>
+#include <ctype/isalpha.c>
+#include <ctype/iscntrl.c>
+#include <ctype/isprint.c>
+#include <ctype/ispunct.c>
+#include <posix/mktemp.c>
+#include <stub/pclose.c>
+#include <stub/popen.c>
+#include <string/rindex.c>
+#include <stub/rewind.c>
+#include <stub/setbuf.c>
+#include <stub/system.c>
+#include <string/strerror.c>
+
+// binutils
+#include <stdlib/abs.c>
+#include <stub/chown.c>
+#include <stub/ctime.c>
+#include <stdio/fdgets.c>
+#include <stdio/feof.c>
+#include <stdio/fgets.c>
+#include <stub/frexp.c>
+#include <stdio/perror.c>
+#include <stub/sigsetmask.c>
+#include <string/strcspn.c>
+#include <string/strncat.c>
+#include <string/strpbrk.c>
+#include <string/strspn.c>
+#include <stub/sys_siglist.c>
+#include <stub/umask.c>
+#include <stub/utime.c>
+#include <stub/fscanf.c>
+#include <ctype/isascii.c>
+#include <stdlib/bsearch.c>
+#include <stub/gmtime.c>
+#include <posix/sbrk.c>
+#include <string/strdup.c>
+#include <posix/raise.c>
+#include <stub/strftime.c>
+#include <stdlib/mbstowcs.c>
+#include <stdio/clearerr.c>
+#include <math/fabs.c>
+
+// gcc
+
+#include <stdio/freopen.c>
+#include <stub/times.c>
+#include <posix/sleep.c>
+#include <posix/unsetenv.c>
+#include <stdlib/atexit.c>
+#include <posix/alarm.c>
+#include <stub/getpwnam.c>
+
 #if !__GNU__
 #include <stdlib/alloca.c>
 #endif
-#include <glibc.c>
+
+#include <stdlib/__exit.c>
+#include <stub/__cleanup.c>

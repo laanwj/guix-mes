@@ -18,4 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+#include <pwd.h>
+
+struct passwd *
+getpwnam (const char *NAME)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("getpwnam stub\n");
+  stub = 1;
+  errno = 0;
+  return 0;
+}

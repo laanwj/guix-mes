@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <ctype.h>
+
+int
+ispunct (int c)
+{
+  return isprint (c) && !isspace (c) && !isalnum (c);
+}

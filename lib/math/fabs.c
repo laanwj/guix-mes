@@ -18,4 +18,12 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+//#include <math.h>
+
+double
+fabs (double number)
+{
+  if (number < 0)
+    return -number;
+  return number;
+}

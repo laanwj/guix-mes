@@ -18,4 +18,13 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdio.h>
+
+int
+feof (FILE *stream)
+{
+  char c = fgetc (stream);
+  if (c != EOF)
+    ungetc (c, stream);
+  return c == EOF;
+}

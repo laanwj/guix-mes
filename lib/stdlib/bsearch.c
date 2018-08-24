@@ -18,4 +18,18 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdlib.h>
+
+void *
+#if __MESC__
+bsearch (void const *key, void const *array, size_t count, size_t size, void (*compare) ())
+#else
+bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare)
+#endif
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("bsearch stub\n");
+  stub = 1;
+  return 0;
+}

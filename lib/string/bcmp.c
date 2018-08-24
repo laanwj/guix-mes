@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <string.h>
+
+int
+bcmp (void const *s1, void const *s2, size_t size)
+{
+  return memcmp (s1, s2, size);
+}

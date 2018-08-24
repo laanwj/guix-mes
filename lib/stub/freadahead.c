@@ -18,4 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+#include <stdio.h>
+
+size_t
+freadahead (FILE *fp)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("freadahead stub\n");
+  stub = 1;
+  errno = 0;
+  return 0;
+}

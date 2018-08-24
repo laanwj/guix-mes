@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdio.h>
+
+void
+perror (char const *message)
+{
+  fprintf (stderr, "%s: %s\n", strerror (errno), message);
+}

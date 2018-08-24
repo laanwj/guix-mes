@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdio.h>
+
+char *
+fgets (char *s, int count, FILE *stream)
+{
+  return fdgets (s, count, (int)stream);
+}

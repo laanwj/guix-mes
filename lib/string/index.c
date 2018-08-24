@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <string.h>
+
+int
+index (char const *s, int c)
+{
+  return strchr (s, c);
+}

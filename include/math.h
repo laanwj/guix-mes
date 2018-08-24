@@ -27,5 +27,6 @@
 double ldexp (double x, int exp);
 #endif  // ! WITH_GLIBC
 
-#endif // __MES_MATH_H
+double fabs (double number);
 
+#endif // __MES_MATH_H

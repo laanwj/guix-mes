@@ -18,4 +18,14 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <unistd.h>
+
+unsigned int
+sleep (unsigned int seconds)
+{
+  struct timespec requested_time;
+  struct timespec remaining;
+  requested_time.tv_sec = seconds;
+  requested_time.tv_nsec = 0;
+  return nanosleep (&requested_time, &remaining);
+}

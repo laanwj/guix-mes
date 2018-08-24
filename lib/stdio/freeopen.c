@@ -18,4 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdio.h>
+
+FILE *
+freopen (char const *file_name, char const *opentype, FILE *stream)
+{
+  fclose (stream);
+  return fopen (file_name, opentype);
+}

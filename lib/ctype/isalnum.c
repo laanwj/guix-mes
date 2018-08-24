@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <ctype.h>
+
+int
+isalnum (int c)
+{
+  return isdigit (c) || isalpha (c);
+}

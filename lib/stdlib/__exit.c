@@ -18,4 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+int
+__exit (int status)
+{
+  exit (status);
+}

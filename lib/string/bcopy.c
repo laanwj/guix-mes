@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <string.h>
+
+void
+bcopy (void const *src, void *dest, size_t n)
+{
+  memmove (dest, src, n);
+}

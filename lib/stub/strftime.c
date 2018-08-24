@@ -18,4 +18,15 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+
+size_t
+strftime (char *s, size_t size, char const *template,
+          struct tm const *brokentime)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("strftime stub\n");
+  stub = 1;
+  return template;
+}

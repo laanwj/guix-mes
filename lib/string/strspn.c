@@ -18,4 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <string.h>
+
+size_t
+strspn (char const *string, char const *skipset)
+{
+  char *p = string;
+  while (*p)
+    if (!strchr (skipset, *p))
+      break;
+    else
+      p++;
+  return p - string;
+}

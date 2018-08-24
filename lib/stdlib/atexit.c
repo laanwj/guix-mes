@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdlib.h>
+
+int
+atexit (void (*function) (void))
+{
+  __call_at_exit = function;
+}

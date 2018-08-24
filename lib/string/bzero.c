@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <string.h>
+
+int
+bzero (void *block, size_t size)
+{
+  return memset (block, 0, size);
+}

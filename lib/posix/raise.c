@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <unistd.h>
+
+int
+raise (int signum)
+{
+  kill (getpid (), signum);
+}

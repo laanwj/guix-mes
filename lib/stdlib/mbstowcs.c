@@ -18,4 +18,20 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdlib.h>
+
+#if !__MESC__
+typedef char wchar_t[];
+
+size_t
+mbstowcs (wchar_t *wstring, char const *string,
+          size_t size)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("mbstowcs stub\n");
+  stub = 1;
+  strcpy (wstring, string);
+  return strlen (string);
+}
+#endif

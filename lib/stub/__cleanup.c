@@ -18,4 +18,14 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+
+int
+__cleanup ()
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__cleanup stub\n");
+  stub = 1;
+  return 0;
+}

@@ -18,4 +18,17 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <unistd.h>
+
+#if __SBRK_CHAR_PTRDIFF
+char *
+sbrk (ptrdiff_t)
+#else
+void *
+sbrk (intptr_t delta)
+#endif
+{
+  if (delta >= 0)
+    return malloc (delta);
+  return __brk;
+}

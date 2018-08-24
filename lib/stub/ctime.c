@@ -18,4 +18,15 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+
+int
+ctime (int x)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("ctime stub\n");
+  stub = 1;
+  errno = 0;
+  return 0;
+}

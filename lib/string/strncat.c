@@ -18,4 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <string.h>
+
+char *
+strncat (char *to, char const *from, size_t size)
+{
+  if (size == 0)
+    return to;
+  char *p = strchr (to , '\0');
+  while (*from && size-- > 0)
+    *p++ = *from++;
+  *p = 0;
+  return to;
+}

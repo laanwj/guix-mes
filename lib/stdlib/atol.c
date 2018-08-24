@@ -18,4 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdlib.h>
+
+int
+atol (char const *s)
+{
+  return atoi (s);
+}

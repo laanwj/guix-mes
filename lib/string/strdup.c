@@ -18,4 +18,14 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <string.h>
+
+char *
+strdup (char const *s)
+{
+  size_t length = strlen (s) + 1;
+  char *p = (char*)malloc (length);
+  if (p)
+    return memcpy (p, s, length);
+  return 0;
+}

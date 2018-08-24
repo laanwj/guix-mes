@@ -18,4 +18,17 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+#include <time.h>
+#include <sys/time.h>
+
+struct tm *
+gmtime (time_t const *time)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("gmtime stub\n");
+  stub = 1;
+  errno = 0;
+  return localtime (time);
+}

@@ -18,4 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+#include <sys/times.h>
+#include <sys/time.h>
+
+clock_t
+times (struct tms *buffer)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("times stub\n");
+  stub = 1;
+  return 0;
+}

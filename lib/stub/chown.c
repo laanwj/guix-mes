@@ -18,4 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <libmes.h>
+#include <unistd.h>
+
+int
+chown (char const *file_name, uid_t owner, gid_t group)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("chown stub\n");
+  stub = 1;
+  errno = 0;
+  return 0;
+}

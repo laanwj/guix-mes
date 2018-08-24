@@ -18,4 +18,12 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <stdlib.h>
+
+int
+abs (int x)
+{
+  if (x < 0)
+    return -x;
+  return x;
+}

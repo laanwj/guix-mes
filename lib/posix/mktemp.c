@@ -18,4 +18,18 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <posix/getopt.c>
+#include <unistd.h>
+
+char *
+mktemp (char *template)
+{
+  char *p = strchr (template, '\0');
+  int q = (int)template;
+  *--p = ((unsigned char)(q >> 4)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 8)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 12)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 16)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 20)) % 26 + 'a';
+  *--p = ((unsigned char)(q >> 24)) % 26 + 'a';
+  return template;
+}
