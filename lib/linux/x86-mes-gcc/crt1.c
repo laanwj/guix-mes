@@ -19,7 +19,7 @@
  */
 
 char **environ = 0;
-int main (int argc, char *argv[]);
+int main (int argc, char *argv[], char *envp[]);
 
 void
 _start ()
@@ -32,6 +32,7 @@ _start ()
        "shl     $2,%%eax\n\t"
        "add     %%ebp,%%eax\n\t"
        "mov     %%eax,%0\n\t"
+       "push    %%eax\n\t"
        : "=r" (environ)
        : //no inputs ""
        );

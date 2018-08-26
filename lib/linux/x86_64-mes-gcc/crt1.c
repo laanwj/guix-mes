@@ -35,6 +35,7 @@ _start ()
        "shl     $3,%%rax\n\t"
        "add     %%rbp,%%rax\n\t"
        "mov     %%rax,%0\n\t"
+       "mov     %%rax,%%rdx\n\t"
        : "=r" (environ)
        : //no inputs ""
        );
