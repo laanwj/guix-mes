@@ -98,9 +98,7 @@
 #include <string/strrchr.c>
 #include <string/strstr.c>
 #include <string/strupr.c>
-#include <stub/time.c>
 #include <stub/sigaction.c>
-#include <stub/gettimeofday.c>
 #include <stub/ldexp.c>
 #include <stub/mprotect.c>
 #include <stub/localtime.c>

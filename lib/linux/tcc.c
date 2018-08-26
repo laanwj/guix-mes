@@ -18,6 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <time.h>
+
 int
 close (int filedes)
 {
@@ -57,4 +59,16 @@ char *
 getcwd (char *buffer, size_t size)
 {
   return _sys_call2 (SYS_getcwd, (long)buffer, (long)size);
+}
+
+time_t
+time (time_t *result)
+{
+  return _sys_call1 (SYS_time, (long)result);
+}
+
+int
+gettimeofday (struct timeval *tv, struct timezone *tz)
+{
+  return _sys_call2 (SYS_gettimeofday, (long)tv, (long)tz);
 }

@@ -27,7 +27,8 @@
 
 #ifndef __MES_TIME_T
 #define __MES_TIME_T 1
-typedef int time_t;
+typedef long int clockid_t;
+typedef long int time_t;
 #endif
 
 struct tm {
@@ -42,11 +43,6 @@ struct tm {
   int tm_isdst;
 };
 
-struct tm *localtime (time_t const *timep);
-struct tm *gmtime (time_t const *time);
-
-time_t time (time_t *tloc);
-
 #ifndef __MES_STRUCT_TIMESPEC
 #define __MES_STRUCT_TIMESPEC
 
@@ -57,6 +53,12 @@ struct timespec
 };
 
 #endif // __MES_STRUCT_TIMESPEC
+
+int clock_gettime (clockid_t clk_id, struct timespec *tp);
+struct tm *localtime (time_t const *timep);
+struct tm *gmtime (time_t const *time);
+
+time_t time (time_t *tloc);
 
 #endif // ! WITH_GLIBC
 

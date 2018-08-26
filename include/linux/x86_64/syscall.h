@@ -39,9 +39,11 @@
 
 // libc+tcc
 #define SYS_close  0x03
+#define SYS_time   0xc9
 #define SYS_lseek  0x08
 #define SYS_unlink 0x57
 #define SYS_rmdir  0x54
+#define SYS_gettimeofday 0x60
 #define SYS_stat   0x04
 #define SYS_getcwd 0x4f
 
@@ -65,5 +67,6 @@
 #define SYS_fstat     0x05
 #define SYS_nanosleep 0x33
 #define SYS_getdents  0x4e
+#define SYS_clock_gettime 0xe4
 
 #endif // __MES_LINUX_X86_64_SYSCALL_H

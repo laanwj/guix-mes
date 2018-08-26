@@ -19,12 +19,7 @@
  */
 
 #include <sys/resource.h>
-
-int
-chdir (char const *file_name)
-{
-  return _sys_call1 (SYS_chdir, (long)file_name);
-}
+#include <time.h>
 
 int
 link (char const *old_name, char const *new_name)
@@ -156,4 +151,16 @@ int
 getdents (long filedes, char *buffer, size_t nbytes)
 {
   return _sys_call3 (SYS_getdents, (long)filedes, (long)buffer, (long)nbytes);
+}
+
+int
+chdir (char const *file_name)
+{
+  return _sys_call1 (SYS_chdir, (long)file_name);
+}
+
+int
+clock_gettime (clockid_t clk_id, struct timespec *tp)
+{
+  return _sys_call2 (SYS_clock_gettime, (long)clk_id, (long)tp);
 }
