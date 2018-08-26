@@ -104,4 +104,10 @@
 #include <dirent/opendir.c>
 #include <dirent/readdir.c>
 
+// diffutils
 #include <posix/execl.c>
+
+// make
+#include <stub/getlogin.c>
+#include <stub/setvbuf.c>
+#include <stub/sigblock.c>

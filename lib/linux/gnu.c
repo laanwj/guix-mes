@@ -21,6 +21,12 @@
 #include <sys/resource.h>
 
 int
+chdir (char const *file_name)
+{
+  return _sys_call1 (SYS_chdir, (long)file_name);
+}
+
+int
 link (char const *old_name, char const *new_name)
 {
   return _sys_call2 (SYS_link, (long)old_name, (long)new_name);

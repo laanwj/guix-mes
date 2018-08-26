@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,24 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SYS_WAIT_H
-#define __MES_SYS_WAIT_H 1
 
-#if WITH_GLIBC
-#undef __MES_SYS_WAIT_H
-#include_next <sys/wait.h>
-#else // ! WITH_GLIBC
+#include <libmes.h>
+#include <stdio.h>
 
-#ifndef __MES_PID_T
-#define __MES_PID_T
-typedef int pid_t;
-#endif
-
-#define	WNOHANG 1
-
-pid_t waitpid (pid_t pid, int *status_ptr, int options);
-pid_t wait (int *status_ptr);
-
-#endif // ! WITH_GLIBC
-
-#endif // __MES_SYS_WAIT_H
+int
+setvbuf (FILE *stream, char *buf, int mode, size_t size)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("setvbuf stub\n");
+  stub = 1;
+  return 0;
+}

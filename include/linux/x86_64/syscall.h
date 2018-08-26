@@ -46,6 +46,7 @@
 #define SYS_getcwd 0x4f
 
 // libc+gnu
+#define SYS_chdir     0x50
 #define SYS_link      0x56
 #define SYS_getpid    0x27
 #define SYS_getuid    0x66

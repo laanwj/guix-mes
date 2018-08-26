@@ -45,6 +45,12 @@ int g_stdout;
 
 #else // ! WITH_GLIBC
 
+#ifndef _IOFBF
+#define _IOFBF 0 /* Fully buffered.  */
+#define _IOLBF 1 /* Line buffered.  */
+#define _IONBF 2 /* No buffering.  */
+#endif
+
 #ifndef BUFSIZ
 #define BUFSIZ 256
 #endif
@@ -80,11 +86,13 @@ int fputs (char const* s, FILE *stream);
 int fseek (FILE *stream, long offset, int whence);
 int getc (FILE *stream);
 int getchar (void);
+char *getlogin (void);
 int printf (char const* format, ...);
 int putc (int c, FILE* stream);
 int putchar (int c);
 int puts (char const* s);
 int remove (char const *file_name);
+int setvbuf (FILE *stream, char *buf, int mode, size_t size);
 int snprintf(char *str,  size_t size,  char const *format, ...);
 int sprintf (char *str, char const* format, ...);
 int sscanf (char const *str, const char *format, ...);
