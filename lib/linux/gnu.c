@@ -145,3 +145,9 @@ fstat (int fd, struct stat *statbuf)
 {
   return _sys_call2 (SYS_fstat, (long)fd, (long)statbuf);
 }
+
+int
+getdents (long filedes, char *buffer, size_t nbytes)
+{
+  return _sys_call3 (SYS_getdents, (long)filedes, (long)buffer, (long)nbytes);
+}

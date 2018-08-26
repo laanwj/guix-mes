@@ -69,6 +69,12 @@ typedef int gid_t;
 typedef unsigned ino_t;
 #endif
 
+#ifndef __MES_INO64_T
+#define __MES_INO64_T
+#undef ino64_t
+typedef unsigned long long ino64_t;
+#endif
+
 #ifndef __MES_INTPTR_T
 #define __MES_INTPTR_T
 #undef intptr_t
@@ -79,6 +85,12 @@ typedef long intptr_t;
 #define __MES_OFF_T
 #undef off_t
 typedef unsigned long off_t;
+#endif
+
+#ifndef __MES_OFF64_T
+#define __MES_OFF64_T
+#undef off64_t
+typedef unsigned long long off64_t;
 #endif
 
 #ifndef __MES_PID_T

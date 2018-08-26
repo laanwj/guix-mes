@@ -63,5 +63,6 @@
 #define SYS_setitimer 0x26
 #define SYS_fstat     0x05
 #define SYS_nanosleep 0x33
+#define SYS_getdents  0x4e
 
 #endif // __MES_LINUX_X86_64_SYSCALL_H

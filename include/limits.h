@@ -38,6 +38,8 @@
 #define LONG_MIN -2147483648
 #define LONG_MAX 2147483647
 #define _POSIX_OPEN_MAX 16
+#define PATH_MAX 512
+#define NAME_MAX 255
 
 #endif // ! WITH_GLIBC
 

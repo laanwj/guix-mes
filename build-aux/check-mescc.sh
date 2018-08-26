@@ -141,6 +141,7 @@ t
 96-strto
 97-fopen
 98-fopen
+99-readdir
 "
 
 # 90: needs GNU, fails for mescc, passes for tcc

@@ -98,3 +98,8 @@
 
 #include <stdlib/__exit.c>
 #include <stub/__cleanup.c>
+
+#include <dirent/__getdirentries.c>
+#include <dirent/closedir.c>
+#include <dirent/opendir.c>
+#include <dirent/readdir.c>
