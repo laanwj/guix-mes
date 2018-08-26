@@ -57,6 +57,7 @@ int access (char const *s, int mode);
 unsigned int alarm (unsigned int seconds);
 int close (int fd);
 int execv (char const *file_name, char *const argv[]);
+int execl (char const *file_name, char const *arg, ...);
 int execve (char const *file, char *const argv[], char *const env[]);
 int execvp (char const *file, char *const argv[]);
 int fork (void);

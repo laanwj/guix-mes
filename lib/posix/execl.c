@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,31 +17,36 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_LIMITS_H
-#define __MES_LIMITS_H 1
 
-#if WITH_GLIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_LIMITS_H
-#include_next <limits.h>
+#include <libmes.h>
+#include <unistd.h>
 
-#else // ! WITH_GLIBC
+int
+execl (char const *file_name, char const *arg, ...)
+{
+  if (__mes_debug () > 2)
+    {
+      eputs ("execl "); eputs (file_name); eputs ("\n");
+    }
+  char *argv[1000];           // POSIX minimum 4096
+  int i = 0;
 
-#define CHAR_BIT 8
-#define UCHAR_MAX 255
-#define CHAR_MAX 255
-#define UINT_MAX 4294967295U
-#define INT_MIN -2147483648
-#define INT_MAX 2147483647
-#define MB_CUR_MAX 1
-#define LONG_MIN -2147483648
-#define LONG_MAX 2147483647
-#define _POSIX_OPEN_MAX 16
-#define PATH_MAX 512
-#define NAME_MAX 255
+  va_list ap;
+  va_start (ap, arg);
 
-#endif // ! WITH_GLIBC
-
-#endif // __MES_LIMITS_H
+  argv[i++] = file_name;
+  arg = va_arg (ap, char const *);
+  while (arg)
+    {
+      argv[i++] = arg;
+      arg = va_arg (ap, char const *);
+      if (__mes_debug () > 2)
+        {
+          eputs ("arg["); eputs (itoa (i)); eputs ("]: "); eputs (argv[i-1]); eputs ("\n");
+        }
+    }
+  argv[i] = 0;
+  int r = execv (file_name, argv);
+  va_end (ap);
+  return r;
+}
