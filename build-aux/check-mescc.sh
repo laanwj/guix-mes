@@ -125,6 +125,7 @@ t
 7s-struct-short
 80-setjmp
 81-qsort
+81-qsort-dupes
 82-define
 83-heterogenoous-init
 84-struct-field-list

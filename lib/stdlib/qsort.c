@@ -37,11 +37,14 @@ qpart (void *base, size_t count, size_t size, int (*compare)(void const *, void 
   size_t i = 0;
   for (size_t j = 0; j < count; j++)
     {
-      if (compare (base+j*size, p) < 0)
+      int c = compare (base+j*size, p);
+      if (c < 0)
         {
           qswap (base+i*size, base+j*size, size);
           i++;
         }
+      else if (c == 0)
+        i++;
     }
   if (compare (base+count*size, base+i*size) < 0)
     qswap (base+i*size, base+count*size, size);
