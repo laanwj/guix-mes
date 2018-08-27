@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -28,7 +28,13 @@
 #include_next <locale.h>
 
 #else // ! WITH_GLIBC
-char* dirname (char*);
+
+#ifndef LC_ALL
+#define LC_ALL     "LC_ALL"
+#define LC_NUMERIC "LC_NUMERIC"
+#endif
+char * setlocale (int category, char const *locale);
+
 #endif // ! WITH_GLIBC
 
 #endif // __MES_LOCALE_H

@@ -210,6 +210,7 @@ typedef struct ucontext
 
 int kill (pid_t pid, int signum);
 int sigaction (int signum, struct sigaction const *act, struct sigaction *oldact);
+int sigaddset (sigset_t *set, int signum);
 #if __MESC__
 void* signal (int signum, void * action);
 #else

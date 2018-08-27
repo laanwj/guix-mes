@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,32 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_LIMITS_H
-#define __MES_LIMITS_H 1
 
-#if WITH_GLIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_LIMITS_H
-#include_next <limits.h>
+#include <libmes.h>
+#include <signal.h>
 
-#else // ! WITH_GLIBC
-
-#define CHAR_BIT 8
-#define UCHAR_MAX 255
-#define CHAR_MAX 255
-#define UINT_MAX 4294967295U
-#define ULONG_MAX 4294967295U
-#define INT_MIN -2147483648
-#define INT_MAX 2147483647
-#define MB_CUR_MAX 1
-#define LONG_MIN -2147483648
-#define LONG_MAX 2147483647
-#define _POSIX_OPEN_MAX 16
-#define PATH_MAX 512
-#define NAME_MAX 255
-
-#endif // ! WITH_GLIBC
-
-#endif // __MES_LIMITS_H
+int
+sigaddset (sigset_t *set, int signum)
+{
+  return 0;
+}

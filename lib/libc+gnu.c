@@ -111,3 +111,5 @@
 #include <stub/getlogin.c>
 #include <stub/setvbuf.c>
 #include <stub/sigblock.c>
+#include <stub/sigaddset.c>
+#include <stub/setlocale.c>
