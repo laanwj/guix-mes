@@ -259,7 +259,7 @@ web: info $(WEB_IMAGES)
 	GENDOCS_TEMPLATE_DIR=doc build-aux/gendocs.sh -I doc -s ${srcdest}doc/mes.texi -o doc/web/manual --email bug-mes@gnu.org mes "GNU Mes manual"
 
 ###  dist
-COMMIT=$(shell test -d ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2>/dev/null) || cat ${srcdest}.tarball-version)
+COMMIT=$(shell test -e ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2>/dev/null) || cat ${srcdest}.tarball-version)
 TARBALL_VERSION=$(COMMIT:v%=%)
 TARBALL_DIR:=$(PACKAGE)-$(TARBALL_VERSION)
 TARBALL:=$(TARBALL_DIR).tar.gz
@@ -323,15 +323,14 @@ release: update-hash | gen-announce guix-build
 GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 gen-announce:
 	../gnulib/build-aux/announce-gen\
-	    --release-type=alpha\
+	    --release-type=beta\
 	    --package-name=mes\
 	    --previous-version='0.16 '\
             --current-version=$(VERSION)\
 	    --gpg-key-id=$(GPG_KEY_ID)\
-	    --url-directory=https://alpha.gnu.org/gnu/mes\
+	    --url-directory=https://ftp.gnu.org/gnu/mes\
 	    --news=NEWS\
             > doc/announce/ANNOUNCE-$(VERSION)-
-
 
 installdirs: mkinstalldirs
 	mkdir -p\
