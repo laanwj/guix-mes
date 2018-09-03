@@ -111,14 +111,14 @@ hex2 linker.")
 
 (define-public mes
   (let ((triplet "i686-unknown-linux-gnu")
-        (version "0.17"))
+        (version "0.17.1"))
     (package
       (name "mes")
       (version version)
       (source (origin
                 (method url-fetch)
                 (uri (string-append
-                      "https://alpha.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
+                      "https://ftp.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
                 (sha256
                  (base32 #!mes!# "1j32x4zqy2cqjlg9m35f2411mwac2b0p5ch4hm99gddmfbxzgyhg"))))
       (build-system gnu-build-system)
@@ -158,7 +158,7 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.17")
+ (let ((version "0.17.1")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package

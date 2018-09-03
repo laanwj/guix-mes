@@ -20,7 +20,7 @@
 
 set -e
 
-VERSION=0.17
+VERSION=0.17.1
 
 # parse --prefix=prefix
 cmdline=$(echo "$@")
