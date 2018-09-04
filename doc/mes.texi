@@ -340,7 +340,7 @@ later, including 2.2.x;
 @item @url{https://savannah.gnu.org/projects/nyacc/, NYACC}, currently only the patched
   version 0.80.42 from @url{http://gitlab.com/janneke/nyacc/, patched
   NYACC} is known to work.
-@item @url{http://gcc.gnu.org, GCC's gcc}, version 3.0.0 or later.
+@item @url{http://gcc.gnu.org, GCC's gcc}, version 2.95.3 or later.
 @end itemize
 
 The following dependencies are optional:
@@ -494,22 +494,22 @@ binutils-source + mes + tcc => binutils0
 
 gcc-source + tcc + binutils0 => gcc-core
 
-glibc-source + kernel-headers-source + binutils0 + gcc => glibc
+glibc-source + kernel-headers-source + binutils0 + gcc => glibc0
 
 binutils-source + binutils0 + gcc + glibc => binutils
 
 gcc-source + binutils + gcc-core + glibc => gcc
+
+glibc-source + binutils + gcc + glibc0 => glibc
 @end verbatim
 
 @c This graph is generated from wip-bootstrap, doing:
 
-@c sed -i s,package-with-bootstrap-guile,identity, gnu/packages/{commencement,mes}.scm
-
-@c ~/src/guix-bootstrap/pre-inst-env guix graph gcc-mesboot > doc/images/gcc-mesboot-graph.dot
+@c ~/src/guix-bootstrap/pre-inst-env guix graph --type=bag -e '(begin (use-modules (guix packages)) (%current-system "i686-linux") (@@ (gnu packages commencement) gcc-mesboot))' doc/images/gcc-mesboot-graph.dot
 @c dot -T png doc/images/gcc-mesboot-graph.dot > doc/images/gcc-mesboot-graph.png
 
-Here's a generated dependency diagram to give you impression, it is not
-complete or correct.
+Here's a generated dependency diagram to for the final bootstrap gcc
+that builds the rest of GuixSD
 
 @image{images/gcc-mesboot-graph,2in,,Reference graph of the gcc-mesboot}
 
@@ -523,8 +523,8 @@ These additional non-bootstrapped dependencies (i.e., binary seeds) are
 taken for granted
 
 @example
-BOOTSTRAP-GUILE, flex, bash,
-bzip2, coreutils, diffutils, gawk, grep, gzip, make, sed, tar
+BOOTSTRAP-GUILE, bash, bzip2, coreutils, gawk, grep, gzip, patch, sed,
+tar, xz
 @end example
 
 Although we think these are less essential and thus less interesting

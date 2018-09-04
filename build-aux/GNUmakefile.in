@@ -188,7 +188,7 @@ endif
 
 info: doc/mes.info
 
-doc/mes.info: ${srcdest}doc/mes.texi doc/version.texi ${srcdest}doc/images/gcc-mesboot-graph.dot GNUmakefile
+doc/mes.info: ${srcdest}doc/mes.texi doc/version.texi ${srcdest}doc/images/gcc-mesboot-graph.png GNUmakefile
 	$(MAKEINFO) -o $@ -I doc -I doc $<
 
 doc/images/%.eps: ${srcdest}doc/images/%.dot
