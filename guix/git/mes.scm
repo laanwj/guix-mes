@@ -68,17 +68,23 @@
         (_ #f)))))
 
 (define-public nyacc-for-mes
-  (package
-    (inherit nyacc)
-    (version "0.80.42")
+  (let ((commit "2378e6c2e7348a80c4c2ebd03ea09811088597")
+        (revision "0")
+        (version "0.85.3"))
+    (package
+      (inherit nyacc)
+      (version (if commit (string-append version "-" revision "." (string-take commit 7))
+                   version))
       (source (origin
                 (method url-fetch)
-                (uri (string-append "https://gitlab.com/janneke/nyacc"
-                                    "/-/archive/v" version
-                                    "/nyacc-" version ".tar.gz"))
+                (uri (if commit
+                         (string-append "http://git.savannah.nongnu.org/cgit/nyacc.git/snapshot/nyacc-"
+                                        commit ".tar.gz")
+                         (string-append "http://download.savannah.nongnu.org/releases/nyacc/nyacc-"
+                                        version ".tar.gz")))
                 (sha256
                  (base32
-                  "0c8c8kxir0h2d4nxr131xbkfs7c80haipmkp2g6677sh14wn0b3y"))))))
+                  "0nnkwv95l3izap13pwgspz41rvxxbg2lkd17ijharcmmpf4zdhs7")))))))
 
 (define-public mescc-tools
   (package
