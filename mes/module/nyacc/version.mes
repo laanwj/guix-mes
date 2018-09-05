@@ -18,11 +18,9 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(mes-use-module (mes optargs))
-(mes-use-module (mes pmatch))
-(mes-use-module (srfi srfi-1))
-(mes-use-module (srfi srfi-13))
-(mes-use-module (srfi srfi-26))
-(mes-use-module (nyacc lang c99 parser))
-(mes-use-module (nyacc version))
-(include-from-path "mescc/preprocess.scm")
+;;; Commentary:
+
+;;; Code:
+
+(include-from-path "nyacc/version.scm")
+(display "nyacc version\n")

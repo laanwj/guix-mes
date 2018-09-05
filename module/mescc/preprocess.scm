@@ -26,8 +26,43 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (nyacc lang c99 parser)
+  #:use-module (nyacc lang c99 parser)
+  #:use-module (nyacc version)
   #:use-module (mes guile)
   #:export (c99-input->ast))
+
+(format (current-error-port) "*nyacc-version*=~a\n" *nyacc-version*)
+;; list of which rules you want progress reported
+(define need-progress
+  (assoc-ref
+   '(("0.85.3" (1 2 3))
+     ("0.86.0" (1 2 3)))
+   *nyacc-version*))
+
+(define (progress o)
+  (when (and o (getenv "NYACC_DEBUG"))
+    (display "    :" (current-error-port))
+    (display o (current-error-port))
+    (display "\n" (current-error-port))))
+
+(define (insert-progress-monitors act-v len-v)
+  (let ((n (vector-length act-v)))
+    (let loop ((ix 0))
+      (when (< ix n)
+	(if (memq ix need-progress)
+	    (vector-set
+	     act-v ix
+	     (lambda args
+	       (progress (list-ref args (1- (vector-ref len-v ix))))
+	       (apply (vector-ref act-v ix) args))))
+        (loop (1+ ix))))))
+
+(cond-expand
+ (guile
+  (insert-progress-monitors (@@ (nyacc lang c99 parser) c99-act-v)
+                            (@@ (nyacc lang c99 parser) c99-len-v)))
+ (mes
+  (insert-progress-monitors c99-act-v c99-len-v)))
 
 (define (logf port string . rest)
   (apply format (cons* port string rest))

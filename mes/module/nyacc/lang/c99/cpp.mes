@@ -28,5 +28,6 @@
 
 (mes-use-module (nyacc parse))
 (mes-use-module (nyacc lex))
+(mes-use-module (nyacc lang sx-util))
 (mes-use-module (nyacc lang util))
 (include-from-path "nyacc/lang/c99/cpp.scm")

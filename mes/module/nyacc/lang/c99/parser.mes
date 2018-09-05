@@ -32,6 +32,7 @@
 
 (mes-use-module (nyacc lex))
 (mes-use-module (nyacc parse))
+(mes-use-module (nyacc lang sx-util))
 (mes-use-module (nyacc lang util))
 (mes-use-module (nyacc lang c99 cpp))
 
