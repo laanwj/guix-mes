@@ -378,7 +378,7 @@ Some influential environment variables:
                              (make-dep "help2man" '(1 47) #:optional? #t)
                              (make-dep "perl" '(5) #:optional? #t)
                              (make-dep "git" '(2) #:optional? #t))))
-           (deps (cons (check-program-version (make-dep "nyacc" '(0 80 41) #:commands (list (string-append (file-name "guile" deps) " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t))
+           (deps (cons (check-program-version (make-dep "nyacc" '(0 86 0) #:commands (list (string-append (file-name "guile" deps) " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t))
                        deps))
            (deps (if (file-name "cc" deps)
                      (cons* (check-header-c (make-dep "stdio.h"))

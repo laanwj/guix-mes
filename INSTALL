@@ -24,7 +24,7 @@ similar way.
 
 *** Other GNU/Linux
   - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.5 is known to work.
-  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][patched Nyacc]] 0.80.42 is known to work.
+  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.86.0 is known to work.
   - GNU Gcc, 4.9.3 is known to work.
   - GNU Guile, version 2.0.12 or is know to work.
   - SH, /bin/sh, GNU Bash 4.3 is known to work.
@@ -53,7 +53,7 @@ http://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/mes.scm?h=wip-bootst
 
 ** Prerequisites
   - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.5 is known to work.
-  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], [[https://gitlab.com/janneke/nyacc][patched Nyacc]] 0.80.42 is known to work.
+  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.86.0 is known to work.
   - [[https://gitlab.com/janneke/mes-seed][mes-seed]], 0.17.1 is known to work.
 
 ** Build it

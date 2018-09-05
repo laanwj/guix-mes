@@ -115,13 +115,19 @@ These were “Maxwell’s Equations of Software!”
 @author Alan Kay
 @end quotation
 
-GNU Mes@footnote{``Mes'' is an acronym for the Maxwell Equations of
-Software.} consists of a mutual self-hosting Scheme interpreter written
-in C and a Nyacc-based (see @pxref{NYACC User's Guide,,, nyacc-ug, NYACC
-User's Guide}) C compiler written in Scheme.
+The purpose of GNU Mes@footnote{``Mes'' is an acronym for the Maxwell
+Equations of Software.} is to help create a computer operating system
+that we can trust.
 
-The Scheme interpreter @file{mes.c} is about 5000LOC of restricted C and
-intended to be bootstrappable using a very simple C compiler.
+Mes consists of a mutual self-hosting Scheme interpreter written in C
+and a Nyacc-based (see @pxref{NYACC User's Guide,,, nyacc-ug, NYACC
+User's Guide}) C compiler written in Scheme.  The Scheme interpreter
+@file{mes.c} is about 5000LOC of restricted C and intended to be
+bootstrappable using a very simple C compiler.
+
+If we want to trust our computers to do what we instructed them to do
+then we need to be able to inspect all instructions---all
+softwares---that we have given it to run.
 
 @section Software Freedom
 @cindex purpose
@@ -154,11 +160,25 @@ essential freedoms:
 @end enumerate
 @end quotation
 
-So we have access to the software, we have studied it, possibly modified
-it, we built it and we installed it on a computer or some device.  How
-can we trust that when we run the program we are indeed running the
-untainted product of the source code that we studied?  Unless we are
-certain of this we cannot really enjoy freedom 1.
+A computer operating system that respects the user's freedom is one
+essential ingredient for building a reliable, trustable computing
+system.  There are about a dozen general purpose operating systems that
+can be trusted in this way, see
+@url{https://www.gnu.org/distros/free-distros.html, Free Distributions}.
+For all softwares on such a system we have the full source code and
+build recipes available.
+
+@c The Free System Distribution Guidelines (GNU FSDG)@footnote{Examples of
+@c free operating systems are GNU GuixSD, GNU Parabola and Trisquel, see
+@c https://www.gnu.org/distros/free-system-distribution-guidelines.html}
+@c can serve as help to create such a system
+
+So we have access to all the software, we have studied it, possibly
+modified it, then we built it and we installed it on a computer or some
+device or appliance.  How can we trust that when we run the program we
+are indeed running the untainted product of the source code that we
+studied?  Unless we are certain of this we cannot really enjoy
+Freedom 1.
 
 @menu
 * Reproducible Builds::         Reproducibility and free software.
@@ -170,8 +190,10 @@ certain of this we cannot really enjoy freedom 1.
 @section Reproducible Builds
 
 The current Reproducible Builds effort incubated in the Debian
-project@footnote{@url{http://debian.org, The Debian Project}} and was organized by Lunar.  Quoting
-the Reproducible Builds website@footnote{@url{https://reproducible-builds.org/,Reproducible Builds}}
+project@footnote{@url{http://debian.org, The Debian Project}} and was
+organized by Lunar.  Quoting the Reproducible Builds
+website@footnote{@url{https://reproducible-builds.org/,Reproducible
+Builds}}
 
 @quotation
 A build is reproducible if given the same source code, build environment
@@ -183,11 +205,11 @@ copies of all specified artifacts.
 
 Now consider the opposite, that a second build of a piece of source code
 produces a different binary program.  Upon further investigation we
-might find that the only difference is a timestamp that was embedded in
-the binary, or perhaps the name of the directory it was built in.  Such
-investigations can be nontrivial and are highly unpractical.  And what
-if the binary difference is not so trivial, cannot be easily accounted
-for?
+might find that the only difference is probably harmless: a timestamp
+that was embedded in the binary, or perhaps the name of the user that
+built it or directory it was built in.  Such investigations can be
+nontrivial and are highly unpractical.  And what if the binary
+difference is not so trivial, cannot be easily accounted for?
 
 A piece of software that cannot be built bit-by-bit reproducible is
 probably not a good community member in the world of software freedom.
@@ -233,8 +255,8 @@ seeds that are used to start building the distribution.
 
 The GNU GuixSD operating system has a relatively small closure of
 bootstrap binaries: GNU binutils, GNU gcc, GNU Libc, GNU Guile, and
-``Static binaries'' (think: bash, coreutils, diffutils, findutils,
-gawk, grep, gzip, make, sed, tar)
+``Static binaries'' (think: bash, bzip2, coreutils, gawk, grep, gzip,
+patch, sed, tar, xz).
 
 @example
 $ du -schx $(readlink $(guix build bootstrap-tarballs)/*)
@@ -267,16 +289,113 @@ $ du -schx *
 There is an obvious solution: we cannot allow any binary seeds in our
 software stack.  Not even in the bootstrap binaries.  Maybe that is a
 bit too strong: we want to have the absolute minimum of binary seeds and
-all binary seeds need to be inspectable and must be reviewed.
+all binary seeds need to be inspectable and must be reviewed.  How big
+would the absolute minimal set be?
 
 @subsection The Magical Self-Hosting Hex Assembler
 
 June 2016 I learnt about
 @url{https://github.com/oriansj/stage0/,Stage0}.  Jeremiah Orians
-created `hex0' a ~500 byte self-hosting hex assembler.  The source code
-is well documented and the binary is the exact mirror of the source
-code.  I was inspired: what if we could bootstrap a whole GNU
-distribution from source, using only an initial 500 byte binary seed?
+created @file{hex0} a ~500 byte self-hosting hex assembler.  The source
+code is well documented and the binary is the exact mirror of the source
+code.  I was inspired.
+
+Here is an example of what the @file{hex0} program looks like; the start
+of the @var{hex} function
+
+@example
+00000060: 4883 f830 7c6f 4883 f83a 7c5a 4883 f841  H..0|oH..:|ZH..A
+@dots{}
+000000d0: 48c7 c0ff ffff ffc3 0000 0000 0000 0000  H...............
+000000e0: 4883 e830 c300 0000 0000 0000 0000 0000  H..0............
+@end example
+
+All computer programs look like this: an opaque list of computer codes.
+The initial programs that we take for granted---the bootstrap
+binaries---are about 250MB of such numbers: think 250,000 pages full of
+numbers.
+
+Most computers work pretty well so apparently there is not a pressing
+need to inspect and study all of these codes.  At the same time it is
+tricky to fully trust@footnote{ Ken Thompson's 1984 Turing award
+acceptance speech
+@url{http://www.ece.cmu.edu/~ganger/712.fall02/papers/p761-thompson.pdf,
+Reflections on Trusting Tust}.} a computer that was bootstrapped in this
+way.
+
+Here is what the source code of the @file{hex0} assembler looks like
+
+@example
+## function: hex
+48 83 f8 30                # cmp $0x30,%rax
+7c 6f                      # jl 6000f3 <ascii_other>
+48 83 f8 3a                # cmp $0x3a,%rax
+7c 5a                      # jl 6000e4 <ascii_num>
+48 83 f8 41                # cmp $0x41,%rax
+@dots{}
+## function: ascii_other
+48 c7 c0 ff ff ff ff       # mov $0xffffffffffffffff,%rax
+c3                         # ret
+@dots{}
+## function: ascii_num
+48 83 e8 30                # sub $0x30,%rax
+c3                         # ret
+@end example
+
+While it may be hard to understand what this piece of the program does,
+it should be possible for anyone to verify that the computer codes above
+correspond to the source code with comments.
+
+One step beyond these annotated codes is Assembly language.  To write a
+program in Assembly, you only need to provide the instructions; the
+codes are computed by the @file{assembler} program.
+
+@example
+hex:
+	# deal all ascii less than 0
+	cmp $48, %rax
+	jl ascii_other
+	# deal with 0-9
+	cmp $58, %rax
+	jl ascii_num
+@dots{}
+ascii_other:
+	mov $-1, %rax
+	ret
+ascii_num:
+	sub $48, %rax
+	ret
+@end example
+
+More readable still, a similar program text in the C programming language.
+
+@example
+int
+hex (int c)
+@{
+  if (c >= '0' && c <= '9')
+    return c - 48;
+@dots{}
+@}
+@end example
+
+What if we could bootstrap our entire system from only this one
+@file{hex0} assembler binary seed?  We would only ever need to inspect
+these 500 bytes of computer codes.  Every@footnote{Some program
+languages have become very hard or practically impossible to bootstrap.
+Instead of depending on a simple language such as C, they depend on a
+recent version of itself, or on other binary or ASCII seeds, on other
+recent programs written in that language, or even on manual
+intervention.  Programs written in a language that cannot be
+bootstrapped can still run on our systems, but cannot enjoy any of the
+trust we intend to create.} later program is written in a more friendly
+programming language: Assembly, C, @dots{}  Scheme.
+
+Inspecting all these programs is a lot of work, but it can certainly be
+done.  We might be able to create a fully inspectable path from almost
+nothing to all of the programs that our computer runs.  Something that
+seemed to be an impossible dream is suddenly starting to look like
+``just a couple years of work''.
 
 @subsection LISP as Maxwell's Equations of Software
 
@@ -298,8 +417,8 @@ over.
 
 Our starting point is @file{hex0}, a 500 byte hex assembler and we need
 to somehow close the gap to building the bootstrap binaries, esp. GNU
-Gcc and GNU Libc.  What better way to do that than by leveraging the
-powers of LISP?
+Gcc and the GNU C Library.  What better way to do that than by
+leveraging the powers of LISP?
 
 GNU Mes is a Scheme@footnote{Scheme is a modern LISP} interpreter that
 will be indirectly bootstrapped from @file{hex0} and that wields the
@@ -337,9 +456,7 @@ GNU Mes depends on the following packages:
 @item @url{http://gnu.org/software/guile/, GNU Guile}, version 2.0.13 or
 later, including 2.2.x;
 @item @url{http://www.gnu.org/software/make/, GNU Make}.
-@item @url{https://savannah.gnu.org/projects/nyacc/, NYACC}, currently only the patched
-  version 0.80.42 from @url{http://gitlab.com/janneke/nyacc/, patched
-  NYACC} is known to work.
+@item @url{https://savannah.gnu.org/projects/nyacc/, NYACC},  0.86.0 is known to work.
 @item @url{http://gcc.gnu.org, GCC's gcc}, version 2.95.3 or later.
 @end itemize
 
@@ -409,8 +526,8 @@ MES_BOOT=scaffold/boot/00-zero.scm src/mes
 Run a single Mes Scheme test
 
 @example
-tests/boot.test
-tests/boot.test-guile
+./pre-inst-env tests/boot.test
+MES=guile ./pre-inst-env tests/boot.test
 @end example
 
 Run MesCC tests only
@@ -474,9 +591,9 @@ responsibility.
 @section The Mes Bootstrap Process
 
 The Mes full source bootstrap process@footnote{TBH, the current state of
-affairs demands to label this a `reduced binary seed bootstrap'} is
+affairs demands to label this a `Reduced Binary Seed bootstrap'} is
 currently being developed in GuixSD@footnote{See
-@file{gnu/packages/mes.scm} in the @var{wip-bootstrap} branch in Guix
+@file{gnu/packages/commencement.scm} in the @var{core-updates-next} branch in Guix
 git
 @url{http://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/mes.scm?h=wip-bootstrap}}.
 In it's intiial form it is only available for x86-linux.
@@ -505,7 +622,7 @@ glibc-source + binutils + gcc + glibc0 => glibc
 
 @c This graph is generated from wip-bootstrap, doing:
 
-@c ~/src/guix-bootstrap/pre-inst-env guix graph --type=bag -e '(begin (use-modules (guix packages)) (%current-system "i686-linux") (@@ (gnu packages commencement) gcc-mesboot))' doc/images/gcc-mesboot-graph.dot
+@c ~/src/guix-boot/pre-inst-env guix graph --type=bag -e '(@@ (gnu packages commencement) gcc-mesboot)' doc/images/gcc-mesboot-graph.dot
 @c dot -T png doc/images/gcc-mesboot-graph.dot > doc/images/gcc-mesboot-graph.png
 
 Here's a generated dependency diagram to for the final bootstrap gcc
@@ -519,8 +636,8 @@ injected by our own doing as temporary shortcut
 mescc-tools-seed, mes-seed, tinycc-seed
 @end example
 
-These additional non-bootstrapped dependencies (i.e., binary seeds) are
-taken for granted
+For now, these additional non-bootstrapped dependencies (i.e., binary
+seeds) are taken for granted
 
 @example
 BOOTSTRAP-GUILE, bash, bzip2, coreutils, gawk, grep, gzip, patch, sed,
@@ -889,24 +1006,25 @@ without any effort.
 
 However, please don't let our preference stop you from reporting a bug.
 There's one thing @emph{much} worse for us than getting a bug report
-without a patch: Reading a complaint or rant online about your pain and
-how our work sucks, without having heard directly what you experienced.
+without a patch: Reading a complaint or rant online about your
+frustrations and how our work sucks, without having heard directly what
+you experienced.
 
 So if you report a problem, will it be fixed?  And @strong{when}?  The
 most honest answer is: It depends.  Let's curry that informationless
-honesty with a more helpful and more blunt reminder of a mantra of Free
-Software:
+honesty with a more helpful and more blunt reminder of a mantra of free
+software:
 
 @quotation
 @table @strong
 @item Q:
-When@dots{}?
+When will it be finished?
 
 @item A:
-@dots{}sooner if you help.
+It will be ready sooner if you help.
 @end table
 
-@author Eric Raymond
+@author Richard Stallman
 @end quotation
 
 @cindex contact, irc, mailing list
@@ -922,7 +1040,7 @@ Please send bug reports with full details to @email{bug-mes@@gnu.org}.
 
 We would like to thank the following people for their help: Jeremiah
 Orians, pdewacht, rain1, Ricardo Wurmus, Rutger van Beusekom.
-w
+
 We also thank Ludovic Courtès for creating GuixSD and making the
 bootstrap problem so painfully visible, John McCarthy for creating
 LISP-1.5 and Alan Kay for their inspiring comment on

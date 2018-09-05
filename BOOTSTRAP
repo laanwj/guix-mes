@@ -99,16 +99,15 @@ be source.
     https://gitlab.com/janneke/tinycc
 
 * TODO
-** upstream mes-boot to GuixSD.
-** replace GuixSD bootstrap for x86.
 ** remove or upstream patches from tcc-boot
 ** prepare src/mes.c for M2-Planet transpiler.
+** arm, the Hurd
 ** fix bootstrap-loops: (Nyacc?, mes.M2, psyntax.pp?)
 ** make GNU gcc (8.0?) bootstrappable again, remove [need for] tcc stage
-** integrate with GuixSD
-** x86_64, arm, the Hurd
-
 * DONE
+** upstream mes-boot to GuixSD.
+** replace GuixSD bootstrap for x86_64.
+** replace GuixSD bootstrap for x86.
 ** add full source gcc-4.7 package build.
 ** bootstrap gcc+glibc-built binutils-20.1, gcc-4.1.0.
 ** have tcc-boot compile gnutools triplet: binutils-2.14, gcc-2.95.3, glibc-2.2.5.

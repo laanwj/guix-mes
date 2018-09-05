@@ -10,10 +10,23 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to bug-mes@gnu.org.
 
-* Changes in 0.17.1 since 0.17
+* Changes in 0.18 since 0.17.1
 ** Core
+*** Mes/MesCC now supports x86_64.
+*** Mes/MesCC now brings a Reduced Binary Seed bootstrap to GuixSD.
+** Language
+*** fold-right now supports 3 lists.
 ** MesCC
-*** Mes C Library has now been exploded into a separate C f per function.
+*** MesCC now supports x86_64 (also as cross build), using -m 64.
+*** Mes C Library now has better support for bootstrapping gcc-3.0.
+*** Mes C test suite now has 178 tests; 74 tests were added.
+*** MesCC has been refactored to support use an abstracted assembly language.
+*** MesCC now uses Nyacc 0.86.0.
+** Noteworthy bug fixes
+*** scaffold/tests/7s-struct-short.c has been fixed.
+* Changes in 0.17.1 since 0.17
+** MesCC
+*** Mes C Library has now been exploded into a separate C file per function.
 *** Mes C Library now bootstraps glibc-2.16.0, binutils-2.20.1, gcc-4.7.4.
 *** Mes C Library now supports compiling make-3.82.
 *** Mes C Library now supports compiling diffutils-2.7.
