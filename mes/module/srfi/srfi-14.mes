@@ -52,3 +52,6 @@
 
 (define (char-whitespace? c)
   (char-set-contains? char-set:whitespace c))
+
+(define (char-set-copy cs)
+  (map identity cs))
