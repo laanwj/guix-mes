@@ -68,9 +68,9 @@
         (_ #f)))))
 
 (define-public nyacc-for-mes
-  (let ((commit "2378e6c2e7348a80c4c2ebd03ea09811088597")
+  (let ((commit "ba24561b77306cd876bb9fd5ac412b15c7535f02")
         (revision "0")
-        (version "0.85.3"))
+        (version "0.86.0"))
     (package
       (inherit nyacc)
       (version (if commit (string-append version "-" revision "." (string-take commit 7))
@@ -84,7 +84,7 @@
                                         version ".tar.gz")))
                 (sha256
                  (base32
-                  "0nnkwv95l3izap13pwgspz41rvxxbg2lkd17ijharcmmpf4zdhs7")))))))
+                  "08y8ihwm21i333w7b0g1gs4s184ky0wy6fnl1rcakpgrqan9r1ql")))))))
 
 (define-public mescc-tools
   (package
