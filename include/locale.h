@@ -30,8 +30,10 @@
 #else // ! WITH_GLIBC
 
 #ifndef LC_ALL
-#define LC_ALL     "LC_ALL"
-#define LC_NUMERIC "LC_NUMERIC"
+#define LC_CTYPE   0
+#define LC_NUMERIC 1
+#define LC_COLLATE 3
+#define LC_ALL     6
 #endif
 char * setlocale (int category, char const *locale);
 
