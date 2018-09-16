@@ -51,7 +51,36 @@
         (let* ((output (shell-command-to-string (concat "GUIX_PROFILE= /bin/sh -x " profile "/etc/profile")))
                (exports (matches-in-string "^[+] export \\(.*\\)" output)))
           (mapcar (lambda (line) (apply #'setenv (split-string line "="))) exports )))
-))))
+
+      (defun shell-args-to-string (&rest args)
+        (shell-command-to-string (mapconcat 'identity args " ")))
+
+      (defun as (string &optional arch)
+        (let* ((arch (or arch "--64"))
+               (asm (subst-char-in-string ?_ ?\s string))
+               (foo (message "asm:%S" asm))
+               (result (shell-args-to-string "as" arch (concat "<(echo '" asm "')")))
+               (disassembly (shell-args-to-string "objdump" "-d" "a.out"))
+               (foo (message "disassembly: %S" disassembly))
+               (match (string-match "^   0:[\t]\\([^\t]*\\)" disassembly))
+               (code (match-string 1 disassembly))
+               (code (apply 'concat (split-string code " " t))))
+          (insert " ")
+          (insert code)))
+
+      (defun as-32 (point mark)
+        (interactive "r")
+        (let* ((string (buffer-substring point mark))
+               (code (as string "--32")))
+          (insert " ")
+          (insert code)))
+
+      (defun as-64 (point mark)
+        (interactive "r")
+        (let* ((string (buffer-substring point mark))
+               (code (as string "--64")))
+          (insert " ")
+          (insert code)))))))
  (makefile-mode
   (indent-tabs-mode . t))
  (scheme-mode
@@ -67,5 +96,5 @@
        (mapcar
         #'prefix-dir-locals-dir
         '("scripts" "module")))))))
-  (texinfo-mode    . ((indent-tabs-mode . nil)
+ (texinfo-mode    . ((indent-tabs-mode . nil)
                      (fill-column . 72))))
