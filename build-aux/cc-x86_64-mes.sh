@@ -48,15 +48,15 @@ fi
 mkdir -p $d
 
 if [ -n "$PREPROCESS" ]; then
-    trace "CPP.mes64  $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES64_CFLAGS -E -o "$o.E" "${srcdest}$c".c
-    trace "CC.mes64   $c.E" ./pre-inst-env bash $MESCC $MES64_CFLAGS -S "$o".E
-    trace "AS.mes64   $c.S" ./pre-inst-env bash $MESCC $MES64_CFLAGS -c -o "$o".${p}o "$o".S
+    trace "CPP.mes64  $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES64_CFLAGS -E -o "$o.${p}E" "${srcdest}$c".c
+    trace "CC.mes64   $c.E" ./pre-inst-env bash $MESCC $MES64_CFLAGS -S -o "$o".${p}S "$o".${p}E
+    trace "AS.mes64   $c.S" ./pre-inst-env bash $MESCC $MES64_CFLAGS -c -o "$o".${p}o "$o".${p}S
     if [ -z "$NOLINK" ]; then
         trace "LD.mes64   $c.o" ./pre-inst-env bash $MESCC $MES64_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi
 elif [ -n "$COMPILE" ]; then
-    trace "CC.mes64   $c.c" trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES64_CFLAGS -S -o "$o.S" "${srcdest}$c".c
-    trace "AS.mes64   $c.S" ./pre-inst-env bash $MESCC $MES64_CFLAGS -c -o "$o".${p}o "$o".S
+    trace "CC.mes64   $c.c" trace "MESCC $c.c" ./pre-inst-env bash $MESCC $MES_CPPFLAGS $MES64_CFLAGS -S -o "$o".${p}S "${srcdest}$c".c
+    trace "AS.mes64   $c.S" ./pre-inst-env bash $MESCC $MES64_CFLAGS -c -o "$o".${p}o "$o".${p}S
     if [ -z "$NOLINK" ]; then
         trace "LD.mes64   $c.o" ./pre-inst-env bash $MESCC $MES64_CFLAGS -o "$o".${p}out "$o".${p}o $MES_LIBS
     fi

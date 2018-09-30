@@ -180,6 +180,7 @@ DEFINE setg___%dil 400f9fc7
 DEFINE setge__%al 0f9dc0
 DEFINE setge__%dil 400f9dc7
 DEFINE setl___%al 0f9cc0
+DEFINE setl___%dil 400f9cc7
 DEFINE setle__%al 0f9ec0
 DEFINE setle__%dil 400f9ec7
 DEFINE setne__%al 0f95c0

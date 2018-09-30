@@ -60,50 +60,50 @@ trace "TEST       lib/x86_64-mes/exit-42.x86_64-out" echo lib/x86_64-mes/exit-42
 { set +e; lib/x86_64-mes/exit-42.x86_64-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-# if [ -d "$MES_SEED" ]; then
-#     mkdir -p lib/x86_64-mes
-#     trace "M1         crt1.S" $M1\
-#         $M1FLAGS\
-#         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
-#         -f $MES_SEED/x86_64-mes/crt1.S\
-#         -o lib/x86_64-mes/crt1.o
-#     trace "M1         libc.S" $M1\
-#         $M1FLAGS\
-#         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
-#         -f $MES_SEED/x86_64-mes/libc.S\
-#         -o lib/x86_64-mes/libc.o
-#     trace "M1         mes.S" $M1\
-#         --LittleEndian\
-#         --Architecture 2\
-#         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
-#         -f $MES_SEED/x86_64-mes/mes.S\
-#         -o src/mes.o
-#     trace "BLOOD_ELF  mes.S" $BLOOD_ELF\
-#         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
-#         -f $MES_SEED/x86_64-mes/mes.S\
-#         -f $MES_SEED/x86_64-mes/libc.S\
-#         -o src/mes.S.blood-elf
-#     trace "M1         mes.blood-elf" $M1\
-#         --LittleEndian\
-#         --Architecture 2\
-#         -f src/mes.S.blood-elf\
-#         -o src/mes.o.blood-elf
-#     trace "HEX2       mes.o" $HEX2\
-#         $HEX2FLAGS\
-#         -f ${srcdest}lib/x86_64-mes/elf64-header.hex2\
-#         -f lib/x86_64-mes/crt1.o\
-#         -f lib/x86_64-mes/libc.o\
-#         -f src/mes.o\
-#         -f src/mes.o.blood-elf\
-#         --exec_enable\
-#         -o src/mes.seed-out
-#     cp src/mes.seed-out src/mes
-#     trace "M1         libc+tcc.S" $M1\
-#         $M1FLAGS\
-#         -f ${srcdest}lib/x86_64-mes/x86_64.M1\
-#         -f $MES_SEED/x86_64-mes/libc+tcc.S\
-#         -o lib/x86_64-mes/libc+tcc.o
-# fi
+if [ -d "$MES_SEED" ]; then
+    mkdir -p lib/x86_64-mes
+    trace "M1         crt1.S" $M1\
+        $M1FLAGS\
+        -f ${srcdest}lib/x86_64-mes/x86_64.M1\
+        -f $MES_SEED/x86_64-mes/crt1.S\
+        -o lib/x86_64-mes/crt1.o
+    trace "M1         libc.S" $M1\
+        $M1FLAGS\
+        -f ${srcdest}lib/x86_64-mes/x86_64.M1\
+        -f $MES_SEED/x86_64-mes/libc.S\
+        -o lib/x86_64-mes/libc.o
+    trace "M1         mes.S" $M1\
+        --LittleEndian\
+        --Architecture 2\
+        -f ${srcdest}lib/x86_64-mes/x86_64.M1\
+        -f $MES_SEED/x86_64-mes/mes.S\
+        -o src/mes.o
+    trace "BLOOD_ELF  mes.S" $BLOOD_ELF\
+        -f ${srcdest}lib/x86_64-mes/x86_64.M1\
+        -f $MES_SEED/x86_64-mes/mes.S\
+        -f $MES_SEED/x86_64-mes/libc.S\
+        -o src/mes.S.blood-elf
+    trace "M1         mes.blood-elf" $M1\
+        --LittleEndian\
+        --Architecture 2\
+        -f src/mes.S.blood-elf\
+        -o src/mes.o.blood-elf
+    trace "HEX2       mes.o" $HEX2\
+        $HEX2FLAGS\
+        -f ${srcdest}lib/x86_64-mes/elf64-header.hex2\
+        -f lib/x86_64-mes/crt1.o\
+        -f lib/x86_64-mes/libc.o\
+        -f src/mes.o\
+        -f src/mes.o.blood-elf\
+        --exec_enable\
+        -o src/mes.seed-out
+    cp src/mes.seed-out src/mes
+    trace "M1         libc+tcc.S" $M1\
+        $M1FLAGS\
+        -f ${srcdest}lib/x86_64-mes/x86_64.M1\
+        -f $MES_SEED/x86_64-mes/libc+tcc.S\
+        -o lib/x86_64-mes/libc+tcc.o
+fi
 
 
 PREPROCESS=1
@@ -114,39 +114,35 @@ if [ ! -d "$MES_SEED" ] \
     MES_ARENA=100000000
 fi
 
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crt1
+MES_ARENA=100000000
 
-MES_LIBS='-l none' PREPROCESS= bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/x86_64-mes/exit-42
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crt1
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc-mini
+MES64_LIBS='-l c-mini' PREPROCESS= bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/x86_64-mes/exit-42
 
 trace "TEST       lib/x86_64-mes/exit-42.x86_64-mes-out" echo lib/x86_64-mes/exit-42.x86_64-mes-out
 { set +e; lib/x86_64-mes/exit-42.x86_64-mes-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc-mini
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc
-
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crt0
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crti
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crtn
-
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc+tcc
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc+gnu
-# ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libgetopt
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc+tcc
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc+gnu
+ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libgetopt
 
 
-# [ -n "$SEED" ] && exit 0
+[ -n "$SEED" ] && exit 0
 
-# MES_ARENA=${MES_ARENA-100000000}
-# trace "MSNARF gc.c"     ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
-# trace "MSNARF lib.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
-# trace "MSNARF math.c"   ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
-# trace "MSNARF mes.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
-# trace "MSNARF posix.c"  ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
-# trace "MSNARF reader.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
-# trace "MSNARF vector.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
+MES_ARENA=${MES_ARENA-100000000}
+trace "MSNARF gc.c"     ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
+trace "MSNARF lib.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
+trace "MSNARF math.c"   ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
+trace "MSNARF mes.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
+trace "MSNARF posix.c"  ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
+trace "MSNARF reader.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
+trace "MSNARF vector.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
 
-# echo MES_ARENA=$MES_ARENA
-# bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/main
+echo MES_ARENA=$MES_ARENA
+bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/main
 
 MES_LIBS='-l none' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/main
 
@@ -154,12 +150,11 @@ trace "TEST       scaffold/main.x86_64-mes-out" echo scaffold/main.x86_64-mes-ou
 { set +e; scaffold/main.x86_64-mes-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-# MES_LIBS='-l mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/hello
-# MES_LIBS='-l mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/argv
-# bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/malloc
-# ##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/micro-mes
-# ##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/tiny-mes
-# # bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/mini-mes
-# bash ${srcdest}build-aux/cc-x86_64-mes.sh src/mes
-# cp src/mes.mes-out src/mes
-true
+MES64_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/hello
+MES64_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/argv
+bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/malloc
+##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/micro-mes
+##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/tiny-mes
+# bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/mini-mes
+bash ${srcdest}build-aux/cc-x86_64-mes.sh src/mes
+cp src/mes.x86_64-mes-out src/mes

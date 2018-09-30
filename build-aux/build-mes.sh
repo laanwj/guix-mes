@@ -122,10 +122,6 @@ trace "TEST       lib/x86-mes/exit-42.mes-out" echo lib/x86-mes/exit-42.mes-out
 { set +e; lib/x86-mes/exit-42.mes-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crt0
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crti
-ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/linux/x86-mes/crtn
-
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+tcc
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+gnu

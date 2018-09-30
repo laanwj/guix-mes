@@ -150,12 +150,18 @@ uninstall:
 
 seed: all-go gcc mes-gcc mes-tcc
 	cd $(MES_SEED) && git reset --hard HEAD
-	MES=$(GUILE) GUILE=$(GUILE) SEED=1 ${srcdest}build-aux/build-mes.sh
+	$(MAKE) MES=guile MES_SEED= SEED=1 mes
+	cp -v lib/x86-mes/*.S $(MES_SEED)/x86-mes
+	cp -v src/mes.S $(MES_SEED)/x86-mes
+	$(MAKE) MES=guile MES_SEED= SEED=1 x86_64-mes
+	cp -v lib/x86_64-mes/*.S $(MES_SEED)/x86_64-mes
+	cp -v src/mes.x86_64-mes-S $(MES_SEED)/x86_64-mes/mes.S
+	MES=$(GUILE) GUILE=$(GUILE) SEED=1 MES_SEED= ${srcdest}build-aux/build-mes.sh
 	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
 	MES=$(GUILE) GUILE=$(GUILE) SEED=1 ${srcdest}build-aux/build-mes.sh
-	cp lib/x86-mes/elf32-header.hex2\
-           lib/x86-mes/x86.M1\
-           lib/x86-mes/libc+tcc.S\
+	cd $(MES_SEED) && MES_PREFIX=$(PWD) arch=x86_64-mes ./refresh.sh
+	MES=$(GUILE) GUILE=$(GUILE) SEED=1 ${srcdest}build-aux/build-x86_64-mes.sh
+	cp lib/x86-mes/libc+tcc.S\
            lib/x86-mes/libc.S\
            lib/x86-mes/crt1.S\
            lib/x86-mes/libgetopt.S\
