@@ -157,4 +157,5 @@ bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/malloc
 ##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/tiny-mes
 # bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/mini-mes
 bash ${srcdest}build-aux/cc-x86_64-mes.sh src/mes
-cp src/mes.x86_64-mes-out src/mes
+# not yet, broken
+# cp src/mes.x86_64-mes-out src/mes

@@ -37,7 +37,7 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       else
         {
           fdputs ("#\\", fd);
-          int v = VALUE (x);
+          long v = VALUE (x);
           if (v == '\0') fdputs ("nul", fd);
           else if (v == '\a') fdputs ("alarm", fd);
           else if (v == '\b') fdputs ("backspace", fd);
@@ -139,7 +139,7 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       SCM t = CAR (x);
       while (t && t != cell_nil)
         {
-          int v = write_p ? VALUE (CAR (t)) : -1;
+          long v = write_p ? VALUE (CAR (t)) : -1;
           if (v == '\0') fdputs ("\\0", fd);
           else if (v == '\a') fdputs ("\\a", fd);
           else if (v == '\b') fdputs ("\\b", fd);
@@ -170,7 +170,7 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     {
       fdputs ("#(", fd);
       SCM t = CAR (x);
-      for (int i = 0; i < LENGTH (x); i++)
+      for (long i = 0; i < LENGTH (x); i++)
         {
           if (i)
             fdputc (' ', fd);
@@ -302,7 +302,7 @@ equal2_p (SCM a, SCM b)
     {
       if (LENGTH (a) != LENGTH (b))
         return cell_f;
-      for (int i=0; i < LENGTH (a); i++)
+      for (long i=0; i < LENGTH (a); i++)
         {
           SCM ai = VECTOR (a) + i;
           SCM bi = VECTOR (b) + i;

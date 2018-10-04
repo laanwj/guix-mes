@@ -507,7 +507,7 @@ dump ()
       eputs ("\n");
     }
 
-  int i;
+  long i;
   for (i=0; i<g_free * sizeof (struct scm); i = i + 1)
     {
       putchar (p[0]);

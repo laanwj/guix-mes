@@ -36,7 +36,7 @@ greater_p (SCM x) ///((name . ">") (arity . n))
   if (x == cell_nil)
     return cell_t;
   assert_number ("greater_p", CAR (x));
-  int n = VALUE (CAR (x));
+  long n = VALUE (CAR (x));
   x = CDR (x);
   while (x != cell_nil)
     {
@@ -55,7 +55,7 @@ less_p (SCM x) ///((name . "<") (arity . n))
   if (x == cell_nil)
     return cell_t;
   assert_number ("less_p", CAR (x));
-  int n = VALUE (CAR (x));
+  long n = VALUE (CAR (x));
   x = CDR (x);
   while (x != cell_nil)
     {
@@ -74,7 +74,7 @@ is_p (SCM x) ///((name . "=") (arity . n))
   if (x == cell_nil)
     return cell_t;
   assert_number ("is_p", CAR (x));
-  int n = VALUE (CAR (x));
+  long n = VALUE (CAR (x));
   x = cdr (x);
   while (x != cell_nil)
     {
@@ -89,7 +89,7 @@ SCM
 minus (SCM x) ///((name . "-") (arity . n))
 {
   assert_number ("minus", CAR (x));
-  int n = VALUE (CAR (x));
+  long n = VALUE (CAR (x));
   x = cdr (x);
   if (x == cell_nil)
     n = -n;
@@ -105,7 +105,7 @@ minus (SCM x) ///((name . "-") (arity . n))
 SCM
 plus (SCM x) ///((name . "+") (arity . n))
 {
-  int n = 0;
+  long n = 0;
   while (x != cell_nil)
     {
       assert_number ("plus", CAR (x));
@@ -118,7 +118,7 @@ plus (SCM x) ///((name . "+") (arity . n))
 SCM
 divide (SCM x) ///((name . "/") (arity . n))
 {
-  int n = 1;
+  long n = 1;
   if (x != cell_nil)
     {
       assert_number ("divide", CAR (x));
@@ -139,7 +139,7 @@ modulo (SCM a, SCM b)
 {
   assert_number ("modulo", a);
   assert_number ("modulo", b);
-  int x = VALUE (a);
+  long x = VALUE (a);
   while (x < 0) x += VALUE (b);
   return MAKE_NUMBER (x % VALUE (b));
 }
@@ -147,7 +147,7 @@ modulo (SCM a, SCM b)
 SCM
 multiply (SCM x) ///((name . "*") (arity . n))
 {
-  int n = 1;
+  long n = 1;
   while (x != cell_nil)
     {
       assert_number ("multiply", CAR (x));
@@ -160,7 +160,7 @@ multiply (SCM x) ///((name . "*") (arity . n))
 SCM
 logand (SCM x) ///((arity . n))
 {
-  int n = 0;
+  long n = 0;
   while (x != cell_nil)
     {
       assert_number ("multiply", CAR (x));
@@ -173,7 +173,7 @@ logand (SCM x) ///((arity . n))
 SCM
 logior (SCM x) ///((arity . n))
 {
-  int n = 0;
+  long n = 0;
   while (x != cell_nil)
     {
       assert_number ("logior", CAR (x));
@@ -187,14 +187,14 @@ SCM
 lognot (SCM x)
 {
   assert_number ("lognot", x);
-  int n = ~VALUE (x);
+  long n = ~VALUE (x);
   return MAKE_NUMBER (n);
 }
 
 SCM
 logxor (SCM x) ///((arity . n))
 {
-  int n = 0;
+  long n = 0;
   while (x != cell_nil)
     {
       assert_number ("logxor", CAR (x));
@@ -209,7 +209,7 @@ ash (SCM n, SCM count)
 {
   assert_number ("ash", n);
   assert_number ("ash", count);
-  int cn = VALUE (n);
-  int ccount = VALUE (count);
+  long cn = VALUE (n);
+  long ccount = VALUE (count);
   return MAKE_NUMBER ((ccount < 0) ? cn >> -ccount : cn << ccount);
 }

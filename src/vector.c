@@ -19,11 +19,11 @@
  */
 
 SCM
-make_vector__ (int k)
+make_vector__ (long k)
 {
   SCM v = alloc (k);
   SCM x = make_cell__ (TVECTOR, k, v);
-  for (int i=0; i<k; i++)
+  for (long i=0; i<k; i++)
     g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
   return x;
 }
@@ -91,7 +91,7 @@ SCM
 vector_to_list (SCM v)
 {
   SCM x = cell_nil;
-  for (int i = LENGTH (v); i; i--)
+  for (long i = LENGTH (v); i; i--)
     {
       SCM e = VECTOR (v)+i-1;
       if (TYPE (e) == TREF)

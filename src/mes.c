@@ -39,7 +39,7 @@ char *g_arena = 0;
 typedef long SCM;
 
 int g_debug = 0;
-int g_free = 0;
+long g_free = 0;
 
 SCM g_continuations = 0;
 SCM g_symbols = 0;
@@ -1029,7 +1029,7 @@ eval_apply ()
   int global_p;
   int macro_p;
   int t;
-  int c;
+  long c;
 
  eval_apply:
   if (r3 == cell_vm_evlis) goto evlis;
