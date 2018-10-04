@@ -89,17 +89,18 @@
 (define-public mescc-tools
   (package
     (name "mescc-tools")
-    (version "0.5.1")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://github.com/oriansj/mescc-tools/archive/Release_"
-                    version
-                    ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "0rsxbjc3bg0jl3h7ai4hndxx2iyyk8bvwj9nd3xv2vgz3bmypnah"))))
+    (version "0.5.2")
+     (source (origin
+               (method url-fetch)
+               (uri (string-append "http://git.savannah.nongnu.org/cgit/"
+                                   "mescc-tools.git/snapshot/"
+                                   "mescc-tools-Release_" version
+                                   ".tar.gz"))
+               (patches (search-patches "mescc-tools-boot.patch"))
+               (file-name (string-append name "-" version ".tar.gz"))
+               (sha256
+                (base32
+                 "01x7bhmgwyf6mc2g1hcvibhps98nllacqm4f0j5l51b1mbi18pc2"))))
     (build-system gnu-build-system)
     (supported-systems '("i686-linux" "x86_64-linux"))
     (arguments
@@ -117,7 +118,7 @@ hex2 linker.")
 
 (define-public mes
   (let ((triplet "i686-unknown-linux-gnu")
-        (version "0.17.1"))
+        (version "0.18"))
     (package
       (name "mes")
       (version version)
@@ -164,7 +165,7 @@ Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.17.1")
+ (let ((version "0.18")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
