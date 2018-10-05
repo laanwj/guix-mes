@@ -17,7 +17,7 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 if [ -z "$V" -o "$V0" = 0 ]; then
-    function trace () {
+    trace () {
         echo "  $1"
         shift
         eval "$@" $LOG
@@ -25,7 +25,7 @@ if [ -z "$V" -o "$V0" = 0 ]; then
     LOG=" >>build.log 2>&1"
 fi
 if [ "$V" = 1 ]; then
-    function trace () {
+    trace () {
         shift
         echo "$@"
         eval "$@ $LOG"
@@ -34,7 +34,7 @@ if [ "$V" = 1 ]; then
 fi
 if [ "$V" = 2 ]; then
     set -x
-    function trace () {
+    trace () {
         shift
         eval "$@"
     }
