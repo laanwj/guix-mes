@@ -118,7 +118,7 @@ MES_ARENA=100000000
 
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crt1
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libc-mini
-MES64_LIBS='-l c-mini' PREPROCESS= bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/x86_64-mes/exit-42
+MES_LIBS='-l c-mini' PREPROCESS= bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/x86_64-mes/exit-42
 
 trace "TEST       lib/x86_64-mes/exit-42.x86_64-mes-out" echo lib/x86_64-mes/exit-42.x86_64-mes-out
 { set +e; lib/x86_64-mes/exit-42.x86_64-mes-out; r=$?; set -e; }
@@ -150,8 +150,8 @@ trace "TEST       scaffold/main.x86_64-mes-out" echo scaffold/main.x86_64-mes-ou
 { set +e; scaffold/main.x86_64-mes-out; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r" && exit 1
 
-MES64_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/hello
-MES64_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/argv
+MES_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/hello
+MES_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/argv
 bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/malloc
 ##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/micro-mes
 ##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/tiny-mes
