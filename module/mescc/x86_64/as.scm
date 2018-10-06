@@ -48,7 +48,6 @@
 
 ;; AMD
 (define (x86_64:function-preamble info . rest)
-  (format (current-error-port) "rest=~s\n" rest)
   `(("push___%rbp")
     ("mov____%rsp,%rbp")
     ("sub____$i32,%rbp" "%0x80")
@@ -63,7 +62,6 @@
 
 ;; traditional
 (define (x86_64:function-preamble info . rest)
-  (format (current-error-port) "rest=~s\n" rest)
   `(("push___%rbp")
     ("mov____%rsp,%rbp")))
 
