@@ -74,7 +74,17 @@
       (let loop ((lst lst1))
         (if (null? lst) init
             (proc (car lst) (loop (cdr lst)))))
-      (error "FOLD-RIGHT-2-NOT-SUPPORTED")))
+      (if (null? (cdr rest))
+          (let loop ((lst1 lst1) (lst2 (car rest)))
+            (if (or (null? lst1)
+                    (null? lst2)) init
+                    (proc (car lst1) (car lst2) (loop (cdr lst1) (cdr lst2)))))
+          (let loop ((lst1 lst1) (lst2 (car rest)) (lst3 (cadr rest)))
+            (if (or (null? lst1)
+                    (null? lst2)
+                    (null? lst3)) init
+                    (proc (car lst1) (car lst2) (car lst3) (loop (cdr lst1) (cdr lst2) (cdr lst3)))))
+          (error "FOLD-RIGHT-4-NOT-SUPPORTED"))))
 
 (define (unfold p f g seed . rest)
   (let ((tail-gen (if (null? rest) (const '())
