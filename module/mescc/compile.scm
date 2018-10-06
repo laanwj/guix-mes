@@ -581,7 +581,12 @@
 
 (define (ast->comment o)
   (if mes? '()
-      (let ((source (with-output-to-string (lambda () (pretty-print-c99 o)))))
+      (let* ((source (with-output-to-string (lambda () (pretty-print-c99 o))))
+             ;; Nyacc fixups
+             (source (string-substitute source "\\" "\\\\"))
+             (source (string-substitute source "'\\'" "'\\\\'"))
+             (source (string-substitute source "'\"'" "'\\\"'"))
+             (source (string-substitute source "'''" "'\\''")))
         (make-comment (string-join (string-split source #\newline) " ")))))
 
 (define (r*n info n)
