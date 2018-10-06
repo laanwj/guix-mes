@@ -128,6 +128,8 @@ divide (SCM x) ///((name . "/") (arity . n))
   while (x != cell_nil)
     {
       assert_number ("divide", CAR (x));
+      if (!n)
+        break;
       n /= VALUE (car (x));
       x = cdr (x);
     }
@@ -140,8 +142,10 @@ modulo (SCM a, SCM b)
   assert_number ("modulo", a);
   assert_number ("modulo", b);
   long x = VALUE (a);
-  while (x < 0) x += VALUE (b);
-  return MAKE_NUMBER (x % VALUE (b));
+  while (x < 0)
+    x += VALUE (b);
+  x = x ? x % VALUE (b) : 0;
+  return MAKE_NUMBER (x);
 }
 
 SCM
