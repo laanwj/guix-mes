@@ -30,7 +30,7 @@
 #define SYS_open    0x02
 //#define SYS_waitpid
 #define SYS_wait4   0x3d
-#define SYS_execve  0x3a
+#define SYS_execve  0x3b
 #define SYS_chmod   0x5a
 #define SYS_access  0x15
 #define SYS_brk     0x0c
