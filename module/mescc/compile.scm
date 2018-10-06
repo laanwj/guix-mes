@@ -2151,8 +2151,7 @@
 (define (global->info type name o init info)
   (let* ((rank (->rank type))
          (size (->size type info))
-         (reg-size (->size "*" info))
-         (data (cond ((not init) (string->list (make-string (max size reg-size) #\nul)))
+         (data (cond ((not init) (string->list (make-string size #\nul)))
                      ((c-array? type)
                       (let* ((string (array-init->string init))
                              (size (or (and string (max size (1+ (string-length string))))
@@ -2165,7 +2164,7 @@
                         (append data (string->list (make-string (max 0 (- size (length data))) #\nul)))))
                      (else
                       (let ((data (init->data type init info)))
-                        (append data (string->list (make-string (max 0 (- (max size reg-size) (length data))) #\nul)))))))
+                        (append data (string->list (make-string (max 0 (- size (length data))) #\nul)))))))
          (global (make-global-entry name type data)))
     (clone info #:globals (append (.globals info) (list global)))))
 
