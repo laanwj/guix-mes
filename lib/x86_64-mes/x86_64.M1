@@ -56,6 +56,7 @@ DEFINE cmp____$i32,%rax 483d
 DEFINE cmp____$i8,%rax 4883f8
 DEFINE cmp____%r15,%rax 4c39f8
 DEFINE cmp____%r15,%rdi 4c39ff
+DEFINE cqto 4899
 DEFINE hlt f4
 DEFINE idiv___%rdi 48f7ff
 DEFINE ja32  0f87

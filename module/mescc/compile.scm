@@ -79,10 +79,14 @@
     (cons `(tag ,name) (make-type 'union size fields))))
 
 (define (signed? o)
-  (eq? ((compose type:type ->type) o) 'signed))
+  (let ((type (->type o)))
+    (cond ((type? type) (eq? (type:type type) 'signed))
+          (else #f))))
 
 (define (unsigned? o)
-  (eq? ((compose type:type ->type) o) 'unsigned))
+    (let ((type (->type o)))
+    (cond ((type? type) (eq? (type:type type) 'unsigned))
+          (else #t))))
 
 (define (->size o info)
   (cond ((and (type? o) (eq? (type:type o) 'union))
@@ -792,7 +796,7 @@
                         (info (append-text info (wrap-as (append
                                                           (as info 'value->r size)
                                                           (as info 'swap-r0-r1)
-                                                          (as info 'r0/r1)))))
+                                                          (as info 'r0/r1 #f)))))
                         (info (append-text info (wrap-as (append (as info 'swap-r0-r1)))))
                         (free-register info))
                    info)))
@@ -1177,7 +1181,7 @@
                      ;; FIXME: c&p 792
                      (let* ((info (allocate-register info))
                             (info (append-text info (wrap-as (append (as info 'value->r size)
-                                                                     (as info 'r0/r1)))))
+                                                                     (as info 'r0/r1 #f)))))
                             (info (free-register info)))
                        info)))
                (let* ((info (expr->register b info))
@@ -1199,8 +1203,11 @@
         ((bitwise-xor ,a ,b) ((binop->r info) a b 'r0-xor-r1))
         ((lshift ,a ,b) ((binop->r info) a b 'r0<<r1))
         ((rshift ,a ,b) ((binop->r info) a b 'r0>>r1))
-        ((div ,a ,b) ((binop->r info) a b 'r0/r1))
-        ((mod ,a ,b) ((binop->r info) a b 'r0%r1))
+        ((div ,a ,b)
+         ((binop->r info) a b 'r0/r1
+                      (or (signed? (ast->type a info)) (signed? (ast->type b info)))))
+        ((mod ,a ,b) ((binop->r info) a b 'r0%r1
+                      (or (signed? (ast->type a info)) (signed? (ast->type b info)))))
         ((mul ,a ,b) ((binop->r info) a b 'r0*r1))
 
         ((not ,expr)
@@ -1334,11 +1341,12 @@
                                              info)))
                                  (info (expr->register a info))
                                  (info (append-text info (wrap-as (as info 'swap-r0-r1))))
+                                 (signed? (or (signed? type) (signed? type-b)))
                                  (info (append-text info (cond ((equal? op "+=") (wrap-as (as info 'r0+r1)))
                                                                ((equal? op "-=") (wrap-as (as info 'r0-r1)))
                                                                ((equal? op "*=") (wrap-as (as info 'r0*r1)))
-                                                               ((equal? op "/=") (wrap-as (as info 'r0/r1)))
-                                                               ((equal? op "%=") (wrap-as (as info 'r0%r1)))
+                                                               ((equal? op "/=") (wrap-as (as info 'r0/r1 signed?)))
+                                                               ((equal? op "%=") (wrap-as (as info 'r0%r1 signed?)))
                                                                ((equal? op "&=") (wrap-as (as info 'r0-and-r1)))
                                                                ((equal? op "|=") (wrap-as (as info 'r0-or-r1)))
                                                                ((equal? op "^=") (wrap-as (as info 'r0-xor-r1)))
@@ -1349,7 +1357,7 @@
                             (cond ((not (and (= rank 1) (= rank-b 1))) info)
                                   ((equal? op "-=") (let* ((info (allocate-register info))
                                                            (info (append-text info (wrap-as (append (as info 'value->r size)
-                                                                                                    (as info 'r0/r1)))))
+                                                                                                    (as info 'r0/r1 signed?)))))
                                                            (info (free-register info)))
                                                       info))
                                   (else (error (format #f "invalid operands to binary ~s (have ~s* and ~s*)" op type (ast->basic-type b info)))))))))
@@ -1446,10 +1454,10 @@
               (else '())))))
 
 (define (binop->r info)
-  (lambda (a b c)
+  (lambda (a b c . rest)
     (let* ((info (expr->register a info))
            (info (expr->register b info))
-           (info (append-text info (wrap-as (as info c)))))
+           (info (append-text info (wrap-as (apply as info (cons c rest))))))
       (free-register info))))
 
 (define (binop->r* info)

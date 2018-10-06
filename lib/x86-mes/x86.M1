@@ -49,6 +49,7 @@ DEFINE and____%ebx,%eax 21d8
 DEFINE call32 e8
 DEFINE call___*%eax ffd0
 DEFINE call___*%ebx ffd3
+DEFINE cltd 99
 DEFINE cmp____$0x32,%eax 3d
 DEFINE cmp____$i32,%eax 3d
 DEFINE cmp____$i8,%eax 83f8
