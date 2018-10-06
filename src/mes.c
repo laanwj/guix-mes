@@ -2016,9 +2016,9 @@ g_cells[cell_vm_return].car = cstring_to_list (scm_vm_return.car);
   a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
   a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
 
-  char *compiler = "gcc";
+  char *compiler = "gnuc";
 #if __MESC__
-  compiler = "mescc";
+  compiler = "mesc";
 #elif __TINYC__
   compiler = "tcc";
 #endif
@@ -2360,12 +2360,13 @@ bload_env (SCM a) ///((internal))
   g_stdin = STDIN;
   r0 = mes_builtins (r0);
 
-  char *compiler = "gcc";
+  char *compiler = "gnuc";
 #if __MESC__
-  compiler = "mescc";
+  compiler = "mesc";
 #elif __TINYC__
   compiler = "tcc";
 #endif
+
   a = acons (cell_symbol_compiler, MAKE_STRING (cstring_to_list (compiler)), a);
 
   char *arch = "x86";
