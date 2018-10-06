@@ -53,6 +53,9 @@
 (define (hex2:address o)
   (string-append "&" o))
 
+(define (hex2:address8 o)
+  (string-append "&" o " %0")) ;; FIXME: 64bit
+
 (define (hex2:offset o)
   (string-append "%" o))
 
@@ -76,6 +79,14 @@
 (define (hex2:immediate4 o)
   (if hex? (string-append "%0x" (dec->hex o))
       (string-append "%" (number->string o))))
+
+(define (hex2:immediate8 o)
+  (if hex? (string-append "%0x" (dec->hex (modulo o #x100000000))
+                          " %0x" (if (< o 0) "-1"
+                                     (dec->hex (quotient o #x100000000))))
+      (string-append "%" (number->string (dec->hex (modulo o #x100000000)))
+                     " %" (if (< o 0) "-1"
+                              (number->string (dec->hex (quoteint o #x100000000)))))))
 
 (define* (display-join o #:optional (sep ""))
   (let loop ((o o))
@@ -110,7 +121,8 @@
        ((and (pair? o) (keyword? (car o)))
         (pmatch o
           ;; FIXME
-          ((#:address (#:string ,string)) (hex2:address (string->label `(#:string ,string))))
+          ((#:address (#:string ,string))
+           (hex2:address (string->label `(#:string ,string))))
           ((#:address (#:address ,address)) (guard (string? address))
            (hex2:address address))
           ((#:address (#:address ,global)) (guard (global? global))
@@ -119,17 +131,38 @@
            (hex2:address (function->string function)))
           ((#:address ,number) (guard (number? number))
            (string-join (map text->M1 (int->bv32 number))))
+
+          ((#:address8 (#:string ,string))
+           (hex2:address8 (string->label `(#:string ,string))))
+          ((#:address8 (#:address ,address)) (guard (string? address))
+           (hex2:address8 address))
+          ((#:address8 (#:address ,global)) (guard (global? global))
+           (hex2:address8 (global->string global)))
+          ((#:address8 ,function) (guard (function? function))
+           (hex2:address8 (function->string function)))
+          ((#:address8 ,number) (guard (number? number))
+           (string-join (map text->M1 (int->bv64 number))))
+
           ((#:string ,string)
            (hex2:address (string->label o)))
-          ((#:address ,address) (guard (string? address)) (hex2:address address))
+
+          ((#:address ,address) (guard (string? address))
+           (hex2:address address))
           ((#:address ,global) (guard (global? global))
            (hex2:address (global->string global)))
+
+          ((#:address8 ,address) (guard (string? address))
+           (hex2:address8 address))
+          ((#:address8 ,global) (guard (global? global))
+           (hex2:address8 (global->string global)))
+
           ((#:offset ,offset) (hex2:offset offset))
           ((#:offset1 ,offset1) (hex2:offset1 offset1))
           ((#:immediate ,immediate) (hex2:immediate immediate))
           ((#:immediate1 ,immediate1) (hex2:immediate1 immediate1))
           ((#:immediate2 ,immediate2) (hex2:immediate2 immediate2))
           ((#:immediate4 ,immediate4) (hex2:immediate4 immediate4))
+          ((#:immediate8 ,immediate8) (hex2:immediate8 immediate8))
           (_ (error "text->M1 no match o" o))))
        ((pair? o) (string-join (map text->M1 o)))))
     (define (write-function o)

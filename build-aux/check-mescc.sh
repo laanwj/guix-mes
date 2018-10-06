@@ -78,6 +78,9 @@ t
 17-compare-unsigned-gt
 17-compare-unsigned-le
 17-compare-unsigned-lt
+17-compare-unsigned-char-le
+17-compare-unsigned-short-le
+17-compare-unsigned-long-le
 17-compare-and
 17-compare-or
 17-compare-and-or
@@ -218,9 +221,12 @@ t
 99-readdir
 a0-call-trunc-char
 a0-call-trunc-short
+a0-call-trunc-int
 "
 
 broken="$broken
+17-compare-unsigned-char-le
+17-compare-unsigned-short-le
 66-local-char-array
 "
 

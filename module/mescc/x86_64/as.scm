@@ -76,13 +76,17 @@
 (define (x86_64:r->local info n)
   (let ((r (get-r info))
         (n (- 0 (* 8 n))))
-    `(,(if (< (abs n) #x80) `(,(string-append "mov____%" r ",0x8(%rbp)") (#:immediate1 ,n))
+    `(,(if (< (abs n) #x80)
+           `(,(string-append "mov____%" r ",0x8(%rbp)") (#:immediate1 ,n))
            `(,(string-append "mov____%" r ",0x32(%rbp)") (#:immediate ,n))))))
 
 (define (x86_64:value->r info v)
   (or v (error "invalid value: x86_64:value->r: " v))
   (let ((r (get-r info)))
-    `((,(string-append "mov____$i32,%" r) (#:immediate ,v)))))
+    (if (and (>= v 0)
+             (< v #xffffffff))
+     `((,(string-append "mov____$i32,%" r) (#:immediate ,v)))
+     `((,(string-append "mov____$i64,%" r) (#:immediate8 ,v))))))
 
 ;; AMD
 (define (x86_64:ret . rest)
@@ -122,7 +126,9 @@
 
 (define (x86_64:label->arg info label i)
   (let ((r0 (list-ref x86_64:registers (1+ i))))
-    `((,(string-append "mov____$i32,%" r0) (#:address ,label))))) ;; FIXME: 64 bits
+    (if (< (label v) #x80000000)
+        `((,(string-append "mov____$i32,%" r0) (#:address ,label)))
+        `((,(string-append "mov____$i64,%" r0) (#:address8 ,label))))))
 
 ;; traditional
 (define (x86_64:r->arg info i)
@@ -131,6 +137,11 @@
 
 (define (x86_64:label->arg info label i)
   `(("push___$i32" (#:address ,label))))
+
+;; FIXME?
+;; (define (x86_64:label->arg info label i)
+;;   `((,(string-append "mov____$i64,%r15") (#:address8 ,label))
+;;     ("push___%r15" (#:address ,label))))
 
 (define (x86_64:r0+r1 info)
   (let ((r1 (get-r1 info))
@@ -168,7 +179,7 @@
 (define (x86_64:r-mem-add info v)
   (let ((r (get-r info)))
     `(,(if (< (abs v) #x80) `(,(string-append "add____$i8,(%" r ")") (#:immediate1 ,v))
-           `(,(string-append "add____$i32,(%" r ")") (#:immediate ,v))))))
+           `(,(string-append "add____$i32,(%" r ")") (#:immediate ,v)))))) ;; FIXME 64bit
 
 (define (x86_64:r-byte-mem-add info v)
   (let ((r (get-r info)))
@@ -183,11 +194,11 @@
     (let ((n (- 0 (* 8 n))))
       `((,(string-append "mov____%rbp,%" r))
         ,(if (< (abs n) #x80) `(,(string-append "add____$i8,%" r) (#:immediate1 ,n))
-             `(,(string-append "add____$i32,%" r)  (#:immediate ,n)))))))
+             `(,(string-append "add____$i32,%" r)  (#:immediate ,n))))))) ;; FIXME 64bit
 
 (define (x86_64:label->r info label)
   (let ((r (get-r info)))
-    `((,(string-append "mov____$i32,%" r) (#:address ,label)))))
+    `((,(string-append "mov____$i64,%" r) (#:address8 ,label)))))
 
 (define (x86_64:r0->r1 info)
   (let ((r0 (get-r0 info))
@@ -293,11 +304,11 @@
   (let ((n (- 0 (* 8 n))))
     `(,(if (and (< (abs n) #x80)
                 (< (abs v) #x80)) `("add____$i8,0x8(%rbp)" (#:immediate1 ,n) (#:immediate1 ,v))
-                `("add____$i32,0x32(%rbp)" (#:immediate ,n) (#:immediate ,v))))))
+                `("add____$i32,0x32(%rbp)" (#:immediate ,n) (#:immediate ,v)))))) ;; FIXME: 64b
 
 (define (x86_64:label-mem-add info label v)
   `(,(if (< (abs v) #x80) `("add____$i8,0x32" (#:address ,label) (#:immediate1 ,v))
-         `("add____$i32,0x32" (#:address ,label) (#:immediate ,v)))))
+         `("add____$i32,0x32" (#:address ,label) (#:immediate ,v))))) ;; FIXME: 64b
 
 (define (x86_64:nop info)
   '(("nop")))
@@ -460,8 +471,13 @@
 
 (define (x86_64:r+value info v)
   (let ((r (get-r info)))
-    `(,(if (< (abs v) #x80) `(,(string-append "add____$i8,%" r) (#:immediate1 ,v))
-           `(,(string-append "add____$i32,%" r) (#:immediate ,v))))))
+    (cond ((< (abs v) #x80)
+           `((,(string-append "add____$i8,%" r) (#:immediate1 ,v))))
+          ((< (abs v) #x80000000)
+           `((,(string-append "add____$i32,%" r) (#:immediate ,v))))
+          (else
+           `((,(string-append "mov____$i64,%r15") (#:immediate8 ,v))
+             (,(string-append "add____%r15,%" r)))))))
 
 (define (x86_64:r0->r1-mem info)
   (let ((r0 (get-r0 info))
@@ -488,8 +504,14 @@
 
 (define (x86_64:r-cmp-value info v)
   (let ((r (get-r info)))
-    `(,(if (< (abs v) #x80) `(,(string-append "cmp____$i8,%" r) (#:immediate1 ,v))
-           `(,(string-append "cmp____$i32,%" r) (#:immediate ,v))))))
+    (cond ((< (abs v) #x80)
+           `((,(string-append "cmp____$i8,%" r) (#:immediate1 ,v))))
+          ((and (>= v 0)
+                (< v #xffffffff))
+           `((,(string-append "cmp____$i32,%" r) (#:immediate ,v))))
+          (else
+           `(,(string-append "mov____$i64,%r15") (#:immediate8 ,v)
+             ,(string-append "cmp____%r15,%" r))))))
 
 (define (x86_64:push-register info r)
   `((,(string-append "push___%" r))))
@@ -535,7 +557,7 @@
 (define (x86_64:r0+value info v)
   (let ((r0 (get-r0 info)))
     `(,(if (< (abs v) #x80) `(,(string-append "add____$i8,%" r0) (#:immediate1 ,v))
-           `(,(string-append "add____$i32,%" r0) (#:immediate ,v))))))
+           `(,(string-append "add____$i32,%" r0) (#:immediate ,v)))))) ; FIXME: 64bit
 
 (define (x86_64:value->r0 info v)
   (let ((r0 (get-r0 info)))
@@ -543,8 +565,14 @@
 
 (define (x86_64:r-long-mem-add info v)
   (let ((r (get-r info)))
-    `(,(if (< (abs v) #x80) `(,(string-append "addl___$i8,(%" r ")") (#:immediate1 ,v))
-           `(,(string-append "addl___$i32,(%" r ")") (#:immediate ,v))))))
+    (cond  ((< (abs v) #x80)
+            `((,(string-append "addl___$i8,(%" r ")") (#:immediate1 ,v))))
+           ((and (>= v 0)
+                 (< v #xffffffff))
+            `((,(string-append "addl___$i32,(%" r ")") (#:immediate ,v))))
+           (else
+            `((,(string-append "mov____$i64,%r15") (#:immediate8 ,v))
+              (,(string-append "add____%r15,(%" r ")")))))))
 
 (define (x86_64:byte-r->local+n info id n)
   (let* ((n (+ (- 0 (* 8 id)) n))
@@ -569,7 +597,11 @@
 
 (define (x86_64:r-and info v)
   (let ((r (get-r info)))
-    `((,(string-append "and____$i32,%" r) (#:immediate ,v)))))
+    (if (and (>= v 0)
+             (< v #xffffffff))
+        `((,(string-append "and____$i32,%" r) (#:immediate ,v)))
+        `((,(string-append "mov____$i64,%r15") (#:immediate8 ,v))
+          (,(string-append "and____%r15,%" r))))))
 
 (define (x86_64:push-r0 info)
   (let ((r0 (get-r0 info)))

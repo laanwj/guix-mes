@@ -17,8 +17,8 @@
 ### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 # reduced instruction set: rax, rdi (some rcx for shift, rdx for mul, div)
-# 184 instructions
-# TODO: $i64/$0x64 instructions are missing
+# and r10 as i64 immediate helper
+# 202 instructions
 DEFINE add____$i32,%rax 4805
 DEFINE add____$i32,%rbp 4881c5
 DEFINE add____$i32,%rdi 4881c7
@@ -30,6 +30,8 @@ DEFINE add____$i8,%rsp 4883c4
 DEFINE add____$i8,(%rax) 8300
 DEFINE add____$i8,(%rdi) 8307
 DEFINE add____$i8,0x8(%rbp) 8345
+DEFINE add____%r15,(%rax) 4c0138
+DEFINE add____%r15,(%rdi) 4c013f
 DEFINE add____%rax,%rax 4801c0
 DEFINE add____%rbp,%rax 4801e8
 DEFINE add____%rdi,%rax 4801f8
@@ -43,12 +45,16 @@ DEFINE addl___$i8,(%rdi) 8307
 DEFINE addw___$i8,(%rax) 668100
 DEFINE addw___$i8,(%rdi) 668107
 DEFINE and____$i32,%rdi 4881e7
+DEFINE and____%r15,%rax 4c21f8
+DEFINE and____%r15,%rdi 4c21ff
 DEFINE and____%rdi,%rax 4821f8
 DEFINE call32 e8
 DEFINE call___*%rax ffd0
 DEFINE call___*%rdi ffd7
 DEFINE cmp____$i32,%rax 483d
 DEFINE cmp____$i8,%rax 4883f8
+DEFINE cmp____%r15,%rax 4c39f8
+DEFINE cmp____%r15,%rdi 4c39ff
 DEFINE hlt f4
 DEFINE idiv___%rdi 48f7ff
 DEFINE ja32  0f87
@@ -68,17 +74,24 @@ DEFINE lahf 9f
 DEFINE mov____$i32,%rax 48c7c0
 DEFINE mov____$i32,%rdi 48c7c7
 DEFINE mov____$i32,0x8(%rbp) c745
+DEFINE mov____$i64,%r15 49bf
 DEFINE mov____$i64,%rax 48a1
 DEFINE mov____$i64,%rax 48b8
+DEFINE mov____$i64,%rax 48b8
+DEFINE mov____$i64,%rdi 48bf
 DEFINE mov____%al,(%rdi) 8807
 DEFINE mov____%al,0x32(%rbp) 8885
 DEFINE mov____%al,0x8(%rbp) 8845
 DEFINE mov____%ax,(%rdi) 668907
 DEFINE mov____%ax,0x8(%rbp) 668945
+DEFINE mov____%eax,%eax 89c0
+DEFINE mov____%eax,%rax 89c0
 DEFINE mov____%eax,(%rdi) 8907
 DEFINE mov____%eax,0x32(%rbp)  8985
 DEFINE mov____%eax,0x8(%rbp) 8945
 DEFINE mov____%eax,0x8(%rbp) 8945
+DEFINE mov____%edi,%edi 89ff
+DEFINE mov____%edi,%rdi 89ff
 DEFINE mov____%edi,0x32(%rbp) 89bd
 DEFINE mov____%edi,0x8(%rbp) 897d
 DEFINE mov____%esi,%eax 89f0
@@ -145,8 +158,12 @@ DEFINE movzbq_%al,%rax 480fb6c0
 DEFINE movzbq_%dil,%rdi 480fb6ff
 DEFINE movzbq_(%rax),%rax 480fb600
 DEFINE movzbq_(%rdi),%rdi 480fb63f
+DEFINE movzlq_%eax,%rax 89c0
+DEFINE movzlq_%edi,%rdi 89ff
 DEFINE movzlq_(%rax),%rax 8b00
 DEFINE movzlq_(%rdi),%rdi 8b3f
+DEFINE movzwq_%ax,%rax 480fb7c0
+DEFINE movzwq_%di,%rdi 480fb7ff
 DEFINE movzwq_(%rax),%rax 480fb700
 DEFINE movzwq_(%rdi),%rdi 480fb73f
 DEFINE mul____%rdi 48f7e7
@@ -159,6 +176,7 @@ DEFINE pop____%rbp 5d
 DEFINE pop____%rdi 5f
 DEFINE pop____%rdx 5a
 DEFINE push___$i32 68
+DEFINE push___%r15 4157
 DEFINE push___%rax 50
 DEFINE push___%rbp 55
 DEFINE push___%rdi 57

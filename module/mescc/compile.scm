@@ -1397,15 +1397,23 @@
         (cond ((and (= size 1) sign)
                (wrap-as (as info 'byte-signed-r)))
               ((= size 1)
-               (wrap-as (as info 'byte-r)))
+               (wrap-as (as info 'byte-r))
+               ;;(wrap-as (as info 'byte-signed-r))
+               )
               ((and (= size 2) sign)
                (wrap-as (as info 'word-signed-r)))
               ((= size 2)
-               (wrap-as (as info 'word-r)))
+               (wrap-as (as info 'word-r))
+               ;;(wrap-as (as info 'word-signed-r))
+               )
               ((and (> reg-size 4) (= size 4) sign)
                (wrap-as (as info 'long-signed-r)))
               ((and (> reg-size 4) (= size 4))
-               (wrap-as (as info 'long-signed-r)))
+               ;; for 17-unsigned-le
+               (wrap-as (as info 'long-signed-r))  ; huh, why not long-r?
+               ;; for a0-call-trunc-int
+               ;;(wrap-as (as info 'long-r))
+               )
               (else '())))))
 
 (define (binop->r info)

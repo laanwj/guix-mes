@@ -31,7 +31,7 @@
 (define (x86_64-info)
   (make <info> #:types x86_64:type-alist #:registers x86_64:registers #:instructions x86_64:instructions))
 
-(define x86_64:registers '("rax" "rdi" "rsi" "rdx" "rcx" "r8" "r9"))
+(define x86_64:registers '("rax" "rdi" "rsi" "rdx" "rcx" "r8" "r9" "r10" "r11" "r12" "r13" "r14" "r15"))
 (define x86_64:type-alist
   `(("char" . ,(make-type 'signed 1 #f))
     ("short" . ,(make-type 'signed 2 #f))
