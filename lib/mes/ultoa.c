@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -21,7 +21,7 @@
 #include <libmes.h>
 
 char const*
-utoa (unsigned x)
+ultoa (unsigned long x)
 {
-  return ntoab (x, 10, 0);
+  return ntoab (x, 10, 1);
 }

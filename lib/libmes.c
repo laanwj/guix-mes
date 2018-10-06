@@ -34,6 +34,7 @@
 #include <mes/ltoab.c>
 #include <mes/itoa.c>
 #include <mes/ltoa.c>
+#include <mes/ultoa.c>
 #include <mes/utoa.c>
 #include <mes/fdgetc.c>
 #include <mes/fdputc.c>
