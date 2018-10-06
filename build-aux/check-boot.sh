@@ -45,6 +45,7 @@ tests="
 
 10-cons.scm
 11-list.scm
+11-vector.scm
 12-car.scm
 13-cdr.scm
 14-exit.scm
