@@ -53,4 +53,6 @@ if [ -n "$TCC" ]; then
 fi
 
 sh ${srcdest}build-aux/build-mes.sh
-sh ${srcdest}build-aux/build-x86_64-mes.sh
+if [ "$MES" = guile ]; then
+    sh ${srcdest}build-aux/build-x86_64-mes.sh
+fi
