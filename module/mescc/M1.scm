@@ -35,14 +35,15 @@
             infos->M1
             M1:merge-infos))
 
-(define (infos->M1 file-name infos)
+(define* (infos->M1 file-name infos #:key align?)
   (let ((info (fold M1:merge-infos (make <info>) infos)))
-    (info->M1 file-name info)))
+    (info->M1 file-name info #:align? align?)))
 
 (define (M1:merge-infos o info)
   (clone info
          #:functions (alist-add (.functions info) (.functions o))
-         #:globals (alist-add (.globals info) (.globals o))))
+         #:globals (alist-add (.globals info) (.globals o))
+         #:types (.types o)))
 
 (define (alist-add a b)
   (let* ((b-keys (map car b))
@@ -96,12 +97,13 @@
           (display sep))
       (loop (cdr o)))))
 
-(define (info->M1 file-name o)
+(define* (info->M1 file-name o #:key align?)
   (let* ((functions (.functions o))
          (function-names (map car functions))
          (globals (.globals o))
          (global-names (map car globals))
-         (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names)))
+         (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names))
+         (reg-size (type:size (assoc-ref (.types o) "*"))))
     (define (string->label o)
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
         (if index
@@ -194,10 +196,11 @@
                     ((equal? string-label "%0") o) ;; FIXME: 64b
                     (else (string-append "&" label))))))
       (define (display-align size)
-        (let ((alignment (- 4 (modulo size 4))))
-          (when (> 4 alignment 0)
+        (let ((alignment (- reg-size (modulo size reg-size))))
+          (when (and align? (> reg-size alignment 0))
             (display " ")
-            (display-join (map text->M1 (map (const 0) (iota alignment))) " "))))
+            (display-join (map text->M1 (map (const 0) (iota alignment))) " "))
+          #t))
       (let* ((label (cond
                      ((and (pair? (car o)) (eq? (caar o) #:string))
                       (string->label (car o)))

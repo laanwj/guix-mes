@@ -72,7 +72,8 @@ fi
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((assemble (single-char #\c))
+          '((align)
+            (assemble (single-char #\c))
             (base-address (value #t))
             (compile (single-char #\S))
             (define (single-char #\D) (value #t))
@@ -98,6 +99,7 @@ fi
      (and (or help? usage?)
           (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
+  --align            align globals
   -c                 preprocess, compile and assemble only; do not link
   --base-address=ADRRESS
                      use BaseAddress ADDRESS [0x1000000]

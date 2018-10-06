@@ -299,6 +299,16 @@
   (let ((r (get-r info)))
     `((,(string-append "mov____%" r ",0x32") (#:address ,label)))))
 
+(define (i386:r->byte-label info label)
+  (let* ((r (get-r info))
+         (l (e->l r)))
+    `((,(string-append "movb___%" l ",0x32") (#:address ,label)))))
+
+(define (i386:r->word-label info label)
+  (let* ((r (get-r info))
+        (x (e->x r)))
+    `((,(string-append "movw___%" x ",0x32") (#:address ,label)))))
+
 (define (i386:call-r info n)
   (let ((r (get-r info)))
     `((,(string-append "call___*%" r))
@@ -567,9 +577,11 @@
     (r+r . ,i386:r+r)
     (r+value . ,i386:r+value)
     (r->arg . ,i386:r->arg)
+    (r->byte-label . ,i386:r->byte-label)
     (r->label . ,i386:r->label)
     (r->local . ,i386:r->local)
     (r->local+n . ,i386:r->local+n)
+    (r->word-label . ,i386:r->word-label)
     (r-and . ,i386:r-and)
     (r-byte-mem-add . ,i386:r-byte-mem-add)
     (r-cmp-value . ,i386:r-cmp-value)

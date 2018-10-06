@@ -222,12 +222,15 @@ t
 a0-call-trunc-char
 a0-call-trunc-short
 a0-call-trunc-int
+a1-global-no-align
+a1-global-no-clobber
 "
 
 broken="$broken
 17-compare-unsigned-char-le
 17-compare-unsigned-short-le
 66-local-char-array
+a0-call-trunc-int
 "
 
 # gcc not supported

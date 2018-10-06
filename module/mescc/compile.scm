@@ -61,7 +61,8 @@
 (define (clean-info o)
   (make <info>
     #:functions (filter (compose pair? function:text cdr) (.functions o))
-    #:globals (.globals o)))
+    #:globals (.globals o)
+    #:types (.types o)))
 
 (define (ident->constant name value)
   (cons name value))
@@ -520,14 +521,26 @@
                              (wrap-as (as info 'r->local (local:id local))))))
           ((assoc-ref (.statics info) o)
            =>
-           (lambda (global) (let ((size (->size global info))
-                                  (r-size (->size "*" info)))
-                              (wrap-as (as info 'r->label global)) )))
+           (lambda (global) (let* ((size (->size global info))
+                                   (reg-size (->size "*" info))
+                                   (size (if (= size reg-size) 0 size)))
+                              (case size
+                                ((0) (wrap-as (as info 'r->label global)))
+                                ((1) (wrap-as (as info 'r->byte-label global)))
+                                ((2) (wrap-as (as info 'r->word-label global)))
+                                ((4) (wrap-as (as info 'r->long-label global)))
+                                (else (wrap-as (as info 'r->label global)))))))
           ((assoc-ref (filter (negate static-global?) (.globals info)) o)
            =>
-           (lambda (global) (let ((size (->size global info))
-                                  (r-size (->size "*" info)))
-                              (wrap-as (as info 'r->label global))))))))
+           (lambda (global) (let* ((size (->size global info))
+                                   (reg-size (->size "*" info))
+                                   (size (if (= size reg-size) 0 size)))
+                              (case size
+                                ((0) (wrap-as (as info 'r->label global)))
+                                ((1) (wrap-as (as info 'r->byte-label global)))
+                                ((2) (wrap-as (as info 'r->word-label global)))
+                                ((4) (wrap-as (as info 'r->long-label global)))
+                                (else (wrap-as (as info 'r->label global))))))))))
 
 (define (ident-add info)
   (lambda (o n)
@@ -536,12 +549,28 @@
            (lambda (local) (wrap-as (as info 'local-add (local:id local) n))))
           ((assoc-ref (.statics info) o)
            =>
-           (lambda (global) (wrap-as (append
-                                      (as info 'label-mem-add `(#:address ,o) n)))))
+           (lambda (global)
+             (let* ((size (->size global info))
+                    (reg-size (->size "*" info))
+                    (size (if (= size reg-size) 0 size)))
+               (case size
+                 ((0) (wrap-as (as info 'label-mem-add `(#:address ,o) n)))
+                 ((1) (wrap-as (as info 'byte-label-mem-add `(#:address ,o) n)))
+                 ((2) (wrap-as (as info 'word-label-mem-add `(#:address ,o) n)))
+                 ((4) (wrap-as (as info 'long-mem-add `(#:address ,o) n)))
+                 (else (as info 'label-mem-add `(#:address ,o) n))))))
           ((assoc-ref (filter (negate static-global?) (.globals info)) o)
            =>
-           (lambda (global) (wrap-as (append
-                                      (as info 'label-mem-add `(#:address ,global) n))))))))
+           (lambda (global)
+             (let* ((size (->size global info))
+                    (reg-size (->size "*" info))
+                    (size (if (= size reg-size) 0 size)))
+               (case size
+                 ((0) (wrap-as (as info 'label-mem-add `(#:address ,o) n)))
+                 ((1) (wrap-as (as info 'byte-label-mem-add `(#:address ,o) n)))
+                 ((2) (wrap-as (as info 'word-label-mem-add `(#:address ,o) n)))
+                 ((4) (wrap-as (as info 'long-mem-add `(#:address ,o) n)))
+                 (else (as info 'label-mem-add `(#:address ,o) n)))))))))
 
 (define (make-comment o)
   (wrap-as `((#:comment ,o))))

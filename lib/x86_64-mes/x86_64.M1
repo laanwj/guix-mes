@@ -18,7 +18,8 @@
 
 # reduced instruction set: rax, rdi (some rcx for shift, rdx for mul, div)
 # and r10 as i64 immediate helper
-# 202 instructions
+# 206 instructions
+
 DEFINE add____$i32,%rax 4805
 DEFINE add____$i32,%rbp 4881c5
 DEFINE add____$i32,%rdi 4881c7
@@ -141,6 +142,8 @@ DEFINE mov____0x8(%rbp),%rsp 488b65
 DEFINE mov____0x8(%rdi),%rax 488b47
 DEFINE mov____0x8(%rdi),%rbp 488b6f
 DEFINE mov____0x8(%rdi),%rsp 488b67
+DEFINE movl___%eax,0x32 890425
+DEFINE movl___%edi,0x32 893c25
 DEFINE movsbq_%al,%rax 480fbec0
 DEFINE movsbq_%dil,%rdi 480fbeff
 DEFINE movsbq_(%rax),%rax 480fbe00
@@ -153,6 +156,8 @@ DEFINE movswq_%ax,%rax 480fbfc0
 DEFINE movswq_%di,%rdi 480fbfff
 DEFINE movswq_(%rax),%rax 480fbf00
 DEFINE movswq_(%rdi),%rdi 480fbf3f
+DEFINE movw___%ax,0x32 66890425
+DEFINE movw___%di,0x32 66893c25
 DEFINE movz___(%rax),%rax 480fb600
 DEFINE movzbq_%al,%rax 480fb6c0
 DEFINE movzbq_%dil,%rdi 480fb6ff

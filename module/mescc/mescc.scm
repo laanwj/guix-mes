@@ -69,11 +69,12 @@
                                    (option-ref options 'output #f)))
                              (else (replace-suffix input-file-name ".S"))))
          (infos (map (cut file->info options <>) files))
-         (verbose? (option-ref options 'verbose #f)))
+         (verbose? (option-ref options 'verbose #f))
+         (align? (option-ref options 'align #f)))
     (when verbose?
       (stderr "dumping: ~a\n" M1-file-name))
     (with-output-to-file M1-file-name
-      (cut infos->M1 M1-file-name infos))
+      (cut infos->M1 M1-file-name infos #:align? align?))
     M1-file-name))
 
 (define (file->info options file-name)
@@ -153,11 +154,12 @@
          (M1-file-name (replace-suffix hex2-file-name ".S"))
          (options (acons 'compile #t options)) ; ugh
          (options (acons 'output hex2-file-name options))
-         (verbose? (option-ref options 'verbose #f)))
+         (verbose? (option-ref options 'verbose #f))
+         (align? (option-ref options 'align #f)))
     (when verbose?
       (stderr "dumping: ~a\n" M1-file-name))
     (with-output-to-file M1-file-name
-      (cut infos->M1 M1-file-name infos))
+      (cut infos->M1 M1-file-name infos #:align? align?))
     (or (M1->hex2 options (list M1-file-name))
         (exit 1))))
 

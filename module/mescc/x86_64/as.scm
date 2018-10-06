@@ -376,6 +376,21 @@
   (let ((r (get-r info)))
     `((,(string-append "mov____%" r ",0x32") (#:address ,label))))) ;; FIXME: 64 bits
 
+(define (x86_64:r->byte-label info label)
+  (let* ((r (get-r info))
+         (l (r->l r)))
+    `((,(string-append "movb___%" l ",0x32") (#:address ,label)))))
+
+(define (x86_64:r->word-label info label)
+  (let* ((r (get-r info))
+        (x (r->x r)))
+    `((,(string-append "movw___%" x ",0x32") (#:address ,label)))))
+
+(define (x86_64:r->long-label info label)
+  (let* ((r (get-r info))
+        (e (r->e r)))
+    `((,(string-append "movl___%" e ",0x32") (#:address ,label)))))
+
 (define (x86_64:call-r info n)
   (let ((r (get-r info)))
     `((,(string-append "call___*%" r))
@@ -635,7 +650,6 @@
 
 (define x86_64:instructions
   `(
-    (r2->r0 . ,x86_64:r2->r0)
     (a?->r . ,x86_64:a?->r)
     (ae?->r . ,x86_64:ae?->r)
     (b?->r . ,x86_64:b?->r)
@@ -689,9 +703,12 @@
     (r+r . ,x86_64:r+r)
     (r+value . ,x86_64:r+value)
     (r->arg . ,x86_64:r->arg)
+    (r->byte-label . ,x86_64:r->byte-label)
     (r->label . ,x86_64:r->label)
     (r->local . ,x86_64:r->local)
     (r->local+n . ,x86_64:r->local+n)
+    (r->long-label . ,x86_64:r->long-label)
+    (r->word-label . ,x86_64:r->word-label)
     (r-and . ,x86_64:r-and)
     (r-byte-mem-add . ,x86_64:r-byte-mem-add)
     (r-cmp-value . ,x86_64:r-cmp-value)
@@ -715,6 +732,7 @@
     (r0<<r1 . ,x86_64:r0<<r1)
     (r0>>r1 . ,x86_64:r0>>r1)
     (r1->r0 . ,x86_64:r1->r0)
+    (r2->r0 . ,x86_64:r2->r0)
     (ret . ,x86_64:ret)
     (return->r . ,x86_64:return->r)
     (shl-r . ,x86_64:shl-r)
