@@ -27,6 +27,7 @@ int __mes_debug ();
 long abtol (char const** p, int base);
 char const* ntoab (long number, int base, int signed_p);
 char const* itoa (int number);
+char const* ltoa (long number);
 char const* utoa (unsigned long number);
 char const* ltoab (long x, int base);
 int atoi (char const *s);
