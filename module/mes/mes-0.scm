@@ -48,4 +48,4 @@
 (define EOF (if #f #f))
 (define append2 append)
 (define %arch (car (string-split %host-type #\-)))
-(define %compiler "gcc")
+(define %compiler "gnuc")
