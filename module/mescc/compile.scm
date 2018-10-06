@@ -1400,7 +1400,7 @@
                (wrap-as (as info 'byte-r)))
               ((and (= size 2) sign)
                (wrap-as (as info 'word-signed-r)))
-              ((= size 1)
+              ((= size 2)
                (wrap-as (as info 'word-r)))
               ((and (> reg-size 4) (= size 4) sign)
                (wrap-as (as info 'long-signed-r)))

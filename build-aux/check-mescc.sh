@@ -216,6 +216,8 @@ t
 97-fopen
 98-fopen
 99-readdir
+a0-call-trunc-char
+a0-call-trunc-short
 "
 
 broken="$broken
