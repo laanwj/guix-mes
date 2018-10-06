@@ -72,7 +72,7 @@ reader_read_identifier_or_number (int c)
 {
   char buf[MAX_STRING];
   int i = 0;
-  int n = 0;
+  long n = 0;
   int negative_p = 0;
   if (c == '+' && isdigit (peekchar ()))
     c = readchar ();
@@ -338,12 +338,12 @@ reader_read_character ()
 SCM
 reader_read_binary ()
 {
-  int n = 0;
+  long n = 0;
   int c = peekchar ();
-  int s = 1;
+  int negative_p = 0;
   if (c == '-')
     {
-      s = -1;
+      negative_p = 1;
       readchar ();
       c = peekchar ();
     }
@@ -354,18 +354,20 @@ reader_read_binary ()
       readchar ();
       c = peekchar ();
     }
-  return MAKE_NUMBER (s*n);
+  if (negative_p)
+    n = 0 - n;
+  return MAKE_NUMBER (n);
 }
 
 SCM
 reader_read_octal ()
 {
-  int n = 0;
+  long n = 0;
   int c = peekchar ();
-  int s = 1;
+  int negative_p = 0;
   if (c == '-')
     {
-      s = -1;
+      negative_p = 1;
       readchar ();
       c = peekchar ();
     }
@@ -376,18 +378,20 @@ reader_read_octal ()
       readchar ();
       c = peekchar ();
     }
-  return MAKE_NUMBER (s*n);
+  if (negative_p)
+    n = 0 - n;
+  return MAKE_NUMBER (n);
 }
 
 SCM
 reader_read_hex ()
 {
-  int n = 0;
+  long n = 0;
   int c = peekchar ();
-  int s = 1;
+  int negative_p = 0;
   if (c == '-')
     {
-      s = -1;
+      negative_p = 1;
       readchar ();
       c = peekchar ();
     }
@@ -405,7 +409,9 @@ reader_read_hex ()
       readchar ();
       c = peekchar ();
     }
-  return MAKE_NUMBER (s*n);
+  if (negative_p)
+    n = 0 - n;
+  return MAKE_NUMBER (n);
 }
 
 SCM
