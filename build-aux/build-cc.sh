@@ -23,9 +23,6 @@ set -e
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
 
-# cc64
-LIBC=${LIBC-c}
-
 # native
 trace "SNARF      gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
 trace "SNARF      lib.c"    ${srcdest}build-aux/mes-snarf.scm src/lib.c
@@ -35,39 +32,6 @@ trace "SNARF      posix.c"  ${srcdest}build-aux/mes-snarf.scm src/posix.c
 trace "SNARF      reader.c" ${srcdest}build-aux/mes-snarf.scm src/reader.c
 trace "SNARF      vector.c" ${srcdest}build-aux/mes-snarf.scm src/vector.c
 
-# cc64-mes
-trace "SNARF.mes  gc.c"     ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
-trace "SNARF.mes  lib.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
-trace "SNARF.mes  math.c"   ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
-trace "SNARF.mes  mes.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
-trace "SNARF.mes  posix.c"  ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
-trace "SNARF.mes  reader.c" ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
-trace "SNARF.mes  vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
-
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc.sh lib/libmes
 sh ${srcdest}build-aux/cc.sh src/mes
-
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crt0
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crt1
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crti
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crtn
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc-mini
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc+tcc
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libtcc1
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libc+gnu
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libg
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/libgetopt
-
-LIBC= sh ${srcdest}build-aux/cc64-mes.sh scaffold/main
-LIBC=c-mini sh ${srcdest}build-aux/cc64-mes.sh scaffold/hello
-LIBC=c-mini sh ${srcdest}build-aux/cc64-mes.sh scaffold/argv
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/read
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/malloc
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/micro-mes
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/tiny-mes
-# sh ${srcdest}build-aux/cc64-mes.sh scaffold/cons-mes
-sh ${srcdest}build-aux/cc64-mes.sh scaffold/mini-mes
-
-sh ${srcdest}build-aux/cc64-mes.sh src/mes
 cp src/mes.gcc-out src/mes

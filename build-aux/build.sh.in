@@ -44,6 +44,10 @@ if [ -n "$CC32" ]; then
     sh ${srcdest}build-aux/build-cc32.sh
 fi
 
+if [ -n "$CC64" ]; then
+    sh ${srcdest}build-aux/build-cc64.sh
+fi
+
 if [ -n "$TCC" ]; then
     CC32=$TCC sh ${srcdest}build-aux/build-cc32.sh
 fi

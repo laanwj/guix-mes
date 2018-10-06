@@ -90,6 +90,9 @@ gcc:
 mes-gcc:
 	${srcdest}build-aux/build-cc32.sh
 
+x86_64-mes-gcc:
+	${srcdest}build-aux/build-cc64.sh
+
 mes-tcc:
 ifdef TCC
 	CC32=$(TCC) ${srcdest}build-aux/build-cc32.sh

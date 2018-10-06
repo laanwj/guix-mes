@@ -133,13 +133,13 @@ ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/libgetopt
 [ -n "$SEED" ] && exit 0
 
 MES_ARENA=${MES_ARENA-100000000}
-trace "MSNARF gc.c"     ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
-trace "MSNARF lib.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
-trace "MSNARF math.c"   ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
-trace "MSNARF mes.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
-trace "MSNARF posix.c"  ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
-trace "MSNARF reader.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
-trace "MSNARF vector.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
+trace "SNARF.mes  gc.c"     ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
+trace "SNARF.mes  lib.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
+trace "SNARF.mes  math.c"   ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
+trace "SNARF.mes  mes.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
+trace "SNARF.mes  posix.c"  ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
+trace "SNARF.mes  reader.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
+trace "SNARF.mes  vector.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
 
 echo MES_ARENA=$MES_ARENA
 bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/main
@@ -153,9 +153,9 @@ trace "TEST       scaffold/main.x86_64-mes-out" echo scaffold/main.x86_64-mes-ou
 MES_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/hello
 MES_LIBS='-l c-mini' bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/argv
 bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/malloc
-##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/micro-mes
-##sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/tiny-mes
-# bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/mini-mes
+sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/micro-mes
+sh ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/tiny-mes
+bash ${srcdest}build-aux/cc-x86_64-mes.sh scaffold/mini-mes
 bash ${srcdest}build-aux/cc-x86_64-mes.sh src/mes
 # not yet, broken
 # cp src/mes.x86_64-mes-out src/mes
