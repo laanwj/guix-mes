@@ -18,7 +18,7 @@
 
 # reduced instruction set: rax, rdi (some rcx for shift, rdx for mul, div)
 # and r10 as i64 immediate helper
-# 211 instructions
+# 212 instructions
 
 DEFINE add____$i32,%rax 4805
 DEFINE add____$i32,%rbp 4881c5
@@ -57,6 +57,7 @@ DEFINE cmp____$i8,%rax 4883f8
 DEFINE cmp____%r15,%rax 4c39f8
 DEFINE cmp____%r15,%rdi 4c39ff
 DEFINE cqto 4899
+DEFINE div___%rdi 48f7f7
 DEFINE hlt f4
 DEFINE idiv___%rdi 48f7ff
 DEFINE ja32  0f87

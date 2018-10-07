@@ -17,7 +17,7 @@
 ### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 # reduced instruction set: eax, ebx (some ecx for shift, edx for mul, div)
-# 191 instructions
+# 193 instructions
 
 DEFINE add____$i32,%eax 05
 DEFINE add____$i32,%ebx 81c3
@@ -53,6 +53,7 @@ DEFINE cltd 99
 DEFINE cmp____$0x32,%eax 3d
 DEFINE cmp____$i32,%eax 3d
 DEFINE cmp____$i8,%eax 83f8
+DEFINE div___%ebx f7f3
 DEFINE hlt f4
 DEFINE idiv___%ebx f7fb
 DEFINE int cd
