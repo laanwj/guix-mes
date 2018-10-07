@@ -127,7 +127,7 @@ hex2 linker.")
                 (uri (string-append
                       "https://ftp.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
                 (sha256
-                 (base32 #!mes!# "02g8zig53ffd0ai8kqhv2zj7bj2366a8hr6ydkwakmi2d1amyrna"))))
+                 (base32 #!mes!# "1dsaaqyanzsq9m5wrcd2bjhb3qd6928c9q97rg5r730pyqjwxyxf"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
