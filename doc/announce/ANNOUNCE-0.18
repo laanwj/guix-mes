@@ -1,5 +1,5 @@
 
-Subject: mes-0.18 released
+Subject: GNU Mes 0.18 released
 
 <#secure method=pgpmime mode=sign>
 We are pleased to announce the release of GNU Mes 0.18, representing
@@ -9,8 +9,8 @@ Mes is now bringing a Reduced Binary Seed bootstrap to GuixSD; the
 size of bootstrap binaries has been halved and no regular toolchain
 binaries are used as binary seeds (i686-linux and x86_64-linux only).
 
-MesCC has been refactored to support use an abstracted assembly
-language and can now (cross-)build x86_64 binaries.
+MesCC has been refactored to use an abstracted assembly language and
+can now (cross-)build x86_64 binaries.
 
 Next targets:
 
