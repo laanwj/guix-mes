@@ -144,7 +144,6 @@ DEFINE movzbl_0x8(%eax),%eax 0fb640
 DEFINE movzbl_0x8(%ebp),%eax 0fb645
 DEFINE movzwl_%ax,%eax 0fb7c0
 DEFINE movzwl_%bx,%ebx 0fb7db
-DEFINE movzwl_%bx,%ebx 6689db
 DEFINE movzwl_(%eax),%eax 0fb700
 DEFINE movzwl_(%ebx),%ebx 0fb71b
 DEFINE movzwl_0x32(%eax),%eax 0fb780
