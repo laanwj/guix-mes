@@ -107,9 +107,9 @@ fi
 
 PREPROCESS=1
 if [ ! -d "$MES_SEED" ] \
-       && [ "$ARCH" = "i386" \
-            -o "$ARCH" = "i586" \
-            -o "$ARCH" = "i686" ]; then
+       && [ "$arch" = "i386" \
+            -o "$arch" = "i586" \
+            -o "$arch" = "i686" ]; then
     MES_ARENA=100000000
 fi
 

@@ -94,16 +94,21 @@ fi
 
 mkdir -p $DESTDIR$MES_PREFIX
 if [ -z "$srcdest" ]; then
-    tar -cf- include lib | tar -xf- -C $DESTDIR$MES_PREFIX
+    tar -cf- --exclude='*.E' --exclude='*.*-out' include lib | tar -xf- -C $DESTDIR$MES_PREFIX
     tar -cf- --exclude='*.go' module | tar -xf- -C $DESTDIR$MES_PREFIX
     tar -cf- --exclude='*.gcc*' --exclude='*.mes*' scaffold | tar -xf- -C $DESTDIR$MES_PREFIX
 else
     tar -cf- -C ${srcdest} include lib | tar -xf- -C $DESTDIR$MES_PREFIX
-    tar -cf- -C lib | tar -xf- -C $DESTDIR$MES_PREFIX
+    tar -cf- -C lib --exclude='*.E' --exclude='*.*-out' | tar -xf- -C $DESTDIR$MES_PREFIX
     tar -cf- -C ${srcdest} module | tar -xf- -C $DESTDIR$MES_PREFIX
     tar -cf- -C ${srcdest} scaffold | tar -xf- -C $DESTDIR$MES_PREFIX
 fi
 tar -cf- -C ${srcdest}mes module | tar -xf- -C $DESTDIR$MES_PREFIX
+
+cp src/mes.S $DESTDIR$MES_PREFIX/lib/x86-mes/mes.S
+if [ -f src/mes.x86_64-mes-S ]; then
+    cp src/mes.x86_64-mes-S $DESTDIR$MES_PREFIX/lib/x86_64-mes/mes.S
+fi
 
 mkdir -p $DESTDIR$guile_site_dir
 mkdir -p $DESTDIR$guile_site_ccache_dir

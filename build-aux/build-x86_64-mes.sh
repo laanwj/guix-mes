@@ -107,13 +107,6 @@ fi
 
 
 PREPROCESS=1
-if [ ! -d "$MES_SEED" ] \
-       && [ "$ARCH" = "i386" \
-            -o "$ARCH" = "i586" \
-            -o "$ARCH" = "i686" ]; then
-    MES_ARENA=100000000
-fi
-
 MES_ARENA=100000000
 
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-x86_64-mes.sh lib/linux/x86_64-mes/crt1

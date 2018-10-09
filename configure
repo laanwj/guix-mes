@@ -423,7 +423,7 @@ Some influential environment variables:
           (stdout "PACKAGE:=~a\n" PACKAGE)
           (stdout "VERSION:=~a\n" VERSION)
 
-          (stdout "ARCH:=~a\n" arch)
+          (stdout "arch:=~a\n" arch)
           (stdout "build:=~a\n" build-type)
           (stdout "host:=~a\n" host-type)
 
@@ -481,6 +481,7 @@ Some influential environment variables:
                      ("@guile_site_dir@" . ,guile-site-dir)
                      ("@guile_site_ccache_dir@" . ,guile-site-ccache-dir)
                      ("@VERSION@" . ,VERSION)
+                     ("@arch@" . ,arch)
                      ("mes/module/" . ,(string-append moduledir/)))))
         (for-each (lambda (o)
                     (let* ((src (string-append srcdest o))

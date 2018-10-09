@@ -58,6 +58,7 @@ export V
 
 export abs_top_builddir
 export abs_top_srcdir
+export arch
 export datadir
 export moduledir
 export prefix

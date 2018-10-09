@@ -48,8 +48,8 @@ ifdef DESTDIR
 export DESTDIR
 endif
 
-ifdef ARCH
-export ARCH
+ifdef arch
+export arch
 endif
 
 ifdef CC

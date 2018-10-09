@@ -24,6 +24,7 @@ abs_top_srcdir="@abs_top_srcdir@"
 abs_top_builddir="@abs_top_builddir@"
 prefix=${prefix-@prefix@}
 VERSION=${VERSION-@VERSION@}
+arch=${arch-@arch@}
 
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
@@ -53,6 +54,6 @@ if [ -n "$TCC" ]; then
 fi
 
 sh ${srcdest}build-aux/build-mes.sh
-if [ "$MES" = guile ]; then
-    sh ${srcdest}build-aux/build-x86_64-mes.sh
+if [ "$arch" = x86_64 -a "$GUILE" ]; then
+    MES=$GUILE sh ${srcdest}build-aux/build-x86_64-mes.sh
 fi

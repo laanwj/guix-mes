@@ -60,6 +60,7 @@ moduledir=$(eval echo ${moduledir-$datadir/mes/module})
 moduledir_="$moduledir/"
 guile_site_dir=$(eval echo ${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION})
 guile_site_ccache_dir=$(eval echo ${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache})
+arch=$(get_machine || uname -m)
 
 subst () {
     sed \
@@ -74,6 +75,7 @@ subst () {
     -e s,"@guile_site_dir@,$guile_site_dir,"\
     -e s,"@guile_site_ccache_dir@,$guile_site_ccache_dir,"\
     -e s,"@VERSION@,$VERSION,"\
+    -e s,"@arch@,$arch,"\
     -e s,"mes/module/,$moduledir/,"\
     $1 > $2
 }
