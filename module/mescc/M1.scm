@@ -87,7 +87,7 @@
                                      (dec->hex (quotient o #x100000000))))
       (string-append "%" (number->string (dec->hex (modulo o #x100000000)))
                      " %" (if (< o 0) "-1"
-                              (number->string (dec->hex (quoteint o #x100000000)))))))
+                              (number->string (dec->hex (quotient o #x100000000)))))))
 
 (define* (display-join o #:optional (sep ""))
   (let loop ((o o))
