@@ -166,11 +166,34 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       if (TYPE (x) == TPORT)
         fdputs (">", fd);
     }
+  else if (t == TREF)
+    fdisplay_ (REF (x), fd, write_p);
+  else if (t == TSTRUCT)
+    {
+      SCM printer = STRUCT (x) + 1;
+      if (TYPE (printer) == TREF)
+        printer = REF (printer);
+      if (printer != cell_unspecified)
+        apply (printer, cons (x, cell_nil), r0);
+      else
+        {
+          fdputs ("#<", fd);
+          fdisplay_ (STRUCT (x), fd, write_p);
+          SCM t = CAR (x);
+          long size = LENGTH (x);
+          for (long i=2; i<size; i++)
+            {
+              fdputc (' ', fd);
+              fdisplay_ (STRUCT (x) + i, fd, write_p);
+            }
+          fdputc ('>', fd);
+        }
+    }
   else if (t == TVECTOR)
     {
       fdputs ("#(", fd);
       SCM t = CAR (x);
-      for (long i = 0; i < LENGTH (x); i++)
+      for (long i = 0; i<LENGTH (x); i++)
         {
           if (i)
             fdputc (' ', fd);

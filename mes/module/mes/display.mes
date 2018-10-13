@@ -143,6 +143,13 @@
         (if (keyword? x) (display "#:" port))
         (for-each (display-cut2 display-char <> port write?) (string->list x))
         (if (and (string? x) write?) (write-char #\" port)))
+       ((struct? x)
+        (display "#<" port)
+        (for-each (lambda (i)
+                    (let ((x (struct-ref x i)))
+                      (d x #f (if (= i 0) "" " "))))
+                  (iota (struct-length x)))
+        (display ")" port))
        ((vector? x)
         (display "#(" port)
         (for-each (lambda (i)
@@ -215,7 +222,7 @@
                     ((#\s) (write (car args) port))
                     (else (display (car args) port)))
                   (simple-format (cddr lst) (cdr args)))))))
-    
+
     (if destination (simple-format lst rest)
         (with-output-to-string
           (lambda () (simple-format lst rest))))))

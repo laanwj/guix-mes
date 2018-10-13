@@ -69,13 +69,14 @@ CONSTANT TPORT          8
 CONSTANT TREF           9
 CONSTANT TSPECIAL      10
 CONSTANT TSTRING       11
-CONSTANT TSYMBOL       12
-CONSTANT TVALUES       13
-CONSTANT TVARIABLE     14
-CONSTANT TVECTOR       15
-CONSTANT TBROKEN_HEART 16
+CONSTANT TSTRUCT       12
+CONSTANT TSYMBOL       13
+CONSTANT TVALUES       14
+CONSTANT TVARIABLE     15
+CONSTANT TVECTOR       16
+CONSTANT TBROKEN_HEART 17
 #else // !__M2_PLANET__
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
+enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSTRUCT, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
 #endif // !__M2_PLANET__
 
 typedef SCM (*function0_t) (void);
@@ -252,6 +253,7 @@ struct scm scm_type_port = {TSYMBOL, "<cell:port>",0};
 struct scm scm_type_ref = {TSYMBOL, "<cell:ref>",0};
 struct scm scm_type_special = {TSYMBOL, "<cell:special>",0};
 struct scm scm_type_string = {TSYMBOL, "<cell:string>",0};
+struct scm scm_type_struct = {TSYMBOL, "<cell:struct>",0};
 struct scm scm_type_symbol = {TSYMBOL, "<cell:symbol>",0};
 struct scm scm_type_values = {TSYMBOL, "<cell:values>",0};
 struct scm scm_type_variable = {TSYMBOL, "<cell:variable>",0};
@@ -279,6 +281,7 @@ int g_function = 0;
 #include "mes.mes.h"
 #include "posix.mes.h"
 #include "reader.mes.h"
+#include "struct.mes.h"
 #include "vector.mes.h"
 #else
 #include "gc.h"
@@ -287,6 +290,7 @@ int g_function = 0;
 #include "mes.h"
 #include "posix.h"
 #include "reader.h"
+#include "struct.h"
 #include "vector.h"
 #endif
 
@@ -311,6 +315,7 @@ int g_function = 0;
 #define FUNCTION0(x) g_functions[g_cells[x].cdr].function
 #define MACRO(x) g_cells[x].cdr
 #define PORT(x) g_cells[x].cdr
+#define STRUCT(x) g_cells[x].cdr
 #define VALUE(x) g_cells[x].cdr
 #define VECTOR(x) g_cells[x].cdr
 
@@ -331,6 +336,7 @@ int g_function = 0;
 #define MACRO(x) g_cells[x].macro
 #define PORT(x) g_cells[x].port
 #define REF(x) g_cells[x].ref
+#define STRUCT(x) g_cells[x].vector
 #define VALUE(x) g_cells[x].value
 #define VECTOR(x) g_cells[x].vector
 #define FUNCTION(x) g_functions[g_cells[x].function]
@@ -626,6 +632,8 @@ check_apply (SCM f, SCM e) ///((internal))
     type = "number";
   if (TYPE (f) == TSTRING)
     type = "string";
+  if (TYPE (f) == TSTRUCT)
+    type = "#<...>";
   if (TYPE (f) == TBROKEN_HEART)
     type = "<3";
 
@@ -2043,6 +2051,7 @@ g_cells[cell_vm_return].car = cstring_to_list (scm_vm_return.car);
   a = acons (cell_type_ref, MAKE_NUMBER (TREF), a);
   a = acons (cell_type_special, MAKE_NUMBER (TSPECIAL), a);
   a = acons (cell_type_string, MAKE_NUMBER (TSTRING), a);
+  a = acons (cell_type_struct, MAKE_NUMBER (TSTRUCT), a);
   a = acons (cell_type_symbol, MAKE_NUMBER (TSYMBOL), a);
   a = acons (cell_type_values, MAKE_NUMBER (TVALUES), a);
   a = acons (cell_type_variable, MAKE_NUMBER (TVARIABLE), a);
@@ -2196,6 +2205,7 @@ a = acons (lookup_symbol_ (scm_getenv_.string), cell_getenv_, a);
 #include "math.mes.i"
 #include "lib.mes.i"
 #include "vector.mes.i"
+#include "struct.mes.i"
 #include "gc.mes.i"
 #include "reader.mes.i"
 
@@ -2205,6 +2215,7 @@ a = acons (lookup_symbol_ (scm_getenv_.string), cell_getenv_, a);
 #include "mes.mes.environment.i"
 #include "posix.mes.environment.i"
 #include "reader.mes.environment.i"
+#include "struct.mes.environment.i"
 #include "vector.mes.environment.i"
 #else
 #include "mes.i"
@@ -2214,6 +2225,7 @@ a = acons (lookup_symbol_ (scm_getenv_.string), cell_getenv_, a);
 #include "math.i"
 #include "lib.i"
 #include "vector.i"
+#include "struct.i"
 #include "gc.i"
 #include "reader.i"
 
@@ -2223,6 +2235,7 @@ a = acons (lookup_symbol_ (scm_getenv_.string), cell_getenv_, a);
 #include "mes.environment.i"
 #include "posix.environment.i"
 #include "reader.environment.i"
+#include "struct.environment.i"
 #include "vector.environment.i"
 #endif
 
@@ -2403,6 +2416,7 @@ bload_env (SCM a) ///((internal))
 }
 
 #include "vector.c"
+#include "struct.c"
 #include "gc.c"
 #include "reader.c"
 

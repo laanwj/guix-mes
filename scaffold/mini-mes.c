@@ -57,7 +57,7 @@ SCM r2 = 0;
 // continuation
 SCM r3 = 0;
 
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
+enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSTRUCT, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
 
 struct scm {
   enum type_t type;
@@ -189,6 +189,7 @@ struct scm scm_type_port = {TSYMBOL, "<cell:port>",0};
 struct scm scm_type_ref = {TSYMBOL, "<cell:ref>",0};
 struct scm scm_type_special = {TSYMBOL, "<cell:special>",0};
 struct scm scm_type_string = {TSYMBOL, "<cell:string>",0};
+struct scm scm_type_struct = {TSYMBOL, "<cell:struct>",0};
 struct scm scm_type_symbol = {TSYMBOL, "<cell:symbol>",0};
 struct scm scm_type_values = {TSYMBOL, "<cell:values>",0};
 struct scm scm_type_variable = {TSYMBOL, "<cell:variable>",0};
@@ -234,6 +235,7 @@ SCM gc_init_news ();
 #define LENGTH(x) g_cells[x].car
 #define REF(x) g_cells[x].car
 #define STRING(x) g_cells[x].car
+#define STRUCT(x) g_cells[x].cdr
 #define VARIABLE(x) g_cells[x].car
 
 #define CLOSURE(x) g_cells[x].cdr

@@ -70,7 +70,8 @@ gc_copy (SCM old) ///((internal))
     return g_cells[old].car;
   SCM new = g_free++;
   g_news[new] = g_cells[old];
-  if (NTYPE (new) == TVECTOR)
+  if (NTYPE (new) == TSTRUCT
+      || NTYPE (new) == TVECTOR)
     {
       NVECTOR (new) = g_free;
       for (long i=0; i<LENGTH (old); i++)

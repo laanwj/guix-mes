@@ -37,6 +37,7 @@
         (cons <cell:ref> (quote <cell:ref>))
         (cons <cell:special> (quote <cell:special>))
         (cons <cell:string> (quote <cell:string>))
+        (cons <cell:struct> (quote <cell:struct>))
         (cons <cell:symbol> (quote <cell:symbol>))
         (cons <cell:values> (quote <cell:values>))
         (cons <cell:variable> (quote <cell:variable>))
@@ -85,6 +86,9 @@
 
 (define (string? x)
   (eq? (core:type x) <cell:string>))
+
+(define (struct? x)
+  (eq? (core:type x) <cell:struct>))
 
 (define (symbol? x)
   (eq? (core:type x) <cell:symbol>))

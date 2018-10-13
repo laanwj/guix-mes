@@ -33,4 +33,5 @@ trace "SNARF$snarf  math.c"   ${srcdest}build-aux/mes-snarf.scm $1 src/math.c
 trace "SNARF$snarf  mes.c"    ${srcdest}build-aux/mes-snarf.scm $1 src/mes.c
 trace "SNARF$snarf  posix.c"  ${srcdest}build-aux/mes-snarf.scm $1 src/posix.c
 trace "SNARF$snarf  reader.c" ${srcdest}build-aux/mes-snarf.scm $1 src/reader.c
+trace "SNARF$snarf  struct.c" ${srcdest}build-aux/mes-snarf.scm $1 src/struct.c
 trace "SNARF$snarf  vector.c" ${srcdest}build-aux/mes-snarf.scm $1 src/vector.c
