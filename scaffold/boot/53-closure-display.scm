@@ -28,7 +28,7 @@
     (if (null? lst) (list)
         (cons (f (car lst)) (map f (cdr lst)))))
   (define (closure x)
-    (map car (cdr (core:cdr (core:car (core:cdr (cdr (assq 'x (current-module)))))))))))
+    (map car (cdr (core:cdr (core:car (core:cdr (cdr (module-variable (current-module) 'x))))))))))
 
 (define (x t) #t)
 (define (xx x1 x2)

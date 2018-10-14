@@ -38,3 +38,20 @@ make_initial_module (SCM a)
   SCM module = make_struct (module_type_name, values, cell_unspecified);
   return module;
 }
+
+SCM
+module_ref (SCM module, SCM name)
+{
+  SCM x = module_variable (module, name);
+  if (x == cell_f)
+    return cell_undefined;
+  return CDR (x);
+}
+
+SCM
+module_variable (SCM module, SCM name)
+{
+  //SCM locals = struct_ref (module, 4);
+  SCM locals = module;
+  return assq (name, locals);
+}

@@ -562,7 +562,7 @@ error (SCM key, SCM x)
 {
 #if !__MESC_MES__
   SCM throw;
-  if ((throw = assq_ref_env (cell_symbol_throw, r0)) != cell_undefined)
+  if ((throw = module_ref (r0, cell_symbol_throw)) != cell_undefined)
     return apply (throw, cons (key, cons (x, cell_nil)), r0);
 #endif
   display_error_ (key);
@@ -827,15 +827,6 @@ assq (SCM x, SCM a)
 }
 
 SCM
-assq_ref_env (SCM x, SCM a)
-{
-  x = assq (x, a);
-  if (x == cell_f)
-    return cell_undefined;
-  return CDR (x);
-}
-
-SCM
 set_car_x (SCM x, SCM e)
 {
   if (TYPE (x) != TPAIR)
@@ -860,7 +851,7 @@ set_env_x (SCM x, SCM e, SCM a)
   if (TYPE (x) == TVARIABLE)
     p = VARIABLE (x);
   else
-    p = assert_defined (x, assq (x, a));
+    p = assert_defined (x, module_variable (a, x));
   if (TYPE (p) != TPAIR)
     error (cell_symbol_not_a_pair, cons (p, x));
   return set_cdr_x (p, e);
@@ -1009,7 +1000,7 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
                    && CAR (x) != cell_symbol_if // HMM
                    && !formal_p (CAR (x), formals))
             {
-              SCM v = assq (CAR (x), r0);
+              SCM v = module_variable (r0, CAR (x));
               if (v != cell_f)
                 CAR (x) = make_variable_ (v);
             }
@@ -1275,7 +1266,7 @@ eval_apply ()
                     }
                   else
                     {
-                      entry = assq (name, r0);
+                      entry = module_variable (r0, name);
                       if (entry == cell_f)
                         {
                           entry = cons (name, cell_f);
@@ -1315,7 +1306,7 @@ eval_apply ()
                 }
               else if (global_p)
                 {
-                  entry = assq (name, r0);
+                  entry = module_variable (r0, name);
                   set_cdr_x (entry, r1);
                 }
               else
@@ -1324,7 +1315,7 @@ eval_apply ()
                   aa = cons (entry, cell_nil);
                   set_cdr_x (aa, cdr (r0));
                   set_cdr_x (r0, aa);
-                  cl = assq (cell_closure, r0);
+                  cl = module_variable (r0, cell_closure);
                   set_cdr_x (cl, aa);
                 }
               r1 = cell_unspecified;
@@ -1350,7 +1341,7 @@ eval_apply ()
           r1 = cell_begin;
           goto vm_return;
         }
-      r1 = assert_defined (r1, assq_ref_env (r1, r0));
+      r1 = assert_defined (r1, module_ref (r0, r1));
       goto vm_return;
     }
   else if (t == TVARIABLE)
@@ -1421,10 +1412,10 @@ eval_apply ()
         && TYPE (CAR (r1)) == TSYMBOL
         && CAR (r1) != cell_symbol_begin
         && ((macro = assq (cell_symbol_portable_macro_expand, g_macros)) != cell_f)
-        && ((expanders = assq_ref_env (cell_symbol_sc_expander_alist, r0)) != cell_undefined)
+        && ((expanders = module_ref (r0, cell_symbol_sc_expander_alist)) != cell_undefined)
         && ((macro = assq (CAR (r1), expanders)) != cell_f))
       {
-        sc_expand = assq_ref_env (cell_symbol_macro_expand, r0);
+        sc_expand = module_ref (r0, cell_symbol_macro_expand);
         r2 = r1;
         if (sc_expand != cell_undefined && sc_expand != cell_f)
           {

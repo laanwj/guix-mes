@@ -52,14 +52,6 @@
       (if (eq? x (car lst)) lst
           (memq x (cdr lst)))))
 
-;; (cond-expand
-;;  (guile
-;;   (define closure identity)
-;;   (define body identity)
-;;   (define append2 append)
-;;   (define (core:apply f a m) (f a))
-;;   )
-;;  (mes
   (define (symbol? x)
     (eq? (core:type x) <cell:symbol>))
 
@@ -72,12 +64,6 @@
 
   (define (vector? x)
     (eq? (core:type x) <cell:vector>))
-
-  ;; (define (body x)
-  ;; (core:cdr (core:cdr (core:cdr (cdr (assq 'x (current-module)))))))
-  ;; (define (closure x)
-  ;;   (map car (cdr (core:cdr (core:car (core:cdr (cdr (assq 'x (current-module)))))))))
-  ;; ))
 
 (define (cons* . rest)
   (if (null? (cdr rest)) (car rest)
@@ -93,9 +79,7 @@
           (append2 (car rest) (apply append (cdr rest))))))
 
 (define-macro (quasiquote x)
-  ;;(core:display-error "quasiquote:") (core:write-error x) (core:display-error "\n")
   (define (loop x)
-    ;;(core:display-error "loop:") (core:write-error x) (core:display-error "\n")
     (if (vector? x) (list 'list->vector (loop (vector->list x)))
         (if (not (pair? x)) (cons 'quote (cons x '()))
             (if (eq? (car x) 'quasiquote) (loop (loop (cadr x)))
