@@ -47,11 +47,11 @@ struct_length (SCM x)
 }
 
 SCM
-struct_ref (SCM x, SCM i)
+struct_ref_ (SCM x, long i)
 {
   assert (TYPE (x) == TSTRUCT);
-  assert (VALUE (i) < LENGTH (x));
-  SCM e = STRUCT (x) + VALUE (i);
+  assert (i < LENGTH (x));
+  SCM e = STRUCT (x) + i;
   if (TYPE (e) == TREF)
     e = REF (e);
   if (TYPE (e) == TCHAR)
@@ -62,10 +62,22 @@ struct_ref (SCM x, SCM i)
 }
 
 SCM
-struct_set_x (SCM x, SCM i, SCM e)
+struct_set_x_ (SCM x, long i, SCM e)
 {
   assert (TYPE (x) == TSTRUCT);
   assert (VALUE (i) < LENGTH (x));
-  g_cells[STRUCT (x)+VALUE (i)] = g_cells[vector_entry (e)];
+  g_cells[STRUCT (x)+i] = g_cells[vector_entry (e)];
   return cell_unspecified;
+}
+
+SCM
+struct_ref (SCM x, SCM i)
+{
+  return struct_ref_ (x, VALUE (i));
+}
+
+SCM
+struct_set_x (SCM x, SCM i, SCM e)
+{
+  return struct_set_x_ (x, VALUE (i), e);
 }

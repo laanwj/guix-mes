@@ -52,6 +52,8 @@ SCM r1 = 0;
 SCM r2 = 0;
 // continuation
 SCM r3 = 0;
+// current-module
+SCM m0 = 0;
 // macro
 SCM g_macros = 1;
 SCM g_ports = 1;
@@ -662,7 +664,7 @@ check_apply (SCM f, SCM e) ///((internal))
 SCM
 gc_push_frame () ///((internal))
 {
-  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cell_nil))));
+  SCM frame = cons (r1, cons (r2, cons (r3, cons (r0, cons (m0, cell_nil)))));
   g_stack = cons (frame, g_stack);
   return g_stack;
 }
@@ -897,7 +899,10 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   r2 = p2;
   gc_push_frame ();
   r1 = p1;
-  r0 = a;
+  // if (TYPE (a) == TPAIR)
+  //   r0 = module_clone_locals (r0, a);
+  // else
+    r0 = a;
   r3 = x;
   return cell_unspecified;
 }
@@ -910,6 +915,7 @@ gc_peek_frame () ///((internal))
   r2 = CADR (frame);
   r3 = CAR (CDDR (frame));
   r0 = CADR (CDDR (frame));
+  m0 = CAR (CDDR (CDDR (frame)));
   return frame;
 }
 
@@ -1016,6 +1022,9 @@ expand_variable (SCM x, SCM formals) ///((internal))
 {
   return expand_variable_ (x, formals, 1);
 }
+
+SCM struct_ref_ (SCM x, long i);
+SCM vector_ref_ (SCM x, long i);
 
 SCM
 eval_apply ()
@@ -1268,12 +1277,7 @@ eval_apply ()
                     {
                       entry = module_variable (r0, name);
                       if (entry == cell_f)
-                        {
-                          entry = cons (name, cell_f);
-                          aa = cons (entry, cell_nil);
-                          set_cdr_x (aa, cdr (r0));
-                          set_cdr_x (r0, aa);
-                        }
+                        module_define_x (m0, name, cell_f);
                     }
                 }
               r2 = r1;
@@ -1507,6 +1511,8 @@ eval_apply ()
 
               push_cc (input, r2, r0, cell_vm_return);
               x = read_input_file_env (r0);
+              if (g_debug > 3)
+                module_printer (m0);
               gc_pop_frame ();
               input = r1;
               r1 = x;
@@ -1594,12 +1600,12 @@ apply (SCM f, SCM x, SCM a) ///((internal))
 SCM
 mes_g_stack (SCM a) ///((internal))
 {
-  r0 = a;
+  //r0 = a;
   r1 = MAKE_CHAR (0);
   r2 = MAKE_CHAR (0);
   r3 = MAKE_CHAR (0);
   g_stack = cons (cell_nil, cell_nil);
-  return r0;
+  return a;
 }
 
 // Environment setup
@@ -2025,20 +2031,6 @@ g_cells[cell_vm_return].car = cstring_to_list (scm_vm_return.car);
   a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
   a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
 
-  char *compiler = "gnuc";
-#if __MESC__
-  compiler = "mesc";
-#elif __TINYC__
-  compiler = "tcc";
-#endif
-  a = acons (cell_symbol_compiler, MAKE_STRING (cstring_to_list (compiler)), a);
-
-  char *arch = "x86";
-#if __x86_64__
-  arch = "x86_64";
-#endif
-  a = acons (cell_symbol_arch, MAKE_STRING (cstring_to_list (arch)), a);
-
   a = acons (cell_type_char, MAKE_NUMBER (TCHAR), a);
   a = acons (cell_type_closure, MAKE_NUMBER (TCLOSURE), a);
   a = acons (cell_type_continuation, MAKE_NUMBER (TCONTINUATION), a);
@@ -2064,9 +2056,31 @@ g_cells[cell_vm_return].car = cstring_to_list (scm_vm_return.car);
 }
 
 SCM
-mes_environment () ///((internal))
+mes_environment (int argc, char *argv[])
 {
   SCM a = mes_symbols ();
+
+  char *compiler = "gnuc";
+#if __MESC__
+  compiler = "mesc";
+#elif __TINYC__
+  compiler = "tcc";
+#endif
+  a = acons (cell_symbol_compiler, MAKE_STRING (cstring_to_list (compiler)), a);
+
+  char *arch = "x86";
+#if __x86_64__
+  arch = "x86_64";
+#endif
+  a = acons (cell_symbol_arch, MAKE_STRING (cstring_to_list (arch)), a);
+
+#if !MES_MINI
+  SCM lst = cell_nil;
+  for (int i=argc-1; i>=0; i--)
+    lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
+  a = acons (cell_symbol_argv, lst, a);
+#endif
+
   return mes_g_stack (a);
 }
 
@@ -2287,9 +2301,8 @@ load_boot (char *prefix, char const *boot, char const *location)
 }
 
 SCM
-load_env (SCM a) ///((internal))
+load_env () ///((internal))
 {
-  r0 = a;
   g_stdin = -1;
   char prefix[1024];
   char boot[1024];
@@ -2328,15 +2341,13 @@ load_env (SCM a) ///((internal))
       exit (1);
     }
 
-  if (!g_function)
-    r0 = mes_builtins (r0);
   r2 = read_input_file_env (r0);
   g_stdin = STDIN;
   return r2;
 }
 
 SCM
-bload_env (SCM a) ///((internal))
+bload_env () ///((internal))
 {
 #if !_POSIX_SOURCE
   char *mo = "mes/boot-0.32-mo";
@@ -2376,22 +2387,10 @@ bload_env (SCM a) ///((internal))
   gc_peek_frame ();
   g_symbols = r1;
   g_stdin = STDIN;
+  // SCM a = struct_ref (r0, 3);
+  // a = mes_builtins (a);
+  // struct_set_x (r0, 3, a);
   r0 = mes_builtins (r0);
-
-  char *compiler = "gnuc";
-#if __MESC__
-  compiler = "mesc";
-#elif __TINYC__
-  compiler = "tcc";
-#endif
-
-  a = acons (cell_symbol_compiler, MAKE_STRING (cstring_to_list (compiler)), a);
-
-  char *arch = "x86";
-#if __x86_64__
-  arch = "x86_64";
-#endif
-  a = acons (cell_symbol_arch, MAKE_STRING (cstring_to_list (arch)), a);
 
   if (g_debug > 3)
     {
@@ -2448,21 +2447,20 @@ main (int argc, char *argv[])
     GC_SAFETY = atoi (p);
   g_stdin = STDIN;
   g_stdout = STDOUT;
-  r0 = mes_environment ();
+
+  SCM a = mes_environment (argc, argv);
+  a = mes_builtins (a);
+  m0 = make_initial_module (a);
+
+  if (g_debug > 3)
+    module_printer (m0);
 
   SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
-    ? bload_env (r0) : load_env (r0);
+    ? bload_env () : load_env ();
   g_tiny = argc > 2 && !strcmp (argv[2], "--tiny");
   if (argc > 1 && !strcmp (argv[1], "--dump"))
     return dump ();
 
-#if !MES_MINI
-  SCM lst = cell_nil;
-  for (int i=argc-1; i>=0; i--)
-    lst = cons (MAKE_STRING (cstring_to_list (argv[i])), lst);
-  r0 = acons (cell_symbol_argv, lst, r0); // FIXME
-  r0 = acons (cell_symbol_argv, lst, r0);
-#endif
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
 
   if (g_debug > 2)

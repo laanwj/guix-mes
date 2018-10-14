@@ -22,7 +22,9 @@
             disjoin
             guile?
             mes?
+            pk
             pke
+            warn
             stderr
             string-substitute))
 
@@ -43,12 +45,21 @@
 (define (stderr string . rest)
   (apply logf (cons* (current-error-port) string rest)))
 
+(define (pk . stuff)
+  (newline)
+  (display ";;; ")
+  (write stuff)
+  (newline)
+  (car (last-pair stuff)))
+
 (define (pke . stuff)
   (newline (current-error-port))
   (display ";;; " (current-error-port))
   (write stuff (current-error-port))
   (newline (current-error-port))
   (car (last-pair stuff)))
+
+(define warn pke)
 
 (define (disjoin . predicates)
   (lambda (. arguments)

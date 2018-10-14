@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -24,39 +24,19 @@
 
 (mes-use-module (mes scm))
 
-
-(define (sexp:define e a)
-  (if (atom? (car (cdr e))) (cons (car (cdr e))
-                                  (core:eval (car (cdr (cdr e))) a))
-      (cons (car (car (cdr e)))
-            (core:eval (cons (quote lambda)
-                             (cons (cdr (car (cdr e))) (cdr (cdr e)))) a))))
-
-(define (f:env:define a+ a)
-  (set-cdr! a+ (cdr a))
-  (set-cdr! a a+)
-  ;;(set-cdr! (assq '*closure* a) a+)
-  )
-
-(define (env:escape-closure a n)
-  (if (eq? (caar a) '*closure*) (if (= 0 n) a
-                                    (env:escape-closure (cdr a) (- n 1)))
-      (env:escape-closure (cdr a) n)))
-
-(define-macro (module-define! name value a)
-  `(f:env:define (cons (sexp:define (cons 'define (cons ',name (cons ,value '()))) ,a) '()) (env:escape-closure ,a 1)))
-
 (define-macro (make-fluid . default)
-  `(begin
-     ,(let ((fluid (symbol-append 'fluid: (gensym)))
-            (module (current-module)))
-        `(begin
-           (module-define! ,fluid
-                           (let ((v ,(and (pair? default) (car default))))
-                             (lambda ( . rest)
-                               (if (null? rest) v
-                                   (set! v (car rest))))) ',module)
-           ',fluid))))
+  ((lambda (fluid)
+     `(begin
+        (module-define!
+         (boot-module)
+        ',fluid
+        ((lambda (v)
+           (lambda ( . rest)
+             (if (null? rest) v
+                 (set! v (car rest)))))
+         ,(and (pair? default) (car default))))
+        ',fluid))
+   (symbol-append 'fluid: (gensym))))
 
 (define (fluid-ref fluid)
   (fluid))

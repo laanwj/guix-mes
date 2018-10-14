@@ -42,11 +42,11 @@ vector_length (SCM x)
 }
 
 SCM
-vector_ref (SCM x, SCM i)
+vector_ref_ (SCM x, long i)
 {
   assert (TYPE (x) == TVECTOR);
-  assert (VALUE (i) < LENGTH (x));
-  SCM e = VECTOR (x) + VALUE (i);
+  assert (i < LENGTH (x));
+  SCM e = VECTOR (x) + i;
   if (TYPE (e) == TREF)
     e = REF (e);
   if (TYPE (e) == TCHAR)
@@ -54,6 +54,12 @@ vector_ref (SCM x, SCM i)
   if (TYPE (e) == TNUMBER)
     e = MAKE_NUMBER (VALUE (e));
   return e;
+}
+
+SCM
+vector_ref (SCM x, SCM i)
+{
+  return vector_ref_ (x, VALUE (i));
 }
 
 SCM
@@ -65,12 +71,18 @@ vector_entry (SCM x)
 }
 
 SCM
-vector_set_x (SCM x, SCM i, SCM e)
+vector_set_x_ (SCM x, long i, SCM e)
 {
   assert (TYPE (x) == TVECTOR);
-  assert (VALUE (i) < LENGTH (x));
-  g_cells[VECTOR (x)+VALUE (i)] = g_cells[vector_entry (e)];
+  assert (i < LENGTH (x));
+  g_cells[VECTOR (x)+i] = g_cells[vector_entry (e)];
   return cell_unspecified;
+}
+
+SCM
+vector_set_x (SCM x, SCM i, SCM e)
+{
+  return vector_set_x_ (x, VALUE (i), e);
 }
 
 SCM

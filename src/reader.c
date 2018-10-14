@@ -34,8 +34,9 @@ read_input_file_env_ (SCM e, SCM a)
 SCM
 read_input_file_env (SCM a)
 {
-  r0 = a;
-  return read_input_file_env_ (read_env (r0), r0);
+  //r0 = a;
+  //return read_input_file_env_ (read_env (r0), r0);
+  return read_input_file_env_ (read_env (cell_nil), cell_nil);
 }
 
 int

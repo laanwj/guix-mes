@@ -104,10 +104,6 @@
                             (cons (quote or) (cdr x))))
                 (car x)))))
 
-(define-macro (module-define! module name value)
-  ;;(list 'define name value)
-  #t)
-
 (define-macro (mes-use-module module)
   #t)
 

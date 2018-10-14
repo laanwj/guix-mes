@@ -34,6 +34,8 @@ MES_ARENA=${MES_ARENA-100000000}
 tests="
 tests/boot.test
 tests/read.test
+tests/srfi-0.test
+tests/macro.test
 tests/base.test
 tests/quasiquote.test
 tests/let.test
