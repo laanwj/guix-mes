@@ -81,7 +81,7 @@
     (list 'load (list string-append %moduledir file)))
 
   (define (string->symbol s)
-    (core:lookup-symbol (core:car s)))
+    (list->symbol (core:car s)))
 
   (define (symbol->list s)
     (core:car s))

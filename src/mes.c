@@ -279,6 +279,7 @@ int g_function = 0;
 #include "lib.mes.h"
 #include "math.mes.h"
 #include "mes.mes.h"
+#include "module.mes.h"
 #include "posix.mes.h"
 #include "reader.mes.h"
 #include "struct.mes.h"
@@ -288,6 +289,7 @@ int g_function = 0;
 #include "lib.h"
 #include "math.h"
 #include "mes.h"
+#include "module.h"
 #include "posix.h"
 #include "reader.h"
 #include "struct.h"
@@ -1611,6 +1613,7 @@ mes_g_stack (SCM a) ///((internal))
 
 // Environment setup
 
+#include "module.c"
 #include "posix.c"
 #include "math.c"
 #include "lib.c"
@@ -2207,6 +2210,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "mes.mes.i"
 
   // Do not sort: Order of these includes define builtins
+#include "module.mes.i"
 #include "posix.mes.i"
 #include "math.mes.i"
 #include "lib.mes.i"
@@ -2219,6 +2223,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "lib.mes.environment.i"
 #include "math.mes.environment.i"
 #include "mes.mes.environment.i"
+#include "module.mes.environment.i"
 #include "posix.mes.environment.i"
 #include "reader.mes.environment.i"
 #include "struct.mes.environment.i"
@@ -2227,6 +2232,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "mes.i"
 
   // Do not sort: Order of these includes define builtins
+#include "module.i"
 #include "posix.i"
 #include "math.i"
 #include "lib.i"
@@ -2239,6 +2245,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "lib.environment.i"
 #include "math.environment.i"
 #include "mes.environment.i"
+#include "module.environment.i"
 #include "posix.environment.i"
 #include "reader.environment.i"
 #include "struct.environment.i"

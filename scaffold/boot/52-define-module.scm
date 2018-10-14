@@ -69,7 +69,7 @@
 ;;;;;;;;;;;;;;;;;;
 
   (define (string->symbol s)
-    (core:lookup-symbol (core:car s)))
+    (list->symbol (core:car s)))
 
   (define-macro (load file)
     (list 'primitive-load file))

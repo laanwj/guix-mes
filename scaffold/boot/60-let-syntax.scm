@@ -65,14 +65,14 @@
 
   (define (string->symbol s)
     (if (not (pair? (core:car s))) '()
-        (core:lookup-symbol (core:car s))))
+        (list->symbol (core:car s))))
 
   (define (string? x)
     (eq? (core:type x) <cell:string>))
-  
+
   (define (vector? x)
     (eq? (core:type x) <cell:vector>))
- 
+
   ;; (define (body x)
   ;; (core:cdr (core:cdr (core:cdr (cdr (assq 'x (current-module)))))))
   ;; (define (closure x)
@@ -272,14 +272,14 @@
         (and (segment-template? pattern)
              (or (null? (cddr pattern))
                  (syntax-error "segment matching not implemented" pattern))))
-    
+
       (define (segment-template? pattern)
         (and (pair? pattern)
              (pair? (cdr pattern))
              (memq (cadr pattern) indicators-for-zero-or-more)))
-    
+
       (define indicators-for-zero-or-more (list (string->symbol "...") '---))
-    
+
       (lambda (exp r c)
 
         (define %input (r '%input))     ;Gensym these, if you like.
@@ -316,7 +316,7 @@
                                        0
                                        (meta-variables pattern 0 '())))))
               (syntax-error "ill-formed syntax rule" rule)))
-      
+
         ;; Generate code to test whether input expression matches pattern
 
         (define (process-match input pattern)
@@ -337,7 +337,7 @@
                  `((eq? ,input ',pattern)))
                 (else
                  `((equal? ,input ',pattern)))))
-      
+
         (define (process-segment-match input pattern)
           ;;(core:display-error "process-segment-match:") (core:write-error input) (core:display-error "\n")
           ;;(core:display-error "              pattern:") (core:write-error pattern) (core:display-error "\n")
@@ -349,7 +349,7 @@
                         (and (pair? l)
                              ,@conjuncts
                              (loop (cdr l)))))))))
-      
+
         ;; Generate code to take apart the input expression
         ;; This is pretty bad, but it seems to work (can't say why).
 
@@ -470,4 +470,3 @@
                         (if (not condition)
                             (begin exp ...))))))
    (xwhen #f 42)))
-

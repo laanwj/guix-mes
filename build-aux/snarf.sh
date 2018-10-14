@@ -31,6 +31,7 @@ trace "SNARF$snarf  gc.c"     ${srcdest}build-aux/mes-snarf.scm $1 src/gc.c
 trace "SNARF$snarf  lib.c"    ${srcdest}build-aux/mes-snarf.scm $1 src/lib.c
 trace "SNARF$snarf  math.c"   ${srcdest}build-aux/mes-snarf.scm $1 src/math.c
 trace "SNARF$snarf  mes.c"    ${srcdest}build-aux/mes-snarf.scm $1 src/mes.c
+trace "SNARF$snarf  module.c" ${srcdest}build-aux/mes-snarf.scm $1 src/module.c
 trace "SNARF$snarf  posix.c"  ${srcdest}build-aux/mes-snarf.scm $1 src/posix.c
 trace "SNARF$snarf  reader.c" ${srcdest}build-aux/mes-snarf.scm $1 src/reader.c
 trace "SNARF$snarf  struct.c" ${srcdest}build-aux/mes-snarf.scm $1 src/struct.c
