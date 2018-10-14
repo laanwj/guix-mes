@@ -146,8 +146,8 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
        (format #f "g_cells[cell_~a].string = MAKE_STRING (scm_~a.string);\n" (function.name f) (function.name f))
        (format #f "g_cells[cell_~a].car = MAKE_STRING (scm_~a.car);\n" (function.name f) (function.name f)))
    (if %gcc?
-       (format #f "a = acons (lookup_symbol_ (scm_~a.string), ~a, a);\n\n" (function.name f) (function-cell-name f))
-       (format #f "a = acons (lookup_symbol_ (scm_~a.car), ~a, a);\n\n" (function.name f) (function-cell-name f)))))
+       (format #f "a = acons (make_symbol (scm_~a.string), ~a, a);\n\n" (function.name f) (function-cell-name f))
+       (format #f "a = acons (make_symbol (scm_~a.car), ~a, a);\n\n" (function.name f) (function-cell-name f)))))
 
 (define (disjoin . predicates)
   (lambda (. arguments)

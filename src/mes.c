@@ -415,7 +415,7 @@ list_of_char_equal_p (SCM a, SCM b) ///((internal))
 }
 
 SCM
-lookup_symbol_ (SCM s)
+list_to_symbol (SCM s)
 {
   SCM x = g_symbols;
   while (x)
@@ -583,6 +583,12 @@ SCM
 cstring_to_list (char const* s)
 {
   return string_to_list (s, strlen (s));
+}
+
+SCM
+cstring_to_symbol (char const *s)
+{
+  return list_to_symbol (cstring_to_list (s));
 }
 
 //  extra lib
@@ -2147,50 +2153,50 @@ g_cells[cell_getenv_] = scm_getenv_;
 //mes.environment
 scm_cons.string = cstring_to_list (fun_cons.name);
 g_cells[cell_cons].string = MAKE_STRING (scm_cons.string);
-a = acons (lookup_symbol_ (scm_cons.string), cell_cons, a);
+a = acons (list_to_symbol (scm_cons.string), cell_cons, a);
 
 scm_car.string = cstring_to_list (fun_car.name);
 g_cells[cell_car].string = MAKE_STRING (scm_car.string);
-a = acons (lookup_symbol_ (scm_car.string), cell_car, a);
+a = acons (list_to_symbol (scm_car.string), cell_car, a);
 
 scm_cdr.string = cstring_to_list (fun_cdr.name);
 g_cells[cell_cdr].string = MAKE_STRING (scm_cdr.string);
-a = acons (lookup_symbol_ (scm_cdr.string), cell_cdr, a);
+a = acons (list_to_symbol (scm_cdr.string), cell_cdr, a);
 
 scm_list.string = cstring_to_list (fun_list.name);
 g_cells[cell_list].string = MAKE_STRING (scm_list.string);
-a = acons (lookup_symbol_ (scm_list.string), cell_list, a);
+a = acons (list_to_symbol (scm_list.string), cell_list, a);
 
 scm_null_p.string = cstring_to_list (fun_null_p.name);
 g_cells[cell_null_p].string = MAKE_STRING (scm_null_p.string);
-a = acons (lookup_symbol_ (scm_null_p.string), cell_null_p, a);
+a = acons (list_to_symbol (scm_null_p.string), cell_null_p, a);
 
 scm_eq_p.string = cstring_to_list (fun_eq_p.name);
 g_cells[cell_eq_p].string = MAKE_STRING (scm_eq_p.string);
-a = acons (lookup_symbol_ (scm_eq_p.string), cell_eq_p, a);
+a = acons (list_to_symbol (scm_eq_p.string), cell_eq_p, a);
 
 //math.environment
  scm_minus.string = cstring_to_list (fun_minus.name);
 g_cells[cell_minus].string = MAKE_STRING (scm_minus.string);
-a = acons (lookup_symbol_ (scm_minus.string), cell_minus, a);
+a = acons (list_to_symbol (scm_minus.string), cell_minus, a);
 
 scm_plus.string = cstring_to_list (fun_plus.name);
 g_cells[cell_plus].string = MAKE_STRING (scm_plus.string);
-a = acons (lookup_symbol_ (scm_plus.string), cell_plus, a);
+a = acons (list_to_symbol (scm_plus.string), cell_plus, a);
 
 //lib.environment
 scm_display_.string = cstring_to_list (fun_display_.name);
 g_cells[cell_display_].string = MAKE_STRING (scm_display_.string);
-a = acons (lookup_symbol_ (scm_display_.string), cell_display_, a);
+a = acons (list_to_symbol (scm_display_.string), cell_display_, a);
 
 scm_display_error_.string = cstring_to_list (fun_display_error_.name);
 g_cells[cell_display_error_].string = MAKE_STRING (scm_display_error_.string);
-a = acons (lookup_symbol_ (scm_display_error_.string), cell_display_error_, a);
+a = acons (list_to_symbol (scm_display_error_.string), cell_display_error_, a);
 
 //posix.environment
 scm_getenv_.string = cstring_to_list (fun_getenv_.name);
 g_cells[cell_getenv_].string = MAKE_STRING (scm_getenv_.string);
-a = acons (lookup_symbol_ (scm_getenv_.string), cell_getenv_, a);
+a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 
 #if !POSIX
  #undef function

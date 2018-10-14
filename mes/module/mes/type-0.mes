@@ -128,9 +128,6 @@
 (define (symbol->keyword s)
   (core:make-cell <cell:keyword> (symbol->list s) 0))
 
-(define (list->symbol lst)
-  (core:lookup-symbol lst))
-
 (define (symbol->list s)
   (core:car s))
 

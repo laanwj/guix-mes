@@ -103,7 +103,7 @@ reader_read_identifier_or_number (int c)
     }
   unreadchar (c);
   buf[i] = 0;
-  return lookup_symbol_ (cstring_to_list (buf));
+  return cstring_to_symbol (buf);
 }
 
 SCM

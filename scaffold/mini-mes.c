@@ -332,7 +332,7 @@ list_of_char_equal_p (SCM a, SCM b) ///((internal))
 }
 
 SCM
-lookup_symbol_ (SCM s)
+list_to_symbol (SCM s)
 {
   SCM x = g_symbols;
   while (x) {
