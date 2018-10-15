@@ -92,7 +92,7 @@
     `(let ,(map (lambda (b s) `(,s (,b))) (map car bindings) syms)
        ,@(map (lambda (o) `(fluid-set! ,(car o) ,(cadr o))) bindings)
        (let ((r (begin ,@bodies)))
-         `,@(map (lambda (b s) `(fluid-set! ,b ,s)) (map car bindings) syms)
+         ,@(map (lambda (b s) `(fluid-set! ,b ,s)) (map car bindings) syms)
          r))))
 
 (define (dynamic-wind in-guard thunk out-guard)

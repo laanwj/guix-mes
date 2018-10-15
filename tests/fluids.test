@@ -51,14 +51,14 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 ;;     0 (with-fluids* (list a b) '(0 1)
 ;;                     (lambda () (fluid-ref a))))
 
-(pass-if-equal "with-fluids"
+(pass-if-eq "with-fluids"
     0 (with-fluids ((a 1)
                     (a 2)
                     (a 3))
         (fluid-set! a 0)
         (fluid-ref a)))
 
-(pass-if-equal "with-fluids" ; FIXME: fails with Mes
+(pass-if-eq "with-fluids"
     #f (begin
          (with-fluids ((a 1)
                        (b 2))
@@ -66,4 +66,4 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
            (display "X:") (display (fluid-ref a)) (newline))
          (fluid-ref a)))
 
-(result 'report (if mes? 1 0))
+(result 'report)
