@@ -52,7 +52,7 @@ SCM
 hashq_ref (SCM table, SCM key, SCM dflt)
 {
   unsigned hash = hashq_ (key, 0);
-  SCM buckets = struct_ref_ (table, 3);
+  SCM buckets = struct_ref_ (table, 4);
   SCM bucket = vector_ref_ (buckets, hash);
   SCM x = cell_f;
   if (TYPE (dflt) == TPAIR)
@@ -66,7 +66,7 @@ SCM
 hashq_set_x (SCM table, SCM key, SCM value)
 {
   unsigned hash = hashq_ (key, 0);
-  SCM buckets = struct_ref_ (table, 3);
+  SCM buckets = struct_ref_ (table, 4);
   SCM bucket = vector_ref_ (buckets, hash);
   if (TYPE (bucket) != TPAIR)
     bucket = cell_nil;
@@ -78,9 +78,9 @@ hashq_set_x (SCM table, SCM key, SCM value)
 SCM
 hash_table_printer (SCM table)
 {
-  fdputs ("#<", g_stdout); display_ (struct_ref_ (table, 0)); fdputc (' ', g_stdout);
-  fdputs ("size: ", g_stdout); display_ (struct_ref_ (table, 2)); fdputc (' ', g_stdout);
-  SCM buckets = struct_ref_ (table, 3);
+  fdputs ("#<", g_stdout); display_ (struct_ref_ (table, 2)); fdputc (' ', g_stdout);
+  fdputs ("size: ", g_stdout); display_ (struct_ref_ (table, 3)); fdputc (' ', g_stdout);
+  SCM buckets = struct_ref_ (table, 4);
   fdputs ("buckets: ", g_stdout);
   for (int i=0; i<LENGTH (buckets); i++)
     {
@@ -104,13 +104,15 @@ hash_table_printer (SCM table)
 SCM
 make_hashq_type () ///((internal))
 {
+  SCM record_type_name = cstring_to_symbol ("<record-type>");
+  SCM record_type = record_type_name; // FIXME
   SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
   SCM fields = cell_nil;
   fields = cons (cstring_to_symbol ("buckets"), fields);
   fields = cons (cstring_to_symbol ("size"), fields);
-  fields = cons (hashq_type_name, fields);
   fields = cons (fields, cell_nil);
-  return make_struct (cstring_to_symbol ("<record-type>"), fields, cell_unspecified);
+  fields = cons (hashq_type_name, fields);
+  return make_struct (record_type, fields, cell_unspecified);
 }
 
 SCM
@@ -118,12 +120,17 @@ make_hash_table_ (long size)
 {
   if (!size)
     size = 30 * 27;
+  SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
+  SCM record_type_name = cstring_to_symbol ("<record-type>");
+  //SCM hashq_type = hashq_type_name; // FIXME
+  SCM hashq_type = make_hashq_type ();
+
   SCM buckets = make_vector__ (size);
   SCM values = cell_nil;
   values = cons (buckets, values);
   values = cons (MAKE_NUMBER (size), values);
-  SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
-  return make_struct (hashq_type_name, values, cell_hash_table_printer);
+  values = cons (hashq_type_name, values);
+  return make_struct (hashq_type, values, cell_hash_table_printer);
 }
 
 SCM

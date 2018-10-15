@@ -2415,9 +2415,9 @@ bload_env () ///((internal))
   gc_peek_frame ();
   g_symbols = r1;
   g_stdin = STDIN;
-  // SCM a = struct_ref (r0, 3);
+  // SCM a = struct_ref (r0, 4);
   // a = mes_builtins (a);
-  // struct_set_x (r0, 3, a);
+  // struct_set_x (r0, 4, a);
   r0 = mes_builtins (r0);
 
   if (g_debug > 3)

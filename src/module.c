@@ -24,23 +24,29 @@ SCM struct_set_x_ (SCM x, long i, SCM e);
 SCM
 make_module_type () ///(internal))
 {
+  SCM record_type_name = cstring_to_symbol ("<record-type>");
+  SCM record_type = record_type_name; // FIXME
   SCM module_type_name = cstring_to_symbol ("<module>");
   SCM fields = cell_nil;
   fields = cons (cstring_to_symbol ("globals"), fields);
   fields = cons (cstring_to_symbol ("locals"), fields);
   fields = cons (cstring_to_symbol ("name"), fields);
-  fields = cons (module_type_name, fields);
   fields = cons (fields, cell_nil);
-  return make_struct (cstring_to_symbol ("<record-type>"), fields, cell_unspecified);
+  fields = cons (module_type_name, fields);
+  return make_struct (record_type, fields, cell_unspecified);
 }
 
 SCM
 make_initial_module (SCM a) ///((internal))
 {
   SCM module_type_name = cstring_to_symbol ("<module>");
-  a = acons (module_type_name, make_module_type (), a);
+  // SCM module_type = module_type_name; //FIXME
+  SCM module_type = make_module_type ();
+  a = acons (module_type_name, module_type, a);
+
+  SCM hashq_type = make_hashq_type ();
   SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
-  a = acons (hashq_type_name, make_hashq_type (), a);
+  a = acons (hashq_type_name, hashq_type, a);
 
   SCM name = cons (cstring_to_symbol ("boot"), cell_nil);
   SCM globals = make_hash_table_ (0);
@@ -50,11 +56,11 @@ make_initial_module (SCM a) ///((internal))
   values = cons (globals, values);
   values = cons (locals, values);
   values = cons (name, values);
-  SCM module = make_struct (module_type_name, values, cell_module_printer);
-
+  values = cons (module_type_name, values);
+  SCM module = make_struct (module_type, values, cell_module_printer);
   r0 = cell_nil;
+  r0 = cons (CADR (a), r0);
   r0 = cons (CAR (a), r0);
-
   m0 = module;
   while (TYPE (a) == TPAIR)
     {
@@ -72,10 +78,11 @@ make_initial_module (SCM a) ///((internal))
 SCM
 module_printer (SCM module)
 {
-  fdputs ("#<", g_stdout); display_ (struct_ref_ (module, 0)); fdputc (' ', g_stdout);
-  fdputs ("name: ", g_stdout); display_ (struct_ref_ (module, 2)); fdputc (' ', g_stdout);
-  fdputs ("locals: ", g_stdout); display_ (struct_ref_ (module, 3)); fdputc (' ', g_stdout);
-  SCM table = struct_ref_ (m0, 4);
+  //module = m0;
+  fdputs ("#<", g_stdout); display_ (struct_ref_ (module, 2)); fdputc (' ', g_stdout);
+  fdputs ("name: ", g_stdout); display_ (struct_ref_ (module, 3)); fdputc (' ', g_stdout);
+  fdputs ("locals: ", g_stdout); display_ (struct_ref_ (module, 4)); fdputc (' ', g_stdout);
+  SCM table = struct_ref_ (module, 5);
   fdputs ("globals:\n  ", g_stdout);
   display_ (table);
   fdputc ('>', g_stdout);
@@ -90,7 +97,7 @@ module_variable (SCM module, SCM name)
   if (x == cell_f)
     {
       module = m0;
-      SCM globals = struct_ref_ (module, 4);
+      SCM globals = struct_ref_ (module, 5);
       x = hashq_ref (globals, name, cell_f);
     }
   return x;
@@ -117,6 +124,6 @@ module_define_x (SCM module, SCM name, SCM value)
       eputs ("module_define_x: "); display_error_ (name); eputs ("\n");
     }
   module = m0;
-  SCM globals = struct_ref_ (module, 4);
+  SCM globals = struct_ref_ (module, 5);
   return hashq_set_x (globals, name, value);
 }
