@@ -447,6 +447,7 @@ cdr_ (SCM x)
 {
   return (TYPE (x) != TCHAR
           && TYPE (x) != TNUMBER
+          && TYPE (x) != TPORT
           && (TYPE (CDR (x)) == TPAIR
               || TYPE (CDR (x)) == TREF
               || TYPE (CDR (x)) == TSPECIAL

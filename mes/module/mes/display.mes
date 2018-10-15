@@ -115,6 +115,7 @@
        ((port? x)
         (display "#<port " port)
         (display (core:cdr x) port)
+        (display " ")
         (display (core:car x) port)
         (display ">" port))
        ((variable? x)
