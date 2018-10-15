@@ -55,7 +55,7 @@ SCM r3 = 0;
 // current-module
 SCM m0 = 0;
 // macro
-SCM g_macros = 1;
+SCM g_macros = 0;
 SCM g_ports = 1;
 
 #if __M2_PLANET__
@@ -884,14 +884,24 @@ make_variable_ (SCM var) ///((internal))
 }
 
 SCM
-lookup_macro_ (SCM x, SCM a) ///((internal))
+macro_ref (SCM table, SCM name) ///((internal))
 {
-  if (TYPE (x) != TSYMBOL)
-    return cell_f;
-  SCM m = assq (x, a);
+  return hashq_ref (table, name, cell_nil);
+}
+
+SCM
+get_macro (SCM table, SCM name) ///((internal))
+{
+  SCM m = macro_ref (table, name);
   if (m != cell_f)
     return MACRO (CDR (m));
   return cell_f;
+}
+
+SCM
+macro_set_x (SCM table, SCM name, SCM value) ///((internal))
+{
+  return hashq_set_x (table, name, value);
 }
 
 SCM
@@ -1277,10 +1287,7 @@ eval_apply ()
                     {
                       entry = assq (name, g_macros);
                       if (entry == cell_f)
-                        {
-                          entry = cons (name, cell_f);
-                          g_macros = cons (entry, g_macros);
-                        }
+                        macro_set_x (g_macros, name, cell_f);
                     }
                   else
                     {
@@ -1313,7 +1320,7 @@ eval_apply ()
                 name = CAR (name);
               if (macro_p)
                 {
-                  entry = assq (name, g_macros);
+                  entry = macro_ref (g_macros, name);
                   r1 = MAKE_MACRO (name, r1);
                   set_cdr_x (entry, r1);
                 }
@@ -1388,7 +1395,7 @@ eval_apply ()
       }
 
     if (TYPE (r1) == TPAIR
-        && (macro = lookup_macro_ (CAR (r1), g_macros)) != cell_f)
+        && (macro = get_macro (g_macros, CAR (r1))) != cell_f)
       {
         r1 = cons (macro, CDR (r1));
         push_cc (r1, cell_nil, r0, cell_vm_macro_expand);
@@ -1426,7 +1433,7 @@ eval_apply ()
     if (TYPE (r1) == TPAIR
         && TYPE (CAR (r1)) == TSYMBOL
         && CAR (r1) != cell_symbol_begin
-        && ((macro = assq (cell_symbol_portable_macro_expand, g_macros)) != cell_f)
+        && ((macro = macro_ref (g_macros, cell_symbol_portable_macro_expand)) != cell_f)
         && ((expanders = module_ref (r0, cell_symbol_sc_expander_alist)) != cell_undefined)
         && ((macro = assq (CAR (r1), expanders)) != cell_f))
       {
@@ -2472,6 +2479,7 @@ main (int argc, char *argv[])
   SCM a = mes_environment (argc, argv);
   a = mes_builtins (a);
   m0 = make_initial_module (a);
+  g_macros = make_hash_table_ (0);
 
   if (g_debug > 3)
     module_printer (m0);
