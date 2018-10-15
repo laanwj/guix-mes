@@ -183,6 +183,7 @@ struct scm scm_symbol_sc_expander_alist = {TSYMBOL, "*sc-expander-alist*",0};
 struct scm scm_symbol_call_with_values = {TSYMBOL, "call-with-values",0};
 struct scm scm_call_with_current_continuation = {TSPECIAL, "*call/cc*",0};
 struct scm scm_symbol_call_with_current_continuation = {TSYMBOL, "call-with-current-continuation",0};
+struct scm scm_symbol_boot_module = {TSYMBOL, "boot-module",0};
 struct scm scm_symbol_current_module = {TSYMBOL, "current-module",0};
 struct scm scm_symbol_primitive_load = {TSYMBOL, "primitive-load",0};
 struct scm scm_symbol_read_input_file = {TSYMBOL, "read-input-file",0};
@@ -1001,6 +1002,7 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
           else if (TYPE (CAR (x)) == TSYMBOL
                    && CAR (x) != cell_begin
                    && CAR (x) != cell_symbol_begin
+                   && CAR (x) != cell_symbol_boot_module
                    && CAR (x) != cell_symbol_current_module
                    && CAR (x) != cell_symbol_primitive_load
                    && CAR (x) != cell_symbol_if // HMM
@@ -1166,6 +1168,11 @@ eval_apply ()
       if (CAR (r1) == cell_symbol_current_module)
         {
           r1 = r0;
+          goto vm_return;
+        }
+      if (CAR (r1) == cell_symbol_boot_module)
+        {
+          r1 = m0;
           goto vm_return;
         }
     }
@@ -1338,6 +1345,8 @@ eval_apply ()
     }
   else if (t == TSYMBOL)
     {
+      if (r1 == cell_symbol_boot_module)
+        goto vm_return;
       if (r1 == cell_symbol_current_module)
         goto vm_return;
       if (r1 == cell_symbol_begin) // FIXME
@@ -1737,6 +1746,9 @@ g_free++;
 g_cells[cell_symbol_call_with_current_continuation] = scm_symbol_call_with_current_continuation;
 
 g_free++;
+g_cells[cell_symbol_boot_module] = scm_symbol_boot_module;
+
+g_free++;
 g_cells[cell_symbol_current_module] = scm_symbol_current_module;
 
 g_free++;
@@ -1957,6 +1969,7 @@ g_cells[cell_symbol_sc_expander_alist].car = cstring_to_list (scm_symbol_sc_expa
 g_cells[cell_symbol_call_with_values].car = cstring_to_list (scm_symbol_call_with_values.name);
 g_cells[cell_call_with_current_continuation].car = cstring_to_list (scm_call_with_current_continuation.name);
 g_cells[cell_symbol_call_with_current_continuation].car = cstring_to_list (scm_symbol_call_with_current_continuation.name);
+g_cells[cell_symbol_boot_module].car = cstring_to_list (scm_symbol_boot_module.name);
 g_cells[cell_symbol_current_module].car = cstring_to_list (scm_symbol_current_module.name);
 g_cells[cell_symbol_primitive_load].car = cstring_to_list (scm_symbol_primitive_load.name);
 g_cells[cell_symbol_read_input_file].car = cstring_to_list (scm_symbol_read_input_file.name);
@@ -2025,6 +2038,7 @@ g_cells[cell_vm_return].car = cstring_to_list (scm_vm_return.car);
 #endif
 
   a = acons (cell_symbol_call_with_values, cell_symbol_call_with_values, a);
+  a = acons (cell_symbol_boot_module, cell_symbol_boot_module, a);
   a = acons (cell_symbol_current_module, cell_symbol_current_module, a);
   a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
 

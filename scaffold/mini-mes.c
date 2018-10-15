@@ -117,6 +117,7 @@ struct scm scm_symbol_sc_expander_alist = {TSYMBOL, "*sc-expander-alist*",0};
 struct scm scm_symbol_call_with_values = {TSYMBOL, "call-with-values",0};
 struct scm scm_call_with_current_continuation = {TSPECIAL, "*call/cc*",0};
 struct scm scm_symbol_call_with_current_continuation = {TSYMBOL, "call-with-current-continuation",0};
+struct scm scm_symbol_boot_module = {TSYMBOL, "boot-module",0};
 struct scm scm_symbol_current_module = {TSYMBOL, "current-module",0};
 struct scm scm_symbol_primitive_load = {TSYMBOL, "primitive-load",0};
 struct scm scm_symbol_read_input_file = {TSYMBOL, "read-input-file",0};
