@@ -43,6 +43,7 @@ int isspace (int c);
 int isxdigit (int c);
 int _open3 (char const *file_name, int flags, int mask);
 int _open2 (char const *file_name, int flags);
+int oputc (int c);
 int oputs (char const* s);
 ssize_t write (int filedes, void const *buffer, size_t size);
 char *search_path (char const *file_name);
