@@ -27,23 +27,7 @@ LIBC=${LIBC-c}
 
 ##moduledir=${moduledir-${datadir}${datadir:+/}module}
 
-# native
-# trace "SNARF      gc.c"     ${srcdest}build-aux/mes-snarf.scm src/gc.c
-# trace "SNARF      lib.c"    ${srcdest}build-aux/mes-snarf.scm src/lib.c
-# trace "SNARF      math.c"   ${srcdest}build-aux/mes-snarf.scm src/math.c
-# trace "SNARF      mes.c"    ${srcdest}build-aux/mes-snarf.scm src/mes.c
-# trace "SNARF      posix.c"  ${srcdest}build-aux/mes-snarf.scm src/posix.c
-# trace "SNARF      reader.c" ${srcdest}build-aux/mes-snarf.scm src/reader.c
-# trace "SNARF      vector.c" ${srcdest}build-aux/mes-snarf.scm src/vector.c
-
-# cc32-mes
-trace "SNARF.mes  gc.c"     ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
-trace "SNARF.mes  lib.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
-trace "SNARF.mes  math.c"   ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
-trace "SNARF.mes  mes.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
-trace "SNARF.mes  posix.c"  ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
-trace "SNARF.mes  reader.c" ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
-trace "SNARF.mes  vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
+sh ${srcdest}build-aux/snarf.sh --mes
 
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crt0
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc32-mes.sh lib/linux/x86-mes-gcc/crt1

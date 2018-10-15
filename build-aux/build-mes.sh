@@ -128,13 +128,7 @@ ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libc+gnu
 ARCHDIR=1 NOLINK=1 bash ${srcdest}build-aux/cc-mes.sh lib/libgetopt
 
 MES_ARENA=${MES_ARENA-100000000}
-trace "SNARF.mes  gc.c"     ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
-trace "SNARF.mes  lib.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
-trace "SNARF.mes  math.c"   ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
-trace "SNARF.mes  mes.c"    ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
-trace "SNARF.mes  posix.c"  ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
-trace "SNARF.mes  reader.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
-trace "SNARF.mes  vector.c" ./pre-inst-env bash ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
+sh ${srcdest}build-aux/snarf.sh --mes
 
 if [ -n "$SEED" ]; then
     bash ${srcdest}build-aux/cc-mes.sh src/mes

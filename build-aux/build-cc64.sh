@@ -26,13 +26,7 @@ set -e
 LIBC=${LIBC-c}
 
 # cc64-mes
-trace "SNARF.mes  gc.c"     ${srcdest}build-aux/mes-snarf.scm --mes src/gc.c
-trace "SNARF.mes  lib.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/lib.c
-trace "SNARF.mes  math.c"   ${srcdest}build-aux/mes-snarf.scm --mes src/math.c
-trace "SNARF.mes  mes.c"    ${srcdest}build-aux/mes-snarf.scm --mes src/mes.c
-trace "SNARF.mes  posix.c"  ${srcdest}build-aux/mes-snarf.scm --mes src/posix.c
-trace "SNARF.mes  reader.c" ${srcdest}build-aux/mes-snarf.scm --mes src/reader.c
-trace "SNARF.mes  vector.c" ${srcdest}build-aux/mes-snarf.scm --mes src/vector.c
+sh ${srcdest}build-aux/snarf.sh --mes
 
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crt0
 ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc64-mes.sh lib/linux/x86_64-mes-gcc/crt1
