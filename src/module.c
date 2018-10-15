@@ -18,11 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SCM make_vector__ (long k);
 SCM struct_ref_ (SCM x, long i);
 SCM struct_set_x_ (SCM x, long i, SCM e);
-SCM vector_ref_ (SCM x, long i);
-SCM vector_set_x_ (SCM x, long i, SCM e);
 
 SCM
 make_initial_module (SCM a) ///((internal))
@@ -37,8 +34,7 @@ make_initial_module (SCM a) ///((internal))
   a = acons (module_type_name, module_type, a);
   SCM values = cell_nil;
   SCM name = cons (cstring_to_symbol ("boot"), cell_nil);
-  //SCM globals = make_vector__ (28 * 27);
-  SCM globals = make_vector__ (30 * 27);
+  SCM globals = make_hash_table_ (0);
   values = cons (globals, values);
   SCM locals = cell_nil;
   values = cons (locals, values);
@@ -89,28 +85,6 @@ module_printer (SCM module)
   eputc ('>');
 }
 
-
-
-int
-char_hash (int c)
-{
-  if (c >= 'a' && c <= 'z')
-    return c - 'a';
-  return 27;
-}
-
-int
-module_hash (SCM x) ///((internal))
-{
-  int hash = char_hash (VALUE (CAR (STRING (x)))) * 27;
-  if (TYPE (CDR (STRING (x))) == TPAIR)
-    hash = hash + char_hash (VALUE (CADR (STRING (x))));
-  else
-    hash = hash + char_hash (0);
-  assert (hash <= 756);
-  return hash;
-}
-
 SCM
 module_variable (SCM module, SCM name)
 {
@@ -119,12 +93,9 @@ module_variable (SCM module, SCM name)
   SCM x = assq (name, locals);
   if (x == cell_f)
     {
-      int hash = module_hash (name);
       module = m0;
       SCM globals = struct_ref_ (module, 4);
-      SCM bucket = vector_ref_ (globals, hash);
-      if (TYPE (bucket) == TPAIR)
-        x = assq (name, bucket);
+      x = hashq_ref (globals, name, cell_f);
     }
   return x;
 }
@@ -149,13 +120,7 @@ module_define_x (SCM module, SCM name, SCM value)
     {
       eputs ("module_define_x: "); display_error_ (name); eputs ("\n");
     }
-  int hash = module_hash (name);
   module = m0;
   SCM globals = struct_ref_ (module, 4);
-  SCM bucket = vector_ref_ (globals, hash);
-  if (TYPE (bucket) != TPAIR)
-    bucket = cell_nil;
-  bucket = acons (name, value, bucket);
-  vector_set_x_ (globals, hash, bucket);
-  return cell_t;
+  return hashq_set_x (globals, name, value);
 }

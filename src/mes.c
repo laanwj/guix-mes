@@ -279,6 +279,7 @@ int g_function = 0;
 
 #if !__GNUC__ || !_POSIX_SOURCE
 #include "gc.mes.h"
+#include "hash.mes.h"
 #include "lib.mes.h"
 #include "math.mes.h"
 #include "mes.mes.h"
@@ -289,6 +290,7 @@ int g_function = 0;
 #include "vector.mes.h"
 #else
 #include "gc.h"
+#include "hash.h"
 #include "lib.h"
 #include "math.h"
 #include "mes.h"
@@ -1619,6 +1621,7 @@ mes_g_stack (SCM a) ///((internal))
 
 // Environment setup
 
+#include "hash.c"
 #include "module.c"
 #include "posix.c"
 #include "math.c"
@@ -2229,6 +2232,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "mes.mes.i"
 
   // Do not sort: Order of these includes define builtins
+#include "hash.mes.i"
 #include "module.mes.i"
 #include "posix.mes.i"
 #include "math.mes.i"
@@ -2239,6 +2243,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "reader.mes.i"
 
 #include "gc.mes.environment.i"
+#include "hash.mes.environment.i"
 #include "lib.mes.environment.i"
 #include "math.mes.environment.i"
 #include "mes.mes.environment.i"
@@ -2251,6 +2256,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "mes.i"
 
   // Do not sort: Order of these includes define builtins
+#include "hash.i"
 #include "module.i"
 #include "posix.i"
 #include "math.i"
@@ -2261,6 +2267,7 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 #include "reader.i"
 
 #include "gc.environment.i"
+#include "hash.environment.i"
 #include "lib.environment.i"
 #include "math.environment.i"
 #include "mes.environment.i"

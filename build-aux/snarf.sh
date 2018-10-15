@@ -28,6 +28,7 @@ if [ -n "$1" ]; then
     snarf=.mes
 fi
 trace "SNARF$snarf  gc.c"     ${srcdest}build-aux/mes-snarf.scm $1 src/gc.c
+trace "SNARF$snarf  hash.c"   ${srcdest}build-aux/mes-snarf.scm $1 src/hash.c
 trace "SNARF$snarf  lib.c"    ${srcdest}build-aux/mes-snarf.scm $1 src/lib.c
 trace "SNARF$snarf  math.c"   ${srcdest}build-aux/mes-snarf.scm $1 src/math.c
 trace "SNARF$snarf  mes.c"    ${srcdest}build-aux/mes-snarf.scm $1 src/mes.c
