@@ -30,7 +30,8 @@ make_module_type () ///(internal))
   fields = cons (cstring_to_symbol ("locals"), fields);
   fields = cons (cstring_to_symbol ("name"), fields);
   fields = cons (module_type_name, fields);
-  return make_struct (cstring_to_symbol ("record-type"), fields, cell_unspecified);
+  fields = cons (fields, cell_nil);
+  return make_struct (cstring_to_symbol ("<record-type>"), fields, cell_unspecified);
 }
 
 SCM

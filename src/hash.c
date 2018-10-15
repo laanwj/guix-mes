@@ -109,7 +109,8 @@ make_hashq_type () ///((internal))
   fields = cons (cstring_to_symbol ("buckets"), fields);
   fields = cons (cstring_to_symbol ("size"), fields);
   fields = cons (hashq_type_name, fields);
-  return make_struct (cstring_to_symbol ("record-type"), fields, cell_unspecified);
+  fields = cons (fields, cell_nil);
+  return make_struct (cstring_to_symbol ("<record-type>"), fields, cell_unspecified);
 }
 
 SCM
