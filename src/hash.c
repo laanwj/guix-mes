@@ -52,7 +52,8 @@ SCM
 hashq_ref (SCM table, SCM key, SCM dflt)
 {
   unsigned hash = hashq_ (key, 0);
-  SCM bucket = vector_ref_ (table, hash);
+  SCM buckets = struct_ref_ (table, 3);
+  SCM bucket = vector_ref_ (buckets, hash);
   SCM x = cell_f;
   if (TYPE (dflt) == TPAIR)
     x = CAR (dflt);
@@ -65,12 +66,50 @@ SCM
 hashq_set_x (SCM table, SCM key, SCM value)
 {
   unsigned hash = hashq_ (key, 0);
-  SCM bucket = vector_ref_ (table, hash);
+  SCM buckets = struct_ref_ (table, 3);
+  SCM bucket = vector_ref_ (buckets, hash);
   if (TYPE (bucket) != TPAIR)
     bucket = cell_nil;
   bucket = acons (key, value, bucket);
-  vector_set_x_ (table, hash, bucket);
+  vector_set_x_ (buckets, hash, bucket);
   return value;
+}
+
+SCM
+hash_table_printer (SCM table)
+{
+  fdputs ("#<", g_stdout); display_ (struct_ref_ (table, 0)); fdputc (' ', g_stdout);
+  fdputs ("size: ", g_stdout); display_ (struct_ref_ (table, 2)); fdputc (' ', g_stdout);
+  SCM buckets = struct_ref_ (table, 3);
+  fdputs ("buckets: ", g_stdout);
+  for (int i=0; i<LENGTH (buckets); i++)
+    {
+      SCM e = vector_ref_ (buckets, i);
+      if (e != cell_unspecified)
+        {
+          fdputc ('[', g_stdout);
+          while (TYPE (e) == TPAIR)
+            {
+              display_ (CAAR (e));
+              e = CDR (e);
+              if (TYPE (e) == TPAIR)
+                fdputc (' ', g_stdout);
+            }
+          fdputs ("]\n  ", g_stdout);
+        }
+    }
+  fdputc ('>', g_stdout);
+}
+
+SCM
+make_hashq_type () ///((internal))
+{
+  SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
+  SCM fields = cell_nil;
+  fields = cons (cstring_to_symbol ("buckets"), fields);
+  fields = cons (cstring_to_symbol ("size"), fields);
+  fields = cons (hashq_type_name, fields);
+  return make_struct (cstring_to_symbol ("record-type"), fields, cell_unspecified);
 }
 
 SCM
@@ -78,7 +117,12 @@ make_hash_table_ (long size)
 {
   if (!size)
     size = 30 * 27;
-  return make_vector__ (size);
+  SCM buckets = make_vector__ (size);
+  SCM values = cell_nil;
+  values = cons (buckets, values);
+  values = cons (MAKE_NUMBER (size), values);
+  SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
+  return make_struct (hashq_type_name, values, cell_hash_table_printer);
 }
 
 SCM

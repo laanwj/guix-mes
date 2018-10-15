@@ -22,24 +22,35 @@ SCM struct_ref_ (SCM x, long i);
 SCM struct_set_x_ (SCM x, long i, SCM e);
 
 SCM
-make_initial_module (SCM a) ///((internal))
+make_module_type () ///(internal))
 {
+  SCM module_type_name = cstring_to_symbol ("<module>");
   SCM fields = cell_nil;
   fields = cons (cstring_to_symbol ("globals"), fields);
   fields = cons (cstring_to_symbol ("locals"), fields);
   fields = cons (cstring_to_symbol ("name"), fields);
-  fields = cons (cstring_to_symbol ("<module>"), fields);
-  SCM module_type = make_struct (cstring_to_symbol ("record-type"), fields, cell_unspecified);
+  fields = cons (module_type_name, fields);
+  return make_struct (cstring_to_symbol ("record-type"), fields, cell_unspecified);
+}
+
+SCM
+make_initial_module (SCM a) ///((internal))
+{
   SCM module_type_name = cstring_to_symbol ("<module>");
-  a = acons (module_type_name, module_type, a);
-  SCM values = cell_nil;
+  a = acons (module_type_name, make_module_type (), a);
+  SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
+  a = acons (hashq_type_name, make_hashq_type (), a);
+
   SCM name = cons (cstring_to_symbol ("boot"), cell_nil);
   SCM globals = make_hash_table_ (0);
-  values = cons (globals, values);
   SCM locals = cell_nil;
+
+  SCM values = cell_nil;
+  values = cons (globals, values);
   values = cons (locals, values);
   values = cons (name, values);
   SCM module = make_struct (module_type_name, values, cell_module_printer);
+
   r0 = cell_nil;
   r0 = cons (CAR (a), r0);
 
@@ -60,29 +71,13 @@ make_initial_module (SCM a) ///((internal))
 SCM
 module_printer (SCM module)
 {
-  eputs ("#<"); display_error_ (struct_ref_ (module, 0)); eputc (' ');
-  //eputs ("printer: "); display_error_ (struct_ref_ (module, 1)); eputc (' ');
-  eputs ("name: "); display_error_ (struct_ref_ (module, 2)); eputc (' ');
-  eputs ("locals: "); display_error_ (struct_ref_ (module, 3)); eputc (' ');
-  eputs ("globals:\n  ");
-  SCM v = struct_ref_ (m0, 4);
-  for (int i=0; i<LENGTH (v); i++)
-    {
-      SCM e = vector_ref_ (v, i);
-      if (e != cell_unspecified)
-        {
-          eputc ('[');
-          while (TYPE (e) == TPAIR)
-            {
-              display_error_ (CAAR (e));
-              e = CDR (e);
-              if (TYPE (e) == TPAIR)
-                eputc (' ');
-            }
-          eputs ("]\n  ");
-        }
-    }
-  eputc ('>');
+  fdputs ("#<", g_stdout); display_ (struct_ref_ (module, 0)); fdputc (' ', g_stdout);
+  fdputs ("name: ", g_stdout); display_ (struct_ref_ (module, 2)); fdputc (' ', g_stdout);
+  fdputs ("locals: ", g_stdout); display_ (struct_ref_ (module, 3)); fdputc (' ', g_stdout);
+  SCM table = struct_ref_ (m0, 4);
+  fdputs ("globals:\n  ", g_stdout);
+  display_ (table);
+  fdputc ('>', g_stdout);
 }
 
 SCM
