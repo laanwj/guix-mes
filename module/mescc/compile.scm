@@ -209,6 +209,7 @@
       ((mod ,a ,b) (ast->type a info))
       ((mul ,a ,b) (ast->type a info))
       ((not ,a) (ast->type a info))
+      ((pos ,a) (ast->type a info))
       ((neg ,a) (ast->type a info))
       ((eq ,a ,b) (ast->type a info))
       ((ge ,a ,b) (ast->type a info))
@@ -1218,6 +1219,9 @@
                 (info (append-text info (wrap-as (as info 'r-negate)))))
            (append-text info (wrap-as (as info 'test-r))))) ;; hmm, use ast->info?
 
+        ((pos ,expr)
+         (expr->register expr info))
+
         ((neg ,expr)
          (let* ((info (expr->register expr info))
                 (info (allocate-register info))
@@ -1559,6 +1563,8 @@
   (pmatch o
     ((fixed ,a) (cstring->int a))
     ((p-expr ,expr) (expr->number info expr))
+    ((pos ,a)
+     (expr->number info a))
     ((neg ,a)
      (- (expr->number info a)))
     ((add ,a ,b)
