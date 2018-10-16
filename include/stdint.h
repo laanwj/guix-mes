@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Peter De Wachter <pdewacht@gmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -78,6 +79,40 @@ typedef unsigned* uintptr_t;
 #define __MES_PTRDIFF_T
 #undef ptrdiff_t
 typedef long ptrdiff_t;
+#endif
+
+#define CHAR_BIT 8
+#define CHAR_MAX 255
+#define UCHAR_MAX 255
+
+#define INT8_MAX 127
+#define INT8_MIN (-INT8_MAX-1)
+#define UINT8_MAX 255
+
+#define INT16_MAX 32767
+#define INT16_MIN (-INT16_MAX-1)
+#define UINT16_MAX 65535
+
+#define INT32_MAX 2147483647
+#define INT32_MIN (-INT32_MAX-1)
+#define UINT32_MAX 4294967295U
+
+#define INT64_MAX 9223372036854775807LL
+#define INT64_MIN (-INT64_MAX-1)
+#define UINT64_MAX 18446744073709551615ULL
+
+#define INT_MIN -2147483648
+#define INT_MAX 2147483647
+#if __i386__
+#define LONG_MIN INT_MIN
+#define LONG_MAX INT_MAX
+#define UINT_MAX UINT32_MAX
+#define ULONG_MAX UINT32_MAX
+#elif __x86_64__
+#define LONG_MIN INT64_MIN
+#define LONG_MAX INT64_MAX
+#define UINT_MAX UINT32_MAX
+#define ULONG_MAX UINT64_MAX
 #endif
 
 #endif // ! WITH_GLIBC
