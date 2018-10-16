@@ -1012,12 +1012,9 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
           else if (CAR (x) == cell_symbol_quote)
             return cell_unspecified;
           else if (TYPE (CAR (x)) == TSYMBOL
-                   && CAR (x) != cell_begin
-                   && CAR (x) != cell_symbol_begin
                    && CAR (x) != cell_symbol_boot_module
                    && CAR (x) != cell_symbol_current_module
                    && CAR (x) != cell_symbol_primitive_load
-                   && CAR (x) != cell_symbol_if // HMM
                    && !formal_p (CAR (x), formals))
             {
               SCM v = module_variable (r0, CAR (x));
