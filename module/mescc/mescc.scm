@@ -281,7 +281,7 @@
   (let ((status (apply system* args)))
     (when (not (zero? status))
       (stderr "mescc: failed: ~a\n" (string-join args))
-      (exit status))
+      (exit (status:exit-val status)))
     status))
 
 (define (multi-opt option-name) (lambda (o) (and (eq? (car o) option-name) (cdr o))))

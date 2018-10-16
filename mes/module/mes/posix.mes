@@ -57,3 +57,6 @@
 (define (waitpid pid . options)
   (let ((options (if (null? options) 0 (car options))))
     (core:waitpid pid options)))
+
+(define (status:exit-val status)
+  (ash status -8))
