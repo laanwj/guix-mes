@@ -136,7 +136,6 @@ DEFINE movswl_%bx,%ebx 0fbfdb
 DEFINE movw___%ax,0x32 66a3
 DEFINE movzbl_%al,%eax 0fb6c0
 DEFINE movzbl_%bl,%ebx 0fb6db
-DEFINE movzbl_%bl,%ebx 0fb6db
 DEFINE movzbl_(%eax),%eax 0fb600
 DEFINE movzbl_(%ebx),%ebx 0fb61b
 DEFINE movzbl_0x32(%eax),%eax 0fb680
@@ -202,7 +201,6 @@ DEFINE test___%al,%al 84c0
 DEFINE test___%eax,%eax 85c0
 DEFINE test___%ebx,%ebx 85db
 DEFINE xchg___%eax,%ebx 93
-DEFINE xchg___%eax,(%esp) 870424
 DEFINE xchg___%eax,(%esp) 870424
 DEFINE xchg___%ebx,(%esp) 871c24
 DEFINE xor____$i32,%eax 35

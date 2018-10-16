@@ -78,8 +78,6 @@ DEFINE mov____$i32,%rax 48c7c0
 DEFINE mov____$i32,%rdi 48c7c7
 DEFINE mov____$i32,0x8(%rbp) c745
 DEFINE mov____$i64,%r15 49bf
-DEFINE mov____$i64,%rax 48a1
-DEFINE mov____$i64,%rax 48b8
 DEFINE mov____$i64,%rax 48b8
 DEFINE mov____$i64,%rdi 48bf
 DEFINE mov____%al,(%rdi) 8807
@@ -91,7 +89,6 @@ DEFINE mov____%eax,%eax 89c0
 DEFINE mov____%eax,%rax 89c0
 DEFINE mov____%eax,(%rdi) 8907
 DEFINE mov____%eax,0x32(%rbp)  8985
-DEFINE mov____%eax,0x8(%rbp) 8945
 DEFINE mov____%eax,0x8(%rbp) 8945
 DEFINE mov____%edi,%edi 89ff
 DEFINE mov____%edi,%rdi 89ff
