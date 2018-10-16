@@ -2542,6 +2542,7 @@
 (define (fctn-defn:get-name o)
   (pmatch o
     ((_ (ftn-declr (ident ,name) _) _) name)
+    ((_ (ftn-declr (scope (ident ,name)) _) _) name)
     ((_ (ptr-declr (pointer . _) (ftn-declr (ident ,name) _)) _) name)
     (_ (error "fctn-defn:get-name not supported:" o))))
 
@@ -2615,6 +2616,7 @@
 (define (fctn-defn:get-statement o)
   (pmatch o
     ((_ (ftn-declr (ident _) _) ,statement) statement)
+    ((_ (ftn-declr (scope (ident _)) _) ,statement) statement)
     ((_ (ptr-declr (pointer . _) (ftn-declr (ident _) . _)) ,statement) statement)
     (_ (error "fctn-defn:get-statement: not supported: " o))))
 
