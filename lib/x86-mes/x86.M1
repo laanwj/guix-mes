@@ -129,11 +129,13 @@ DEFINE mov____0x8(%ebp),%edx 8b55
 DEFINE mov____0x8(%ebp),%esi 8b75
 DEFINE mov____0x8(%ebp),%esp 8b65
 DEFINE movb___%al,0x32 a2
+DEFINE movb___%bl,0x32 881d
 DEFINE movsbl_%al,%eax 0fbec0
 DEFINE movsbl_%bl,%ebx 0fbedb
 DEFINE movswl_%ax,%eax 0fbfc0
 DEFINE movswl_%bx,%ebx 0fbfdb
 DEFINE movw___%ax,0x32 66a3
+DEFINE movw___%bx,0x32 66891d
 DEFINE movzbl_%al,%eax 0fb6c0
 DEFINE movzbl_%bl,%ebx 0fb6db
 DEFINE movzbl_(%eax),%eax 0fb600

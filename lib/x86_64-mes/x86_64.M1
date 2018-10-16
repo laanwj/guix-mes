@@ -1,5 +1,6 @@
 ### GNU Mes --- Maxwell Equations of Software
 ### Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright © 2018 Peter De Wachter <pdewacht@gmail.com>
 ###
 ### This file is part of GNU Mes.
 ###
@@ -54,6 +55,7 @@ DEFINE call___*%rax ffd0
 DEFINE call___*%rdi ffd7
 DEFINE cmp____$i32,%rax 483d
 DEFINE cmp____$i8,%rax 4883f8
+DEFINE cmp____$i8,%rdi 4883ff
 DEFINE cmp____%r15,%rax 4c39f8
 DEFINE cmp____%r15,%rdi 4c39ff
 DEFINE cqto 4899
