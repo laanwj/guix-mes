@@ -38,6 +38,11 @@
             %arch
             %compiler
             ))
+(cond-expand
+ (guile-2)
+ (guile
+  (define %host-type (string-append (utsname:machine (uname)) "linux-gnu")))
+ (else))
 
 (define-macro (mes-use-module . rest) #t)
 (define builtin? procedure?) ; not strictly true, but ok for tests/*.test
