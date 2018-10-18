@@ -134,6 +134,12 @@ struct scm scm_symbol_wrong_number_of_args = {TSYMBOL, "wrong-number-of-args",0}
 struct scm scm_symbol_wrong_type_arg = {TSYMBOL, "wrong-type-arg",0};
 struct scm scm_symbol_unbound_variable = {TSYMBOL, "unbound-variable",0};
 
+struct scm scm_symbol_hashq_table = {TSYMBOL, "<hashq-table>",0};
+struct scm scm_symbol_record_type = {TSYMBOL, "<record-type>",0};
+struct scm scm_symbol_module = {TSYMBOL, "<module>",0};
+struct scm scm_symbol_buckets = {TSYMBOL, "buckets",0};
+struct scm scm_symbol_size = {TSYMBOL, "size",0};
+
 struct scm scm_symbol_argv = {TSYMBOL, "%argv",0};
 struct scm scm_symbol_mes_prefix = {TSYMBOL, "%prefix",0};
 struct scm scm_symbol_mes_version = {TSYMBOL, "%version",0};
@@ -643,6 +649,24 @@ assq (SCM x, SCM a)
   //FIXME: move into fast-non eq_p-ing assq core:assq?
   //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
   while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
+  return a != cell_nil ? CAR (a) : cell_f;
+}
+
+SCM
+assoc_string (SCM x, SCM a) ///(internal))
+{
+  while (a != cell_nil && list_of_char_equal_p (STRING (x), STRING (CAAR (a))) == cell_f)
+    a = CDR (a);
+  return a != cell_nil ? CAR (a) : cell_f;
+}
+
+SCM
+assoc (SCM x, SCM a)
+{
+  if (TYPE (x) == TSTRING)
+    return assoc_string (x, a);
+  while (a != cell_nil && equal2_p (x, CAAR (a)) == cell_f)
+    a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
 }
 

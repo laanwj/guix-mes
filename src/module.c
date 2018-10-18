@@ -24,29 +24,24 @@ SCM struct_set_x_ (SCM x, long i, SCM e);
 SCM
 make_module_type () ///(internal))
 {
-  SCM record_type_name = cstring_to_symbol ("<record-type>");
-  SCM record_type = record_type_name; // FIXME
-  SCM module_type_name = cstring_to_symbol ("<module>");
+  SCM record_type = cell_symbol_record_type; // FIXME
   SCM fields = cell_nil;
   fields = cons (cstring_to_symbol ("globals"), fields);
   fields = cons (cstring_to_symbol ("locals"), fields);
   fields = cons (cstring_to_symbol ("name"), fields);
   fields = cons (fields, cell_nil);
-  fields = cons (module_type_name, fields);
+  fields = cons (cell_symbol_module, fields);
   return make_struct (record_type, fields, cell_unspecified);
 }
 
 SCM
 make_initial_module (SCM a) ///((internal))
 {
-  SCM module_type_name = cstring_to_symbol ("<module>");
-  // SCM module_type = module_type_name; //FIXME
   SCM module_type = make_module_type ();
-  a = acons (module_type_name, module_type, a);
+  a = acons (cell_symbol_module, module_type, a);
 
   SCM hashq_type = make_hashq_type ();
-  SCM hashq_type_name = cstring_to_symbol ("<hashq-table>");
-  a = acons (hashq_type_name, hashq_type, a);
+  a = acons (cell_symbol_hashq_table, hashq_type, a);
 
   SCM name = cons (cstring_to_symbol ("boot"), cell_nil);
   SCM globals = make_hash_table_ (0);
@@ -56,7 +51,7 @@ make_initial_module (SCM a) ///((internal))
   values = cons (globals, values);
   values = cons (locals, values);
   values = cons (name, values);
-  values = cons (module_type_name, values);
+  values = cons (cell_symbol_module, values);
   SCM module = make_struct (module_type, values, cell_module_printer);
   r0 = cell_nil;
   r0 = cons (CADR (a), r0);
@@ -66,7 +61,7 @@ make_initial_module (SCM a) ///((internal))
     {
       if (g_debug > 3)
         {
-          eputs ("entry="); display_error_ (CAR (a)); eputs ("\n");
+          eputs ("entry="); write_error_ (CAR (a)); eputs ("\n");
         }
       module_define_x (module, CAAR (a), CDAR (a));
       a = CDR (a);
@@ -98,7 +93,7 @@ module_variable (SCM module, SCM name)
     {
       module = m0;
       SCM globals = struct_ref_ (module, 5);
-      x = hashq_ref (globals, name, cell_f);
+      x = hashq_get_handle (globals, name, cell_f);
     }
   return x;
 }

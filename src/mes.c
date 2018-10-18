@@ -28,7 +28,7 @@
 #if POSIX
 long ARENA_SIZE = 100000000;
 #else
-long ARENA_SIZE = 200000; // 32b: 2MiB, 64b: 4 MiB
+long ARENA_SIZE = 300000; // 32b: 3MiB, 64b: 6 MiB
 #endif
 long MAX_ARENA_SIZE = 100000000;
 long STACK_SIZE = 20000;
@@ -199,6 +199,12 @@ struct scm scm_symbol_system_error = {TSYMBOL, "system-error",0};
 struct scm scm_symbol_wrong_number_of_args = {TSYMBOL, "wrong-number-of-args",0};
 struct scm scm_symbol_wrong_type_arg = {TSYMBOL, "wrong-type-arg",0};
 struct scm scm_symbol_unbound_variable = {TSYMBOL, "unbound-variable",0};
+
+struct scm scm_symbol_hashq_table = {TSYMBOL, "<hashq-table>",0};
+struct scm scm_symbol_record_type = {TSYMBOL, "<record-type>",0};
+struct scm scm_symbol_module = {TSYMBOL, "<module>",0};
+struct scm scm_symbol_buckets = {TSYMBOL, "buckets",0};
+struct scm scm_symbol_size = {TSYMBOL, "size",0};
 
 struct scm scm_symbol_argv = {TSYMBOL, "%argv",0};
 struct scm scm_symbol_mes_prefix = {TSYMBOL, "%prefix",0};
@@ -930,7 +936,9 @@ make_variable_ (SCM var) ///((internal))
 SCM
 macro_ref (SCM table, SCM name) ///((internal))
 {
-  return hashq_ref (table, name, cell_nil);
+  if (TYPE (name) == TSYMBOL)
+    return hashq_get_handle (table, name, cell_nil);
+  return cell_f;
 }
 
 SCM
@@ -1837,6 +1845,21 @@ g_free++;
 g_cells[cell_symbol_unbound_variable] = scm_symbol_unbound_variable;
 
 g_free++;
+g_cells[cell_symbol_hashq_table] = scm_symbol_hashq_table;
+
+g_free++;
+g_cells[cell_symbol_record_type] = scm_symbol_record_type;
+
+g_free++;
+g_cells[cell_symbol_module] = scm_symbol_module;
+
+g_free++;
+g_cells[cell_symbol_buckets] = scm_symbol_buckets;
+
+g_free++;
+g_cells[cell_symbol_size] = scm_symbol_size;
+
+g_free++;
 g_cells[cell_symbol_argv] = scm_symbol_argv;
 
 g_free++;
@@ -2034,6 +2057,11 @@ g_cells[cell_symbol_system_error].car = cstring_to_list (scm_symbol_system_error
 g_cells[cell_symbol_wrong_number_of_args].car = cstring_to_list (scm_symbol_wrong_number_of_args.name);
 g_cells[cell_symbol_wrong_type_arg].car = cstring_to_list (scm_symbol_wrong_type_arg.name);
 g_cells[cell_symbol_unbound_variable].car = cstring_to_list (scm_symbol_unbound_variable.name);
+g_cells[cell_symbol_hashq_table].car = cstring_to_list (scm_symbol_hashq_table.name);
+g_cells[cell_symbol_record_type].car = cstring_to_list (scm_symbol_record_type.name);
+g_cells[cell_symbol_module].car = cstring_to_list (scm_symbol_module.name);
+g_cells[cell_symbol_buckets].car = cstring_to_list (scm_symbol_buckets.name);
+g_cells[cell_symbol_size].car = cstring_to_list (scm_symbol_size.name);
 g_cells[cell_symbol_argv].car = cstring_to_list (scm_symbol_argv.name);
 g_cells[cell_symbol_mes_prefix].car = cstring_to_list (scm_symbol_mes_prefix.name);
 g_cells[cell_symbol_mes_version].car = cstring_to_list (scm_symbol_mes_version.name);
