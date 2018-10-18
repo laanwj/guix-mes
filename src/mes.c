@@ -409,23 +409,29 @@ make_cell_ (SCM type, SCM car, SCM cdr)
 }
 
 SCM
-make_symbol_ (SCM s) ///((internal))
+make_symbol_ (SCM string) ///((internal))
 {
-  SCM x = make_cell__ (TSYMBOL, s, 0);
-  g_symbols = cons (x, g_symbols);
+  SCM x = make_cell__ (TSYMBOL, STRING (string), 0);
+  hash_set_x (g_symbols, string, x);
+
+  if (g_debug > 3)
+    hash_table_printer (g_symbols);
+
   return x;
 }
 
 SCM
 list_of_char_equal_p (SCM a, SCM b) ///((internal))
 {
-  while (a != cell_nil && b != cell_nil && VALUE (CAR (a)) == VALUE (CAR (b)))
-    {
-      assert (TYPE (CAR (a)) == TCHAR);
-      assert (TYPE (CAR (b)) == TCHAR);
-      a = CDR (a);
-      b = CDR (b);
-    }
+  assert (TYPE (CAR (a)) == TCHAR);
+  if (TYPE (CAR (b)) == TCHAR)
+    while (a != cell_nil && b != cell_nil && VALUE (CAR (a)) == VALUE (CAR (b)))
+      {
+        assert (TYPE (CAR (a)) == TCHAR);
+        assert (TYPE (CAR (b)) == TCHAR);
+        a = CDR (a);
+        b = CDR (b);
+      }
   return (a == cell_nil && b == cell_nil) ? cell_t : cell_f;
 }
 
@@ -438,19 +444,12 @@ assoc_string (SCM x, SCM a) ///((internal))
 }
 
 SCM
-list_to_symbol (SCM s)
+list_to_symbol (SCM lst)
 {
-  SCM x = g_symbols;
-  while (x)
-    {
-      if (list_of_char_equal_p (STRING (CAR (x)), s) == cell_t)
-        break;
-      x = CDR (x);
-    }
-  if (x)
-    x = CAR (x);
-  if (!x)
-    x = make_symbol_ (s);
+  SCM key = MAKE_STRING (lst);
+  SCM x = hash_ref (g_symbols, key, cell_f);
+  if (x == cell_f)
+    x = make_symbol_ (key);
   return x;
 }
 
@@ -851,22 +850,25 @@ assq (SCM x, SCM a)
   if (TYPE (a) != TPAIR)
     return cell_f;
   int t = TYPE (x);
-  if (t == TCHAR
-      || t == TNUMBER)
+  if (t == TSYMBOL
+      || t == TSPECIAL)
+    while (a != cell_nil && x != CAAR (a))
+      a = CDR (a);
+  else if (t == TCHAR
+           || t == TNUMBER)
       {
         SCM v = VALUE (x);
         while (a != cell_nil && v != VALUE (CAAR (a)))
           a = CDR (a);
       }
-    else if (t == TKEYWORD)
-      {
-        SCM v = STRING (x);
-        while (a != cell_nil && v != STRING (CAAR (a)))
-          a = CDR (a);
-      }
-  // else if (t == TSYMBOL)
-  // else if (t == TSPECIAL)
+  else if (t == TKEYWORD)
+    {
+      SCM v = STRING (x);
+      while (a != cell_nil && v != STRING (CAAR (a)))
+        a = CDR (a);
+    }
   else
+    /* pointer equality, e.g. on strings. */
     while (a != cell_nil && x != CAAR (a))
       a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
@@ -935,26 +937,26 @@ make_variable_ (SCM var) ///((internal))
 }
 
 SCM
-macro_ref (SCM table, SCM name) ///((internal))
+macro_get_handle (SCM name)
 {
   if (TYPE (name) == TSYMBOL)
-    return hashq_get_handle (table, name, cell_nil);
+    return hashq_get_handle (g_macros, name, cell_nil);
   return cell_f;
 }
 
 SCM
-get_macro (SCM table, SCM name) ///((internal))
+get_macro (SCM name) ///((internal))
 {
-  SCM m = macro_ref (table, name);
+  SCM m = macro_get_handle (name);
   if (m != cell_f)
     return MACRO (CDR (m));
   return cell_f;
 }
 
 SCM
-macro_set_x (SCM table, SCM name, SCM value) ///((internal))
+macro_set_x (SCM name, SCM value) ///((internal))
 {
-  return hashq_set_x (table, name, value);
+  return hashq_set_x (g_macros, name, value);
 }
 
 SCM
@@ -1326,7 +1328,7 @@ eval_apply ()
                     {
                       entry = assq (name, g_macros);
                       if (entry == cell_f)
-                        macro_set_x (g_macros, name, cell_f);
+                        macro_set_x (name, cell_f);
                     }
                   else
                     {
@@ -1359,7 +1361,7 @@ eval_apply ()
                 name = CAR (name);
               if (macro_p)
                 {
-                  entry = macro_ref (g_macros, name);
+                  entry = macro_get_handle (name);
                   r1 = MAKE_MACRO (name, r1);
                   set_cdr_x (entry, r1);
                 }
@@ -1434,7 +1436,7 @@ eval_apply ()
       }
 
     if (TYPE (r1) == TPAIR
-        && (macro = get_macro (g_macros, CAR (r1))) != cell_f)
+        && (macro = get_macro (CAR (r1))) != cell_f)
       {
         r1 = cons (macro, CDR (r1));
         push_cc (r1, cell_nil, r0, cell_vm_macro_expand);
@@ -1472,7 +1474,7 @@ eval_apply ()
     if (TYPE (r1) == TPAIR
         && TYPE (CAR (r1)) == TSYMBOL
         && CAR (r1) != cell_symbol_begin
-        && ((macro = macro_ref (g_macros, cell_symbol_portable_macro_expand)) != cell_f)
+        && ((macro = macro_get_handle (cell_symbol_portable_macro_expand)) != cell_f)
         && ((expanders = module_ref (r0, cell_symbol_sc_expander_alist)) != cell_undefined)
         && ((macro = assq (CAR (r1), expanders)) != cell_f))
       {
@@ -1998,13 +2000,7 @@ g_cells[cell_test] = scm_test;
 #include "mes.symbols.i"
 #endif
 
-
   g_symbol_max = g_free++;
-  g_symbols = 0;
-  for (int i=1; i<g_symbol_max; i++)
-    g_symbols = cons (i, g_symbols);
-
-  SCM a = cell_nil;
 
 #if MES_MINI
 
@@ -2118,6 +2114,11 @@ g_cells[cell_vm_return].car = cstring_to_list (scm_vm_return.car);
 #include "mes.symbol-names.i"
 #endif
 
+  g_symbols = make_hash_table_ (500);
+  for (int i=1; i<g_symbol_max; i++)
+    hash_set_x (g_symbols, MAKE_STRING (STRING (i)), i);
+
+  SCM a = cell_nil;
   a = acons (cell_symbol_call_with_values, cell_symbol_call_with_values, a);
   a = acons (cell_symbol_boot_module, cell_symbol_boot_module, a);
   a = acons (cell_symbol_current_module, cell_symbol_current_module, a);
@@ -2494,13 +2495,7 @@ bload_env () ///((internal))
   if (g_debug > 3)
     {
       eputs ("symbols: ");
-      SCM s = g_symbols;
-      while (s && s != cell_nil)
-        {
-          display_error_ (CAR (s));
-          eputs (" ");
-          s = CDR (s);
-        }
+      write_error_ (g_symbols);
       eputs ("\n");
       eputs ("functions: ");
       eputs (itoa (g_function));

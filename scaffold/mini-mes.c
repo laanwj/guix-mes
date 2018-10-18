@@ -341,15 +341,15 @@ list_of_char_equal_p (SCM a, SCM b) ///((internal))
 }
 
 SCM
-list_to_symbol (SCM s)
+list_to_symbol (SCM lst)
 {
   SCM x = g_symbols;
   while (x) {
-    if (list_of_char_equal_p (STRING (CAR (x)), s) == cell_t) break;
+    if (list_of_char_equal_p (STRING (CAR (x)), lst) == cell_t) break;
     x = CDR (x);
   }
   if (x) x = CAR (x);
-  if (!x) x = make_symbol_ (s);
+  if (!x) x = make_symbol_ (lst);
   return x;
 }
 
@@ -646,9 +646,8 @@ call (SCM fn, SCM x)
 SCM
 assq (SCM x, SCM a)
 {
-  //FIXME: move into fast-non eq_p-ing assq core:assq?
-  //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
-  while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
+  while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f)
+    a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
 }
 
@@ -710,11 +709,8 @@ make_closure_ (SCM args, SCM body, SCM a) ///((internal))
 }
 
 SCM
-lookup_macro_ (SCM x, SCM a) ///((internal))
+macro_get_handle (SCM name)
 {
-  if (TYPE (x) != TSYMBOL) return cell_f;
-  SCM m = assq_ref_env (x, a);
-  if (TYPE (m) == TMACRO) return MACRO (m);
   return cell_f;
 }
 
