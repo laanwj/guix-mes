@@ -16,7 +16,6 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define (pair? x) (eq? (core:type x) <cell:pair>))
 (define (vector? x)
   (eq? (core:type x) <cell:vector>))
 
@@ -85,7 +84,7 @@
 ;;          ((lambda (a d)
 ;;             (core:display "  a=") (core:display a) (core:display "\n")
 ;;             (core:display "  d=") (core:display d)
-            
+
 ;;             (if (pair? d)
 ;;                 (if (eq? (car d) 'quote)
 ;;                     (if (and (pair? a) (eq? (car a) 'quote))
@@ -133,7 +132,7 @@
             (core:display "\n")
             (core:display "CDR d=") (core:display d)
             (core:display "\n")
-            
+
                  (if (pair? d)
                      (if (eq? (car d) 'quote)
                          (if (and (pair? a) (eq? (car a) 'quote))

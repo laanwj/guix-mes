@@ -32,7 +32,6 @@
 ;; end boot-00.scm
 
 ;; boot-01.scm
-(define (pair? x) (eq? (core:type x) <cell:pair>))
 (define (not x) (if x #f #t))
 
 (define (display x . rest)

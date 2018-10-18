@@ -36,7 +36,6 @@
 (define <cell:pair> 7)
 (define <cell:string> 10)
 
-(define (pair? x) (eq? (core:type x) <cell:pair>))
 (define (not x) (if x #f #t))
 
 (define (display x . rest)

@@ -75,9 +75,6 @@
 (define (number? x)
   (eq? (core:type x) <cell:number>))
 
-(define (pair? x)
-  (eq? (core:type x) <cell:pair>))
-
 (define (port? x)
   (eq? (core:type x) <cell:port>))
 

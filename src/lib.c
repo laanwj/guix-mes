@@ -348,3 +348,9 @@ last_pair (SCM x)
     x = CDR (x);
   return x;
 }
+
+SCM
+pair_p (SCM x)
+{
+  return TYPE (x) == TPAIR ? cell_t : cell_f;
+}
