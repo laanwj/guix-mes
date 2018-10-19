@@ -424,6 +424,14 @@ list_of_char_equal_p (SCM a, SCM b) ///((internal))
 }
 
 SCM
+assoc_string (SCM x, SCM a) ///((internal))
+{
+  while (a != cell_nil && list_of_char_equal_p (STRING (x), STRING (CAAR (a))) == cell_f)
+    a = CDR (a);
+  return a != cell_nil ? CAR (a) : cell_f;
+}
+
+SCM
 list_to_symbol (SCM s)
 {
   SCM x = g_symbols;
@@ -854,6 +862,16 @@ assq (SCM x, SCM a)
   else
     while (a != cell_nil && x != CAAR (a))
       a = CDR (a);
+  return a != cell_nil ? CAR (a) : cell_f;
+}
+
+SCM
+assoc (SCM x, SCM a)
+{
+  if (TYPE (x) == TSTRING)
+    return assoc_string (x, a);
+  while (a != cell_nil && equal2_p (x, CAAR (a)) == cell_f)
+    a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
 }
 

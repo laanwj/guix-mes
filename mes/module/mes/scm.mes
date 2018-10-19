@@ -108,11 +108,6 @@
 (define assv assq)
 (define assv-ref assq-ref)
 
-(define (assoc key alist)
-  (if (not (pair? alist)) #f
-      (if (equal? key (caar alist)) (car alist)
-          (assoc key (cdr alist)))))
-
 (define (assoc-ref alist key)
   (let ((entry (assoc key alist)))
     (if entry (cdr entry)
