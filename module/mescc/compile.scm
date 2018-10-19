@@ -1546,6 +1546,7 @@
 (define (cstring->int o)
   (let ((o (cond ((string-suffix? "ULL" o) (string-drop-right o 3))
                  ((string-suffix? "UL" o) (string-drop-right o 2))
+                 ((string-suffix? "U" o) (string-drop-right o 1))
                  ((string-suffix? "LL" o) (string-drop-right o 2))
                  ((string-suffix? "L" o) (string-drop-right o 1))
                  (else o))))
