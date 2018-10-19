@@ -457,6 +457,14 @@ length (SCM x)
 SCM apply (SCM, SCM, SCM);
 
 SCM
+assq_ref_env (SCM x, SCM a)
+{
+  x = assq (x, a);
+  if (x == cell_f) return cell_undefined;
+  return CDR (x);
+}
+
+SCM
 error (SCM key, SCM x)
 {
   SCM throw;
@@ -636,14 +644,6 @@ assq (SCM x, SCM a)
   //while (a != cell_nil && x != CAAR (a)) a = CDR (a);
   while (a != cell_nil && eq_p (x, CAAR (a)) == cell_f) a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
-}
-
-SCM
-assq_ref_env (SCM x, SCM a)
-{
-  x = assq (x, a);
-  if (x == cell_f) return cell_undefined;
-  return CDR (x);
 }
 
 SCM
