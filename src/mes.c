@@ -590,6 +590,7 @@ error (SCM key, SCM x)
   eputs (": ");
   write_error_ (x);
   eputs ("\n");
+  assert (0);
   exit (1);
 }
 
