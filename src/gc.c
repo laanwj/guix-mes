@@ -232,3 +232,77 @@ gc ()
       eputs ("\n");
     }
 }
+
+SCM
+gc_debug ()
+{
+  r0 = MAKE_NUMBER (5);
+  r1 = MAKE_NUMBER (4);
+  r2 = MAKE_NUMBER (3);
+  r3 = MAKE_NUMBER (2);
+
+  gc_push_frame ();
+  for (long i=g_stack; i<STACK_SIZE; i++)
+    {
+      long c = g_stack_array[i];
+      eputs ("stack["); eputs (itoa (i-STACK_SIZE)); eputs ("]: "); eputs (itoa (c));
+      int t = TYPE (c);
+      eputs (" ");
+      eputs (itoa (t));
+      if (t == TSYMBOL || t == TSPECIAL || t == TNUMBER)
+        {
+          eputs (" ");
+          write_error_ (c);
+        }
+      eputs ("\n");
+    }
+
+  gc_ ();
+
+  eputs ("\n");
+  for (long i=g_stack; i<STACK_SIZE; i++)
+    {
+      long c = g_stack_array[i];
+      eputs ("stack["); eputs (itoa (i-STACK_SIZE)); eputs ("]: "); eputs (itoa (c));
+      int t = TYPE (c);
+      eputs (" ");
+      eputs (itoa (t));
+      if (t == TSYMBOL || t == TSPECIAL || t == TNUMBER)
+        {
+          eputs (" ");
+          write_error_ (c);
+        }
+      if (t == TBROKEN_HEART)
+        {
+          eputs (" ");
+          c = g_cells[c].car;
+
+          eputs ("=> "); eputs (itoa (c));
+          int t = TYPE (c);
+          eputs (" ");
+          eputs (itoa (t));
+          if (t == TSYMBOL || t == TSPECIAL || t == TNUMBER)
+            {
+              eputs (" ");
+              write_error_ (c);
+            }
+          // if (t == TBROKEN_HEART)
+          //   {
+          //     eputs (" ");
+          //     c = g_cells[c].car;
+
+          //     eputs ("=> "); eputs (itoa (c));
+          //     int t = TYPE (c);
+          //     eputs (" ");
+          //     eputs (itoa (t));
+          //     if (t == TSYMBOL || t == TSPECIAL || t == TNUMBER)
+          //       {
+          //         eputs (" ");
+          //         write_error_ (c);
+          //       }
+          //   }
+        }
+      eputs ("\n");
+    }
+  gc_pop_frame ();
+}
