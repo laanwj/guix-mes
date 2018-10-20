@@ -105,6 +105,10 @@ Environment variables:
   MES=BINARY          run on mes-executable BINARY {mes,guile}
   MES_DEBUG=LEVEL     show debug output with verbosity LEVEL {0..5}
   NYACC_TRACE=1       show Nyacc progress
+
+Report bugs to: bug-mes@gnu.org
+GNU Mes home page: <http://gnu.org/software/mes/>
+General help using GNU software: <http://gnu.org/gethelp/>
 ")
                 (exit (or (and usage? 2) 0)))
            options))))

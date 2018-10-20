@@ -10,6 +10,48 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to bug-mes@gnu.org.
 
+* Changes in 0.19 since 0.18
+** Core
+*** The build system has been simplified.
+*** Mes now prints a backtrace upon error.
+*** Performance has been improved 2-8 times, making Mes 2-10 times slower than Guile.
+*** Mes now supports a module type and uses a `boot-module'.
+*** Mes now supports a hash_table type.
+*** Mes now supports a struct type.
+*** Mes now supports building a %bootstrap-mes seed from Guix.
+** Language
+*** Records are now implemented using struct (WAS: vector).
+*** 44 new functions
+ceil, char-downcase, char-set-adjoin, char-set-complement,
+char-upcase, current-time, delete-file, dup, dup2, file-exists?,
+floor, frame-printer, get-internal-run-time, getcwd, gettimeofday,
+hash, hash-ref, hash-set!, hash-table-printer, hashq,
+hashq-get-handle, hashq-ref, hashq-set, inexact->exact,
+make-hash-table, make-stack, make-struct, module-define!,
+module-printer, module-ref, module-variable, read-line, round,
+stack-length, stack-ref, string-downcase, string-tokenize,
+string-upcase, struct-length, struct-ref, struct-set! struct-vtable,
+struct-vtable, with-error-to-file.
+** MesCC
+*** Assembly defines have been cleaned-up: duplicates deleted, missing added, wrong fixed.
+*** MesCC now supports compiling GNU Bash and GNU Tar.
+**** 6 New functions
+getegid, geteuid, getppid, setgid, setuid, sigdelset, sigprocmask.
+**** 22 New macros
+EACCES, ENOSPC, ESPIPE, INT16_MAX, INT16_MIN, INT32_MAX, INT32_MIN,
+INT64_MAX, INT64_MIN, INT8_MAX, INT8_MIN, LLONG_MAX, LLONG_MIN,
+SIZE_MAX SYS_getegid, SYS_geteuid, SYS_setgid SYS_setuid, S_IRGRP,
+S_IROTH, S_IRWXG, S_IRWXO S_ISGID, S_ISUID, S_IWGRP, S_IWOTH, S_IXGRP,
+S_IXOTH, UINT16_MAX, UINT32_MAX, UINT64_MAX, UINT8_MAX,
+_POSIX_VERSION.
+** Noteworthy bug fixes
+*** Mes now supports characters #\xNN.
+*** Mes now supports assq-ref and assoc-ref with alist == #f.
+*** Mes now support \xNN in strings.  Fixes using Nyacc-0.86.0.
+*** MesCC now supports the unary plus operator.
+*** MesCC now supports the `U' integer suffix.
+*** MesCC now comes with INTnn_MIN/MAX, UINTnn defines in stdint.h.
+*** MesCC now always exits non-zero when assembler or linker fail.
 * Changes in 0.18 since 0.17.1
 ** Core
 *** Mes/MesCC now supports x86_64.

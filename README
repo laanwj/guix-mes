@@ -3,10 +3,10 @@
 
 #+SUBTITLE: Maxwell Equations of Software
 
-[[https://www.gnu.org/software/mes][GNU Mes]] brings a [[http://joyofsource.com/reduced-binary-seed-bootstrap.html][Reduced Binary Seed bootstrap]] to [[https://www.gnu.org/software/guix][GuixSD]] and
-potentially to any other interested GNU/Linux distribution, and aims
-to help create a full source bootstrap as part of the
-[[http://bootstrappable.org][bootstrappable builds]] effort.
+[[https://www.gnu.org/software/mes][GNU Mes]] brings a [[http://joyofsource.com/reduced-binary-seed-bootstrap.html][Reduced Binary Seed bootstrap]] to [[https://www.gnu.org/software/guix][Guix]] and potentially
+to any other interested GNU/Linux distribution, and aims to help
+create a full source bootstrap as part of the [[http://bootstrappable.org][bootstrappable builds]]
+effort.
 
 It consists of a mutual self-hosting Scheme interpreter written in
 ~5,000 LOC of simple C and a Nyacc-based C compiler written in Scheme.
@@ -21,7 +21,7 @@ C-compiler: MesCC.
 Mes+MesCC can compile an only [[http://gitlab.com/janneke/tinycc][lightly patched TinyCC]] that is
 self-hosting.  Using this tcc and the Mes C library we now have a
 Reduced Binary Seed bootstrap for the gnutools triplet: glibc-2.2.5,
-binutils-2.20.1, gcc-2.95.3.  This is enough to bootstrap GuixSD for
+binutils-2.20.1, gcc-2.95.3.  This is enough to bootstrap Guix for
 i686-linux and x86_64-linux.
 
 Mes is inspired by The Maxwell Equations of Software: [[http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf][LISP-1.5]] -- John

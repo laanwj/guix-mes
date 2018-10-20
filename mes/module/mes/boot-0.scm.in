@@ -264,6 +264,10 @@ Ignored for Guile compatibility:
   --fresh-auto-compile
   --no-auto-compile
   -C,--compiled-path=DIR
+
+Report bugs to: bug-mes@gnu.org
+GNU Mes home page: <http://gnu.org/software/mes/>
+General help using GNU software: <http://gnu.org/gethelp/>
 " (or (and usage? (current-error-port)) (current-output-port)))
           (exit (or (and usage? 2) 0)))
      options)

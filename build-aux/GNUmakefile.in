@@ -293,7 +293,7 @@ gen-announce:
 	../gnulib/build-aux/announce-gen\
 	    --release-type=beta\
 	    --package-name=mes\
-	    --previous-version='0.17 '\
+	    --previous-version='0.18 '\
             --current-version=$(VERSION)\
 	    --gpg-key-id=$(GPG_KEY_ID)\
 	    --url-directory=https://ftp.gnu.org/gnu/mes\

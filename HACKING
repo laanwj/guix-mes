@@ -1,7 +1,7 @@
                                                               -*- org -*-
 #+TITLE: Hacking GNU Mes
 
-Copyright © 2016, 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -26,9 +26,7 @@ development.
 ** DEVELOPMENT BUILD
 To help development we assume ./configure sets these variables for make
 
-   CC     -- gcc
-   CC32   -- i686-unknown-linux-gnu-gcc (or on x86, also gcc)
-   CC64   -- gcc for use with Mes C Library: -nostdinc, -nostdlib
+   CC     -- gcc (or i686-unknown-linux-gnu-gcc sans libc)
    GUILE  -- guile
    HEX2   -- hex2
    MES    -- unset
@@ -36,65 +34,64 @@ To help development we assume ./configure sets these variables for make
    prefix -- ""
 
 Mes is supposed to serve as a full equivalent for Guile, however Mes
-~30 times slower than Guile.  That's why we usually don't use Mes
-during development.
+is still about 2 to 10 times slower than Guile.  That's why we usually
+don't use Mes during development.
 
 Gcc is used to verify the sanity of our C sources.
 
 i686-unknown-linux-gnu-gcc is used to compare hex/assembly, to test
 the gcc variant of Mes C Libirary.
-Target prefix: mes-gcc.
+Target prefix: x86-mes-gcc.
 
-gcc (CC64) -nostdinc,-nostdlib is used to compare hex/assembly, to test
-the 64bit variant of Mes C Library.
-Target prefix: x86_64-mes-gcc.
+gcc -nostdinc,-nostdlib is used to compare hex/assembly, to test the
+64bit variant of Mes C Library.  Target prefix: x86_64-mes-gcc.
 
 Guile is used to develop MesCC, the C compiler in Scheme that during
 bootstrapping will be executed by Mes.
 
-mes is built from src/*.c and some out/src/*.h files that are snarfed from
-src/*.c by build-aux/mes-snarf.scm.
-
-Running ./make.scm produces a `script' file.
-
 ** BOOTSTRAP BUILD
 
+    ./configure.sh [--prefix=PREFIX]
     ./build.sh
+    ./install.sh
 
-In bootstrap mode, we don't have gcc (CC), we don't have a 32 bit gcc
-(CC32), we have no guile (GUILE)...but we should have hex2, M1, and
-mes.M1.  That's a bootstrap problem which is currently ignored by
-using the mes-seed package.  mes.M1 will be produced by M2-Planet from
-mes.c.
+In bootstrap mode, we don't have gcc (CC), we don't have a 32 bit gcc,
+we have no guile (GUILE)...but we should have hex2, M1, and mes.M1.
+That's a bootstrap problem which is currently ignored by using the
+mes-seed package.  mes.M1 will be produced by M2-Planet from mes.c.
 
 
 * ROADMAP
 ** TODO
 *** release 0.x, unsorted
-  - replace bootstrap utils with Gash: bash, coreutils, grep, gzip,
+  - mes: prepare src/mes.c for M2-Planet transpiler,
+    Jeremiah branched-out from mes; see https://github.com/oriansj/mes-m2.
+  - mes/mescc: proper docstrings, api reference documentation.
+  - replace bootstrap-binaries with Gash: bash, coreutils, grep, gzip,
     sed, tar.
+  - mes: real module support, Guile compatible (define-module,
+    define-public, export).
+  - mescc: ARMv7/AArch64 support.
+*** after release 1.0
+  - replace initial gcc-2.95.3 with gcc-3.x or 4.x
+  - use 3rd party libc (ucLibc, dietlibc, ...) after Mes and reduce
+    need for bootstrappably-rich Mes C Library?
+  - mes/mescc: bootstrap a `bootstrap-Guile' before bootstrapping tcc?
   - tcc: remove or upstream patches from tcc-boot.
   - tcc: build 0.9.27 directly instead of via 0.9.26, see tinycc
     wip-bootstrappable@0.9.27 branch
-  - mes: performance!
-  - mes: prepare src/mes.c for M2-Planet transpiler,
-    Jeremiah branched-out from mes; see https://github.com/oriansj/mes-m2.
-  - mes: real module support, bonus for supporting Guile's define-module/define-public syntax.
   - mes/mescc: bootstrap a minimal-Guile?
-    + libguile/{eval,init,list,strings,values,..}.c
+    + libguile/{eval,init,list,strings,values,..}.
     + ice-9/eval.scm
   - mescc: have mes-tcc pass all scaffold/tests, scaffold/tinycc tests.
-  - mescc: support long long?
-  - mescc: full support for floats?
-  - mescc: some success with 8cc,pcc,guile/libguile/eval.c?
-  - build: guile/guix/make.scm: add file-types, intermediate, hash all dependencies
-  - get full source syntax-case up (Andre van Tonder?) OR drop it.
-    https://srfi.schemers.org/srfi-72/srfi-72.html
-    psyntax/syntax-case and rewrite Nyacc without syntax-case+R7RS Ellipsis.
-  - mescc: split-off MesCC as as standalone Guile C compiler project.
-*** release 1.0
-  - more architectures (does GuixSD require this, i.e. before 1.0?).
+  - syntax-case bootstrap problem
+    + resolve portable syntax-case bootstrap, or
+    + get full source syntax-case up (Andre van Tonder?)
+      https://srfi.schemers.org/srfi-72/srfi-72.html, or
+    + ... drop it?
+  - mescc: the Hurd support.
 ** DONE
+*** 0.19 GNU mes now compiles TinyCC in ~8min and supports building Bash and GNU Tar.
 *** 0.18 GNU mes now supports GuixSD bootstrap (x86,x86_64) and has native x86_64 support.
 *** 0.17.1 GNU Mes now allows removing glibc, binutils and gcc from the GuixSD bootstrap.
 *** 0.17 GNU Mes is now an official GNU project and bootstraps gcc-4.7.4.
@@ -139,6 +136,9 @@ enough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
 
 
 * Bugs
+** mes: performance, Mes is now 2-10x slower than Guile.
+** mes/mescc lack support for the Hurd.
+** mes: gcc-x86_64 compiled mes segfaults with small arena, or gc_up_arena.
 ** mes: gcc-x86 compiled, tests/srfi-13.test number->string INT-MIN fails:
 test: number->string INT-MIN: fail
 expected: -2147483648
@@ -149,7 +149,6 @@ actual: -./,),(-*,(
 ** mes+mescc: parse tcc.c->tcc.E works, compile tcc.E -> tcc.M1 segfaults.
   time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH ../mes/scripts/mescc -E -o tcc.E -I . -I ../mes/lib -I ../mes/include -D 'CONFIG_TCCDIR="usr/lib/tcc"' -D 'CONFIG_TCC_CRTPREFIX="usr/lib:{B}/lib:."' -D 'CONFIG_TCC_ELFINTERP="/gnu/store/70jxsnpffkl7fdb7qv398n8yi1a3w5nx-glibc-2.26.105-g0890d5379c/lib/ld-linux.so.2"' -D 'CONFIG_TCC_LIBPATHS="/home/janneke/src/tinycc/usr/lib:{B}/lib:."' -D 'CONFIG_TCC_SYSINCLUDEPATHS="../mes/include:usr/include:{B}/include"' -D CONFIG_USE_LIBGCC=1 -D 'TCC_LIBGCC="/home/janneke/src/tinycc/usr/lib/libc+tcc-gcc.mlibc-o"' -D CONFIG_TCC_STATIC=1 -D ONE_SOURCE=yes -D TCC_TARGET_I386=1 -D BOOTSTRAP=1 tcc.c
   time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH MES_ARENA=200000000 ../mes/scripts/mescc -c -o tcc.M1 tcc.E
-** mes: with-fluids: tests/fluids.test test 7 fails with Mes.
 ** mescc: 7n-struct-struct-array.c:  struct file f = {"first.h"};
 ** test/match.test ("nyacc-simple"): hygiene problem in match
 * OLD: Booting from LISP-1.5 into Mes

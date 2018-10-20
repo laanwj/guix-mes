@@ -18,6 +18,13 @@ scaffold/tests/98-fopen.c
 Han-Wen Nienhuys <hanwen@xs4all.nl>
 lib/string/memmem.c (_memmem, memmem)
 
+Peter de Wachter
+Small fixes and additions to
+lib/x86-mes/x86.M1
+lib/x86_64-mes/x86_64.M1
+include/stdint.h
+module/mescc/compile.mes
+
 rain1
 scaffold/tests/90-goto-var.c
 scaffold/tests/91-goto-array.c

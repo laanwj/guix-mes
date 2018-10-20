@@ -33,7 +33,7 @@ Documentation License''.
 @end direntry
 
 @titlepage
-@title Mes Reference Manual
+@title GNU Mes Reference Manual
 @subtitle Full Source Bootstrapping of the GNU GuixSD Operating System
 @author Jan (janneke) Nieuwenhuizen
 
@@ -49,7 +49,7 @@ Edition @value{EDITION} @*
 
 @c *********************************************************************
 @node Top
-@top Mes
+@top GNU Mes
 
 This document describes GNU Mes version @value{VERSION}, a bootstrappable
 Scheme interpreter and C compiler written for bootstrapping the GNU system.
@@ -1039,7 +1039,7 @@ Please send bug reports with full details to @email{bug-mes@@gnu.org}.
 @chapter Acknowledgments
 
 We would like to thank the following people for their help: Jeremiah
-Orians, pdewacht, rain1, Ricardo Wurmus, Rutger van Beusekom.
+Orians, Peter de Wachter, rain1, Ricardo Wurmus, Rutger van Beusekom.
 
 We also thank Ludovic Courtès for creating GuixSD and making the
 bootstrap problem so painfully visible, John McCarthy for creating
