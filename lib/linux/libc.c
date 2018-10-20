@@ -149,3 +149,7 @@ fsync (int filedes)
 {
   return _sys_call1 (SYS_fsync, (int)filedes);
 }
+
+#include "linux/clock_gettime.c"
+#include "linux/gettimeofday.c"
+#include "linux/time.c"

@@ -26,7 +26,7 @@
 
 //#define MES_MINI 1
 #if POSIX
-long ARENA_SIZE = 100000000;
+long ARENA_SIZE = 100000000; // 2.3GiB
 #else
 long ARENA_SIZE = 300000; // 32b: 3MiB, 64b: 6 MiB
 #endif
@@ -271,6 +271,7 @@ struct scm scm_type_variable = {TSYMBOL, "<cell:variable>",0};
 struct scm scm_type_vector = {TSYMBOL, "<cell:vector>",0};
 struct scm scm_type_broken_heart = {TSYMBOL, "<cell:broken-heart>",0};
 
+struct scm scm_symbol_internal_time_units_per_second = {TSYMBOL, "internal-time-units-per-second",0};
 struct scm scm_symbol_compiler = {TSYMBOL, "%compiler",0};
 struct scm scm_symbol_arch = {TSYMBOL, "%arch",0};
 
@@ -2546,6 +2547,7 @@ main (int argc, char *argv[])
 
   SCM a = mes_environment (argc, argv);
   a = mes_builtins (a);
+  a = init_time (a);
   m0 = make_initial_module (a);
   g_macros = make_hash_table_ (0);
 

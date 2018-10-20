@@ -205,6 +205,7 @@ struct scm scm_type_variable = {TSYMBOL, "<cell:variable>",0};
 struct scm scm_type_vector = {TSYMBOL, "<cell:vector>",0};
 struct scm scm_type_broken_heart = {TSYMBOL, "<cell:broken-heart>",0};
 
+struct scm scm_symbol_internal_time_units_per_second = {TSYMBOL, "internal-time-units-per-second",0};
 struct scm scm_symbol_compiler = {TSYMBOL, "%compiler",0};
 struct scm scm_symbol_arch = {TSYMBOL, "%arch",0};
 

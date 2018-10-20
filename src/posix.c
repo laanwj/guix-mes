@@ -18,10 +18,12 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/stat.h>
-#include <sys/wait.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 int readchar ();
@@ -302,4 +304,51 @@ waitpid_ (SCM pid, SCM options)
   int status;
   int child = waitpid (VALUE (pid), &status, VALUE (options));
   return cons (MAKE_NUMBER (child), MAKE_NUMBER (status));
+}
+
+#if __x86_64__
+/* Nanoseconds on 64-bit systems with POSIX timers.  */
+#define TIME_UNITS_PER_SECOND 1000000000
+#else
+/* Milliseconds for everyone else.  */
+#define TIME_UNITS_PER_SECOND 1000
+#endif
+
+struct timespec g_start_time;
+SCM
+init_time (SCM a) ///((internal))
+{
+  clock_gettime (CLOCK_PROCESS_CPUTIME_ID, &g_start_time);
+  a = acons (cell_symbol_internal_time_units_per_second, MAKE_NUMBER (TIME_UNITS_PER_SECOND), a);
+}
+
+SCM
+current_time ()
+{
+  return MAKE_NUMBER (time (0));
+}
+
+SCM
+gettimeofday_ () ///((name . "gettimeofday"))
+{
+  struct timeval time;
+  gettimeofday (&time, 0);
+  return cons (MAKE_NUMBER (time.tv_sec), MAKE_NUMBER (time.tv_usec));
+}
+
+long
+seconds_and_nanoseconds_to_long (long s, long ns)
+{
+  return s * TIME_UNITS_PER_SECOND
+    + ns / (1000000000 / TIME_UNITS_PER_SECOND);
+}
+
+SCM
+get_internal_run_time ()
+{
+  struct timespec ts;
+  clock_gettime (CLOCK_PROCESS_CPUTIME_ID, &ts);
+  long time = seconds_and_nanoseconds_to_long (ts.tv_sec - g_start_time.tv_sec,
+                                               ts.tv_nsec - g_start_time.tv_nsec);
+  return MAKE_NUMBER (time);
 }

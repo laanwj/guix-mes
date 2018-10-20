@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,43 +20,8 @@
 
 #include <time.h>
 
-int
-close (int filedes)
+time_t
+time (time_t *result)
 {
-  if (_ungetc_fd == filedes)
-    {
-      _ungetc_pos = -1;
-      _ungetc_fd = -1;
-    }
-  return _sys_call1 (SYS_close, (int)filedes);
-}
-
-off_t
-lseek (int filedes, off_t offset, int whence)
-{
-  return _sys_call3 (SYS_lseek, (int)filedes, (long)offset, (int)whence);
-}
-
-int
-unlink (char const *file_name)
-{
-  return _sys_call1 (SYS_unlink, (long)file_name);
-}
-
-int
-rmdir (char const *file_name)
-{
-  return _sys_call1 (SYS_rmdir, (long)file_name);
-}
-
-int
-stat (char const *file_name, struct stat *statbuf)
-{
-  return _sys_call2 (SYS_stat, (long)file_name, (long)statbuf);
-}
-
-char *
-getcwd (char *buffer, size_t size)
-{
-  return _sys_call2 (SYS_getcwd, (long)buffer, (long)size);
+  return _sys_call1 (SYS_time, (long)result);
 }
