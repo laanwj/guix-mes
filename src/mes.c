@@ -46,6 +46,8 @@ SCM g_continuations = 0;
 SCM g_symbols = 0;
 SCM g_stack = 0;
 SCM *g_stack_array = 0;
+#define FRAME_SIZE 5
+#define FRAME_PROCEDURE 4
 // a/env
 SCM r0 = 0;
 // param 1
@@ -202,8 +204,11 @@ struct scm scm_symbol_unbound_variable = {TSYMBOL, "unbound-variable",0};
 
 struct scm scm_symbol_hashq_table = {TSYMBOL, "<hashq-table>",0};
 struct scm scm_symbol_record_type = {TSYMBOL, "<record-type>",0};
+struct scm scm_symbol_frame = {TSYMBOL, "<frame>",0};
 struct scm scm_symbol_module = {TSYMBOL, "<module>",0};
+struct scm scm_symbol_stack = {TSYMBOL, "<stack>",0};
 struct scm scm_symbol_buckets = {TSYMBOL, "buckets",0};
+struct scm scm_symbol_procedure = {TSYMBOL, "procedure",0};
 struct scm scm_symbol_size = {TSYMBOL, "size",0};
 
 struct scm scm_symbol_argv = {TSYMBOL, "%argv",0};
@@ -701,16 +706,15 @@ gc_peek_frame () ///((internal))
   r2 = g_stack_array[g_stack+1];
   r1 = g_stack_array[g_stack+2];
   r0 = g_stack_array[g_stack+3];
-  m0 = g_stack_array[g_stack+4];
-  return m0;
+  return g_stack_array[g_stack+FRAME_PROCEDURE];
 }
 
 SCM
 gc_pop_frame () ///((internal))
 {
-  gc_peek_frame ();
+  SCM x = gc_peek_frame ();
   g_stack += 5;
-  return m0;
+  return x;
 }
 
 SCM

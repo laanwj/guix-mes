@@ -202,6 +202,7 @@ gc_ () ///((internal))
   g_symbols = gc_copy (g_symbols);
   g_macros = gc_copy (g_macros);
   g_ports = gc_copy (g_ports);
+  m0 = gc_copy (m0);
   for (long i=g_stack; i<STACK_SIZE; i++)
     g_stack_array[i]= gc_copy (g_stack_array[i]);
   gc_loop (1);

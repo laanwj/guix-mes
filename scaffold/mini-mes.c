@@ -50,6 +50,8 @@ SCM g_macros = 0;
 SCM g_ports = 0;
 SCM g_stack = 0;
 SCM *g_stack_array = 0;
+#define FRAME_SIZE 5
+#define FRAME_PROCEDURE 4
 // a/env
 SCM r0 = 0;
 // param 1
@@ -58,6 +60,8 @@ SCM r1 = 0;
 SCM r2 = 0;
 // continuation
 SCM r3 = 0;
+// current-module
+SCM m0 = 0;
 
 enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSTRUCT, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
 
@@ -136,8 +140,11 @@ struct scm scm_symbol_unbound_variable = {TSYMBOL, "unbound-variable",0};
 
 struct scm scm_symbol_hashq_table = {TSYMBOL, "<hashq-table>",0};
 struct scm scm_symbol_record_type = {TSYMBOL, "<record-type>",0};
+struct scm scm_symbol_frame = {TSYMBOL, "<frame>",0};
 struct scm scm_symbol_module = {TSYMBOL, "<module>",0};
+struct scm scm_symbol_stack = {TSYMBOL, "<stack>",0};
 struct scm scm_symbol_buckets = {TSYMBOL, "buckets",0};
+struct scm scm_symbol_procedure = {TSYMBOL, "procedure",0};
 struct scm scm_symbol_size = {TSYMBOL, "size",0};
 
 struct scm scm_symbol_argv = {TSYMBOL, "%argv",0};
@@ -806,6 +813,19 @@ make_tmps (struct scm* cells)
 #include "math.c"
 #endif
 #include "lib.c"
+
+SCM frame_printer (SCM frame)
+{
+}
+SCM make_stack (SCM stack)
+{
+}
+SCM stack_length (SCM stack)
+{
+}
+SCM stack_ref (SCM stack, SCM index)
+{
+}
 
 // Jam Collector
 SCM g_symbol_max;

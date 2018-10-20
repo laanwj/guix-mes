@@ -268,6 +268,84 @@ exit_ (SCM x) ///((name . "exit"))
   exit (VALUE (x));
 }
 
+#if !MES_MINI
+SCM
+frame_printer (SCM frame)
+{
+  fdputs ("#<", g_stdout); display_ (struct_ref_ (frame, 2));
+  fdputc (' ', g_stdout);
+  fdputs ("procedure: ", g_stdout); display_ (struct_ref_ (frame, 3));
+  fdputc ('>', g_stdout);
+}
+
+SCM
+make_frame_type () ///((internal))
+{
+  SCM record_type = cell_symbol_record_type; // FIXME
+  SCM fields = cell_nil;
+  fields = cons (cell_symbol_procedure, fields);
+  fields = cons (fields, cell_nil);
+  fields = cons (cell_symbol_frame, fields);
+  return make_struct (record_type, fields, cell_unspecified);
+}
+
+SCM
+make_frame (SCM stack, long index)
+{
+  SCM frame_type = make_frame_type ();
+  long array_index = (STACK_SIZE-(index*FRAME_SIZE));
+  SCM procedure = g_stack_array[array_index+FRAME_PROCEDURE];
+  if (!procedure)
+    procedure = cell_f;
+  SCM values = cell_nil;
+  values = cons (procedure, values);
+  values = cons (cell_symbol_frame, values);
+  return make_struct (frame_type, values, cell_frame_printer);
+}
+
+SCM
+make_stack_type () ///((internal))
+{
+  SCM record_type = cell_symbol_record_type; // FIXME
+  SCM fields = cell_nil;
+  fields = cons (cstring_to_symbol ("frames"), fields);
+  fields = cons (fields, cell_nil);
+  fields = cons (cell_symbol_stack, fields);
+  return make_struct (record_type, fields, cell_unspecified);
+}
+
+SCM
+make_stack (SCM stack) ///((arity . n))
+{
+  SCM stack_type = make_stack_type ();
+  long size = (STACK_SIZE-g_stack) / FRAME_SIZE;
+  SCM frames = make_vector__ (size);
+  for (long i=0; i<size; i++)
+    {
+      SCM frame = make_frame (stack, i);
+      vector_set_x_ (frames, i, frame);
+    }
+  SCM values = cell_nil;
+  values = cons (frames, values);
+  values = cons (cell_symbol_stack, values);
+  return make_struct (stack_type, values, cell_unspecified);
+}
+
+SCM
+stack_length (SCM stack)
+{
+  SCM frames = struct_ref_ (stack, 3);
+  return vector_length (frames);
+}
+
+SCM
+stack_ref (SCM stack, SCM index)
+{
+  SCM frames = struct_ref_ (stack, 3);
+  return vector_ref (frames, index);
+}
+#endif // !MES_MINI
+
 SCM
 xassq (SCM x, SCM a) ///for speed in core only
 {
