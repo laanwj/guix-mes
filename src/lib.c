@@ -55,7 +55,12 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
   else if (t == TCLOSURE)
     {
       fdputs ("#<closure ", fd);
-      display_helper (CDR (x), cont, "", fd, 0);
+      SCM circ = CADR (x);
+      SCM name = CADR (circ);
+      SCM args = CAR (CDDR (x));
+      display_helper (CAR (name), 0, "", fd, 0);
+      fdputc (' ', fd);
+      display_helper (args, 0, "", fd, 0);
       fdputs (">", fd);
     }
   else if (t == TFUNCTION)
