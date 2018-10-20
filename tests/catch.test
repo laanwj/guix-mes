@@ -54,18 +54,17 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
     (lambda (key . args)
       789)))
 
-(if mes?
-    (pass-if-equal "catch feel"
-        1
-      (let ((save-exit exit))
-        (set! exit (lambda (x)
-                     (set! exit save-exit)
-                     1))
-        (catch 'boo
-          (lambda ()
-            (throw-22)
-            11)
-          (lambda (key . args)
-            22)))))
+(pass-if-equal "catch feel"
+               1
+               (catch 'twenty-two
+                 (lambda _
+                   (catch 'boo
+                     (lambda ()
+                       (throw-22)
+                       11)
+                     (lambda (key . args)
+                       (exit 1))))
+                 (lambda (key . args)
+                   1)))
 
 (result 'report)

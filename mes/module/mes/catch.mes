@@ -31,6 +31,8 @@
                      (core:display-error ":")
                      (core:write-error args)
                      (core:display-error "\n")))
+               (core:display-error "Backtrace:\n")
+               (display-backtrace (make-stack) (current-error-port))
                (exit 1))))
 
 (define (catch key thunk handler)
@@ -54,3 +56,16 @@
     (apply handler (cons key args))))
 
 (define with-throw-handler catch) ; FIXME: hack for Nyacc 0.75
+
+(define (frame-procedure frame)
+  (struct-ref frame 3))
+
+(define (display-backtrace stack port . rest)
+  (let* ((frames (map (lambda (i) (stack-ref stack i)) (iota (stack-length stack))))
+         (call-frames (filter frame-procedure frames))
+         (display-frames (drop-right call-frames 2)))
+    (for-each (lambda (f)
+                (core:display-error "  ")
+                (core:display-error f)
+                (core:display-error "\n"))
+              display-frames)))
