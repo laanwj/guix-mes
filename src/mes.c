@@ -691,7 +691,7 @@ gc_push_frame () ///((internal))
 {
   if (g_stack < 5)
     assert (!"STACK FULL");
-  g_stack_array[--g_stack] = m0;
+  g_stack_array[--g_stack] = cell_f;
   g_stack_array[--g_stack] = r0;
   g_stack_array[--g_stack] = r1;
   g_stack_array[--g_stack] = r2;
@@ -932,7 +932,7 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 SCM
 make_closure_ (SCM args, SCM body, SCM a) ///((internal))
 {
-  return make_cell__ (TCLOSURE, 0, cons (cons (cell_circular, a), cons (args, body)));
+  return make_cell__ (TCLOSURE, cell_f, cons (cons (cell_circular, a), cons (args, body)));
 }
 
 SCM
@@ -972,10 +972,7 @@ push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
   r2 = p2;
   gc_push_frame ();
   r1 = p1;
-  // if (TYPE (a) == TPAIR)
-  //   r0 = module_clone_locals (r0, a);
-  // else
-    r0 = a;
+  r0 = a;
   r3 = x;
   return cell_unspecified;
 }
@@ -1156,6 +1153,7 @@ eval_apply ()
   goto vm_return;
 
  apply:
+  g_stack_array[g_stack+FRAME_PROCEDURE] = CAR (r1);
   t = TYPE (CAR (r1));
   if (t == TFUNCTION)
     {
