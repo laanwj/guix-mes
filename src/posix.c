@@ -112,8 +112,11 @@ write_char (SCM i) ///((arity . n))
 }
 
 SCM
-read_string ()
+read_string (SCM port) ///((arity . n))
 {
+  int fd = g_stdin;
+  if (TYPE (port) == TPAIR && TYPE (car (port)) == TNUMBER)
+    g_stdin = VALUE (CAR (port));
   SCM lst = cell_nil;
   SCM c = read_char ();
   while (VALUE (c) != -1)
@@ -121,6 +124,7 @@ read_string ()
       lst = append2 (lst, cons (c, cell_nil));
       c = read_char ();
     }
+  g_stdin = fd;
   return MAKE_STRING (lst);
 }
 
