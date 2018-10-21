@@ -1100,39 +1100,39 @@ eval_apply ()
   long c;
 
  eval_apply:
-  if (r3 == cell_vm_evlis) {eputs ("goto: evlis\n"); goto evlis;}
-  else if (r3 == cell_vm_evlis2) {eputs ("goto: evlis2\n"); goto evlis2;}
-  else if (r3 == cell_vm_evlis3) {eputs ("goto: evlis3\n"); goto evlis3;}
-  else if (r3 == cell_vm_apply) {eputs ("goto: apply\n"); goto apply;}
-  else if (r3 == cell_vm_apply2) {eputs ("goto: apply2\n"); goto apply2;}
-  else if (r3 == cell_vm_eval) {eputs ("goto: eval\n"); goto eval;}
-  else if (r3 == cell_vm_eval_pmatch_car) {eputs ("goto: eval_pmatch_car\n"); goto eval_pmatch_car;}
-  else if (r3 == cell_vm_eval_pmatch_cdr) {eputs ("goto: eval_pmatch_cdr\n"); goto eval_pmatch_cdr;}
-  else if (r3 == cell_vm_eval_define) {eputs ("goto: eval_define\n"); goto eval_define;}
-  else if (r3 == cell_vm_eval_set_x) {eputs ("goto: eval_set_x\n"); goto eval_set_x;}
-  else if (r3 == cell_vm_eval_macro_expand_eval) {eputs ("goto: eval_macro_expand_eval\n"); goto eval_macro_expand_eval;}
-  else if (r3 == cell_vm_eval_macro_expand_expand) {eputs ("goto: eval_macro_expand_expand\n"); goto eval_macro_expand_expand;}
-  else if (r3 == cell_vm_eval_check_func) {eputs ("goto: eval_check_func\n"); goto eval_check_func;}
-  else if (r3 == cell_vm_eval2) {eputs ("goto: eval2\n"); goto eval2;}
-  else if (r3 == cell_vm_macro_expand) {eputs ("goto: macro_expand\n"); goto macro_expand;}
-  else if (r3 == cell_vm_macro_expand_define) {eputs ("goto: macro_expand_define\n"); goto macro_expand_define;}
-  else if (r3 == cell_vm_macro_expand_define_macro) {eputs ("goto: macro_expand_define_macro\n"); goto macro_expand_define_macro;}
-  else if (r3 == cell_vm_macro_expand_lambda) {eputs ("goto: macro_expand_lambda\n"); goto macro_expand_lambda;}
-  else if (r3 == cell_vm_macro_expand_set_x) {eputs ("goto: macro_expand_set_x\n"); goto macro_expand_set_x;}
-  else if (r3 == cell_vm_macro_expand_car) {eputs ("goto: macro_expand_car\n"); goto macro_expand_car;}
-  else if (r3 == cell_vm_macro_expand_cdr) {eputs ("goto: macro_expand_cdr\n"); goto macro_expand_cdr;}
-  else if (r3 == cell_vm_begin) {eputs ("goto: begin\n"); goto begin;}
-  else if (r3 == cell_vm_begin_eval) {eputs ("goto: begin_eval\n"); goto begin_eval;}
-  else if (r3 == cell_vm_begin_primitive_load) {eputs ("goto: begin_primitive_load\n"); goto begin_primitive_load;}
-  else if (r3 == cell_vm_begin_expand) {eputs ("goto: begin_expand\n"); goto begin_expand;}
-  else if (r3 == cell_vm_begin_expand_eval) {eputs ("goto: begin_expand_eval\n"); goto begin_expand_eval;}
-  else if (r3 == cell_vm_begin_expand_macro) {eputs ("goto: begin_expand_macro\n"); goto begin_expand_macro;}
-  else if (r3 == cell_vm_begin_expand_primitive_load) {eputs ("goto: begin_expand_primitive_load\n"); goto begin_expand_primitive_load;}
-  else if (r3 == cell_vm_if) {eputs ("goto: vm_if\n"); goto vm_if;}
-  else if (r3 == cell_vm_if_expr) {eputs ("goto: if_expr\n"); goto if_expr;}
-  else if (r3 == cell_vm_call_with_current_continuation2) {eputs ("goto: call_with_current_continuation2\n"); goto call_with_current_continuation2;}
-  else if (r3 == cell_vm_call_with_values2) {eputs ("goto: call_with_values2\n"); goto call_with_values2;}
-  else if (r3 == cell_vm_return) {eputs ("goto: vm_return\n"); goto vm_return;}
+  if (r3 == cell_vm_evlis) goto evlis;
+  else if (r3 == cell_vm_evlis2) goto evlis2;
+  else if (r3 == cell_vm_evlis3) goto evlis3;
+  else if (r3 == cell_vm_apply) goto apply;
+  else if (r3 == cell_vm_apply2) goto apply2;
+  else if (r3 == cell_vm_eval) goto eval;
+  else if (r3 == cell_vm_eval_pmatch_car) goto eval_pmatch_car;
+  else if (r3 == cell_vm_eval_pmatch_cdr) goto eval_pmatch_cdr;
+  else if (r3 == cell_vm_eval_define) goto eval_define;
+  else if (r3 == cell_vm_eval_set_x) goto eval_set_x;
+  else if (r3 == cell_vm_eval_macro_expand_eval) goto eval_macro_expand_eval;
+  else if (r3 == cell_vm_eval_macro_expand_expand) goto eval_macro_expand_expand;
+  else if (r3 == cell_vm_eval_check_func) goto eval_check_func;
+  else if (r3 == cell_vm_eval2) goto eval2;
+  else if (r3 == cell_vm_macro_expand) goto macro_expand;
+  else if (r3 == cell_vm_macro_expand_define) goto macro_expand_define;
+  else if (r3 == cell_vm_macro_expand_define_macro) goto macro_expand_define_macro;
+  else if (r3 == cell_vm_macro_expand_lambda) goto macro_expand_lambda;
+  else if (r3 == cell_vm_macro_expand_set_x) goto macro_expand_set_x;
+  else if (r3 == cell_vm_macro_expand_car) goto macro_expand_car;
+  else if (r3 == cell_vm_macro_expand_cdr) goto macro_expand_cdr;
+  else if (r3 == cell_vm_begin) goto begin;
+  else if (r3 == cell_vm_begin_eval) goto begin_eval;
+  else if (r3 == cell_vm_begin_primitive_load) goto begin_primitive_load;
+  else if (r3 == cell_vm_begin_expand) goto begin_expand;
+  else if (r3 == cell_vm_begin_expand_eval) goto begin_expand_eval;
+  else if (r3 == cell_vm_begin_expand_macro) goto begin_expand_macro;
+  else if (r3 == cell_vm_begin_expand_primitive_load) goto begin_expand_primitive_load;
+  else if (r3 == cell_vm_if) goto vm_if;
+  else if (r3 == cell_vm_if_expr) goto if_expr;
+  else if (r3 == cell_vm_call_with_current_continuation2) goto call_with_current_continuation2;
+  else if (r3 == cell_vm_call_with_values2) goto call_with_values2;
+  else if (r3 == cell_vm_return) goto vm_return;
   else if (r3 == cell_unspecified) return r1;
   else
     error (cell_symbol_system_error,
