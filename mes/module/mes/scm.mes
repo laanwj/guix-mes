@@ -368,6 +368,12 @@
   (lambda args
     (not (apply proc args))))
 
+(define ceil identity)
+(define floor identity)
+(define round identity)
+(define inexact->exact identity)
+(define exact->inexact identity)
+
 (define (const . rest)
   (lambda (. _)
     (car rest)))
