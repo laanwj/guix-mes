@@ -26,11 +26,13 @@
 ;;; Code:
 
 (define-module (mes test)
+  #:use-module (ice-9 rdelim)
   #:export (
             pass-if
             pass-if-equal
             pass-if-not
             pass-if-eq
+            pass-if-timeout
             result
             seq? ; deprecated
             sequal? ; deprecated
@@ -38,6 +40,7 @@
 
 (cond-expand
  (mes
+  (define (inexact->exact x) x)
   (define mes? #t)
   (define guile? #f)
   (define guile-2? #f)
@@ -104,6 +107,14 @@
         (display "actual: ") (display a) (newline)
         #f)))
 
+(define (sless? a expect)
+  (or (< a expect)
+      (begin
+        (display ": fail") (newline)
+        (display "expected: ") (display expect) (newline)
+        (display "actual: ") (display a) (newline)
+        #f)))
+
 (define (sequal2? actual expect)
   (or (equal? actual expect)
       (begin
@@ -132,3 +143,16 @@
    'begin
    (list display "test: ") (list display name)
    (list 'result (list not f)))) ;; FIXME
+
+(define internal-time-units-per-milli-second
+  (/ internal-time-units-per-second 1000))
+(define (test-time thunk)
+  ((lambda (start)
+     (begin
+       (thunk)
+       (inexact->exact (/ (- (get-internal-run-time) start)
+                          internal-time-units-per-milli-second))))
+   (get-internal-run-time)))
+
+(define-macro (pass-if-timeout name limit . body)
+  (list 'pass-if name (list sless? (list test-time (cons* 'lambda '_ body)) limit)))
