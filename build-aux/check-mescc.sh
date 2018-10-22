@@ -220,6 +220,7 @@ t
 97-fopen
 98-fopen
 99-readdir
+9a-snprintf
 a0-call-trunc-char
 a0-call-trunc-short
 a0-call-trunc-int
