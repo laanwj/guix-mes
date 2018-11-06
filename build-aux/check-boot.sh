@@ -20,16 +20,9 @@
 
 set -e
 
+. ./config.status
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
-
-export GUILE MES
-MES=${MES-./src/mes}
-
-GUILE=${GUILE-guile}
-if ! command -v $GUILE > /dev/null; then
-    GUILE=true
-fi
 
 tests="
 
@@ -120,18 +113,17 @@ for i in $tests; do
         echo ' [SKIP]'
         continue;
     fi
-    trace "TEST       $i.guile" $GUILE -L ${srcdest}module -C module -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i)
     x=$(
-        if [ "$MES" = guile ]; then
-            true
+        if [ "$MES" = guile -o "$(basename $MES)" = guile ]; then
+            trace "TEST       $i.guile" $GUILE -L ${srcdest}module -C module -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i)
         elif [ -z "${i/5[0-9]-*/}" ]; then
-            cat scaffold/boot/$i | MES_BOOT=${srcdest}boot-00.scm $MES 2>&1;
+            cat scaffold/boot/$i | MES_BOOT=${srcdest}boot-00.scm trace "TEST       $i" $MES 2>&1;
         elif [ -z "${i/6[0-9]-*/}" ]; then
-            cat scaffold/boot/$i | MES_BOOT=${srcdest}boot-01.scm $MES 2>&1;
+            cat scaffold/boot/$i | MES_BOOT=${srcdest}boot-01.scm trace "TEST       $i" $MES 2>&1;
         else
-            MES_BOOT=${srcdest}scaffold/boot/$i $MES 2>&1;
+            MES_BOOT=${srcdest}scaffold/boot/$i trace "TEST       $i" $MES 2>&1;
         fi
      ) \
-        && echo ' [PASS]' \
+        && echo ' [OK]' \
         || (r=$?; echo ' [FAIL]'; echo -e "$x"; echo scaffold/boot/$i; exit $r)
 done

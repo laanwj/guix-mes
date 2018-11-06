@@ -1,7 +1,7 @@
-#! @BASH@
+#! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -18,42 +18,43 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-srcdest="@srcdest@"
-srcdir="@srcdir@"
-abs_top_srcdir="@abs_top_srcdir@"
-abs_top_builddir="@abs_top_builddir@"
-prefix=${prefix-@prefix@}
-VERSION=${VERSION-@VERSION@}
-arch=${arch-@arch@}
+set -e
 
+. ./config.status
 . ${srcdest}build-aux/config.sh
-. ${srcdest}build-aux/trace.sh
-
-MES_SEED=${MES_SEED-../mes-seed}
-GUILE=${GUILE-$(command -v guile)}
-MES_ARENA=${MES_ARENA-100000000}
 
 if [ -n "$GUILE" -a "$GUILE" != true ]; then
     sh ${srcdest}build-aux/build-guile.sh
 fi
 
-if [ -n "$CC" ]; then
-    sh ${srcdest}build-aux/build-cc.sh
+if [ ! "$mes_p" ]; then
+    sh ${srcdest}build-aux/snarf.sh
+#elif [ ! -d "$MES_SEED" ]; then
+#else
+fi
+sh ${srcdest}build-aux/snarf.sh --mes
+
+if [ "$gcc_p$tcc_p" ]; then
+    sh ${srcdest}build-aux/build-mes.sh
+elif [ -d "$MES_SEED" ]; then
+    sh ${srcdest}build-aux/bootstrap-mes.sh
 fi
 
-if [ -n "$CC32" ]; then
-    sh ${srcdest}build-aux/build-cc32.sh
-fi
-
-if [ -n "$CC64" ]; then
-    sh ${srcdest}build-aux/build-cc64.sh
-fi
-
-if [ -n "$TCC" ]; then
-    CC32=$TCC sh ${srcdest}build-aux/build-cc32.sh
-fi
+## FIXME: remove this and have user configure/build/install for each compiler?
+unset CFLAGS CPPFLAGS LDFLAGS gcc_p tcc_p posix_p
+MES=guile
+mesc_p=1
+mes_p=1
+mes_arch=x86-mes
+program_prefix=$mes_arch-
+CC="./pre-inst-env mescc"
 
 sh ${srcdest}build-aux/build-mes.sh
-if [ "$arch" = x86_64 -a "$GUILE" ]; then
-    MES=$GUILE sh ${srcdest}build-aux/build-x86_64-mes.sh
+cp src/${program_prefix}mes src/mes
+
+if [ "$arch" = x86_64 ]; then
+    MES_CFLAGS='-m 64'
+    mes_arch=x86_64-mes
+    program_prefix=$mes_arch-
+    sh ${srcdest}build-aux/build-mes.sh
 fi

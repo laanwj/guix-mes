@@ -124,7 +124,7 @@
 
 (define (x86_64:label->arg info label i)
   (let ((r0 (list-ref x86_64:registers (1+ i))))
-    (if (< (label v) #x80000000)
+    (if (< label #x80000000)
         `((,(string-append "mov____$i32,%" r0) (#:address ,label)))
         `((,(string-append "mov____$i64,%" r0) (#:address8 ,label))))))
 
@@ -668,6 +668,7 @@
 
 (define (x86_64:r2->r0 info)
   (let ((r0 (get-r0 info))
+        (r1 (get-r1 info))
         (allocated (.allocated info)))
     (if (> (length allocated) 2)
         (let ((r2 (cadddr allocated)))

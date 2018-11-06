@@ -53,7 +53,7 @@
     (let loop ((ix 0))
       (when (< ix n)
 	(if (memq ix need-progress)
-	    (vector-set
+	    (vector-set!
 	     act-v ix
 	     (lambda args
 	       (progress (list-ref args (1- (vector-ref len-v ix))))

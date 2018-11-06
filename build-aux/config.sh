@@ -18,60 +18,72 @@
 
 srcdir=${srcdir-.}
 top_builddir=${top_builddir-.}
+
 if [ "$V" = 2 ]; then
     echo $0
     echo srcdest=${srcdest}
     echo top_builddir=${top_builddir}
 fi
 
+if [ -n "$mes_p" -a -n "$gcc_p" ]; then
+    crt1=lib/linux/$mes_arch/crt1.o
+fi
+
+MES=${MES-${program_prefix}mes}
+libc=${libc-"-l c"}
+export libc
+
+if [ ! "$CC" ]; then
+    CC="./pre-inst-env mescc"
+fi
+
+export AR
 export CC
-export CC CFLAGS
-export CC32
-export CC32_CPPFLAGS
-export CC64
-export CC64_CPPFLAGS
-export CC_CFLAGS
-export CC_CPPFLAGS
 export CFLAGS
 export CPPFLAGS
+export GUILD
 export GUILE
 export GUILE_LOAD_COMPILED_PATH
 export GUILE_LOAD_PATH
 export HEX2
 export HEX2FLAGS
-export LIBC
 export M1
 export M1FLAGS
 export MES
 export MES_CFLAGS
-export MES_CPPFLAGS
-export MES_LIBS
-export TCC
+export MES_FOR_BUILD
+export MES_SEED
+export MESCC
 
 export MES_DEBUG
-export MES_SEED
 export MES_ARENA
-export COMPILE
-export PREPROCESS
 export TINYCC_PREFIX
 export V
 
+export config_status
 export abs_top_builddir
 export abs_top_srcdir
 export arch
 export datadir
 export moduledir
 export prefix
+export program_prefix
 export srcdest
 export srcdir
 export top_builddir
 
-MESCC=${MESCC-mescc}
-BLOOD_ELF=${BLOOD_ELF-blood-elf}
-HEX2=${HEX2-hex2}
-M1=${M1-M1}
+export bits
+export build
+export host
+export compiler
+export gcc_p
+export mes_p
+export mesc_p
+export tcc_p
+export mes_arch
+export posix_p
 
-CC_CPPFLAGS=${CC_CPPFLAGS-"
+CPPFLAGS=${CPPFLAGS-"
 -D 'VERSION=\"$VERSION\"'
 -D 'MODULEDIR=\"$moduledir\"'
 -D 'PREFIX=\"$prefix\"'
@@ -81,29 +93,35 @@ CC_CPPFLAGS=${CC_CPPFLAGS-"
 -I ${srcdest}include
 "}
 
-CC_CFLAGS=${CC_CFLAGS-"
+[ "$posix_p" ] && CPPFLAGS="$CPPFLAGS -D POSIX=1 -D WITH_GLIBC=1"
+
+LDFLAGS=${LDFLAGS-"
+-v
+-L lib/linux/$mes_arch
+-L lib/linux
+-L lib/$mes_arch
+-L lib
+"}
+
+if [ -f "$MES_SEED/x86-mes/mes.S" ]; then
+    LDFLAGS="$LDFLAGS
+-L $MES_SEED
+"
+fi
+
+if [ -n "$gcc_p" ]; then
+CFLAGS=${CFLAGS-"
+-v
 --std=gnu99
 -O0
 -g
 "}
+fi
 
-CC64_CPPFLAGS=${CC64_CPPFLAGS-"
--D 'VERSION=\"$VERSION\"'
--D 'MODULEDIR=\"$moduledir\"'
--D 'PREFIX=\"$prefix\"'
--I src
--I ${srcdest}src
--I ${srcdest}lib
--I ${srcdest}include
-"}
-
-CC64_CFLAGS=${CC64_CFLAGS-"
--std=gnu99
--O0
+if [ "$mes_p" -a "$gcc_p" ]; then
+CFLAGS="$CFLAGS
 -fno-builtin
 -fno-stack-protector
--g
--m64
 -nostdinc
 -nostdlib
 -Wno-discarded-qualifiers
@@ -112,59 +130,29 @@ CC64_CFLAGS=${CC64_CFLAGS-"
 -Wno-pointer-sign
 -Wno-int-conversion
 -Wno-incompatible-pointer-types
-"}
+"
+fi
 
-CC32_CPPFLAGS=${CC32_CPPFLAGS-"
--D 'VERSION=\"$VERSION\"'
--D 'MODULEDIR=\"$moduledir\"'
--D 'PREFIX=\"$prefix\"'
--I src
--I ${srcdest}src
--I ${srcdest}lib
--I ${srcdest}include
-"}
-
-CC32_CFLAGS=${CC32_CFLAGS-"
--std=gnu99
--O0
--fno-builtin
--fno-stack-protector
--g
--m32
--nostdinc
--nostdlib
--Wno-discarded-qualifiers
--Wno-int-to-pointer-cast
--Wno-pointer-to-int-cast
--Wno-pointer-sign
--Wno-int-conversion
--Wno-incompatible-pointer-types
-"}
-
-MES_CPPFLAGS=${MES_CPPFLAGS-"
--D 'VERSION=\"$VERSION\"'
--D 'MODULEDIR=\"$moduledir\"'
--D 'PREFIX=\"$prefix\"'
--I src
--I ${srcdest}src
--I ${srcdest}lib
--I ${srcdest}include
-"}
-
-MES_CFLAGS=${MES_CFLAGS-"
-"}
-
-MES64_CFLAGS=${MES64_CFLAGS-"
--m64
-"}
-
-M1FLAGS=${M1FLAGS-"
---LittleEndian
---Architecture 1
-"}
-
-HEX2FLAGS=${HEX2FLAGS-"
+if [ "$arch" = "x86" ]; then
+    HEX2FLAGS=${HEX2FLAGS-"
 --LittleEndian
 --Architecture 1
 --BaseAddress 0x1000000
 "}
+    M1FLAGS=${M1FLAGS-"
+--LittleEndian
+--Architecture 1
+"}
+    bits=32
+elif [ "$arch" = "x86_64" ]; then
+    HEX2FLAGS=${HEX2FLAGS-"
+--LittleEndian
+--Architecture 2
+--BaseAddress 0x1000000
+"}
+    M1FLAGS=${M1FLAGS-"
+--LittleEndian
+--Architecture 2
+"}
+    bits=64
+fi

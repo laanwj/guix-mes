@@ -540,6 +540,7 @@
 
 (define (i386:r2->r0 info)
   (let ((r0 (get-r0 info))
+        (r1 (get-r1 info))
         (allocated (.allocated info)))
     (if (> (length allocated) 2)
         (let ((r2 (cadddr allocated)))

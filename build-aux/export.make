@@ -56,10 +56,6 @@ ifdef CC
 export CC
 endif
 
-ifdef CC32
-export CC32
-endif
-
 ifdef CC64
 export CC64
 endif
@@ -80,6 +76,18 @@ ifdef MES
 export MES
 endif
 
+ifdef MES_FOR_BUILD
+export MES_FOR_BUILD
+endif
+
+ifdef MES_SEED
+export MES_SEED
+endif
+
+ifdef MESCC
+export MESCC
+endif
+
 ifdef HEX2
 export HEX2
 endif
@@ -92,8 +100,8 @@ ifdef GUILE
 export GUILE
 endif
 
-ifdef GUILE_TOOLS
-export GUILE_TOOLS
+ifdef GUILD
+export GUILD
 endif
 
 ifdef GUIX
@@ -124,36 +132,12 @@ ifdef CPPFLAGS
 export CPPFLAGS
 endif
 
-ifdef CC32_CFLAGS
-export CC32_CFLAGS
-endif
-
-ifdef CC64_CFLAGS
-export CC64_CFLAGS
-endif
-
 ifdef HEX2FLAGS
 export HEX2FLAGS
 endif
 
 ifdef M1FLAGS
 export M1FLAGS
-endif
-
-ifdef MES_CFLAGS
-export MES_CFLAGS
-endif
-
-ifdef MES_SEED
-export MES_SEED
-endif
-
-ifdef MESCC_TOOLS_SEED
-export MESCC_TOOLS_SEED
-endif
-
-ifdef TINYCC_SEED
-export TINYCC_SEED
 endif
 
 ifdef TINYCC_PREFIX

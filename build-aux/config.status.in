@@ -1,0 +1,72 @@
+# GNU Mes --- Maxwell Equations of Software
+# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+#
+# This file is part of GNU Mes.
+#
+# GNU Mes is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or (at
+# your option) any later version.
+#
+# GNU Mes is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+config_status=1
+AR="@AR@"
+BASH="@BASH@"
+BLOOD_ELF="@BLOOD_ELF@"
+CC="@CC@"
+DOT="@DOT@"
+GIT="@GIT@"
+GUILD="@GUILD@"
+GUILE="@GUILE@"
+GUILE_EFFECTIVE_VERSION="@GUILE_EFFECTIVE_VERSION@"
+GUIX="@GUIX@"
+HELP2MAN="@HELP2MAN@"
+HEX2="@HEX2@"
+#HEX2FLAGS="@HEX2FLAGS@"
+MAKEINFO="@MAKEINFO@"
+M1="@M1@"
+#M1FLAGS="@M1FLAGS@"
+MES_FOR_BUILD="@MES_FOR_BUILD@"
+MES_SEED="@MES_SEED@"
+NYACC="@NYACC@"
+PACKAGE="@PACKAGE@"
+PERL="@PERL@"
+TINYCC_PREFIX="@TINYCC_PREFIX@"
+VERSION="@VERSION@"
+
+abs_top_builddir="@abs_top_builddir@"
+abs_top_srcdir="@abs_top_srcdir@"
+arch="@arch@"
+build="@build@"
+host="@host@"
+
+mes_arch="@mes_arch@"
+gcc_p="@gcc_p@"
+mes_p="@mes_p@"
+mesc_p="@mesc_p@"
+tcc_p="@tcc_p@"
+
+prefix="@prefix@"
+
+bindir="@bindir@"
+datadir="@datadir@"
+docdir="@docdir@"
+guile_site_ccache_dir="@guile_site_ccache_dir@"
+guile_site_dir="@guile_site_dir@"
+infodir="@infodir@"
+libdir="@libdir@"
+mandir="@mandir@"
+moduledir="@moduledir@"
+posix_p="@posix_p@"
+program_prefix="@program_prefix@"
+srcdest="@srcdest@"
+srcdir="@srcdir@"
+sysconfdir="@sysconfdir@"
+top_builddir="@top_builddir@"

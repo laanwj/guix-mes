@@ -20,12 +20,7 @@
 
 #set -e
 
-srcdest="@srcdest@"
-srcdir="@srcdir@"
-abs_top_srcdir="@abs_top_srcdir@"
-abs_top_builddir="@abs_top_builddir@"
-prefix=${prefix-@prefix@}
-
+. ./config.status
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
 
@@ -44,15 +39,11 @@ moduledir=${moduledir-$datadir/mes/module}
 guile_site_dir=${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
 guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
 
-mkdir -p $DESTDIR$prefix/bin
-cp src/mes $DESTDIR$prefix/bin/mes
-
-mkdir -p $DESTDIR$prefix/lib
-mkdir -p $DESTDIR$MES_PREFIX/lib
-cp scripts/mescc $DESTDIR$prefix/bin/mescc
+MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
 
 rm $DESTDIR$prefix/bin/mes
 rm $DESTDIR$prefix/bin/mescc
+rm -f $DESTDIR$prefix/bin/diff.scm
 rmdir $DESTDIR$prefix/bin || :
 
 for i in\
@@ -77,6 +68,16 @@ rm -r $DESTDIR$guile_site_ccache_dir/mescc
 rm -r $DESTDIR$guile_site_dir/mes
 rm -r $DESTDIR$guile_site_dir/mescc
 
+rm $DESTDIR$prefix/share/info/dir
 rm $DESTDIR$prefix/share/info/mes.info*
+rm $DESTDIR$prefix/share/info/images/gcc-mesboot*
+rm $DESTDIR$prefix/share/info/images/README
 rm $DESTDIR$mandir/man1/mes.1
 rm $DESTDIR$mandir/man1/mescc.1
+
+rmdir -p $DESTDIR$prefix/share/doc
+rmdir -p $DESTDIR$prefix/share/info/images
+rmdir -p $DESTDIR$guile_site_dir
+rmdir -p $DESTDIR$guile_site_ccache_dir
+rmdir -p $DESTDIR$mandir/man1
+true

@@ -20,16 +20,9 @@
 
 set -e
 
+. ./config.status
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
-
-if [ "$MES" = guile ]; then
-    mes=guile-
-fi
-BASH=${BASH-bash}
-GUILE=${GUILE-guile}
-MES=${MES-src/mes}
-MES_ARENA=${MES_ARENA-100000000}
 
 tests="
 tests/boot.test

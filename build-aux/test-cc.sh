@@ -20,12 +20,30 @@
 
 set -e
 
+if [ ! "$config_status" ]; then
+    . ./config.status
+fi
+
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
+. ${srcdest}build-aux/cc.sh
 
-# native
-sh ${srcdest}build-aux/snarf.sh
+t=${1-scaffold/tests/t}
+o="$t"
 
-ARCHDIR=1 NOLINK=1 sh ${srcdest}build-aux/cc.sh lib/libmes
-sh ${srcdest}build-aux/cc.sh src/mes
-cp src/mes.gcc-out src/mes
+rm -f "${program_prefix}$o"
+compile "$t"
+link "$t"
+
+r=0
+[ -f "$t".exit ] && r=$(cat "$t".exit)
+set +e
+$(dirname "$o")/${program_prefix}$(basename "$o") $ARGS > "$o".${program_prefix}stdout
+m=$?
+cat "$o".${program_prefix}stdout
+set -e
+
+[ $m = $r ]
+if [ -f "$t".expect ]; then
+    $DIFF -ub "$t".expect "$o".${program_prefix}stdout
+fi

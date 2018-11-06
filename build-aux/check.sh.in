@@ -20,34 +20,13 @@
 
 set -e
 
-srcdest="@srcdest@"
-srcdir="@srcdir@"
-abs_top_srcdir="@abs_top_srcdir@"
-abs_top_builddir="@abs_top_builddir@"
-prefix=${prefix-@prefix@}
-
+. ./config.status
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
 
-GUILE=${GUILE-guile}
-MES=${MES-src/mes}
-MES_ARENA=${MES_ARENA-100000000}
-TCC_PREFIX=${TCC_PREFIX-${srcdest}../tinycc}
-
-if ! command -v $GUILE > /dev/null; then
-    GUILE=true
-fi
-
-set -e
-
-if [ "$GUILE" != true ]; then
-    MES=guile bash ${srcdest}build-aux/check-mes.sh
-fi
-if [ "$MES" != guile ]; then
-    bash ${srcdest}build-aux/check-mes.sh
-fi
-bash ${srcdest}build-aux/check-boot.sh
-bash ${srcdest}build-aux/check-mescc.sh
+./pre-inst-env bash ${srcdest}build-aux/check-boot.sh
+./pre-inst-env bash ${srcdest}build-aux/check-mes.sh
+./pre-inst-env bash ${srcdest}build-aux/check-mescc.sh
 if [ -d $TINYCC_PREFIX/tests/tests2 ] ;then
-    bash ${srcdest}build-aux/check-tcc.sh
+    ./pre-inst-env bash ${srcdest}build-aux/check-tcc.sh
 fi

@@ -19,31 +19,11 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
+. ./config.status
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
 
-MES=${MES-src/mes}
-[ -z "$MESCC" ] && MESCC=scripts/mescc
-GUILE=${GUILE-guile}
-MES_PREFIX=${MES_PREFIX-mes}
-
-HEX2=${HEX2-hex2}
-M1=${M1-M1}
-BLOOD_ELF=${BLOOD_ELF-blood-elf}
-MES_SEED=${MES_SEED-../mes-seed}
-MESCC=${MESCC-$(command -v mescc)}
-[ -z "$MESCC" ] && MESCC=scripts/mescc
-MES=${MES-$(command -v mes)}
-[ -z "$MES" ] && MES=src/mes
-
-if ! command -v $GUILE > /dev/null; then
-    GUILE=true
-fi
-
 test_sh=${test_sh-${srcdest}build-aux/test.sh}
-if [ "$arch" = "x86_64-mes" ]; then
-    test_sh=${srcdest}build-aux/test64.sh
-fi
 
 tests="
 t
@@ -237,8 +217,18 @@ a0-call-trunc-int
 a0-math-divide-signed-negative
 "
 
-# gcc not supported
-CC=
+if [ "$mes_arch" = "x86_64-gcc" ]; then
+    broken="$broken
+21-char[]
+41-?
+70-printf-stdarg
+70-printf-simple
+70-printf
+80-setjmp
+a1-global-no-align
+"
+fi
+
 set +e
 expect=$(echo $broken | wc -w)
 pass=0
@@ -247,20 +237,15 @@ total=0
 mkdir -p scaffold/tests
 for t in $tests; do
     if [ -z "${t/[012][0-9]-*/}" ]; then
-        LIBC=
-        MES_LIBS="-l none"
+        libc=
     elif [ -z "${t/[34][0-9]-*/}" ]; then
-        LIBC=c-mini
-        MES_LIBS="-l c-mini"
+        libc='-l c-mini'
     elif [ -z "${t/[78][0-9a-z]-*/}" ]; then
-        LIBC=c+tcc
-        MES_LIBS="-l c+tcc"
-    elif [ -z "${t/9[0-9]-*/}" ]; then
-        LIBC=c+gnu
-        MES_LIBS="-l c+gnu"
+        libc='-l c+tcc'
+    elif [ -z "${t/9[0-9a-z]-*/}" ]; then
+        libc='-l c+gnu'
     else
-        LIBC=c
-        MES_LIBS=
+        libc='-l c'
     fi
     sh $test_sh "scaffold/tests/$t" &> scaffold/tests/"$t".log
     r=$?

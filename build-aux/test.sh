@@ -19,67 +19,19 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
+. ./config.status
 . ${srcdest}build-aux/config.sh
-. ${srcdest}build-aux/trace.sh
 
-MES_ARENA=100000000
+sh ${srcdest}build-aux/test-cc.sh $1
 
-GUILE=${GUILE-$MES}
-DIFF=${DIFF-$(command -v diff)} || true
-[ -z "$DIFF" ] && DIFF="sh scripts/diff.scm"
-
-t=${1-scaffold/tests/t}
-o="$t"
-rm -f "$o".mes-out
-
-rm -f "$o".gcc-out
-if [ -n "$CC" ]; then
-    sh ${srcdest}build-aux/cc.sh "$t"
-
-    r=0
-    [ -f "$t".exit ] && r=$(cat "$t".exit)
-    set +e
-    "$o".gcc-out $ARGS > "$o".gcc-stdout
-    m=$?
-    cat "$o".gcc-stdout
-    set -e
-
-    [ $m = $r ]
-    if [ -f "$t".expect ]; then
-        $DIFF -ub "$t".expect "$o".gcc-stdout;
-    fi
-fi
-
-rm -f "$t".mes-gcc-out
-if [ -n "$CC32" ]; then
-    sh ${srcdest}build-aux/cc32-mes.sh "$t"
-
-    r=0
-    [ -f "$t".exit ] && r=$(cat "$t".exit)
-    set +e
-    "$o".mes-gcc-out $ARGS > "$o".mes-gcc-stdout
-    m=$?
-    cat "$t".mes-gcc-stdout
-    set -e
-
-    [ $m = $r ]
-    if [ -f "$t".expect ]; then
-        $DIFF -ub "$t".expect "$o".mes-gcc-stdout;
-    fi
-fi
-
-rm -f "$o".mes-out
-sh ${srcdest}build-aux/cc-mes.sh "$t"
-
-r=0
-[ -f "$t".exit ] && r=$(cat "$t".exit)
-set +e
-"$o".mes-out $ARGS > "$o".mes-stdout
-m=$?
-cat "$o".mes-stdout
-set -e
-
-[ $m = $r ]
-if [ -f "$t".expect ]; then
-    $DIFF -ub "$t".expect "$o".mes-stdout;
+if [ ! "$mesc_p" ]; then
+    #FIXME: c&p
+    unset CFLAGS CPPFLAGS LDFLAGS gcc_p tcc_p posix_p
+    MES=guile
+    mesc_p=1
+    mes_p=1
+    mes_arch=x86-mes
+    program_prefix=$mes_arch-
+    CC="./pre-inst-env mescc"
+    sh ${srcdest}build-aux/test-cc.sh $1
 fi

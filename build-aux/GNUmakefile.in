@@ -82,39 +82,21 @@ doc: build
 build:
 	./build.sh
 
-src/mes: build
-
-gcc:
-	${srcdest}build-aux/build-cc.sh
-
-mes-gcc:
-	${srcdest}build-aux/build-cc32.sh
-
-x86_64-mes-gcc:
-	${srcdest}build-aux/build-cc64.sh
-
-mes-tcc:
-ifdef TCC
-	CC32=$(TCC) ${srcdest}build-aux/build-cc32.sh
-else
-
-$(warning skipping mes-tcc: no tcc)
-endif
-
-mes:
-	${srcdest}build-aux/build-mes.sh
-
-x86_64-mes:
-	${srcdest}build-aux/build-x86_64-mes.sh
+src/${program_prefix}mes: build
 
 clean:
 	git clean -dfx\
+	    -e .config.make\
+	    -e config.status\
 	    -e GNUmakefile\
 	    -e build.sh\
 	    -e check.sh\
 	    -e install.sh\
-	    -e pre-inst-env\
 	    -e uninstall.sh\
+	    -e pre-inst-env\
+	    -e scripts/mescc\
+	    -e "mes"/module/mes/boot-0.scm\
+
 #
 
 # Mes does not cache anything on the file system; therefore clean
@@ -150,30 +132,6 @@ install:
 
 uninstall:
 	./uninstall.sh
-
-seed: all-go gcc mes-gcc x86_64-mes-gcc mes-tcc
-	cd $(MES_SEED) && git reset --hard HEAD
-	$(MAKE) MES=guile MES_SEED= SEED=1 mes
-	cp -v lib/x86-mes/*.S $(MES_SEED)/x86-mes
-	cp -v src/mes.S $(MES_SEED)/x86-mes
-	$(MAKE) MES=guile MES_SEED= SEED=1 x86_64-mes
-	cp -v lib/x86_64-mes/*.S $(MES_SEED)/x86_64-mes
-	cp -v src/mes.x86_64-mes-S $(MES_SEED)/x86_64-mes/mes.S
-	MES=$(GUILE) GUILE=$(GUILE) SEED=1 MES_SEED= ${srcdest}build-aux/build-mes.sh
-	MES=$(GUILE) GUILE=$(GUILE) SEED=1 MES_SEED= ${srcdest}build-aux/build-x86_64-mes.sh
-	cd $(MES_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
-	MES=$(GUILE) GUILE=$(GUILE) SEED=1 ${srcdest}build-aux/build-mes.sh
-	cd $(MES_SEED) && MES_PREFIX=$(PWD) arch=x86_64-mes ./refresh.sh
-	MES=$(GUILE) GUILE=$(GUILE) SEED=1 ${srcdest}build-aux/build-x86_64-mes.sh
-	cp lib/x86-mes/libc+tcc.S\
-           lib/x86-mes/libc.S\
-           lib/x86-mes/crt1.S\
-           lib/x86-mes/libgetopt.S\
-           $(MESCC_TOOLS_SEED)/libs
-	cd $(MESCC_TOOLS_SEED) && MES_PREFIX=$(PWD) ./bootstrap.sh
-ifdef TCC
-	cd $(TINYCC_SEED) && MES_PREFIX=$(PWD) ./refresh.sh
-endif
 
 doc/version.texi: ${srcdest}doc/mes.texi GNUmakefile
 	@mkdir -p $(@D)
@@ -234,10 +192,10 @@ man: doc/mes.1 doc/mescc.1
 %: %.o
 %: %.c
 
-doc/mes.1: src/mes | build
+doc/mes.1: src/${program_prefix}mes | build
 	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
 
-doc/mescc.1: scripts/mescc src/mes | build
+doc/mescc.1: scripts/mescc src/${program_prefix}mes | build
 	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
 
 html: doc/html/index.html
@@ -320,7 +278,7 @@ tag:
 	git tag -s v$(VERSION) -m "GNU Mes $(VERSION)."
 
 # Release process
-#  0. doc: Release update, Release commit, make seed, test guix bootstrap
+#  0. doc: Release update, Release commit, test guix bootstrap
 #  1. make tag
 #  2. make dist
 #  3. make release
@@ -376,12 +334,8 @@ Usage: make [OPTION]... [TARGET]...
 Main and non-standard targets:
   all             update everything
   all-go          update .go files
-  gcc             update src/mes.gcc-out
   dist            update $(TARBALL)
   doc             update documentation
-  mes-gcc         update src/mes.mes-gcc-out
-  mes-tcc         update src/mes.mes-tcc-out
-  mes             update src/mes
   check           run unit tests
   clean           run git clean -dfx
   clean-go        clean .go files
@@ -389,7 +343,6 @@ Main and non-standard targets:
   install         install in $(prefix)
   install-info    install info docs in $(prefix)/share/info
   release         dist and tag
-  seed            update mes-seed in $(MES_SEED)
   uninstall       uninstall from $(prefix)
 endef
 export HELP_TOP

@@ -19,26 +19,9 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
+. ./config.status
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
-
-MES=${MES-src/mes}
-[ -z "$MESCC" ] && MESCC=scripts/mescc
-GUILE=${GUILE-guile}
-MES_PREFIX=${MES_PREFIX-mes}
-
-HEX2=${HEX2-hex2}
-M1=${M1-M1}
-BLOOD_ELF=${BLOOD_ELF-blood-elf}
-MES_SEED=${MES_SEED-../mes-seed}
-MESCC=${MESCC-$(command -v mescc)}
-[ -z "$MESCC" ] && MESCC=scripts/mescc
-MES=${MES-$(command -v mes)}
-[ -z "$MES" ] && MES=src/mes
-
-if ! command -v $GUILE > /dev/null; then
-    GUILE=true
-fi
 
 tests="
 00_assignment

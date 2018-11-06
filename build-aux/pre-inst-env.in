@@ -22,6 +22,7 @@ srcdir="@srcdir@"
 abs_top_srcdir="@abs_top_srcdir@"
 abs_top_builddir="@abs_top_builddir@"
 prefix=${prefix-@prefix@}
+program_prefix=${program_prefix-@program_prefix@}
 
 MES_PREFIX=${MES_PREFIX-${srcdest}mes}
 export MES_PREFIX
@@ -36,7 +37,7 @@ export GUILE_LOAD_COMPILED_PATH GUILE_LOAD_PATH
 PATH="$abs_top_builddir/scripts:$abs_top_builddir/src:$abs_top_builddir/build-aux:$PATH"
 export PATH
 
-MES=${MES-src/mes}
+MES=${MES-${abs_top_builddir}/src/${program_prefix}mes}
 export MES
 
 GUIX_PACKAGE_PATH="$abs_top_srcdir/guix${GUIX_PACKAGE_PATH:+:}$GUIX_PACKAGE_PATH"

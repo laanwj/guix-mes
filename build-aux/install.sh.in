@@ -19,13 +19,8 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
-srcdest="@srcdest@"
-srcdir="@srcdir@"
-abs_top_srcdir="@abs_top_srcdir@"
-abs_top_builddir="@abs_top_builddir@"
-prefix=${prefix-@prefix@}
-VERSION=${VERSION-@VERSION@}
 
+. ./config.status
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
 
@@ -35,8 +30,6 @@ SHELL=${SHELL-$(command -v sh)}
 [ -n "$BASH" ] && set -o pipefail
 
 MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
-MES_SEED=${MES_SEED-../MES-SEED}
-TINYCC_SEED=${TINYCC_SEED-../TINYCC-SEED}
 
 GUILE=${GUILE-$(command -v guile)} || true
 if [ -z "$GUILE" -o "$GUILE" = true ]; then
@@ -54,7 +47,9 @@ guile_site_dir=$(eval echo ${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFE
 guile_site_ccache_dir=$(eval echo ${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache})
 
 mkdir -p $DESTDIR$bindir
-cp src/mes $DESTDIR$bindir/mes
+if [ -f src/x86-mes-mes ]; then
+    cp src/x86-mes-mes $DESTDIR$bindir/mes
+fi
 cp scripts/mescc $DESTDIR$bindir/mescc
 
 sed \
@@ -66,7 +61,7 @@ mkdir -p $docdir
 
 if [ -n "$PERL" -a -n "$GIT" ]\
        && $PERL -v > /dev/null\
-       && $GIT --status > /dev/null; then
+       && $GIT status > /dev/null; then
     $PERL ${srcdest}build-aux/gitlog-to-changelog --srcdir=. > ChangeLog
 fi
 
@@ -105,7 +100,9 @@ else
 fi
 tar -cf- -C ${srcdest}mes module | tar -xf- -C $DESTDIR$MES_PREFIX
 
-cp src/mes.S $DESTDIR$MES_PREFIX/lib/x86-mes/mes.S
+if [ -f src/mes.x86-mes-S ]; then
+    cp src/mes.x86-mes-S $DESTDIR$MES_PREFIX/lib/x86-mes/mes.S
+fi
 if [ -f src/mes.x86_64-mes-S ]; then
     cp src/mes.x86_64-mes-S $DESTDIR$MES_PREFIX/lib/x86_64-mes/mes.S
 fi

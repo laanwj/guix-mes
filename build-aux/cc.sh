@@ -1,5 +1,3 @@
-#! /bin/sh
-
 # GNU Mes --- Maxwell Equations of Software
 # Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
@@ -18,42 +16,32 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -e
+compile () {
+    flags=
+    [ "$mesc_p" ] && flags="$LDFLAGS $MES_CFLAGS"
+    trace "CC         $1.c" $CC -c $CPPFLAGS $CFLAGS $flags -o "$1".${program_prefix}o "${srcdest}$1".c
+}
 
-. ${srcdest}build-aux/trace.sh
-. ${srcdest}build-aux/config.sh
+archive () {
+    l=$1
+    shift
+    objects=$(for i in $@; do echo $i.${program_prefix}o; done)
+    [ -z "$objects" ] && objects=$l.${program_prefix}o
+    out=$(dirname "$l")/$mes_arch/$(basename "$l").a
+    d=$(dirname $out)
+    mkdir -p $d
+    if [ "$mesc_p" ]; then
+        trace "AR         $l.a" mv $l.${program_prefix}o $(dirname $l)/$mes_arch/$(basename $l).o\
+            && mv $l.${program_prefix}S $(dirname $l)/$mes_arch/$(basename $l).S
+    else
+        trace "AR         $l.a" $AR cr $out $objects\
+            && mv $objects $d
+    fi
+}
 
-c=$1
-
-if [ -z "$ARCHDIR" ]; then
-    o="$c"
-    d=${c%%/*}
-    p="gcc-"
-else
-    b=${c##*/}
-    d=${c%/*}/gcc
-    o="$d/$b"
-fi
-mkdir -p $d
-
-trace "CC         $c.c" $CC\
-    -c\
-    $CC_CPPFLAGS\
-    $CPPFLAGS\
-    $CC_CFLAGS\
-    $CFLAGS\
-    -D WITH_GLIBC=1\
-    -D POSIX=1\
-    -o "$o".${p}o\
-    "${srcdest}$c".c
-
-if [ -z "$NOLINK" ]; then
-    trace "CCLD       "$o".${p}out" $CC\
-        $CC_CPPFLAGS\
-        $CPPFLAGS\
-        $CC_CFLAGS\
-        $CFLAGS\
-        -o "$o".${p}out\
-        "$o".${p}o\
-        lib/gcc/libmes.o
-fi
+link () {
+    lib=$libc
+    [ "$posix_p" ] && lib='-l mes'
+    out=$(dirname "$1")/${program_prefix}$(basename "$1")
+    trace "CCLD       $1" $CC $CFLAGS $LDFLAGS -o" $out" $crt1 "$1".${program_prefix}o $2 $lib
+}

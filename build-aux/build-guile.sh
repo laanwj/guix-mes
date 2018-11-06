@@ -18,12 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-. ${srcdest}build-aux/trace.sh
+if [ ! "$config_status" ]; then
+    . ./config.status
+fi
 
-export GUILE
-export GUILE_AUTO_COMPILE
-GUILE=${GUILE-$(command -v guile)}
-GUILE_TOOLS=${GUILE_TOOLS-$(command -v guile-tools)}
+. ${srcdest}build-aux/config.sh
+. ${srcdest}build-aux/trace.sh
 GUILE_AUTO_COMPILE=0
 
 set -e
@@ -58,12 +58,10 @@ if [ "$GUILE_EFFECTIVE_VERSION" = "2.0" ]; then
     srcdest=$abs_top_srcdir/
 fi
 
-GUILE_AUTO_COMPILE=0
-
 for i in $SCM_FILES $SCRIPTS; do
     b=$(basename $i)
     go=${i%%.scm}.go
     if [ $i -nt $go ]; then
-        trace "GUILEC     $b" $GUILE_TOOLS compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $i
+        trace "GUILEC     $b" $GUILD compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $i
     fi
 done

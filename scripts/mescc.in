@@ -4,6 +4,7 @@ if [ "$V" = 2 ]; then
     set -x
 fi
 prefix=${prefix-@prefix@}
+program_prefix=${program_prefix-@program_prefix@}
 MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
 export MES_PREFIX
 mes_p=$(command -v mes)
