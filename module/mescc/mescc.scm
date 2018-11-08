@@ -205,7 +205,9 @@
                          ((equal? machine "64") "2")
                          (else "1")))
          (base-address (option-ref options 'base-address "0x1000000"))
-         (elf-footer (or elf-footer (arch-find options (string-append"elf" machine "-footer-single-main.hex2"))))
+         (elf-footer (or elf-footer
+                         (arch-find options (string-append
+                                             "elf" machine "-footer-single-main.hex2"))))
          (command `(,hex2
                     "--LittleEndian"
                     "--Architecture" ,architecture
@@ -246,8 +248,15 @@
 
 (define (replace-suffix file-name suffix)
   (let* ((parts (string-split file-name #\.))
-         (base (if (pair? (cdr parts)) (drop-right parts 1))))
-    (string-append (string-join base ".") suffix)))
+         (base (if (pair? (cdr parts)) (drop-right parts 1)))
+         (old-suffix (last parts))
+         (program-prefix (cond ((string-prefix? "x86-mes-" old-suffix) ".x86-mes-")
+                               ((string-prefix? "x86_64-mes-" old-suffix) ".x86_64-mes-")
+                               (else "."))))
+    (if (string-null? suffix)
+        (if (string-null? program-prefix) (string-join base ".")
+            (string-append (string-drop program-prefix 1) (string-join base ".")))
+        (string-append (string-join base ".") program-prefix (string-drop suffix 1)))))
 
 (define (find-library options ext o)
   (arch-find options (string-append "lib" o ext)))
@@ -265,11 +274,13 @@
                       (filter-map (multi-opt 'library-dir) options)))
          (arch-file-name (string-append arch "/" file-name))
          (verbose? (option-ref options 'verbose #f)))
-    (when verbose?
-      (stderr "arch-find=~s\n" arch-file-name)
-      (stderr "     path=~s\n" path)
-      (stderr "  => ~s\n" (search-path path arch-file-name)))
-    (search-path path arch-file-name)))
+    (let ((file (search-path path arch-file-name)))
+      (when verbose?
+        (stderr "arch-find=~s\n" arch-file-name)
+        (stderr "     path=~s\n" path)
+        (stderr "  => ~s\n" file))
+      (or file
+          (error (format #f "mescc: file not found: ~s" arch-file-name))))))
 
 (define (prefix-file options file-name)
   (let ((prefix (option-ref options 'prefix "")))
