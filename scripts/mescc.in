@@ -85,11 +85,14 @@ fi
             (library (single-char #\l) (value #t))
             (machine (single-char #\m) (value #t))
             (preprocess (single-char #\E))
+            (std (value #t))
             (output (single-char #\o) (value #t))
+            (optimize (single-char #\O) (value #t))
             (version (single-char #\V))
             (verbose (single-char #\v))
-            (write (single-char #\w) (value #t))))
-         (single-dash-options '("-dumpmachine"))
+            (write (single-char #\w) (value #t))
+            (language (single-char #\x) (value #t))))
+         (single-dash-options '("-dumpmachine" "-std"))
          (args (map (lambda (o)
                       (if (member o single-dash-options) (string-append "-" o)
                           o))
@@ -107,29 +110,31 @@ fi
            (and (or help? usage?)
                 (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
-  --align            align globals
-  -c                 preprocess, compile and assemble only; do not link
-  -dumpmachine       display the compiler's target processor
+  --align             align globals
+  -dumpmachine        display the compiler's target processor
   --base-address=ADRRESS
-                     use BaseAddress ADDRESS [0x1000000]
-  -D DEFINE[=VALUE]  define DEFINE [VALUE=1]
-  -E                 preprocess only; do not compile, assemble or link
-  -g                 add debug info [GDB, objdump] TODO: hex2 footer
-  -h, --help         display this help and exit
-  -I DIR             append DIR to include path
-  -L DIR             append DIR to library path
-  -l LIBNAME         link with LIBNAME
-  -m BITS            compile for BITS bits [32]
-  -o FILE            write output to FILE
-  -S                 preprocess and compile only; do not assemble or link
-  -v, --version      display version and exit
-  -w,--write=TYPE    dump Nyacc AST using TYPE {pretty-print,write}
+                      use BaseAddress ADDRESS [0x1000000]
+  -D DEFINE[=VALUE]   define DEFINE [VALUE=1]
+  -E                  preprocess only; do not compile, assemble or link
+  -g                  add debug info [GDB, objdump] TODO: hex2 footer
+  -h, --help          display this help and exit
+  -I DIR              append DIR to include path
+  -L DIR              append DIR to library path
+  -l LIBNAME          link with LIBNAME
+  -m BITS             compile for BITS bits [32]
+  -o FILE             write output to FILE
+  -O LEVEL            use optimizing LEVEL
+  -S                  preprocess and compile only; do not assemble or link
+      --std=STANDARD  assume that the input sources are for STANDARD
+  -v, --version       display version and exit
+  -w,--write=TYPE     dump Nyacc AST using TYPE {pretty-print,write}
+  -x LANGUAGE         specify LANGUAGE of the following input files
 
 Environment variables:
 
-  MES=BINARY         run on mes-executable BINARY {mes,guile}
-  MES_DEBUG=LEVEL    show debug output with verbosity LEVEL {0..5}
-  NYACC_TRACE=1      show Nyacc progress
+  MES=BINARY          run on mes-executable BINARY {mes,guile}
+  MES_DEBUG=LEVEL     show debug output with verbosity LEVEL {0..5}
+  NYACC_TRACE=1       show Nyacc progress
 ")
                 (exit (or (and usage? 2) 0)))
            options))))
