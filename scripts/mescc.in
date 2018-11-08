@@ -78,6 +78,7 @@ fi
             (compile (single-char #\S))
             (define (single-char #\D) (value #t))
             (debug-info (single-char #\g))
+            (dumpmachine (single-char #\d))
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
             (library-dir (single-char #\L) (value #t))
@@ -88,19 +89,27 @@ fi
             (version (single-char #\V))
             (verbose (single-char #\v))
             (write (single-char #\w) (value #t))))
+         (single-dash-options '("-dumpmachine"))
+         (args (map (lambda (o)
+                      (if (member o single-dash-options) (string-append "-" o)
+                          o))
+                    args))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '()))
          (usage? (and (not help?) (null? files)))
          (version? (option-ref options 'version #f)))
-    (or
-     (and version?
-          (format (current-output-port) "mescc (GNU Mes) ~a\n" %version))
-     (and (or help? usage?)
-          (format (or (and usage? (current-error-port)) (current-output-port)) "\
+    (cond ((option-ref options 'dumpmachine #f)
+           (display "x86-mes")
+           (exit 0))
+          (version? (format #t "mescc (GNU Mes) ~a\n" %version) (exit 0))
+          (else
+           (and (or help? usage?)
+                (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
   --align            align globals
   -c                 preprocess, compile and assemble only; do not link
+  -dumpmachine       display the compiler's target processor
   --base-address=ADRRESS
                      use BaseAddress ADDRESS [0x1000000]
   -D DEFINE[=VALUE]  define DEFINE [VALUE=1]
@@ -122,8 +131,8 @@ Environment variables:
   MES_DEBUG=LEVEL    show debug output with verbosity LEVEL {0..5}
   NYACC_TRACE=1      show Nyacc progress
 ")
-          (exit (or (and usage? 2) 0)))
-     options)))
+                (exit (or (and usage? 2) 0)))
+           options))))
 
 (define (main args)
   (let* ((options (parse-opts args))
