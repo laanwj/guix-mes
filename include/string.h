@@ -45,6 +45,7 @@ typedef unsigned long size_t;
 typedef long ssize_t;
 #endif
 
+void * memchr (void const *block, int c, size_t size);
 void *memcpy (void *dest, void const *src, size_t n);
 void *memmove (void *dest, void const *src, size_t n);
 void *memset (void *s, int c, size_t n);

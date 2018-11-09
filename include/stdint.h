@@ -108,11 +108,17 @@ typedef long ptrdiff_t;
 #define LONG_MAX INT_MAX
 #define UINT_MAX UINT32_MAX
 #define ULONG_MAX UINT32_MAX
+#define LLONG_MIN INT64_MIN
+#define LLONG_MAX INT64_MAX
+#define SIZE_MAX UINT32_MAX
 #elif __x86_64__
 #define LONG_MIN INT64_MIN
 #define LONG_MAX INT64_MAX
 #define UINT_MAX UINT32_MAX
 #define ULONG_MAX UINT64_MAX
+#define LLONG_MIN INT64_MIN
+#define LLONG_MAX INT64_MAX
+#define SIZE_MAX UINT64_MAX
 #endif
 
 #endif // ! WITH_GLIBC

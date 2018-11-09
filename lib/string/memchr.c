@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,28 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_PWD_H
-#define __MES_PWD_H 1
 
-#if WITH_GLIBC
-#undef __MES_PWD_H
-#include_next <pwd.h>
-#else  // ! WITH_GLIBC
+#include <string.h>
 
-struct passwd
+void *
+memchr (void const *block, int c, size_t size)
 {
-  char *pw_name;
-  char *pw_passwd;
-  uid_t pw_uid;
-  gid_t pw_gid;
-  char *pw_gecos;
-  char *pw_dir;
-  char *pw_shell;
-};
-
-struct passwd * getpwuid ();
-
-
-#endif  // ! WITH_GLIBC
-
-#endif // __MES_PWD_H
+  char const *p = block;
+  while (size--)
+    {
+      if (c == *p)
+        return p;
+      p++;
+    }
+  return 0;
+}

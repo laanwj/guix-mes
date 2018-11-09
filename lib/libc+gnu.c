@@ -113,3 +113,8 @@
 #include <stub/sigblock.c>
 #include <stub/sigaddset.c>
 #include <stub/setlocale.c>
+
+// bash
+#include <stub/getpwuid.c>
+#include <stub/rand.c>
+#include <stub/ttyname.c>

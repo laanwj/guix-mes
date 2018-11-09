@@ -69,4 +69,10 @@
 #define SYS_getdents  0x4e
 #define SYS_clock_gettime 0xe4
 
+// bash
+#define SYS_setuid    0x69
+#define SYS_setgid    0x6a
+#define SYS_geteuid   0x6b
+#define SYS_getegid   0x6c
+
 #endif // __MES_LINUX_X86_64_SYSCALL_H

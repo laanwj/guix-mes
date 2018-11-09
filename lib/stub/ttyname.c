@@ -17,28 +17,19 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_PWD_H
-#define __MES_PWD_H 1
 
-#if WITH_GLIBC
-#undef __MES_PWD_H
-#include_next <pwd.h>
-#else  // ! WITH_GLIBC
+#include <libmes.h>
+#include <unistd.h>
 
-struct passwd
+char *
+ttyname (int filedes)
 {
-  char *pw_name;
-  char *pw_passwd;
-  uid_t pw_uid;
-  gid_t pw_gid;
-  char *pw_gecos;
-  char *pw_dir;
-  char *pw_shell;
-};
-
-struct passwd * getpwuid ();
-
-
-#endif  // ! WITH_GLIBC
-
-#endif // __MES_PWD_H
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("ttyname stub\n");
+  stub = 1;
+  errno = 0;
+  if (isatty (filedes))
+      return "/dev/tty0";
+  return 0;
+}

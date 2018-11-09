@@ -42,6 +42,7 @@ int setenv (char const* s, char const* v, int overwrite_p);
 void unsetenv (char const *name);
 void *malloc (size_t);
 void qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *));
+int rand (void);
 void *realloc (void *p, size_t size);
 double strtod (char const *string, char **tailptr);
 float strtof (char const *string, char **tailptr);

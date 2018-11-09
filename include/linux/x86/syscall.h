@@ -73,4 +73,10 @@
 #define SYS_getdents  0x8d
 #define SYS_clock_gettime 0x109
 
+// bash
+#define SYS_setuid    0x17
+#define SYS_geteuid   0x31
+#define SYS_getegid   0x32
+#define SYS_setgid    0x3e
+
 #endif // __MES_LINUX_X86_SYSCALL_H

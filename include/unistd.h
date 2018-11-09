@@ -29,6 +29,8 @@
 
 #else // ! WITH_GLIBC
 
+#define _POSIX_VERSION 199009L
+
 #include <sys/types.h>
 #ifndef NULL
 #define NULL 0
@@ -62,8 +64,12 @@ int execve (char const *file, char *const argv[], char *const env[]);
 int execvp (char const *file, char *const argv[]);
 int fork (void);
 char *getcwd (char *buf, size_t size);
-gid_t getgid (void);
 uid_t getuid (void);
+gid_t getgid (void);
+int setgid (gid_t newgid);
+int setuid (uid_t newuid);
+uid_t geteuid (void);
+gid_t getegid (void);
 int isatty (int fd);
 int link (char const *oldname, char const *newname);
 off_t lseek (int fd, off_t offset, int whence);

@@ -173,3 +173,28 @@ chdir (char const *file_name)
 {
   return _sys_call1 (SYS_chdir, (long)file_name);
 }
+
+// bash
+uid_t
+geteuid ()
+{
+  return _sys_call (SYS_geteuid);
+}
+
+gid_t
+getegid ()
+{
+  return _sys_call (SYS_getegid);
+}
+
+int
+setuid (uid_t newuid)
+{
+  return _sys_call1 (SYS_setuid, (long)newuid);
+}
+
+int
+setgid (gid_t newgid)
+{
+  return _sys_call1 (SYS_setgid, (long)newgid);
+}
