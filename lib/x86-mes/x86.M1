@@ -53,6 +53,7 @@ DEFINE cltd 99
 DEFINE cmp____$0x32,%eax 3d
 DEFINE cmp____$i32,%eax 3d
 DEFINE cmp____$i8,%eax 83f8
+DEFINE cmp____$i8,%ebx 81fb
 DEFINE div___%ebx f7f3
 DEFINE hlt f4
 DEFINE idiv___%ebx f7fb
