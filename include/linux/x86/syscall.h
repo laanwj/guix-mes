@@ -79,4 +79,7 @@
 #define SYS_getegid   0x32
 #define SYS_setgid    0x3e
 
+// make+POSIX
+#define SYS_sigprocmask 0x7e
+
 #endif // __MES_LINUX_X86_SYSCALL_H

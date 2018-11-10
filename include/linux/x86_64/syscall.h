@@ -75,4 +75,7 @@
 #define SYS_geteuid   0x6b
 #define SYS_getegid   0x6c
 
+// make+POSIX
+#define SYS_rt_sigprocmask 0x0e
+
 #endif // __MES_LINUX_X86_64_SYSCALL_H

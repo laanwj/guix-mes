@@ -198,3 +198,14 @@ setgid (gid_t newgid)
 {
   return _sys_call1 (SYS_setgid, (long)newgid);
 }
+
+// make+POSIX
+int
+sigprocmask (int how, sigset_t const *set, sigset_t *oldset)
+{
+#if __i386__
+  return _sys_call3 (SYS_sigprocmask, (long)how, (long)set, (long)oldset);
+#else
+  return _sys_call3 (SYS_rt_sigprocmask, (long)how, (long)set, (long)oldset);
+#endif
+}

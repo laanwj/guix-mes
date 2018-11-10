@@ -228,6 +228,12 @@ void* signal (int signum, void * action);
 sighandler_t signal (int signum, sighandler_t action);
 #endif
 int sigemptyset (sigset_t *set);
+#ifndef SIG_BLOCK
+#define SIG_BLOCK 0
+#define SIG_UNBLOCK 1
+#define SIG_SETMASK 2
+#endif
+int sigprocmask (int how, sigset_t const *set, sigset_t *oldset);
 
 #endif //! WITH_GLIBC
 

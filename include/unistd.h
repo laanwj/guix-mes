@@ -29,7 +29,9 @@
 
 #else // ! WITH_GLIBC
 
+#if defined (BOOTSTRAP_WITH_POSIX)
 #define _POSIX_VERSION 199009L
+#endif
 
 #include <sys/types.h>
 #ifndef NULL
