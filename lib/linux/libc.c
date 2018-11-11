@@ -150,6 +150,15 @@ fsync (int filedes)
   return _sys_call1 (SYS_fsync, (int)filedes);
 }
 
+char *
+getcwd (char *buffer, size_t size)
+{
+  int r = _sys_call2 (SYS_getcwd, (long)buffer, (long)size);
+  if (r >= 0)
+    return buffer;
+  return 0;
+}
+
 #include "linux/clock_gettime.c"
 #include "linux/gettimeofday.c"
 #include "linux/time.c"
