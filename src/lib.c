@@ -228,7 +228,7 @@ SCM
 display_error_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", STDERR, 0);
+  return display_helper (x, 0, "", g_stderr, 0);
 }
 
 SCM
@@ -249,7 +249,7 @@ SCM
 write_error_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", STDERR, 1);
+  return display_helper (x, 0, "", g_stderr, 1);
 }
 
 SCM

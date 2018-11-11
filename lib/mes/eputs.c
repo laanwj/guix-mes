@@ -24,6 +24,6 @@ int
 eputs (char const* s)
 {
   int i = strlen (s);
-  write (STDERR, s, i);
+  write (g_stderr, s, i);
   return 0;
 }

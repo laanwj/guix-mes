@@ -2365,18 +2365,18 @@ a = acons (list_to_symbol (scm_getenv_.string), cell_getenv_, a);
 
   if (g_debug > 3)
     {
-      fdputs ("functions: ", STDERR);
-      fdputs (itoa (g_function), STDERR);
-      fdputs ("\n", STDERR);
+      fdputs ("functions: ", g_stderr);
+      fdputs (itoa (g_function), g_stderr);
+      fdputs ("\n", g_stderr);
       for (int i = 0; i < g_function; i++)
         {
-          fdputs ("[", STDERR);
-          fdputs (itoa (i), STDERR);
-          fdputs ("]: ", STDERR);
-          fdputs (g_functions[i].name, STDERR);
-          fdputs ("\n", STDERR);
+          fdputs ("[", g_stderr);
+          fdputs (itoa (i), g_stderr);
+          fdputs ("]: ", g_stderr);
+          fdputs (g_functions[i].name, g_stderr);
+          fdputs ("\n", g_stderr);
         }
-      fdputs ("\n", STDERR);
+      fdputs ("\n", g_stderr);
     }
 
   return a;
@@ -2549,6 +2549,7 @@ main (int argc, char *argv[])
     STACK_SIZE = atoi (p);
   g_stdin = STDIN;
   g_stdout = STDOUT;
+  g_stderr = STDERR;
 
   SCM a = mes_environment (argc, argv);
   a = mes_builtins (a);

@@ -136,6 +136,8 @@ write_byte (SCM x) ///((arity . n))
   int fd = g_stdout;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER && VALUE (CAR (p)) != 1)
     fd = VALUE (CAR (p));
+  if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER && VALUE (CAR (p)) == 2)
+    fd = g_stderr;
   char cc = VALUE (c);
   write (fd, (char*)&cc, 1);
 #if !__MESC__
@@ -231,6 +233,12 @@ current_output_port ()
 }
 
 SCM
+current_error_port ()
+{
+  return MAKE_NUMBER (g_stderr);
+}
+
+SCM
 open_output_file (SCM x) ///((arity . n))
 {
   SCM file_name = car (x);
@@ -246,6 +254,13 @@ set_current_output_port (SCM port)
 {
   g_stdout = VALUE (port) ? VALUE (port) : STDOUT;
   return current_output_port ();
+}
+
+SCM
+set_current_error_port (SCM port)
+{
+  g_stderr = VALUE (port) ? VALUE (port) : STDERR;
+  return current_error_port ();
 }
 
 SCM

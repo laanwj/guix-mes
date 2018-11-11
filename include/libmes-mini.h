@@ -21,6 +21,11 @@
 #ifndef __MES_LIBMES_MINI_H
 #define __MES_LIBMES_MINI_H
 
+char **environ;
+int g_stdin;
+int g_stdout;
+int g_stderr;
+
 #ifndef _SIZE_T
 #define _SIZE_T
 #ifndef __SIZE_T

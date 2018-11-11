@@ -24,6 +24,6 @@ int
 oputs (char const* s)
 {
   int i = strlen (s);
-  write (1, s, i);
+  write (g_stdout, s, i);
   return 0;
 }

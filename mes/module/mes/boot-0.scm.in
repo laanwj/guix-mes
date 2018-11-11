@@ -111,8 +111,6 @@
 (define (primitive-eval e) (core:eval e (current-module)))
 (define eval core:eval)
 
-(define (current-output-port) 1)
-(define (current-error-port) 2)
 (define (port-filename port) "<stdin>")
 (define (port-line port) 0)
 (define (port-column port) 0)

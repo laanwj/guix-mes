@@ -20,21 +20,7 @@
 #ifndef __MES_STDIO_H
 #define __MES_STDIO_H 1
 
-char **environ;
-int g_stdin;
-int g_stdout;
-
-#ifndef STDIN
-#define STDIN 0
-#endif
-
-#ifndef STDOUT
-#define STDOUT 1
-#endif
-
-#ifndef STDERR
-#define STDERR 2
-#endif
+#include <libmes.h>
 
 #if WITH_GLIBC
 #ifndef _GNU_SOURCE

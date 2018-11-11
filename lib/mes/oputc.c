@@ -23,5 +23,5 @@
 int
 oputc (int c)
 {
-  return fdputc (c, STDOUT);
+  return fdputc (c, g_stdout);
 }
