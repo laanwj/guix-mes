@@ -183,9 +183,9 @@
                      "@VERSION@"))
 (define (effective-version) %version)
 
-(if (list 'and (list getenv "MES_DEBUG")
-          (list not (list equal2? (list getenv "MES_DEBUG") "0"))
-          (list not (list equal2? (list getenv "MES_DEBUG") "1")))
+(if (and (getenv "MES_DEBUG")
+          (not (equal2? (getenv "MES_DEBUG") "0"))
+          (not (equal2? (getenv "MES_DEBUG") "1")))
     (begin
       (core:display-error ";;; %moduledir=")
       (core:display-error %moduledir)
