@@ -380,3 +380,15 @@ getcwd_ () ///((name . "getcwd"))
   return MAKE_STRING (cstring_to_list (getcwd (buf, PATH_MAX)));
 }
 
+SCM
+dup_ (SCM port) ///((name . "dup"))
+{
+  return MAKE_NUMBER (dup (VALUE (port)));
+}
+
+SCM
+dup2_ (SCM old, SCM new) ///((name . "dup2"))
+{
+  dup2 (VALUE (old), VALUE (new));
+  return cell_unspecified;
+}
