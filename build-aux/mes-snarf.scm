@@ -110,8 +110,8 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
 
 (define (symbol->names s i)
   (if %gcc?
-      (format #f "g_cells[cell_~a].car = cstring_to_list (scm_~a.name);\n" s s)
-      (format #f "g_cells[cell_~a].car = cstring_to_list (scm_~a.car);\n" s s)))
+      (format #f "NAME_SYMBOL (cell_~a, scm_~a.name);\n" s s)
+      (format #f "NAME_SYMBOL (cell_~a, scm_~a.cdr);\n" s s)))
 
 (define (function->header f i)
   (let* ((arity (or (assoc-ref (function.annotation f) 'arity)
@@ -132,7 +132,7 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
   (string-append
    (if %gcc?
        (format #f "~a.function = g_function;\n" (function-builtin-name f))
-       (format #f "~a.cdr = g_function;\n" (function-builtin-name f)))
+       (format #f "~a.car = g_function;\n" (function-builtin-name f)))
    (format #f "g_functions[g_function++] = fun_~a;\n" (function.name f))
    (format #f "cell_~a = g_free++;\n" (function.name f))
    (format #f "g_cells[cell_~a] = ~a;\n\n" (function.name f) (function-builtin-name f))))
@@ -140,14 +140,11 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
 (define (function->environment f i)
   (string-append
    (if %gcc?
-       (format #f "scm_~a.string = cstring_to_list (fun_~a.name);\n" (function.name f) (function.name f))
-       (format #f "scm_~a.car = cstring_to_list (fun_~a.name);\n" (function.name f) (function.name f)))
+       (format #f "scm_~a.string = MAKE_BYTES0 (fun_~a.name);\n" (function.name f) (function.name f))
+       (format #f "scm_~a.cdr = MAKE_BYTES0 (fun_~a.name);\n" (function.name f) (function.name f)))
    (if %gcc?
-       (format #f "g_cells[cell_~a].string = MAKE_STRING (scm_~a.string);\n" (function.name f) (function.name f))
-       (format #f "g_cells[cell_~a].car = MAKE_STRING (scm_~a.car);\n" (function.name f) (function.name f)))
-   (if %gcc?
-       (format #f "a = acons (list_to_symbol (scm_~a.string), ~a, a);\n\n" (function.name f) (function-cell-name f))
-       (format #f "a = acons (list_to_symbol (scm_~a.car), ~a, a);\n\n" (function.name f) (function-cell-name f)))))
+       (format #f "a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_~a)), ~a, a);\n\n" (function.name f) (function-cell-name f))
+       (format #f "a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_~a)), ~a, a);\n\n" (function.name f) (function-cell-name f)))))
 
 (define (disjoin . predicates)
   (lambda (. arguments)

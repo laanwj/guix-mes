@@ -59,6 +59,7 @@
 #define SYS_pipe      0x16
 #define SYS_getgid    0x68
 #define SYS_rt_sigaction 0x0d
+#define SYS_rt_sigreturn 0x0f
 #define SYS_fcntl     0x48
 #define SYS_dup2      0x21
 #define SYS_getrusage 0x62

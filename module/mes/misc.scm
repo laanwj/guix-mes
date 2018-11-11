@@ -53,10 +53,11 @@
   (car (last-pair stuff)))
 
 (define (pke . stuff)
+  (display "\n" (current-error-port))
   (newline (current-error-port))
   (display ";;; " (current-error-port))
   (write stuff (current-error-port))
-  (newline (current-error-port))
+  (display "\n" (current-error-port))
   (car (last-pair stuff)))
 
 (define warn pke)

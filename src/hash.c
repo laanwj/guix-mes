@@ -23,11 +23,11 @@ SCM vector_ref_ (SCM x, long i);
 SCM vector_set_x_ (SCM x, long i, SCM e);
 
 int
-hash_list_of_char (SCM lst, long size)
+hash_cstring (char const* s, long size)
 {
-  int hash = VALUE (CAR (lst)) * 37;
-  if (TYPE (CDR (lst)) == TPAIR && TYPE (CADR (lst)) == TCHAR)
-    hash = hash + VALUE (CADR (lst)) * 43;
+  int hash = s[0] * 37;
+  if (s[0] && s[1])
+    hash = hash + s[1] * 43;
   assert (size);
   hash = hash % size;
   return hash;
@@ -38,15 +38,15 @@ hashq_ (SCM x, long size)
 {
   if (TYPE (x) == TSPECIAL
       || TYPE (x) == TSYMBOL)
-    return hash_list_of_char (STRING (x), size);  // FIXME: hash x directly
-  error (cell_symbol_system_error, cons (MAKE_STRING (cstring_to_list ("hashq_: not a symbol")), x));
+    return hash_cstring (CSTRING (x), size);  // FIXME: hash x directly
+  error (cell_symbol_system_error, cons (MAKE_STRING0 ("hashq_: not a symbol"), x));
 }
 
 int
 hash_ (SCM x, long size)
 {
   if (TYPE (x) == TSTRING)
-    return hash_list_of_char (STRING (x), size);
+    return hash_cstring (CSTRING (x), size);
   assert (0);
   return hashq_ (x, size);
 }

@@ -33,9 +33,17 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
 
+(pass-if "string=?"
+  (string=? "foo" "foo"))
+
+(pass-if "string=?"
+  (let ((empty ""))
+   (string=? "" empty)))
+
 (pass-if-equal "string-join"
-               "foo bar"
-               (string-join '("foo" "bar")))
+    "foo bar"
+  (string-join '("foo" "bar")))
+
 
 (pass-if-equal "string-join infix"
                "foo+bar"
@@ -73,6 +81,15 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 (pass-if-equal "number->string INT-MIN" "-2147483648" (number->string -2147483648))
 (pass-if-equal "number->string" "-4" (number->string -4))
 
+(pass-if-eq "string->list" #\A
+            (car (string->list "A")))
+
+(pass-if-eq "string->list high" #\xff
+            (car (string->list (list->string (list (integer->char 255))))))
+
+(pass-if-eq "string->list high" #xff
+            (char->integer (car (string->list (list->string (list (integer->char 255)))))))
+
 (pass-if-equal "string-fold"
     "oof"
   (list->string (string-fold cons '() "foo")))
@@ -107,5 +124,21 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 
 (pass-if-equal "string-replace" "fubar"
              (string-replace "foobar" "u" 1 3))
+
+(pass-if-equal "reverse" '(3 2 1)
+               (reverse '(1 2 3)))
+
+(pass-if-equal "reverse fresh" '(1 2 3)
+               (let ((list '(1 2 3)))
+                 (reverse list)
+                 list))
+
+(pass-if-equal "reverse!" '(1)
+               (let ((list '(1 2 3)))
+                 (reverse! list)
+                 list))
+
+(pass-if-equal "reverse! ()" '()
+  (reverse! '()))
 
 (result 'report (if (and (or #t (equal? %compiler "gnuc")) (equal? %arch "x86")) 1 0))

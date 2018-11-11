@@ -1,6 +1,9 @@
 #! /bin/sh
 # -*-scheme-*-
-exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests scm)' -s "$0" "$@"
+if [ "$MES" != guile ]; then
+    MES_BOOT=boot-03.scm exec ${MES-mes} < $0
+fi
+exec ${MES-mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests boot)' -s "$0" "$@"
 !#
 
 ;;; -*-scheme-*-
@@ -27,9 +30,12 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
   #:use-module (mes mes-0)
   #:use-module (mes test))
 
-(mes-use-module (mes scm))
-(mes-use-module (srfi srfi-0))
-(mes-use-module (mes test))
+(cond-expand
+ (mes
+  (primitive-load "module/mes/test.scm"))
+ (guile-2)
+ (guile
+  (use-modules (ice-9 syncase))))
 
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
@@ -124,22 +130,6 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 
 (pass-if-equal "iota -1"
                '() (iota -1))
-
-(pass-if-equal "reverse" '(3 2 1)
-               (reverse '(1 2 3)))
-
-(pass-if-equal "reverse fresh" '(1 2 3)
-               (let ((list '(1 2 3)))
-                 (reverse list)
-                 list))
-
-(pass-if-equal "reverse!" '(1)
-               (let ((list '(1 2 3)))
-                 (reverse! list)
-                 list))
-
-(pass-if-equal "reverse! ()" '()
-  (reverse! '()))
 
 (pass-if "cond-expand" (sequal? (cond-expand (foobar #f) (mes (display ": pass: *YAY*") 'mes) (guile (display ": pass: *GUILE*") 'mes)) 'mes))
 

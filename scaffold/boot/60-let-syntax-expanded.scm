@@ -46,9 +46,6 @@
   (if (null? rest) (core:write x)
       (core:write-port x (car rest))))
 
-(define (list->string lst)
-  (core:make-cell <cell:string> lst 0))
-
 (define (integer->char x)
   (core:make-cell <cell:character> 0 x))
 
@@ -142,10 +139,6 @@
   (define (symbol? x)
     (eq? (core:type x) <cell:symbol>))
 
-  (define (string->symbol s)
-    (if (not (pair? (core:car s))) '()
-        (list->symbol (core:car s))))
-
   (define <cell:string> 10)
   (define (string? x)
     (eq? (core:type x) <cell:string>))
@@ -232,7 +225,7 @@
           (and (equal2? (car a) (car b))
                (equal2? (cdr a) (cdr b)))
           (if (and (string? a) (string? b))
-              (eq? (string->symbol a) (string->symbol b))
+              (string=? a b)
               (if (and (vector? a) (vector? b))
                   (equal2? (vector->list a) (vector->list b))
                   (eq? a b))))))

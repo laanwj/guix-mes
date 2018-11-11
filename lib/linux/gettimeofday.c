@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <time.h>
+#include <sys/time.h>
 
 int
 gettimeofday (struct timeval *tv, struct timezone *tz)

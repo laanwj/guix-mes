@@ -36,20 +36,25 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         fdputc (VALUE (x), fd);
       else
         {
-          fdputs ("#\\", fd);
+          fdputs ("#", fd);
           long v = VALUE (x);
-          if (v == '\0') fdputs ("nul", fd);
-          else if (v == '\a') fdputs ("alarm", fd);
-          else if (v == '\b') fdputs ("backspace", fd);
-          else if (v == '\t') fdputs ("tab", fd);
-          else if (v == '\n') fdputs ("newline", fd);
-          else if (v == '\v') fdputs ("vtab", fd);
-          else if (v == '\f') fdputs ("page", fd);
+          if (v == '\0') fdputs ("\\nul", fd);
+          else if (v == '\a') fdputs ("\\alarm", fd);
+          else if (v == '\b') fdputs ("\\backspace", fd);
+          else if (v == '\t') fdputs ("\\tab", fd);
+          else if (v == '\n') fdputs ("\\newline", fd);
+          else if (v == '\v') fdputs ("\\vtab", fd);
+          else if (v == '\f') fdputs ("\\page", fd);
           //Nyacc bug
           // else if (v == '\r') fdputs ("return", fd);
-            else if (v == 13) fdputs ("return", fd);
-          else if (v == ' ') fdputs ("space", fd);
-          else fdputc (VALUE (x), fd);
+          else if (v == 13) fdputs ("\\return", fd);
+          else if (v == ' ') fdputs ("\\space", fd);
+          else
+            {
+              if (v >= 32 && v <= 127)
+                fdputc ('\\', fd);
+              fdputc (VALUE (x), fd);
+            }
         }
     }
   else if (t == TCLOSURE)
@@ -131,20 +136,27 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
            || t == TSTRING
            || t == TSYMBOL)
     {
-      if (TYPE (x) == TPORT)
+      if (t == TPORT)
         {
           fdputs ("#<port ", fd);
           fdputs (itoa (PORT (x)), fd);
           fdputs (" " ,fd);
+          x = STRING (x);
         }
-      if (TYPE (x) == TKEYWORD)
+      if (t == TKEYWORD)
         fdputs ("#:", fd);
-      if ((write_p && TYPE (x) == TSTRING) || TYPE (x) == TPORT)
+      if ((write_p && t == TSTRING) || t == TPORT)
         fdputc ('"', fd);
-      SCM t = CAR (x);
-      while (t && t != cell_nil)
+      char const *s = CSTRING (x);
+#if 0
+      s += START (x);
+      size_t length = LEN (x);
+#else
+      size_t length = LENGTH (x);
+#endif
+      for (size_t i=0; i < length; i++)
         {
-          long v = write_p ? VALUE (CAR (t)) : -1;
+          long v = write_p ? s[i] : -1;
           if (v == '\0') fdputs ("\\0", fd);
           else if (v == '\a') fdputs ("\\a", fd);
           else if (v == '\b') fdputs ("\\b", fd);
@@ -163,12 +175,11 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
 #endif
           else if (v == '\\') fdputs ("\\\\", fd);
           else if (v == '"') fdputs ("\\\"", fd);
-          else fdputc (VALUE (CAR (t)), fd);
-          t = CDR (t);
+          else fdputc (s[i], fd);
         }
-      if ((write_p && TYPE (x) == TSTRING) || TYPE (x) == TPORT)
+      if ((write_p && t == TSTRING) || t == TPORT)
         fdputc ('"', fd);
-      if (TYPE (x) == TPORT)
+      if (t == TPORT)
         fdputs (">", fd);
     }
   else if (t == TREF)
@@ -178,7 +189,8 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       SCM printer = STRUCT (x) + 1;
       if (TYPE (printer) == TREF)
         printer = REF (printer);
-      if (printer != cell_unspecified)
+      if (TYPE (printer) == TCLOSURE
+          || TYPE (printer) == TFUNCTION)
         apply (printer, cons (x, cell_nil), r0);
       else
         {
@@ -209,12 +221,22 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
   else
     {
       fdputs ("<", fd);
-      fdputs (itoa (TYPE (x)), fd);
+      fdputs (itoa (t), fd);
       fdputs (":", fd);
       fdputs (itoa (x), fd);
       fdputs (">", fd);
     }
   return 0;
+}
+
+SCM
+procedure_name_ (SCM x)
+{
+  assert (TYPE (x) == TFUNCTION);
+  char const *p = "?";
+  if (FUNCTION (x).name != 0)
+    p = FUNCTION (x).name;
+  return MAKE_STRING0 (p);
 }
 
 SCM
@@ -273,7 +295,6 @@ exit_ (SCM x) ///((name . "exit"))
   exit (VALUE (x));
 }
 
-#if !MES_MINI
 SCM
 frame_printer (SCM frame)
 {
@@ -349,7 +370,6 @@ stack_ref (SCM stack, SCM index)
   SCM frames = struct_ref_ (stack, 3);
   return vector_ref (frames, index);
 }
-#endif // !MES_MINI
 
 SCM
 xassq (SCM x, SCM a) ///for speed in core only
@@ -372,8 +392,9 @@ memq (SCM x, SCM a)
       }
     else if (t == TKEYWORD)
       {
-        SCM v = STRING (x);
-        while (a != cell_nil && v != STRING (CAR (a)))
+        while (a != cell_nil
+               && (TYPE (CAR (a)) != TKEYWORD
+                   || string_equal_p (x, CAR (a)) == cell_f))
           a = CDR (a);
       }
     else
@@ -399,11 +420,7 @@ equal2_p (SCM a, SCM b)
       return cell_f;
     }
   if (TYPE (a) == TSTRING && TYPE (b) == TSTRING)
-    {
-      a = STRING (a);
-      b = STRING (b);
-      goto equal2;
-    }
+    return string_equal_p (a, b);
   if (TYPE (a) == TVECTOR && TYPE (b) == TVECTOR)
     {
       if (LENGTH (a) != LENGTH (b))

@@ -57,19 +57,9 @@ exec ${MES-mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests macr
 
 ;; type-0.mes
 (define (string . lst)
-  (core:make-cell <cell:string> lst 0))
-
-(define (string->symbol s)
-  (if (not (pair? (core:car s))) '()
-      (list->symbol (core:car s))))
-
-(define (symbol->list s)
-  (core:car s))
+  (list->string lst))
 
 ;; boot-0.scm
-(define (symbol->string s)
-  (apply string (symbol->list s)))
-
 (define (string-append . rest)
   (apply string (apply append (map1 string->list rest))))
 

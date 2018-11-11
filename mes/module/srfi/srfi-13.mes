@@ -41,10 +41,6 @@
 (define (string-copy s)
   (list->string (string->list s)))
 
-(define (string=? a b)
-    (eq? (string->symbol a)
-         (string->symbol b)))
-
 (define (string= a b . rest)
   (let* ((start1 (and (pair? rest) (car rest)))
          (end1 (and start1 (pair? (cdr rest)) (cadr rest)))

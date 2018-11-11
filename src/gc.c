@@ -20,6 +20,8 @@
 
 #include <errno.h>
 
+size_t bytes_cells (size_t length);
+
 SCM
 gc_up_arena () ///((internal))
 {
@@ -79,6 +81,22 @@ gc_copy (SCM old) ///((internal))
       for (long i=0; i<LENGTH (old); i++)
         g_news[g_free++] = g_cells[VECTOR (old)+i];
     }
+  else if (NTYPE (new) == TBYTES)
+    {
+      char const *src = CBYTES (old);
+      char *dest = NCBYTES (new);
+      size_t length = NLENGTH (new);
+      memcpy (dest, src, length + 1);
+      g_free += bytes_cells (length) - 1;
+
+      if (g_debug > 4)
+        {
+          eputs ("gc copy bytes: "); eputs (src); eputs ("\n");
+          eputs ("    length: "); eputs (itoa (LENGTH (old))); eputs ("\n");
+          eputs ("    nlength: "); eputs (itoa (NLENGTH (new))); eputs ("\n");
+          eputs ("        ==> "); eputs (dest); eputs ("\n");
+        }
+    }
   TYPE (old) = TBROKEN_HEART;
   CAR (old) = new;
   return new;
@@ -107,16 +125,10 @@ gc_loop (SCM scan) ///((internal))
     {
       if (NTYPE (scan) == TBROKEN_HEART)
         error (cell_symbol_system_error,  cell_gc);
-      if (NTYPE (scan) == TFUNCTION
-          || NTYPE (scan) == TKEYWORD
-          || NTYPE (scan) == TMACRO
+      if (NTYPE (scan) == TMACRO
           || NTYPE (scan) == TPAIR
-          || NTYPE (scan) == TPORT
           || NTYPE (scan) == TREF
           || scan == 1 // null
-          || NTYPE (scan) == TSPECIAL
-          || NTYPE (scan) == TSTRING
-          || NTYPE (scan) == TSYMBOL
           || NTYPE (scan) == TVARIABLE)
         {
           car = gc_copy (g_news[scan].car);
@@ -124,14 +136,23 @@ gc_loop (SCM scan) ///((internal))
         }
       if ((NTYPE (scan) == TCLOSURE
            || NTYPE (scan) == TCONTINUATION
+           || NTYPE (scan) == TFUNCTION
+           || NTYPE (scan) == TKEYWORD
            || NTYPE (scan) == TMACRO
            || NTYPE (scan) == TPAIR
+           || NTYPE (scan) == TPORT
+           || NTYPE (scan) == TSPECIAL
+           || NTYPE (scan) == TSTRING
+           || NTYPE (scan) == TSYMBOL
+           || scan == 1 // null
            || NTYPE (scan) == TVALUES)
           && g_news[scan].cdr) // allow for 0 terminated list of symbols
         {
           cdr = gc_copy (g_news[scan].cdr);
           gc_relocate_cdr (scan, cdr);
         }
+      if (NTYPE (scan) == TBYTES)
+        scan += bytes_cells (NLENGTH (scan)) - 1;
       scan++;
     }
   gc_flip ();

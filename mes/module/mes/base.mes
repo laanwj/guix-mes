@@ -101,6 +101,24 @@
   (or (null? x)
       (and (pair? x) (list? (cdr x)))))
 
+(define-macro (cond . clauses)
+  (list 'if (pair? clauses)
+        (list (cons
+               'lambda
+               (cons
+                '(test)
+                (list (list 'if 'test
+                            (if (pair? (cdr (car clauses)))
+                                (if (eq? (car (cdr (car clauses))) '=>)
+                                    (append2 (cdr (cdr (car clauses))) '(test))
+                                    (list (cons 'lambda (cons '() (cons 'test (cdr (car clauses)))))))
+                                (list (cons 'lambda (cons '() (cons 'test (cdr (car clauses)))))))
+                            (if (pair? (cdr clauses))
+                                (cons 'cond (cdr clauses)))))))
+              (car (car clauses)))))
+
+(define else #t)
+
 (define (procedure? p)
   (cond ((builtin? p) #t)
         ((and (pair? p) (eq? (car p) 'lambda)))

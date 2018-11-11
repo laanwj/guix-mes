@@ -21,8 +21,6 @@
 
 #include <ctype.h>
 
-#define MAX_STRING 4096
-
 SCM
 read_input_file_env_ (SCM e, SCM a)
 {
@@ -49,7 +47,7 @@ reader_read_line_comment (int c)
       c = readchar ();
     }
   error (cell_symbol_system_error,
-         MAKE_STRING (cstring_to_list ("reader_read_line_comment")));
+         MAKE_STRING0 ("reader_read_line_comment"));
 }
 
 SCM reader_read_block_comment (int s, int c);
@@ -176,7 +174,7 @@ reader_read_list (int c, SCM a)
   if (c == ')')
     return cell_nil;
   if (c == EOF)
-    error (cell_symbol_not_a_pair, MAKE_STRING (cstring_to_list ("EOF in list")));
+    error (cell_symbol_not_a_pair, MAKE_STRING0 ("EOF in list"));
     //return cell_nil;
   SCM s = reader_read_sexp_ (c, a);
   if (s == cell_dot)
@@ -233,7 +231,14 @@ reader_read_hash (int c, SCM a)
     return cons (cell_symbol_quasisyntax,
                  cons (reader_read_sexp_ (readchar (), a), cell_nil));
   if (c == ':')
-    return MAKE_KEYWORD (CAR (reader_read_sexp_ (readchar (), a)));
+    {
+      SCM x = reader_read_identifier_or_number (readchar ());
+      if (TYPE (x) == TNUMBER)
+        error (cell_symbol_system_error, // READ error
+               cons (MAKE_STRING0 ("keyword perifx ':' not followed by a symbol: "),
+                     x));
+      return symbol_to_keyword (x);
+    }
   if (c == 'b')
     return reader_read_binary ();
   if (c == 'o')
@@ -274,6 +279,16 @@ reader_read_character ()
           c += readchar () - '0';
           p = peekchar ();
         }
+    }
+  else if (c == 'x'
+           && ((p >= '0' && p <= '9')
+               || (p >= 'a' && p <= 'f')
+               || (p >= 'F' && p <= 'F')))
+    {
+      c = VALUE (reader_read_hex ());
+      eputs ("reading hex c=");
+      eputs (itoa (c));
+      eputs ("\n");
     }
   else if (((c >= 'a' && c <= 'z')
             || c == '*')
@@ -330,7 +345,7 @@ reader_read_character ()
           eputs (buf);
           eputs ("\n");
           error (cell_symbol_system_error,
-                 MAKE_STRING (cstring_to_list ("char not supported")));
+                 MAKE_STRING0 ("char not supported"));
         }
     }
   return MAKE_CHAR (c);
@@ -418,10 +433,12 @@ reader_read_hex ()
 SCM
 reader_read_string ()
 {
-  SCM lst = cell_nil;
+  char buf[MAX_STRING];
+  size_t i = 0;
   int c;
   do
     {
+      assert (i < MAX_STRING);
       c = readchar ();
       if (c == '"')
         break;
@@ -429,40 +446,37 @@ reader_read_string ()
         {
           c = readchar ();
           if (c == '\\' || c == '"')
-            lst = cons (MAKE_CHAR (c), lst);
+            ;
           else if (c == '0')
-            lst = cons (MAKE_CHAR ('\0'), lst);
+            c = '\0';
           else if (c == 'a')
-            lst = cons (MAKE_CHAR ('\a'), lst);
+            c = '\a';
           else if (c == 'b')
-            lst = cons (MAKE_CHAR ('\b'), lst);
+            c = '\b';
           else if (c == 't')
-            lst = cons (MAKE_CHAR ('\t'), lst);
+            c = '\t';
           else if (c == 'n')
-            lst = cons (MAKE_CHAR ('\n'), lst);
+            c = '\n';
           else if (c == 'v')
-            lst = cons (MAKE_CHAR ('\v'), lst);
+            c = '\v';
           else if (c == 'f')
-            lst = cons (MAKE_CHAR ('\f'), lst);
+            c = '\f';
           else if (c == 'r')
             // Nyacc bug
-            // lst = cons (MAKE_CHAR ('\r'), lst);
-            lst = cons (MAKE_CHAR (13), lst);
+            // c = '\r';
+            c = 13;
           else if (c == 'e')
             // Nyacc bug
-            // lst = cons (MAKE_CHAR ('\e'), lst);
-            lst = cons (MAKE_CHAR (27), lst);
+            // c = '\e';
+            c = 27;
           else if (c == 'x')
-            {
-              SCM x = reader_read_hex ();
-              lst = cons (MAKE_CHAR (VALUE (x)), lst);
-            }
+            c = VALUE (reader_read_hex ());
         }
-      else
-        lst = cons (MAKE_CHAR (c), lst);
+      buf[i++] = c;
     }
   while (1);
-  return MAKE_STRING (reverse_x_ (lst, cell_nil));
+  buf[i] = 0;
+  return make_string (buf, i);
 }
 
 int g_tiny = 0;

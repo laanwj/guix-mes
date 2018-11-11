@@ -111,6 +111,7 @@
             (if (equal? o "%0") o       ; FIXME: 64b
                 (error "no such string:" o)))))
     (define (text->M1 o)
+      ;;
       (cond
        ((char? o) (text->M1 (char->integer o)))
        ((string? o) o)
@@ -166,7 +167,8 @@
           ((#:immediate4 ,immediate4) (hex2:immediate4 immediate4))
           ((#:immediate8 ,immediate8) (hex2:immediate8 immediate8))
           (_ (error "text->M1 no match o" o))))
-       ((pair? o) (string-join (map text->M1 o)))))
+       ((pair? o) (string-join (map text->M1 o)))
+       (#t (error "no such text:" o))))
     (define (write-function o)
       (let ((name (car o))
             (text (function:text (cdr o))))

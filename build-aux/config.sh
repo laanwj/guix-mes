@@ -87,8 +87,7 @@ CPPFLAGS=${CPPFLAGS-"
 -D 'VERSION=\"$VERSION\"'
 -D 'MODULEDIR=\"$moduledir\"'
 -D 'PREFIX=\"$prefix\"'
--I src
--I ${srcdest}src
+-I ${srcdest}.
 -I ${srcdest}lib
 -I ${srcdest}include
 "}
@@ -97,6 +96,7 @@ CPPFLAGS=${CPPFLAGS-"
 
 LDFLAGS=${LDFLAGS-"
 -v
+-g
 -L lib/linux/$mes_arch
 -L lib/linux
 -L lib/$mes_arch

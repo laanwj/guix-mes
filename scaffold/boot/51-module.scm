@@ -42,11 +42,8 @@
             (list (quote if) (car x) (cons (quote and) (cdr x))
                   #f))))
 
-  (define (string->list s)
-    (core:car s))
-
   (define (string . lst)
-    (core:make-cell <cell:string> lst 0))
+    (list->string lst))
 
   (define (string-append . rest)
     (apply string (apply append (map string->list rest))))
@@ -59,9 +56,6 @@
         (cons (f (car lst)) (map1 f (cdr lst)))))
 
   (define map map1)
-
-  (define (list->string lst)
-    (core:make-cell <cell:string> lst 0))
 
   (define %moduledir
     (if (not %prefix ) "mes/module/"
@@ -80,24 +74,11 @@
   (define-macro (include-from-path file)
     (list 'load (list string-append %moduledir file)))
 
-  (define (string->symbol s)
-    (list->symbol (core:car s)))
-
-  (define (symbol->list s)
-    (core:car s))
-
-  (define (string . lst)
-    (core:make-cell <cell:string> lst 0))
-
-  (define (symbol->string s)
-    (apply string (symbol->list s)))
-
   (define (getcwd) ".")
 
   (define (display x . rest)
     (if (null? rest) (core:display x)
-        (core:display-port x (car rest))))
-  ))
+        (core:display-port x (car rest))))))
 
 (define (memq x lst)
   (if (null? lst) #f

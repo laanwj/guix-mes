@@ -910,8 +910,7 @@
         ((p-expr (fixed ,value))
          (let* ((value (cstring->int value))
                 (info (allocate-register info))
-                (info (append-text info (append (wrap-as (as info 'value->r value)))))
-                (reg-size (->size "*" info)))
+                (info (append-text info (wrap-as (as info 'value->r value)))))
            (if (or #t (> value 0) (= reg-size 4)) info
                (append-text info (wrap-as (as info 'long-signed-r))))))
 
@@ -1208,7 +1207,7 @@
         ((rshift ,a ,b) ((binop->r info) a b 'r0>>r1))
         ((div ,a ,b)
          ((binop->r info) a b 'r0/r1
-                      (or (signed? (ast->type a info)) (signed? (ast->type b info)))))
+          (or (signed? (ast->type a info)) (signed? (ast->type b info)))))
         ((mod ,a ,b) ((binop->r info) a b 'r0%r1
                       (or (signed? (ast->type a info)) (signed? (ast->type b info)))))
         ((mul ,a ,b) ((binop->r info) a b 'r0*r1))

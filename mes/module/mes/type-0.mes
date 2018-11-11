@@ -26,7 +26,8 @@
 ;;; Code:
 
 (define cell:type-alist
-  (list (cons <cell:char> (quote <cell:char>))
+  (list (cons <cell:bytes> (quote <cell:bytes>))
+        (cons <cell:char> (quote <cell:char>))
         (cons <cell:closure> (quote <cell:closure>))
         (cons <cell:continuation> (quote <cell:continuation>))
         (cons <cell:function> (quote <cell:function>))
@@ -46,6 +47,9 @@
 
 (define (cell:type-name x)
   (cond ((assq (core:type x) cell:type-alist) => cdr)))
+
+(define (bytes? x)
+  (eq? (core:type x) <cell:bytes>))
 
 (define (char? x)
   (and (eq? (core:type x) <cell:char>)
@@ -102,10 +106,8 @@
 (define (vector? x)
   (eq? (core:type x) <cell:vector>))
 
-;; Non-types
-;; In core
-;; (define (null? x)
-;;   (eq? x '()))
+(define (broken-heart? x)
+  (eq? (core:type x) <cell:broken-heart>))
 
 (define (atom? x)
   (not (pair? x)))
@@ -116,20 +118,13 @@
 
 ;;; core: accessors
 (define (string . lst)
-  (core:make-cell <cell:string> lst 0))
-
-(define (string->symbol s)
-  (if (not (pair? (core:car s))) '()
-      (list->symbol (core:car s))))
-
-(define (symbol->keyword s)
-  (core:make-cell <cell:keyword> (symbol->list s) 0))
-
-(define (symbol->list s)
-  (core:car s))
+  (list->string lst))
 
 (define (keyword->list s)
-  (core:car s))
+  (string->list (keyword->string s)))
+
+(define (symbol->list s)
+  (string->list (symbol->string s)))
 
 (define (integer->char x)
   (core:make-cell <cell:char> 0 x))

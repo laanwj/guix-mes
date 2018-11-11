@@ -6,12 +6,12 @@
 ;;;; modify it under the terms of the GNU Lesser General Public
 ;;;; License as published by the Free Software Foundation; either
 ;;;; version 3 of the License, or (at your option) any later version.
-;;;; 
+;;;;
 ;;;; This library is distributed in the hope that it will be useful,
 ;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;;;; Lesser General Public License for more details.
-;;;; 
+;;;;
 ;;;; You should have received a copy of the GNU Lesser General Public
 ;;;; License along with this library; if not, write to the Free Software
 ;;;; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
@@ -57,7 +57,7 @@
 
 ;;; Code:
 
-(define-module (ice-9 optargs)
+(define-module (mes optargs)
   #:use-module (system base pmatch)
   #:replace (lambda*)
   #:export-syntax (let-optional
@@ -151,13 +151,12 @@
 				 => cdr)
 				(else
 				 ,(cadr key)))))))
-	  `(let ((,kb-list-gensym (;;(@@ (ice-9 optargs) rest-arg->keyword-binding-list)
-                                   rest-arg->keyword-binding-list
+	  `(let ((,kb-list-gensym ((if (not mes?) (@@ (mes optargs) rest-arg->keyword-binding-list)
+                                       rest-arg->keyword-binding-list)
                                    ,REST-ARG ',(map (lambda (x) (symbol->keyword (if (pair? x) (car x) x)))
                                                     BINDINGS)
                                    ,ALLOW-OTHER-KEYS?)))
 	     ,(let-o-k-template REST-ARG BINDINGS BODY let-type bindfilter)))))
-
 
 (define (rest-arg->keyword-binding-list rest-arg keywords allow-other-keys?)
   (if (null? rest-arg)

@@ -63,19 +63,13 @@ getgid ()
   return _sys_call (SYS_getgid);
 }
 
-// long _sys_call (long sys_call);
-// long _sys_call4 (long sys_call, long one, long two, long three, long four);
-
-#define SA_SIGINFO 4
-#define SA_RESTORER 0x04000000
-
-#define SYS_rt_sigreturn 15
-
+#if __x86_64__
 void
 _restorer (void)
 {
   _sys_call (SYS_rt_sigreturn);
 }
+#endif
 
 # define __sigmask(sig) \
   (((unsigned long int) 1) << (((sig) - 1) % (8 * sizeof (unsigned long int))))

@@ -42,17 +42,11 @@
   (if (null? rest) (core:write x)
       (core:write-port x (car rest))))
 
-(define (list->string lst)
-  (core:make-cell <cell:string> lst 0))
-
 (define (integer->char x)
   (core:make-cell <cell:char> 0 x))
 
 (define (newline . rest)
   (core:display (list->string (list (integer->char 10)))))
-
-(define (string->list s)
-  (core:car s))
 
 (define (cadr x) (car (cdr x)))
 

@@ -45,6 +45,7 @@
             core:write-error
             core:write-port
             core:type
+            equal2?
             pmatch-car
             pmatch-cdr
             )
@@ -66,6 +67,7 @@
   (define (core:apply f a . m) (apply f a))
   (define (core:car f a . m) (apply f a))
   (define append2 append)
+  (define equal2? equal?)
 
   (define guile:keyword? keyword?)
   (define guile:number? number?)

@@ -141,7 +141,7 @@
 
 (define %prefix (getenv "MES_PREFIX"))
 (define %moduledir
-  (if (not %prefix) "mes/module/"
+  (if (not %prefix) "boe /share/mes/module/"
       (list->string
        (append (string->list %prefix) (string->list "/module/" )))))
 
@@ -182,109 +182,5 @@
 
 (define-macro (use-modules . rest) #t)
 ;; end boot-03.scm
-
-(define %version (if (eq? (car (string->list "@VERSION@")) #\@) "git"
-                     "@VERSION@"))
-(define (effective-version) %version)
-
-(mes-use-module (srfi srfi-1))
-(mes-use-module (srfi srfi-13))
-(mes-use-module (mes fluids))
-(mes-use-module (mes catch))
-(mes-use-module (mes posix))
-
-(define-macro (include-from-path file)
-  (let loop ((path (cons* %moduledir "@srcdir@/module" (string-split (or (getenv "GUILE_LOAD_PATH")) #\:))))
-    (cond ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 2)) string->number))
-           (core:display-error (string-append "include-from-path: " file " [PATH:" (string-join path ":") "]\n")))
-          ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 1)) string->number))
-           (core:display-error (string-append "include-from-path: " file "\n"))))
-    (if (null? path) (error "include-from-path: not found: " file)
-        (let ((file (string-append (car path) "/" file)))
-          (if (access? file R_OK) `(load ,file)
-              (loop (cdr path)))))))
-
-(define-macro (define-module module . rest)
-  `(if ,(and (pair? module)
-             (= 1 (length module))
-             (symbol? (car module)))
-       (define (,(car module) . arguments) (main (command-line)))))
-
-(define-macro (use-modules . rest) #t)
-
-(mes-use-module (mes getopt-long))
-
-(define %main #f)
 (primitive-load 0)
-(let ((tty? (isatty? 0)))
-  (define (parse-opts args)
-    (let* ((option-spec
-            '((no-auto-compile)
-              (compiled-path (single-char #\C) (value #t))
-              (dump)
-              (help (single-char #\h))
-              (load)
-              (load-path (single-char #\L) (value #t))
-              (main (single-char #\e) (value #t))
-              (source (single-char #\s) (value #t))
-              (version (single-char #\V)))))
-      (getopt-long args option-spec #:stop-at-first-non-option #t)))
-  (define (source-arg? o)
-    (equal? "-s" o))
-  (let* ((s-index (list-index source-arg? %argv))
-         (args (if s-index (list-head %argv (+ s-index 2)) %argv))
-         (options (parse-opts args))
-         (main (option-ref options 'main #f))
-         (source (option-ref options 'source #f))
-         (files (if s-index (list-tail %argv (+ s-index 1))
-                    (option-ref options '() '())))
-         (help? (option-ref options 'help #f))
-         (usage? (and (not help?) (null? files) (not tty?) (not main)))
-         (version? (option-ref options 'version #f)))
-    (or
-     (and version?
-          (display (string-append "mes (GNU Mes) " %version "\n"))
-          (exit 0))
-     (and (or help? usage?)
-          (display "Usage: mes [OPTION]... [FILE]...
-Evaluate code with Mes, interactively or from a script.
-
-  [-s] FILE           load source code from FILE, and exit
-  --                  stop scanning arguments; run interactively
-
-The above switches stop argument processing, and pass all
-remaining arguments as the value of (command-line).
-
-  --dump              dump binary program to stdout
-  -e,--main=MAIN      after reading script, apply MAIN to command-line arguments
-  -h, --help          display this help and exit
-  --load              load binary program [module/mes/boot-0.32-mo]
-  -L,--load-path=DIR  add DIR to the front of the module load path
-  -v, --version       display version information and exit
-
-Ignored for Guile compatibility:
-  --auto-compile
-  --fresh-auto-compile
-  --no-auto-compile
-  -C,--compiled-path=DIR
-" (or (and usage? (current-error-port)) (current-output-port)))
-          (exit (or (and usage? 2) 0)))
-     options)
-    (if main (set! %main main))
-    (and=> (option-ref options 'load-path #f)
-           (lambda (dir)
-             (setenv "GUILE_LOAD_PATH" (string-append dir ":" (getenv "GUILE_LOAD_PATH")))))
-    (cond ((pair? files)
-           (let* ((file (car files))
-                  (port (if (equal? file "-") 0
-                            (open-input-file file))))
-             (set! %argv files)
-             (set-current-input-port port)))
-          ((and (null? files) tty?)
-
-           (mes-use-module (mes repl))
-           (set-current-input-port 0)
-           (repl))
-          (else #t))))
 (primitive-load 0)
-(primitive-load (open-input-string %main))

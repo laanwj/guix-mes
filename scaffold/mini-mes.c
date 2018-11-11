@@ -218,7 +218,7 @@ struct scm scm_symbol_arch = {TSYMBOL, "%arch",0};
 
 struct scm scm_test = {TSYMBOL, "test",0};
 
-#include "mes.mes.symbols.h"
+#include "src/mes.mes.symbols.h"
 
 SCM tmp;
 SCM tmp_num;
@@ -227,19 +227,19 @@ SCM tmp_num2;
 struct function g_functions[200];
 int g_function = 0;
 
-#include "gc.mes.h"
-#include "lib.mes.h"
+#include "src/gc.mes.h"
+#include "src/lib.mes.h"
 #if !MES_MINI
-#include "math.mes.h"
+#include "src/math.mes.h"
 #endif
-#include "mes.mes.h"
+#include "src/mes.mes.h"
 
 SCM gc_init_news ();
 
 // #if !MES_MINI
-// #include "posix.mes.h"
+// #include "src/posix.mes.h"
 // #ndif
-//#include "vector.mes.h"
+//#include "src/vector.mes.h"
 
 #define TYPE(x) g_cells[x].type
 #define CAR(x) g_cells[x].car
@@ -273,7 +273,7 @@ SCM gc_init_news ();
 #define MAKE_CONTINUATION(n) make_cell_ (tmp_num_ (TCONTINUATION), n, g_stack)
 #define MAKE_NUMBER(n) make_cell_ (tmp_num_ (TNUMBER), 0, tmp_num2_ (n))
 #define MAKE_REF(n) make_cell_ (tmp_num_ (TREF), n, 0)
-#define MAKE_STRING(x) make_cell_ (tmp_num_ (TSTRING), x, 0)
+#define MAKE_STRING0(x) make_string (x, strlen (x))
 
 #define CAAR(x) CAR (CAR (x))
 #define CADR(x) CAR (CDR (x))
@@ -809,10 +809,11 @@ make_tmps (struct scm* cells)
 }
 
 #if !MES_MINI
-#include "posix.c"
-#include "math.c"
+#include "src/posix.c"
+#include "src/math.c"
 #endif
-#include "lib.c"
+#include "src/lib.c"
+#include "src/strings.c"
 
 SCM frame_printer (SCM frame)
 {
@@ -861,7 +862,7 @@ mes_symbols () ///((internal))
   gc_init_cells ();
   gc_init_news ();
 
-#include "mes.mes.symbols.i"
+#include "src/mes.mes.symbols.i"
 
   g_symbol_max = g_free;
   make_tmps (g_cells);
@@ -872,7 +873,7 @@ mes_symbols () ///((internal))
 
   SCM a = cell_nil;
 
-#include "mes.mes.symbol-names.i"
+#include "src/mes.mes.symbol-names.i"
 
   a = acons (cell_symbol_mes_version, MAKE_STRING (cstring_to_list (VERSION)), a);
   a = acons (cell_symbol_mes_prefix, MAKE_STRING (cstring_to_list (PREFIX)), a);
@@ -913,33 +914,35 @@ mes_environment () ///((internal))
 SCM
 mes_builtins (SCM a) ///((internal))
 {
-#include "mes.mes.i"
+#include "src/mes.mes.i"
 
 // Do not sort: Order of these includes define builtins
 #if !MES_MINI
-#include "posix.mes.i"
-#include "math.mes.i"
+#include "src/posix.mes.i"
+#include "src/math.mes.i"
 #endif
-#include "lib.mes.i"
+#include "src/lib.mes.i"
 #if !MES_MINI
-#include "vector.mes.i"
+#include "src/vector.mes.i"
 #endif
-#include "gc.mes.i"
+#include "src/gc.mes.i"
 #if !MES_MINI
-  //#include "reader.mes.i"
+  //#include "src/reader.mes.i"
 #endif
+#include "src/strings.mes.i"
 
-#include "gc.mes.environment.i"
-#include "lib.mes.environment.i"
+#include "src/gc.mes.environment.i"
+#include "src/lib.mes.environment.i"
 #if !MES_MINI
-#include "math.mes.environment.i"
+#include "src/math.mes.environment.i"
 #endif
-#include "mes.mes.environment.i"
+#include "src/mes.mes.environment.i"
 #if !MES_MINI
-#include "posix.mes.environment.i"
-  //#include "reader.mes.environment.i"
-#include "vector.mes.environment.i"
+#include "src/posix.mes.environment.i"
+  //#include "src/reader.mes.environment.i"
+#include "src/vector.mes.environment.i"
 #endif
+#include "src/strings.mes.i"
 
   return a;
 }
@@ -1012,9 +1015,9 @@ bload_env (SCM a) ///((internal))
 }
 
 #if !MES_MINI
-#include "vector.c"
+#include "src/vector.c"
 #endif
-#include "gc.c"
+#include "src/gc.c"
 
 int
 main (int argc, char *argv[])

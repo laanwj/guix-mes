@@ -55,10 +55,6 @@
   (define (symbol? x)
     (eq? (core:type x) <cell:symbol>))
 
-  (define (string->symbol s)
-    (if (not (pair? (core:car s))) '()
-        (list->symbol (core:car s))))
-
   (define (string? x)
     (eq? (core:type x) <cell:string>))
 

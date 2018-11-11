@@ -20,6 +20,7 @@
 
 SCM struct_ref_ (SCM x, long i);
 SCM struct_set_x_ (SCM x, long i, SCM e);
+SCM cstring_to_symbol (char const *s);
 
 SCM
 make_module_type () ///(internal))
@@ -101,7 +102,7 @@ module_variable (SCM module, SCM name)
 SCM
 module_ref (SCM module, SCM name)
 {
-  if (g_debug > 4)
+  if (g_debug > 3)
     {
       eputs ("module_ref: "); display_error_ (name); eputs ("\n");
     }

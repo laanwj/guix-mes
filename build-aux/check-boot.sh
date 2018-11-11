@@ -46,6 +46,12 @@ tests="
 
 16-if-eq-quote.scm
 
+17-memq.scm
+17-memq-keyword.scm
+17-string-equal.scm
+17-equal2.scm
+17-open-input-string.scm
+
 20-define.scm
 20-define-quoted.scm
 20-define-quote.scm
@@ -99,6 +105,8 @@ tests="
 4e-let-global.scm
 4f-string-split.scm
 
+50-string-append.scm
+50-string-join.scm
 50-primitive-load.scm
 51-module.scm
 52-define-module.scm

@@ -17,10 +17,8 @@
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (cond-expand
- (guile
-  )
+ (guile)
  (mes
-;;;;;;;;;;;;;;;
   (define (cons* . rest)
     (if (null? (cdr rest)) (car rest)
         (cons (car rest) (core:apply cons* (cdr rest) (current-module)))))
@@ -34,12 +32,6 @@
         (if (null? (cdr rest)) (car rest)
             (append2 (car rest) (apply append (cdr rest))))))
 
-  (define-macro (and . x)
-    (if (null? x) #t
-        (if (null? (cdr x)) (car x)
-            (list (quote if) (car x) (cons (quote and) (cdr x))
-                  #f))))
-
   (define (string . lst)
     (list->string lst))
 
@@ -50,31 +42,12 @@
   (define map map1)
 
   (define (string-append . rest)
-    (apply string (apply append (map string->list rest))))
+    (apply string (apply append (map string->list rest))))))
 
-;;;;;;;;;;;;;;;;;;
   (define (string-join lst infix)
     (if (null? (cdr lst)) (car lst)
         (string-append (car lst) infix (string-join (cdr lst) infix))))
-;;;;;;;;;;;;;;;;;;
 
-  (define-macro (load file)
-    (list 'primitive-load file))
-
-  (define (not x) (if x #f #t))
-
-  (define (memq x lst)
-    (if (null? lst) #f
-        (if (eq? x (car lst)) lst
-            (memq x (cdr lst)))))
-  ))
-
-(define %moduledir "./")
-(core:display-error "reading...\n")
-(primitive-load "mes/module/mes/module.mes")
-(core:display-error "dun\n")
-(core:write-error (map symbol->string '(scaffold boot data bar)))
-(core:display-error "\n")
-(core:write-error (string-join (map symbol->string '(scaffold boot data bar)) "/"))
-(core:display-error "\n")
-(mes-use-module (scaffold boot data bar))
+(if (string=? (string-join '("foo" "bar") "/") "foo/bar")
+    (exit 0))
+(exit 1)

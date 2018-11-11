@@ -91,12 +91,6 @@
 ;;   (if (= 0 n) '()
 ;;       (foo (car x) (ss-list-head (cdr x) (- n 1)))))
 
-(define (string->list s)
-  (core:car s))
-
-(define (list->string lst)
-  (core:make-cell <cell:string> lst 0))
-
 (define (not x) (if x #f #t))
 
 (define (string-split s c)

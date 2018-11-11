@@ -52,6 +52,7 @@ tests/guile.test
 tests/syntax.test
 tests/let-syntax.test
 tests/pmatch.test
+tests/posix.test
 tests/match.test
 tests/psyntax.test
 "
