@@ -137,4 +137,8 @@
     (if destination (simple-format lst rest)
         (with-output-to-string
           (lambda () (simple-format lst rest))))))
+
 (define format simple-format)
+
+(define (file-exists? o)
+  (access? o R_OK))
