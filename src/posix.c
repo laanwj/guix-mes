@@ -19,6 +19,7 @@
  */
 
 #include <fcntl.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -371,3 +372,11 @@ get_internal_run_time ()
                                                ts.tv_nsec - g_start_time.tv_nsec);
   return MAKE_NUMBER (time);
 }
+
+SCM
+getcwd_ () ///((name . "getcwd"))
+{
+  char buf[PATH_MAX];
+  return MAKE_STRING (cstring_to_list (getcwd (buf, PATH_MAX)));
+}
+
