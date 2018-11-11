@@ -47,8 +47,15 @@
   (set-cdr! (last-pair base) (string->list x))
   base)
 
+(define (char-set-adjoin cs . chars)
+  (append cs chars))
+
 (define (char-set-contains? cs x)
   (and (memq x cs) #t))
+
+(define (char-set-complement cs)
+  (let ((ascii (map integer->char (iota 128))))
+    (list->char-set (filter (lambda (c) (not (char-set-contains? cs c))) ascii))))
 
 (define (char-whitespace? c)
   (char-set-contains? char-set:whitespace c))
