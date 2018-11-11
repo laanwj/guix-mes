@@ -1,24 +1,6 @@
 #! /bin/sh
-# -*- scheme -*-
-unset LANG LC_ALL
-guile=$(command -v ${GUILE-guile})
-guix=$(command -v ${GUIX-guix})
-if [ -n "$guix" ] ; then
-    install="guix environment -l .guix.scm"
-else
-    install="sudo apt-get install guile-2.2-dev"
-fi
-if [ -z "$guile" ]; then
-    cat <<EOF
-
-Missing dependencies: ${GUILE-guile}, please install Guile 2.2 or later; run
-    $install
-EOF
-exit 1
-fi
-GUILE=$guile
-export GUILE
-exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
+# -*-scheme-*-
+MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 !#
 
 ;;; GNU Mes --- Maxwell Equations of Software
@@ -44,15 +26,37 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
-  #:use-module (ice-9 and-let-star)
-  #:use-module (ice-9 curried-definitions)
   #:use-module (ice-9 getopt-long)
-  #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 regex)
   #:export (main))
+
+(cond-expand
+ (guile)
+ (mes (mes-use-module (srfi srfi-1))
+      (mes-use-module (srfi srfi-9))
+      (mes-use-module (srfi srfi-9 gnu))
+      (mes-use-module (srfi srfi-26))
+      (mes-use-module (mes getopt-long))
+      (mes-use-module (mes guile))
+      (mes-use-module (mes misc))
+      (mes-use-module (mes optargs))
+      (define %host-type "x86_64-unknown-linux-gnu")
+      (define OPEN_READ "r")
+      (define (canonicalize-path o)
+        (if (string-prefix? "/" o) o
+            (string-append (getcwd) "/" o)))
+      (define (sort lst less)
+        lst)
+      (define (close-pipe o) 0)
+      (define (open-pipe* OPEN_READ . commands)
+        (let ((fake-pipe ".pipe"))
+          (with-output-to-file fake-pipe
+            (lambda _
+              (let ((status (apply system* (append commands))))
+                (set! close-pipe (lambda _ status)))))
+          (open-input-file fake-pipe)))))
 
 (define* (PATH-search-path name #:key (default name) warn?)
   (or (search-path (string-split (getenv "PATH") #\:) name)
@@ -80,22 +84,17 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define (verbose string . rest)
   (if %verbose? (apply stderr (cons string rest))))
 
-(define (gulp-pipe command)
-  (let* ((port (open-pipe* OPEN_READ *shell* "-c" command))
+(define (gulp-pipe* . command)
+  (let* ((err (current-error-port))
+         (foo (set-current-error-port (open-output-file ".error")))
+         (port (apply open-pipe* OPEN_READ command))
          (output (read-string port))
-         (status (close-pipe port)))
-    (verbose "command[~a]: ~s => ~a\n" status command output)
-    (if (not (zero? status)) "" (string-trim-right output #\newline))))
-
-(define* ((->string #:optional (infix "")) h . t)
-  (let ((o (if (pair? t) (cons h t) h)))
-    (match o
-      ((? char?) (make-string 1 o))
-      ((? number?) (number->string o))
-      ((? string?) o)
-      ((? symbol?) (symbol->string o))
-      ((h ... t) (string-join (map (->string) o) ((->string) infix)))
-      (_ ""))))
+         (status (close-pipe port))
+         (error (with-input-from-file ".error" read-string)))
+    (set-current-error-port err)
+    (verbose "command[~a]: ~s => ~a [~a]\n" status command output error)
+    (if (not (zero? status)) ""
+        (string-trim-right (string-append output error)))))
 
 (define (tuple< a b)
   (cond
@@ -120,25 +119,39 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define (string-replace-char string from to)
   (string-map (cut char->char from to <>) string))
 
+(define (string-replace-string string from to)
+  (cond ((string-contains string from)
+         => (lambda (i) (string-replace string to i (+ i (string-length from)))))
+        (else string)))
+
+(define (string-replace-string/all string from to)
+  (or (and=> (string-contains string from)
+             (lambda (i)
+               (string-append
+                (substring string 0 i)
+                to
+                (string-replace-string/all
+                 (substring string (+ i (string-length from))) from to))))
+      string))
+
 ;;; Configure
 
 (define-immutable-record-type <dependency>
-  (make-depedency name version-expected optional? version-option commands file-name data)
+  (make-dependency name version-expected optional? version-option commands file-name data version-found)
   dependency?
   (name dependency-name)
   (version-expected dependency-version-expected)
-  (version-option dependency-version-option)
   (optional? dependency-optional?)
+  (version-option dependency-version-option)
   (commands dependency-commands)
   (file-name dependency-file-name)
-  (version-found dependency-version-found)
-  (data dependency-data))
+  (data dependency-data)
+  (version-found dependency-version-found))
 
-(define* (make-dep name #:optional (version '(0))
-                   #:key optional? (version-option "--version") (commands (list name)) file-name data)
+(define* (make-dep name #:key (version '(0)) optional? (version-option "--version") (commands (list name)) file-name data)
   (let* ((env-var (getenv (name->shell-name name)))
          (commands (if env-var (cons env-var commands) commands)))
-   (make-depedency name version optional? version-option commands file-name data)))
+    (make-dependency name version optional? version-option commands file-name data #f)))
 
 (define (find-dep name deps)
   (find (compose (cut equal? <> name) dependency-name) deps))
@@ -154,18 +167,23 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
 (define (name->shell-name name)
   (string-upcase (string-replace-char name #\- #\_)))
 
+(define (->string o)
+  (cond ((number? o) (number->string o))
+        ((string? o) o)
+        (else (format #f "~a" o))))
+
 (define (version->string version)
-  ((->string '.) version))
+  (and version (string-join (map ->string version) ".")))
 
 (define (string->version string)
-  (and-let* ((version (string-tokenize string
-                                       (char-set-adjoin char-set:digit #\.)))
-             ((pair? version))
-             (version (sort version (lambda (a b) (> (string-length a) (string-length b)))))
-             (version (car version))
-             (version (string-tokenize version
-                                       (char-set-complement (char-set #\.)))))
-            (map string->number version)))
+  (let ((split (string-tokenize string
+                                (char-set-adjoin char-set:digit #\.))))
+    (and (pair? split)
+         (let* ((version (sort split (lambda (a b) (> (string-length a) (string-length b)))))
+                (version (car version))
+                (version (string-tokenize version
+                                          (char-set-complement (char-set #\.)))))
+           (map string->number version)))))
 
 (define (check-program-version dependency)
   (let ((name (dependency-name dependency))
@@ -178,12 +196,17 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
             (stdout "checking for ~a~a... " name
                     (if (null? expected) ""
                         (format #f " [~a]" (version->string expected))))
-            (let* ((output (gulp-pipe (format #f "~a ~a 2>&1" command version-option)))
+            (let* ((output (gulp-pipe* command version-option))
+                   ;;(foo (stderr "output=~s\n" output))
                    (actual (string->version output))
+                   ;;(foo (stderr "actual=~s\n" actual))
+                   ;;(foo (stderr "expected=~s\n" expected))
                    (pass? (and actual (tuple< expected actual)))
+                   ;;(foo (stderr "PASS?~s\n" pass?))
                    (dependency (set-field dependency (dependency-version-found) actual)))
               (stdout "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
-                                    (if actual " no, found" "no")) (version->string actual))
+                                    (if actual " no, found" "no"))
+                      (or (version->string actual) ""))
               (if pass? (let ((file-name (or (PATH-search-path command)
                                              (dependency-file-name dependency))))
                           (set-field dependency (dependency-file-name) file-name))
@@ -221,20 +244,28 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
           dependency))))
 
 (define (check-preprocess-header-c cc header)
-  (zero? (system (format #f "echo '#include \"~a\"' | ~a -E - > /dev/null 2>&1" header cc))))
+  (with-output-to-file ".config.c"
+    (cut format #t "#include \"~a\"" header))
+  (with-error-to-file "/dev/null"
+    (cut zero? (system* cc "-E" "-o" ".config.E" ".config.c"))))
 
 (define (check-compile-string-c cc string)
-  (zero? (system (format #f "echo '~a' | ~a --std=gnu99 -c -x c -o .config.o - > /dev/null 2>&1" string cc))))
+  (with-output-to-file ".config.c"
+    (cut display string))
+  (with-error-to-file "/dev/null"
+    (cut zero? (system* cc "--std=gnu99" "-c" "-o" ".config.o" ".config.c"))))
 
 (define (check-link-string-c cc string)
-  (zero? (system (format #f "echo '~a' | ~a -v --std=gnu99 -x c -o .config-a.out -  > /dev/null 2>&1" string cc))))
+  (with-output-to-file ".config.c"
+    (cut display string))
+  (with-error-to-file "/dev/null"
+    (cut zero? (system* cc "--std=gnu99" "-o" ".config" ".config.c"))))
 
 (define (parse-opts args)
   (let* ((option-spec
   	  '((build (value #t))
             (host (value #t))
-            (help (single-char #\h))
-            (mes)
+
             (prefix (value #t))
             (program-prefix (value #t))
             (bindir (value #t))
@@ -243,6 +274,9 @@ exec ${guile} -L . --no-auto-compile -e '(configure)' -s "$0" ${1+"$@"}
             (libdir (value #t))
             (srcdir (value #t))
             (sysconfdir (value #t))
+
+            (mes)
+            (help (single-char #\h))
             (verbose (single-char #\v))
             (with-cheating)
             (with-courage)
@@ -336,7 +370,7 @@ Some influential environment variables:
          (docdir (option-ref options 'docdir "${datadir}/doc/mes-${VERSION}"))
          (libdir (option-ref options 'libdir "${prefix}/lib"))
          (moduledir "${datadir}/mes/module")
-         (moduledir/ (gulp-pipe (string-append "echo " prefix "/share/mes/module/")))
+         (moduledir/ (gulp-pipe* "echo" prefix "/share/mes/module/"))
          (guile-effective-version (effective-version))
          (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
                              (string-append "${prefix}/share/guile/site/" guile-effective-version)))
@@ -378,31 +412,34 @@ Some influential environment variables:
            (deps (fold (lambda (program results)
                          (cons (check-program-version program) results))
                        '()
-                       (list (make-dep "hex2" '(0 3))
-                             (make-dep "M1" '(0 3))
-                             (make-dep "blood-elf" '(0 1))
-                             (make-dep "guile" '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile") #:optional? #t)
-                             (make-dep "mes" '(0 18) #:optional? #t)
-                             (make-dep "guix" '(0 13) #:optional? #t)
-                             (make-dep "ar" '(2 10) #:optional? #t)
-                             (make-dep "bash" '(2 0) #:optional? #t)
-                             (make-dep "guild" '(2 0) #:commands '("guild" "guile-tools"))
-                             (make-dep "cc" '(2 95) #:commands (list gcc tcc mescc) #:optional? #t)
-                             (make-dep "make" '(4) #:optional? #t)
-                             (make-dep "makeinfo" '(5) #:optional? #t)
-                             (make-dep "dot" '(2) #:version-option "-V" #:optional? #t)
-                             (make-dep "help2man" '(1 47) #:optional? #t)
-                             (make-dep "perl" '(5) #:optional? #t)
-                             (make-dep "git" '(2) #:optional? #t))))
-           (deps (cons (check-program-version (make-dep "nyacc" '(0 86 0) #:commands (list (string-append (file-name "guile" deps) " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t))
-                       deps))
+                       (list (make-dep "hex2" #:version '(0 3))
+                             (make-dep "M1" #:version '(0 3))
+                             (make-dep "blood-elf" #:version '(0 1))
+                             (make-dep "guile" #:version '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile") #:optional? #t)
+                             (make-dep "mes" #:version '(0 18) #:optional? #t)
+                             (make-dep "guix" #:version '(0 13) #:optional? #t)
+                             (make-dep "ar" #:version '(2 10) #:optional? #t)
+                             (make-dep "bash" #:version '(2 0) #:optional? #t)
+                             (make-dep "guild" #:version '(2 0) #:commands '("guild" "guile-tools"))
+                             (make-dep "cc" #:commands (list gcc tcc mescc) #:optional? #t)
+                             (make-dep "make" #:optional? #t)
+                             (make-dep "makeinfo" #:optional? #t)
+                             (make-dep "dot" #:version-option "-V" #:optional? #t)
+                             (make-dep "help2man" #:version '(1 47) #:optional? #t)
+                             (make-dep "perl" #:version '(5) #:optional? #t)
+                             (make-dep "git" #:version '(2) #:optional? #t))))
+           (guile (file-name "guile" deps))
+           (deps (if guile (cons (check-program-version (make-dep "nyacc" #:version '(0 86 0) #:commands (list (string-append guile " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t))
+                                 deps)
+                     deps))
+           (guile (or guile "guile"))
            (cc (file-name "cc" deps))
            (deps (if cc
                      (cons* (check-header-c cc (make-dep "limits.h"))
                             (check-header-c cc (make-dep "stdio.h" #:optional? #t))
                             deps)
                      deps))
-           (deps (cons (check-file (make-dep "tinycc-prefix" '(0) #:optional? #t
+           (deps (cons (check-file (make-dep "tinycc-prefix" #:optional? #t
                                              #:file-name tinycc-prefix))
                        deps))
            (missing (filter (conjoin (negate dependency-file-name)
@@ -452,10 +489,13 @@ Some influential environment variables:
         (system* "mkdir" "-p" (dirname target))
         (with-output-to-file target
           (lambda _
-            (display
-             (fold (lambda (o result)
-                     (regexp-substitute/global #f (car o) result 'pre (cdr o) 'post))
-                   (with-input-from-file file-name read-string) pairs)))))
+            (let ((in (open-input-file file-name)))
+              (let loop ((line (read-line in 'concat)))
+                (when (not (eof-object? line))
+                  (display (fold (lambda (o result)
+                                   (string-replace-string/all result (car o) (cdr o)))
+                                 line pairs))
+                  (loop (read-line in 'concat))))))))
 
       (when (and (not (member arch '("x86" "x86_64"))) (not with-courage?))
         (stderr "platform not supported: ~a, try --with-courage\n" arch)
@@ -511,14 +551,14 @@ Some influential environment variables:
                      ("@AR@" . ,(or (file-name "ar" deps) ""))
                      ("@BASH@" . ,(or (file-name "bash" deps) ""))
                      ("@CC@" . ,(or (file-name "cc" deps) ""))
-                     ("@DOT@" . ,(Fileor -name "dot" deps))
+                     ("@DOT@" . ,(or (file-name "dot" deps) ""))
                      ("@GIT@" . ,(or (file-name "git" deps) ""))
-                     ("@GUILE@" . ,(file-name "guile" deps))
+                     ("@GUILE@" . ,guile)
                      ("@GUIX@" . ,(or (file-name "guix" deps) ""))
                      ("@HELP2MAN@" . ,(or (file-name "help2man" deps) ""))
                      ("@MAKEINFO@" . ,(or (file-name "makeinfo" deps) ""))
                      ("@MES_FOR_BUILD@" . ,(or (file-name "mes" deps)
-                                               (file-name "guile" deps)))
+                                               guile))
                      ("@MES_SEED@" . ,(or mes-seed ""))
                      ("@PERL@" . ,(or (file-name "perl" deps) ""))
 
