@@ -38,12 +38,6 @@ lseek (int filedes, off_t offset, int whence)
 }
 
 int
-unlink (char const *file_name)
-{
-  return _sys_call1 (SYS_unlink, (long)file_name);
-}
-
-int
 rmdir (char const *file_name)
 {
   return _sys_call1 (SYS_rmdir, (long)file_name);

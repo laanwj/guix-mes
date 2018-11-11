@@ -171,6 +171,12 @@ dup2 (int old, int new)
   return _sys_call2 (SYS_dup2, (int)old, (int)new);
 }
 
+int
+unlink (char const *file_name)
+{
+  return _sys_call1 (SYS_unlink, (long)file_name);
+}
+
 #include "linux/clock_gettime.c"
 #include "linux/gettimeofday.c"
 #include "linux/time.c"
