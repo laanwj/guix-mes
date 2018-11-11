@@ -93,9 +93,14 @@ peek_char ()
 }
 
 SCM
-read_char ()
+read_char (SCM port) ///((arity . n))
 {
-  return MAKE_CHAR (readchar ());
+  int fd = g_stdin;
+  if (TYPE (port) == TPAIR && TYPE (car (port)) == TNUMBER)
+    g_stdin = VALUE (CAR (port));
+  SCM c = MAKE_CHAR (readchar ());
+  g_stdin = fd;
+  return c;
 }
 
 SCM
@@ -118,15 +123,19 @@ read_string (SCM port) ///((arity . n))
   int fd = g_stdin;
   if (TYPE (port) == TPAIR && TYPE (car (port)) == TNUMBER)
     g_stdin = VALUE (CAR (port));
-  SCM lst = cell_nil;
-  SCM c = read_char ();
-  while (VALUE (c) != -1)
+  gc_push_frame ();
+  r0 = cell_nil;
+  r1 = read_char (cell_nil);
+  while (VALUE (r1) != -1)
     {
-      lst = append2 (lst, cons (c, cell_nil));
-      c = read_char ();
+      r0 = cons (r1, r0);
+      r1 = read_char (cell_nil);
+      gc_check ();
     }
   g_stdin = fd;
-  return MAKE_STRING (lst);
+  SCM lst = MAKE_STRING (reverse_x_ (r0, cell_nil));
+  gc_pop_frame ();
+  return lst;
 }
 
 SCM
