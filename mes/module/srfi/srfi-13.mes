@@ -182,3 +182,21 @@
       (string->list (string-take string (or start1 0)))
       (string->list replace)
       (string->list (string-drop string (or end1 (string-length string))))))))
+
+(define (string-downcase string)
+  (string-map char-downcase string))
+
+(define (string-upcase string)
+  (string-map char-upcase string))
+
+(define (string-tokenize string char-set)
+  (let loop ((lst (string->list string)) (result '()))
+    (if (null? lst) (reverse result)
+        (let match ((lst lst) (found '()))
+          (if (null? lst) (loop lst (if (null? found) (reverse result)
+                                        (cons (list->string (reverse found)) result)))
+              (let ((c (car lst)))
+                (if (not (char-set-contains? char-set c)) (loop (cdr lst)
+                                                                (if (null? found) result
+                                                                    (cons (list->string (reverse found)) result)))
+                    (match (cdr lst) (cons c found)))))))))
