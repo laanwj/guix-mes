@@ -57,12 +57,6 @@ mkdir (char const *file_name, mode_t mode)
   return _sys_call2 (SYS_mkdir, (long)file_name, (long)mode);
 }
 
-int
-dup (int old)
-{
-  return _sys_call1 (SYS_dup, (int)old);
-}
-
 gid_t
 getgid ()
 {
@@ -122,12 +116,6 @@ int
 pipe (int filedes[2])
 {
   return _sys_call1 (SYS_pipe, (long)filedes);
-}
-
-int
-dup2 (int old, int new)
-{
-  return _sys_call2 (SYS_dup2, (int)old, (int)new);
 }
 
 int

@@ -159,6 +159,18 @@ getcwd (char *buffer, size_t size)
   return 0;
 }
 
+int
+dup (int old)
+{
+  return _sys_call1 (SYS_dup, (int)old);
+}
+
+int
+dup2 (int old, int new)
+{
+  return _sys_call2 (SYS_dup2, (int)old, (int)new);
+}
+
 #include "linux/clock_gettime.c"
 #include "linux/gettimeofday.c"
 #include "linux/time.c"
