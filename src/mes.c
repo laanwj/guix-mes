@@ -391,6 +391,8 @@ alloc (long n)
 {
   SCM x = g_free;
   g_free += n;
+  if (g_free > ARENA_SIZE)
+    assert (!"alloc: out of memory");
   return x;
 }
 
