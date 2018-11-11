@@ -76,3 +76,15 @@
 
 (define (char-set-copy cs)
   (map identity cs))
+
+(define (char-upcase c)
+  (if (char-set-contains? char-set:lower-case c) (integer->char (- (char->integer c)
+                                                                   (- (char->integer #\a)
+                                                                      (char->integer #\A))))
+      c))
+
+(define (char-downcase c)
+  (if (char-set-contains? char-set:upper-case c) (integer->char (+ (char->integer c)
+                                                                   (- (char->integer #\a)
+                                                                      (char->integer #\A))))
+      c))
