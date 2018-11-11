@@ -99,9 +99,13 @@
     port))
 
 (define (dirname file-name)
-  (let ((lst (filter (negate string-null?) (string-split file-name #\/))))
-    (if (<= (length lst) 1) "."
-        (string-join (list-head lst (1- (length lst))) "/"))))
+  (let* ((lst (string-split file-name #\/))
+         (lst (filter (negate string-null?) lst)))
+    (if (null? lst) (if (string-prefix? "/" file-name) "/" ".")
+        (let ((dir (string-join (list-head lst (1- (length lst))) "/")))
+          (if (string-prefix? "/" file-name) (string-append "/" dir)
+              (if (string-null? dir) "."
+                  dir))))))
 
 ;; FIXME: c&p from display
 (define (with-output-to-string thunk)
