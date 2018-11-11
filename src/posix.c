@@ -392,3 +392,10 @@ dup2_ (SCM old, SCM new) ///((name . "dup2"))
   dup2 (VALUE (old), VALUE (new));
   return cell_unspecified;
 }
+
+SCM
+delete_file (SCM file_name)
+{
+  unlink (string_to_cstring (file_name));
+  return cell_unspecified;
+}
