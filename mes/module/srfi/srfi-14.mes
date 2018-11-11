@@ -36,6 +36,20 @@
        (equal? a b)))
 
 (define char-set:whitespace (char-set #\tab #\page #\return #\vtab #\newline #\space))
+(define char-set:digit (apply char-set
+                                   (map integer->char
+                                        (map (lambda (i)
+                                               (+ i (char->integer #\0))) (iota 10)))))
+
+(define char-set:lower-case (apply char-set
+                                   (map integer->char
+                                        (map (lambda (i)
+                                               (+ i (char->integer #\a))) (iota 26)))))
+
+(define char-set:upper-case (apply char-set
+                                   (map integer->char
+                                        (map (lambda (i)
+                                               (+ i (char->integer #\A))) (iota 26)))))
 
 (define (list->char-set lst)
   (apply char-set lst))
