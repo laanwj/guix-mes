@@ -69,6 +69,16 @@
           (set-current-output-port save)
           r))))
 
+(define (with-error-to-file file thunk)
+  (let ((port (open-output-file file)))
+    (if (= port -1)
+        (error 'cannot-open file)
+        (let* ((save (current-error-port))
+               (foo (set-current-error-port port))
+               (r (thunk)))
+          (set-current-error-port save)
+          r))))
+
 (define (with-output-to-port port thunk)
   (let* ((save (current-output-port))
          (foo (set-current-output-port port))
