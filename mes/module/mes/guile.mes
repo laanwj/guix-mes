@@ -33,6 +33,19 @@
 
 (define (drain-input port) (read-string))
 
+(define (read-line . rest)
+  (let* ((port (if (pair? rest) (car rest) (current-input-port)))
+         (handle-delim (if (and (pair? rest) (pair? (cdr rest))) (cadr rest) 'trim))
+         (c (read-char port)))
+    (if (eof-object? c) c
+        (list->string
+         (let loop ((c c))
+           (if (or (eof-object? c) (eq? c #\newline)) (case handle-delim
+                                                        ((trim) '())
+                                                        ((concat) '(#\newline))
+                                                        (else (error (format #f "not supported: handle-delim=~a" handle-delim))))
+               (cons c (loop (read-char port)))))))))
+
 (define (make-string n . fill)
   (list->string (apply make-list n fill)))
 
