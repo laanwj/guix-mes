@@ -65,7 +65,7 @@ SCM
 struct_set_x_ (SCM x, long i, SCM e)
 {
   assert (TYPE (x) == TSTRUCT);
-  assert (VALUE (i) < LENGTH (x));
+  assert (i < LENGTH (x));
   g_cells[STRUCT (x)+i] = g_cells[vector_entry (e)];
   return cell_unspecified;
 }
