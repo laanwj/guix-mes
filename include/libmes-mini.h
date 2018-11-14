@@ -26,6 +26,8 @@ int g_stdin;
 int g_stdout;
 int g_stderr;
 
+#if !WITH_GLIBC
+
 #ifndef _SIZE_T
 #define _SIZE_T
 #ifndef __SIZE_T
@@ -45,10 +47,22 @@ typedef unsigned long size_t;
 #ifndef __MES_SSIZE_T
 #define __MES_SSIZE_T
 #undef ssize_t
+#if __i386__
+typedef int ssize_t;
+#else
 typedef long ssize_t;
 #endif
 #endif
 #endif
+#endif
+
+#ifndef __MES_ERRNO_T
+#define __MES_ERRNO_T 1
+typedef int error_t;
+int errno;
+#endif // !__MES_ERRNO_T
+
+#endif //!WITH_LIBC
 
 #ifndef STDIN
 #define STDIN 0
@@ -62,16 +76,14 @@ typedef long ssize_t;
 #define STDERR 2
 #endif
 
-#ifndef __MES_ERRNO_T
-#define __MES_ERRNO_T 1
-typedef int error_t;
-int errno;
-#endif // !__MES_ERRNO_T
 
-size_t strlen (char const* s);
-ssize_t write (int filedes, void const *buffer, size_t size);
 int eputs (char const* s);
 int puts (char const* s);
 int oputs (char const* s);
+
+#if !WITH_GLIBC
+size_t strlen (char const* s);
+ssize_t write (int filedes, void const *buffer, size_t size);
+#endif // !WITH_GLIBC
 
 #endif //__MES_LIBMES_MINI_H
