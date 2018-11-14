@@ -46,9 +46,6 @@
                                                         (else (error (format #f "not supported: handle-delim=~a" handle-delim))))
                (cons c (loop (read-char port)))))))))
 
-(define (make-string n . fill)
-  (list->string (apply make-list n fill)))
-
 (define (object->string x . rest)
   (with-output-to-string
     (lambda () ((if (pair? rest) (car rest) write) x))))
