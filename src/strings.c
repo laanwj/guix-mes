@@ -260,3 +260,10 @@ string_append (SCM x) ///((arity . n))
     }
   return make_string (buf, size);
 }
+
+SCM
+string_length (SCM string)
+{
+  assert (TYPE (string) == TSTRING);
+  return MAKE_NUMBER (LENGTH (string));
+}

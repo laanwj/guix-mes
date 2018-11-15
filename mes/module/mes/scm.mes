@@ -194,9 +194,6 @@
 (define (make-string n . fill)
   (list->string (apply make-list n fill)))
 
-(define (string-length s)
-  (length (string->list s)))
-
 (define (string-ref s k)
   (list-ref (string->list s) k))
 
