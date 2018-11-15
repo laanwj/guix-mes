@@ -39,14 +39,11 @@
     (if (null? lst) (list)
         (cons (f (car lst)) (map1 f (cdr lst)))))
 
-  (define map map1)
+  (define map map1)))
 
-  (define (string-append . rest)
-    (apply string (apply append (map string->list rest))))))
-
-  (define (string-join lst infix)
-    (if (null? (cdr lst)) (car lst)
-        (string-append (car lst) infix (string-join (cdr lst) infix))))
+(define (string-join lst infix)
+  (if (null? (cdr lst)) (car lst)
+      (string-append (car lst) infix (string-join (cdr lst) infix))))
 
 (if (string=? (string-join '("foo" "bar") "/") "foo/bar")
     (exit 0))

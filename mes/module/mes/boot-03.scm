@@ -148,9 +148,6 @@
 (include (list->string
           (append2 (string->list %moduledir) (string->list "mes/type-0.mes"))))
 
-(define (string-append . rest)
-  (apply string (apply append (map1 string->list rest))))
-
 (if (and (getenv "MES_DEBUG")
           (not (equal2? (getenv "MES_DEBUG") "0"))
           (not (equal2? (getenv "MES_DEBUG") "1")))

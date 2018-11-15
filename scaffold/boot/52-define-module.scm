@@ -49,9 +49,6 @@
 
   (define map map1)
 
-  (define (string-append . rest)
-    (apply string (apply append (map string->list rest))))
-
 ;;;;;;;;;;;;;;;;;;
   (define (string-join lst infix)
     (if (null? (cdr lst)) (car lst)

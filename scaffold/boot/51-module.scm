@@ -45,9 +45,6 @@
   (define (string . lst)
     (list->string lst))
 
-  (define (string-append . rest)
-    (apply string (apply append (map string->list rest))))
-
   (define %prefix (getenv "MES_PREFIX"))
 
   (define (not x) (if x #f #t))

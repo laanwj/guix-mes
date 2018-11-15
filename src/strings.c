@@ -240,3 +240,23 @@ read_string (SCM port) ///((arity . n))
   g_stdin = fd;
   return make_string (buf, i);
 }
+
+SCM
+string_append (SCM x) ///((arity . n))
+{
+  static char buf[MAX_STRING];
+  char const *p = buf;
+  buf[0] = 0;
+  size_t size = 0;
+  while (x != cell_nil)
+    {
+      SCM string = CAR (x);
+      assert (TYPE (string) == TSTRING);
+      memcpy (p, CSTRING (string), LENGTH (string) + 1);
+      p += LENGTH (string);
+      size += LENGTH (string);
+      assert (size < MAX_STRING);
+      x = CDR (x);
+    }
+  return make_string (buf, size);
+}

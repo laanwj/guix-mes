@@ -50,6 +50,7 @@ tests="
 17-memq-keyword.scm
 17-string-equal.scm
 17-equal2.scm
+17-string-append.scm
 17-open-input-string.scm
 
 20-define.scm

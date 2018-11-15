@@ -33,16 +33,7 @@
             (append2 (car rest) (apply append (cdr rest))))))
 
   (define (string . lst)
-    (list->string lst))
-
-  (define (map1 f lst)
-    (if (null? lst) (list)
-        (cons (f (car lst)) (map1 f (cdr lst)))))
-
-  (define map map1)
-
-  (define (string-append . rest)
-    (apply string (apply append (map string->list rest))))))
+    (list->string lst))))
 
 (define (make-list n . fill)
   fill)

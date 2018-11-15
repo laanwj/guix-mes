@@ -59,10 +59,6 @@ exec ${MES-mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests macr
 (define (string . lst)
   (list->string lst))
 
-;; boot-0.scm
-(define (string-append . rest)
-  (apply string (apply append (map1 string->list rest))))
-
 ;; scm.mes
 (define (symbol-append . rest)
   (string->symbol (apply string-append (map symbol->string rest))))
