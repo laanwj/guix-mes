@@ -81,9 +81,9 @@
         (display ": fail")
         (newline)
         (display "expected: ")
-        (display expect) (newline)
+        (write expect) (newline)
         (display "actual: ")
-        (display a)
+        (write a)
         (newline)
         #f)))
 
@@ -93,9 +93,9 @@
         (display ": fail")
         (newline)
         (display "expected: ")
-        (display expect) (newline)
+        (write expect) (newline)
         (display "actual: ")
-        (display a)
+        (write a)
         (newline)
         #f)))
 
@@ -103,24 +103,24 @@
   (or (eq? a expect)
       (begin
         (display ": fail") (newline)
-        (display "expected: ") (display expect) (newline)
-        (display "actual: ") (display a) (newline)
+        (display "expected: ") (write expect) (newline)
+        (display "actual: ") (write a) (newline)
         #f)))
 
 (define (sless? a expect)
   (or (< a expect)
       (begin
         (display ": fail") (newline)
-        (display "expected: ") (display expect) (newline)
-        (display "actual: ") (display a) (newline)
+        (display "expected: ") (write expect) (newline)
+        (display "actual: ") (write a) (newline)
         #f)))
 
 (define (sequal2? actual expect)
   (or (equal? actual expect)
       (begin
         (display ": fail") (newline)
-        (display "expected: ") (display expect) (newline)
-        (display "actual: ") (display actual) (newline)
+        (display "expected: ") (write expect) (newline)
+        (display "actual: ") (write actual) (newline)
         #f)))
 
 (define-macro (pass-if name t)
