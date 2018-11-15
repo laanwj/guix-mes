@@ -1258,6 +1258,8 @@ eval_apply ()
           goto begin;
         }
     }
+  // write_error_ (CAR (r1));
+  // eputs ("\n");
   push_cc (CAR (r1), r1, r0, cell_vm_apply2);
   goto eval;
  apply2:

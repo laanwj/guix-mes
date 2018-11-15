@@ -18,6 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
+
 #define MAX_STRING 4096
 
 char const*
@@ -266,4 +268,17 @@ string_length (SCM string)
 {
   assert (TYPE (string) == TSTRING);
   return MAKE_NUMBER (LENGTH (string));
+}
+
+SCM
+string_ref (SCM str, SCM k)
+{
+  assert (TYPE (str) == TSTRING);
+  assert (TYPE (k) == TNUMBER);
+  size_t size = LENGTH (str);
+  size_t i = VALUE (k);
+  if (i >= size)
+    error (cell_symbol_system_error, cons (MAKE_STRING0 ("value out of range"), k));
+  char const *p = CSTRING (str);
+  return MAKE_CHAR (p[i]);
 }
