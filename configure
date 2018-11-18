@@ -374,7 +374,7 @@ Some influential environment variables:
                              (make-dep "hex2" '(0 3))
                              (make-dep "tcc" '(0 9 26) #:optional? #t #:version-option "-v")
                              (make-dep "makeinfo" '(5) #:optional? #t)
-                             (make-dep "dot" '(2) #:version-option "-V")
+                             (make-dep "dot" '(2) #:version-option "-V" #:optional? #t)
                              (make-dep "help2man" '(1 47) #:optional? #t)
                              (make-dep "perl" '(5) #:optional? #t)
                              (make-dep "git" '(2) #:optional? #t))))
