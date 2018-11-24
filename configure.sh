@@ -69,6 +69,7 @@ GUILE=${GUILE-$(command -v guile)} || true
 HEX2=${HEX2-$(command -v hex2)}
 M1=${M1-$(command -v M1)}
 MES_FOR_BUILD=${MES_FOR_BUILD-$(command -v mes || command -v guile || echo mes)}
+GIT=${GIT-$(command -v git)} || true
 PERL=${PERL-$(command -v perl)} || true
 MES_SEED=${MES_SEED-../mes-seed}
 
@@ -134,6 +135,7 @@ subst () {
     -e s,"@BASH@,$BASH,"\
     -e s,"@BLOOD_ELF@,$BLOOD_ELF,"\
     -e s,"@CC@,$CC,"\
+    -e s,"@GIT@,$GIT,"\
     -e s,"@GUILD@,$GUILD,"\
     -e s,"@GUILE@,$GUILE,"\
     -e s,"@PERL@,$PERL,"\
@@ -144,6 +146,8 @@ subst () {
     -e s,"@M1FLAGS@,$M1FLAGS,"\
     -e s,"@MES_FOR_BUILD@,$MES_FOR_BUILD,"\
     -e s,"@MES_SEED@,$MES_SEED,"\
+    -e s,"@MES_SEED@,$MES_SEED,"\
+    -e s,"@SHELL@,$SHELL,"\
     -e s,"mes/module/,$moduledir/,"\
     $1 > $2
 }
@@ -170,10 +174,10 @@ if [ "$arch" = i386\
 fi
 
 #
-if $CC --version | grep gcc 2>/dev/null; then
+if $CC --version | grep gcc; then #2>/dev/null; then
     gcc_p=1
     compiler=gcc
-elif $CC --version | grep tcc 2>/dev/null; then
+elif $CC --version | grep tcc; then #2>/dev/null; then
     tcc_p=1
     compiler=tcc
 else
@@ -199,6 +203,8 @@ subst ${srcdest}build-aux/GNUmakefile.in GNUmakefile
 subst ${srcdest}build-aux/config.status.in config.status
 subst ${srcdest}build-aux/build.sh.in build.sh
 chmod +x build.sh
+subst ${srcdest}build-aux/bootstrap.sh.in bootstrap.sh
+chmod +x bootstrap.sh
 subst ${srcdest}build-aux/check.sh.in check.sh
 chmod +x check.sh
 subst ${srcdest}build-aux/install.sh.in install.sh

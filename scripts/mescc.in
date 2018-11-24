@@ -33,9 +33,10 @@ export MES_PREFIX
 
 MES=${MES-src/mes}
 
-exec ${SCHEME-$MES} \
+dir=$(dirname $0)
+${SCHEME-$MES} \
      --no-auto-compile\
      -e main\
      -L @guile_site_dir@\
      -C @guile_site_ccache_dir@\
-     $(dirname $0)/mescc.scm "$@"
+     $dir/mescc.scm "$@"
