@@ -115,6 +115,7 @@
 /install.sh
 /uninstall.sh
 /mes/module/mes/boot-0.scm
+/scripts/mescc.scm
 /scripts/mescc
 /doc/images/gcc-mesboot-graph.png
 /GNUmakefile

@@ -373,9 +373,9 @@ Some influential environment variables:
          (moduledir/ (gulp-pipe* "echo" prefix "/share/mes/module/"))
          (guile-effective-version (effective-version))
          (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
-                             (string-append "${prefix}/share/guile/site/" guile-effective-version)))
+                             (string-append prefix "/share/guile/site/" guile-effective-version)))
          (guile-site-ccache-dir (if (equal? prefix ".") (canonicalize-path ".")
-                                    (string-append "${prefix}/lib/guile/" guile-effective-version "/site-ccache")))
+                                    (string-append prefix "/lib/guile/" guile-effective-version "/site-ccache")))
 
          (srcdir (dirname (car (command-line))))
          (srcdest (if (equal? srcdir ".") ""
@@ -591,10 +591,12 @@ Some influential environment variables:
                     "build-aux/pre-inst-env.in"
                     "build-aux/uninstall.sh.in"
                     "mes/module/mes/boot-0.scm.in"
+                    "scripts/mescc.scm.in"
                     "scripts/mescc.in"
                     ))
         (chmod "pre-inst-env" #o755)
         (chmod "scripts/mescc" #o755)
+        (chmod "scripts/mescc.scm" #o755)
         (chmod "build.sh" #o755)
         (chmod "check.sh" #o755)
         (chmod "install.sh" #o755)

@@ -42,13 +42,13 @@ ${srcdest}module/mescc/i386/info.scm
 ${srcdest}module/mescc/x86_64/as.scm
 ${srcdest}module/mescc/x86_64/info.scm
 ${srcdest}module/mescc/info.scm
+${srcdest}module/mescc.scm
 ${srcdest}module/mescc/mescc.scm
 ${srcdest}module/mescc/preprocess.scm
 "
 
 SCRIPTS="
 ${srcdest}build-aux/mes-snarf.scm
-${srcdest}scripts/mescc
 "
 
 export host=$($GUILE -c "(display %host-type)")

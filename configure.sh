@@ -152,6 +152,8 @@ subst ${srcdest}build-aux/pre-inst-env.in pre-inst-env
 chmod +x pre-inst-env
 subst ${srcdest}scripts/mescc.in scripts/mescc
 chmod +x scripts/mescc
+subst ${srcdest}scripts/mescc.scm.in scripts/mescc.scm
+chmod +x scripts/mescc.scm
 
 host=${host-$($CC -dumpmachine 2>/dev/null || echo x86)}
 if [ -z "$host" ]; then

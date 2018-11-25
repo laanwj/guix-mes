@@ -50,6 +50,7 @@ mkdir -p $DESTDIR$bindir
 if [ -f src/x86-mes-mes ]; then
     cp src/x86-mes-mes $DESTDIR$bindir/mes
 fi
+cp scripts/mescc.scm $DESTDIR$bindir/mescc.scm
 cp scripts/mescc $DESTDIR$bindir/mescc
 
 sed \
