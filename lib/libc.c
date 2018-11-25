@@ -75,6 +75,7 @@ __mes_debug ()
 #include <stdio/ungetc.c>
 
 #include <string/memchr.c>
+#include <string/memcmp.c>
 #include <string/strcmp.c>
 #include <string/strcpy.c>
 #include <string/strncmp.c>

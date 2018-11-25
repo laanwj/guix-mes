@@ -91,7 +91,6 @@ int errno;
 #include <stdlib/strtoll.c>
 #include <stdlib/strtoul.c>
 #include <stdlib/strtoull.c>
-#include <string/memcmp.c>
 #include <string/memmem.c>
 #include <string/memmove.c>
 #include <string/memset.c>
