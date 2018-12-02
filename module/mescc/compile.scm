@@ -587,8 +587,10 @@
              (source (string-substitute source "\\" "\\\\"))
              (source (string-substitute source "'\\'" "'\\\\'"))
              (source (string-substitute source "'\"'" "'\\\"'"))
-             (source (string-substitute source "'''" "'\\''")))
-        (make-comment (string-join (string-split source #\newline) " ")))))
+             (source (string-substitute source "'''" "'\\''"))
+             (source (string-substitute source "\n" "\\n"))
+             (source (string-substitute source "\r" "\\r")))
+        (make-comment source))))
 
 (define (r*n info n)
   (case n
