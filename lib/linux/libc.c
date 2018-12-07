@@ -21,6 +21,7 @@
 #include <libmes.h>
 
 #include <fcntl.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -151,12 +152,21 @@ fsync (int filedes)
 }
 
 char *
-getcwd (char *buffer, size_t size)
+_getcwd (char *buffer, size_t size)
 {
   int r = _sys_call2 (SYS_getcwd, (long)buffer, (long)size);
   if (r >= 0)
     return buffer;
   return 0;
+}
+
+char *
+getcwd (char *buffer, size_t size)
+{
+  static char buf[PATH_MAX];
+  if (buffer)
+    return _getcwd (buffer, size);
+  return _getcwd (buf, PATH_MAX);
 }
 
 int
