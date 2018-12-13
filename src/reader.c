@@ -451,6 +451,11 @@ reader_read_string ()
             // Nyacc bug
             // lst = cons (MAKE_CHAR ('\e'), lst);
             lst = cons (MAKE_CHAR (27), lst);
+          else if (c == 'x')
+            {
+              SCM x = reader_read_hex ();
+              lst = cons (MAKE_CHAR (VALUE (x)), lst);
+            }
         }
       else
         lst = cons (MAKE_CHAR (c), lst);

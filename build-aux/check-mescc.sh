@@ -70,6 +70,7 @@ t
 14-if-goto
 15-if-!f
 16-if-t
+17-compare-char
 17-compare-ge
 17-compare-gt
 17-compare-le
