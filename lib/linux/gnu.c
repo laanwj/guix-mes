@@ -169,6 +169,12 @@ getegid ()
   return _sys_call (SYS_getegid);
 }
 
+pid_t
+getppid ()
+{
+  return _sys_call (SYS_getppid);
+}
+
 int
 setuid (uid_t newuid)
 {

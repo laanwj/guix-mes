@@ -75,6 +75,7 @@
 #define SYS_setgid    0x6a
 #define SYS_geteuid   0x6b
 #define SYS_getegid   0x6c
+#define SYS_getppid   0x6e
 
 // make+POSIX
 #define SYS_rt_sigprocmask 0x0e
