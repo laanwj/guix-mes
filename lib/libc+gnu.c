@@ -117,4 +117,5 @@
 // bash
 #include <stub/getpwuid.c>
 #include <stub/rand.c>
+#include <stub/sigdelset.c>
 #include <stub/ttyname.c>
