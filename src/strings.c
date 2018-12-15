@@ -18,25 +18,39 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
+#define MAX_STRING 524288
+char g_buf[MAX_STRING];
 
-#define MAX_STRING 4096
+void
+assert_max_string (size_t i, char const* msg, char* string)
+{
+  if (i > MAX_STRING) // Mes must be able to make g_buf
+    {
+      eputs (msg);
+      eputs (":string too long[");
+      eputs (itoa (i));
+      eputs ("]:");
+      string[MAX_STRING-1] = 0;
+      eputs (string);
+      error (cell_symbol_system_error, cell_f);
+    }
+}
 
 char const*
 list_to_cstring (SCM list, size_t* size)
 {
-  static char buf[MAX_STRING];
   size_t i = 0;
-  char *p = buf;
+  char *p = g_buf;
   while (list != cell_nil)
     {
-      assert (i < MAX_STRING);
-      buf[i++] = VALUE (car (list));
+      if (i > MAX_STRING)
+        assert_max_string (i, "list_to_string", g_buf);
+      g_buf[i++] = VALUE (car (list));
       list = cdr (list);
     }
-  buf[i] = 0;
+  g_buf[i] = 0;
   *size = i;
-  return buf;
+  return g_buf;
 }
 
 size_t
@@ -71,7 +85,8 @@ make_bytes (char const* s, size_t length)
 SCM
 make_string (char const* s, size_t length)
 {
-  assert (length < HALFLONG_MAX);
+  if (length > MAX_STRING)
+    assert_max_string (length, "make_string", s);
   SCM x = make_cell__ (TSTRING, length, 0);
   SCM v = make_bytes (s, length);
   CDR (x) = v;
@@ -230,25 +245,24 @@ read_string (SCM port) ///((arity . n))
   if (TYPE (port) == TPAIR && TYPE (car (port)) == TNUMBER)
     g_stdin = VALUE (CAR (port));
   int c = readchar ();
-  static char buf[MAX_STRING];
   size_t i = 0;
   while (c != -1)
     {
-      assert (i < MAX_STRING);
-      buf[i++] = c;
+      if (i > MAX_STRING)
+        assert_max_string (i, "read_string", g_buf);
+      g_buf[i++] = c;
       c = readchar ();
     }
-  buf[i] = 0;
+  g_buf[i] = 0;
   g_stdin = fd;
-  return make_string (buf, i);
+  return make_string (g_buf, i);
 }
 
 SCM
 string_append (SCM x) ///((arity . n))
 {
-  static char buf[MAX_STRING];
-  char const *p = buf;
-  buf[0] = 0;
+  char const *p = g_buf;
+  g_buf[0] = 0;
   size_t size = 0;
   while (x != cell_nil)
     {
@@ -257,10 +271,11 @@ string_append (SCM x) ///((arity . n))
       memcpy (p, CSTRING (string), LENGTH (string) + 1);
       p += LENGTH (string);
       size += LENGTH (string);
-      assert (size < MAX_STRING);
+      if (size > MAX_STRING)
+        assert_max_string (size, "string_append", g_buf);
       x = CDR (x);
     }
-  return make_string (buf, size);
+  return make_string (g_buf, size);
 }
 
 SCM
@@ -277,7 +292,7 @@ string_ref (SCM str, SCM k)
   assert (TYPE (k) == TNUMBER);
   size_t size = LENGTH (str);
   size_t i = VALUE (k);
-  if (i >= size)
+  if (i > size)
     error (cell_symbol_system_error, cons (MAKE_STRING0 ("value out of range"), k));
   char const *p = CSTRING (str);
   return MAKE_CHAR (p[i]);

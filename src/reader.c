@@ -69,7 +69,6 @@ reader_end_of_word_p (int c)
 SCM
 reader_read_identifier_or_number (int c)
 {
-  char buf[MAX_STRING];
   int i = 0;
   long n = 0;
   int negative_p = 0;
@@ -82,7 +81,7 @@ reader_read_identifier_or_number (int c)
     }
   while (isdigit (c))
     {
-      buf[i++] = c;
+      g_buf[i++] = c;
       n *= 10;
       n += c - '0';
       c = readchar ();
@@ -97,12 +96,12 @@ reader_read_identifier_or_number (int c)
   /* Fallthrough: Note that `4a', `+1b' are identifiers */
   while (!reader_end_of_word_p (c))
     {
-      buf[i++] = c;
+      g_buf[i++] = c;
       c = readchar ();
     }
   unreadchar (c);
-  buf[i] = 0;
-  return cstring_to_symbol (buf);
+  g_buf[i] = 0;
+  return cstring_to_symbol (g_buf);
 }
 
 SCM
@@ -433,12 +432,12 @@ reader_read_hex ()
 SCM
 reader_read_string ()
 {
-  char buf[MAX_STRING];
   size_t i = 0;
   int c;
   do
     {
-      assert (i < MAX_STRING);
+      if (i > MAX_STRING)
+        assert_max_string (i, "reader_read_string", g_buf);
       c = readchar ();
       if (c == '"')
         break;
@@ -472,11 +471,11 @@ reader_read_string ()
           else if (c == 'x')
             c = VALUE (reader_read_hex ());
         }
-      buf[i++] = c;
+      g_buf[i++] = c;
     }
   while (1);
-  buf[i] = 0;
-  return make_string (buf, i);
+  g_buf[i] = 0;
+  return make_string (g_buf, i);
 }
 
 int g_tiny = 0;
