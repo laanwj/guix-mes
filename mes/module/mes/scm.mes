@@ -101,17 +101,19 @@
           alist))))
 
 (define (assq-ref alist key)
-  (let ((entry (assq key alist)))
-    (if entry (cdr entry)
-        #f)))
+  (and alist
+       (let ((entry (assq key alist)))
+         (if entry (cdr entry)
+             #f))))
 
 (define assv assq)
 (define assv-ref assq-ref)
 
 (define (assoc-ref alist key)
-  (let ((entry (assoc key alist)))
-    (if entry (cdr entry)
-        #f)))
+  (and (pair? alist)
+       (let ((entry (assoc key alist)))
+         (if entry (cdr entry)
+             #f))))
 
 (define (assoc-set! alist key value)
   (let ((entry (assoc key alist)))
