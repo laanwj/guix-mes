@@ -65,7 +65,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 
 (define *shell* "sh")
 (define PACKAGE "mes")
-(define VERSION "0.18")
+(define VERSION "0.19")
 
 ;;; Utility
 (define (logf port string . rest)

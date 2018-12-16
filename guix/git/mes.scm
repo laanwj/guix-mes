@@ -67,24 +67,28 @@
          (any (cut string-suffix? <> file) files))
         (_ #f)))))
 
-(define-public nyacc-for-mes
-  (let ((commit "ba24561b77306cd876bb9fd5ac412b15c7535f02")
-        (revision "0")
-        (version "0.86.0"))
-    (package
-      (inherit nyacc)
-      (version (if commit (string-append version "-" revision "." (string-take commit 7))
-                   version))
-      (source (origin
-                (method url-fetch)
-                (uri (if commit
-                         (string-append "http://git.savannah.nongnu.org/cgit/nyacc.git/snapshot/nyacc-"
-                                        commit ".tar.gz")
-                         (string-append "http://download.savannah.nongnu.org/releases/nyacc/nyacc-"
-                                        version ".tar.gz")))
-                (sha256
-                 (base32
-                  "08y8ihwm21i333w7b0g1gs4s184ky0wy6fnl1rcakpgrqan9r1ql")))))))
+(define-public nyacc
+  (package
+    (name "nyacc")
+    (version "0.86.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://savannah/nyacc/"
+                                  name "-" version ".tar.gz"))
+              (patches (search-patches "nyacc-binary-literals.patch"))
+              (sha256
+               (base32
+                "0lkd9lyspvhxlfs0496gsllwinh62jk9wij6gpadvx9gwz6yavd9"))))
+    (build-system gnu-build-system)
+    (native-inputs
+     `(("guile" ,guile-2.2)))
+    (synopsis "LALR(1) Parser Generator in Guile")
+    (description
+     "NYACC is an LALR(1) parser generator implemented in Guile.
+The syntax and nomenclature should be considered not stable.  It comes with
+extensive examples, including parsers for the Javascript and C99 languages.")
+    (home-page "https://savannah.nongnu.org/projects/nyacc")
+    (license (list gpl3+ lgpl3+))))
 
 (define-public mescc-tools
   (package
@@ -118,7 +122,7 @@ hex2 linker.")
 
 (define-public mes
   (let ((triplet "i686-unknown-linux-gnu")
-        (version "0.18"))
+        (version "0.19"))
     (package
       (name "mes")
       (version version)
@@ -132,7 +136,7 @@ hex2 linker.")
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
        `(("mescc-tools" ,mescc-tools)
-         ("nyacc" ,nyacc-for-mes)))
+         ("nyacc" ,nyacc)))
       (native-inputs
        `(("git" ,git)
          ("guile" ,guile-2.2)
@@ -148,24 +152,25 @@ hex2 linker.")
          ("perl" ,perl)                ; build-aux/gitlog-to-changelog
          ("texinfo" ,texinfo)))
       (arguments
-       `(#:phases
+       `(#:strip-binaries? #f ; binutil's strip b0rkes MesCC/M1/hex2 binaries
+         #:phases
          (modify-phases %standard-phases
            (add-before 'build 'make-git-source-writable
            (lambda* (#:key outputs #:allow-other-keys)
              (for-each make-file-writable
-                       (find-files "." ".*\\.M1"))))
-           (delete 'strip)))) ; binutil's strip b0rkes Mescc/M1/hex2 binaries
+                       (find-files "." ".*\\.M1")))))))
       (synopsis "Scheme interpreter and C compiler for full source bootstrapping")
       (description
-       "GNU Mes [Maxwell Equations of Software] aims to create full source
-bootstrapping for GuixSD.  It consists of a mutual self-hosting [close to
-Guile-] Scheme interpreter prototype in C and a Nyacc-based C compiler in
-[Guile] Scheme.")
+       "GNU Mes--Maxwell Equations of Software--brings the Reduced Binary Seed
+bootstrap to Guix and aims to help create full source bootstrapping for
+GNU/Linux distributions.  It consists of a mutual self-hosting Scheme
+interpreter in C and a Nyacc-based C compiler in Scheme and is compatible with
+Guile.")
       (home-page "https://www.gnu.org/software/mes")
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.18")
+ (let ((version "0.19")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package

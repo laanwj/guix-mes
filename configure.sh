@@ -20,7 +20,7 @@
 
 set -e
 
-VERSION=0.18
+VERSION=0.19
 srcdir=${srcdir-$(dirname $0)}
 . ${srcdest}build-aux/trace.sh
 
