@@ -5,7 +5,8 @@ Subject: GNU Mes 0.19 released
 We are pleased to announce the release of GNU Mes 0.19, representing
 100 commits over 10 weeks.
 
-Mes has now brought the Reduced Binary Seed bootstrap to Guix and work
+Mes has now brought the Reduced Binary Seed bootstrap to Guix (bootstrap
+a GNU/Linux system without binary GNU toolchain or equivalent) and work
 is ongoing to audit and verify this bootstrap path in NixOS.
 
 This release introduces strings as byte-array, hash-tables and native
@@ -68,8 +69,8 @@ Packages are available from Guix's core-updates branch.
 
   Here are the MD5 and SHA1 checksums:
 
-  f9f901f175fbc8a5a3d90c9c551ccc8c  mes-0.19.tar.gz
-  4f7612731a745ebb806548186453d55e0d0bf217  mes-0.19.tar.gz
+  99e134df87adc5fc5fd2c04941929c23  mes-0.19.tar.gz
+  c9781b3b6a814acc985c2ac68caa111a56583bca  mes-0.19.tar.gz
 
   [*] Use a .sig file to verify that the corresponding file (without the
   .sig suffix) is intact.  First, be sure to download both the .sig file
@@ -131,7 +132,7 @@ installed in Guix from a git checkout by running
  ** Noteworthy bug fixes
  *** Mes now supports characters #\xNN.
  *** Mes now supports assq-ref and assoc-ref with alist == #f.
- *** Mes now support \xNN in strings.  Fixes using Nyacc-0.86.0.
+ *** Mes now supports \xNN in strings.  This allows using Nyacc-0.86.0.
  *** MesCC now supports the unary plus operator.
  *** MesCC now supports the `U' integer suffix.
  *** MesCC now comes with INTnn_MIN/MAX, UINTnn defines in stdint.h.
