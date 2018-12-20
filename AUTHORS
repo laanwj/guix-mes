@@ -1,15 +1,14 @@
                                                               -*- org -*-
 #+TITLE: GNU Mes Authors
 
-Copyright © 2016, 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-
-  Copying and distribution of this file, with or without modification,
-  are permitted in any medium without royalty provided the copyright
-  notice and this notice are preserved.
-
 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 Main author
 All files except the imported files listed below
+
+Danny Milosavljevic <dannym@scratchpost.org>
+ARM port
+lib/mes/div.c
+Additions and fixes throughout
 
 Jeremiah Orians <jeremiah@pdp10.guru>
 lib/stdio/fopen.c (first simple version of fopen)
@@ -73,3 +72,10 @@ mes/module/srfi/srfi-26.scm
 
 GNU FDL in texinfo from GNU
 doc/fdl-1.3.texi
+
+* legalese
+Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.

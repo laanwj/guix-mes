@@ -8,11 +8,11 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
   notice and this notice are preserved.
 
 * SETUP
-    guix environment -l .guix.scm     #64 bit + 32bit
+    guix environment -l guix.scm     #64 bit + 32bit
 
 or
 
-    guix environment --system=i686-linux -l .guix.scm #32 bit only
+    guix environment --system=i686-linux -l guix.scm #32 bit only
 
 or
 
@@ -35,7 +35,7 @@ To help development we assume ./configure sets these variables for make
 
 Mes is supposed to serve as a full equivalent for Guile, however Mes
 is still about 2 to 10 times slower than Guile.  That's why we usually
-don't use Mes during development.
+don't use Mes during development, configure --with-cheating.
 
 Gcc is used to verify the sanity of our C sources.
 
@@ -52,7 +52,7 @@ bootstrapping will be executed by Mes.
 ** BOOTSTRAP BUILD
 
     ./configure.sh [--prefix=PREFIX]
-    ./build.sh
+    ./bootstrap.sh
     ./install.sh
 
 In bootstrap mode, we don't have gcc (CC), we don't have a 32 bit gcc,
@@ -269,3 +269,4 @@ https://notabug.org/rain1/hex86/src/master/tests/hex0b3.hex86
 ** <pdewacht> e.g. as described here
            https://jamey.thesharps.us/2016/07/15/testing-strategies-for-corrode/
            ("Randomized testing with Csmith and C-Reduce")  [10:58]
+** linux syscalls: https://fedora.juszkiewicz.com.pl/syscalls.html

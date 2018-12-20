@@ -109,7 +109,7 @@ fi
 # Mes C lib build
 
 # To get a i686-unknown-linux-gnu-gcc, you may do:
-#    GUIX_PACKAGE_PATH=guix guix environment -l .guix.scm
+#    guix environment -l guix.scm
 # or
 #    guix environment --ad-hoc -e '(begin (use-modules (gnu packages cross-base)) (list (cross-binutils "i686-unknown-linux-gnu") (cross-gcc "i686-unknown-linux-gnu")))'
 

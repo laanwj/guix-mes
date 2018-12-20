@@ -256,7 +256,7 @@ endif
 dist: $(TARBALL)
 
 sign: $(TARBALL)
-	gpg -a --output $(TARBALL).sig --detach-sig $(TARBALL)
+	gpg --detach-sign $<
 	git checkout ChangeLog
 
 tree-clean-p:
@@ -301,11 +301,13 @@ guix-build:
 release: update-hash | gen-announce guix-build
 
 GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
+GNULIB=../../gnulib
 gen-announce:
-	../gnulib/build-aux/announce-gen\
+	$(GEN_ANNOUNCE)\
 	    --release-type=beta\
 	    --package-name=mes\
-	    --previous-version='0.18 '\
+	    --previous-version='0.19 '\
             --current-version=$(VERSION)\
 	    --gpg-key-id=$(GPG_KEY_ID)\
 	    --url-directory=https://ftp.gnu.org/gnu/mes\

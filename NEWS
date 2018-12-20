@@ -10,6 +10,32 @@ Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to bug-mes@gnu.org.
 
+* Changes in 0.20 since 0.19
+** Core
+*** The build system has been simplified, again.
+Mes now builds ootb on Debian.
+*** Mes now supports -c EXPR.
+** Divide by zero is now flagged.
+** Language
+*** 1 new function:
+take-while.
+** MesCC
+*** The C libraries have been exploded into one function per file.
+*** MesCC now has enhanced POSIX/gcc comand line support, e.g. -DFOO=1,
+-nodefaultlibs,
+-nostartfiles,
+-nostdlib.
+*** The archiver is now called `mesar'.
+*** MesCC now supports Nyacc-0.99.
+*** MesCC now depends on MesCC-Tools 0.6.0.
+*** 1 new function
+__mesabi_uldiv.
+** Noteworthy bug fixes
+*** interger division has been fixed.
+*** isatty now looks at terminfo.
+*** signal now uses sigaction correctly for non-x86.
+*** string->number now support #x hex-prefix.
+*** ungetc now has a buffer per file handle.
 * Changes in 0.19 since 0.18
 ** Core
 *** The build system has been simplified.

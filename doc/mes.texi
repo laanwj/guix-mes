@@ -34,7 +34,7 @@ Documentation License''.
 
 @titlepage
 @title GNU Mes Reference Manual
-@subtitle Full Source Bootstrapping of the GNU GuixSD Operating System
+@subtitle Full Source Bootstrapping of the GNU Guix Operating System
 @author Jan (janneke) Nieuwenhuizen
 
 @page
@@ -169,7 +169,7 @@ For all softwares on such a system we have the full source code and
 build recipes available.
 
 @c The Free System Distribution Guidelines (GNU FSDG)@footnote{Examples of
-@c free operating systems are GNU GuixSD, GNU Parabola and Trisquel, see
+@c free operating systems are GNU Guix, GNU Parabola and Trisquel, see
 @c https://www.gnu.org/distros/free-system-distribution-guidelines.html}
 @c can serve as help to create such a system
 
@@ -253,7 +253,7 @@ binary seed that all software distributions inject are the so called
 @emph{bootstrap binaries}.  Bootstrap binaries are the initial binary
 seeds that are used to start building the distribution.
 
-The GNU GuixSD operating system has a relatively small closure of
+The GNU Guix operating system has a relatively small closure of
 bootstrap binaries: GNU binutils, GNU gcc, GNU Libc, GNU Guile, and
 ``Static binaries'' (think: bash, bzip2, coreutils, gawk, grep, gzip,
 patch, sed, tar, xz).
@@ -553,7 +553,7 @@ Recipe for yogurt: Add yogurt to milk.
 @end quotation
 
 The bootstrap problem we have set out to solve is that none of our
-modern software distributions, and GuixSD in particular, can be created
+modern software distributions, and Guix in particular, can be created
 all from source code.  In addition to the carefully signed source code
 of all the programs (the `milk') an opaque binary seed (the `yogurt') is
 injected as an essential dependency.
@@ -592,8 +592,8 @@ responsibility.
 
 The Mes full source bootstrap process@footnote{TBH, the current state of
 affairs demands to label this a `Reduced Binary Seed bootstrap'} is
-currently being developed in GuixSD@footnote{See
-@file{gnu/packages/commencement.scm} in the @var{core-updates-next} branch in Guix
+currently being developed in Guix@footnote{See
+@file{gnu/packages/commencement.scm} in the @var{core-updates} branch in Guix
 git
 @url{http://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/mes.scm?h=wip-bootstrap}}.
 In it's intiial form it is only available for x86-linux.
@@ -622,11 +622,11 @@ glibc-source + binutils + gcc + glibc0 => glibc
 
 @c This graph is generated from wip-bootstrap, doing:
 
-@c ~/src/guix-boot/pre-inst-env guix graph --type=bag -e '(@@ (gnu packages commencement) gcc-mesboot)' doc/images/gcc-mesboot-graph.dot
+@c ~/src/guix/core-updates/pre-inst-env guix graph --type=bag -e '(@@ (gnu packages commencement) gcc-mesboot)' > doc/images/gcc-mesboot-graph.dot
 @c dot -T png doc/images/gcc-mesboot-graph.dot > doc/images/gcc-mesboot-graph.png
 
 Here's a generated dependency diagram to for the final bootstrap gcc
-that builds the rest of GuixSD
+that builds the rest of Guix.
 
 @image{images/gcc-mesboot-graph,2in,,Reference graph of the gcc-mesboot}
 
@@ -819,12 +819,24 @@ The @var{option}s can be among the following:
 
 @table @code
 
+@item --align
+align globals
+
+@item --base-address=ADRRESS
+use BaseAddress ADDRESS [0x1000000]
+
 @item -c
 @cindex compile
 preprocess, compile and assemble only; do not link
 
 @item -D @var{DEFINE}[=@var{VALUE}]
 @cindex define DEFINE [VALUE=1]
+
+@item -dumpmachine
+@cindex arch
+@cindex architecture
+@cindex machine
+display the compiler's target processor
 
 @item -E
 preprocess only; do not compile, assemble or link
@@ -847,17 +859,29 @@ append DIR to library path
 @item -l LIBNAME
 link with LIBNAME
 
+@item -m BITS
+compile for BITS bits [32]
+
+@item -O LEVEL
+use optimizing LEVEL
+
 @item -o FILE
 write output to FILE
 
 @item -S
 preprocess and compile only; do not assemble or link
 
+@item --std=STANDARD
+assume that the input sources are for STANDARD
+
 @item -v, --version
 display version and exit
 
 @item -w,--write=TYPE
 dump Nyacc AST using TYPE @{pretty-print,write@}
+
+@item -x LANGUAGE
+specify LANGUAGE of the following input files
 
 @end table
 
@@ -902,6 +926,7 @@ during the parsing phase.
 @menu
 * Building from Git::           The latest and greatest.
 * Running Mes From the Source Tree::  Hacker tricks.
+* Porting GNU Mes::             Teach Mes about your platform.
 * The Perfect Setup::           The right tools.
 * Coding Style::                Hygiene of the contributor.
 * Submitting Patches::          Share your work.
@@ -923,7 +948,7 @@ all the dependencies and appropriate environment variables are set up to
 hack on Mes:
 
 @example
-guix environment -l guix.scm
+guix environment -l .guix.scm
 @end example
 
 Finally, you have to invoke @code{make check} to run tests
@@ -938,6 +963,39 @@ First, you need to have an environment with all the dependencies
 available (@pxref{Building from Git}), and then simply prefix each
 command by @command{./pre-inst-env} (the @file{pre-inst-env} script
 lives in the top build tree of Mes).
+
+@node Porting GNU Mes
+@section Porting GNU Mes
+
+Mes was written for x86-linux.  A 64 bit (x86_64) is almost done, only a
+few bugs remain.  The Guix bootstrap for x86_64 uses x86 mes and that is
+not expected to change.
+
+An ARM (armv4/armv7l) linux port is underway.  A port to GNU/Hurd
+(x86-gnu) is also underway.
+
+Initial scaffold, built by @file{build-aux/build-scaffold.sh}:
+@example
+  @file{lib/x86-mes-gcc/exit-42.S}
+  @file{lib/x86-mes/elf32-0exit-42.hex2}
+  @file{lib/x86-mes/elf32-body-exit-42.hex2}
+
+  @file{lib/x86-mes-gcc/hello-mes.S}
+  @file{lib/x86-mes/elf32-0hello-mes.hex2}
+  @file{lib/x86-mes/elf32-body-hello-mes.hex2}
+@end example
+
+Porting MesCC:
+@example
+  @file{lib/x86-mes/x86.M1}
+
+  @file{module/mescc/mescc.scm}
+  @file{module/mescc/i386/as.scm}
+  @file{module/mescc/i386/info.scm}
+
+  @file{mes/module/mescc/i386/as.mes}
+  @file{mes/module/mescc/i386/info.mes}
+@end example
 
 @node The Perfect Setup
 @section The Perfect Setup
@@ -1046,7 +1104,7 @@ Please send bug reports with full details to @email{bug-mes@@gnu.org}.
 We would like to thank the following people for their help: Jeremiah
 Orians, Peter de Wachter, rain1, Ricardo Wurmus, Rutger van Beusekom.
 
-We also thank Ludovic Courtès for creating GuixSD and making the
+We also thank Ludovic Courtès for creating GNU Guix and making the
 bootstrap problem so painfully visible, John McCarthy for creating
 LISP-1.5 and Alan Kay for their inspiring comment on
 @url{https://queue.acm.org/detail.cfm?id=1039523, Page 13}.

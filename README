@@ -3,12 +3,13 @@
 
 #+SUBTITLE: Maxwell Equations of Software
 
-[[https://www.gnu.org/software/mes][GNU Mes]] brings a [[http://joyofsource.com/reduced-binary-seed-bootstrap.html][Reduced Binary Seed bootstrap]] to [[https://www.gnu.org/software/guix][Guix]] and potentially
-to any other interested GNU/Linux distribution, and aims to help
-create a full source bootstrap as part of the [[http://bootstrappable.org][bootstrappable builds]]
-effort.
+[[https://www.gnu.org/software/mes][GNU Mes]] brings a [[http://joyofsource.com/reduced-binary-seed-bootstrap.html][Reduced Binary Seed bootstrap]] to [[https://www.gnu.org/software/guix][GNU Guix]].  This
+bootstrap has halved the size of opaque, uninspectable binaries that
+were needed to bootstrap Guix.  The final goal is to help create a full
+source bootstrap as part of the [[http://bootstrappable.org][bootstrappable builds]] effort for any
+interested UNIX-like operating system.
 
-It consists of a mutual self-hosting Scheme interpreter written in
+Mes consists of a mutual self-hosting Scheme interpreter written in
 ~5,000 LOC of simple C and a Nyacc-based C compiler written in Scheme.
 This mes.c is [[https://github.com/oriansj/mes-m2][being simplified]] to be transpiled by [[https://github.com/oriansj/m2-planet][M2-Planet]].
 
@@ -48,17 +49,13 @@ General Public Licence version 3 or later.  See the file [[file:COPYING][COPYING
 * REPL it
 
    #+BEGIN_SRC bash
-   src/mes.gcc-out            # default (64 bit) gcc-compiled
-   src/mes.mes-gcc-out        # 32 bit, gcc -nostdlib, Mes C Lib
-   src/mes.mes-out            # 32 bit, bootstrapped, mes.M1+MesCC-compiled
-   src/mes.x86_64-mes-gcc-out # 64 bit, gcc -nostdlib, Mes C Lib
-   src/mes.x86_64-mes-out     # 64 bit, bootstrapped, mes.M1+MesCC-compiled
+   ./pre-inst-env mes
    #+END_SRC
 
 * MesCC compiler
 
    #+BEGIN_SRC bash
-   ./pre-inst env mescc -c scaffold/main.c
+   ./pre-inst-env mescc -c scaffold/main.c
    #+END_SRC
 
 * Bugs
@@ -79,7 +76,7 @@ General Public Licence version 3 or later.  See the file [[file:COPYING][COPYING
   [10] https://github.com/oriansj/stage0
 
 * Legalese
-Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <[[mailto:janneke@gnu.org][janneke@gnu.org]]>
+Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <[[mailto:janneke@gnu.org][janneke@gnu.org]]>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright

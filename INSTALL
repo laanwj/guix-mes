@@ -19,8 +19,8 @@ similar way.
 * Regular build
 ** Prerequisites
 *** Guix
-    guix environment -l .guix.scm     #64 bit + 32bit
-    guix environment --system=i686-linux -l .guix.scm #32 bit only
+    guix environment -l guix.scm     #64 bit + 32bit
+    guix environment --system=i686-linux -l guix.scm #32 bit only
 
 *** Other GNU/Linux
   - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.5 is known to work.
@@ -44,7 +44,7 @@ similar way.
    make install
 
 * Guix it
-   guix package -f .guix.scm
+   guix package -f guix.scm
 
 * Bootstrap build
 
