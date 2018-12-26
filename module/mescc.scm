@@ -17,6 +17,7 @@
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (mescc)
+  #:use-module (srfi srfi-1)
   #:use-module (ice-9 getopt-long)
   #:use-module (mes misc)
   #:use-module (mescc mescc)
@@ -40,6 +41,15 @@
 (when (and=> (getenv "V") (lambda (v) (> (string->number v) 1)))
   (format (current-error-port) "mescc[~a]...\n" %scheme))
 
+(define (unclump-single o)
+  (cond ((string-prefix? "--" o) (list o))
+        ((and (string-prefix? "-" o)
+              (> (string-length o) 2)
+              (not (eq? (string-ref o 2) #\space)))
+         (list (substring o 0 2)
+               (substring o 2)))
+        (else (list o))))
+
 (define (parse-opts args)
   (let* ((option-spec
           '((align)
@@ -62,11 +72,6 @@
             (verbose (single-char #\v))
             (write (single-char #\w) (value #t))
             (language (single-char #\x) (value #t))))
-         (single-dash-options '("-dumpmachine" "-std"))
-         (args (map (lambda (o)
-                      (if (member o single-dash-options) (string-append "-" o)
-                          o))
-                    args))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
          (files (option-ref options '() '()))
@@ -95,7 +100,7 @@ Usage: mescc [OPTION]... FILE...
   -o FILE             write output to FILE
   -O LEVEL            use optimizing LEVEL
   -S                  preprocess and compile only; do not assemble or link
-      --std=STANDARD  assume that the input sources are for STANDARD
+  --std=STANDARD      assume that the input sources are for STANDARD
   -v, --version       display version and exit
   -w,--write=TYPE     dump Nyacc AST using TYPE {pretty-print,write}
   -x LANGUAGE         specify LANGUAGE of the following input files
@@ -114,7 +119,13 @@ General help using GNU software: <http://gnu.org/gethelp/>
            options))))
 
 (define (mescc:main args)
-  (let* ((options (parse-opts args))
+  (let* ((single-dash-options '("-dumpmachine" "-std"))
+         (args (map (lambda (o)
+                      (if (member o single-dash-options) (string-append "-" o)
+                          o))
+                    args))
+         (args (append-map unclump-single args))
+         (options (parse-opts args))
          (options (acons 'prefix %prefix options))
          (preprocess? (option-ref options 'preprocess #f))
          (compile? (option-ref options 'compile #f))
