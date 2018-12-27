@@ -178,10 +178,6 @@ current_input_port ()
   if (g_stdin >= 0)
     return MAKE_NUMBER (g_stdin);
   SCM x = g_ports;
-  if (g_debug > 2)
-    {
-      eputs ("ports:"); write_error_ (g_ports); eputs ("\n");
-    }
   while (x && PORT (CAR (x)) != g_stdin)
     x = CDR (x);
   return CAR (x);
@@ -197,10 +193,6 @@ SCM
 open_input_string (SCM string)
 {
   SCM port = MAKE_STRING_PORT (string);
-  if (g_debug > 2)
-    {
-      eputs ("new port:"); write_error_ (port); eputs ("\n");
-    }
   g_ports = cons (port, g_ports);
   return port;
 }

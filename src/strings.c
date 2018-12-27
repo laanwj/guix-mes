@@ -71,14 +71,6 @@ make_bytes (char const* s, size_t length)
     *(char*)p = 0;
   else
     memcpy (p, s, length + 1);
-  if (g_debug > 2)
-    {
-      eputs ("make bytes: "); eputs (s); eputs ("\n");
-      eputs ("     bytes: "); eputs (CBYTES (x)); eputs ("\n");
-      eputs ("    length: "); eputs (itoa (length)); eputs ("\n");
-      eputs ("        ==> "); write_error_ (x);
-      eputs ("\n");
-    }
   return x;
 }
 
@@ -106,69 +98,31 @@ string_equal_p (SCM a, SCM b) ///((name . "string=?"))
       assert ((TYPE (a) == TSTRING && TYPE (b) == TSTRING)
               || (TYPE (a) == TKEYWORD || TYPE (b) == TKEYWORD));
     }
-  if (g_debug == -1)
-    {
-      eputs ("string=?: "); eputs (CSTRING (a));
-      eputs (" =? "); eputs (CSTRING (b));
-    }
   if (a == b
       || STRING (a) == STRING (b)
       || (!LENGTH (a) && !LENGTH (b))
       || (LENGTH (a) == LENGTH (b)
           && !memcmp (CSTRING (a), CSTRING (b), LENGTH (a))))
-    {
-      if (g_debug == -1)
-        eputs (" => #t\n");
-      return cell_t;
-    }
-  if (g_debug == -1)
-    eputs (" => #f\n");
+    return cell_t;
   return cell_f;
 }
 
 SCM
 symbol_to_string (SCM symbol)
 {
-  SCM x = make_cell__ (TSTRING, CAR (symbol), CDR (symbol));
-
-  if (g_debug > 2)
-    {
-      eputs ("symbol->string: "); eputs (CSTRING (x)); eputs ("\n");
-      eputs ("  was: "); write_error_ (symbol);
-      eputs ("==> "); write_error_ (x);
-      eputs ("\n");
-    }
-  return x;
+  return make_cell__ (TSTRING, CAR (symbol), CDR (symbol));
 }
 
 SCM
 symbol_to_keyword (SCM symbol)
 {
-  SCM x = make_cell__ (TKEYWORD, CAR (symbol), CDR (symbol));
-
-  if (g_debug > 2)
-    {
-      eputs ("symbol->keyword: "); eputs (CSTRING (x)); eputs ("\n");
-      eputs ("  was: "); write_error_ (symbol);
-      eputs ("==> "); write_error_ (x);
-      eputs ("\n");
-    }
-  return x;
+  return make_cell__ (TKEYWORD, CAR (symbol), CDR (symbol));
 }
 
 SCM
 keyword_to_string (SCM keyword)
 {
-  SCM x = make_cell__ (TSTRING, CAR (keyword), CDR (keyword));
-
-  if (g_debug > 2)
-    {
-      eputs ("keyword->string: "); eputs (CSTRING (x)); eputs ("\n");
-      eputs ("  was: "); write_error_ (keyword);
-      eputs ("==> "); write_error_ (x);
-      eputs ("\n");
-    }
-  return x;
+  return make_cell__ (TSTRING, CAR (keyword), CDR (keyword));
 }
 
 SCM
@@ -185,17 +139,6 @@ make_symbol (SCM string)
 {
   SCM x = make_cell__ (TSYMBOL, LENGTH (string), STRING (string));
   hash_set_x (g_symbols, string, x);
-
-  if (g_debug > 3)
-    hash_table_printer (g_symbols);
-
-  if (g_debug > 2)
-    {
-      eputs ("make_symbol: "); eputs (CSTRING (string)); eputs ("\n");
-      eputs ("==> "); write_error_ (x);
-      eputs ("\n");
-    }
-
   return x;
 }
 

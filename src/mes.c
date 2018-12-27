@@ -2604,12 +2604,6 @@ main (int argc, char *argv[])
       write_error_ (r1);
       eputs ("\n");
     }
-  // if (g_debug > 3)
-  //   {
-  //     eputs ("symbols: ");
-  //     write_error_ (g_symbols);
-  //     eputs ("\n");
-  //   }
   r3 = cell_vm_begin_expand;
   r1 = eval_apply ();
   if (g_debug)

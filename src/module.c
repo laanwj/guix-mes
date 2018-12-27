@@ -60,10 +60,6 @@ make_initial_module (SCM a) ///((internal))
   m0 = module;
   while (TYPE (a) == TPAIR)
     {
-      if (g_debug > 3)
-        {
-          eputs ("entry="); write_error_ (CAR (a)); eputs ("\n");
-        }
       module_define_x (module, CAAR (a), CDAR (a));
       a = CDR (a);
     }
@@ -102,10 +98,6 @@ module_variable (SCM module, SCM name)
 SCM
 module_ref (SCM module, SCM name)
 {
-  if (g_debug > 3)
-    {
-      eputs ("module_ref: "); display_error_ (name); eputs ("\n");
-    }
   SCM x = module_variable (module, name);
   if (x == cell_f)
     return cell_undefined;
@@ -115,10 +107,6 @@ module_ref (SCM module, SCM name)
 SCM
 module_define_x (SCM module, SCM name, SCM value)
 {
-  if (g_debug > 4)
-    {
-      eputs ("module_define_x: "); display_error_ (name); eputs ("\n");
-    }
   module = m0;
   SCM globals = struct_ref_ (module, 5);
   return hashq_set_x (globals, name, value);
