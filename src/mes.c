@@ -53,7 +53,7 @@ SCM *g_stack_array = 0;
 SCM r0 = 0;
 // param 1
 SCM r1 = 0;
-// save 2+load/dump
+// save 2
 SCM r2 = 0;
 // continuation
 SCM r3 = 0;
@@ -2546,72 +2546,6 @@ load_env () ///((internal))
   return r2;
 }
 
-SCM
-bload_env () ///((internal))
-{
-#if !POSIX
-  char *mo = "mes/boot-0.32-mo";
-  g_stdin = open ("module/mes/boot-0.32-mo", O_RDONLY);
-  char *read0 = MODULEDIR "/mes/boot-0.32-mo";
-  g_stdin = g_stdin >= 0 ? g_stdin : open (read0, O_RDONLY);
-#else
-  char *mo ="mes/boot-0.mo";
-  g_stdin = open ("module/mes/boot-0.mo", O_RDONLY);
-  g_stdin = g_stdin >= 0 ? g_stdin : open (MODULEDIR "/mes/boot-0.mo", O_RDONLY);
-#endif
-
-  if (g_stdin < 0)
-    {
-      eputs ("no such file: ");
-      eputs (mo);
-      eputs ("\n");
-      return 1;
-    }
-  assert (getchar () == 'M');
-  assert (getchar () == 'E');
-  assert (getchar () == 'S');
-
-  if (g_debug)
-    eputs ("*GOT MES*\n");
-  g_stack = getchar () << 8;
-  g_stack += getchar ();
-
-  char *p = (char*)g_cells;
-  int c = getchar ();
-  while (c != EOF)
-    {
-      *p++ = c;
-      c = getchar ();
-    }
-  g_free = (p-(char*)g_cells) / sizeof (struct scm);
-  gc_peek_frame ();
-  g_symbols = r1;
-  g_stdin = STDIN;
-  // SCM a = struct_ref (r0, 4);
-  // a = mes_builtins (a);
-  // struct_set_x (r0, 4, a);
-  r0 = mes_builtins (r0);
-
-  if (g_debug > 3)
-    {
-      eputs ("symbols: ");
-      write_error_ (g_symbols);
-      eputs ("\n");
-      eputs ("functions: ");
-      eputs (itoa (g_function));
-      eputs ("\n");
-      for (int i = 0; i < g_function; i++)
-        {
-          eputs ("[");
-          eputs (itoa (i));
-          eputs ("]: ");
-          eputs (g_functions[i].name);
-          eputs ("\n");
-        }
-    }
-  return r2;
-}
-
 #include "src/vector.c"
 #include "src/strings.c"
 #include "src/struct.c"
@@ -2655,12 +2589,7 @@ main (int argc, char *argv[])
   if (g_debug > 3)
     module_printer (m0);
 
-  SCM program = (argc > 1 && !strcmp (argv[1], "--load"))
-    ? bload_env () : load_env ();
-  g_tiny = argc > 2 && !strcmp (argv[2], "--tiny");
-  if (argc > 1 && !strcmp (argv[1], "--dump"))
-    return dump ();
-
+  SCM program = load_env ();
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
 
   if (g_debug > 2)

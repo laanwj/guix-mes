@@ -218,9 +218,7 @@
     (let* ((option-spec
             '((no-auto-compile)
               (compiled-path (single-char #\C) (value #t))
-              (dump)
               (help (single-char #\h))
-              (load)
               (load-path (single-char #\L) (value #t))
               (main (single-char #\e) (value #t))
               (source (single-char #\s) (value #t))
@@ -252,10 +250,8 @@ Evaluate code with Mes, interactively or from a script.
 The above switches stop argument processing, and pass all
 remaining arguments as the value of (command-line).
 
-  --dump              dump binary program to stdout
   -e,--main=MAIN      after reading script, apply MAIN to command-line arguments
   -h, --help          display this help and exit
-  --load              load binary program [module/mes/boot-0.32-mo]
   -L,--load-path=DIR  add DIR to the front of the module load path
   -v, --version       display version information and exit
 
