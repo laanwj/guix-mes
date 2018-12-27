@@ -142,3 +142,7 @@
                 (cons (car lst) (loop (cdr lst))))))))
 
 (include-from-path "srfi/srfi-1.scm")
+
+(define (take-while pred lst)
+  (if (or (null? lst) (not (pred (car lst)))) '()
+          (cons (car lst) (take-while pred (cdr lst)))))
