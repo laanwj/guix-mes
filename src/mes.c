@@ -71,29 +71,44 @@ typedef int halflong;
 typedef short halflong;
 #endif
 
-#if __M2_PLANET__
-CONSTANT TBYTES         0
-CONSTANT TCHAR          1
-CONSTANT TCLOSURE       2
-CONSTANT TCONTINUATION  3
-CONSTANT TFUNCTION      4
-CONSTANT TKEYWORD       5
-CONSTANT TMACRO         6
-CONSTANT TNUMBER        7
-CONSTANT TPAIR          8
-CONSTANT TPORT          9
-CONSTANT TREF          10
-CONSTANT TSPECIAL      11
-CONSTANT TSTRING       12
-CONSTANT TSTRUCT       13
-CONSTANT TSYMBOL       14
-CONSTANT TVALUES       15
-CONSTANT TVARIABLE     16
-CONSTANT TVECTOR       17
-CONSTANT TBROKEN_HEART 18
-#else // !__M2_PLANET__
-enum type_t {TBYTES, TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TPORT, TREF, TSPECIAL, TSTRING, TSTRUCT, TSYMBOL, TVALUES, TVARIABLE, TVECTOR, TBROKEN_HEART};
-#endif // !__M2_PLANET__
+// CONSTANT TBYTES         0
+#define TBYTES             0
+// CONSTANT TCHAR          1
+#define TCHAR              1
+// CONSTANT TCLOSURE       2
+#define TCLOSURE           2
+// CONSTANT TCONTINUATION  3
+#define TCONTINUATION      3
+// CONSTANT TFUNCTION      4
+#define TFUNCTION          4
+// CONSTANT TKEYWORD       5
+#define TKEYWORD           5
+// CONSTANT TMACRO         6
+#define TMACRO             6
+// CONSTANT TNUMBER        7
+#define TNUMBER            7
+// CONSTANT TPAIR          8
+#define TPAIR              8
+// CONSTANT TPORT          9
+#define TPORT              9
+// CONSTANT TREF          10
+#define TREF              10
+// CONSTANT TSPECIAL      11
+#define TSPECIAL          11
+// CONSTANT TSTRING       12
+#define TSTRING           12
+// CONSTANT TSTRUCT       13
+#define TSTRUCT           13
+// CONSTANT TSYMBOL       14
+#define TSYMBOL           14
+// CONSTANT TVALUES       15
+#define TVALUES           15
+// CONSTANT TVARIABLE     16
+#define TVARIABLE         16
+// CONSTANT TVECTOR       17
+#define TVECTOR           17
+// CONSTANT TBROKEN_HEART 18
+#define TBROKEN_HEART     18
 
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
@@ -102,7 +117,7 @@ typedef SCM (*function3_t) (SCM, SCM, SCM);
 typedef SCM (*functionn_t) (SCM);
 #if !POSIX
 struct scm {
-  enum type_t type;
+  long type;
   SCM car;
   SCM cdr;
 };
@@ -128,7 +143,7 @@ struct function {
   char const *name;
 };
 struct scm {
-  enum type_t type;
+  long type;
   union
   {
 #if 0
@@ -170,144 +185,253 @@ struct scm *g_cells = 0;
 struct scm *g_news = 0;
 #endif
 
-struct scm scm_nil = {TSPECIAL, 0, "()"};
-struct scm scm_f = {TSPECIAL, 0, "#f"};
-struct scm scm_t = {TSPECIAL, 0, "#t"};
-struct scm scm_dot = {TSPECIAL, 0, "."};
-struct scm scm_arrow = {TSPECIAL, 0, "=>"};
-struct scm scm_undefined = {TSPECIAL, 0, "*undefined*"};
-struct scm scm_unspecified = {TSPECIAL, 0, "*unspecified*"};
-struct scm scm_closure = {TSPECIAL, 0, "*closure*"};
-struct scm scm_circular = {TSPECIAL, 0, "*circular*"};
-struct scm scm_begin = {TSPECIAL, 0, "*begin*"};
+// CONSTANT cell_nil 1
+#define cell_nil 1
+// CONSTANT cell_f 2
+#define cell_f 2
+// CONSTANT cell_t 3
+#define cell_t 3
+// CONSTANT cell_dot 4
+#define cell_dot 4
+// CONSTANT cell_arrow 5
+#define cell_arrow 5
+// CONSTANT cell_undefined 6
+#define cell_undefined 6
+// CONSTANT cell_unspecified 7
+#define cell_unspecified 7
+// CONSTANT cell_closure 8
+#define cell_closure 8
+// CONSTANT cell_circular 9
+#define cell_circular 9
+// CONSTANT cell_begin 10
+#define cell_begin 10
+// CONSTANT cell_call_with_current_continuation 11
+#define cell_call_with_current_continuation 11
 
-struct scm scm_symbol_dot = {TSYMBOL, 0, "*dot*"};
-struct scm scm_symbol_lambda = {TSYMBOL, 0, "lambda"};
-struct scm scm_symbol_begin = {TSYMBOL, 0, "begin"};
-struct scm scm_symbol_if = {TSYMBOL, 0, "if"};
-struct scm scm_symbol_quote = {TSYMBOL, 0, "quote"};
-struct scm scm_symbol_define = {TSYMBOL, 0, "define"};
-struct scm scm_symbol_define_macro = {TSYMBOL, 0, "define-macro"};
+// CONSTANT cell_vm_apply 12
+#define cell_vm_apply 12
+// CONSTANT cell_vm_apply2 13
+#define cell_vm_apply2 13
+// CONSTANT cell_vm_begin 14
+#define cell_vm_begin 14
+// CONSTANT cell_vm_begin_eval 15
+#define cell_vm_begin_eval 15
+// CONSTANT cell_vm_begin_expand 16
+#define cell_vm_begin_expand 16
+// CONSTANT cell_vm_begin_expand_eval 17
+#define cell_vm_begin_expand_eval 17
+// CONSTANT cell_vm_begin_expand_macro 18
+#define cell_vm_begin_expand_macro 18
+// CONSTANT cell_vm_begin_expand_primitive_load 19
+#define cell_vm_begin_expand_primitive_load 19
+// CONSTANT cell_vm_begin_primitive_load 20
+#define cell_vm_begin_primitive_load 20
+// CONSTANT cell_vm_begin_read_input_file 21
+#define cell_vm_begin_read_input_file 21
+// CONSTANT cell_vm_call_with_current_continuation2 22
+#define cell_vm_call_with_current_continuation2 22
+// CONSTANT cell_vm_call_with_values2 23
+#define cell_vm_call_with_values2 23
+// CONSTANT cell_vm_eval 24
+#define cell_vm_eval 24
+// CONSTANT cell_vm_eval2 25
+#define cell_vm_eval2 25
+// CONSTANT cell_vm_eval_check_func 26
+#define cell_vm_eval_check_func 26
+// CONSTANT cell_vm_eval_define 27
+#define cell_vm_eval_define 27
+// CONSTANT cell_vm_eval_macro_expand_eval 28
+#define cell_vm_eval_macro_expand_eval 28
+// CONSTANT cell_vm_eval_macro_expand_expand 29
+#define cell_vm_eval_macro_expand_expand 29
+// CONSTANT cell_vm_eval_pmatch_car 30
+#define cell_vm_eval_pmatch_car 30
+// CONSTANT cell_vm_eval_pmatch_cdr 31
+#define cell_vm_eval_pmatch_cdr 31
+// CONSTANT cell_vm_eval_set_x 32
+#define cell_vm_eval_set_x 32
+// CONSTANT cell_vm_evlis 33
+#define cell_vm_evlis 33
+// CONSTANT cell_vm_evlis2 34
+#define cell_vm_evlis2 34
+// CONSTANT cell_vm_evlis3 35
+#define cell_vm_evlis3 35
+// CONSTANT cell_vm_if 36
+#define cell_vm_if 36
+// CONSTANT cell_vm_if_expr 37
+#define cell_vm_if_expr 37
+// CONSTANT cell_vm_macro_expand 38
+#define cell_vm_macro_expand 38
+// CONSTANT cell_vm_macro_expand_car 39
+#define cell_vm_macro_expand_car 39
+// CONSTANT cell_vm_macro_expand_cdr 40
+#define cell_vm_macro_expand_cdr 40
+// CONSTANT cell_vm_macro_expand_define 41
+#define cell_vm_macro_expand_define 41
+// CONSTANT cell_vm_macro_expand_define_macro 42
+#define cell_vm_macro_expand_define_macro 42
+// CONSTANT cell_vm_macro_expand_lambda 43
+#define cell_vm_macro_expand_lambda 43
+// CONSTANT cell_vm_macro_expand_set_x 44
+#define cell_vm_macro_expand_set_x 44
+// CONSTANT cell_vm_return 45
+#define cell_vm_return 45
 
-struct scm scm_symbol_quasiquote = {TSYMBOL, 0, "quasiquote"};
-struct scm scm_symbol_unquote = {TSYMBOL, 0, "unquote"};
-struct scm scm_symbol_unquote_splicing = {TSYMBOL, 0, "unquote-splicing"};
-struct scm scm_symbol_syntax = {TSYMBOL, 0, "syntax"};
-struct scm scm_symbol_quasisyntax = {TSYMBOL, 0, "quasisyntax"};
-struct scm scm_symbol_unsyntax = {TSYMBOL, 0, "unsyntax"};
-struct scm scm_symbol_unsyntax_splicing = {TSYMBOL, 0, "unsyntax-splicing"};
+// CONSTANT cell_symbol_dot 46
+#define cell_symbol_dot 46
+// CONSTANT cell_symbol_lambda 47
+#define cell_symbol_lambda 47
+// CONSTANT cell_symbol_begin 48
+#define cell_symbol_begin 48
+// CONSTANT cell_symbol_if 49
+#define cell_symbol_if 49
+// CONSTANT cell_symbol_quote 50
+#define cell_symbol_quote 50
+// CONSTANT cell_symbol_define 51
+#define cell_symbol_define 51
+// CONSTANT cell_symbol_define_macro 52
+#define cell_symbol_define_macro 52
 
-struct scm scm_symbol_set_x = {TSYMBOL, 0, "set!"};
+// CONSTANT cell_symbol_quasiquote 53
+#define cell_symbol_quasiquote 53
+// CONSTANT cell_symbol_unquote 54
+#define cell_symbol_unquote 54
+// CONSTANT cell_symbol_unquote_splicing 55
+#define cell_symbol_unquote_splicing 55
+// CONSTANT cell_symbol_syntax 56
+#define cell_symbol_syntax 56
+// CONSTANT cell_symbol_quasisyntax 57
+#define cell_symbol_quasisyntax 57
+// CONSTANT cell_symbol_unsyntax 58
+#define cell_symbol_unsyntax 58
+// CONSTANT cell_symbol_unsyntax_splicing 59
+#define cell_symbol_unsyntax_splicing 59
 
-struct scm scm_symbol_sc_expand = {TSYMBOL, 0, "sc-expand"};
-struct scm scm_symbol_macro_expand = {TSYMBOL, 0, "macro-expand"};
-struct scm scm_symbol_portable_macro_expand = {TSYMBOL, 0, "portable-macro-expand"};
-struct scm scm_symbol_sc_expander_alist = {TSYMBOL, 0, "*sc-expander-alist*"};
+// CONSTANT cell_symbol_set_x 60
+#define cell_symbol_set_x 60
 
-struct scm scm_symbol_call_with_values = {TSYMBOL, 0, "call-with-values"};
-struct scm scm_call_with_current_continuation = {TSPECIAL, 0, "*call/cc*"};
-struct scm scm_symbol_call_with_current_continuation = {TSYMBOL, 0, "call-with-current-continuation"};
-struct scm scm_symbol_boot_module = {TSYMBOL, 0, "boot-module"};
-struct scm scm_symbol_current_module = {TSYMBOL, 0, "current-module"};
-struct scm scm_symbol_primitive_load = {TSYMBOL, 0, "primitive-load"};
-struct scm scm_symbol_read_input_file = {TSYMBOL, 0, "read-input-file"};
-struct scm scm_symbol_write = {TSYMBOL, 0, "write"};
-struct scm scm_symbol_display = {TSYMBOL, 0, "display"};
+// CONSTANT cell_symbol_sc_expand 61
+#define cell_symbol_sc_expand 61
+// CONSTANT cell_symbol_macro_expand 62
+#define cell_symbol_macro_expand 62
+// CONSTANT cell_symbol_portable_macro_expand 63
+#define cell_symbol_portable_macro_expand 63
+// CONSTANT cell_symbol_sc_expander_alist 64
+#define cell_symbol_sc_expander_alist 64
 
-struct scm scm_symbol_throw = {TSYMBOL, 0, "throw"};
-struct scm scm_symbol_not_a_number = {TSYMBOL, 0, "not-a-number"};
-struct scm scm_symbol_not_a_pair = {TSYMBOL, 0, "not-a-pair"};
-struct scm scm_symbol_system_error = {TSYMBOL, 0, "system-error"};
-struct scm scm_symbol_wrong_number_of_args = {TSYMBOL, 0, "wrong-number-of-args"};
-struct scm scm_symbol_wrong_type_arg = {TSYMBOL, 0, "wrong-type-arg"};
-struct scm scm_symbol_unbound_variable = {TSYMBOL, 0, "unbound-variable"};
+// CONSTANT cell_symbol_call_with_values 65
+#define cell_symbol_call_with_values 65
+// CONSTANT cell_symbol_call_with_current_continuation 66
+#define cell_symbol_call_with_current_continuation 66
+// CONSTANT cell_symbol_boot_module 67
+#define cell_symbol_boot_module 67
+// CONSTANT cell_symbol_current_module 68
+#define cell_symbol_current_module 68
+// CONSTANT cell_symbol_primitive_load 69
+#define cell_symbol_primitive_load 69
+// CONSTANT cell_symbol_read_input_file 70
+#define cell_symbol_read_input_file 70
+// CONSTANT cell_symbol_write 71
+#define cell_symbol_write 71
+// CONSTANT cell_symbol_display 72
+#define cell_symbol_display 72
 
-struct scm scm_symbol_hashq_table = {TSYMBOL, 0, "<hashq-table>"};
-struct scm scm_symbol_record_type = {TSYMBOL, 0, "<record-type>"};
-struct scm scm_symbol_frame = {TSYMBOL, 0, "<frame>"};
-struct scm scm_symbol_module = {TSYMBOL, 0, "<module>"};
-struct scm scm_symbol_stack = {TSYMBOL, 0, "<stack>"};
-struct scm scm_symbol_buckets = {TSYMBOL, 0, "buckets"};
-struct scm scm_symbol_procedure = {TSYMBOL, 0, "procedure"};
-struct scm scm_symbol_size = {TSYMBOL, 0, "size"};
+// CONSTANT cell_symbol_car 73
+#define cell_symbol_car 73
+// CONSTANT cell_symbol_cdr 74
+#define cell_symbol_cdr 74
+// CONSTANT cell_symbol_not_a_number 75
+#define cell_symbol_not_a_number 75
+// CONSTANT cell_symbol_not_a_pair 76
+#define cell_symbol_not_a_pair 76
+// CONSTANT cell_symbol_system_error 77
+#define cell_symbol_system_error 77
+// CONSTANT cell_symbol_throw 78
+#define cell_symbol_throw 78
+// CONSTANT cell_symbol_unbound_variable 79
+#define cell_symbol_unbound_variable 79
+// CONSTANT cell_symbol_wrong_number_of_args 80
+#define cell_symbol_wrong_number_of_args 80
+// CONSTANT cell_symbol_wrong_type_arg 81
+#define cell_symbol_wrong_type_arg 81
 
-struct scm scm_symbol_argv = {TSYMBOL, 0, "%argv"};
-struct scm scm_symbol_mes_prefix = {TSYMBOL, 0, "%prefix"};
-struct scm scm_symbol_mes_version = {TSYMBOL, 0, "%version"};
+// CONSTANT cell_symbol_buckets 82
+#define cell_symbol_buckets 82
+// CONSTANT cell_symbol_frame 83
+#define cell_symbol_frame 83
+// CONSTANT cell_symbol_hashq_table 84
+#define cell_symbol_hashq_table 84
+// CONSTANT cell_symbol_module 85
+#define cell_symbol_module 85
+// CONSTANT cell_symbol_procedure 86
+#define cell_symbol_procedure 86
+// CONSTANT cell_symbol_record_type 87
+#define cell_symbol_record_type 87
+// CONSTANT cell_symbol_size 88
+#define cell_symbol_size 88
+// CONSTANT cell_symbol_stack 89
+#define cell_symbol_stack 89
 
-struct scm scm_symbol_car = {TSYMBOL, 0, "car"};
-struct scm scm_symbol_cdr = {TSYMBOL, 0, "cdr"};
-struct scm scm_symbol_pmatch_car = {TSYMBOL, 0, "pmatch-car"};
-struct scm scm_symbol_pmatch_cdr = {TSYMBOL, 0, "pmatch-cdr"};
+// CONSTANT cell_symbol_argv 90
+#define cell_symbol_argv 90
+// CONSTANT cell_symbol_mes_prefix 91
+#define cell_symbol_mes_prefix 91
+// CONSTANT cell_symbol_mes_version 92
+#define cell_symbol_mes_version 92
 
-struct scm scm_vm_evlis = {TSPECIAL, 0, "*vm-evlis*"};
-struct scm scm_vm_evlis2 = {TSPECIAL, 0, "*vm-evlis2*"};
-struct scm scm_vm_evlis3 = {TSPECIAL, 0, "*vm-evlis3*"};
-struct scm scm_vm_apply = {TSPECIAL, 0, "core:apply"};
-struct scm scm_vm_apply2 = {TSPECIAL, 0, "*vm-apply2*"};
-struct scm scm_vm_eval = {TSPECIAL, 0, "core:eval-expanded"};
+// CONSTANT cell_symbol_internal_time_units_per_second 93
+#define cell_symbol_internal_time_units_per_second 93
+// CONSTANT cell_symbol_compiler 94
+#define cell_symbol_compiler 94
+// CONSTANT cell_symbol_arch 95
+#define cell_symbol_arch 95
 
-struct scm scm_vm_eval_pmatch_car = {TSPECIAL, 0, "*vm-eval-pmatch-car*"};
-struct scm scm_vm_eval_pmatch_cdr = {TSPECIAL, 0, "*vm-eval-pmatch-cdr*"};
-struct scm scm_vm_eval_define = {TSPECIAL, 0, "*vm-eval-define*"};
+// CONSTANT cell_symbol_pmatch_car 96
+#define cell_symbol_pmatch_car 96
+// CONSTANT cell_symbol_pmatch_cdr 97
+#define cell_symbol_pmatch_cdr 97
 
-struct scm scm_vm_eval_set_x = {TSPECIAL, 0, "*vm-eval-set!*"};
-struct scm scm_vm_eval_macro_expand_eval = {TSPECIAL, 0, "*vm:eval-macro-expand-eval*"};
-struct scm scm_vm_eval_macro_expand_expand = {TSPECIAL, 0, "*vm:eval-macro-expand-expand*"};
-struct scm scm_vm_eval_check_func = {TSPECIAL, 0, "*vm-eval-check-func*"};
-struct scm scm_vm_eval2 = {TSPECIAL, 0, "*vm-eval2*"};
-struct scm scm_vm_macro_expand = {TSPECIAL, 0, "core:macro-expand"};
-struct scm scm_vm_macro_expand_define = {TSPECIAL, 0, "*vm:core:macro-expand-define*"};
-struct scm scm_vm_macro_expand_define_macro = {TSPECIAL, 0, "*vm:core:macro-expand-define-macro*"};
-struct scm scm_vm_macro_expand_lambda = {TSPECIAL, 0, "*vm:core:macro-expand-lambda*"};
-struct scm scm_vm_macro_expand_set_x = {TSPECIAL, 0, "*vm:core:macro-expand-set!*"};
-struct scm scm_vm_begin_expand_primitive_load = {TSPECIAL, 0, "*vm:core:begin-expand-primitive-load*"};
-struct scm scm_vm_begin_primitive_load = {TSPECIAL, 0, "*vm:core:begin-primitive-load*"};
-struct scm scm_vm_macro_expand_car = {TSPECIAL, 0, "*vm:core:macro-expand-car*"};
-struct scm scm_vm_macro_expand_cdr = {TSPECIAL, 0, "*vm:macro-expand-cdr*"};
-struct scm scm_vm_begin_expand = {TSPECIAL, 0, "core:eval"};
-struct scm scm_vm_begin_expand_eval = {TSPECIAL, 0, "*vm:begin-expand-eval*"};
-struct scm scm_vm_begin_expand_macro = {TSPECIAL, 0, "*vm:begin-expand-macro*"};
-struct scm scm_vm_begin = {TSPECIAL, 0, "*vm-begin*"};
-struct scm scm_vm_begin_read_input_file = {TSPECIAL, 0, "*vm-begin-read-input-file*"};
-struct scm scm_vm_begin_eval = {TSPECIAL, 0, "*vm:begin-eval*"};
-struct scm scm_vm_if = {TSPECIAL, 0, "*vm-if*"};
-struct scm scm_vm_if_expr = {TSPECIAL, 0, "*vm-if-expr*"};
-struct scm scm_vm_call_with_values2 = {TSPECIAL, 0, "*vm-call-with-values2*"};
-struct scm scm_vm_call_with_current_continuation2 = {TSPECIAL, 0, "*vm-call-with-current-continuation2*"};
-struct scm scm_vm_return = {TSPECIAL, 0, "*vm-return*"};
+// CONSTANT cell_type_bytes 98
+#define cell_type_bytes 98
+// CONSTANT cell_type_char 99
+#define cell_type_char 99
+// CONSTANT cell_type_closure 100
+#define cell_type_closure 100
+// CONSTANT cell_type_continuation 101
+#define cell_type_continuation 101
+// CONSTANT cell_type_function 102
+#define cell_type_function 102
+// CONSTANT cell_type_keyword 103
+#define cell_type_keyword 103
+// CONSTANT cell_type_macro 104
+#define cell_type_macro 104
+// CONSTANT cell_type_number 105
+#define cell_type_number 105
+// CONSTANT cell_type_pair 106
+#define cell_type_pair 106
+// CONSTANT cell_type_port 107
+#define cell_type_port 107
+// CONSTANT cell_type_ref 108
+#define cell_type_ref 108
+// CONSTANT cell_type_special 109
+#define cell_type_special 109
+// CONSTANT cell_type_string 110
+#define cell_type_string 110
+// CONSTANT cell_type_struct 111
+#define cell_type_struct 111
+// CONSTANT cell_type_symbol 112
+#define cell_type_symbol 112
+// CONSTANT cell_type_values 113
+#define cell_type_values 113
+// CONSTANT cell_type_variable 114
+#define cell_type_variable 114
+// CONSTANT cell_type_vector 115
+#define cell_type_vector 115
+// CONSTANT cell_type_broken_heart 116
+#define cell_type_broken_heart 116
 
-struct scm scm_type_bytes = {TSYMBOL, 0, "<cell:bytes>"};
-struct scm scm_type_char = {TSYMBOL, 0, "<cell:char>"};
-struct scm scm_type_closure = {TSYMBOL, 0, "<cell:closure>"};
-struct scm scm_type_continuation = {TSYMBOL, 0, "<cell:continuation>"};
-struct scm scm_type_function = {TSYMBOL, 0, "<cell:function>"};
-struct scm scm_type_keyword = {TSYMBOL, 0, "<cell:keyword>"};
-struct scm scm_type_macro = {TSYMBOL, 0, "<cell:macro>"};
-struct scm scm_type_number = {TSYMBOL, 0, "<cell:number>"};
-struct scm scm_type_pair = {TSYMBOL, 0, "<cell:pair>"};
-struct scm scm_type_port = {TSYMBOL, 0, "<cell:port>"};
-struct scm scm_type_ref = {TSYMBOL, 0, "<cell:ref>"};
-struct scm scm_type_special = {TSYMBOL, 0, "<cell:special>"};
-struct scm scm_type_string = {TSYMBOL, 0, "<cell:string>"};
-struct scm scm_type_struct = {TSYMBOL, 0, "<cell:struct>"};
-struct scm scm_type_symbol = {TSYMBOL, 0, "<cell:symbol>"};
-struct scm scm_type_values = {TSYMBOL, 0, "<cell:values>"};
-struct scm scm_type_variable = {TSYMBOL, 0, "<cell:variable>"};
-struct scm scm_type_vector = {TSYMBOL, 0, "<cell:vector>"};
-struct scm scm_type_broken_heart = {TSYMBOL, 0, "<cell:broken-heart>"};
-
-struct scm scm_symbol_internal_time_units_per_second = {TSYMBOL, 0, "internal-time-units-per-second"};
-struct scm scm_symbol_compiler = {TSYMBOL, 0, "%compiler"};
-struct scm scm_symbol_arch = {TSYMBOL, 0, "%arch"};
-
-struct scm scm_test = {TSYMBOL, 0, "%%test"};
-
-#if !POSIX
-#include "src/mes.mes.symbols.h"
-#else
-#include "src/mes.symbols.h"
-#endif
+// CONSTANT cell_symbol_test 117
+#define cell_symbol_test 117
 
 struct function g_functions[200];
 int g_function = 0;
@@ -1721,509 +1845,156 @@ gc_init_cells () ///((internal))
   return 0;
 }
 
+void
+init_symbol (long x, long type, char const* name)
+{
+  TYPE (x) = type;
+  int length = strlen (name);
+  SCM string = make_string (name, length);
+  CAR (x) = length;
+  CDR (x) = STRING (string);
+  hash_set_x (g_symbols, string, x);
+}
+
 SCM
 mes_symbols () ///((internal))
 {
   gc_init_cells ();
 
-#if MES_MINI
-
-g_free++;
-g_cells[cell_nil] = scm_nil;
-
-g_free++;
-g_cells[cell_f] = scm_f;
-
-g_free++;
-g_cells[cell_t] = scm_t;
-
-g_free++;
-g_cells[cell_dot] = scm_dot;
-
-g_free++;
-g_cells[cell_arrow] = scm_arrow;
-
-g_free++;
-g_cells[cell_undefined] = scm_undefined;
-
-g_free++;
-g_cells[cell_unspecified] = scm_unspecified;
-
-g_free++;
-g_cells[cell_closure] = scm_closure;
-
-g_free++;
-g_cells[cell_circular] = scm_circular;
-
-g_free++;
-g_cells[cell_begin] = scm_begin;
-
-g_free++;
-g_cells[cell_symbol_dot] = scm_symbol_dot;
-
-g_free++;
-g_cells[cell_symbol_lambda] = scm_symbol_lambda;
-
-g_free++;
-g_cells[cell_symbol_begin] = scm_symbol_begin;
-
-g_free++;
-g_cells[cell_symbol_if] = scm_symbol_if;
-
-g_free++;
-g_cells[cell_symbol_quote] = scm_symbol_quote;
-
-g_free++;
-g_cells[cell_symbol_define] = scm_symbol_define;
-
-g_free++;
-g_cells[cell_symbol_define_macro] = scm_symbol_define_macro;
-
-g_free++;
-g_cells[cell_symbol_quasiquote] = scm_symbol_quasiquote;
-
-g_free++;
-g_cells[cell_symbol_unquote] = scm_symbol_unquote;
-
-g_free++;
-g_cells[cell_symbol_unquote_splicing] = scm_symbol_unquote_splicing;
-
-g_free++;
-g_cells[cell_symbol_syntax] = scm_symbol_syntax;
-
-g_free++;
-g_cells[cell_symbol_quasisyntax] = scm_symbol_quasisyntax;
-
-g_free++;
-g_cells[cell_symbol_unsyntax] = scm_symbol_unsyntax;
-
-g_free++;
-g_cells[cell_symbol_unsyntax_splicing] = scm_symbol_unsyntax_splicing;
-
-g_free++;
-g_cells[cell_symbol_set_x] = scm_symbol_set_x;
-
-g_free++;
-g_cells[cell_symbol_sc_expand] = scm_symbol_sc_expand;
-
-g_free++;
-g_cells[cell_symbol_macro_expand] = scm_symbol_macro_expand;
-
-g_free++;
-g_cells[cell_symbol_portable_macro_expand] = scm_symbol_portable_macro_expand;
-
-g_free++;
-g_cells[cell_symbol_sc_expander_alist] = scm_symbol_sc_expander_alist;
-
-g_free++;
-g_cells[cell_symbol_call_with_values] = scm_symbol_call_with_values;
-
-g_free++;
-g_cells[cell_call_with_current_continuation] = scm_call_with_current_continuation;
-
-g_free++;
-g_cells[cell_symbol_call_with_current_continuation] = scm_symbol_call_with_current_continuation;
-
-g_free++;
-g_cells[cell_symbol_boot_module] = scm_symbol_boot_module;
-
-g_free++;
-g_cells[cell_symbol_current_module] = scm_symbol_current_module;
-
-g_free++;
-g_cells[cell_symbol_primitive_load] = scm_symbol_primitive_load;
-
-g_free++;
-g_cells[cell_symbol_read_input_file] = scm_symbol_read_input_file;
-
-g_free++;
-g_cells[cell_symbol_write] = scm_symbol_write;
-
-g_free++;
-g_cells[cell_symbol_display] = scm_symbol_display;
-
-g_free++;
-g_cells[cell_symbol_throw] = scm_symbol_throw;
-
-g_free++;
-g_cells[cell_symbol_not_a_number] = scm_symbol_not_a_number;
-
-g_free++;
-g_cells[cell_symbol_not_a_pair] = scm_symbol_not_a_pair;
-
-g_free++;
-g_cells[cell_symbol_system_error] = scm_symbol_system_error;
-
-g_free++;
-g_cells[cell_symbol_wrong_number_of_args] = scm_symbol_wrong_number_of_args;
-
-g_free++;
-g_cells[cell_symbol_wrong_type_arg] = scm_symbol_wrong_type_arg;
-
-g_free++;
-g_cells[cell_symbol_unbound_variable] = scm_symbol_unbound_variable;
-
-g_free++;
-g_cells[cell_symbol_hashq_table] = scm_symbol_hashq_table;
-
-g_free++;
-g_cells[cell_symbol_record_type] = scm_symbol_record_type;
-
-g_free++;
-g_cells[cell_symbol_frame] = scm_symbol_frame;
-
-g_free++;
-g_cells[cell_symbol_module] = scm_symbol_module;
-
-g_free++;
-g_cells[cell_symbol_stack] = scm_symbol_stack;
-
-g_free++;
-g_cells[cell_symbol_buckets] = scm_symbol_buckets;
-
-g_free++;
-g_cells[cell_symbol_procedure] = scm_symbol_procedure;
-
-g_free++;
-g_cells[cell_symbol_size] = scm_symbol_size;
-
-g_free++;
-g_cells[cell_symbol_argv] = scm_symbol_argv;
-
-g_free++;
-g_cells[cell_symbol_mes_prefix] = scm_symbol_mes_prefix;
-
-g_free++;
-g_cells[cell_symbol_mes_version] = scm_symbol_mes_version;
-
-g_free++;
-g_cells[cell_symbol_car] = scm_symbol_car;
-
-g_free++;
-g_cells[cell_symbol_cdr] = scm_symbol_cdr;
-
-g_free++;
-g_cells[cell_symbol_pmatch_car] = scm_symbol_pmatch_car;
-
-g_free++;
-g_cells[cell_symbol_pmatch_cdr] = scm_symbol_pmatch_cdr;
-
-g_free++;
-g_cells[cell_vm_evlis] = scm_vm_evlis;
-
-g_free++;
-g_cells[cell_vm_evlis2] = scm_vm_evlis2;
-
-g_free++;
-g_cells[cell_vm_evlis3] = scm_vm_evlis3;
-
-g_free++;
-g_cells[cell_vm_apply] = scm_vm_apply;
-
-g_free++;
-g_cells[cell_vm_apply2] = scm_vm_apply2;
-
-g_free++;
-g_cells[cell_vm_eval] = scm_vm_eval;
-
-g_free++;
-g_cells[cell_vm_eval_pmatch_car] = scm_vm_eval_pmatch_car;
-
-g_free++;
-g_cells[cell_vm_eval_pmatch_cdr] = scm_vm_eval_pmatch_cdr;
-
-g_free++;
-g_cells[cell_vm_eval_define] = scm_vm_eval_define;
-
-g_free++;
-g_cells[cell_vm_eval_set_x] = scm_vm_eval_set_x;
-
-g_free++;
-g_cells[cell_vm_eval_macro_expand_eval] = scm_vm_eval_macro_expand_eval;
-
-g_free++;
-g_cells[cell_vm_eval_macro_expand_expand] = scm_vm_eval_macro_expand_expand;
-
-g_free++;
-g_cells[cell_vm_eval_check_func] = scm_vm_eval_check_func;
-
-g_free++;
-g_cells[cell_vm_eval2] = scm_vm_eval2;
-
-g_free++;
-g_cells[cell_vm_macro_expand] = scm_vm_macro_expand;
-
-g_free++;
-g_cells[cell_vm_macro_expand_define] = scm_vm_macro_expand_define;
-
-g_free++;
-g_cells[cell_vm_macro_expand_define_macro] = scm_vm_macro_expand_define_macro;
-
-g_free++;
-g_cells[cell_vm_macro_expand_lambda] = scm_vm_macro_expand_lambda;
-
-g_free++;
-g_cells[cell_vm_macro_expand_set_x] = scm_vm_macro_expand_set_x;
-
-g_free++;
-g_cells[cell_vm_begin_expand_primitive_load] = scm_vm_begin_expand_primitive_load;
-
-g_free++;
-g_cells[cell_vm_begin_primitive_load] = scm_vm_begin_primitive_load;
-
-g_free++;
-g_cells[cell_vm_macro_expand_car] = scm_vm_macro_expand_car;
-
-g_free++;
-g_cells[cell_vm_macro_expand_cdr] = scm_vm_macro_expand_cdr;
-
-g_free++;
-g_cells[cell_vm_begin_expand] = scm_vm_begin_expand;
-
-g_free++;
-g_cells[cell_vm_begin_expand_eval] = scm_vm_begin_expand_eval;
-
-g_free++;
-g_cells[cell_vm_begin_expand_macro] = scm_vm_begin_expand_macro;
-
-g_free++;
-g_cells[cell_vm_begin] = scm_vm_begin;
-
-g_free++;
-g_cells[cell_vm_begin_read_input_file] = scm_vm_begin_read_input_file;
-
-g_free++;
-g_cells[cell_vm_begin_eval] = scm_vm_begin_eval;
-
-g_free++;
-g_cells[cell_vm_if] = scm_vm_if;
-
-g_free++;
-g_cells[cell_vm_if_expr] = scm_vm_if_expr;
-
-g_free++;
-g_cells[cell_vm_call_with_values2] = scm_vm_call_with_values2;
-
-g_free++;
-g_cells[cell_vm_call_with_current_continuation2] = scm_vm_call_with_current_continuation2;
-
-g_free++;
-g_cells[cell_vm_return] = scm_vm_return;
-
-g_free++;
-g_cells[cell_type_bytes] = scm_type_bytes;
-
-g_free++;
-g_cells[cell_type_char] = scm_type_char;
-
-g_free++;
-g_cells[cell_type_closure] = scm_type_closure;
-
-g_free++;
-g_cells[cell_type_continuation] = scm_type_continuation;
-
-g_free++;
-g_cells[cell_type_function] = scm_type_function;
-
-g_free++;
-g_cells[cell_type_keyword] = scm_type_keyword;
-
-g_free++;
-g_cells[cell_type_macro] = scm_type_macro;
-
-g_free++;
-g_cells[cell_type_number] = scm_type_number;
-
-g_free++;
-g_cells[cell_type_pair] = scm_type_pair;
-
-g_free++;
-g_cells[cell_type_port] = scm_type_port;
-
-g_free++;
-g_cells[cell_type_ref] = scm_type_ref;
-
-g_free++;
-g_cells[cell_type_special] = scm_type_special;
-
-g_free++;
-g_cells[cell_type_string] = scm_type_string;
-
-g_free++;
-g_cells[cell_type_struct] = scm_type_struct;
-
-g_free++;
-g_cells[cell_type_symbol] = scm_type_symbol;
-
-g_free++;
-g_cells[cell_type_values] = scm_type_values;
-
-g_free++;
-g_cells[cell_type_variable] = scm_type_variable;
-
-g_free++;
-g_cells[cell_type_vector] = scm_type_vector;
-
-g_free++;
-g_cells[cell_type_broken_heart] = scm_type_broken_heart;
-
-g_free++;
-g_cells[cell_symbol_internal_time_units_per_second] = scm_symbol_internal_time_units_per_second;
-
-g_free++;
-g_cells[cell_symbol_compiler] = scm_symbol_compiler;
-
-g_free++;
-g_cells[cell_symbol_arch] = scm_symbol_arch;
-
-g_free++;
-g_cells[cell_test] = scm_test;
-
-#elif !POSIX
-#include "src/mes.mes.symbols.i"
-#else
-#include "src/mes.symbols.i"
-#endif
-
-g_symbol_max = g_free++;
-
-#if MES_MINI
-
-#if !POSIX
- #define name cdr
-#endif
-
-NAME_SYMBOL (cell_nil, scm_nil.name);
-NAME_SYMBOL (cell_f, scm_f.name);
-NAME_SYMBOL (cell_t, scm_t.name);
-NAME_SYMBOL (cell_dot, scm_dot.name);
-NAME_SYMBOL (cell_arrow, scm_arrow.name);
-NAME_SYMBOL (cell_undefined, scm_undefined.name);
-NAME_SYMBOL (cell_unspecified, scm_unspecified.name);
-NAME_SYMBOL (cell_closure, scm_closure.name);
-NAME_SYMBOL (cell_circular, scm_circular.name);
-NAME_SYMBOL (cell_begin, scm_begin.name);
-NAME_SYMBOL (cell_symbol_dot, scm_symbol_dot.name);
-NAME_SYMBOL (cell_symbol_lambda, scm_symbol_lambda.name);
-NAME_SYMBOL (cell_symbol_begin, scm_symbol_begin.name);
-NAME_SYMBOL (cell_symbol_if, scm_symbol_if.name);
-NAME_SYMBOL (cell_symbol_quote, scm_symbol_quote.name);
-NAME_SYMBOL (cell_symbol_define, scm_symbol_define.name);
-NAME_SYMBOL (cell_symbol_define_macro, scm_symbol_define_macro.name);
-NAME_SYMBOL (cell_symbol_quasiquote, scm_symbol_quasiquote.name);
-NAME_SYMBOL (cell_symbol_unquote, scm_symbol_unquote.name);
-NAME_SYMBOL (cell_symbol_unquote_splicing, scm_symbol_unquote_splicing.name);
-NAME_SYMBOL (cell_symbol_syntax, scm_symbol_syntax.name);
-NAME_SYMBOL (cell_symbol_quasisyntax, scm_symbol_quasisyntax.name);
-NAME_SYMBOL (cell_symbol_unsyntax, scm_symbol_unsyntax.name);
-NAME_SYMBOL (cell_symbol_unsyntax_splicing, scm_symbol_unsyntax_splicing.name);
-NAME_SYMBOL (cell_symbol_set_x, scm_symbol_set_x.name);
-NAME_SYMBOL (cell_symbol_sc_expand, scm_symbol_sc_expand.name);
-NAME_SYMBOL (cell_symbol_macro_expand, scm_symbol_macro_expand.name);
-NAME_SYMBOL (cell_symbol_portable_macro_expand, scm_symbol_portable_macro_expand.name);
-NAME_SYMBOL (cell_symbol_sc_expander_alist, scm_symbol_sc_expander_alist.name);
-NAME_SYMBOL (cell_symbol_call_with_values, scm_symbol_call_with_values.name);
-NAME_SYMBOL (cell_call_with_current_continuation, scm_call_with_current_continuation.name);
-NAME_SYMBOL (cell_symbol_call_with_current_continuation, scm_symbol_call_with_current_continuation.name);
-NAME_SYMBOL (cell_symbol_boot_module, scm_symbol_boot_module.name);
-NAME_SYMBOL (cell_symbol_current_module, scm_symbol_current_module.name);
-NAME_SYMBOL (cell_symbol_primitive_load, scm_symbol_primitive_load.name);
-NAME_SYMBOL (cell_symbol_read_input_file, scm_symbol_read_input_file.name);
-NAME_SYMBOL (cell_symbol_write, scm_symbol_write.name);
-NAME_SYMBOL (cell_symbol_display, scm_symbol_display.name);
-NAME_SYMBOL (cell_symbol_throw, scm_symbol_throw.name);
-NAME_SYMBOL (cell_symbol_not_a_number, scm_symbol_not_a_number.name);
-NAME_SYMBOL (cell_symbol_not_a_pair, scm_symbol_not_a_pair.name);
-NAME_SYMBOL (cell_symbol_system_error, scm_symbol_system_error.name);
-NAME_SYMBOL (cell_symbol_wrong_number_of_args, scm_symbol_wrong_number_of_args.name);
-NAME_SYMBOL (cell_symbol_wrong_type_arg, scm_symbol_wrong_type_arg.name);
-NAME_SYMBOL (cell_symbol_unbound_variable, scm_symbol_unbound_variable.name);
-NAME_SYMBOL (cell_symbol_hashq_table, scm_symbol_hashq_table.name);
-NAME_SYMBOL (cell_symbol_record_type, scm_symbol_record_type.name);
-NAME_SYMBOL (cell_symbol_frame, scm_symbol_frame.name);
-NAME_SYMBOL (cell_symbol_module, scm_symbol_module.name);
-NAME_SYMBOL (cell_symbol_stack, scm_symbol_stack.name);
-NAME_SYMBOL (cell_symbol_buckets, scm_symbol_buckets.name);
-NAME_SYMBOL (cell_symbol_procedure, scm_symbol_procedure.name);
-NAME_SYMBOL (cell_symbol_size, scm_symbol_size.name);
-NAME_SYMBOL (cell_symbol_argv, scm_symbol_argv.name);
-NAME_SYMBOL (cell_symbol_mes_prefix, scm_symbol_mes_prefix.name);
-NAME_SYMBOL (cell_symbol_mes_version, scm_symbol_mes_version.name);
-NAME_SYMBOL (cell_symbol_car, scm_symbol_car.name);
-NAME_SYMBOL (cell_symbol_cdr, scm_symbol_cdr.name);
-NAME_SYMBOL (cell_symbol_pmatch_car, scm_symbol_pmatch_car.name);
-NAME_SYMBOL (cell_symbol_pmatch_cdr, scm_symbol_pmatch_cdr.name);
-NAME_SYMBOL (cell_vm_evlis, scm_vm_evlis.name);
-NAME_SYMBOL (cell_vm_evlis2, scm_vm_evlis2.name);
-NAME_SYMBOL (cell_vm_evlis3, scm_vm_evlis3.name);
-NAME_SYMBOL (cell_vm_apply, scm_vm_apply.name);
-NAME_SYMBOL (cell_vm_apply2, scm_vm_apply2.name);
-NAME_SYMBOL (cell_vm_eval, scm_vm_eval.name);
-NAME_SYMBOL (cell_vm_eval_pmatch_car, scm_vm_eval_pmatch_car.name);
-NAME_SYMBOL (cell_vm_eval_pmatch_cdr, scm_vm_eval_pmatch_cdr.name);
-NAME_SYMBOL (cell_vm_eval_define, scm_vm_eval_define.name);
-NAME_SYMBOL (cell_vm_eval_set_x, scm_vm_eval_set_x.name);
-NAME_SYMBOL (cell_vm_eval_macro_expand_eval, scm_vm_eval_macro_expand_eval.name);
-NAME_SYMBOL (cell_vm_eval_macro_expand_expand, scm_vm_eval_macro_expand_expand.name);
-NAME_SYMBOL (cell_vm_eval_check_func, scm_vm_eval_check_func.name);
-NAME_SYMBOL (cell_vm_eval2, scm_vm_eval2.name);
-NAME_SYMBOL (cell_vm_macro_expand, scm_vm_macro_expand.name);
-NAME_SYMBOL (cell_vm_macro_expand_define, scm_vm_macro_expand_define.name);
-NAME_SYMBOL (cell_vm_macro_expand_define_macro, scm_vm_macro_expand_define_macro.name);
-NAME_SYMBOL (cell_vm_macro_expand_lambda, scm_vm_macro_expand_lambda.name);
-NAME_SYMBOL (cell_vm_macro_expand_set_x, scm_vm_macro_expand_set_x.name);
-NAME_SYMBOL (cell_vm_begin_expand_primitive_load, scm_vm_begin_expand_primitive_load.name);
-NAME_SYMBOL (cell_vm_begin_primitive_load, scm_vm_begin_primitive_load.name);
-NAME_SYMBOL (cell_vm_macro_expand_car, scm_vm_macro_expand_car.name);
-NAME_SYMBOL (cell_vm_macro_expand_cdr, scm_vm_macro_expand_cdr.name);
-NAME_SYMBOL (cell_vm_begin_expand, scm_vm_begin_expand.name);
-NAME_SYMBOL (cell_vm_begin_expand_eval, scm_vm_begin_expand_eval.name);
-NAME_SYMBOL (cell_vm_begin_expand_macro, scm_vm_begin_expand_macro.name);
-NAME_SYMBOL (cell_vm_begin, scm_vm_begin.name);
-NAME_SYMBOL (cell_vm_begin_read_input_file, scm_vm_begin_read_input_file.name);
-NAME_SYMBOL (cell_vm_begin_eval, scm_vm_begin_eval.name);
-NAME_SYMBOL (cell_vm_if, scm_vm_if.name);
-NAME_SYMBOL (cell_vm_if_expr, scm_vm_if_expr.name);
-NAME_SYMBOL (cell_vm_call_with_values2, scm_vm_call_with_values2.name);
-NAME_SYMBOL (cell_vm_call_with_current_continuation2, scm_vm_call_with_current_continuation2.name);
-NAME_SYMBOL (cell_vm_return, scm_vm_return.name);
-NAME_SYMBOL (cell_type_bytes, scm_type_bytes.name);
-NAME_SYMBOL (cell_type_char, scm_type_char.name);
-NAME_SYMBOL (cell_type_closure, scm_type_closure.name);
-NAME_SYMBOL (cell_type_continuation, scm_type_continuation.name);
-NAME_SYMBOL (cell_type_function, scm_type_function.name);
-NAME_SYMBOL (cell_type_keyword, scm_type_keyword.name);
-NAME_SYMBOL (cell_type_macro, scm_type_macro.name);
-NAME_SYMBOL (cell_type_number, scm_type_number.name);
-NAME_SYMBOL (cell_type_pair, scm_type_pair.name);
-NAME_SYMBOL (cell_type_port, scm_type_port.name);
-NAME_SYMBOL (cell_type_ref, scm_type_ref.name);
-NAME_SYMBOL (cell_type_special, scm_type_special.name);
-NAME_SYMBOL (cell_type_string, scm_type_string.name);
-NAME_SYMBOL (cell_type_struct, scm_type_struct.name);
-NAME_SYMBOL (cell_type_symbol, scm_type_symbol.name);
-NAME_SYMBOL (cell_type_values, scm_type_values.name);
-NAME_SYMBOL (cell_type_variable, scm_type_variable.name);
-NAME_SYMBOL (cell_type_vector, scm_type_vector.name);
-NAME_SYMBOL (cell_type_broken_heart, scm_type_broken_heart.name);
-NAME_SYMBOL (cell_symbol_internal_time_units_per_second, scm_symbol_internal_time_units_per_second.name);
-NAME_SYMBOL (cell_symbol_compiler, scm_symbol_compiler.name);
-NAME_SYMBOL (cell_symbol_arch, scm_symbol_arch.name);
-NAME_SYMBOL (cell_test, scm_test.name);
-
-#if !POSIX
- #undef name
-#endif
-
-#elif !POSIX
-#include "src/mes.mes.symbol-names.i"
-#else
-#include "src/mes.symbol-names.i"
-#endif
-
+  g_free = cell_symbol_test + 1;
+  g_symbol_max = g_free;
   g_symbols = make_hash_table_ (500);
-  for (int i=1; i<g_symbol_max; i++)
-    hash_set_x (g_symbols, symbol_to_string (i), i);
+
+  init_symbol (cell_nil, TSPECIAL, "()");
+  init_symbol (cell_f, TSPECIAL, "#f");
+  init_symbol (cell_t, TSPECIAL, "#t");
+  init_symbol (cell_dot, TSPECIAL, ".");
+  init_symbol (cell_arrow, TSPECIAL, "=>");
+  init_symbol (cell_undefined, TSPECIAL, "*undefined*");
+  init_symbol (cell_unspecified, TSPECIAL, "*unspecified*");
+  init_symbol (cell_closure, TSPECIAL, "*closure*");
+  init_symbol (cell_circular, TSPECIAL, "*circular*");
+  init_symbol (cell_begin, TSPECIAL, "*begin*");
+  init_symbol (cell_call_with_current_continuation, TSPECIAL, "*call/cc*");
+
+  init_symbol (cell_vm_apply, TSPECIAL, "core:apply");
+  init_symbol (cell_vm_apply2, TSPECIAL, "*vm-apply2*");
+  init_symbol (cell_vm_begin, TSPECIAL, "*vm-begin*");
+  init_symbol (cell_vm_begin_eval, TSPECIAL, "*vm:begin-eval*");
+  init_symbol (cell_vm_begin_expand, TSPECIAL, "core:eval");
+  init_symbol (cell_vm_begin_expand_eval, TSPECIAL, "*vm:begin-expand-eval*");
+  init_symbol (cell_vm_begin_expand_macro, TSPECIAL, "*vm:begin-expand-macro*");
+  init_symbol (cell_vm_begin_expand_primitive_load, TSPECIAL, "*vm:core:begin-expand-primitive-load*");
+  init_symbol (cell_vm_begin_primitive_load, TSPECIAL, "*vm:core:begin-primitive-load*");
+  init_symbol (cell_vm_begin_read_input_file, TSPECIAL, "*vm-begin-read-input-file*");
+  init_symbol (cell_vm_call_with_current_continuation2, TSPECIAL, "*vm-call-with-current-continuation2*");
+  init_symbol (cell_vm_call_with_values2, TSPECIAL, "*vm-call-with-values2*");
+  init_symbol (cell_vm_eval, TSPECIAL, "core:eval-expanded");
+  init_symbol (cell_vm_eval2, TSPECIAL, "*vm-eval2*");
+  init_symbol (cell_vm_eval_check_func, TSPECIAL, "*vm-eval-check-func*");
+  init_symbol (cell_vm_eval_define, TSPECIAL, "*vm-eval-define*");
+  init_symbol (cell_vm_eval_macro_expand_eval, TSPECIAL, "*vm:eval-macro-expand-eval*");
+  init_symbol (cell_vm_eval_macro_expand_expand, TSPECIAL, "*vm:eval-macro-expand-expand*");
+  init_symbol (cell_vm_eval_pmatch_car, TSPECIAL, "*vm-eval-pmatch-car*");
+  init_symbol (cell_vm_eval_pmatch_cdr, TSPECIAL, "*vm-eval-pmatch-cdr*");
+  init_symbol (cell_vm_eval_set_x, TSPECIAL, "*vm-eval-set!*");
+  init_symbol (cell_vm_evlis, TSPECIAL, "*vm-evlis*");
+  init_symbol (cell_vm_evlis2, TSPECIAL, "*vm-evlis2*");
+  init_symbol (cell_vm_evlis3, TSPECIAL, "*vm-evlis3*");
+  init_symbol (cell_vm_if, TSPECIAL, "*vm-if*");
+  init_symbol (cell_vm_if_expr, TSPECIAL, "*vm-if-expr*");
+  init_symbol (cell_vm_macro_expand, TSPECIAL, "core:macro-expand");
+  init_symbol (cell_vm_macro_expand_car, TSPECIAL, "*vm:core:macro-expand-car*");
+  init_symbol (cell_vm_macro_expand_cdr, TSPECIAL, "*vm:macro-expand-cdr*");
+  init_symbol (cell_vm_macro_expand_define, TSPECIAL, "*vm:core:macro-expand-define*");
+  init_symbol (cell_vm_macro_expand_define_macro, TSPECIAL, "*vm:core:macro-expand-define-macro*");
+  init_symbol (cell_vm_macro_expand_lambda, TSPECIAL, "*vm:core:macro-expand-lambda*");
+  init_symbol (cell_vm_macro_expand_set_x, TSPECIAL, "*vm:core:macro-expand-set!*");
+  init_symbol (cell_vm_return, TSPECIAL, "*vm-return*");
+
+  init_symbol (cell_symbol_dot, TSYMBOL, "*dot*");
+  init_symbol (cell_symbol_lambda, TSYMBOL, "lambda");
+  init_symbol (cell_symbol_begin, TSYMBOL, "begin");
+  init_symbol (cell_symbol_if, TSYMBOL, "if");
+  init_symbol (cell_symbol_quote, TSYMBOL, "quote");
+  init_symbol (cell_symbol_define, TSYMBOL, "define");
+  init_symbol (cell_symbol_define_macro, TSYMBOL, "define-macro");
+
+  init_symbol (cell_symbol_quasiquote, TSYMBOL, "quasiquote");
+  init_symbol (cell_symbol_unquote, TSYMBOL, "unquote");
+  init_symbol (cell_symbol_unquote_splicing, TSYMBOL, "unquote-splicing");
+  init_symbol (cell_symbol_syntax, TSYMBOL, "syntax");
+  init_symbol (cell_symbol_quasisyntax, TSYMBOL, "quasisyntax");
+  init_symbol (cell_symbol_unsyntax, TSYMBOL, "unsyntax");
+  init_symbol (cell_symbol_unsyntax_splicing, TSYMBOL, "unsyntax-splicing");
+
+  init_symbol (cell_symbol_set_x, TSYMBOL, "set!");
+
+  init_symbol (cell_symbol_sc_expand, TSYMBOL, "sc-expand");
+  init_symbol (cell_symbol_macro_expand, TSYMBOL, "macro-expand");
+  init_symbol (cell_symbol_portable_macro_expand, TSYMBOL, "portable-macro-expand");
+  init_symbol (cell_symbol_sc_expander_alist, TSYMBOL, "*sc-expander-alist*");
+
+  init_symbol (cell_symbol_call_with_values, TSYMBOL, "call-with-values");
+  init_symbol (cell_symbol_call_with_current_continuation, TSYMBOL, "call-with-current-continuation");
+  init_symbol (cell_symbol_boot_module, TSYMBOL, "boot-module");
+  init_symbol (cell_symbol_current_module, TSYMBOL, "current-module");
+  init_symbol (cell_symbol_primitive_load, TSYMBOL, "primitive-load");
+  init_symbol (cell_symbol_read_input_file, TSYMBOL, "read-input-file");
+  init_symbol (cell_symbol_write, TSYMBOL, "write");
+  init_symbol (cell_symbol_display, TSYMBOL, "display");
+
+  init_symbol (cell_symbol_car, TSYMBOL, "car");
+  init_symbol (cell_symbol_cdr, TSYMBOL, "cdr");
+  init_symbol (cell_symbol_not_a_number, TSYMBOL, "not-a-number");
+  init_symbol (cell_symbol_not_a_pair, TSYMBOL, "not-a-pair");
+  init_symbol (cell_symbol_system_error, TSYMBOL, "system-error");
+  init_symbol (cell_symbol_throw, TSYMBOL, "throw");
+  init_symbol (cell_symbol_unbound_variable, TSYMBOL, "unbound-variable");
+  init_symbol (cell_symbol_wrong_number_of_args, TSYMBOL, "wrong-number-of-args");
+  init_symbol (cell_symbol_wrong_type_arg, TSYMBOL, "wrong-type-arg");
+
+  init_symbol (cell_symbol_buckets, TSYMBOL, "buckets");
+  init_symbol (cell_symbol_frame, TSYMBOL, "<frame>");
+  init_symbol (cell_symbol_hashq_table, TSYMBOL, "<hashq-table>");
+  init_symbol (cell_symbol_module, TSYMBOL, "<module>");
+  init_symbol (cell_symbol_procedure, TSYMBOL, "procedure");
+  init_symbol (cell_symbol_record_type, TSYMBOL, "<record-type>");
+  init_symbol (cell_symbol_size, TSYMBOL, "size");
+  init_symbol (cell_symbol_stack, TSYMBOL, "<stack>");
+
+  init_symbol (cell_symbol_argv, TSYMBOL, "%argv");
+  init_symbol (cell_symbol_mes_prefix, TSYMBOL, "%prefix");
+  init_symbol (cell_symbol_mes_version, TSYMBOL, "%version");
+
+  init_symbol (cell_symbol_internal_time_units_per_second, TSYMBOL, "internal-time-units-per-second");
+  init_symbol (cell_symbol_compiler, TSYMBOL, "%compiler");
+  init_symbol (cell_symbol_arch, TSYMBOL, "%arch");
+
+  init_symbol (cell_symbol_pmatch_car, TSYMBOL, "pmatch-car");
+  init_symbol (cell_symbol_pmatch_cdr, TSYMBOL, "pmatch-cdr");
+
+  init_symbol (cell_type_bytes, TSYMBOL, "<cell:bytes>");
+  init_symbol (cell_type_char, TSYMBOL, "<cell:char>");
+  init_symbol (cell_type_closure, TSYMBOL, "<cell:closure>");
+  init_symbol (cell_type_continuation, TSYMBOL, "<cell:continuation>");
+  init_symbol (cell_type_function, TSYMBOL, "<cell:function>");
+  init_symbol (cell_type_keyword, TSYMBOL, "<cell:keyword>");
+  init_symbol (cell_type_macro, TSYMBOL, "<cell:macro>");
+  init_symbol (cell_type_number, TSYMBOL, "<cell:number>");
+  init_symbol (cell_type_pair, TSYMBOL, "<cell:pair>");
+  init_symbol (cell_type_port, TSYMBOL, "<cell:port>");
+  init_symbol (cell_type_ref, TSYMBOL, "<cell:ref>");
+  init_symbol (cell_type_special, TSYMBOL, "<cell:special>");
+  init_symbol (cell_type_string, TSYMBOL, "<cell:string>");
+  init_symbol (cell_type_struct, TSYMBOL, "<cell:struct>");
+  init_symbol (cell_type_symbol, TSYMBOL, "<cell:symbol>");
+  init_symbol (cell_type_values, TSYMBOL, "<cell:values>");
+  init_symbol (cell_type_variable, TSYMBOL, "<cell:variable>");
+  init_symbol (cell_type_vector, TSYMBOL, "<cell:vector>");
+  init_symbol (cell_type_broken_heart, TSYMBOL, "<cell:broken-heart>");
+
+  init_symbol (cell_symbol_test, TSYMBOL, "%%test");
 
   SCM a = cell_nil;
   a = acons (cell_symbol_call_with_values, cell_symbol_call_with_values, a);
