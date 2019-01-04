@@ -27,13 +27,6 @@ if [ -n "$GUILE" -a "$GUILE" != true ]; then
     sh ${srcdest}build-aux/build-guile.sh
 fi
 
-if [ ! "$mes_p" ]; then
-    sh ${srcdest}build-aux/snarf.sh
-#elif [ ! -d "$MES_SEED" ]; then
-#else
-fi
-sh ${srcdest}build-aux/snarf.sh --mes
-
 if [ "$gcc_p$tcc_p" ]; then
     sh ${srcdest}build-aux/build-mes.sh
 elif [ -d "$MES_SEED" ]; then

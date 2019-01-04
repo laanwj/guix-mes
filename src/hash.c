@@ -221,7 +221,8 @@ make_hash_table_ (long size)
   values = cons (buckets, values);
   values = cons (MAKE_NUMBER (size), values);
   values = cons (cell_symbol_hashq_table, values);
-  return make_struct (hashq_type, values, cell_hash_table_printer);
+  //FIXME: symbol/printer return make_struct (hashq_type, values, cstring_to_symbol ("hash-table-printer");
+  return make_struct (hashq_type, values, cell_unspecified);
 }
 
 SCM

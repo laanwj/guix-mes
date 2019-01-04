@@ -30,7 +30,6 @@
         (cons <cell:char> (quote <cell:char>))
         (cons <cell:closure> (quote <cell:closure>))
         (cons <cell:continuation> (quote <cell:continuation>))
-        (cons <cell:function> (quote <cell:function>))
         (cons <cell:keyword> (quote <cell:keyword>))
         (cons <cell:macro> (quote <cell:macro>))
         (cons <cell:number> (quote <cell:number>))
@@ -64,11 +63,6 @@
 
 (define (continuation? x)
   (eq? (core:type x) <cell:continuation>))
-
-(define (function? x)
-  (eq? (core:type x) <cell:function>))
-
-(define builtin? function?)
 
 (define (keyword? x)
   (eq? (core:type x) <cell:keyword>))

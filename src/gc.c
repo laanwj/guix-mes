@@ -124,7 +124,7 @@ gc_loop (SCM scan) ///((internal))
   while (scan < g_free)
     {
       if (NTYPE (scan) == TBROKEN_HEART)
-        error (cell_symbol_system_error,  cell_gc);
+        error (cell_symbol_system_error,  cstring_to_symbol ("gc"));
       if (NTYPE (scan) == TMACRO
           || NTYPE (scan) == TPAIR
           || NTYPE (scan) == TREF
@@ -136,7 +136,6 @@ gc_loop (SCM scan) ///((internal))
         }
       if ((NTYPE (scan) == TCLOSURE
            || NTYPE (scan) == TCONTINUATION
-           || NTYPE (scan) == TFUNCTION
            || NTYPE (scan) == TKEYWORD
            || NTYPE (scan) == TMACRO
            || NTYPE (scan) == TPAIR

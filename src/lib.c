@@ -18,6 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// CONSTANT STRUCT_TYPE 0
+#define STRUCT_TYPE 0
+// CONSTANT STRUCT_PRINTER 1
+#define STRUCT_PRINTER 1
+
 int g_depth;
 SCM fdisplay_ (SCM, int, int);
 
@@ -67,19 +72,6 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       fdputc (' ', fd);
       display_helper (args, 0, "", fd, 0);
       fdputs (">", fd);
-    }
-  else if (t == TFUNCTION)
-    {
-      fdputs ("#<procedure ", fd);
-      char const *p = "?";
-      if (FUNCTION (x).name != 0)
-        p = FUNCTION (x).name;
-      fdputs (p, fd);
-      fdputs ("[", fd);
-      fdputs (itoa (CDR (x)), fd);
-      fdputs (",", fd);
-      fdputs (itoa (x), fd);
-      fdputs ("]>", fd);
     }
   else if (t == TMACRO)
     {
@@ -186,11 +178,12 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     fdisplay_ (REF (x), fd, write_p);
   else if (t == TSTRUCT)
     {
-      SCM printer = STRUCT (x) + 1;
+      //SCM printer = STRUCT (x) + 1;
+      SCM printer = struct_ref_ (x, STRUCT_PRINTER);
       if (TYPE (printer) == TREF)
         printer = REF (printer);
       if (TYPE (printer) == TCLOSURE
-          || TYPE (printer) == TFUNCTION)
+          || builtin_p (printer) == cell_t)
         apply (printer, cons (x, cell_nil), r0);
       else
         {
@@ -227,16 +220,6 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       fdputs (">", fd);
     }
   return 0;
-}
-
-SCM
-procedure_name_ (SCM x)
-{
-  assert (TYPE (x) == TFUNCTION);
-  char const *p = "?";
-  if (FUNCTION (x).name != 0)
-    p = FUNCTION (x).name;
-  return MAKE_STRING0 (p);
 }
 
 SCM
@@ -326,7 +309,7 @@ make_frame (SCM stack, long index)
   SCM values = cell_nil;
   values = cons (procedure, values);
   values = cons (cell_symbol_frame, values);
-  return make_struct (frame_type, values, cell_frame_printer);
+  return make_struct (frame_type, values, cstring_to_symbol ("frame-printer"));
 }
 
 SCM

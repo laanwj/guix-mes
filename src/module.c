@@ -53,7 +53,7 @@ make_initial_module (SCM a) ///((internal))
   values = cons (locals, values);
   values = cons (name, values);
   values = cons (cell_symbol_module, values);
-  SCM module = make_struct (module_type, values, cell_module_printer);
+  SCM module = make_struct (module_type, values, cstring_to_symbol ("module-printer"));
   r0 = cell_nil;
   r0 = cons (CADR (a), r0);
   r0 = cons (CAR (a), r0);

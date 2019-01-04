@@ -10,18 +10,6 @@ MES_ARENA=${MES_ARENA-100000000}
 MES_MAX_ARENA=${MES_MAX_ARENA-100000000}
 MES_STACK=${MES_STACK-500000}
 
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/gc.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/hash.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/lib.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/math.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/mes.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/module.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/posix.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/reader.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/strings.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/struct.c
-@GUILE@ -e '(mes-snarf)' build-aux/mes-snarf.scm --mes src/vector.c
-
 hex2 --LittleEndian --Architecture 1 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-0header.hex2 -f lib/x86-mes/elf32-body-exit-42.hex2 -f lib/x86-mes/elf-0footer.hex2 --exec_enable -o lib/x86-mes/0exit-42
 hex2 --LittleEndian --Architecture 1 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-header.hex2 -f lib/x86-mes/elf32-body-exit-42.hex2 -f lib/x86-mes/elf32-footer-single-main.hex2 --exec_enable -o lib/x86-mes/exit-42
 M1 --LittleEndian --Architecture 1 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/crt1.S -o lib/x86-mes/crt1.o

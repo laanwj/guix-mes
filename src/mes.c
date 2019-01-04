@@ -18,6 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
@@ -63,14 +64,6 @@ SCM m0 = 0;
 SCM g_macros = 0;
 SCM g_ports = 1;
 
-#if __x86_64__
-#define HALFLONG_MAX UINT_MAX
-typedef int halflong;
-#else
-#define HALFLONG_MAX UINT16_MAX
-typedef short halflong;
-#endif
-
 // CONSTANT TBYTES         0
 #define TBYTES             0
 // CONSTANT TCHAR          1
@@ -79,101 +72,46 @@ typedef short halflong;
 #define TCLOSURE           2
 // CONSTANT TCONTINUATION  3
 #define TCONTINUATION      3
-// CONSTANT TFUNCTION      4
-#define TFUNCTION          4
-// CONSTANT TKEYWORD       5
-#define TKEYWORD           5
-// CONSTANT TMACRO         6
-#define TMACRO             6
-// CONSTANT TNUMBER        7
-#define TNUMBER            7
-// CONSTANT TPAIR          8
-#define TPAIR              8
-// CONSTANT TPORT          9
-#define TPORT              9
-// CONSTANT TREF          10
-#define TREF              10
-// CONSTANT TSPECIAL      11
-#define TSPECIAL          11
-// CONSTANT TSTRING       12
-#define TSTRING           12
-// CONSTANT TSTRUCT       13
-#define TSTRUCT           13
-// CONSTANT TSYMBOL       14
-#define TSYMBOL           14
-// CONSTANT TVALUES       15
-#define TVALUES           15
-// CONSTANT TVARIABLE     16
-#define TVARIABLE         16
-// CONSTANT TVECTOR       17
-#define TVECTOR           17
-// CONSTANT TBROKEN_HEART 18
-#define TBROKEN_HEART     18
+// CONSTANT TKEYWORD       4
+#define TKEYWORD           4
+// CONSTANT TMACRO         5
+#define TMACRO             5
+// CONSTANT TNUMBER        6
+#define TNUMBER            6
+// CONSTANT TPAIR          7
+#define TPAIR              7
+// CONSTANT TPORT          8
+#define TPORT              8
+// CONSTANT TREF           9
+#define TREF               9
+// CONSTANT TSPECIAL      10
+#define TSPECIAL          10
+// CONSTANT TSTRING       11
+#define TSTRING           11
+// CONSTANT TSTRUCT       12
+#define TSTRUCT           12
+// CONSTANT TSYMBOL       13
+#define TSYMBOL           13
+// CONSTANT TVALUES       14
+#define TVALUES           14
+// CONSTANT TVARIABLE     15
+#define TVARIABLE         15
+// CONSTANT TVECTOR       16
+#define TVECTOR           16
+// CONSTANT TBROKEN_HEART 17
+#define TBROKEN_HEART     17
 
 typedef SCM (*function0_t) (void);
 typedef SCM (*function1_t) (SCM);
 typedef SCM (*function2_t) (SCM, SCM);
 typedef SCM (*function3_t) (SCM, SCM, SCM);
 typedef SCM (*functionn_t) (SCM);
-#if !POSIX
-struct scm {
+struct scm
+{
   long type;
   SCM car;
   SCM cdr;
 };
-struct function {
-#if __M2_PLANET__
-  FUNCTION function;
-#else // !__M2_PLANET__
-  SCM (*function) (SCM);
-#endif // !__M2_PLANET__
-  long arity;
-  char *name;
-};
-#else
-struct function {
-  union {
-    function0_t function0;
-    function1_t function1;
-    function2_t function2;
-    function3_t function3;
-    functionn_t functionn;
-  };
-  long arity;
-  char const *name;
-};
-struct scm {
-  long type;
-  union
-  {
-#if 0
-    struct
-    {
-      unsigned halflong start;
-      unsigned halflong end;
-    };
-#endif
-    unsigned long function;
-    unsigned long length;
-    long port;
-    SCM car;
-    SCM macro;
-    SCM ref;
-    SCM variable;
-  };
-  union
-  {
-    long value;
-    char const* name;
-    char const* bytes;
-    SCM cdr;
-    SCM closure;
-    SCM continuation;
-    SCM string;
-    SCM vector;
-  };
-};
-#endif
 
 #if __MESC__
 //FIXME
@@ -357,110 +295,84 @@ struct scm *g_news = 0;
 
 // CONSTANT cell_symbol_buckets 82
 #define cell_symbol_buckets 82
-// CONSTANT cell_symbol_frame 83
-#define cell_symbol_frame 83
-// CONSTANT cell_symbol_hashq_table 84
-#define cell_symbol_hashq_table 84
-// CONSTANT cell_symbol_module 85
-#define cell_symbol_module 85
-// CONSTANT cell_symbol_procedure 86
-#define cell_symbol_procedure 86
-// CONSTANT cell_symbol_record_type 87
-#define cell_symbol_record_type 87
-// CONSTANT cell_symbol_size 88
-#define cell_symbol_size 88
-// CONSTANT cell_symbol_stack 89
-#define cell_symbol_stack 89
+// CONSTANT cell_symbol_builtin 83
+#define cell_symbol_builtin 83
+// CONSTANT cell_symbol_frame 84
+#define cell_symbol_frame 84
+// CONSTANT cell_symbol_hashq_table 85
+#define cell_symbol_hashq_table 85
+// CONSTANT cell_symbol_module 86
+#define cell_symbol_module 86
+// CONSTANT cell_symbol_procedure 87
+#define cell_symbol_procedure 87
+// CONSTANT cell_symbol_record_type 88
+#define cell_symbol_record_type 88
+// CONSTANT cell_symbol_size 89
+#define cell_symbol_size 89
+// CONSTANT cell_symbol_stack 90
+#define cell_symbol_stack 90
 
-// CONSTANT cell_symbol_argv 90
-#define cell_symbol_argv 90
-// CONSTANT cell_symbol_mes_prefix 91
-#define cell_symbol_mes_prefix 91
-// CONSTANT cell_symbol_mes_version 92
-#define cell_symbol_mes_version 92
+// CONSTANT cell_symbol_argv 91
+#define cell_symbol_argv 91
+// CONSTANT cell_symbol_mes_prefix 92
+#define cell_symbol_mes_prefix 92
+// CONSTANT cell_symbol_mes_version 93
+#define cell_symbol_mes_version 93
 
-// CONSTANT cell_symbol_internal_time_units_per_second 93
-#define cell_symbol_internal_time_units_per_second 93
-// CONSTANT cell_symbol_compiler 94
-#define cell_symbol_compiler 94
-// CONSTANT cell_symbol_arch 95
-#define cell_symbol_arch 95
+// CONSTANT cell_symbol_internal_time_units_per_second 94
+#define cell_symbol_internal_time_units_per_second 94
+// CONSTANT cell_symbol_compiler 95
+#define cell_symbol_compiler 95
+// CONSTANT cell_symbol_arch 96
+#define cell_symbol_arch 96
+// CONSTANT cell_symbol_pmatch_car 97
+#define cell_symbol_pmatch_car 97
+// CONSTANT cell_symbol_pmatch_cdr 98
+#define cell_symbol_pmatch_cdr 98
 
-// CONSTANT cell_symbol_pmatch_car 96
-#define cell_symbol_pmatch_car 96
-// CONSTANT cell_symbol_pmatch_cdr 97
-#define cell_symbol_pmatch_cdr 97
+// CONSTANT cell_type_bytes 99
+#define cell_type_bytes 99
+// CONSTANT cell_type_char 100
+#define cell_type_char 100
+// CONSTANT cell_type_closure 101
+#define cell_type_closure 101
+// CONSTANT cell_type_continuation 102
+#define cell_type_continuation 102
+// CONSTANT cell_type_function 103
+#define cell_type_function 103
+// CONSTANT cell_type_keyword 104
+#define cell_type_keyword 104
+// CONSTANT cell_type_macro 105
+#define cell_type_macro 105
+// CONSTANT cell_type_number 106
+#define cell_type_number 106
+// CONSTANT cell_type_pair 107
+#define cell_type_pair 107
+// CONSTANT cell_type_port 108
+#define cell_type_port 108
+// CONSTANT cell_type_ref 109
+#define cell_type_ref 109
+// CONSTANT cell_type_special 110
+#define cell_type_special 110
+// CONSTANT cell_type_string 111
+#define cell_type_string 111
+// CONSTANT cell_type_struct 112
+#define cell_type_struct 112
+// CONSTANT cell_type_symbol 113
+#define cell_type_symbol 113
+// CONSTANT cell_type_values 114
+#define cell_type_values 114
+// CONSTANT cell_type_variable 115
+#define cell_type_variable 115
+// CONSTANT cell_type_vector 116
+#define cell_type_vector 116
+// CONSTANT cell_type_broken_heart 117
+#define cell_type_broken_heart 117
 
-// CONSTANT cell_type_bytes 98
-#define cell_type_bytes 98
-// CONSTANT cell_type_char 99
-#define cell_type_char 99
-// CONSTANT cell_type_closure 100
-#define cell_type_closure 100
-// CONSTANT cell_type_continuation 101
-#define cell_type_continuation 101
-// CONSTANT cell_type_function 102
-#define cell_type_function 102
-// CONSTANT cell_type_keyword 103
-#define cell_type_keyword 103
-// CONSTANT cell_type_macro 104
-#define cell_type_macro 104
-// CONSTANT cell_type_number 105
-#define cell_type_number 105
-// CONSTANT cell_type_pair 106
-#define cell_type_pair 106
-// CONSTANT cell_type_port 107
-#define cell_type_port 107
-// CONSTANT cell_type_ref 108
-#define cell_type_ref 108
-// CONSTANT cell_type_special 109
-#define cell_type_special 109
-// CONSTANT cell_type_string 110
-#define cell_type_string 110
-// CONSTANT cell_type_struct 111
-#define cell_type_struct 111
-// CONSTANT cell_type_symbol 112
-#define cell_type_symbol 112
-// CONSTANT cell_type_values 113
-#define cell_type_values 113
-// CONSTANT cell_type_variable 114
-#define cell_type_variable 114
-// CONSTANT cell_type_vector 115
-#define cell_type_vector 115
-// CONSTANT cell_type_broken_heart 116
-#define cell_type_broken_heart 116
+// CONSTANT cell_test 118
+#define cell_test 118
 
-// CONSTANT cell_symbol_test 117
-#define cell_symbol_test 117
-
-struct function g_functions[200];
-int g_function = 0;
-
-#if !__GNUC__ || !POSIX
-#include "src/gc.mes.h"
-#include "src/hash.mes.h"
-#include "src/lib.mes.h"
-#include "src/math.mes.h"
-#include "src/mes.mes.h"
-#include "src/module.mes.h"
-#include "src/posix.mes.h"
-#include "src/reader.mes.h"
-#include "src/strings.mes.h"
-#include "src/struct.mes.h"
-#include "src/vector.mes.h"
-#else
-#include "src/gc.h"
-#include "src/hash.h"
-#include "src/lib.h"
-#include "src/math.h"
-#include "src/mes.h"
-#include "src/module.h"
-#include "src/posix.h"
-#include "src/reader.h"
-#include "src/strings.h"
-#include "src/struct.h"
-#include "src/vector.h"
-#endif
+#include "builtins.h"
 
 #define TYPE(x) g_cells[x].type
 #define CAR(x) g_cells[x].car
@@ -484,8 +396,6 @@ int g_function = 0;
 #define CBYTES(x) &g_cells[x].cdr
 #define CSTRING_STRUCT(x) &g_cells[x.cdr].cdr
 
-#define FUNCTION(x) g_functions[g_cells[x].car]
-#define FUNCTION0(x) g_functions[g_cells[x].car].function
 #define MACRO(x) g_cells[x].car
 #define NAME(x) g_cells[x].cdr
 #define PORT(x) g_cells[x].car
@@ -502,8 +412,6 @@ int g_function = 0;
 
 #else
 #define BYTES(x) g_cells[x].bytes
-#define FUNCTION(x) g_functions[g_cells[x].function]
-#define FUNCTION0(x) g_functions[g_cells[x].function].function0
 #define LENGTH(x) g_cells[x].length
 #define REF(x) g_cells[x].ref
 #define START(x) g_cells[x].start
@@ -550,8 +458,12 @@ int g_function = 0;
 #define CADDR(x) CAR (CDR (CDR (x)))
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 
-SCM make_bytes (char const* s, size_t length);
+SCM apply_builtin (SCM fn, SCM x);
 SCM cstring_to_list (char const* s);
+SCM cstring_to_symbol (char const *s);
+SCM make_bytes (char const* s, size_t length);
+SCM make_hash_table_ (long size);
+SCM read_input_file_env (SCM);
 SCM string_equal_p (SCM a, SCM b);
 
 SCM
@@ -645,13 +557,6 @@ cdr_ (SCM x)
               || TYPE (CDR (x)) == TSPECIAL
               || TYPE (CDR (x)) == TSYMBOL
               || TYPE (CDR (x)) == TSTRING)) ? CDR (x) : MAKE_NUMBER (CDR (x));
-}
-
-SCM
-arity_ (SCM x)
-{
-  assert (TYPE (x) == TFUNCTION);
-  return MAKE_NUMBER (FUNCTION (x).arity);
 }
 
 SCM
@@ -806,7 +711,8 @@ check_apply (SCM f, SCM e) ///((internal))
     type = "number";
   if (TYPE (f) == TSTRING)
     type = "string";
-  if (TYPE (f) == TSTRUCT)
+  if (TYPE (f) == TSTRUCT
+      && builtin_p (f) == cell_f)
     type = "#<...>";
   if (TYPE (f) == TBROKEN_HEART)
     type = "<3";
@@ -862,7 +768,7 @@ append2 (SCM x, SCM y)
   if (x == cell_nil)
     return y;
   if (TYPE (x) != TPAIR)
-    error (cell_symbol_not_a_pair, cons (x, cell_append2));
+    error (cell_symbol_not_a_pair, cons (x, cstring_to_symbol ("append2")));
   SCM r = cell_nil;
   while (x != cell_nil)
     {
@@ -878,7 +784,7 @@ append_reverse (SCM x, SCM y)
   if (x == cell_nil)
     return y;
   if (TYPE (x) != TPAIR)
-    error (cell_symbol_not_a_pair, cons (x, cell_append_reverse));
+    error (cell_symbol_not_a_pair, cons (x, cstring_to_symbol ("append-reverse")));
   while (x != cell_nil)
     {
       y = cons (CAR (x), y);
@@ -891,7 +797,7 @@ SCM
 reverse_x_ (SCM x, SCM t)
 {
   if (x != cell_nil && TYPE (x) != TPAIR)
-    error (cell_symbol_not_a_pair, cons (x, cell_reverse_x_));
+    error (cell_symbol_not_a_pair, cons (x, cstring_to_symbol ("core:reverse!")));
   SCM r = t;
   while (x != cell_nil)
     {
@@ -912,80 +818,6 @@ pairlis (SCM x, SCM y, SCM a)
     return cons (cons (x, y), a);
   return cons (cons (car (x), car (y)),
                pairlis (cdr (x), cdr (y), a));
-}
-
-SCM
-call (SCM fn, SCM x)
-{
-#if __M2_PLANET__
-  struct function *f = FUNCTION (fn);
-#else
-  struct function *f = &FUNCTION (fn);
-#endif
-  int arity = f->arity;
-  if ((arity > 0 || arity == -1)
-      && x != cell_nil && TYPE (CAR (x)) == TVALUES)
-    x = cons (CADAR (x), CDR (x));
-  if ((arity > 1 || arity == -1)
-      && x != cell_nil && TYPE (CDR (x)) == TPAIR && TYPE (CADR (x)) == TVALUES)
-    x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
-
-#if __M2_PLANET__
-  FUNCTION fp = f->function;
-  if (arity == 0)
-    return fp ();
-  else if (arity == 1)
-    return fp (CAR (x));
-  else if (arity == 2)
-    return fp (CAR (x), CADR (x));
-  else if (arity == 3)
-    return fp (CAR (x), CADR (x), CAR (CDDR (x)));
-  else if (arity == -1)
-    return fp (x);
-#elif !POSIX
-  if (arity == 0)
-    {
-      //function0_t fp = f->function;
-      SCM (*fp) (void) = f->function;
-      return fp ();
-    }
-  else if (arity == 1)
-    {
-      //function1_t fp = f->function;
-      SCM (*fp) (SCM) = f->function;
-      return fp (CAR (x));
-    }
-  else if (arity == 2)
-    {
-      //function2_t fp = f->function;
-      SCM (*fp) (SCM, SCM) = f->function;
-      return fp (CAR (x), CADR (x));
-    }
-  else if (arity == 3)
-    {
-      //function3_t fp = f->function;
-      SCM (*fp) (SCM, SCM, SCM) = f->function;
-      return fp (CAR (x), CADR (x), CAR (CDDR (x)));
-    }
-  else if (arity == -1)
-    {
-      //functionn_t fp = f->function;
-      SCM (*fp) (SCM) = f->function;
-      return fp (x);
-    }
-#else
-  if (arity == 0)
-    return FUNCTION (fn).function0 ();
-  else if (arity == 1)
-    return FUNCTION (fn).function1 (CAR (x));
-  else if (arity == 2)
-    return FUNCTION (fn).function2 (CAR (x), CADR (x));
-  else if (arity == 3)
-    return FUNCTION (fn).function3 (CAR (x), CADR (x), CAR (CDDR (x)));
-  else if (arity == -1)
-    return FUNCTION (fn).functionn (x);
-#endif //! (__M2_PLANET__ || !POSIX)
-  return cell_unspecified;
 }
 
 SCM
@@ -1031,7 +863,7 @@ SCM
 set_car_x (SCM x, SCM e)
 {
   if (TYPE (x) != TPAIR)
-    error (cell_symbol_not_a_pair, cons (x, cell_set_car_x));
+    error (cell_symbol_not_a_pair, cons (x, cstring_to_symbol ("set-car!")));
   CAR (x) = e;
   return cell_unspecified;
 }
@@ -1040,7 +872,7 @@ SCM
 set_cdr_x (SCM x, SCM e)
 {
   if (TYPE (x) != TPAIR)
-    error (cell_symbol_not_a_pair, cons (x, cell_set_cdr_x));
+    error (cell_symbol_not_a_pair, cons (x, cstring_to_symbol ("set-cdr!")));
   CDR (x) = e;
   return cell_unspecified;
 }
@@ -1292,10 +1124,10 @@ eval_apply ()
  apply:
   g_stack_array[g_stack+FRAME_PROCEDURE] = CAR (r1);
   t = TYPE (CAR (r1));
-  if (t == TFUNCTION)
+  if (t == TSTRUCT && builtin_p (CAR (r1)) == cell_t)
     {
-      check_formals (CAR (r1), MAKE_NUMBER (FUNCTION (CAR (r1)).arity), CDR (r1));
-      r1 = call (CAR (r1), CDR (r1)); /// FIXME: move into eval_apply
+      check_formals (CAR (r1), builtin_arity (CAR (r1)), CDR (r1));
+      r1 = apply_builtin (CAR (r1), CDR (r1)); /// FIXME: move into eval_apply
       goto vm_return;
     }
   else if (t == TCLOSURE)
@@ -1817,14 +1649,6 @@ mes_g_stack (SCM a) ///((internal))
   return r0;
 }
 
-// Environment setup
-
-#include "src/hash.c"
-#include "src/module.c"
-#include "src/posix.c"
-#include "src/math.c"
-#include "src/lib.c"
-
 // Jam Collector
 SCM g_symbol_max;
 
@@ -1955,6 +1779,7 @@ mes_symbols () ///((internal))
   init_symbol (cell_symbol_wrong_type_arg, TSYMBOL, "wrong-type-arg");
 
   init_symbol (cell_symbol_buckets, TSYMBOL, "buckets");
+  init_symbol (cell_symbol_builtin, TSYMBOL, "<builtin>");
   init_symbol (cell_symbol_frame, TSYMBOL, "<frame>");
   init_symbol (cell_symbol_hashq_table, TSYMBOL, "<hashq-table>");
   init_symbol (cell_symbol_module, TSYMBOL, "<module>");
@@ -2009,7 +1834,6 @@ mes_symbols () ///((internal))
   a = acons (cell_type_char, MAKE_NUMBER (TCHAR), a);
   a = acons (cell_type_closure, MAKE_NUMBER (TCLOSURE), a);
   a = acons (cell_type_continuation, MAKE_NUMBER (TCONTINUATION), a);
-  a = acons (cell_type_function, MAKE_NUMBER (TFUNCTION), a);
   a = acons (cell_type_keyword, MAKE_NUMBER (TKEYWORD), a);
   a = acons (cell_type_macro, MAKE_NUMBER (TMACRO), a);
   a = acons (cell_type_number, MAKE_NUMBER (TNUMBER), a);
@@ -2060,194 +1884,322 @@ mes_environment (int argc, char *argv[])
 }
 
 SCM
+init_builtin (SCM builtin_type, char const* name, int arity, SCM (*function) (SCM), SCM a)
+{
+  SCM s = cstring_to_symbol (name);
+  return acons (s, make_builtin (builtin_type, symbol_to_string (s), MAKE_NUMBER (arity), MAKE_NUMBER (function)), a);
+}
+
+SCM
+make_builtin_type () ///(internal))
+{
+  SCM record_type = cell_symbol_record_type;
+  SCM fields = cell_nil;
+  fields = cons (cstring_to_symbol ("address"), fields);
+  fields = cons (cstring_to_symbol ("arity"), fields);
+  fields = cons (cstring_to_symbol ("name"), fields);
+  fields = cons (fields, cell_nil);
+  fields = cons (cell_symbol_builtin, fields);
+  return make_struct (record_type, fields, cell_unspecified);
+}
+
+SCM
+make_builtin (SCM builtin_type, SCM name, SCM arity, SCM function)
+{
+  SCM values = cell_nil;
+  values = cons (function, values);
+  values = cons (arity, values);
+  values = cons (name, values);
+  values = cons (cell_symbol_builtin, values);
+  return make_struct (builtin_type, values, cstring_to_symbol ("builtin-printer"));
+}
+
+SCM
+builtin_name (SCM builtin)
+{
+  return struct_ref_ (builtin, 3);
+}
+
+SCM
+builtin_arity (SCM builtin)
+{
+  return struct_ref_ (builtin, 4);
+}
+
+#if __MESC__
+long
+builtin_function (SCM builtin)
+#else
+SCM
+(*builtin_function (SCM builtin)) (SCM)
+#endif
+{
+  return VALUE (struct_ref_ (builtin, 5));
+}
+
+SCM
+builtin_p (SCM x)
+{
+  return (TYPE (x) == TSTRUCT && struct_ref_ (x, 2) == cell_symbol_builtin)
+    ? cell_t : cell_f;
+}
+
+SCM
+builtin_printer (SCM builtin)
+{
+  fdputs ("#<procedure ", g_stdout);
+  display_ (builtin_name (builtin));
+  fdputc (" ", stdout);
+  int arity = VALUE (builtin_arity (builtin));
+  if (arity == -1)
+    fdputs ("_", g_stdout);
+  else
+    {
+      fdputc ('(', g_stdout);
+      for (int i = 0; i < arity; i++)
+        {
+          if (i)
+            fdputc (' ', g_stdout);
+          fdputc ('_', g_stdout);
+        }
+    }
+  fdputc ('>', g_stdout);
+}
+
+SCM
+apply_builtin (SCM fn, SCM x) ///((internal))
+{
+  int arity = VALUE (builtin_arity (fn));
+  if ((arity > 0 || arity == -1)
+      && x != cell_nil && TYPE (CAR (x)) == TVALUES)
+    x = cons (CADAR (x), CDR (x));
+  if ((arity > 1 || arity == -1)
+      && x != cell_nil && TYPE (CDR (x)) == TPAIR && TYPE (CADR (x)) == TVALUES)
+    x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
+
+#if __M2_PLANET__
+  FUNCTION fp = builtin_function (fn)
+  if (arity == 0)
+    return fp ();
+  else if (arity == 1)
+    return fp (CAR (x));
+  else if (arity == 2)
+    return fp (CAR (x), CADR (x));
+  else if (arity == 3)
+    return fp (CAR (x), CADR (x), CAR (CDDR (x)));
+  else if (arity == -1)
+    return fp (x);
+#elif !POSIX
+  if (arity == 0)
+    {
+      //function0_t fp = f->function;
+      SCM (*fp) (void) = builtin_function (fn);
+      return fp ();
+    }
+  else if (arity == 1)
+    {
+      //function1_t fp = f->function;
+      SCM (*fp) (SCM) = builtin_function (fn);
+      return fp (CAR (x));
+    }
+  else if (arity == 2)
+    {
+      //function2_t fp = f->function;
+      SCM (*fp) (SCM, SCM) = builtin_function (fn);
+      return fp (CAR (x), CADR (x));
+    }
+  else if (arity == 3)
+    {
+      //function3_t fp = f->function;
+      SCM (*fp) (SCM, SCM, SCM) = builtin_function (fn);
+      return fp (CAR (x), CADR (x), CAR (CDDR (x)));
+    }
+  else if (arity == -1)
+    {
+      //functionn_t fp = f->function;
+      SCM (*fp) (SCM) = builtin_function (fn);
+      return fp (x);
+    }
+#else
+  #error POSIX
+  if (arity == 0)
+    return FUNCTION (fn).function0 ();
+  else if (arity == 1)
+    return FUNCTION (fn).function1 (CAR (x));
+  else if (arity == 2)
+    return FUNCTION (fn).function2 (CAR (x), CADR (x));
+  else if (arity == 3)
+    return FUNCTION (fn).function3 (CAR (x), CADR (x), CAR (CDDR (x)));
+  else if (arity == -1)
+    return FUNCTION (fn).functionn (x);
+#endif //! (__M2_PLANET__ || !POSIX)
+  return cell_unspecified;
+}
+
+SCM
 mes_builtins (SCM a) ///((internal))
 {
-#if MES_MINI
+  // TODO minimal: cons, car, cdr, list, null_p, eq_p minus, plus
+  // display_, display_error_, getenv
 
-#if !POSIX
- #define function car
-#endif
+  SCM builtin_type = make_builtin_type ();
 
-//mes
-scm_cons.function = g_function;
-g_functions[g_function++] = fun_cons;
-cell_cons = g_free++;
-g_cells[cell_cons] = scm_cons;
-
-scm_car.function = g_function;
-g_functions[g_function++] = fun_car;
-cell_car = g_free++;
-g_cells[cell_car] = scm_car;
-
-scm_cdr.function = g_function;
-g_functions[g_function++] = fun_cdr;
-cell_cdr = g_free++;
-g_cells[cell_cdr] = scm_cdr;
-
-scm_list.function = g_function;
-g_functions[g_function++] = fun_list;
-cell_list = g_free++;
-g_cells[cell_list] = scm_list;
-
-scm_null_p.function = g_function;
-g_functions[g_function++] = fun_null_p;
-cell_null_p = g_free++;
-g_cells[cell_null_p] = scm_null_p;
-
-scm_eq_p.function = g_function;
-g_functions[g_function++] = fun_eq_p;
-cell_eq_p = g_free++;
-g_cells[cell_eq_p] = scm_eq_p;
-
-//math
-scm_minus.function = g_function;
-g_functions[g_function++] = fun_minus;
-cell_minus = g_free++;
-g_cells[cell_minus] = scm_minus;
-
-scm_plus.function = g_function;
-g_functions[g_function++] = fun_plus;
-cell_plus = g_free++;
-g_cells[cell_plus] = scm_plus;
-
-//lib
-scm_display_.function = g_function;
-g_functions[g_function++] = fun_display_;
-cell_display_ = g_free++;
-g_cells[cell_display_] = scm_display_;
-
-scm_display_error_.function = g_function;
-g_functions[g_function++] = fun_display_error_;
-cell_display_error_ = g_free++;
-g_cells[cell_display_error_] = scm_display_error_;
-
-//posix
-scm_getenv_.function = g_function;
-g_functions[g_function++] = fun_getenv_;
-cell_getenv_ = g_free++;
-g_cells[cell_getenv_] = scm_getenv_;
-
-#if !POSIX
- #undef name
- #define string cdr
-#endif
-
-//mes.environment
-scm_cons.string = MAKE_BYTES0 (fun_cons.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_cons)), cell_cons, a);
-
-scm_car.string = MAKE_BYTES0 (fun_car.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_car)), cell_car, a);
-
-scm_cdr.string = MAKE_BYTES0 (fun_cdr.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_cdr)), cell_cdr, a);
-
-scm_list.string = MAKE_BYTES0 (fun_list.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_list)), cell_list, a);
-
-scm_null_p.string = MAKE_BYTES0 (fun_null_p.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_null_p)), cell_null_p, a);
-
-scm_eq_p.string = MAKE_BYTES0 (fun_eq_p.name);
- a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_eq_p)), cell_eq_p, a);
-
-//math.environment
-scm_minus.string = MAKE_BYTES0 (fun_minus.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_minus)), cell_minus, a);
-
-scm_plus.string = MAKE_BYTES0 (fun_plus.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_plus)), cell_plus, a);
-
-//lib.environment
-scm_display_.string = MAKE_BYTES0 (fun_display_.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_display_)), cell_display_, a);
-
-scm_display_error_.string = MAKE_BYTES0 (fun_display_error_.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_display_error_)), cell_display_error_, a);
-
-//posix.environment
-scm_getenv_.string = MAKE_BYTES0 (fun_getenv_.name);
-a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_getenv_)), cell_getenv_, a);
-
-#if !POSIX
- #undef function
- #undef string
-#endif
-
-#elif !__GNUC__ || !POSIX
-#include "src/mes.mes.i"
-
-  // Do not sort: Order of these includes define builtins
-#include "src/hash.mes.i"
-#include "src/module.mes.i"
-#include "src/posix.mes.i"
-#include "src/math.mes.i"
-#include "src/lib.mes.i"
-#include "src/vector.mes.i"
-#include "src/strings.mes.i"
-#include "src/struct.mes.i"
-#include "src/gc.mes.i"
-#include "src/reader.mes.i"
-
-#include "src/gc.mes.environment.i"
-#include "src/hash.mes.environment.i"
-#include "src/lib.mes.environment.i"
-#include "src/math.mes.environment.i"
-#include "src/mes.mes.environment.i"
-#include "src/module.mes.environment.i"
-#include "src/posix.mes.environment.i"
-#include "src/reader.mes.environment.i"
-#include "src/strings.mes.environment.i"
-#include "src/struct.mes.environment.i"
-#include "src/vector.mes.environment.i"
-#else
-#include "src/mes.i"
-
-  // Do not sort: Order of these includes define builtins
-#include "src/hash.i"
-#include "src/module.i"
-#include "src/posix.i"
-#include "src/math.i"
-#include "src/lib.i"
-#include "src/vector.i"
-#include "src/strings.i"
-#include "src/struct.i"
-#include "src/gc.i"
-#include "src/reader.i"
-
-#include "src/gc.environment.i"
-#include "src/hash.environment.i"
-#include "src/lib.environment.i"
-#include "src/math.environment.i"
-#include "src/mes.environment.i"
-#include "src/module.environment.i"
-#include "src/posix.environment.i"
-#include "src/reader.environment.i"
-#include "src/strings.environment.i"
-#include "src/struct.environment.i"
-#include "src/vector.environment.i"
-#endif
-
-  if (g_debug > 3)
-    {
-      fdputs ("functions: ", g_stderr);
-      fdputs (itoa (g_function), g_stderr);
-      fdputs ("\n", g_stderr);
-      for (int i = 0; i < g_function; i++)
-        {
-          fdputs ("[", g_stderr);
-          fdputs (itoa (i), g_stderr);
-          fdputs ("]: ", g_stderr);
-          fdputs (g_functions[i].name, g_stderr);
-          fdputs ("\n", g_stderr);
-        }
-      fdputs ("\n", g_stderr);
-    }
+  // src/gc.mes
+  a = init_builtin (builtin_type, "gc-check", 0, &gc_check, a);
+  a = init_builtin (builtin_type, "gc", 0, &gc, a);
+  // src/hash.mes
+  a = init_builtin (builtin_type, "hashq", 2, &hashq, a);
+  a = init_builtin (builtin_type, "hash", 2, &hash, a);
+  a = init_builtin (builtin_type, "hashq-get-handle", 3, &hashq_get_handle, a);
+  a = init_builtin (builtin_type, "hashq-ref", 3, &hashq_ref, a);
+  a = init_builtin (builtin_type, "hash-ref", 3, &hash_ref, a);
+  a = init_builtin (builtin_type, "hashq-set!", 3, &hashq_set_x, a);
+  a = init_builtin (builtin_type, "hash-set!", 3, &hash_set_x, a);
+  a = init_builtin (builtin_type, "hash-table-printer", 1, &hash_table_printer, a);
+  a = init_builtin (builtin_type, "make-hash-table", 1, &make_hash_table, a);
+  // src/lib.mes
+  a = init_builtin (builtin_type, "core:display", 1, &display_, a);
+  a = init_builtin (builtin_type, "core:display-error", 1, &display_error_, a);
+  a = init_builtin (builtin_type, "core:display-port", 2, &display_port_, a);
+  a = init_builtin (builtin_type, "core:write", 1, &write_, a);
+  a = init_builtin (builtin_type, "core:write-error", 1, &write_error_, a);
+  a = init_builtin (builtin_type, "core:write-port", 2, &write_port_, a);
+  a = init_builtin (builtin_type, "exit", 1, &exit_, a);
+  a = init_builtin (builtin_type, "frame-printer", 1, &frame_printer, a);
+  a = init_builtin (builtin_type, "make-stack", -1, &make_stack, a);
+  a = init_builtin (builtin_type, "stack-length", 1, &stack_length, a);
+  a = init_builtin (builtin_type, "stack-ref", 2, &stack_ref, a);
+  a = init_builtin (builtin_type, "xassq", 2, &xassq, a);
+  a = init_builtin (builtin_type, "memq", 2, &memq, a);
+  a = init_builtin (builtin_type, "equal2?", 2, &equal2_p, a);
+  a = init_builtin (builtin_type, "last-pair", 1, &last_pair, a);
+  a = init_builtin (builtin_type, "pair?", 1, &pair_p, a);
+  // src/math.mes
+  a = init_builtin (builtin_type, ">", -1, &greater_p, a);
+  a = init_builtin (builtin_type, "<", -1, &less_p, a);
+  a = init_builtin (builtin_type, "=", -1, &is_p, a);
+  a = init_builtin (builtin_type, "-", -1, &minus, a);
+  a = init_builtin (builtin_type, "+", -1, &plus, a);
+  a = init_builtin (builtin_type, "/", -1, &divide, a);
+  a = init_builtin (builtin_type, "modulo", 2, &modulo, a);
+  a = init_builtin (builtin_type, "*", -1, &multiply, a);
+  a = init_builtin (builtin_type, "logand", -1, &logand, a);
+  a = init_builtin (builtin_type, "logior", -1, &logior, a);
+  a = init_builtin (builtin_type, "lognot", 1, &lognot, a);
+  a = init_builtin (builtin_type, "logxor", -1, &logxor, a);
+  a = init_builtin (builtin_type, "ash", 2, &ash, a);
+  // src/mes.mes
+  a = init_builtin (builtin_type, "core:make-cell", 3, &make_cell_, a);
+  a = init_builtin (builtin_type, "core:type", 1, &type_, a);
+  a = init_builtin (builtin_type, "core:car", 1, &car_, a);
+  a = init_builtin (builtin_type, "core:cdr", 1, &cdr_, a);
+  a = init_builtin (builtin_type, "cons", 2, &cons, a);
+  a = init_builtin (builtin_type, "car", 1, &car, a);
+  a = init_builtin (builtin_type, "cdr", 1, &cdr, a);
+  a = init_builtin (builtin_type, "list", -1, &list, a);
+  a = init_builtin (builtin_type, "null?", 1, &null_p, a);
+  a = init_builtin (builtin_type, "eq?", 2, &eq_p, a);
+  a = init_builtin (builtin_type, "values", -1, &values, a);
+  a = init_builtin (builtin_type, "acons", 3, &acons, a);
+  a = init_builtin (builtin_type, "length", 1, &length, a);
+  a = init_builtin (builtin_type, "error", 2, &error, a);
+  a = init_builtin (builtin_type, "append2", 2, &append2, a);
+  a = init_builtin (builtin_type, "append-reverse", 2, &append_reverse, a);
+  a = init_builtin (builtin_type, "core:reverse!", 2, &reverse_x_, a);
+  a = init_builtin (builtin_type, "pairlis", 3, &pairlis, a);
+  a = init_builtin (builtin_type, "assq", 2, &assq, a);
+  a = init_builtin (builtin_type, "assoc", 2, &assoc, a);
+  a = init_builtin (builtin_type, "set-car!", 2, &set_car_x, a);
+  a = init_builtin (builtin_type, "set-cdr!", 2, &set_cdr_x, a);
+  a = init_builtin (builtin_type, "set-env!", 3, &set_env_x, a);
+  a = init_builtin (builtin_type, "macro-get-handle", 1, &macro_get_handle, a);
+  a = init_builtin (builtin_type, "add-formals", 2, &add_formals, a);
+  a = init_builtin (builtin_type, "eval-apply", 0, &eval_apply, a);
+  a = init_builtin (builtin_type, "make-builtin-type", 0, &make_builtin_type, a);
+  a = init_builtin (builtin_type, "make-builtin", 4, &make_builtin, a);
+  a = init_builtin (builtin_type, "builtin-name", 1, &builtin_name, a);
+  a = init_builtin (builtin_type, "builtin-arity", 1, &builtin_arity, a);
+  a = init_builtin (builtin_type, "builtin?", 1, &builtin_p, a);
+  a = init_builtin (builtin_type, "builtin-printer", 1, &builtin_printer, a);
+  // src/module.mes
+  a = init_builtin (builtin_type, "make-module-type", 0, &make_module_type, a);
+  a = init_builtin (builtin_type, "module-printer", 1, &module_printer, a);
+  a = init_builtin (builtin_type, "module-variable", 2, &module_variable, a);
+  a = init_builtin (builtin_type, "module-ref", 2, &module_ref, a);
+  a = init_builtin (builtin_type, "module-define!", 3, &module_define_x, a);
+  // src/posix.mes
+  a = init_builtin (builtin_type, "peek-byte", 0, &peek_byte, a);
+  a = init_builtin (builtin_type, "read-byte", 0, &read_byte, a);
+  a = init_builtin (builtin_type, "unread-byte", 1, &unread_byte, a);
+  a = init_builtin (builtin_type, "peek-char", 0, &peek_char, a);
+  a = init_builtin (builtin_type, "read-char", -1, &read_char, a);
+  a = init_builtin (builtin_type, "unread-char", 1, &unread_char, a);
+  a = init_builtin (builtin_type, "write-char", -1, &write_char, a);
+  a = init_builtin (builtin_type, "write-byte", -1, &write_byte, a);
+  a = init_builtin (builtin_type, "getenv", 1, &getenv_, a);
+  a = init_builtin (builtin_type, "setenv", 2, &setenv_, a);
+  a = init_builtin (builtin_type, "access?", 2, &access_p, a);
+  a = init_builtin (builtin_type, "current-input-port", 0, &current_input_port, a);
+  a = init_builtin (builtin_type, "open-input-file", 1, &open_input_file, a);
+  a = init_builtin (builtin_type, "open-input-string", 1, &open_input_string, a);
+  a = init_builtin (builtin_type, "set-current-input-port", 1, &set_current_input_port, a);
+  a = init_builtin (builtin_type, "current-output-port", 0, &current_output_port, a);
+  a = init_builtin (builtin_type, "current-error-port", 0, &current_error_port, a);
+  a = init_builtin (builtin_type, "open-output-file", -1, &open_output_file, a);
+  a = init_builtin (builtin_type, "set-current-output-port", 1, &set_current_output_port, a);
+  a = init_builtin (builtin_type, "set-current-error-port", 1, &set_current_error_port, a);
+  a = init_builtin (builtin_type, "force-output", -1, &force_output, a);
+  a = init_builtin (builtin_type, "chmod", 2, &chmod_, a);
+  a = init_builtin (builtin_type, "isatty?", 1, &isatty_p, a);
+  a = init_builtin (builtin_type, "primitive-fork", 0, &primitive_fork, a);
+  a = init_builtin (builtin_type, "execl", 2, &execl_, a);
+  a = init_builtin (builtin_type, "core:waitpid", 2, &waitpid_, a);
+  a = init_builtin (builtin_type, "current-time", 0, &current_time, a);
+  a = init_builtin (builtin_type, "gettimeofday", 0, &gettimeofday_, a);
+  a = init_builtin (builtin_type, "get-internal-run-time", 0, &get_internal_run_time, a);
+  a = init_builtin (builtin_type, "getcwd", 0, &getcwd_, a);
+  a = init_builtin (builtin_type, "dup", 1, &dup_, a);
+  a = init_builtin (builtin_type, "dup2", 2, &dup2_, a);
+  a = init_builtin (builtin_type, "delete-file", 1, &delete_file, a);
+  // src/reader.mes
+  a = init_builtin (builtin_type, "core:read-input-file-env", 2, &read_input_file_env_, a);
+  a = init_builtin (builtin_type, "read-input-file-env", 1, &read_input_file_env, a);
+  a = init_builtin (builtin_type, "read-env", 1, &read_env, a);
+  a = init_builtin (builtin_type, "reader-read-sexp", 3, &reader_read_sexp, a);
+  a = init_builtin (builtin_type, "reader-read-character", 0, &reader_read_character, a);
+  a = init_builtin (builtin_type, "reader-read-binary", 0, &reader_read_binary, a);
+  a = init_builtin (builtin_type, "reader-read-octal", 0, &reader_read_octal, a);
+  a = init_builtin (builtin_type, "reader-read-hex", 0, &reader_read_hex, a);
+  a = init_builtin (builtin_type, "reader-read-string", 0, &reader_read_string, a);
+  // src/strings.mes
+  a = init_builtin (builtin_type, "string=?", 2, &string_equal_p, a);
+  a = init_builtin (builtin_type, "symbol->string", 1, &symbol_to_string, a);
+  a = init_builtin (builtin_type, "symbol->keyword", 1, &symbol_to_keyword, a);
+  a = init_builtin (builtin_type, "keyword->string", 1, &keyword_to_string, a);
+  a = init_builtin (builtin_type, "string->symbol", 1, &string_to_symbol, a);
+  a = init_builtin (builtin_type, "make-symbol", 1, &make_symbol, a);
+  a = init_builtin (builtin_type, "string->list", 1, &string_to_list, a);
+  a = init_builtin (builtin_type, "list->string", 1, &list_to_string, a);
+  a = init_builtin (builtin_type, "read-string", -1, &read_string, a);
+  a = init_builtin (builtin_type, "string-append", -1, &string_append, a);
+  a = init_builtin (builtin_type, "string-length", 1, &string_length, a);
+  a = init_builtin (builtin_type, "string-ref", 2, &string_ref, a);
+  // src/struct.mes
+  a = init_builtin (builtin_type, "make-struct", 3, &make_struct, a);
+  a = init_builtin (builtin_type, "struct-length", 1, &struct_length, a);
+  a = init_builtin (builtin_type, "struct-ref", 2, &struct_ref, a);
+  a = init_builtin (builtin_type, "struct-set!", 3, &struct_set_x, a);
+  // src/vector.mes
+  a = init_builtin (builtin_type, "core:make-vector", 1, &make_vector_, a);
+  a = init_builtin (builtin_type, "vector-length", 1, &vector_length, a);
+  a = init_builtin (builtin_type, "vector-ref", 2, &vector_ref, a);
+  a = init_builtin (builtin_type, "vector-entry", 1, &vector_entry, a);
+  a = init_builtin (builtin_type, "vector-set!", 3, &vector_set_x, a);
+  a = init_builtin (builtin_type, "list->vector", 1, &list_to_vector, a);
+  a = init_builtin (builtin_type, "vector->list", 1, &vector_to_list, a);
 
   return a;
 }
-
-SCM read_input_file_env (SCM);
 
 int
 load_boot (char *prefix, char const *boot, char const *location)
@@ -2317,11 +2269,16 @@ load_env () ///((internal))
   return r2;
 }
 
-#include "src/vector.c"
-#include "src/strings.c"
-#include "src/struct.c"
-#include "src/gc.c"
-#include "src/reader.c"
+#include "hash.c"
+#include "module.c"
+#include "posix.c"
+#include "math.c"
+#include "lib.c"
+#include "vector.c"
+#include "strings.c"
+#include "struct.c"
+#include "gc.c"
+#include "reader.c"
 
 int
 main (int argc, char *argv[])

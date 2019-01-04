@@ -23,18 +23,14 @@ set -e
 . ${srcdest}build-aux/config.sh
 . ${srcdest}build-aux/trace.sh
 
-snarf="    "
-if [ -n "$1" ]; then
-    snarf=.mes
-fi
-trace "SNARF$snarf  gc.c"      ${srcdest}build-aux/mes-snarf.scm $1 src/gc.c
-trace "SNARF$snarf  hash.c"    ${srcdest}build-aux/mes-snarf.scm $1 src/hash.c
-trace "SNARF$snarf  lib.c"     ${srcdest}build-aux/mes-snarf.scm $1 src/lib.c
-trace "SNARF$snarf  math.c"    ${srcdest}build-aux/mes-snarf.scm $1 src/math.c
-trace "SNARF$snarf  mes.c"     ${srcdest}build-aux/mes-snarf.scm $1 src/mes.c
-trace "SNARF$snarf  module.c"  ${srcdest}build-aux/mes-snarf.scm $1 src/module.c
-trace "SNARF$snarf  posix.c"   ${srcdest}build-aux/mes-snarf.scm $1 src/posix.c
-trace "SNARF$snarf  reader.c"  ${srcdest}build-aux/mes-snarf.scm $1 src/reader.c
-trace "SNARF$snarf  strings.c" ${srcdest}build-aux/mes-snarf.scm $1 src/strings.c
-trace "SNARF$snarf  struct.c"  ${srcdest}build-aux/mes-snarf.scm $1 src/struct.c
-trace "SNARF$snarf  vector.c"  ${srcdest}build-aux/mes-snarf.scm $1 src/vector.c
+trace "SNARF$snarf  gc.c"      ${srcdest}build-aux/mes-snarf.scm src/gc.c
+trace "SNARF$snarf  hash.c"    ${srcdest}build-aux/mes-snarf.scm src/hash.c
+trace "SNARF$snarf  lib.c"     ${srcdest}build-aux/mes-snarf.scm src/lib.c
+trace "SNARF$snarf  math.c"    ${srcdest}build-aux/mes-snarf.scm src/math.c
+trace "SNARF$snarf  mes.c"     ${srcdest}build-aux/mes-snarf.scm src/mes.c
+trace "SNARF$snarf  module.c"  ${srcdest}build-aux/mes-snarf.scm src/module.c
+trace "SNARF$snarf  posix.c"   ${srcdest}build-aux/mes-snarf.scm src/posix.c
+trace "SNARF$snarf  reader.c"  ${srcdest}build-aux/mes-snarf.scm src/reader.c
+trace "SNARF$snarf  strings.c" ${srcdest}build-aux/mes-snarf.scm src/strings.c
+trace "SNARF$snarf  struct.c"  ${srcdest}build-aux/mes-snarf.scm src/struct.c
+trace "SNARF$snarf  vector.c"  ${srcdest}build-aux/mes-snarf.scm src/vector.c
