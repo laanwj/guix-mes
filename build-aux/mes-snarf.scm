@@ -101,50 +101,23 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
 
 (define %start 1)
 (define (symbol->header s i)
-  (format #f "#define cell_~a ~a\n" s i))
-
-(define (symbol->source s i)
   (string-append
-   (format #f "g_free++;\n")
-   (format #f "g_cells[cell_~a] = scm_~a;\n\n" s s)))
-
-(define (symbol->names s i)
-  (if %gcc?
-      (format #f "NAME_SYMBOL (cell_~a, scm_~a.name);\n" s s)
-      (format #f "NAME_SYMBOL (cell_~a, scm_~a.cdr);\n" s s)))
+   (format #f "// CONSTANT ~a ~a\n" s i)
+   (format #f "#define ~a ~a\n" s i)))
 
 (define (function->header f i)
   (let* ((arity (or (assoc-ref (function.annotation f) 'arity)
                     (if (string-null? (function.formals f)) 0
                         (length (string-split (function.formals f) #\,)))))
          (n (if (eq? arity 'n) -1 arity)))
-    (string-append
-     (format #f "SCM ~a (~a);\n" (function.name f) (function.formals f))
-     (if %gcc?
-         (format #f "struct function fun_~a = {.function~a=&~a, .arity=~a, .name=~s};\n" (function.name f) arity (function.name f) n (function-scm-name f))
-         (format #f "struct function fun_~a = {&~a, ~a, ~s};\n" (function.name f) (function.name f) n (function-scm-name f)))
-     (if %gcc?
-         (format #f "struct scm ~a = {TFUNCTION, .name=0, .function=0};\n" (function-builtin-name f))
-         (format #f "struct scm ~a = {TFUNCTION, 0, 0};\n" (function-builtin-name f)))
-     (format #f "SCM cell_~a;\n\n" (function.name f)))))
+    (format #f "SCM ~a (~a);\n" (function.name f) (function.formals f))))
 
 (define (function->source f i)
-  (string-append
-   (if %gcc?
-       (format #f "~a.function = g_function;\n" (function-builtin-name f))
-       (format #f "~a.car = g_function;\n" (function-builtin-name f)))
-   (format #f "g_functions[g_function++] = fun_~a;\n" (function.name f))
-   (format #f "cell_~a = g_free++;\n" (function.name f))
-   (format #f "g_cells[cell_~a] = ~a;\n\n" (function.name f) (function-builtin-name f))))
-
-(define (function->environment f i)
-  (string-append
-   (if %gcc?
-       (format #f "scm_~a.string = MAKE_BYTES0 (fun_~a.name);\n" (function.name f) (function.name f))
-       (format #f "scm_~a.cdr = MAKE_BYTES0 (fun_~a.name);\n" (function.name f) (function.name f)))
-   (if %gcc?
-       (format #f "a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_~a)), ~a, a);\n\n" (function.name f) (function-cell-name f))
-       (format #f "a = acons (cstring_to_symbol (CSTRING_STRUCT (scm_~a)), ~a, a);\n\n" (function.name f) (function-cell-name f)))))
+  (let* ((arity (or (assoc-ref (function.annotation f) 'arity)
+                    (if (string-null? (function.formals f)) 0
+                        (length (string-split (function.formals f) #\,)))))
+         (n (if (eq? arity 'n) -1 arity)))
+    (format #f "  a = init_builtin (builtin_type, ~s, ~a, &~a, a);\n" (function.name f) n (function.name f))))
 
 (define (disjoin . predicates)
   (lambda (. arguments)
@@ -152,12 +125,11 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
 
 (define (snarf-symbols string)
   (let* ((lines (string-split string #\newline))
-         (scm (filter (cut string-prefix? "struct scm scm_" <>) lines))
-         (symbols (filter (disjoin (cut string-contains <> "TSPECIAL") (cut string-contains <> "TSYMBOL")) scm)))
+         (symbols (filter (cut string-prefix? "  init_symbol (" <>) lines)))
     (define (line->symbol line)
       ((compose
-        (lambda (s) (string-take s (string-index s #\space)))
-        (cut string-drop <> (string-length "struct scm scm_")))
+        (lambda (s) (string-take s (string-index s #\,)))
+        (cut string-drop <> (string-length "  init_symbol (")))
        line))
     (map line->symbol symbols)))
 
@@ -218,27 +190,16 @@ exec ${GUILE-guile} --no-auto-compile -L $(dirname $0) -C $(dirname $0) -e '(mes
          (source (make-file
                   (string-append base-name ".i")
                   (string-join (map function->source (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))
-         (environment (make-file
-                       (string-append base-name ".environment.i")
-                       (string-join (map function->environment (filter (negate no-environment?) functions) (iota (length functions) (+ (length symbols) %start))) "")))
          (symbols.h (make-file
                      (string-append base-name ".symbols.h")
-                     (string-join (map symbol->header symbols (iota (length symbols) %start)) "")))
-         (symbols.i (make-file
-                     (string-append base-name ".symbols.i")
-                     (string-join (map symbol->source symbols (iota (length symbols))) "")))
-         (symbol-names.i (make-file
-                          (string-append base-name ".symbol-names.i")
-                          (string-join (map symbol->names symbols (iota (length symbols))) ""))))
-    (list header source environment symbols.h symbols.i symbol-names.i)))
+                     (string-join (map symbol->header symbols (iota (length symbols) %start)) ""))))
+    (list header source symbols.h)))
 
 (define (file-write file)
   (system* "mkdir" "-p" (dirname (file.name file)))
   (with-output-to-file (file.name file) (lambda () (display (file.content file)))))
 
 (define (main args)
-  (let* ((files (if (not (and (pair? (cdr args)) (equal? (cadr args) "--mes"))) (cdr args)
-                    (begin (set! %gcc? #f)
-                           (cddr args))))
+  (let* ((files (cdr args))
          (files (append-map generate-includes files)))
-    (map file-write (filter content? files))))
+    (for-each file-write (filter content? files))))
