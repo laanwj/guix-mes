@@ -757,6 +757,11 @@ The initial size of the arena @pxref{5.3,,, sicp, SICP} in cells.  Default: 20,0
 
 The maximum size of the arena in cells.  Default: 100,000,000.
 
+@item MES_MAX_STRING
+@vindex MES_MAX_STRING
+
+The maximum size of a string.  Default: 524,288.
+
 @item MES_DEBUG
 @vindex MES_DEBUG
 

@@ -38,11 +38,15 @@ long STACK_SIZE = 20000;
 long JAM_SIZE = 20000;
 long GC_SAFETY = 2000;
 
+long MAX_STRING = 524288;
+
 char *g_arena = 0;
 typedef long SCM;
 
 int g_debug = 0;
 long g_free = 0;
+
+char *g_buf = 0;
 
 SCM g_continuations = 0;
 SCM g_symbols = 0;
@@ -1647,6 +1651,10 @@ gc_init_cells () ///((internal))
   g_cells++;
   TYPE (0) = TCHAR;
   VALUE (0) = 'c';
+
+  // FIXME: remove MES_MAX_STRING, grow dynamically
+  g_buf = (char*)malloc (MAX_STRING);
+
   return 0;
 }
 
@@ -2276,6 +2284,8 @@ main (int argc, char *argv[])
     GC_SAFETY = atoi (p);
   if (p = getenv ("MES_STACK"))
     STACK_SIZE = atoi (p);
+  if (p = getenv ("MES_MAX_STRING"))
+    MAX_STRING = atoi (p);
   g_stdin = STDIN;
   g_stdout = STDOUT;
   g_stderr = STDERR;

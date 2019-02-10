@@ -18,13 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MAX_STRING 524288
-char g_buf[MAX_STRING];
-
 void
 assert_max_string (size_t i, char const* msg, char* string)
 {
-  if (i > MAX_STRING) // Mes must be able to make g_buf
+  if (i > MAX_STRING)
     {
       eputs (msg);
       eputs (":string too long[");
