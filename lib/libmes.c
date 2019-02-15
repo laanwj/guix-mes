@@ -42,6 +42,10 @@
 #include <mes/fdungetc.c>
 
 #if POSIX
+// The Mes C Library defines and initializes these in crt1
+int g_stdin = STDIN;
+int g_stdout = STDOUT;
+int g_stderr = STDERR;
 #include <mes/eputs.c>
 #include <mes/oputs.c>
 #endif // POSIX

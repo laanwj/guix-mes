@@ -66,7 +66,7 @@ make_bytes (char const* s, size_t length)
   SCM x = alloc (size);
   TYPE (x) = TBYTES;
   LENGTH (x) = length;
-  char *p = &g_cells[x].cdr;
+  char *p = (char*)&g_cells[x].cdr;
   if (!length)
     *(char*)p = 0;
   else
@@ -78,7 +78,7 @@ SCM
 make_string (char const* s, size_t length)
 {
   if (length > MAX_STRING)
-    assert_max_string (length, "make_string", s);
+    assert_max_string (length, "make_string", (char*)s);
   SCM x = make_cell__ (TSTRING, length, 0);
   SCM v = make_bytes (s, length);
   CDR (x) = v;
@@ -204,7 +204,7 @@ read_string (SCM port) ///((arity . n))
 SCM
 string_append (SCM x) ///((arity . n))
 {
-  char const *p = g_buf;
+  char *p = g_buf;
   g_buf[0] = 0;
   size_t size = 0;
   while (x != cell_nil)
