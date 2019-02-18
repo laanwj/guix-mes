@@ -81,8 +81,6 @@ compile scaffold/argv
 
 [ "$mes_p" ] && compile scaffold/tiny-mes
 [ "$mes_p" ] && link scaffold/tiny-mes
-#[ "$mes_p" ] && compile scaffold/mini-mes
-#[ "$mes_p" ] && link scaffold/mini-mes
 
 compile src/mes
 link src/mes

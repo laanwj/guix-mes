@@ -73,7 +73,6 @@
 /scaffold/main
 /scaffold/micro-mes
 /scaffold/tiny-mes
-/scaffold/mini-mes
 
 /scaffold/x86-mes-*
 /scaffold/x86_64-mes-*
@@ -155,3 +154,5 @@
 /doc/images/gcc-mesboot-graph.eps
 /doc/images/gcc-mesboot-graph.pdf
 /doc/web/
+/lib/x86_64-mes/0exit-42
+/lib/x86_64-mes/exit-42
