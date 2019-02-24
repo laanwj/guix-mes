@@ -82,6 +82,8 @@ DEFINE mov____$i32,(%eax) c700
 DEFINE mov____$i32,0x32 c705
 DEFINE mov____$i32,0x8(%eax) c740
 DEFINE mov____$i32,0x8(%ebp) c745
+DEFINE mov____$i8,%al b0
+DEFINE mov____$i8,%eax b0
 DEFINE mov____%al,(%ebx) 8803
 DEFINE mov____%al,0x8(%ebp) 8845
 DEFINE mov____%ax,(%ebx) 668903

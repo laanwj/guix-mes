@@ -18,12 +18,22 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-char **environ = 0;
+#include "libmes-mini.h"
+
 int main (int argc, char *argv[], char *envp[]);
 
 int
 _start ()
 {
+  asm ("mov____$i8,%eax !0");
+  asm ("mov____%eax,0x32 &g_stdin");
+
+  asm ("mov____$i8,%eax !1");
+  asm ("mov____%eax,0x32 &g_stdout");
+
+  asm ("mov____$i8,%eax !2");
+  asm ("mov____%eax,0x32 &g_stderr");
+
   asm ("mov____%ebp,%eax");
   asm ("add____$i8,%eax !4");
 

@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-char **environ = 0;
+#include <libmes-mini.h>
 // int main (int argc, char *argv[]);
 
 // gcc x86_64 calling convention:
@@ -27,6 +27,26 @@ char **environ = 0;
 void
 _start ()
 {
+  asm (
+       "mov    $0,%%rax\n\t"
+       "mov    %%rax,%0\n"
+       : "=r" (g_stdin)
+       : //no inputs ""
+       );
+
+  asm (
+       "mov    $1,%%rax\n\t"
+       "mov    %%rax,%0\n"
+       : "=r" (g_stdout)
+       : //no inputs ""
+       );
+
+  asm (
+       "mov    $2,%%rax\n\t"
+       "mov    %%rax,%0\n"
+       : "=r" (g_stderr)
+       : //no inputs ""
+       );
   asm (
        "mov     %%rbp,%%rax\n\t"
        "add     $8,%%rax\n\t"

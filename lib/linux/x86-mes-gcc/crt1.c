@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,12 +18,32 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-char **environ = 0;
+#include <libmes-mini.h>
 //int main (int argc, char *argv[], char *envp[]);
 
 void
 _start ()
 {
+  asm (
+       "mov    $0,%%eax\n\t"
+       "mov    %%eax,%0\n"
+       : "=r" (g_stdin)
+       : //no inputs ""
+       );
+
+  asm (
+       "mov    $1,%%eax\n\t"
+       "mov    %%eax,%0\n"
+       : "=r" (g_stdout)
+       : //no inputs ""
+       );
+
+  asm (
+       "mov    $2,%%eax\n\t"
+       "mov    %%eax,%0\n"
+       : "=r" (g_stderr)
+       : //no inputs ""
+       );
   asm (
        "mov     %%ebp,%%eax\n\t"
        "add     $4,%%eax\n\t"

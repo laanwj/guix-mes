@@ -2286,9 +2286,6 @@ main (int argc, char *argv[])
     STACK_SIZE = atoi (p);
   if (p = getenv ("MES_MAX_STRING"))
     MAX_STRING = atoi (p);
-  g_stdin = STDIN;
-  g_stdout = STDOUT;
-  g_stderr = STDERR;
 
   SCM a = mes_environment (argc, argv);
   a = mes_builtins (a);

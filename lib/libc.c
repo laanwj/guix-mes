@@ -40,8 +40,6 @@
 #error both __GNU__ and _linux__ are undefined, choose one
 #endif
 
-int g_stdin = 0;
-
 void _env ();
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))

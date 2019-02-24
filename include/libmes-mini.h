@@ -21,11 +21,6 @@
 #ifndef __MES_LIBMES_MINI_H
 #define __MES_LIBMES_MINI_H
 
-char **environ;
-int g_stdin;
-int g_stdout;
-int g_stderr;
-
 #if !WITH_GLIBC
 
 #ifndef _SIZE_T
@@ -64,18 +59,25 @@ int errno;
 
 #endif //!WITH_LIBC
 
+// CONSTANT STDIN 0
 #ifndef STDIN
 #define STDIN 0
 #endif
 
+// CONSTANT STDOUT 1
 #ifndef STDOUT
 #define STDOUT 1
 #endif
 
+// CONSTANT STDERR 2
 #ifndef STDERR
 #define STDERR 2
 #endif
 
+char **environ;
+int g_stdin;
+int g_stdout;
+int g_stderr;
 
 int eputs (char const* s);
 int puts (char const* s);
