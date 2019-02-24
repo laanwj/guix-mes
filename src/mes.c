@@ -2182,7 +2182,7 @@ mes_builtins (SCM a) ///((internal))
 }
 
 int
-load_boot (char *prefix, char const *boot, char const *location)
+open_boot (char *prefix, char const *boot, char const *location)
 {
   strcpy (prefix + strlen (prefix), boot);
   if (g_debug > 1)
@@ -2204,7 +2204,7 @@ load_boot (char *prefix, char const *boot, char const *location)
 }
 
 SCM
-load_env () ///((internal))
+read_boot () ///((internal))
 {
   g_stdin = -1;
   char prefix[1024];
@@ -2218,23 +2218,23 @@ load_env () ///((internal))
       strcpy (prefix, getenv ("MES_PREFIX"));
       strcpy (prefix + strlen (prefix), "/module");
       strcpy (prefix + strlen (prefix), "/mes/");
-      g_stdin = load_boot (prefix, boot, "MES_PREFIX");
+      g_stdin = open_boot (prefix, boot, "MES_PREFIX");
     }
   if (g_stdin < 0)
     {
       char const *p = MODULEDIR "/mes/";
       strcpy (prefix, p);
-      g_stdin = load_boot (prefix, boot, "MODULEDIR");
+      g_stdin = open_boot (prefix, boot, "MODULEDIR");
     }
   if (g_stdin < 0)
     {
       strcpy (prefix, "mes/module/mes/");
-      g_stdin = load_boot (prefix, boot, ".");
+      g_stdin = open_boot (prefix, boot, ".");
     }
   if (g_stdin < 0)
     {
       prefix[0] = 0;
-      g_stdin = load_boot (prefix, boot, "<boot>");
+      g_stdin = open_boot (prefix, boot, "<boot>");
     }
   if (g_stdin < 0)
     {
@@ -2299,7 +2299,7 @@ main (int argc, char *argv[])
   if (g_debug > 3)
     module_printer (m0);
 
-  SCM program = load_env ();
+  SCM program = read_boot ();
   push_cc (r2, cell_unspecified, r0, cell_unspecified);
 
   if (g_debug > 2)
