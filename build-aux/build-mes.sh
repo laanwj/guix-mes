@@ -69,11 +69,11 @@ compile scaffold/hello
 compile scaffold/argv
 (libc="-l c-mini" link scaffold/argv)
 
-[ "$mes_p" ] && compile lib/tests/stdlib/malloc
-[ "$mes_p" ] && link lib/tests/stdlib/malloc
+[ "$mes_p" ] && compile lib/tests/stdlib/50-malloc
+[ "$mes_p" ] && link lib/tests/stdlib/50-malloc
 
-[ "$mes_p" ] && compile lib/tests/stdlib/getenv
-[ "$mes_p" ] && link lib/tests/stdlib/getenv
+[ "$mes_p" ] && compile lib/tests/posix/50-getenv
+[ "$mes_p" ] && link lib/tests/posix/50-getenv
 
 
 [ "$mes_p" ] && compile scaffold/micro-mes

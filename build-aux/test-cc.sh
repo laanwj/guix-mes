@@ -38,12 +38,12 @@ link "$t"
 r=0
 [ -f "$t".exit ] && r=$(cat "$t".exit)
 set +e
-$(dirname "$o")/${program_prefix}$(basename "$o") $ARGS > "$o".${program_prefix}stdout
+$(dirname "$o")/${program_prefix}$(basename "$o") $ARGS > "$o".${program_prefix}1 2> "$o".${program_prefix}2
 m=$?
-cat "$o".${program_prefix}stdout
+cat "$o".${program_prefix}1
 set -e
 
 [ $m = $r ]
-if [ -f "$t".expect ]; then
-    $DIFF -ub "$t".expect "$o".${program_prefix}stdout
+if [ -f "$t".stdout ]; then
+    $DIFF -ub "$t".stdout "$o".${program_prefix}1
 fi

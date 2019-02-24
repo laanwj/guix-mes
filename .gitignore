@@ -62,6 +62,12 @@
 /lib/x86-mes/0exit-42
 /lib/x86-mes/exit-42
 
+/lib/tests/*/[0-9a][0-9a-z]-*
+/lib/tests/*/x86-mes-*
+!/lib/tests/*/*.c
+!/lib/tests/*/*.exit
+!/lib/tests/*/*.stdout
+
 /scaffold/argv
 /scaffold/hello
 /scaffold/main
@@ -73,7 +79,11 @@
 /scaffold/x86_64-mes-*
 
 /scaffold/tests/x86-mes-*
-/scaffold/tests/[0-9a][0-9a-z]-[^.]*
+/scaffold/tests/[0-9a][0-9a-z]-*
+/scaffold/tests/t.*
+!/scaffold/tests/*.c
+!/scaffold/tests/*.exit
+!/scaffold/tests/*.stdout
 
 /src/mes.mes.symbols.h
 /src/gc.mes.h

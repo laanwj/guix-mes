@@ -19,14 +19,7 @@
  */
 
 #include "libmes.h"
-#include "string.h"
 #include "stdlib.h"
-#define strlen xstrlen
-#define strncmp xstrncmp
-#define getenv xgetenv
-#include "lib/string/strlen.c"
-#include "lib/string/strncmp.c"
-#include "lib/stdlib/getenv.c"
 
 int
 main (int argc, char const *argv[])

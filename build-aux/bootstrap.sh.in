@@ -51,9 +51,9 @@ mv lib/libc+gnu.x86-mes-o lib/x86-mes/libc+gnu.o
 
 @GUILE@ -e main -L module scripts/mescc.scm -v -g -L lib/linux/x86-mes -L lib/linux -L lib/x86-mes -L lib -L @MES_SEED@ -o scaffold/x86-mes-argv scaffold/argv.x86-mes-o -l c-mini
 
-@GUILE@ -e main -L module scripts/mescc.scm -c -D 'VERSION="@VERSION@"' -D 'MODULEDIR="@moduledir@"' -D 'PREFIX="@prefix@"' -I . -I lib -I include -v -g -L lib/linux/x86-mes -L lib/linux -L lib/x86-mes -L lib -L @MES_SEED@ -o lib/tests/stdlib/malloc.x86-mes-o lib/tests/stdlib/malloc.c
+@GUILE@ -e main -L module scripts/mescc.scm -c -D 'VERSION="@VERSION@"' -D 'MODULEDIR="@moduledir@"' -D 'PREFIX="@prefix@"' -I . -I lib -I include -v -g -L lib/linux/x86-mes -L lib/linux -L lib/x86-mes -L lib -L @MES_SEED@ -o lib/tests/stdlib/50-malloc.x86-mes-o lib/tests/stdlib/50-malloc.c
 
-@GUILE@ -e main -L module scripts/mescc.scm -c -D 'VERSION="@VERSION@"' -D 'MODULEDIR="@moduledir@"' -D 'PREFIX="@prefix@"' -I . -I lib -I include -v -g -L lib/linux/x86-mes -L lib/linux -L lib/x86-mes -L lib -L @MES_SEED@ -o lib/tests/stdlib/getenv.x86-mes-o lib/tests/stdlib/getenv.c
+@GUILE@ -e main -L module scripts/mescc.scm -c -D 'VERSION="@VERSION@"' -D 'MODULEDIR="@moduledir@"' -D 'PREFIX="@prefix@"' -I . -I lib -I include -v -g -L lib/linux/x86-mes -L lib/linux -L lib/x86-mes -L lib -L @MES_SEED@ -o lib/tests/posix/50-getenv.x86-mes-o lib/tests/posix/50-getenv.c
 
 @GUILE@ -e main -L module scripts/mescc.scm -c -D 'VERSION="@VERSION@"' -D 'MODULEDIR="@moduledir@"' -D 'PREFIX="@prefix@"' -I . -I lib -I include -v -g -L lib/linux/x86-mes -L lib/linux -L lib/x86-mes -L lib -L @MES_SEED@ -o scaffold/micro-mes.x86-mes-o scaffold/micro-mes.c
 

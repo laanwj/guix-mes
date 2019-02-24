@@ -60,9 +60,9 @@ __mes_debug ()
 
 
 #if !___GNU__
-#include <string/memcpy.c>
-#include <stdlib/malloc.c>
 #include <assert/assert.c>
+#include <stdlib/malloc.c>
+#include <string/memcpy.c>
 #endif
 
 #include <stdio/getchar.c>
@@ -82,9 +82,9 @@ __mes_debug ()
 
 #include <stdlib/free.c>
 #include <stdlib/realloc.c>
-#include <stdlib/getenv.c>
-#include <stdlib/setenv.c>
 
+#include <posix/getenv.c>
 #include <posix/isatty.c>
+#include <posix/setenv.c>
 #include <posix/wait.c>
 #include <posix/execv.c>
