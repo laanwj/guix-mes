@@ -104,8 +104,8 @@
       (core:display-error (string-append "open-input-file: `" file "'"))
       (when (> debug 3)
         (core:display-error " port=")
-        (core:display-error port)))
-    (core:display-error "\n")
+        (core:display-error port))
+      (core:display-error "\n"))
     port))
 
 (define (dirname file-name)
