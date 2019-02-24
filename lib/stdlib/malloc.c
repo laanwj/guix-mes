@@ -25,7 +25,7 @@ malloc (size_t size)
 {
   if (!__brk)
     __brk = brk (0);
-  if (brk (__brk + size) == (void*)-1)
+  if (brk (__brk + size) == -1)
     return 0;
   char *p = __brk;
   __brk += size;
