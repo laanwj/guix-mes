@@ -66,14 +66,14 @@ for t in $tests; do
         echo $t: [SKIP];
         continue
     fi
-    ${top_builddir}/pre-inst-env sh "$t" &> $t.${mes}log
+    ${top_builddir}/pre-inst-env sh "$t" > $t.${mes}log 2>&1
     r=$?
-    total=$((total+1))
+    total=$(expr $total + 1)
     if [ $r = 0 ]; then
         echo $t: [${mes}OK]
     else
         echo $t: [${mes}FAIL]
-        fail=$((fail+1))
+        fail=$(expr $fail + 1)
     fi
 done
 if [ $fail != 0 ]; then

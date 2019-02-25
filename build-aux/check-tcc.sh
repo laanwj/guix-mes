@@ -135,20 +135,20 @@ for t in $tests; do
         continue;
     fi
     cp $TINYCC_PREFIX/tests/tests2/$i* scaffold/tinycc
-    sh ${srcdest}build-aux/test.sh "scaffold/tinycc/$t" &> scaffold/tinycc/"$t".log
+    sh ${srcdest}build-aux/test.sh "scaffold/tinycc/$t" > scaffold/tinycc/"$t".log 2>&1
     r=$?
-    total=$((total+1))
+    total=$(expr $total + 1)
     if [ $r = 0 ]; then
         echo $t: [OK]
-        pass=$((pass+1))
+        pass=$(expr $pass + 1)
     else
         echo $t: [FAIL]
-        fail=$((fail+1))
+        fail=$(expr $fail + 1)
     fi
 done
 [ $expect != 0 ] && echo "expect: $expect"
 [ $fail != 0 ] && echo "failed: $fail"
-[ $fail -lt $expect ] && echo "solved: $(($expect - $fail))"
+[ $fail -lt $expect ] && echo "solved: $(expr $expect - $fail)"
 echo "passed: $pass"
 echo "total:  $total"
 if [ $fail != 0 -a $fail -gt $expect ]; then

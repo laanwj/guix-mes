@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -25,7 +25,7 @@ set -e
 mes_prefix=@prefix@/share/mes
 
 # use bash or lose if pipes fail
-if [ "$(basename $SHELL)" == bash ]; then
+if [ "$(basename $SHELL)" = bash ]; then
    set -o pipefail
 fi
 
@@ -39,7 +39,7 @@ cp scripts/mescc $DESTDIR@bindir@/mescc
 sed \
     -e "s,^#! /bin/sh,#! @SHELL@," \
     scripts/diff.scm > $DESTDIR@bindir@/diff.scm
-chmod -w+x $DESTDIR@bindir@/diff.scm
+chmod +x $DESTDIR@bindir@/diff.scm
 
 mkdir -p $DESTDIR@docdir@
 
