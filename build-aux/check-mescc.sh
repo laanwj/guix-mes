@@ -33,8 +33,8 @@ scaffold/tests/02-return-1
 scaffold/tests/03-call
 scaffold/tests/04-call-0
 scaffold/tests/05-call-1
-scaffold/tests/06-call-!1
-scaffold/tests/06-!call-1
+scaffold/tests/06-call-not-1
+scaffold/tests/06-not-call-1
 scaffold/tests/06-call-2
 scaffold/tests/06-call-string
 scaffold/tests/06-call-variable
@@ -45,10 +45,10 @@ scaffold/tests/08-assign-negative
 scaffold/tests/08-assign-global
 scaffold/tests/10-if-0
 scaffold/tests/11-if-1
-scaffold/tests/12-if-==
-scaffold/tests/13-if-!=
+scaffold/tests/12-if-eq
+scaffold/tests/13-if-neq
 scaffold/tests/14-if-goto
-scaffold/tests/15-if-!f
+scaffold/tests/15-if-not-f
 scaffold/tests/16-if-t
 scaffold/tests/17-compare-char
 scaffold/tests/17-compare-ge
@@ -69,9 +69,9 @@ scaffold/tests/17-compare-assign
 scaffold/tests/17-compare-call
 scaffold/tests/18-assign-shadow
 scaffold/tests/20-while
-scaffold/tests/21-char[]-simple
-scaffold/tests/21-char[]
-scaffold/tests/22-while-char[]
+scaffold/tests/21-char-array-simple
+scaffold/tests/21-char-array
+scaffold/tests/22-while-char-array
 scaffold/tests/23-global-pointer-init-null
 scaffold/tests/23-global-pointer-init
 scaffold/tests/23-global-pointer-ref
@@ -91,7 +91,7 @@ scaffold/tests/38-compare-call-2
 scaffold/tests/38-compare-call-3
 scaffold/tests/38-compare-call
 scaffold/tests/40-if-else
-scaffold/tests/41-?
+scaffold/tests/41-ternary
 scaffold/tests/42-goto-label
 scaffold/tests/43-for-do-while
 scaffold/tests/44-switch
@@ -174,8 +174,8 @@ scaffold/tests/7s-unsigned-compare
 scaffold/tests/7t-function-destruct
 scaffold/tests/7u-double
 scaffold/tests/7u-long-long
-scaffold/tests/7u-?-expression
-scaffold/tests/7u-call-?
+scaffold/tests/7u-ternary-expression
+scaffold/tests/7u-call-ternary
 scaffold/tests/7u-inc-byte-word
 scaffold/tests/7u-struct-func
 scaffold/tests/7u-struct-size10
@@ -220,8 +220,8 @@ scaffold/tests/a0-math-divide-signed-negative
 
 if [ "$mes_arch" = "x86_64-gcc" ]; then
     broken="$broken
-scaffold/tests/21-char[]
-scaffold/tests/41-?
+scaffold/tests/21-char-array
+scaffold/tests/41-ternary
 scaffold/tests/stdio/70-printf-stdarg
 scaffold/tests/stdio/70-printf-simple
 scaffold/tests/stdio/70-printf

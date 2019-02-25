@@ -136,7 +136,7 @@ main (int argc, char* argv[])
   char *strings[] = { "one\n", "two\n", "three\n", 0 };
   char **p = strings;
   while (*p)
-    oputs (*p++);
+    eputs (*p++);
   if (strcmp (strings[1], "two\n"))
     return 21;
   p = list;
@@ -181,11 +181,11 @@ main (int argc, char* argv[])
   int lst[6] = {-1, 1 - 1, i, 2, 3};
   for (int i = 0; i < 4; i++)
     {
-      oputs ("i: "); oputs (itoa (lst[i])); oputs ("\n");
+      eputs ("i: "); eputs (itoa (lst[i])); eputs ("\n");
       if (lst[i+1] != i)
         return 30 + i;
     }
-  oputs ("foo"
+  eputs ("foo"
          "bar");
 
   return 0;
