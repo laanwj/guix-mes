@@ -30,6 +30,7 @@ _exit (int code)
        "int    $0x80\n\t"
        : // no outputs "=" (r)
        : "rm" (code)
+       : "eax", "ebx"
        );
   // not reached
   _exit (0);
