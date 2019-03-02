@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,8 +20,56 @@
 
 #include <unistd.h>
 
-int
-isatty (int fd)
+typedef unsigned char cc_t;
+typedef unsigned int speed_t;
+typedef unsigned int tcflag_t;
+
+// Use termio, termios2?
+#define NCCS 19
+struct termios
 {
-  return ioctl (fd, TCGETS, 0) & 0xf0;
+  tcflag_t c_iflag;
+  tcflag_t c_oflag;
+  tcflag_t c_cflag;
+  tcflag_t c_lflag;
+  cc_t c_line;
+  cc_t c_cc[NCCS];
+};
+
+struct ktermios
+{
+  tcflag_t c_iflag;
+  tcflag_t c_oflag;
+  tcflag_t c_cflag;
+  tcflag_t c_lflag;
+  cc_t c_line;
+  cc_t c_cc[NCCS];
+  speed_t c_ispeed;
+  speed_t c_ospeed;
+};
+
+int
+__tcgetattr (int filedes, struct termios *termios_p)
+{
+  struct ktermios kernel_termios;
+  int r = ioctl (filedes, TCGETS, &kernel_termios);
+
+  termios_p->c_iflag = kernel_termios.c_iflag;
+  termios_p->c_oflag = kernel_termios.c_oflag;
+  termios_p->c_cflag = kernel_termios.c_cflag;
+  termios_p->c_lflag = kernel_termios.c_lflag;
+  termios_p->c_line = kernel_termios.c_line;
+#if 0
+  termios_p->c_ispeed = kernel_termios.c_ispeed;
+  termios_p->c_ospeed = kernel_termios.c_ospeed;
+#endif
+  memcpy (&termios_p->c_cc[0], &kernel_termios.c_cc[0], NCCS * sizeof (cc_t));
+  return r;
+}
+
+int
+isatty (int filedes)
+{
+  struct termios term;
+  return __tcgetattr (filedes, &term) == 0;
 }

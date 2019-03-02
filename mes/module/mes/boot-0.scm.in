@@ -234,7 +234,7 @@
          (files (if s-index (list-tail %argv (+ s-index 1))
                     (option-ref options '() '())))
          (help? (option-ref options 'help #f))
-         (usage? (and (not help?) (null? files) (not tty?) (not main)))
+         (usage? #f)
          (version? (option-ref options 'version #f)))
     (or
      (and version?
