@@ -1,7 +1,7 @@
 ;;; -*-scheme-*-
 
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -126,7 +126,9 @@
         (#t #f)))
 
 (define (map f h . t)
-  (if (null? h) '()
+  (if (or (null? h)
+          (and (pair? t) (null? (car t)))
+          (and (pair? t) (pair? (cdr t)) (null? (cadr t)))) '()
       (if (null? t) (cons (f (car h)) (map f (cdr h)))
           (if (null? (cdr t))
               (cons (f (car h) (caar t)) (map f (cdr h) (cdar t)))

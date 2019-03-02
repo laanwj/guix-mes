@@ -9,7 +9,7 @@ exec ${MES-mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests boot
 ;;; -*-scheme-*-
 
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -46,7 +46,23 @@ exec ${MES-mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests boot
 (pass-if "map" (sequal? (map identity '(1 2 3 4)) '(1 2 3 4)))
 (pass-if "map 2 " (sequal? (map (lambda (i a) (cons i a)) '(1 2 3 4) '(a b c d))
                            '((1 . a) (2 . b) (3 . c) (4 . d))))
+
+(pass-if-equal "map 1,2"
+               '((0 . a))
+               (map (lambda (x y) (cons x y)) '(0) '(a b)))
+
+(pass-if-equal "map 2,1"
+               '((0 . a))
+               (map (lambda (x y) (cons x y)) '(0 1) '(a)))
+
 (pass-if "for-each" (sequal? (let ((acc '())) (for-each (lambda (x) (set! acc (cons x acc))) '(1 2 3 4)) acc) '(4 3 2 1)))
+
+(pass-if "for-each 1,2"
+         (for-each (lambda (x y) (cons x y)) '(0) '(a b)))
+
+(pass-if "for-each 2,1"
+         (for-each (lambda (x y) (cons x y)) '(0 1) '(a)))
+
 (define xxxa 0)
 (pass-if "set! " (seq? (begin (set! xxxa 1) xxxa) 1))
 (pass-if "set! 2" (seq? (let ((a 0)) (set! a 1) a) 1))

@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -911,6 +911,7 @@
 
         ((p-expr (fixed ,value))
          (let* ((value (cstring->int value))
+                (reg-size (->size "*" info))
                 (info (allocate-register info))
                 (info (append-text info (wrap-as (as info 'value->r value)))))
            (if (or #t (> value 0) (= reg-size 4)) info
