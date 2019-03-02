@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -25,7 +25,7 @@ int
 main (int argc, char const *argv[])
 {
   eputs ("test:getenv\n");
-  if (getenv ("SHELL") == 0)
+  if (getenv ("PATH") == 0)
     return 1;
   return 0;
 }

@@ -211,6 +211,7 @@ scaffold/tests/a1-global-no-clobber
 "
 
 broken="$broken
+lib/tests/posix/50-getenv
 scaffold/tests/17-compare-unsigned-char-le
 scaffold/tests/17-compare-unsigned-short-le
 scaffold/tests/66-local-char-array
