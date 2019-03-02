@@ -33,7 +33,7 @@ int unreadchar ();
 int
 peekchar ()
 {
-  if (g_stdin >= 0)
+  if (__stdin >= 0)
     {
       int c = readchar ();
       unreadchar (c);
@@ -51,8 +51,8 @@ peekchar ()
 int
 readchar ()
 {
-  if (g_stdin >= 0)
-    return fdgetc (g_stdin);
+  if (__stdin >= 0)
+    return fdgetc (__stdin);
   SCM port = current_input_port ();
   SCM string = STRING (port);
   size_t length = LENGTH (string);
@@ -67,8 +67,8 @@ readchar ()
 int
 unreadchar (int c)
 {
-  if (g_stdin >= 0)
-    return fdungetc (c, g_stdin);
+  if (__stdin >= 0)
+    return fdungetc (c, __stdin);
   SCM port = current_input_port ();
   SCM string = STRING (port);
   size_t length = LENGTH (string);
@@ -109,11 +109,11 @@ peek_char ()
 SCM
 read_char (SCM port) ///((arity . n))
 {
-  int fd = g_stdin;
+  int fd = __stdin;
   if (TYPE (port) == TPAIR && TYPE (car (port)) == TNUMBER)
-    g_stdin = VALUE (CAR (port));
+    __stdin = VALUE (CAR (port));
   SCM c = MAKE_CHAR (readchar ());
-  g_stdin = fd;
+  __stdin = fd;
   return c;
 }
 
@@ -136,11 +136,11 @@ write_byte (SCM x) ///((arity . n))
 {
   SCM c = car (x);
   SCM p = cdr (x);
-  int fd = g_stdout;
+  int fd = __stdout;
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER && VALUE (CAR (p)) != 1)
     fd = VALUE (CAR (p));
   if (TYPE (p) == TPAIR && TYPE (car (p)) == TNUMBER && VALUE (CAR (p)) == 2)
-    fd = g_stderr;
+    fd = __stderr;
   char cc = VALUE (c);
   write (fd, (char*)&cc, 1);
 #if !__MESC__
@@ -175,10 +175,10 @@ access_p (SCM file_name, SCM mode)
 SCM
 current_input_port ()
 {
-  if (g_stdin >= 0)
-    return MAKE_NUMBER (g_stdin);
+  if (__stdin >= 0)
+    return MAKE_NUMBER (__stdin);
   SCM x = g_ports;
-  while (x && PORT (CAR (x)) != g_stdin)
+  while (x && PORT (CAR (x)) != __stdin)
     x = CDR (x);
   return CAR (x);
 }
@@ -202,22 +202,22 @@ set_current_input_port (SCM port)
 {
   SCM prev = current_input_port ();
   if (TYPE (port) == TNUMBER)
-    g_stdin = VALUE (port) ? VALUE (port) : STDIN;
+    __stdin = VALUE (port) ? VALUE (port) : STDIN;
   else if (TYPE (port) == TPORT)
-    g_stdin = PORT (port);
+    __stdin = PORT (port);
   return prev;
 }
 
 SCM
 current_output_port ()
 {
-  return MAKE_NUMBER (g_stdout);
+  return MAKE_NUMBER (__stdout);
 }
 
 SCM
 current_error_port ()
 {
-  return MAKE_NUMBER (g_stderr);
+  return MAKE_NUMBER (__stderr);
 }
 
 SCM
@@ -234,14 +234,14 @@ open_output_file (SCM x) ///((arity . n))
 SCM
 set_current_output_port (SCM port)
 {
-  g_stdout = VALUE (port) ? VALUE (port) : STDOUT;
+  __stdout = VALUE (port) ? VALUE (port) : STDOUT;
   return current_output_port ();
 }
 
 SCM
 set_current_error_port (SCM port)
 {
-  g_stderr = VALUE (port) ? VALUE (port) : STDERR;
+  __stderr = VALUE (port) ? VALUE (port) : STDERR;
   return current_error_port ();
 }
 

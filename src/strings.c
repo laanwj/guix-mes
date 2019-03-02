@@ -181,9 +181,9 @@ list_to_string (SCM list)
 SCM
 read_string (SCM port) ///((arity . n))
 {
-  int fd = g_stdin;
+  int fd = __stdin;
   if (TYPE (port) == TPAIR && TYPE (car (port)) == TNUMBER)
-    g_stdin = VALUE (CAR (port));
+    __stdin = VALUE (CAR (port));
   int c = readchar ();
   size_t i = 0;
   while (c != -1)
@@ -194,7 +194,7 @@ read_string (SCM port) ///((arity . n))
       c = readchar ();
     }
   g_buf[i] = 0;
-  g_stdin = fd;
+  __stdin = fd;
   return make_string (g_buf, i);
 }
 

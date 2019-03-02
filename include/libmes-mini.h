@@ -75,9 +75,9 @@ int errno;
 #endif
 
 char **environ;
-int g_stdin;
-int g_stdout;
-int g_stderr;
+int __stdin;
+int __stdout;
+int __stderr;
 
 int eputs (char const* s);
 int puts (char const* s);

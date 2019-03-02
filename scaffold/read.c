@@ -25,7 +25,7 @@
 int
 main (int argc, char *argv[])
 {
-  g_stdin = open ("scaffold/read.data", 0);
+  __stdin = open ("scaffold/read.data", 0);
   int c = getchar ();
   if (c != 'm')
     return 1;

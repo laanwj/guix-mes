@@ -226,14 +226,14 @@ SCM
 display_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", g_stdout, 0);
+  return display_helper (x, 0, "", __stdout, 0);
 }
 
 SCM
 display_error_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", g_stderr, 0);
+  return display_helper (x, 0, "", __stderr, 0);
 }
 
 SCM
@@ -247,14 +247,14 @@ SCM
 write_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", g_stdout, 1);
+  return display_helper (x, 0, "", __stdout, 1);
 }
 
 SCM
 write_error_ (SCM x)
 {
   g_depth = 5;
-  return display_helper (x, 0, "", g_stderr, 1);
+  return display_helper (x, 0, "", __stderr, 1);
 }
 
 SCM
@@ -281,10 +281,10 @@ exit_ (SCM x) ///((name . "exit"))
 SCM
 frame_printer (SCM frame)
 {
-  fdputs ("#<", g_stdout); display_ (struct_ref_ (frame, 2));
-  fdputc (' ', g_stdout);
-  fdputs ("procedure: ", g_stdout); display_ (struct_ref_ (frame, 3));
-  fdputc ('>', g_stdout);
+  fdputs ("#<", __stdout); display_ (struct_ref_ (frame, 2));
+  fdputc (' ', __stdout);
+  fdputs ("procedure: ", __stdout); display_ (struct_ref_ (frame, 3));
+  fdputc ('>', __stdout);
 }
 
 SCM

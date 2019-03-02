@@ -71,13 +71,13 @@ SCM
 module_printer (SCM module)
 {
   //module = m0;
-  fdputs ("#<", g_stdout); display_ (struct_ref_ (module, 2)); fdputc (' ', g_stdout);
-  fdputs ("name: ", g_stdout); display_ (struct_ref_ (module, 3)); fdputc (' ', g_stdout);
-  fdputs ("locals: ", g_stdout); display_ (struct_ref_ (module, 4)); fdputc (' ', g_stdout);
+  fdputs ("#<", __stdout); display_ (struct_ref_ (module, 2)); fdputc (' ', __stdout);
+  fdputs ("name: ", __stdout); display_ (struct_ref_ (module, 3)); fdputc (' ', __stdout);
+  fdputs ("locals: ", __stdout); display_ (struct_ref_ (module, 4)); fdputc (' ', __stdout);
   SCM table = struct_ref_ (module, 5);
-  fdputs ("globals:\n  ", g_stdout);
+  fdputs ("globals:\n  ", __stdout);
   display_ (table);
-  fdputc ('>', g_stdout);
+  fdputc ('>', __stdout);
 }
 
 SCM

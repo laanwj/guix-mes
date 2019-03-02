@@ -27,21 +27,21 @@ _start ()
   asm (
        "mov    $0,%%eax\n\t"
        "mov    %%eax,%0\n"
-       : "=r" (g_stdin)
+       : "=r" (__stdin)
        : //no inputs ""
        );
 
   asm (
        "mov    $1,%%eax\n\t"
        "mov    %%eax,%0\n"
-       : "=r" (g_stdout)
+       : "=r" (__stdout)
        : //no inputs ""
        );
 
   asm (
        "mov    $2,%%eax\n\t"
        "mov    %%eax,%0\n"
-       : "=r" (g_stderr)
+       : "=r" (__stderr)
        : //no inputs ""
        );
   asm (

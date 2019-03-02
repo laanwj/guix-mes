@@ -25,13 +25,13 @@ int
 _start ()
 {
   asm ("mov____$i8,%rax !0");
-  asm ("mov____%rax,0x32 &g_stdin");
+  asm ("mov____%rax,0x32 &__stdin");
 
   asm ("mov____$i8,%rax !1");
-  asm ("mov____%rax,0x32 &g_stdout");
+  asm ("mov____%rax,0x32 &__stdout");
 
   asm ("mov____$i8,%rax !2");
-  asm ("mov____%rax,0x32 &g_stderr");
+  asm ("mov____%rax,0x32 &__stderr");
 
 #if 0 //MES_CCAMD64
   asm ("add____$i32,%rbp %0x80"); // FIXME: corresponds to x86_64/as.scm function-preamble-fu

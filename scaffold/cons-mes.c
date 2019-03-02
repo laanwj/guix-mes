@@ -543,7 +543,7 @@ g_cells[cell_cdr] = scm_cdr;
 SCM
 bload_env (SCM a) ///((internal))
 {
-  g_stdin = open ("module/mes/read-0.mo", 0);
+  __stdin = open ("module/mes/read-0.mo", 0);
   char *p = (char*)g_cells;
   assert (getchar () == 'M');
   assert (getchar () == 'E');
@@ -559,7 +559,7 @@ bload_env (SCM a) ///((internal))
   g_free = (p-(char*)g_cells) / sizeof (struct scm);
   gc_peek_frame ();
   g_symbols = r1;
-  g_stdin = STDIN;
+  __stdin = STDIN;
   r0 = mes_builtins (r0);
   return r2;
 }
@@ -746,8 +746,8 @@ simple_bload_env (SCM a) ///((internal))
   char *mo = "module/mes/tiny-0-32.mo";
   puts (mo);
   puts ("\n");
-  g_stdin = open (mo, 0);
-  if (g_stdin < 0) {eputs ("no such file: module/mes/tiny-0-32.mo\n");return 1;}
+  __stdin = open (mo, 0);
+  if (__stdin < 0) {eputs ("no such file: module/mes/tiny-0-32.mo\n");return 1;}
 
   char *p = (char*)g_cells;
   int c;
@@ -779,7 +779,7 @@ simple_bload_env (SCM a) ///((internal))
   
   g_symbols = 1;
 
-  g_stdin = STDIN;
+  __stdin = STDIN;
   r0 = mes_builtins (r0);
   
   if (g_free != 19) exit (34);
@@ -826,7 +826,7 @@ main (int argc, char *argv[])
 #else
   if (argc > 1 && !strcmp (argv[1], "--version")) {eputs ("Mes ");return eputs ("0.4");};
 #endif
-  g_stdin = STDIN;
+  __stdin = STDIN;
 
   r0 = mes_environment ();
   

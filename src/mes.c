@@ -1939,23 +1939,23 @@ builtin_p (SCM x)
 SCM
 builtin_printer (SCM builtin)
 {
-  fdputs ("#<procedure ", g_stdout);
+  fdputs ("#<procedure ", __stdout);
   display_ (builtin_name (builtin));
-  fdputc (' ', g_stdout);
+  fdputc (' ', __stdout);
   int arity = VALUE (builtin_arity (builtin));
   if (arity == -1)
-    fdputc ('_', g_stdout);
+    fdputc ('_', __stdout);
   else
     {
-      fdputc ('(', g_stdout);
+      fdputc ('(', __stdout);
       for (int i = 0; i < arity; i++)
         {
           if (i)
-            fdputc (' ', g_stdout);
-          fdputc ('_', g_stdout);
+            fdputc (' ', __stdout);
+          fdputc ('_', __stdout);
         }
     }
-  fdputc ('>', g_stdout);
+  fdputc ('>', __stdout);
 }
 
 SCM
@@ -2206,7 +2206,7 @@ open_boot (char *prefix, char const *boot, char const *location)
 SCM
 read_boot () ///((internal))
 {
-  g_stdin = -1;
+  __stdin = -1;
   char prefix[1024];
   char boot[1024];
   if (getenv ("MES_BOOT"))
@@ -2218,25 +2218,25 @@ read_boot () ///((internal))
       strcpy (prefix, getenv ("MES_PREFIX"));
       strcpy (prefix + strlen (prefix), "/module");
       strcpy (prefix + strlen (prefix), "/mes/");
-      g_stdin = open_boot (prefix, boot, "MES_PREFIX");
+      __stdin = open_boot (prefix, boot, "MES_PREFIX");
     }
-  if (g_stdin < 0)
+  if (__stdin < 0)
     {
       char const *p = MODULEDIR "/mes/";
       strcpy (prefix, p);
-      g_stdin = open_boot (prefix, boot, "MODULEDIR");
+      __stdin = open_boot (prefix, boot, "MODULEDIR");
     }
-  if (g_stdin < 0)
+  if (__stdin < 0)
     {
       strcpy (prefix, "mes/module/mes/");
-      g_stdin = open_boot (prefix, boot, ".");
+      __stdin = open_boot (prefix, boot, ".");
     }
-  if (g_stdin < 0)
+  if (__stdin < 0)
     {
       prefix[0] = 0;
-      g_stdin = open_boot (prefix, boot, "<boot>");
+      __stdin = open_boot (prefix, boot, "<boot>");
     }
-  if (g_stdin < 0)
+  if (__stdin < 0)
     {
       eputs ("mes: boot failed: no such file: ");
       eputs (boot);
@@ -2245,7 +2245,7 @@ read_boot () ///((internal))
     }
 
   r2 = read_input_file_env (r0);
-  g_stdin = STDIN;
+  __stdin = STDIN;
   return r2;
 }
 

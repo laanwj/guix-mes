@@ -30,21 +30,21 @@ _start ()
   asm (
        "mov    $0,%%rax\n\t"
        "mov    %%rax,%0\n"
-       : "=r" (g_stdin)
+       : "=r" (__stdin)
        : //no inputs ""
        );
 
   asm (
        "mov    $1,%%rax\n\t"
        "mov    %%rax,%0\n"
-       : "=r" (g_stdout)
+       : "=r" (__stdout)
        : //no inputs ""
        );
 
   asm (
        "mov    $2,%%rax\n\t"
        "mov    %%rax,%0\n"
-       : "=r" (g_stderr)
+       : "=r" (__stderr)
        : //no inputs ""
        );
   asm (

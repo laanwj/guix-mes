@@ -23,5 +23,5 @@
 int
 getchar ()
 {
-  return fdgetc (g_stdin);
+  return fdgetc (__stdin);
 }

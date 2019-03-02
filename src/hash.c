@@ -174,27 +174,27 @@ hash_set_x (SCM table, SCM key, SCM value)
 SCM
 hash_table_printer (SCM table)
 {
-  fdputs ("#<", g_stdout); display_ (struct_ref_ (table, 2)); fdputc (' ', g_stdout);
-  fdputs ("size: ", g_stdout); display_ (struct_ref_ (table, 3)); fdputc (' ', g_stdout);
+  fdputs ("#<", __stdout); display_ (struct_ref_ (table, 2)); fdputc (' ', __stdout);
+  fdputs ("size: ", __stdout); display_ (struct_ref_ (table, 3)); fdputc (' ', __stdout);
   SCM buckets = struct_ref_ (table, 4);
-  fdputs ("buckets: ", g_stdout);
+  fdputs ("buckets: ", __stdout);
   for (int i=0; i<LENGTH (buckets); i++)
     {
       SCM e = vector_ref_ (buckets, i);
       if (e != cell_unspecified)
         {
-          fdputc ('[', g_stdout);
+          fdputc ('[', __stdout);
           while (TYPE (e) == TPAIR)
             {
               write_ (CAAR (e));
               e = CDR (e);
               if (TYPE (e) == TPAIR)
-                fdputc (' ', g_stdout);
+                fdputc (' ', __stdout);
             }
-          fdputs ("]\n  ", g_stdout);
+          fdputs ("]\n  ", __stdout);
         }
     }
-  fdputc ('>', g_stdout);
+  fdputc ('>', __stdout);
 }
 
 SCM
