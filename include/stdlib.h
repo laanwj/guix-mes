@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <alloca.h>
 
+double atof (char const *s);
 int atoi (char const *s);
 int atexit (void (*function) (void));
 void * calloc (size_t nmemb, size_t size);

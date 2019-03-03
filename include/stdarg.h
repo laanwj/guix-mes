@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -31,7 +31,7 @@
 #define __FOO_VARARGS 1
 #endif
 
-typedef long va_list;
+typedef char *va_list;
 #define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
 #define va_arg(ap, type) (type)(((long*)((ap) = ((ap) + sizeof (void*))))[-1])
 #define va_end(ap) (void)((ap) = 0)

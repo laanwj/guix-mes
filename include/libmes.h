@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -24,13 +24,17 @@
 #include <libmes-mini.h>
 
 int __mes_debug ();
-long abtol (char const** p, int base);
-char const* ntoab (long number, int base, int signed_p);
-char const* itoa (int number);
-char const* ltoa (long number);
-char const* ultoa (unsigned long number);
-char const* utoa (unsigned number);
-char const* ltoab (long x, int base);
+void __ungetc_init ();
+void __ungetc_clear (int filedes);
+void __ungetc_set (int filedes, int c);
+int __ungetc_p (int filedes);
+long abtol (char const **p, int base);
+char *itoa (int number);
+char *ltoa (long number);
+char *ltoab (long x, int base);
+char *ntoab (long number, int base, int signed_p);
+char *ultoa (unsigned long number);
+char *utoa (unsigned number);
 int atoi (char const *s);
 int eputc (int c);
 int fdgetc (int fd);
