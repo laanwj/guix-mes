@@ -52,6 +52,11 @@ else
     LIBS='-l c'
 fi
 
+if test $mes_kernel = gnu\
+        && test -z "$LIBS"; then
+    LIBS="-l c-mini"
+fi
+
 if test $mes_libc = system; then
     crt1=
     LIBS='-l mes'

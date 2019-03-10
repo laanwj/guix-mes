@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,25 +17,31 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SYS_WAIT_H
-#define __MES_SYS_WAIT_H 1
 
-#if SYSTEM_LIBC
-#undef __MES_SYS_WAIT_H
-#include_next <sys/wait.h>
-#else // ! SYSTEM_LIBC
+/** Commentary:
+    Inspired by implementation in GNU C Library:
+    Initialization code run first thing by the ELF startup code.  For i386/Hurd.
+    Copyright (C) 1995-2016 Free Software Foundation, Inc.
+ */
 
-#ifndef __MES_PID_T
-#define __MES_PID_T
-typedef int pid_t;
-#endif
+#include <gnu/hurd.h>
+#include <gnu/syscall.h>
 
-#define	WNOHANG 1
-#define W_EXITCODE(status, signal) ((status) << 8 | (signal))
+#include <mach/mach-init.h>
+#include <mach/mach_types.h>
+#include <mach/message.h>
+#include <mach/port.h>
 
-pid_t waitpid (pid_t pid, int *status_ptr, int options);
-pid_t wait (int *status_ptr);
+struct hurd_startup_data _hurd_startup_data;
 
-#endif // ! SYSTEM_LIBC
+void __mach_init (void);
 
-#endif // __MES_SYS_WAIT_H
+void
+_hurd_start ()
+{
+  mach_port_t bootstrap;
+  __mach_init ();
+  __task_get_special_port (__mach_task_self (), TASK_BOOTSTRAP_PORT,
+                           &bootstrap);
+  __exec_startup_get_data (bootstrap, &_hurd_startup_data);
+}

@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,25 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SYS_WAIT_H
-#define __MES_SYS_WAIT_H 1
 
-#if SYSTEM_LIBC
-#undef __MES_SYS_WAIT_H
-#include_next <sys/wait.h>
-#else // ! SYSTEM_LIBC
+#include <gnu/syscall.h>
 
-#ifndef __MES_PID_T
-#define __MES_PID_T
-typedef int pid_t;
-#endif
-
-#define	WNOHANG 1
-#define W_EXITCODE(status, signal) ((status) << 8 | (signal))
-
-pid_t waitpid (pid_t pid, int *status_ptr, int options);
-pid_t wait (int *status_ptr);
-
-#endif // ! SYSTEM_LIBC
-
-#endif // __MES_SYS_WAIT_H
+kern_return_t
+__task_get_special_port (mach_port_t task, int which, mach_port_t *port)
+{
+  struct mach_msg_2 message = {0};
+  message.header.msgh_size = sizeof (struct mach_msg_1);
+  message.type_one = mach_msg_type_int32;
+  message.one = which;
+  message.type_two = mach_msg_type_int32;
+  message.two = 0;
+  kern_return_t result = __syscall_get (task, SYS__task_get_special_port,
+                                        &message.header, sizeof (message));
+  if (result == KERN_SUCCESS)
+    *port = message.two;
+  return result;
+}

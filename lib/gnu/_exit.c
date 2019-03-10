@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,25 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_SYS_WAIT_H
-#define __MES_SYS_WAIT_H 1
 
-#if SYSTEM_LIBC
-#undef __MES_SYS_WAIT_H
-#include_next <sys/wait.h>
-#else // ! SYSTEM_LIBC
+/** Commentary:
+    Inspired by implementation in GNU C Library:
+    _hurd_exit
+    Copyright (C) 1993-2016 Free Software Foundation, Inc.
+ */
 
-#ifndef __MES_PID_T
-#define __MES_PID_T
-typedef int pid_t;
-#endif
+#include <gnu/hurd.h>
+#include <gnu/hurd-types.h>
+#include <gnu/syscall.h>
+#include <mach/mach-init.h>
 
-#define	WNOHANG 1
-#define W_EXITCODE(status, signal) ((status) << 8 | (signal))
-
-pid_t waitpid (pid_t pid, int *status_ptr, int options);
-pid_t wait (int *status_ptr);
-
-#endif // ! SYSTEM_LIBC
-
-#endif // __MES_SYS_WAIT_H
+void
+_exit (int status)
+{
+  __proc_mark_exit (_hurd_startup_data.portarray[INIT_PORT_PROC], status, 0);
+  __task_terminate (__mach_task_self ());
+  while (1) {* (int *) 0 = 0;}
+}

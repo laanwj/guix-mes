@@ -22,6 +22,12 @@ AM_CPPFLAGS="
 -I ${srcdest}include/$mes_kernel/$mes_cpu
 "
 
+if test $mes_kernel = gnu; then
+    AM_CPPFLAGS="$AM_CPPFLAGS
+-I /usr/include
+"
+fi
+
 AM_CFLAGS=
 
 if test $mes_libc = mes; then

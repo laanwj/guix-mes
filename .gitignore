@@ -114,3 +114,6 @@
 /body-hello-mes
 /exit-42
 /hello-mes
+core
+/.config
+a.out

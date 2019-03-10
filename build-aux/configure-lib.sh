@@ -41,6 +41,26 @@ lib/stdlib/exit.c
 lib/stdlib/puts.c
 lib/string/strlen.c
 "
+
+    if test $mes_kernel = gnu; then
+        libc_mini_shared_SOURCES="$libc_mini_shared_SOURCES
+lib/gnu/_exit.c
+lib/gnu/exec-startup-get-data.c
+lib/gnu/hurd-start.c
+lib/gnu/proc-mark-exit.c
+lib/gnu/syscall.c
+lib/gnu/task-get-special-port.c
+lib/gnu/task-terminate.c
+lib/gnu/vm-statistics.c
+lib/mach/mach-init.c
+lib/mach/mach_host_self.S
+lib/mach/mach_msg_trap.S
+lib/mach/mach_reply_port.S
+lib/mach/mach_task_self.S
+lib/mach/mach_thread_self.S
+lib/mach/msg.c
+"
+    fi
 fi
 
 libc_mini_SOURCES="$libc_mini_shared_SOURCES"

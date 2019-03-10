@@ -73,6 +73,13 @@ mes/module/srfi/srfi-26.scm
 GNU FDL in texinfo from GNU
 doc/fdl-1.3.texi
 
+Hurd and Mach support from GNU C Library
+include/gnu/hurd-types.h
+include/mach/mach-init.h
+lib/mach/msg.c
+lib/mach/mach-init.c
+lib/mach/*.S
+
 * legalese
 Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 

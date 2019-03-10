@@ -65,10 +65,17 @@ fi
 "
         AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
+-I ${srcdest}lib
 -I include
 -I ${srcdest}include
 -I ${srcdest}include/$mes_kernel/$mes_cpu
 "
+        if test $mes_kernel = gnu; then
+            AM_CPPFLAGS="$AM_CPPFLAGS
+-I /usr/include
+"
+        fi
+
         ${SHELL} ${srcdest}build-aux/build-lib.sh
         cp crt1.o ..
     fi
@@ -85,6 +92,7 @@ fi
 
     AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
+-I ${srcdest}lib
 -I include
 -I ${srcdest}include
 -I ${srcdest}include/$mes_kernel/$mes_cpu
@@ -108,6 +116,7 @@ fi
     fi
         AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
+-I ${srcdest}lib
 -I include
 -I ${srcdest}include
 -I ${srcdest}include/$mes_kernel/$mes_cpu
