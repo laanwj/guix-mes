@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,12 +18,17 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mes/lib-mini.h>
+#include <gnu/hurd.h>
+#include <gnu/hurd-types.h>
+#include <gnu/syscall.h>
+#include <mach/mach-init.h>
 
-int
-main ()
+ssize_t
+_write (int filedes, void const *buffer, size_t size)
 {
-  oputs ("\n");
-  oputs ("Hello, GNU Mes\n");
-  return 0;
+  mach_port_t p = fd_get (filedes);
+  error_t e = fd_write (p, buffer, &size, -1);
+  if (!e)
+    return size;
+  return -1;
 }

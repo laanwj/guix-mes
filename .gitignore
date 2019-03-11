@@ -34,8 +34,6 @@
 *.a
 *.o
 *.seed-out
-*.stderr
-*.stdout
 
 /lib/tests/*/[0-9a][0-9a-z]-*
 !/lib/tests/*/*.c

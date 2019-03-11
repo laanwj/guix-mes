@@ -33,6 +33,8 @@
 #include <mach/port.h>
 
 struct hurd_startup_data _hurd_startup_data;
+mach_port_t _hurd_dtable[_HURD_DTABLE_MAX];
+int _hurd_dtable_size;
 
 void __mach_init (void);
 
@@ -44,4 +46,7 @@ _hurd_start ()
   __task_get_special_port (__mach_task_self (), TASK_BOOTSTRAP_PORT,
                            &bootstrap);
   __exec_startup_get_data (bootstrap, &_hurd_startup_data);
+  _hurd_dtable_size = _hurd_startup_data.dtablesize;
+  for (int i = 0; i < _hurd_dtable_size; i++)
+    _hurd_dtable[i] = _hurd_startup_data.dtable[i];
 }

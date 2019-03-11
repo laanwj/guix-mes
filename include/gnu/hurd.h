@@ -24,6 +24,16 @@
 #define _GNU_SOURCE 1
 #define __USE_GNU 1
 
+#include <errno.h>
+#include <sys/types.h>
+
+#ifndef _BITS_TYPES_H
+#ifndef _LOFF_T
+#define _LOFF_T
+typedef off64_t loff_t;
+#endif
+#endif
+
 #include <mach/mach_types.h>
 #include <mach/message.h>
 #include <mach/port.h>
@@ -44,8 +54,12 @@ struct hurd_startup_data
     vm_address_t user_entry;
   };
 
-extern mach_port_t *_hurd_init_dtable;
-extern mach_msg_type_number_t _hurd_init_dtablesize;
+#define _HURD_DTABLE_MAX 1024
+extern mach_port_t _hurd_dtable[_HURD_DTABLE_MAX];
+extern int _hurd_dtable_size;
 extern struct hurd_startup_data _hurd_startup_data;
+
+mach_port_t fd_get (int filedes);
+error_t fd_write (mach_port_t port, void const *buffer, size_t *size, loff_t offset);
 
 #endif // __MES_GNU_HURD_H

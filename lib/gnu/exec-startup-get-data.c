@@ -18,6 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//#include <gnu/hurd.h>
 #include <gnu/syscall.h>
 
 static void

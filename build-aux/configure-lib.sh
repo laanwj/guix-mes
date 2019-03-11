@@ -46,6 +46,10 @@ lib/string/strlen.c
         libc_mini_shared_SOURCES="$libc_mini_shared_SOURCES
 lib/gnu/_exit.c
 lib/gnu/exec-startup-get-data.c
+lib/gnu/fd-get.c
+lib/gnu/fd-write.c
+lib/gnu/io-write.c
+lib/gnu/_write.c
 lib/gnu/hurd-start.c
 lib/gnu/proc-mark-exit.c
 lib/gnu/syscall.c

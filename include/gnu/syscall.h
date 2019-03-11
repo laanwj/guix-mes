@@ -38,6 +38,12 @@ enum
    SYS__task_get_special_port = 2058,
   };
 
+// hurd/io.defs
+enum
+  {
+   SYS__io_write = 21000,
+  };
+
 // hurd/process.defs
 enum
   {
@@ -51,6 +57,8 @@ enum
   };
 
 extern mach_msg_type_t mach_msg_type_int32;
+extern mach_msg_type_t mach_msg_type_int64;
+extern mach_msg_type_long_t mach_msg_type_pointer;
 
 struct mach_msg
 {
@@ -102,6 +110,7 @@ struct mach_msg_startup_info
 kern_return_t __syscall (mach_port_t port, int sys_call);
 kern_return_t __syscall2 (mach_port_t port, int sys_call, int one, int two);
 kern_return_t __syscall_get (mach_port_t port, int sys_call, mach_msg_header_t *message, size_t size);
+kern_return_t __syscall_put (mach_port_t port, int sys_call, mach_msg_header_t *message, size_t size);
 
 // mach.defs
 kern_return_t __task_terminate (mach_port_t task);
@@ -111,5 +120,8 @@ kern_return_t __vm_statistics (mach_port_t task, vm_statistics_data_t *vm_stats)
 // process.defs
 kern_return_t __proc_mark_exit (mach_port_t process, int one, int two);
 kern_return_t __exec_startup_get_data (mach_port_t bootstrap, struct hurd_startup_data *data);
+
+// io.c
+kern_return_t __io_write (io_t io_object, data_t data, mach_msg_type_number_t size, loff_t offset, vm_size_t *wrote);
 
 #endif // __MES_GNU_SYSCALL_H
