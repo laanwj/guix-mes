@@ -42,6 +42,7 @@ enum
 enum
   {
    SYS__io_write = 21000,
+   SYS__io_read,
   };
 
 // hurd/process.defs
@@ -75,6 +76,13 @@ struct mach_msg_2
 {
   mach_msg_header_t header;
   mach_msg_type_t type_one; int one;
+  mach_msg_type_t type_two; int two;
+};
+
+struct mach_msg_loff_int
+{
+  mach_msg_header_t header;
+  mach_msg_type_t type_one; loff_t one;
   mach_msg_type_t type_two; int two;
 };
 
@@ -123,5 +131,6 @@ kern_return_t __exec_startup_get_data (mach_port_t bootstrap, struct hurd_startu
 
 // io.c
 kern_return_t __io_write (io_t io_object, data_t data, mach_msg_type_number_t size, loff_t offset, vm_size_t *wrote);
+kern_return_t __io_read (io_t io, data_t *data, mach_msg_type_number_t *read, loff_t offset, vm_size_t size);
 
 #endif // __MES_GNU_SYSCALL_H

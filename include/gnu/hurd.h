@@ -61,5 +61,6 @@ extern struct hurd_startup_data _hurd_startup_data;
 
 mach_port_t fd_get (int filedes);
 error_t fd_write (mach_port_t port, void const *buffer, size_t *size, loff_t offset);
+error_t fd_read (mach_port_t port, void *buffer, size_t *size, loff_t offset);
 
 #endif // __MES_GNU_HURD_H

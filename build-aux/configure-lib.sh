@@ -149,6 +149,14 @@ lib/string/strcpy.c
 lib/string/strncmp.c
 "
 
+if test $mes_kernel = gnu; then
+    libc_SOURCES="$libc_SOURCES
+lib/gnu/_read.c
+lib/gnu/fd-read.c
+lib/gnu/io-read.c
+"
+fi
+
 if test $mes_kernel = linux; then
     libc_SOURCES="$libc_SOURCES
 lib/linux/access.c
