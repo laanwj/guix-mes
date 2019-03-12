@@ -37,8 +37,7 @@ _start ()
   __stdin = 0;
   __stdout = 1;
   __stderr = 2;
-  int argc = _hurd_startup_data.arg_count;
-  int r = main (argc, __argv, environ);
+  int r = main (__argc, __argv, environ);
   _exit (r);
   asm ("hlt");
 }

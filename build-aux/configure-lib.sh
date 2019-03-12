@@ -162,6 +162,8 @@ lib/gnu/_read.c
 lib/gnu/dir-lookup.c
 lib/gnu/fd-read.c
 lib/gnu/io-read.c
+lib/gnu/malloc.c
+lib/gnu/vm-allocate.c
 lib/stub/access.c
 lib/stub/brk.c
 lib/stub/chmod.c

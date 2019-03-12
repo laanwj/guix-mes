@@ -34,6 +34,7 @@
 enum
   {
    SYS__task_terminate = 2008,
+   SYS__vm_allocate = 2021,
    SYS__vm_statistics = 2030,
    SYS__task_get_special_port = 2058,
   };
@@ -129,6 +130,7 @@ kern_return_t __syscall_put (mach_port_t port, int sys_call, mach_msg_header_t *
 // mach.defs
 kern_return_t __task_terminate (mach_port_t task);
 kern_return_t __task_get_special_port (mach_port_t task, int which, mach_port_t *port);
+kern_return_t __vm_allocate (mach_port_t task, vm_address_t *address, vm_size_t size, boolean_t anywhere);
 kern_return_t __vm_statistics (mach_port_t task, vm_statistics_data_t *vm_stats);
 
 // process.defs
