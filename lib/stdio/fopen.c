@@ -54,7 +54,7 @@ fopen (char const *file_name, char const *opentype)
       fd = _open3 (file_name, flags, mode);
     }
   else
-    fd = _open3 (file_name, 0, 0);
+    fd = _open3 (file_name, O_RDONLY, 0);
 
   if (__mes_debug ())
     {

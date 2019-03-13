@@ -27,7 +27,7 @@
 int
 main ()
 {
-  int fd = open ("../COPYING", 0);
+  int fd = open ("../COPYING", O_RDONLY);
   if (fd <= 0)
     return 1;
   FILE *f = fdopen (fd, "r");

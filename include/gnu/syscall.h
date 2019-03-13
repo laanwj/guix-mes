@@ -38,6 +38,12 @@ enum
    SYS__task_get_special_port = 2058,
   };
 
+// hurd/fsys.defs
+enum
+  {
+   SYS__dir_lookup = 20018,
+  };
+
 // hurd/io.defs
 enum
   {

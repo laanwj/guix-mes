@@ -20,7 +20,7 @@
 
 #include <gnu/syscall.h>
 
-struct mach_msg_pointer_int
+struct mach_msg_pointer_loff
 {
   mach_msg_header_t header;
   mach_msg_type_long_t type_one; char *one;
@@ -30,8 +30,8 @@ struct mach_msg_pointer_int
 kern_return_t
 __io_write (io_t io, data_t data, mach_msg_type_number_t size, loff_t offset, vm_size_t *wrote)
 {
-  struct mach_msg_pointer_int message = {0};
-  message.header.msgh_size = sizeof (struct mach_msg_pointer_int);
+  struct mach_msg_pointer_loff message = {0};
+  message.header.msgh_size = sizeof (struct mach_msg_pointer_loff);
   message.type_one = mach_msg_type_pointer;
   message.one = data;
   message.type_two = mach_msg_type_int64;

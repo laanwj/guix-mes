@@ -157,7 +157,9 @@ lib/string/strncmp.c
 
 if test $mes_kernel = gnu; then
     libc_SOURCES="$libc_SOURCES
+lib/gnu/_open3.c
 lib/gnu/_read.c
+lib/gnu/dir-lookup.c
 lib/gnu/fd-read.c
 lib/gnu/io-read.c
 lib/stub/access.c
@@ -171,7 +173,6 @@ lib/stub/fork.c
 lib/stub/_getcwd.c
 lib/stub/gettimeofday.c
 lib/stub/ioctl.c
-lib/stub/_open3.c
 lib/stub/time.c
 lib/stub/unlink.c
 lib/stub/waitpid.c
