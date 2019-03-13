@@ -18,26 +18,27 @@
  * along with Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if 0
-#include <mes/lib-mini.h>
-#else // FIXME
-#define __MES_LIB_MINI_H 1
+#include <gnu/hurd.h>
 
 char **environ;
 int __stdin;
 int __stdout;
 int __stderr;
-#endif
+
+int main ();
+void _exit (int status);
 
 void _hurd_start (void);
-void _posix_start (void);
 
 void
 _start ()
 {
   _hurd_start ();
-  _posix_start ();
+  __stdin = 0;
+  __stdout = 1;
+  __stderr = 2;
+  int argc = _hurd_startup_data.arg_count;
+  int r = main (argc, __argv, environ);
+  _exit (r);
+  asm ("hlt");
 }
-
-#define _start _posix_start
-#include <linux/x86-mes-gcc/crt1.c>

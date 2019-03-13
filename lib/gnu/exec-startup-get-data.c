@@ -18,7 +18,6 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <gnu/hurd.h>
 #include <gnu/syscall.h>
 
 static void
@@ -27,15 +26,26 @@ mach_startup_info2hurd_startup_data (struct mach_msg_startup_info *info,
 {
   data->flags = info->flags;
   data->dtable = info->dtable;
-  data->dtablesize = info->dtableType.msgtl_number;
+  data->dtable_count = info->dtableType.msgtl_number;
+
+  data->argp = info->argv;
+  data->arg_size = info->argvType.msgtl_number;
+
+  data->envp = info->envp;
+  data->env_size = info->envpType.msgtl_number;
+
   data->portarray = info->portarray;
-  data->portarraysize = info->portarrayType.msgtl_number;
+  data->portarray_count = info->portarrayType.msgtl_number;
+
   data->intarray = info->intarray;
-  data->intarraysize = info->intarrayType.msgtl_number;
+  data->intarray_count = info->intarrayType.msgtl_number;
+
   data->stack_base = info->stack_base;
-  data->stack_size = info->stack_size;
+  data->stack_count = info->stack_size;
+
   data->phdr = info->phdr;
-  data->phdrsz = info->phdr_size;
+  data->phdr_count = info->phdr_size;
+
   data->user_entry = info->user_entry;
 }
 

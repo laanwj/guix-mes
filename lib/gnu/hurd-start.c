@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -24,6 +24,8 @@
     Copyright (C) 1995-2016 Free Software Foundation, Inc.
  */
 
+#include <mes/lib-mini.h>
+#include <argz.h>
 #include <gnu/hurd.h>
 #include <gnu/syscall.h>
 
@@ -34,7 +36,10 @@
 
 struct hurd_startup_data _hurd_startup_data;
 mach_port_t _hurd_dtable[_HURD_DTABLE_MAX];
-int _hurd_dtable_size;
+int _hurd_dtable_count;
+size_t __argc;
+char *__argv[_HURD_ARGV_MAX];
+char *__envv[_HURD_ENVV_MAX];
 
 void __mach_init (void);
 
@@ -46,7 +51,10 @@ _hurd_start ()
   __task_get_special_port (__mach_task_self (), TASK_BOOTSTRAP_PORT,
                            &bootstrap);
   __exec_startup_get_data (bootstrap, &_hurd_startup_data);
-  _hurd_dtable_size = _hurd_startup_data.dtablesize;
-  for (int i = 0; i < _hurd_dtable_size; i++)
+  _hurd_dtable_count = _hurd_startup_data.dtable_count;
+  for (int i = 0; i < _hurd_dtable_count; i++)
     _hurd_dtable[i] = _hurd_startup_data.dtable[i];
+  __argc = __argz_extract_count (_hurd_startup_data.argp, _hurd_startup_data.arg_size, __argv);
+  __argz_extract (_hurd_startup_data.envp, _hurd_startup_data.env_size, __envv);
+  environ = __envv;
 }

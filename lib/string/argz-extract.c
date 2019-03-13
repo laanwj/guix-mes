@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright (C) 1995-2018 Free Software Foundation, Inc.
+ * Copyright © 1995-2018 Free Software Foundation, Inc.
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -28,16 +29,23 @@
 /* Puts pointers to each string in ARGZ, plus a terminating 0 element, into
    ARGV, which must be large enough to hold them all.  */
 void
-__argz_extract (const char *argz, size_t len, char **argv)
+__argz_extract (char const *argz, size_t len, char **argv)
 {
+  __argz_extract_count (argz, len, argv);
+}
+
+size_t
+__argz_extract_count (char const *argz, size_t len, char **argv)
+{
+  size_t count = 0;
   while (len > 0)
     {
       size_t part_len = strlen (argz);
       *argv++ = (char *) argz;
       argz += part_len + 1;
       len -= part_len + 1;
+      count ++;
     }
   *argv = 0;
+  return count;
 }
-
-weak_alias (__argz_extract, argz_extract)

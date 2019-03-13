@@ -31,7 +31,7 @@
 mach_port_t
 fd_get (int filedes)
 {
-  if (filedes >=0 && filedes <= _hurd_dtable_size)
+  if (filedes >=0 && filedes <= _hurd_dtable_count)
     return _hurd_dtable[filedes];
   return 0;
 }

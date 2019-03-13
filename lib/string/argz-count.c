@@ -40,5 +40,3 @@ __argz_count (const char *argz, size_t len)
     }
   return count;
 }
-
-libc_hidden_def (__argz_count) weak_alias (__argz_count, argz_count)

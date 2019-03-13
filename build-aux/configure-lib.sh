@@ -63,6 +63,7 @@ lib/mach/mach_reply_port.S
 lib/mach/mach_task_self.S
 lib/mach/mach_thread_self.S
 lib/mach/msg.c
+lib/string/argz-extract.c
 "
     fi
 fi

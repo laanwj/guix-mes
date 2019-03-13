@@ -41,23 +41,41 @@ typedef off64_t loff_t;
 struct hurd_startup_data
   {
     int flags;
+
     mach_port_t *dtable;
-    mach_msg_type_number_t dtablesize;
+    mach_msg_type_number_t dtable_count;
+
+    char *argp;
+    int arg_size;
+
+    char *envp;
+    int env_size;
+
     mach_port_t *portarray;
-    mach_msg_type_number_t portarraysize;
+    mach_msg_type_number_t portarray_count;
+
     int *intarray;
-    mach_msg_type_number_t intarraysize;
+    mach_msg_type_number_t intarray_count;
+
     vm_address_t stack_base;
-    vm_size_t stack_size;
+    vm_size_t stack_count;
+
     vm_address_t phdr;
-    vm_size_t phdrsz;
+    vm_size_t phdr_count;
+
     vm_address_t user_entry;
   };
 
 #define _HURD_DTABLE_MAX 1024
 extern mach_port_t _hurd_dtable[_HURD_DTABLE_MAX];
-extern int _hurd_dtable_size;
+extern int _hurd_dtable_count;
 extern struct hurd_startup_data _hurd_startup_data;
+
+#define _HURD_ARGV_MAX 1000
+#define _HURD_ENVV_MAX 1000
+extern size_t __argc;
+extern char *__argv[_HURD_ARGV_MAX];
+extern char *__envv[_HURD_ENVV_MAX];
 
 mach_port_t fd_get (int filedes);
 error_t fd_write (mach_port_t port, void const *buffer, size_t *size, loff_t offset);
