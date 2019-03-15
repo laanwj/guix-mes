@@ -48,7 +48,7 @@ _hurd_start ()
 {
   mach_port_t bootstrap;
   __mach_init ();
-  __task_get_special_port (__mach_task_self (), TASK_BOOTSTRAP_PORT,
+  __task_get_special_port (mach_task_self (), TASK_BOOTSTRAP_PORT,
                            &bootstrap);
   __exec_startup_get_data (bootstrap, &_hurd_startup_data);
   _hurd_dtable_count = _hurd_startup_data.dtable_count;

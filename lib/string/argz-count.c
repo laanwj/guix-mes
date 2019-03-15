@@ -18,9 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Taken from GNU C Library
- * Routines for dealing with '\0' separated arg vectors.
- * Written by Miles Bader <miles@gnu.ai.mit.edu>
+/** Commentary:
+    Taken from GNU C Library
+    Routines for dealing with '\0' separated arg vectors.
+    Written by Miles Bader <miles@gnu.org>
 */
 
 #include <argz.h>

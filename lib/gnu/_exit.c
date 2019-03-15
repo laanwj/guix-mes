@@ -33,7 +33,7 @@ void
 _exit (int status)
 {
   __proc_mark_exit (_hurd_startup_data.portarray[INIT_PORT_PROC], status, 0);
-  __task_terminate (__mach_task_self ());
+  __task_terminate (mach_task_self ());
 #if 0 // FIXME: this was needed?
   while (1) {* (int *) 0 = 0;}
 #else

@@ -1,20 +1,28 @@
-/* Declarations and macros for the basic Mach things set at startup.
-   Copyright (C) 1993-2016 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+/* -*-comment-start: "//";comment-end:""-*-
+ * GNU Mes --- Maxwell Equations of Software
+ * Copyright © 1993-2016 Free Software Foundation, Inc.
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ *
+ * This file is part of GNU Mes.
+ *
+ * GNU Mes is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * GNU Mes is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, see
-   <http://www.gnu.org/licenses/>.  */
+/** Commentary:
+    Taken from GNU C Library
+    Declarations and macros for the basic Mach things set at startup.
+ */
 
 #ifndef	_MACH_INIT_H
 
@@ -23,18 +31,8 @@
 #include <mach/mach_types.h>
 
 /* Return the current task's task port.  */
-extern mach_port_t __mach_task_self (void);
 extern mach_port_t mach_task_self (void);
-
-/* This cache is initialized at startup.  */
-extern mach_port_t __mach_task_self_;
-#define __mach_task_self()	(__mach_task_self_ + 0)	/* Not an lvalue.  */
-#define mach_task_self()	(__mach_task_self ())
-
-/* This cache is initialized at startup.  */
-extern mach_port_t __mach_host_self_;
-#define __mach_host_self()	(__mach_host_self_ + 0)	/* Not an lvalue.  */
-#define mach_host_self()	(__mach_host_self ())
+extern mach_port_t mach_host_self (void);
 
 /* Kernel page size.  */
 extern vm_size_t __vm_page_size;
