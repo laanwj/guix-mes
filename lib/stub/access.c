@@ -20,6 +20,8 @@
 
 #include <mes/lib.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 int
 access (char const *file_name, int how)
@@ -29,5 +31,15 @@ access (char const *file_name, int how)
     eputs ("access stub\n");
   stub = 1;
   errno = 0;
-  return 0;
+  if (how == R_OK || how == F_OK)
+    {
+      int filedes = _open3 (file_name, O_RDONLY, 0);
+      if (filedes >= 2)
+        return 0;
+    }
+  else if (how == W_OK)
+    return 0;
+  else if (how == X_OK)
+    return 0;
+  return -1;
 }
