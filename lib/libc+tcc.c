@@ -93,7 +93,6 @@ int errno;
 #include <stdlib/strtoull.c>
 #include <string/memmem.c>
 #include <string/memmove.c>
-#include <string/memset.c>
 #include <string/strcat.c>
 #include <string/strchr.c>
 #include <string/strlwr.c>

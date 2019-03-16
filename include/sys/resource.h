@@ -50,6 +50,8 @@ struct rusage
 
 #define RUSAGE_SELF 0
 #define RUSAGE_CHILDREN -1
+#define RLIMIT_NOFILE 1024
+#define OPEN_MAX RLIMIT_NOFILE
 
 int getrusage (int processes, struct rusage *rusage);
 

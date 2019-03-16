@@ -23,11 +23,8 @@
 int
 close (int filedes)
 {
-  if (_ungetc_fd == filedes)
-    {
-      _ungetc_pos = -1;
-      _ungetc_fd = -1;
-    }
+  if (filedes > 2)
+    __ungetc_buf[filedes] = -1;
   return _sys_call1 (SYS_close, (int)filedes);
 }
 

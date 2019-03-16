@@ -74,6 +74,7 @@ __mes_debug ()
 
 #include <string/memchr.c>
 #include <string/memcmp.c>
+#include <string/memset.c>
 #include <string/strcmp.c>
 #include <string/strcpy.c>
 #include <string/strncmp.c>

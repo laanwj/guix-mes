@@ -69,14 +69,10 @@ read (int filedes, void *buffer, size_t size)
 int
 _open3 (char const *file_name, int flags, int mask)
 {
-#if !MES_BOOTSTRAP
-  if (!flags)
-    {
-      _ungetc_pos = -1;
-      _ungetc_fd = -1;
-    }
-#endif
   int r = _sys_call3 (SYS_open, (long)file_name, (int)flags, (int)mask);
+  __ungetc_init ();
+  if (r > 2)
+    __ungetc_buf[r] = -1;
   return r;
 }
 

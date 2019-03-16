@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -24,7 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct scm {
+struct scm
+{
   int type;
   int car;
   int cdr;
@@ -56,30 +57,31 @@ main ()
   oputs ("\n: ");
   oputs ("t: read 0123456789\nt: ");
   int c = get ();
-  while (i < 10) {
-    *p++ = c;
-    putchar (c);
-    c = get ();
-    i++;
-  }
+  while (i < 10)
+    {
+      *p++ = c;
+      putchar (c);
+      c = get ();
+      i++;
+    }
   oputs ("\n");
-  if (strcmp (g_chars, "0123456789")) return 1;
+  if (strcmp (g_chars, "0123456789"))
+    return 1;
 
-  oputs ("t: ungetc ('A') == getchar ()\n");
-  ungetc ('A', STDIN);
-  if (getchar () != 'A') return 1;
-  ungetc (0, STDIN);
-  //ungetc ('\1', STDIN);
-  ungetc (1, STDIN);
-  oputs ("t: ungetc ();ungetc ();getchar ();getchar ()\n");
-  if (getchar () != 1) return 1;
-  //if (getchar () != '\0') return 1;
-  if (getchar () != 0) return 1;
+  oputs ("t: fdungetc ('A') == getchar ()\n");
+  fdungetc ('A', STDIN);
+  if (getchar () != 'A')
+    return 2;
+  oputs ("t: fdungetc (0)\n");
+  fdungetc (0, STDIN);
+  if (getchar () != 0)
+    return 3;
 
   oputs ("t: i == 'm'\n");
   char m = 0x1122336d;
   i = m;
-  if (i != 'm') return 1;
+  if (i != 'm')
+    return 4;
 
   return 0;
 }
