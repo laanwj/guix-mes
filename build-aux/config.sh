@@ -81,7 +81,7 @@ export mes_p
 export mesc_p
 export tcc_p
 export mes_arch
-export posix_p
+export with_glibc_p
 
 CPPFLAGS=${CPPFLAGS-"
 -D 'VERSION=\"$VERSION\"'
@@ -92,7 +92,7 @@ CPPFLAGS=${CPPFLAGS-"
 -I ${srcdest}include
 "}
 
-[ "$posix_p" ] && CPPFLAGS="$CPPFLAGS -D POSIX=1 -D WITH_GLIBC=1"
+[ "$with_glibc_p" ] && CPPFLAGS="$CPPFLAGS -D WITH_GLIBC=1"
 
 LDFLAGS=${LDFLAGS-"
 -v

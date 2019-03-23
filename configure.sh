@@ -111,7 +111,7 @@ subst () {
     -e s,"@mesc_p@,$mesc_p,"\
     -e s,"@tcc_p@,$tcc_p,"\
     -e s,"@mes_arch@,$mes_arch,"\
-    -e s,"@posix_p@,$posix_p,"\
+    -e s,"@with_glibc_p@,$with_glibc_p,"\
     -e s,"@abs_top_srcdir@,$abs_top_srcdir,"\
     -e s,"@abs_top_builddir@,$abs_top_builddir,"\
     -e s,"@top_builddir@,$top_builddir,"\
@@ -195,7 +195,7 @@ if [ ! "$mesc_p" ]; then
     mes_arch=$mes_arch-$compiler
 fi
 if [ ! "$mesc_p" -a ! "$mes_p" ]; then
-    posix_p=1
+    with_glibc_p=1
 fi
 
 subst ${srcdest}mes/module/mes/boot-0.scm.in mes/module/mes/boot-0.scm

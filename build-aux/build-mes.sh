@@ -32,7 +32,7 @@ fi
 [ "$mes_p" -a ! "$gcc_p" ] && cp -f lib/linux/$mes_arch/crt1.S lib/$mes_arch/crt1.S
 [ "$mes_p" -a ! "$gcc_p" ] && cp -f lib/linux/$mes_arch/crt1.o lib/$mes_arch/crt1.o
 
-[ ! "$mesc_p" -a ! "$posix_p" ] && (program_prefix= compile lib/linux/$mes_arch/crt0)
+ [ ! "$mesc_p" -a ! "$with_glibc_p" ] && (program_prefix= compile lib/linux/$mes_arch/crt0)
 [ "$mes_p" -a "$gcc_p" ] && (program_prefix= compile lib/linux/$mes_arch/crti)
 [ "$mes_p" -a "$gcc_p" ] && (program_prefix= compile lib/linux/$mes_arch/crtn)
 

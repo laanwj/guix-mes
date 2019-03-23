@@ -533,7 +533,7 @@ Some influential environment variables:
                      ("@mes_arch@" . ,mes-arch)
                      ("@mes_p@" . ,(if mes? "1" ""))
                      ("@mesc_p@" . ,(if mesc? "1" ""))
-                     ("@posix_p@" . ,(if posix? "1" ""))
+                     ("@with_glibc_p@" . ,(if posix? "1" ""))
                      ("@tcc_p@" . ,(if tcc? "1" ""))
 
                      ("@abs_top_srcdir@" . ,abs-top-srcdir)

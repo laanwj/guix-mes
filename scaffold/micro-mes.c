@@ -18,8 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if POSIX
-#error "POSIX not supported"
+#if WITH_GLIBC
+#error "WITH_GLIBC not supported"
 #endif
 
 #include <stdio.h>

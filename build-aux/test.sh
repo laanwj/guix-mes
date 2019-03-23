@@ -26,7 +26,7 @@ sh ${srcdest}build-aux/test-cc.sh $1
 
 if [ ! "$mesc_p" ]; then
     #FIXME: c&p
-    unset CFLAGS CPPFLAGS LDFLAGS gcc_p tcc_p posix_p
+    unset CFLAGS CPPFLAGS LDFLAGS gcc_p tcc_p with_glibc_p
     MES=${MES-guile}
     mesc_p=1
     mes_p=1

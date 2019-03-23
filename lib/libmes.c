@@ -41,7 +41,10 @@
 #include <mes/fdputs.c>
 #include <mes/fdungetc.c>
 
-#if POSIX
+#if WITH_GLIBC
+#undef open
+#include <fcntl.h>
+#include <stdarg.h>
 // The Mes C Library defines and initializes these in crt1
 int __stdin = STDIN;
 int __stdout = STDOUT;
@@ -63,7 +66,7 @@ mes_open (char const *file_name, int flags, ...)
 
 #include <mes/eputs.c>
 #include <mes/oputs.c>
-#endif // POSIX
+#endif // WITH_GLIBC
 
 #include <mes/eputc.c>
 #include <mes/oputc.c>

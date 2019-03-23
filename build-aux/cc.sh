@@ -41,7 +41,7 @@ archive () {
 
 link () {
     lib=$libc
-    [ "$posix_p" ] && lib='-l mes'
+    [ "$with_glibc_p" ] && lib='-l mes'
     out=$(dirname "$1")/${program_prefix}$(basename "$1")
     trace "CCLD       $1" $CC $CFLAGS $LDFLAGS -o" $out" $crt1 "$1".${program_prefix}o $2 $lib
 }

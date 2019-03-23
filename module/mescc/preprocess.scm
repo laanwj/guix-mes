@@ -84,8 +84,8 @@
      #:cpp-defs `(
                   "NULL=0"
                   "__linux__=1"
-                  "POSIX=0"
                   "_POSIX_SOURCE=0"
+                  "WITH_GLIBC=0"
                   "__STDC__=1"
                   "__MESC__=1"
                   ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
