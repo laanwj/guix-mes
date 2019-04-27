@@ -267,6 +267,14 @@ lib/linux/stat.c
 "
 fi
 
+if test $mes_kernel = gnu; then
+    libc_tcc_SOURCES="$libc_tcc_SOURCES
+lib/stub/close.c
+lib/stub/rmdir.c
+lib/stub/stat.c
+"
+fi
+
 libc_gnu_SOURCES="
 $libc_tcc_SOURCES
 lib/ctype/isalnum.c
