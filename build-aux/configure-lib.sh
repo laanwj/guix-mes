@@ -103,6 +103,11 @@ lib/ctype/isxdigit.c
 lib/posix/write.c
 lib/stdlib/atoi.c
 "
+    if test $mes_kernel = gnu; then
+        libmes_SOURCES="$libmes_SOURCES
+lib/stub/lseek.c
+"
+    fi
     if test $mes_kernel = linux; then
         libmes_SOURCES="$libmes_SOURCES
 lib/linux/lseek.c
