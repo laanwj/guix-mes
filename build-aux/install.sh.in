@@ -73,13 +73,28 @@ else
 fi
 
 mkdir -p $DESTDIR$mes_prefix
+rm -f $(find lib -type f -a -executable)
+rm -f $(find lib/tests -type f -a -name '*.1')
+rm -f $(find lib/tests -type f -a -name '*.2')
+rm -f $(find lib/tests -type f -a -name '*.o')
+rm -f $(find lib/tests -type f -a -name '*.log')
+rm -f $(find lib/tests -type f -a -name '*.x86-mes*')
+rm -f $(find lib/tests -type f -a -name '*.x86_64-mes*')
+rm -f $(find scaffold -type f -a -executable)
+rm -f $(find scaffold -type f -a -name '*.1')
+rm -f $(find scaffold -type f -a -name '*.2')
+rm -f $(find scaffold -type f -a -name '*.o')
+rm -f $(find scaffold -type f -a -name '*.S')
+rm -f $(find scaffold -type f -a -name '*.log')
+rm -f $(find scaffold -type f -a -name '*.x86-mes*')
+rm -f $(find scaffold -type f -a -name '*.x86_64-mes*')
 if [ -z "$srcdest" ]; then
-    tar -cf- --exclude='*.E' --exclude='*.*-out' include lib | tar -xf- -C $DESTDIR$mes_prefix
+    tar -cf- include lib | tar -xf- -C $DESTDIR$mes_prefix
     tar -cf- --exclude='*.go' module | tar -xf- -C $DESTDIR$mes_prefix
-    tar -cf- --exclude='*.gcc*' --exclude='*.mes*' scaffold | tar -xf- -C $DESTDIR$mes_prefix
+    tar -cf- scaffold | tar -xf- -C $DESTDIR$mes_prefix
 else
     tar -cf- -C ${srcdest} include lib | tar -xf- -C $DESTDIR$mes_prefix
-    tar -cf- -C lib --exclude='*.E' --exclude='*.*-out' | tar -xf- -C $DESTDIR$mes_prefix
+    tar -cf- -C lib | tar -xf- -C $DESTDIR$mes_prefix
     tar -cf- -C ${srcdest} module | tar -xf- -C $DESTDIR$mes_prefix
     tar -cf- -C ${srcdest} scaffold | tar -xf- -C $DESTDIR$mes_prefix
 fi
@@ -92,23 +107,23 @@ if [ -f src/mes.x86_64-mes-S ]; then
     cp src/mes.x86_64-mes-S $DESTDIR$mes_prefix/lib/x86_64-mes/mes.S
 fi
 
-mkdir -p $DESTDIR@guile_site_dir@
-mkdir -p $DESTDIR@guile_site_ccache_dir@
-tar -cf- -C ${srcdest}module --exclude='*.go' . | tar -xf- -C $DESTDIR@guile_site_dir@
-tar -cf- -C module --exclude='*.scm' . | tar -xf- -C $DESTDIR@guile_site_ccache_dir@
+mkdir -p ${DESTDIR}@guile_site_dir@
+mkdir -p ${DESTDIR}@guile_site_ccache_dir@
+tar -cf- -C ${srcdest}module --exclude='*.go' . | tar -xf- -C ${DESTDIR}@guile_site_dir@
+tar -cf- -C module --exclude='*.scm' . | tar -xf- -C ${DESTDIR}@guile_site_ccache_dir@
 
 if [ -f doc/mes.info ]; then
-    mkdir -p $DESTDIR@infodir@
-    tar -cf- doc/mes.info* doc/images | tar -xf- --strip-components=1 -C $DESTDIR@infodir@
-    install-info --info-dir=$DESTDIR@infodir@ doc/mes.info
+    mkdir -p ${DESTDIR}@infodir@
+    tar -cf- doc/mes.info* doc/images | tar -xf- --strip-components=1 -C ${DESTDIR}@infodir@
+    install-info --info-dir=${DESTDIR}@infodir@ doc/mes.info
 fi
 
 if [ -f doc/mes.1 ]; then
-    mkdir -p $DESTDIR@mandir@/man1
-    cp doc/mes.1 $DESTDIR@mandir@/man1/
+    mkdir -p ${DESTDIR}@mandir@/man1
+    cp doc/mes.1 ${DESTDIR}@mandir@/man1/
 fi
 
 if [ -f doc/mescc.1 ]; then
-    mkdir -p $DESTDIR@mandir@/man1
-    cp doc/mescc.1 $DESTDIR@mandir@/man1/
+    mkdir -p ${DESTDIR}@mandir@/man1
+    cp doc/mescc.1 ${DESTDIR}@mandir@/man1/
 fi
