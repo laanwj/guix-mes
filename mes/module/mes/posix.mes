@@ -34,6 +34,9 @@
              (string-suffix? ext base)) (string-drop-right base (string-length ext))
              base)))
 
+(define (force-output . port)
+  *unspecified*)
+
 (define (search-path path file-name)
   (if (access? file-name R_OK) file-name
       (let loop ((path path))

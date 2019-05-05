@@ -246,12 +246,6 @@ set_current_error_port (SCM port)
 }
 
 SCM
-force_output (SCM p) ///((arity . n))
-{
-  return cell_unspecified;
-}
-
-SCM
 chmod_ (SCM file_name, SCM mode) ///((name . "chmod"))
 {
   chmod (CSTRING (file_name), VALUE (mode));
