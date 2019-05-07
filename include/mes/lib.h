@@ -18,10 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MES_LIBMES_H
-#define __MES_LIBMES_H
+#ifndef __MES_LIB_H
+#define __MES_LIB_H
 
-#include <libmes-mini.h>
+#include <mes/lib-mini.h>
 
 #if WITH_GLIBC
 int mes_open (char const *file_name, int flags, ...);
@@ -56,4 +56,4 @@ int oputc (int c);
 int oputs (char const* s);
 char *search_path (char const *file_name);
 
-#endif //__MES_LIBMES_H
+#endif //__MES_LIB_H

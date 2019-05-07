@@ -21,10 +21,10 @@
 #include <sys/ioctl.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <libmes.h>
+#include <mes/lib.h>
 #include <stdio.h>
 
-#include <libmes.h>
+#include <mes/lib.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>

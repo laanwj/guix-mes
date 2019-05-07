@@ -18,7 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
+#include <mes/lib.h>
+#include <ctype.h>
 
 long
 abtol (char const **p, int base)

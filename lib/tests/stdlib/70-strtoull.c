@@ -18,8 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
-#include <libmes.h>
+#include <mes/lib.h>
+#include <mes/lib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

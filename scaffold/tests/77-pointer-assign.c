@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#include <libmes.h>
+#include <mes/lib.h>
 
 struct baz {
   int i;

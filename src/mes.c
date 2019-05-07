@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libmes.h>
+#include <mes/lib.h>
 
 //#define MES_MINI 1
 #if WITH_GLIBC

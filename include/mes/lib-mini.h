@@ -18,8 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MES_LIBMES_MINI_H
-#define __MES_LIBMES_MINI_H
+#ifndef __MES_LIB_MINI_H
+#define __MES_LIB_MINI_H
 
 #if !WITH_GLIBC
 
@@ -85,7 +85,8 @@ int oputs (char const* s);
 
 #if !WITH_GLIBC
 size_t strlen (char const* s);
+ssize_t _write ();
 ssize_t write (int filedes, void const *buffer, size_t size);
 #endif // !WITH_GLIBC
 
-#endif //__MES_LIBMES_MINI_H
+#endif //__MES_LIB_MINI_H

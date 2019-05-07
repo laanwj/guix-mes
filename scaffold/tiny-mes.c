@@ -22,7 +22,7 @@
 #error "WITH_GLIBC not supported"
 #endif
 
-#include <libmes.h>
+#include <mes/lib.h>
 
 #include <fcntl.h>
 #include <stdio.h>

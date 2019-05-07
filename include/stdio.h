@@ -20,7 +20,7 @@
 #ifndef __MES_STDIO_H
 #define __MES_STDIO_H 1
 
-#include <libmes.h>
+#include <mes/lib.h>
 
 #if WITH_GLIBC
 #ifndef _GNU_SOURCE

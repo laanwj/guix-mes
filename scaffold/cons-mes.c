@@ -26,7 +26,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libmes.h>
+#include <mes/lib.h>
 
 char arena[2000];
 

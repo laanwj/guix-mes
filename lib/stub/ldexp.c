@@ -18,8 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
-#include <stdlib.h>
+#include <mes/lib.h>
+#include <math.h>
 
 double
 ldexp (double x, int exp)

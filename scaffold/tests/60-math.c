@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libmes.h>
+#include <mes/lib.h>
 
 int
 add (int a, int b)

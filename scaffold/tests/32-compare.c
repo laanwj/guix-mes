@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes-mini.h>
+#include <mes/lib-mini.h>
 
 int
 isid (char c)

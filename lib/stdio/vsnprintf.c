@@ -18,8 +18,9 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <mes/lib.h>
+#include <stdarg.h>
+#include <string.h>
 
 int
 vsnprintf (char *str, size_t size, char const* format, va_list ap)

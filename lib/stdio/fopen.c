@@ -19,7 +19,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
+#include <mes/lib.h>
 #include <stdio.h>
 
 //#if __GNUC__ && __x86_64__

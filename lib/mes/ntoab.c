@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
+#include <mes/lib.h>
 
 char *
 ntoab (long x, int base, int signed_p)

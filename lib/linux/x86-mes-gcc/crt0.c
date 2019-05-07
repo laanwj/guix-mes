@@ -23,7 +23,7 @@
 // instead of calling main, it seems to call either _main or ___main,
 // let's try _main first
 
-#include <libmes-mini.h>
+#include <mes/lib-mini.h>
 int _main (int argc, char *argv[]);
 
 void
