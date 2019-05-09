@@ -32,16 +32,4 @@
 #error arch not supported
 #endif
 
-ssize_t
-write (int filedes, void const *buffer, size_t size)
-{
-  int r = _write (filedes, buffer, size);
-  if (r < 0)
-    {
-      errno = -r;
-      r = -1;
-    }
-  else
-    errno = 0;
-  return r;
-}
+#include <posix/write.c>
