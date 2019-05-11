@@ -21,7 +21,7 @@
 #include <libc+tcc.c>
 
 #if __GNU__
-#include <linux/gnu.c>
+#error TODO, see wip-hurd
 #elif __linux__
 #include <linux/gnu.c>
 #else

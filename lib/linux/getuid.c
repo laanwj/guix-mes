@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,26 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <linux/chdir.c>
-#include <linux/fcntl.c>
-#include <linux/fstat.c>
-#include <linux/getdents.c>
-#include <linux/getegid.c>
-#include <linux/geteuid.c>
-#include <linux/getgid.c>
-#include <linux/getpid.c>
-#include <linux/getppid.c>
-#include <linux/getrusage.c>
-#include <linux/getuid.c>
-#include <linux/kill.c>
-#include <linux/link.c>
-#include <linux/lstat.c>
-#include <linux/mkdir.c>
-#include <linux/nanosleep.c>
-#include <linux/pipe.c>
-#include <linux/rename.c>
-#include <linux/setgid.c>
-#include <linux/settimer.c>
-#include <linux/setuid.c>
-#include <linux/signal.c>
-#include <linux/sigprogmask.c>
+uid_t
+getuid ()
+{
+  return _sys_call (SYS_getuid);
+}
