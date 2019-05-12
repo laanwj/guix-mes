@@ -186,7 +186,7 @@ current_input_port ()
 SCM
 open_input_file (SCM file_name)
 {
-  return MAKE_NUMBER (open (CSTRING (file_name), O_RDONLY));
+  return MAKE_NUMBER (mes_open (CSTRING (file_name), O_RDONLY, 0));
 }
 
 SCM
@@ -228,7 +228,7 @@ open_output_file (SCM x) ///((arity . n))
   int mode = S_IRUSR|S_IWUSR;
   if (TYPE (x) == TPAIR && TYPE (car (x)) == TNUMBER)
     mode = VALUE (car (x));
-  return MAKE_NUMBER (open (CSTRING (file_name), O_WRONLY|O_CREAT|O_TRUNC,mode));
+  return MAKE_NUMBER (mes_open (CSTRING (file_name), O_WRONLY|O_CREAT|O_TRUNC, mode));
 }
 
 SCM

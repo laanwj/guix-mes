@@ -23,11 +23,6 @@
 
 #include <mes/lib-mini.h>
 
-#if WITH_GLIBC
-int mes_open (char const *file_name, int flags, ...);
-#define open mes_open
-#endif
-
 int __mes_debug ();
 void __ungetc_init ();
 void __ungetc_clear (int filedes);
@@ -50,8 +45,9 @@ int _fdungetc_p (int fd);
 int isdigit (int c);
 int isspace (int c);
 int isxdigit (int c);
-int _open3 (char const *file_name, int flags, int mask);
+int mes_open (char const *file_name, int flags, int mask);
 int _open2 (char const *file_name, int flags);
+int _open3 (char const *file_name, int flags, int mask);
 int oputc (int c);
 int oputs (char const* s);
 char *search_path (char const *file_name);

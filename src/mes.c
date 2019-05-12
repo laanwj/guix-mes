@@ -2192,7 +2192,7 @@ open_boot (char *prefix, char const *boot, char const *location)
       eputs (prefix);
       eputs ("\n");
     }
-  int fd = open (prefix, O_RDONLY);
+  int fd = mes_open (prefix, O_RDONLY, 0);
   if (g_debug && fd > 0)
     {
       eputs ("mes: read boot-0: ");
