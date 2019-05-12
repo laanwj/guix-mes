@@ -21,6 +21,7 @@
 #define SYS_exit   "0x01"
 #define SYS_write  "0x04"
 
+// *INDENT-OFF*
 void
 _exit (int code)
 {

@@ -34,6 +34,7 @@
 typedef int mode_t;
 #endif
 
+// *INDENT-OFF*
 #if __i386__
 struct stat
 {
@@ -79,6 +80,7 @@ struct stat
   unsigned long  __foo1;
 };
 #endif
+// *INDENT-ON*
 
 int chmod (char const *file_name, mode_t mode);
 int mkdir (char const *file_name, mode_t mode);

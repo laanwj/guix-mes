@@ -77,32 +77,34 @@ struct user_regs_struct
   long int xss;
 };
 
+// *INDENT-OFF*
 struct user
 {
-  struct user_regs_struct	regs;
-  int				u_fpvalid;
-  struct user_fpregs_struct	i387;
-  unsigned long int		u_tsize;
-  unsigned long int		u_dsize;
-  unsigned long int		u_ssize;
-  unsigned long int		start_code;
-  unsigned long int		start_stack;
-  long int			signal;
-  int				reserved;
-  struct user_regs_struct*	u_ar0;
-  struct user_fpregs_struct*	u_fpstate;
-  unsigned long int		magic;
-  char				u_comm [32];
-  int				u_debugreg [8];
+  struct user_regs_struct    regs;
+  int                        u_fpvalid;
+  struct user_fpregs_struct  i387;
+  unsigned long int          u_tsize;
+  unsigned long int          u_dsize;
+  unsigned long int          u_ssize;
+  unsigned long int          start_code;
+  unsigned long int          start_stack;
+  long int                   signal;
+  int                        reserved;
+  struct user_regs_struct   *u_ar0;
+  struct user_fpregs_struct *u_fpstate;
+  unsigned long int          magic;
+  char                       u_comm [32];
+  int                        u_debugreg [8];
 };
 
-#define PAGE_SHIFT		12
-#define PAGE_SIZE		(1UL << PAGE_SHIFT)
-#define PAGE_MASK		(~(PAGE_SIZE-1))
-#define NBPG			PAGE_SIZE
-#define UPAGES			1
-#define HOST_TEXT_START_ADDR	(u.start_code)
-#define HOST_STACK_END_ADDR	(u.start_stack + u.u_ssize * NBPG)
+#define PAGE_SHIFT           12
+#define PAGE_SIZE            (1UL << PAGE_SHIFT)
+#define PAGE_MASK            (~(PAGE_SIZE-1))
+#define NBPG                 PAGE_SIZE
+#define UPAGES               1
+#define HOST_TEXT_START_ADDR (u.start_code)
+#define HOST_STACK_END_ADDR  (u.start_stack + u.u_ssize * NBPG)
+// *INDENT-ON*
 
 #endif // ! WITH_GLIBC
 

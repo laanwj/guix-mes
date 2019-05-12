@@ -29,12 +29,15 @@
 
 #else // ! WITH_GLIBC
 
+// *INDENT-OFF*
 #ifndef LC_ALL
 #define LC_CTYPE   0
 #define LC_NUMERIC 1
 #define LC_COLLATE 3
 #define LC_ALL     6
 #endif
+// *INDENT-ON*
+
 char * setlocale (int category, char const *locale);
 
 #endif // ! WITH_GLIBC

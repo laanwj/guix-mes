@@ -29,6 +29,7 @@ int main (int argc, char *argv[]);
 // gcc x86_64 calling convention:
 // rdi, rsi, rdx, rcx, r8, r9, <stack0>, <stack1>
 
+// *INDENT-OFF*
 void
 _start ()
 {

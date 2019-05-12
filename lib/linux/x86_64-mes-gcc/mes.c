@@ -28,6 +28,7 @@
 // #define R0 rax
 // #define R1 rdi
 
+// *INDENT-OFF*
 long
 _sys_call (long sys_call)
 {

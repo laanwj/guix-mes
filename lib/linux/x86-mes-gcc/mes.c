@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <linux/x86/syscall.h>
 
+// *INDENT-OFF*
 long
 _sys_call (long sys_call)
 {

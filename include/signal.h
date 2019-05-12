@@ -31,6 +31,7 @@ typedef long stack_t;
 
 #include <sys/types.h>
 
+// *INDENT-OFF*
 #define NSIG 30
 #define SIGHUP     1
 #define SIGINT     2
@@ -85,35 +86,34 @@ typedef long stack_t;
 #define SA_NOMASK  SA_NODEFER
 #define SA_ONESHOT SA_RESETHAND
 
-
 typedef struct siginfo_t
 {
-  int si_signo;
-  int si_errno;
-  int si_code;
-  int si_trapno;
-  pid_t si_pid;
-  uid_t si_uid;
-  int si_status;
-  clock_t si_utime;
-  clock_t si_stime;
-  sigval_t si_value;
-  int si_int;
-  void *si_ptr;
-  int si_overrun;
-  int si_timerid;
-  void *si_addr;
-  long si_band;
-  int si_fd;
-  short si_addr_lsb;
-  void *si_lower;
-  void *si_upper;
-  int si_pkey;
-  void *si_call_addr;
-  int si_syscall;
+  int          si_signo;
+  int          si_errno;
+  int          si_code;
+  int          si_trapno;
+  pid_t        si_pid;
+  uid_t        si_uid;
+  int          si_status;
+  clock_t      si_utime;
+  clock_t      si_stime;
+  sigval_t     si_value;
+  int          si_int;
+  void        *si_ptr;
+  int          si_overrun;
+  int          si_timerid;
+  void        *si_addr;
+  long         si_band;
+  int          si_fd;
+  short        si_addr_lsb;
+  void        *si_lower;
+  void        *si_upper;
+  int          si_pkey;
+  void        *si_call_addr;
+  int          si_syscall;
   unsigned int si_arch;
 } siginfo_t;
-
+// *INDENT-ON*
 
 #if __MESC__
 typedef long sighandler_t;

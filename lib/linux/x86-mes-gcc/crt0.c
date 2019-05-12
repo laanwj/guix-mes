@@ -26,6 +26,7 @@
 #include <mes/lib-mini.h>
 int _main (int argc, char *argv[]);
 
+// *INDENT-OFF*
 void
 _start ()
 {

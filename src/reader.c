@@ -232,10 +232,9 @@ reader_read_hash (int c, SCM a)
   if (c == ':')
     {
       SCM x = reader_read_identifier_or_number (readchar ());
+      SCM msg = MAKE_STRING0 ("keyword perifx ':' not followed by a symbol: ");
       if (TYPE (x) == TNUMBER)
-        error (cell_symbol_system_error, // READ error
-               cons (MAKE_STRING0 ("keyword perifx ':' not followed by a symbol: "),
-                     x));
+        error (cell_symbol_system_error, cons (msg, x));
       return symbol_to_keyword (x);
     }
   if (c == 'b')
