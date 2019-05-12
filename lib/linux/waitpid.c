@@ -18,43 +18,14 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mes/lib.h>
-
-#include <fcntl.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-
-#if __MESC__ && __i386__
-#include <linux/x86-mes/mes.c>
-#elif __MESC__ && __x86_64__
-#include <linux/x86_64-mes/mes.c>
-#elif __i386__
-#include <linux/x86-mes-gcc/mes.c>
+pid_t
+waitpid (pid_t pid, int *status_ptr, int options)
+{
+#if __i386__
+  return _sys_call3 (SYS_waitpid, (long)pid, (long)status_ptr, (int)options);
 #elif __x86_64__
-#include <linux/x86_64-mes-gcc/mes.c>
+  return _sys_call4 (SYS_wait4, (long)pid, (long)status_ptr, (int)options, 0);
 #else
 #error arch not supported
 #endif
-
-#include <linux/access.c>
-#include <linux/brk.c>
-#include <linux/chmod.c>
-#include <linux/clock_gettime.c>
-#include <linux/dup.c>
-#include <linux/dup2.c>
-#include <linux/execve.c>
-#include <linux/fork.c>
-#include <linux/fsync.c>
-#include <linux/getcwd.c>
-#include <linux/gettimeofday.c>
-#include <linux/ioctl.c>
-#include <linux/open.c>
-#include <linux/read.c>
-#include <linux/time.c>
-#include <linux/unlink.c>
-#include <linux/waitpid.c>
+}
