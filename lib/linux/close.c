@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,9 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <time.h>
-
-#include <linux/close.c>
-#include <linux/lseek.c>
-#include <linux/rmdir.c>
-#include <linux/stat.c>
+int
+close (int filedes)
+{
+  if (filedes > 2)
+    __ungetc_buf[filedes] = -1;
+  return _sys_call1 (SYS_close, (int)filedes);
+}

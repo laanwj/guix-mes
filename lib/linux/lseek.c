@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,9 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <time.h>
-
-#include <linux/close.c>
-#include <linux/lseek.c>
-#include <linux/rmdir.c>
-#include <linux/stat.c>
+off_t
+lseek (int filedes, off_t offset, int whence)
+{
+  return _sys_call3 (SYS_lseek, (int)filedes, (long)offset, (int)whence);
+}
