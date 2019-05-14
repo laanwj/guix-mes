@@ -2254,7 +2254,7 @@ read_boot () ///((internal))
 #include "math.c"
 #include "lib.c"
 #include "vector.c"
-#include "strings.c"
+#include "string.c"
 #include "struct.c"
 #include "gc.c"
 #include "reader.c"
