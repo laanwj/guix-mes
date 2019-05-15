@@ -25,23 +25,23 @@ set -e
 mes_prefix=@prefix@/share/mes
 
 # use bash or lose if pipes fail
-if [ "$(basename $SHELL)" = bash ]; then
+if [ -n "$BASHOPTS" ]; then
    set -o pipefail
 fi
 
-mkdir -p $DESTDIR@bindir@
+mkdir -p ${DESTDIR}@bindir@
 if [ -f src/x86-mes-mes ]; then
-    cp src/x86-mes-mes $DESTDIR@bindir@/mes
+    cp src/x86-mes-mes ${DESTDIR}@bindir@/mes
 fi
-cp scripts/mescc.scm $DESTDIR@bindir@/mescc.scm
-cp scripts/mescc $DESTDIR@bindir@/mescc
+cp scripts/mescc.scm ${DESTDIR}@bindir@/mescc.scm
+cp scripts/mescc ${DESTDIR}@bindir@/mescc
 
 sed \
     -e "s,^#! /bin/sh,#! @SHELL@," \
-    scripts/diff.scm > $DESTDIR@bindir@/diff.scm
-chmod +x $DESTDIR@bindir@/diff.scm
+    scripts/diff.scm > ${DESTDIR}@bindir@/diff.scm
+chmod +x ${DESTDIR}@bindir@/diff.scm
 
-mkdir -p $DESTDIR@docdir@
+mkdir -p ${DESTDIR}@docdir@
 
 if [ -n "@PERL@" ]\
        && [ -n "@GIT@" ]\
@@ -58,18 +58,12 @@ cp\
     INSTALL\
     NEWS\
     README\
-    $DESTDIR@docdir@
+    ${DESTDIR}@docdir@
 
 if [ -f ChangeLog ]; then
-    cp ChangeLog $DESTDIR@docdir@
+    cp ChangeLog ${DESTDIR}@docdir@
 else
-    cp ChangeLog $DESTDIR@docdir@
-fi
-
-if [ -f ChangeLog ]; then
-    cp ChangeLog @docdir@
-else
-    cp ChangeLog @docdir@
+    cp ChangeLog ${DESTDIR}@docdir@
 fi
 
 mkdir -p $DESTDIR$mes_prefix

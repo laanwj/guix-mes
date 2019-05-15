@@ -37,6 +37,12 @@ if [ ! "$CC" ]; then
     CC="./pre-inst-env mescc"
 fi
 
+unset CFLAGS
+unset CPPFLAGS
+unset HEX2FLAGS
+unset LDFLAGS
+unset M1FLAGS
+
 export AR
 export CC
 export CFLAGS

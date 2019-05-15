@@ -26,7 +26,7 @@ set -e
 
 ./pre-inst-env bash ${srcdest}build-aux/check-boot.sh
 ./pre-inst-env sh ${srcdest}build-aux/check-mes.sh
-./pre-inst-env sh ${srcdest}build-aux/check-mescc.sh
+./pre-inst-env bash ${srcdest}build-aux/check-mescc.sh
 if [ -d $TINYCC_PREFIX/tests/tests2 ] ;then
     ./pre-inst-env sh ${srcdest}build-aux/check-tcc.sh
 fi

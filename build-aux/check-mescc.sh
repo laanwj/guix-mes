@@ -229,6 +229,16 @@ scaffold/tests/stdio/70-printf
 lib/tests/setjmp/80-setjmp
 scaffold/tests/a1-global-no-align
 "
+    # Debian: debugme itoa is broken
+    broken="$broken
+scaffold/tests/47-function-expression
+scaffold/tests/62-array
+scaffold/tests/65-read
+scaffold/tests/85-sizeof
+lib/tests/mes/90-abtod
+lib/tests/mes/90-dtoab
+lib/tests/posix/90-execlp
+"
 fi
 
 set +e

@@ -370,7 +370,7 @@ Some influential environment variables:
          (program-prefix (option-ref options 'program-prefix ""))
          (program-suffix (option-ref options 'program-suffix ""))
          (infodir (option-ref options 'infodir "${prefix}/share/info"))
-         (mandir (option-ref options 'infodir "${prefix}/share/man"))
+         (mandir (option-ref options 'mandir "${prefix}/share/man"))
          (sysconfdir (option-ref options 'sysconfdir "${prefix}/etc"))
 
          (bindir (option-ref options 'bindir "${prefix}/bin"))
