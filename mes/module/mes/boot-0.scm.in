@@ -212,6 +212,7 @@
   (define (parse-opts args)
     (let* ((option-spec
             '((no-auto-compile)
+              (command (single-char #\c) (value #t))
               (compiled-path (single-char #\C) (value #t))
               (help (single-char #\h))
               (load-path (single-char #\L) (value #t))
@@ -224,6 +225,7 @@
   (let* ((s-index (list-index source-arg? %argv))
          (args (if s-index (list-head %argv (+ s-index 2)) %argv))
          (options (parse-opts args))
+         (command (option-ref options 'command #f))
          (main (option-ref options 'main #f))
          (source (option-ref options 'source #f))
          (files (if s-index (list-tail %argv (+ s-index 1))
@@ -239,22 +241,23 @@
           (display "Usage: mes [OPTION]... [FILE]...
 Evaluate code with Mes, interactively or from a script.
 
-  [-s] FILE           load source code from FILE, and exit
-  --                  stop scanning arguments; run interactively
+  [-s] FILE            load source code from FILE, and exit
+  -c EXPR              evalute expression EXPR, and exit
+  --                   stop scanning arguments; run interactively
 
 The above switches stop argument processing, and pass all
 remaining arguments as the value of (command-line).
 
-  -e,--main=MAIN      after reading script, apply MAIN to command-line arguments
-  -h, --help          display this help and exit
-  -L,--load-path=DIR  add DIR to the front of the module load path
-  -v, --version       display version information and exit
+  -e, --main=MAIN      after reading script, apply MAIN to command-line arguments
+  -h, --help           display this help and exit
+  -L, --load-path=DIR  add DIR to the front of the module load path
+  -v, --version        display version information and exit
 
 Ignored for Guile compatibility:
   --auto-compile
   --fresh-auto-compile
   --no-auto-compile
-  -C,--compiled-path=DIR
+  -C, --compiled-path=DIR
 
 Report bugs to: bug-mes@gnu.org
 GNU Mes home page: <http://gnu.org/software/mes/>
@@ -262,10 +265,16 @@ General help using GNU software: <http://gnu.org/gethelp/>
 " (or (and usage? (current-error-port)) (current-output-port)))
           (exit (or (and usage? 2) 0)))
      options)
-    (if main (set! %main main))
     (and=> (option-ref options 'load-path #f)
            (lambda (dir)
              (setenv "GUILE_LOAD_PATH" (string-append dir ":" (getenv "GUILE_LOAD_PATH")))))
+    (when command
+      (let* ((prev (set-current-input-port (open-input-string command)))
+             (expr (read-input-file-env (current-module)))
+             (set-current-input-port prev))
+        (primitive-eval expr)
+        (exit 0)))
+    (when main (set! %main main))
     (cond ((pair? files)
            (let* ((file (car files))
                   (port (if (equal? file "-") 0
