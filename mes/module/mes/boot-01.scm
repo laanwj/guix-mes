@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -42,11 +42,8 @@
   (if (null? rest) (core:write x)
       (core:write-port x (car rest))))
 
-(define (integer->char x)
-  (core:make-cell <cell:char> 0 x))
-
 (define (newline . rest)
-  (core:display (list->string (list (integer->char 10)))))
+  (core:display "\n"))
 
 (define (cadr x) (car (cdr x)))
 

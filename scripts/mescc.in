@@ -1,7 +1,7 @@
 #! @BASH@
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -28,15 +28,22 @@ export MES_ARENA
 MES_STACK=${MES_STACK-500000}
 export MES_STACK
 
-MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
+MES_PREFIX=${MES_PREFIX-/usr/share/mes}
 export MES_PREFIX
 
-MES=${MES-src/mes}
+GUILE_LOAD_PATH=@guile_site_dir@${GUILE_LOAD_PATH+:}${GUILE_LOAD_PATH}
+export GUILE_LOAD_PATH
 
-dir=$(dirname $0)
+MES=${MES-@prefix@/bin/mes}
+bindir=${bindir-@prefix@/bin/mes}
+
+if [ ! -f $bindir/mescc.scm ]; then
+   bindir=$(dirname $0)
+fi
+
 ${SCHEME-$MES} \
      --no-auto-compile\
      -e main\
      -L @guile_site_dir@\
      -C @guile_site_ccache_dir@\
-     $dir/mescc.scm "$@"
+     $bindir/mescc.scm "$@"

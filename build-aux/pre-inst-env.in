@@ -1,7 +1,7 @@
 #! @BASH@
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -39,6 +39,9 @@ export PATH
 
 MES=${MES-${abs_top_builddir}/src/${program_prefix}mes}
 export MES
+
+bindir=${abs_top_builddir}/scripts
+export bindir
 
 GUIX_PACKAGE_PATH="$abs_top_srcdir/guix${GUIX_PACKAGE_PATH:+:}$GUIX_PACKAGE_PATH"
 export GUIX_PACKAGE_PATH
