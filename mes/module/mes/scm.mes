@@ -85,6 +85,12 @@
 
 (define integer? number?)
 
+(define (read . port)
+  (if (null? port) (read-env (current-module))
+      (let* ((prev (set-current-input-port (car port)))
+             (result (read-env (current-module))))
+        result)))
+
 (if (not (defined? 'peek-char))
     (define (peek-char)
       (integer->char (peek-byte))))
