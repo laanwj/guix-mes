@@ -22,11 +22,13 @@
 #include <stdio.h>
 #include <string.h>
 
-struct file {
+struct file
+{
   char buffer[1];
 };
 
-struct xfile {
+struct xfile
+{
   char *buffer;
 };
 
@@ -152,8 +154,10 @@ main ()
   eputs (file.buffer);
   memcpy (ps + 1, "  ", 2);
   eputs (file.buffer);
-  eputs (itoa (ps[1])); eputs ("\n");
-  eputs (itoa (((' ' << 8) + ' '))); eputs ("\n");
+  eputs (itoa (ps[1]));
+  eputs ("\n");
+  eputs (itoa (((' ' << 8) + ' ')));
+  eputs ("\n");
   if (ps[1] != ((' ' << 8) + ' '))
     return 40;
   if (p[4] != '4')
@@ -163,8 +167,10 @@ main ()
   eputs (file.buffer);
   ps[2] = ((' ' << 8) + ' ');
   eputs (file.buffer);
-  eputs (itoa (ps[2])); eputs ("\n");
-  eputs (itoa (((' ' << 8) + ' '))); eputs ("\n");
+  eputs (itoa (ps[2]));
+  eputs ("\n");
+  eputs (itoa (((' ' << 8) + ' ')));
+  eputs ("\n");
   if (ps[2] != ((' ' << 8) + ' '))
     return 42;
   if (p[6] != '6')

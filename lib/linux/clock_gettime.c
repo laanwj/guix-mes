@@ -23,5 +23,5 @@
 int
 clock_gettime (clockid_t clk_id, struct timespec *tp)
 {
-  return _sys_call2 (SYS_clock_gettime, (long)clk_id, (long)tp);
+  return _sys_call2 (SYS_clock_gettime, (long) clk_id, (long) tp);
 }

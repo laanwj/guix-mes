@@ -19,7 +19,7 @@
  */
 
 int
-execve (char const* file_name, char *const argv[], char *const env[])
+execve (char const *file_name, char *const argv[], char *const env[])
 {
-  return _sys_call3 (SYS_execve, (long)file_name, (long)argv, (long)env);
+  return _sys_call3 (SYS_execve, (long) file_name, (long) argv, (long) env);
 }

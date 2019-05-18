@@ -22,11 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-char const* help =
-  "All"
-  " your"
-  " base"
-  " are";
+char const *help = "All" " your" " base" " are";
 
 int global_i = 1;
 int *global_p = &global_i;
@@ -47,5 +43,5 @@ main ()
   if (global_i != 2)
     return global_i;
 
-  return 2,1,0;
+  return 2, 1, 0;
 }

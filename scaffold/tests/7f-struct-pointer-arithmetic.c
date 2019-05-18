@@ -26,11 +26,12 @@
 struct foo;
 typedef struct foo foo_struct;
 
-struct foo {
+struct foo
+{
   //struct foo **foo;
   foo_struct **foo;
 };
-  
+
 struct foo g_foo[2];
 
 int
@@ -40,28 +41,49 @@ main ()
   foo.foo = g_foo;
   void *p;
   void *q;
-  
+
   p = &foo.foo[0];
   q = foo.foo;
-  eputs ("f:"); eputs (itoa (foo.foo)); eputs ("\n");
-  eputs ("p:"); eputs (itoa (p)); eputs ("\n");
-  eputs ("q:"); eputs (itoa (q)); eputs ("\n");
-  if (q != p) return 1;
+  eputs ("f:");
+  eputs (itoa (foo.foo));
+  eputs ("\n");
+  eputs ("p:");
+  eputs (itoa (p));
+  eputs ("\n");
+  eputs ("q:");
+  eputs (itoa (q));
+  eputs ("\n");
+  if (q != p)
+    return 1;
 
   p = &foo.foo[1];
   q = foo.foo + 1;
-  eputs ("f:"); eputs (itoa (foo.foo)); eputs ("\n");
-  eputs ("p:"); eputs (itoa (p)); eputs ("\n");
-  eputs ("q:"); eputs (itoa (q)); eputs ("\n");
-  if (q != p) return 2;
+  eputs ("f:");
+  eputs (itoa (foo.foo));
+  eputs ("\n");
+  eputs ("p:");
+  eputs (itoa (p));
+  eputs ("\n");
+  eputs ("q:");
+  eputs (itoa (q));
+  eputs ("\n");
+  if (q != p)
+    return 2;
 
   struct foo *pfoo = &foo;
   p = &pfoo->foo[1];
   q = pfoo->foo + 1;
-  eputs ("f:"); eputs (itoa (pfoo->foo)); eputs ("\n");
-  eputs ("p:"); eputs (itoa (p)); eputs ("\n");
-  eputs ("q:"); eputs (itoa (q)); eputs ("\n");
-  if (q != p) return 3;
+  eputs ("f:");
+  eputs (itoa (pfoo->foo));
+  eputs ("\n");
+  eputs ("p:");
+  eputs (itoa (p));
+  eputs ("\n");
+  eputs ("q:");
+  eputs (itoa (q));
+  eputs ("\n");
+  if (q != p)
+    return 3;
 
   return 0;
 }

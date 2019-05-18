@@ -21,5 +21,5 @@
 int
 setuid (uid_t newuid)
 {
-  return _sys_call1 (SYS_setuid, (long)newuid);
+  return _sys_call1 (SYS_setuid, (long) newuid);
 }

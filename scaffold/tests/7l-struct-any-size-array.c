@@ -58,7 +58,10 @@ main ()
   p = &tab14;
   for (int i = 0; i < sizeof (struct foo13) * 2; i++)
     {
-      if (i < 10) eputs (" "); eputs (itoa (i)); eputs (": ");
+      if (i < 10)
+        eputs (" ");
+      eputs (itoa (i));
+      eputs (": ");
       eputs (itoa (p[i]));
       eputs ("\n");
     }
@@ -79,7 +82,10 @@ main ()
   p = &tab16;
   for (int i = 0; i < sizeof (struct foo16) * 2; i++)
     {
-      if (i < 10) eputs (" "); eputs (itoa (i)); eputs (": ");
+      if (i < 10)
+        eputs (" ");
+      eputs (itoa (i));
+      eputs (": ");
       eputs (itoa (p[i]));
       eputs ("\n");
     }

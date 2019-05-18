@@ -18,25 +18,19 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-char g_hello[] =
-    "hello\n"
-    "world\n"
-  ;
+char g_hello[] = "hello\n" "world\n";
 
-char *g_hello2 =
-    "hello\n"
-    "world\n"
-  ;
+char *g_hello2 = "hello\n" "world\n";
 
-char g_hello3[] =
-  {
-    'h', 'e', 'l', 'l', 'o', '\n',
-    'w', 'o', 'r', 'l', 'd', '\n',
-    '\0',
-  }
-  ;
+char g_hello3[] = {
+  'h', 'e', 'l', 'l', 'o', '\n',
+  'w', 'o', 'r', 'l', 'd', '\n',
+  '\0',
+}
 
-int g_hello_int[] = {0, 1, 2, 3, 4, 5};
+;
+
+int g_hello_int[] = { 0, 1, 2, 3, 4, 5 };
 
 int
 main (int argc)

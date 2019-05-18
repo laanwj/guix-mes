@@ -31,11 +31,12 @@ struct bar
   char bar;
 };
 
-struct foo global_f = {0, 11, 22};
-struct bar global_b = {11};
+struct foo global_f = { 0, 11, 22 };
+struct bar global_b = { 11 };
+
 int i = 0x11223344;
 
-struct foo foes[2] = {{0, 1, 2}, {0, 3, 4}};
+struct foo foes[2] = { {0, 1, 2}, {0, 3, 4} };
 
 int
 main ()
@@ -46,7 +47,7 @@ main ()
   if (global_f.baz != 22)
     return 2;
 
-  struct foo f = {0, 44, 55};
+  struct foo f = { 0, 44, 55 };
 
   if (f.bar != 44)
     return 3;

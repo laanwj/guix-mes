@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 int
-fpurge (FILE *stream)
+fpurge (FILE * stream)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)

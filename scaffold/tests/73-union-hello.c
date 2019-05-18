@@ -30,7 +30,7 @@ typedef union foo
 int
 main ()
 {
-  union foo f = {48};
+  union foo f = { 48 };
   if (f.i != 48)
     return 1;
 

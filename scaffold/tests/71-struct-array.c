@@ -24,7 +24,7 @@
 
 struct foo;
 
-struct foo* krak;
+struct foo *krak;
 
 typedef struct foo foo_struct;
 
@@ -59,8 +59,10 @@ main ()
   printf ("tweetje: %d\n", f.bar[1]);
 
   int *pf = &f;
-  if (*pf != 0x22) return 1;
-  if (*(pf + 1) != 0x34) return 2;
+  if (*pf != 0x22)
+    return 1;
+  if (*(pf + 1) != 0x34)
+    return 2;
 
   struct foo *g = &f;
   printf ("punter eentje: %d\n", g->bar[0]);
@@ -84,7 +86,7 @@ main ()
   oputs (g_foo.name);
 
   char buf[10];
-  struct foo* s = &buf;
+  struct foo *s = &buf;
   strcpy (s->name, "hi\n");
   oputs (s->name);
 

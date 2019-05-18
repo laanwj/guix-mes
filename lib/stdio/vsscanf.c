@@ -49,7 +49,7 @@ vsscanf (char const *s, char const *template, va_list ap)
             }
           case 'c':
             {
-              char *c = va_arg (ap, char*);
+              char *c = va_arg (ap, char *);
               *c = *p++;
               count++;
               break;
@@ -58,7 +58,7 @@ vsscanf (char const *s, char const *template, va_list ap)
           case 'i':
           case 'u':
             {
-              int *d = va_arg (ap, int*);
+              int *d = va_arg (ap, int *);
               *d = abtol (&p, 10);
               count++;
               break;

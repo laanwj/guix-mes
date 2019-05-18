@@ -35,8 +35,8 @@ signal (int signum, sighandler_t action)
 #if __i386__
   return _sys_call2 (SYS_signal, signum, action);
 #else
-  static struct sigaction setup_action = {-1};
-  static struct sigaction old = {0};
+  static struct sigaction setup_action = { -1 };
+  static struct sigaction old = { 0 };
 
   setup_action.sa_handler = action;
   setup_action.sa_restorer = _restorer;

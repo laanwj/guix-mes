@@ -46,8 +46,7 @@ reader_read_line_comment (int c)
         return c;
       c = readchar ();
     }
-  error (cell_symbol_system_error,
-         MAKE_STRING0 ("reader_read_line_comment"));
+  error (cell_symbol_system_error, MAKE_STRING0 ("reader_read_line_comment"));
 }
 
 SCM reader_read_block_comment (int s, int c);
@@ -127,22 +126,18 @@ reset_reader:
   if (c == '#')
     return reader_read_hash (readchar (), a);
   if (c == '`')
-    return cons (cell_symbol_quasiquote,
-                 cons (reader_read_sexp_ (readchar (), a), cell_nil));
-  if(c == ',')
+    return cons (cell_symbol_quasiquote, cons (reader_read_sexp_ (readchar (), a), cell_nil));
+  if (c == ',')
     {
       if (peekchar () == '@')
         {
           readchar ();
-          return cons (cell_symbol_unquote_splicing,
-                       cons (reader_read_sexp_ (readchar (), a), cell_nil));
+          return cons (cell_symbol_unquote_splicing, cons (reader_read_sexp_ (readchar (), a), cell_nil));
         }
-      return cons (cell_symbol_unquote,
-                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
+      return cons (cell_symbol_unquote, cons (reader_read_sexp_ (readchar (), a), cell_nil));
     }
   if (c == '\'')
-    return cons (cell_symbol_quote,
-                 cons (reader_read_sexp_ (readchar (), a), cell_nil));
+    return cons (cell_symbol_quote, cons (reader_read_sexp_ (readchar (), a), cell_nil));
   if (c == '"')
     return reader_read_string ();
   if (c == '.' && (!reader_identifier_p (peekchar ())))
@@ -159,7 +154,7 @@ reader_eat_whitespace (int c)
     return reader_eat_whitespace (reader_read_line_comment (c));
   if (c == '#' && (peekchar () == '!' || peekchar () == '|'))
     {
-      c=readchar ();
+      c = readchar ();
       reader_read_block_comment (c, readchar ());
       return reader_eat_whitespace (readchar ());
     }
@@ -174,7 +169,7 @@ reader_read_list (int c, SCM a)
     return cell_nil;
   if (c == EOF)
     error (cell_symbol_not_a_pair, MAKE_STRING0 ("EOF in list"));
-    //return cell_nil;
+  //return cell_nil;
   SCM s = reader_read_sexp_ (c, a);
   if (s == cell_dot)
     return CAR (reader_read_list (readchar (), a));
@@ -190,7 +185,8 @@ read_env (SCM a)
 SCM
 reader_read_block_comment (int s, int c)
 {
-  if (c == s && peekchar () == '#') return readchar ();
+  if (c == s && peekchar () == '#')
+    return readchar ();
   return reader_read_block_comment (s, readchar ());
 }
 
@@ -207,28 +203,24 @@ reader_read_hash (int c, SCM a)
       reader_read_block_comment (c, readchar ());
       return reader_read_sexp_ (readchar (), a);
     }
-  if(c == 'f')
+  if (c == 'f')
     return cell_f;
-  if(c == 't')
+  if (c == 't')
     return cell_t;
-  if(c == ',')
+  if (c == ',')
     {
       if (peekchar () == '@')
         {
           readchar ();
-          return cons (cell_symbol_unsyntax_splicing,
-                       cons (reader_read_sexp_ (readchar (), a), cell_nil));
+          return cons (cell_symbol_unsyntax_splicing, cons (reader_read_sexp_ (readchar (), a), cell_nil));
         }
 
-      return cons (cell_symbol_unsyntax,
-                   cons (reader_read_sexp_ (readchar (), a), cell_nil));
+      return cons (cell_symbol_unsyntax, cons (reader_read_sexp_ (readchar (), a), cell_nil));
     }
   if (c == '\'')
-    return cons (cell_symbol_syntax,
-                 cons (reader_read_sexp_ (readchar (), a), cell_nil));
+    return cons (cell_symbol_syntax, cons (reader_read_sexp_ (readchar (), a), cell_nil));
   if (c == '`')
-    return cons (cell_symbol_quasisyntax,
-                 cons (reader_read_sexp_ (readchar (), a), cell_nil));
+    return cons (cell_symbol_quasisyntax, cons (reader_read_sexp_ (readchar (), a), cell_nil));
   if (c == ':')
     {
       SCM x = reader_read_identifier_or_number (readchar ());
@@ -267,8 +259,7 @@ reader_read_character ()
   int c = readchar ();
   int p = peekchar ();
   int i = 0;
-  if (c >= '0' && c <= '7'
-      && p >= '0' && p <= '7')
+  if (c >= '0' && c <= '7' && p >= '0' && p <= '7')
     {
       c = c - '0';
       while (p >= '0' && p <= '7')
@@ -278,62 +269,74 @@ reader_read_character ()
           p = peekchar ();
         }
     }
-  else if (c == 'x'
-           && ((p >= '0' && p <= '9')
-               || (p >= 'a' && p <= 'f')
-               || (p >= 'F' && p <= 'F')))
+  else if (c == 'x' && ((p >= '0' && p <= '9') || (p >= 'a' && p <= 'f') || (p >= 'F' && p <= 'F')))
     {
       c = VALUE (reader_read_hex ());
       eputs ("reading hex c=");
       eputs (itoa (c));
       eputs ("\n");
     }
-  else if (((c >= 'a' && c <= 'z')
-            || c == '*')
-           && ((p >= 'a' && p <= 'z')
-               || p == '*'))
+  else if (((c >= 'a' && c <= 'z') || c == '*') && ((p >= 'a' && p <= 'z') || p == '*'))
     {
       char buf[10];
       buf[i] = c;
       i = i + 1;
-      while ((p >= 'a' && p <= 'z')
-             || p == '*')
+      while ((p >= 'a' && p <= 'z') || p == '*')
         {
           buf[i] = readchar ();
           i = i + 1;
           p = peekchar ();
         }
       buf[i] = 0;
-      if (!strcmp (buf, "*eof*")) c = EOF;
-      else if (!strcmp (buf, "nul")) c = '\0';
-      else if (!strcmp (buf, "alarm")) c = '\a';
-      else if (!strcmp (buf, "backspace")) c = '\b';
-      else if (!strcmp (buf, "tab")) c = '\t';
-      else if (!strcmp (buf, "linefeed")) c = '\n';
-      else if (!strcmp (buf, "newline")) c = '\n';
-      else if (!strcmp (buf, "vtab")) c = '\v';
-      else if (!strcmp (buf, "page")) c = '\f';
-#if 1 //__MESC__
+      if (!strcmp (buf, "*eof*"))
+        c = EOF;
+      else if (!strcmp (buf, "nul"))
+        c = '\0';
+      else if (!strcmp (buf, "alarm"))
+        c = '\a';
+      else if (!strcmp (buf, "backspace"))
+        c = '\b';
+      else if (!strcmp (buf, "tab"))
+        c = '\t';
+      else if (!strcmp (buf, "linefeed"))
+        c = '\n';
+      else if (!strcmp (buf, "newline"))
+        c = '\n';
+      else if (!strcmp (buf, "vtab"))
+        c = '\v';
+      else if (!strcmp (buf, "page"))
+        c = '\f';
+#if 1                           //__MESC__
       //Nyacc bug
-      else if (!strcmp (buf, "return")) c = 13;
-      else if (!strcmp (buf, "esc")) c = 27;
+      else if (!strcmp (buf, "return"))
+        c = 13;
+      else if (!strcmp (buf, "esc"))
+        c = 27;
 #else
-      else if (!strcmp (buf, "return")) c = '\r';
+      else if (!strcmp (buf, "return"))
+        c = '\r';
       //Nyacc crash else if (!strcmp (buf, "esc")) c = '\e';
 #endif
-      else if (!strcmp (buf, "space")) c = ' ';
+      else if (!strcmp (buf, "space"))
+        c = ' ';
 
-#if 1 // Nyacc uses old abbrevs
-      else if (!strcmp (buf, "bel")) c = '\a';
-      else if (!strcmp (buf, "bs")) c = '\b';
-      else if (!strcmp (buf, "ht")) c = '\t';
-      else if (!strcmp (buf, "vt")) c = '\v';
+#if 1                           // Nyacc uses old abbrevs
+      else if (!strcmp (buf, "bel"))
+        c = '\a';
+      else if (!strcmp (buf, "bs"))
+        c = '\b';
+      else if (!strcmp (buf, "ht"))
+        c = '\t';
+      else if (!strcmp (buf, "vt"))
+        c = '\v';
 
-#if 1 //__MESC__
+#if 1                           //__MESC__
       //Nyacc bug
-      else if (!strcmp (buf, "cr")) c = 13;
+      else if (!strcmp (buf, "cr"))
+        c = 13;
 #else
-      else if (!strcmp (buf, "cr")) c = '\r';
+      else if (!strcmp (buf, "cr"))
+        c = '\r';
 #endif
 #endif // Nyacc uses old abbrevs
 
@@ -342,8 +345,7 @@ reader_read_character ()
           eputs ("char not supported: ");
           eputs (buf);
           eputs ("\n");
-          error (cell_symbol_system_error,
-                 MAKE_STRING0 ("char not supported"));
+          error (cell_symbol_system_error, MAKE_STRING0 ("char not supported"));
         }
     }
   return MAKE_CHAR (c);
@@ -409,9 +411,7 @@ reader_read_hex ()
       readchar ();
       c = peekchar ();
     }
-  while ((c >= '0' && c <= '9')
-         || (c >= 'A' && c <= 'F')
-         || (c >= 'a' && c <= 'f'))
+  while ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))
     {
       n = n << 4;
       if (c >= 'a')

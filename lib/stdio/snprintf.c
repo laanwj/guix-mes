@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 int
-snprintf (char *str,  size_t size,  char const *format, ...)
+snprintf (char *str, size_t size, char const *format, ...)
 {
   va_list ap;
   int r;

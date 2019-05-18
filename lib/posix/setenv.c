@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 int
-setenv (char const* s, char const* v, int overwrite_p)
+setenv (char const *s, char const *v, int overwrite_p)
 {
   char **p = environ;
   int length = strlen (s);

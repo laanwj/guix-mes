@@ -21,7 +21,7 @@
 void
 _exit (int status)
 {
-#if 1 // !MES_CCAMD64
+#if 1                           // !MES_CCAMD64
   asm ("mov____0x8(%rbp),%rdi !0x10");
 #endif
 
@@ -32,7 +32,7 @@ _exit (int status)
 void
 _write (int filedes, void const *buffer, size_t size)
 {
-#if 1 // !MES_CCAMD64
+#if 1                           // !MES_CCAMD64
   asm ("mov____0x8(%rbp),%rdi !0x10");
   asm ("mov____0x8(%rbp),%rsi !0x18");
   asm ("mov____0x8(%rbp),%rdx !0x20");

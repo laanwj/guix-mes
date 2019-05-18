@@ -34,7 +34,7 @@
 
 /* Read a directory entry from DIRP.  */
 struct dirent *
-readdir (DIR *dirp)
+readdir (DIR * dirp)
 {
   struct dirent *dp;
   int saved_errno = errno;
@@ -44,33 +44,33 @@ readdir (DIR *dirp)
       size_t reclen;
 
       if (dirp->offset >= dirp->size)
-	{
-	  /* We've emptied out our buffer.  Refill it.  */
+        {
+          /* We've emptied out our buffer.  Refill it.  */
 
-	  size_t maxread;
-	  ssize_t bytes;
+          size_t maxread;
+          ssize_t bytes;
 
-	  maxread = dirp->allocation;
+          maxread = dirp->allocation;
 
 #if 0
-	  off_t base;
-	  bytes = __getdirentries (dirp->fd, dirp->data, maxread, &base);
+          off_t base;
+          bytes = __getdirentries (dirp->fd, dirp->data, maxread, &base);
 #else
           bytes = getdents (dirp->fd, dirp->data, maxread);
 #endif
-	  if (bytes <= 0)
-	    {
-	      /* Don't modifiy errno when reaching EOF.  */
-	      if (bytes == 0)
+          if (bytes <= 0)
+            {
+              /* Don't modifiy errno when reaching EOF.  */
+              if (bytes == 0)
                 errno = saved_errno;
-	      dp = 0;
-	      break;
-	    }
-	  dirp->size = (size_t) bytes;
+              dp = 0;
+              break;
+            }
+          dirp->size = (size_t) bytes;
 
-	  /* Reset the offset into the buffer.  */
-	  dirp->offset = 0;
-	}
+          /* Reset the offset into the buffer.  */
+          dirp->offset = 0;
+        }
 
       dp = (struct dirent *) &dirp->data[dirp->offset];
 
@@ -79,7 +79,8 @@ readdir (DIR *dirp)
       dirp->filepos = dp->d_off;
 
       /* Skip deleted files.  */
-    } while (dp->d_ino == 0);
+    }
+  while (dp->d_ino == 0);
 
   return dp;
 }

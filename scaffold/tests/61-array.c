@@ -24,22 +24,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *env[] = {"foo", "bar", "baz", 0};
+char *env[] = { "foo", "bar", "baz", 0 };
 
-#if 0//!WITH_GLIBC
+#if 0                           //!WITH_GLIBC
 #define getenv xgetenv
 
 char *
-getenv (char const* s)
+getenv (char const *s)
 {
   eputs ("getenv\n");
   char **p = environ;
   int length = strlen (s);
-  eputs ("getenv length="); eputs (itoa (length)); eputs ("\n");
+  eputs ("getenv length=");
+  eputs (itoa (length));
+  eputs ("\n");
   while (*p)
     {
-      eputs ("*p="); eputs (*p); eputs ("\n");;
-      eputs (" p="); eputs (itoa ((long)p)); eputs ("\n");
+      eputs ("*p=");
+      eputs (*p);
+      eputs ("\n");;
+      eputs (" p=");
+      eputs (itoa ((long) p));
+      eputs ("\n");
       if (!strncmp (s, *p, length) && *(*p + length) == '=')
         return (*p + length + 1);
       p++;
@@ -56,18 +62,18 @@ test (char **e)
   oputs ("\n");
   oputs ("a[i] = i-1\n");
   int a[3];
-  for (int i=0; i < 3; i++)
-    a[i] = i-1;
-  for (int i=0; i < 3; i++)
-    if (a[i] != i-1)
-    return 1;
+  for (int i = 0; i < 3; i++)
+    a[i] = i - 1;
+  for (int i = 0; i < 3; i++)
+    if (a[i] != i - 1)
+      return 1;
 
   oputs ("env [");
-  oputs (itoa ((long)env));
+  oputs (itoa ((long) env));
   oputs ("]\n");
 
   oputs ("e [");
-  oputs (itoa ((int)e));
+  oputs (itoa ((int) e));
   oputs ("]\n");
 
   oputs ("env [0] == \"foo\"\n");
@@ -84,7 +90,7 @@ test (char **e)
   while (*pp)
     {
       oputs ("pp [");
-      oputs (itoa ((int)pp));
+      oputs (itoa ((int) pp));
       oputs ("]: ");
       if (*pp)
         oputs (*pp);
@@ -110,7 +116,7 @@ test (char **e)
     return 6;
 
   oputs ("t: buf + 1\n");
-  if (*(buf+1) != 'e')
+  if (*(buf + 1) != 'e')
     return 7;
 
   char **p = &buf;

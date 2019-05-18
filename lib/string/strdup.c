@@ -24,7 +24,7 @@ char *
 strdup (char const *s)
 {
   size_t length = strlen (s) + 1;
-  char *p = (char*)malloc (length);
+  char *p = (char *) malloc (length);
   if (p)
     return memcpy (p, s, length);
   return 0;

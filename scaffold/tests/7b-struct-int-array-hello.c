@@ -26,7 +26,7 @@ struct foo
   int b;
 };
 
-struct foo g_foo[2] = {0,1,2,3};
+struct foo g_foo[2] = { 0, 1, 2, 3 };
 
 
 int

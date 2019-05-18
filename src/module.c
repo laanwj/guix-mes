@@ -23,9 +23,9 @@ SCM struct_set_x_ (SCM x, long i, SCM e);
 SCM cstring_to_symbol (char const *s);
 
 SCM
-make_module_type () ///(internal))
+make_module_type ()             ///(internal))
 {
-  SCM record_type = cell_symbol_record_type; // FIXME
+  SCM record_type = cell_symbol_record_type;    // FIXME
   SCM fields = cell_nil;
   fields = cons (cstring_to_symbol ("globals"), fields);
   fields = cons (cstring_to_symbol ("locals"), fields);
@@ -36,7 +36,7 @@ make_module_type () ///(internal))
 }
 
 SCM
-make_initial_module (SCM a) ///((internal))
+make_initial_module (SCM a)     ///((internal))
 {
   SCM module_type = make_module_type ();
   a = acons (cell_symbol_module, module_type, a);
@@ -71,9 +71,15 @@ SCM
 module_printer (SCM module)
 {
   //module = m0;
-  fdputs ("#<", __stdout); display_ (struct_ref_ (module, 2)); fdputc (' ', __stdout);
-  fdputs ("name: ", __stdout); display_ (struct_ref_ (module, 3)); fdputc (' ', __stdout);
-  fdputs ("locals: ", __stdout); display_ (struct_ref_ (module, 4)); fdputc (' ', __stdout);
+  fdputs ("#<", __stdout);
+  display_ (struct_ref_ (module, 2));
+  fdputc (' ', __stdout);
+  fdputs ("name: ", __stdout);
+  display_ (struct_ref_ (module, 3));
+  fdputc (' ', __stdout);
+  fdputs ("locals: ", __stdout);
+  display_ (struct_ref_ (module, 4));
+  fdputc (' ', __stdout);
   SCM table = struct_ref_ (module, 5);
   fdputs ("globals:\n  ", __stdout);
   display_ (table);

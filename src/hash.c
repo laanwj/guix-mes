@@ -23,7 +23,7 @@ SCM vector_ref_ (SCM x, long i);
 SCM vector_set_x_ (SCM x, long i, SCM e);
 
 int
-hash_cstring (char const* s, long size)
+hash_cstring (char const *s, long size)
 {
   int hash = s[0] * 37;
   if (s[0] && s[1])
@@ -36,9 +36,8 @@ hash_cstring (char const* s, long size)
 int
 hashq_ (SCM x, long size)
 {
-  if (TYPE (x) == TSPECIAL
-      || TYPE (x) == TSYMBOL)
-    return hash_cstring (CSTRING (x), size);  // FIXME: hash x directly
+  if (TYPE (x) == TSPECIAL || TYPE (x) == TSYMBOL)
+    return hash_cstring (CSTRING (x), size);    // FIXME: hash x directly
   error (cell_symbol_system_error, cons (MAKE_STRING0 ("hashq_: not a symbol"), x));
 }
 
@@ -174,11 +173,15 @@ hash_set_x (SCM table, SCM key, SCM value)
 SCM
 hash_table_printer (SCM table)
 {
-  fdputs ("#<", __stdout); display_ (struct_ref_ (table, 2)); fdputc (' ', __stdout);
-  fdputs ("size: ", __stdout); display_ (struct_ref_ (table, 3)); fdputc (' ', __stdout);
+  fdputs ("#<", __stdout);
+  display_ (struct_ref_ (table, 2));
+  fdputc (' ', __stdout);
+  fdputs ("size: ", __stdout);
+  display_ (struct_ref_ (table, 3));
+  fdputc (' ', __stdout);
   SCM buckets = struct_ref_ (table, 4);
   fdputs ("buckets: ", __stdout);
-  for (int i=0; i<LENGTH (buckets); i++)
+  for (int i = 0; i < LENGTH (buckets); i++)
     {
       SCM e = vector_ref_ (buckets, i);
       if (e != cell_unspecified)
@@ -198,9 +201,9 @@ hash_table_printer (SCM table)
 }
 
 SCM
-make_hashq_type () ///((internal))
+make_hashq_type ()              ///((internal))
 {
-  SCM record_type = cell_symbol_record_type; // FIXME
+  SCM record_type = cell_symbol_record_type;    // FIXME
   SCM fields = cell_nil;
   fields = cons (cell_symbol_buckets, fields);
   fields = cons (cell_symbol_size, fields);

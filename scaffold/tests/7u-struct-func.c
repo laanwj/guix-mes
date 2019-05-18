@@ -32,9 +32,9 @@ bar (int i)
 int
 main ()
 {
-  struct foo f = {&bar};
+  struct foo f = { &bar };
   int i = f.func (2);
-  if (i !=1)
+  if (i != 1)
     return 1;
 
   return 0;

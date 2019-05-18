@@ -22,12 +22,14 @@
 
 #include <stdint.h>
 
-struct foo {
-    int i;
-    void *p;
+struct foo
+{
+  int i;
+  void *p;
 };
 
-union bar {
+union bar
+{
   struct foo foo;
 };
 
@@ -40,7 +42,8 @@ main ()
   bar.foo.p = "hallo";
 
   union bar *pb = &bar;
-  if (pb->foo.i != 2) return 1;
+  if (pb->foo.i != 2)
+    return 1;
 
   return 0;
 }

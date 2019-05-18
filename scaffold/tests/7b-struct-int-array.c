@@ -26,14 +26,15 @@ struct foo
   int b;
 };
 
-struct foo g_foo[2] = {0,1,2,3};
+struct foo g_foo[2] = { 0, 1, 2, 3 };
 
 struct bar
 {
   int bar[4];
 };
 
-struct bar g_bar = {101,102};
+struct bar g_bar = { 101, 102 };
+
 typedef struct bar bar_struct;
 typedef struct bar foo_struct;
 
@@ -50,7 +51,7 @@ main ()
     return 4;
 
   void *p = &g_foo;
-  struct foo* pfoo = (((struct foo *)p) + 1);
+  struct foo *pfoo = (((struct foo *) p) + 1);
   if (pfoo->a != 2)
     return 5;
   if (pfoo->b != 3)
@@ -64,7 +65,7 @@ main ()
   if (*pi != 101)
     return 8;
 
-  struct bar bar = {0x22, 0x33};
+  struct bar bar = { 0x22, 0x33 };
   pi = &bar;
   if (*pi != 0x22)
     return 9;

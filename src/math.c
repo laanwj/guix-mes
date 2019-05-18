@@ -21,7 +21,7 @@
 #include <limits.h>
 
 void
-assert_number (char const* name, SCM x)
+assert_number (char const *name, SCM x)
 {
   if (TYPE (x) != TNUMBER)
     {
@@ -31,7 +31,7 @@ assert_number (char const* name, SCM x)
 }
 
 SCM
-greater_p (SCM x) ///((name . ">") (arity . n))
+greater_p (SCM x)               ///((name . ">") (arity . n))
 {
   if (x == cell_nil)
     return cell_t;
@@ -50,7 +50,7 @@ greater_p (SCM x) ///((name . ">") (arity . n))
 }
 
 SCM
-less_p (SCM x) ///((name . "<") (arity . n))
+less_p (SCM x)                  ///((name . "<") (arity . n))
 {
   if (x == cell_nil)
     return cell_t;
@@ -69,7 +69,7 @@ less_p (SCM x) ///((name . "<") (arity . n))
 }
 
 SCM
-is_p (SCM x) ///((name . "=") (arity . n))
+is_p (SCM x)                    ///((name . "=") (arity . n))
 {
   if (x == cell_nil)
     return cell_t;
@@ -86,7 +86,7 @@ is_p (SCM x) ///((name . "=") (arity . n))
 }
 
 SCM
-minus (SCM x) ///((name . "-") (arity . n))
+minus (SCM x)                   ///((name . "-") (arity . n))
 {
   assert_number ("minus", CAR (x));
   long n = VALUE (CAR (x));
@@ -103,7 +103,7 @@ minus (SCM x) ///((name . "-") (arity . n))
 }
 
 SCM
-plus (SCM x) ///((name . "+") (arity . n))
+plus (SCM x)                    ///((name . "+") (arity . n))
 {
   long n = 0;
   while (x != cell_nil)
@@ -116,7 +116,7 @@ plus (SCM x) ///((name . "+") (arity . n))
 }
 
 SCM
-divide (SCM x) ///((name . "/") (arity . n))
+divide (SCM x)                  ///((name . "/") (arity . n))
 {
   long n = 1;
   if (x != cell_nil)
@@ -149,7 +149,7 @@ modulo (SCM a, SCM b)
 }
 
 SCM
-multiply (SCM x) ///((name . "*") (arity . n))
+multiply (SCM x)                ///((name . "*") (arity . n))
 {
   long n = 1;
   while (x != cell_nil)
@@ -162,7 +162,7 @@ multiply (SCM x) ///((name . "*") (arity . n))
 }
 
 SCM
-logand (SCM x) ///((arity . n))
+logand (SCM x)                  ///((arity . n))
 {
   long n = 0;
   while (x != cell_nil)
@@ -175,7 +175,7 @@ logand (SCM x) ///((arity . n))
 }
 
 SCM
-logior (SCM x) ///((arity . n))
+logior (SCM x)                  ///((arity . n))
 {
   long n = 0;
   while (x != cell_nil)
@@ -196,7 +196,7 @@ lognot (SCM x)
 }
 
 SCM
-logxor (SCM x) ///((arity . n))
+logxor (SCM x)                  ///((arity . n))
 {
   long n = 0;
   while (x != cell_nil)

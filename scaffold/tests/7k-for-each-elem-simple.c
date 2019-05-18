@@ -25,15 +25,16 @@
 
 struct sym
 {
-  char* name;
+  char *name;
   int index;
 };
 
-struct sym tab[1] = {"foo", 1};
+struct sym tab[1] = { "foo", 1 };
 
 int
 main ()
 {
-  eputs (tab[0].name); eputs ("\n");
+  eputs (tab[0].name);
+  eputs ("\n");
   return 0;
 }

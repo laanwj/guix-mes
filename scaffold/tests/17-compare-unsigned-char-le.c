@@ -24,7 +24,7 @@ main ()
   unsigned char r = -2;
   if (r <= -3)
     return 1;
-  if (r <= (unsigned char)-1)
+  if (r <= (unsigned char) -1)
     return 0;
   return 2;
 }

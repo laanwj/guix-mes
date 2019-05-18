@@ -21,5 +21,5 @@
 int
 chmod (char const *file_name, mode_t mask)
 {
-  return _sys_call2 (SYS_chmod, (long)file_name, (long)mask);
+  return _sys_call2 (SYS_chmod, (long) file_name, (long) mask);
 }

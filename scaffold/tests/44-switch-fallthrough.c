@@ -25,18 +25,19 @@ main ()
 {
   int r;
   int i = 2;
-  switch (i) {
-    // case 0:
-    //   r = 0;
-    //   break;
-    // case 1:
-    //   r = 1;
-    //   break;
+  switch (i)
+    {
+      // case 0:
+      //   r = 0;
+      //   break;
+      // case 1:
+      //   r = 1;
+      //   break;
     case 2:
     default:
       r = 2;
       break;
-  }
+    }
 
   if (r != 2)
     return 1;

@@ -25,7 +25,7 @@ struct bar
   int bar[4];
 };
 
-struct bar g_bar = {101,102};
+struct bar g_bar = { 101, 102 };
 
 int
 main ()

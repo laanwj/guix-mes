@@ -21,5 +21,5 @@
 int
 lstat (char const *file_name, struct stat *statbuf)
 {
-  return _sys_call2 (SYS_lstat, (long)file_name, (long)statbuf);
+  return _sys_call2 (SYS_lstat, (long) file_name, (long) statbuf);
 }

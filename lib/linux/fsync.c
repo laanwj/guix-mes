@@ -21,5 +21,5 @@
 int
 fsync (int filedes)
 {
-  return _sys_call1 (SYS_fsync, (int)filedes);
+  return _sys_call1 (SYS_fsync, (int) filedes);
 }

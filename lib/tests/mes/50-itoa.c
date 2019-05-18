@@ -28,7 +28,9 @@ main ()
 
   oputs ("\n");
   oputs ("t: itoa (33) == \"33\"\n");
-  oputs ("=>"); oputs (itoa (33)); oputs ("\n");
+  oputs ("=>");
+  oputs (itoa (33));
+  oputs ("\n");
 
   if (strcmp (itoa (33), "33"))
     return 1;

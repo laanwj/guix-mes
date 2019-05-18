@@ -22,9 +22,9 @@ pid_t
 waitpid (pid_t pid, int *status_ptr, int options)
 {
 #if __i386__
-  return _sys_call3 (SYS_waitpid, (long)pid, (long)status_ptr, (int)options);
+  return _sys_call3 (SYS_waitpid, (long) pid, (long) status_ptr, (int) options);
 #elif __x86_64__
-  return _sys_call4 (SYS_wait4, (long)pid, (long)status_ptr, (int)options, 0);
+  return _sys_call4 (SYS_wait4, (long) pid, (long) status_ptr, (int) options, 0);
 #else
 #error arch not supported
 #endif

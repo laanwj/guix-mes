@@ -32,14 +32,14 @@ main ()
   oputs ("\n");
 
   oputs ("t: for (i=1; i<5; ++i)\n");
-  for (i=1; i<5; ++i)
+  for (i = 1; i < 5; ++i)
     ;
   if (i != 5)
     return i;
 
   oputs ("t: while (i<3) i++\n");
   i = 1;
-  while (i<3)
+  while (i < 3)
     i++;
   if (i != 3)
     return i;
@@ -47,8 +47,8 @@ main ()
   oputs ("t: do i-- while (i>0)\n");
   do
     i--;
-  while (i>0)
-    ;
+  while (i > 0)
+  ;
   if (i != 0)
     return 1;
 
@@ -59,7 +59,7 @@ main ()
   oputs ("t: while (1) ... break;\n");
   while (1)
     {
-      f=0;
+      f = 0;
       break;
     }
 
@@ -75,7 +75,7 @@ main ()
   while (one--)
     {
       continue;
-      one=1;
+      one = 1;
     }
   one += 2;
 
@@ -84,7 +84,7 @@ main ()
     {
       goto ok1;
     }
- ok1:
+ok1:
 
   return 0;
 }

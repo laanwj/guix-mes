@@ -19,7 +19,10 @@
  */
 
 char global_c = -1;
-struct foo {char type;};
+struct foo
+{
+  char type;
+};
 int
 main ()
 {
@@ -38,7 +41,7 @@ main ()
 
   {
     char c = -1;
-    int ints[2] = {c, 0};
+    int ints[2] = { c, 0 };
     if (ints[0] != -1)
       return 3;
   }
@@ -58,7 +61,7 @@ main ()
   }
 
   {
-    char a[2] = {-1, -129};
+    char a[2] = { -1, -129 };
     int i = a[0];
     if (i != -1)
       return 6;
@@ -67,7 +70,7 @@ main ()
   }
 
   {
-    struct foo f = {-1};
+    struct foo f = { -1 };
     int i = f.type;
     if (i != -1)
       return 8;
@@ -88,7 +91,7 @@ main ()
 
   {
     int i = -129;
-    i = (char)i;
+    i = (char) i;
     if (i != 127)
       return 11;
   }

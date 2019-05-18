@@ -21,5 +21,5 @@
 int
 mkdir (char const *file_name, mode_t mode)
 {
-  return _sys_call2 (SYS_mkdir, (long)file_name, (long)mode);
+  return _sys_call2 (SYS_mkdir, (long) file_name, (long) mode);
 }

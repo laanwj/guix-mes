@@ -21,5 +21,5 @@
 int
 chdir (char const *file_name)
 {
-  return _sys_call1 (SYS_chdir, (long)file_name);
+  return _sys_call1 (SYS_chdir, (long) file_name);
 }

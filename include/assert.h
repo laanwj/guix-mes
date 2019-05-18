@@ -28,7 +28,7 @@
 #include_next <assert.h>
 #else // ! WITH_GLIBC
 #define assert(x) ((x) ? (void)0 : assert_fail (#x))
-void assert_fail (char* s);
+void assert_fail (char *s);
 #endif // ! WITH_GLIBC
 
 #endif // __MES_ASSERT_H

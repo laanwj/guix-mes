@@ -21,5 +21,5 @@
 int
 getdents (int filedes, char *buffer, size_t nbytes)
 {
-  return _sys_call3 (SYS_getdents, (int)filedes, (long)buffer, (long)nbytes);
+  return _sys_call3 (SYS_getdents, (int) filedes, (long) buffer, (long) nbytes);
 }

@@ -37,14 +37,16 @@ main ()
     return 2;
 
   oputs ("t: if (!strcmp (p, \"t.c\\n\"))\n");
-  if (!strcmp (p, "mes")) goto ok1;
+  if (!strcmp (p, "mes"))
+    goto ok1;
   return 3;
- ok1:
+ok1:
 
   oputs ("t: if (strcmp (p, \"foo\"))\n");
-  if (strcmp (p, "foo")) goto ok2;
+  if (strcmp (p, "foo"))
+    goto ok2;
   return 4;
- ok2:
+ok2:
 
   oputs ("t: itoa (33) == \"33\"\n");
   if (strcmp (itoa (33), "33"))

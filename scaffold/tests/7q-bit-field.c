@@ -20,11 +20,7 @@
 
 struct bits
 {
-  int
-  one: 1,
-    two : 1,
-    four: 1,
-    eightsixteen: 2;
+  int one:1, two:1, four:1, eightsixteen:2;
 };
 
 union foo

@@ -19,29 +19,57 @@
  */
 
 
-int puts (char const*);
+int puts (char const *);
 #include <string.h>
 char global_arena[10];
 int global_i = 1;
 int global_unitialized;
-char* global_string = "foo";
+char *global_string = "foo";
 char global_array[8] = "XXX";
 char *global_chars = global_array;
 typedef int SCM;
-enum type_t {TCHAR};
-char *env[] = {"foo", "bar", "baz", 0};
-char *list[2] = {"foo\n", "bar\n"};
+enum type_t
+{ TCHAR };
+char *env[] = { "foo", "bar", "baz", 0 };
+char *list[2] = { "foo\n", "bar\n" };
 
-struct foo {int length; char* string;};
-struct foo g_f = {3, "foo"};
+struct foo
+{
+  int length;
+  char *string;
+};
+struct foo g_f = { 3, "foo" };
+
 struct foo *g_g = &g_f;
 struct foo g_foes[2];
 int g_foe;
 
-struct anon {struct {int bar; int baz;};};
-struct anion {union {int foo; int bar;}; union {int baz; int bla;};};
+struct anon
+{
+  struct
+  {
+    int bar;
+    int baz;
+  };
+};
+struct anion
+{
+  union
+  {
+    int foo;
+    int bar;
+  };
+  union
+  {
+    int baz;
+    int bla;
+  };
+};
 
-struct here {int and;} there;
+struct here
+{
+  int and;
+} there;
 
 typedef int int_array_t[1];
 int_array_t bar;
@@ -57,17 +85,17 @@ struct nest
   } bar;
   int i;
   enum baz
-    {
-      bla
-    } baz;
+  {
+    bla
+  } baz;
   enum
-    {
-      blub = 33,
-    } blub;
+  {
+    blub = 33,
+  } blub;
 };
 
 int
-test (struct foo* p)
+test (struct foo *p)
 {
   struct foo *g = &g_f;
   g[0].length = 0;
@@ -75,13 +103,13 @@ test (struct foo* p)
 }
 
 int
-next_main (int argc, char* argv[])
+next_main (int argc, char *argv[])
 {
   return 0;
 }
 
 int
-main (int argc, char* argv[])
+main (int argc, char *argv[])
 {
   int i;
   int j = 1;
@@ -123,12 +151,12 @@ main (int argc, char* argv[])
     return 16;
   if (strcmp (g_f.string, "foo"))
     return 17;
-  struct foo g = {4, "baar"};
+  struct foo g = { 4, "baar" };
   if (g.length != 4)
     return 18;
   if (strcmp (g.string, "baar"))
     return 19;
-  struct foo f = {3, "foo"};
+  struct foo f = { 3, "foo" };
   g_foes[0] = f;
   g_foes[1] = f;
   if (g_foe)
@@ -140,23 +168,31 @@ main (int argc, char* argv[])
   if (strcmp (strings[1], "two\n"))
     return 21;
   p = list;
-  struct anon a = {3,4};
-  eputs ("bar:"); eputs (itoa (a.bar)); eputs ("\n");
-  eputs ("baz:"); eputs (itoa (a.baz)); eputs ("\n");
+  struct anon a = { 3, 4 };
+  eputs ("bar:");
+  eputs (itoa (a.bar));
+  eputs ("\n");
+  eputs ("baz:");
+  eputs (itoa (a.baz));
+  eputs ("\n");
   if (a.bar != 3)
     return 22;
   if (a.baz != 4)
     return 23;
 
-  struct anion u = {3, 4};
-  eputs ("u.foo:"); eputs (itoa (u.foo)); eputs ("\n");
-  eputs ("u.bla:"); eputs (itoa (u.bla)); eputs ("\n");
+  struct anion u = { 3, 4 };
+  eputs ("u.foo:");
+  eputs (itoa (u.foo));
+  eputs ("\n");
+  eputs ("u.bla:");
+  eputs (itoa (u.bla));
+  eputs ("\n");
   if (u.foo != 3)
     return 24;
   if (u.bla != 4)
     return 25;
 
-  struct nest n = {0};
+  struct nest n = { 0 };
   if (n.bar.baz)
     return 26;
 
@@ -169,24 +205,25 @@ main (int argc, char* argv[])
   char buf[sizeof (g_f.string)];
   char buf1[sizeof (g_g->string)];
 
-  int (*fun)(int, char **);
+  int (*fun) (int, char **);
   fun = &next_main;
   //i = (*fun)(argc, argv);
 
-  int (*fun2)(int, char *[]);
+  int (*fun2) (int, char *[]);
   fun2 = &next_main;
   //i = (*fun2)(argc, argv);
 
   i = 1;
-  int lst[6] = {-1, 1 - 1, i, 2, 3};
+  int lst[6] = { -1, 1 - 1, i, 2, 3 };
   for (int i = 0; i < 4; i++)
     {
-      eputs ("i: "); eputs (itoa (lst[i])); eputs ("\n");
-      if (lst[i+1] != i)
+      eputs ("i: ");
+      eputs (itoa (lst[i]));
+      eputs ("\n");
+      if (lst[i + 1] != i)
         return 30 + i;
     }
-  eputs ("foo"
-         "bar");
+  eputs ("foo" "bar");
 
   return 0;
 }

@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 long
-ftell (FILE *stream)
+ftell (FILE * stream)
 {
-  return lseek ((int)stream, 0, SEEK_CUR);
+  return lseek ((int) stream, 0, SEEK_CUR);
 }

@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 int
-feof (FILE *stream)
+feof (FILE * stream)
 {
   char c = fgetc (stream);
   if (c != EOF)

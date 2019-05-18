@@ -27,12 +27,12 @@
 int foo;
 
 void
-second()
+second ()
 {
   if (foo++)
     exit (1);
-  oputs ("second\n");        // prints
-  longjmp (buf, 1);          // jumps back to where setjmp was called - making setjmp now return 1
+  oputs ("second\n");           // prints
+  longjmp (buf, 1);             // jumps back to where setjmp was called - making setjmp now return 1
   exit (1);
 }
 
@@ -40,7 +40,7 @@ void
 first ()
 {
   second ();
-  oputs ("first\n");         // does not print
+  oputs ("first\n");            // does not print
   exit (2);
 }
 
@@ -48,10 +48,10 @@ int
 main ()
 {
   if (!setjmp (buf))
-    first ();               // when executed, setjmp returned 0
-  else                      // when longjmp jumps back, setjmp returns 1
+    first ();                   // when executed, setjmp returned 0
+  else                          // when longjmp jumps back, setjmp returns 1
     {
-      oputs ("main\n");    // prints
+      oputs ("main\n");         // prints
       return 0;
     }
 

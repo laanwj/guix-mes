@@ -22,7 +22,7 @@
 #include <signal.h>
 
 int
-sigaddset (sigset_t *set, int signum)
+sigaddset (sigset_t * set, int signum)
 {
   return 0;
 }

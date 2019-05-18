@@ -21,5 +21,5 @@
 int
 pipe (int filedes[2])
 {
-  return _sys_call1 (SYS_pipe, (long)filedes);
+  return _sys_call1 (SYS_pipe, (long) filedes);
 }

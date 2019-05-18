@@ -21,7 +21,7 @@
 #include <mes/lib.h>
 
 int
-fdputs (char const* s, int fd)
+fdputs (char const *s, int fd)
 {
   int i = strlen (s);
   write (fd, s, i);

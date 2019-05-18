@@ -19,7 +19,7 @@
  */
 
 void
-assert_max_string (size_t i, char const* msg, char* string)
+assert_max_string (size_t i, char const *msg, char *string)
 {
   if (i > MAX_STRING)
     {
@@ -27,14 +27,14 @@ assert_max_string (size_t i, char const* msg, char* string)
       eputs (":string too long[");
       eputs (itoa (i));
       eputs ("]:");
-      string[MAX_STRING-1] = 0;
+      string[MAX_STRING - 1] = 0;
       eputs (string);
       error (cell_symbol_system_error, cell_f);
     }
 }
 
-char const*
-list_to_cstring (SCM list, size_t* size)
+char const *
+list_to_cstring (SCM list, size_t * size)
 {
   size_t i = 0;
   char *p = g_buf;
@@ -57,25 +57,25 @@ bytes_cells (size_t length)
 }
 
 SCM
-make_bytes (char const* s, size_t length)
+make_bytes (char const *s, size_t length)
 {
   size_t size = bytes_cells (length);
   SCM x = alloc (size);
   TYPE (x) = TBYTES;
   LENGTH (x) = length;
-  char *p = (char*)&g_cells[x].cdr;
+  char *p = (char *) &g_cells[x].cdr;
   if (!length)
-    *(char*)p = 0;
+    *(char *) p = 0;
   else
     memcpy (p, s, length + 1);
   return x;
 }
 
 SCM
-make_string (char const* s, size_t length)
+make_string (char const *s, size_t length)
 {
   if (length > MAX_STRING)
-    assert_max_string (length, "make_string", (char*)s);
+    assert_max_string (length, "make_string", (char *) s);
   SCM x = make_cell__ (TSTRING, length, 0);
   SCM v = make_bytes (s, length);
   CDR (x) = v;
@@ -83,23 +83,28 @@ make_string (char const* s, size_t length)
 }
 
 SCM
-string_equal_p (SCM a, SCM b) ///((name . "string=?"))
+string_equal_p (SCM a, SCM b)   ///((name . "string=?"))
 {
-  if (! ((TYPE (a) == TSTRING && TYPE (b) == TSTRING)
-         || (TYPE (a) == TKEYWORD || TYPE (b) == TKEYWORD)))
+  if (!((TYPE (a) == TSTRING && TYPE (b) == TSTRING) || (TYPE (a) == TKEYWORD || TYPE (b) == TKEYWORD)))
     {
-      eputs ("type a: "); eputs (itoa (TYPE (a))); eputs ("\n");
-      eputs ("type b: "); eputs (itoa (TYPE (b))); eputs ("\n");
-      eputs ("a= "); write_error_ (a); eputs ("\n");
-      eputs ("b= "); write_error_ (b); eputs ("\n");
-      assert ((TYPE (a) == TSTRING && TYPE (b) == TSTRING)
-              || (TYPE (a) == TKEYWORD || TYPE (b) == TKEYWORD));
+      eputs ("type a: ");
+      eputs (itoa (TYPE (a)));
+      eputs ("\n");
+      eputs ("type b: ");
+      eputs (itoa (TYPE (b)));
+      eputs ("\n");
+      eputs ("a= ");
+      write_error_ (a);
+      eputs ("\n");
+      eputs ("b= ");
+      write_error_ (b);
+      eputs ("\n");
+      assert ((TYPE (a) == TSTRING && TYPE (b) == TSTRING) || (TYPE (a) == TKEYWORD || TYPE (b) == TKEYWORD));
     }
   if (a == b
       || STRING (a) == STRING (b)
       || (!LENGTH (a) && !LENGTH (b))
-      || (LENGTH (a) == LENGTH (b)
-          && !memcmp (CSTRING (a), CSTRING (b), LENGTH (a))))
+      || (LENGTH (a) == LENGTH (b) && !memcmp (CSTRING (a), CSTRING (b), LENGTH (a))))
     return cell_t;
   return cell_f;
 }
@@ -140,7 +145,7 @@ make_symbol (SCM string)
 }
 
 SCM
-bytes_to_list (char const* s, size_t i)
+bytes_to_list (char const *s, size_t i)
 {
   SCM p = cell_nil;
   while (i--)
@@ -152,7 +157,7 @@ bytes_to_list (char const* s, size_t i)
 }
 
 SCM
-cstring_to_list (char const* s)
+cstring_to_list (char const *s)
 {
   return bytes_to_list (s, strlen (s));
 }
@@ -179,7 +184,7 @@ list_to_string (SCM list)
 }
 
 SCM
-read_string (SCM port) ///((arity . n))
+read_string (SCM port)          ///((arity . n))
 {
   int fd = __stdin;
   if (TYPE (port) == TPAIR && TYPE (car (port)) == TNUMBER)
@@ -199,7 +204,7 @@ read_string (SCM port) ///((arity . n))
 }
 
 SCM
-string_append (SCM x) ///((arity . n))
+string_append (SCM x)           ///((arity . n))
 {
   char *p = g_buf;
   g_buf[0] = 0;

@@ -22,7 +22,7 @@
 #include <stdarg.h>
 
 int
-vsprintf (char *str, char const* format, va_list ap)
+vsprintf (char *str, char const *format, va_list ap)
 {
   return vsnprintf (str, LONG_MAX, format, ap);
 }

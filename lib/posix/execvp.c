@@ -33,11 +33,17 @@ execvp (char const *file_name, char *const argv[])
     }
   if (__mes_debug ())
     {
-      eputs (" EXEC: "); eputs (file_name); eputs ("\n");
+      eputs (" EXEC: ");
+      eputs (file_name);
+      eputs ("\n");
       int i = 0;
       while (argv[i])
         {
-          eputs (" arg["); eputs (itoa (i)); eputs ("]: "); eputs (argv[i]); eputs ("\n");
+          eputs (" arg[");
+          eputs (itoa (i));
+          eputs ("]: ");
+          eputs (argv[i]);
+          eputs ("\n");
           i++;
         }
     }

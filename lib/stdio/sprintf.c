@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 int
-sprintf (char *str, char const* format, ...)
+sprintf (char *str, char const *format, ...)
 {
   va_list ap;
   int r;

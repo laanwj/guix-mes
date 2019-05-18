@@ -20,7 +20,9 @@
 
 #include <mes/lib-mini.h>
 
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART};
+enum type_t
+{ TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING,
+    TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART };
 
 int
 swits (int c)
@@ -52,7 +54,7 @@ swits (int c)
     }
 
   return 1;
- next:
+next:
   switch (c)
     {
     case 0:
@@ -96,7 +98,8 @@ default_first (int c)
     there:
     case 0:
       ;
-      {}
+      {
+      }
       return 0;
     }
   return -1;
@@ -153,7 +156,7 @@ main ()
       break;
     }
 
-  if (i!= 0)
+  if (i != 0)
     return 16;
 
   i = 2;

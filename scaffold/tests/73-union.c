@@ -39,12 +39,14 @@ typedef union
 int
 main ()
 {
-  union foo f = {48};
+  union foo f = { 48 };
   printf ("f.i=%d\n", f.i);
   printf ("f.c=%c\n", f.c);
 
-  if (f.i != 48) return 1;
-  if (f.c != '0') return 1;
+  if (f.i != 48)
+    return 1;
+  if (f.c != '0')
+    return 1;
 
   return 0;
 }

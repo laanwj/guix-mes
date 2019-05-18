@@ -26,7 +26,7 @@ memmove (void *dest, void const *src, size_t n)
   if (dest < src)
     return memcpy (dest, src, n);
   char *p = dest + n;
-  char const *q = src +n;
+  char const *q = src + n;
   while (n--)
     *--p = *--q;
   return dest;

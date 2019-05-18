@@ -53,7 +53,9 @@ main ()
     return 1;
   if (sizeof (**p) != 1)
     return 2;
-  oputs ("size: "); oputs (itoa (sizeof (struct foo))); oputs ("\n");
+  oputs ("size: ");
+  oputs (itoa (sizeof (struct foo)));
+  oputs ("\n");
   if (sizeof (struct foo) != 20)
     return 3;
   struct foo f;

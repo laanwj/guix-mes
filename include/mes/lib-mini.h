@@ -79,12 +79,12 @@ int __stdin;
 int __stdout;
 int __stderr;
 
-int eputs (char const* s);
-int puts (char const* s);
-int oputs (char const* s);
+int eputs (char const *s);
+int puts (char const *s);
+int oputs (char const *s);
 
 #if !WITH_GLIBC
-size_t strlen (char const* s);
+size_t strlen (char const *s);
 ssize_t _write ();
 ssize_t write (int filedes, void const *buffer, size_t size);
 #endif // !WITH_GLIBC

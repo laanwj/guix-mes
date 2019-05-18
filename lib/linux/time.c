@@ -21,7 +21,7 @@
 #include <time.h>
 
 time_t
-time (time_t *result)
+time (time_t * result)
 {
-  return _sys_call1 (SYS_time, (long)result);
+  return _sys_call1 (SYS_time, (long) result);
 }

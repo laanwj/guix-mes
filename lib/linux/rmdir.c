@@ -21,5 +21,5 @@
 int
 rmdir (char const *file_name)
 {
-  return _sys_call1 (SYS_rmdir, (long)file_name);
+  return _sys_call1 (SYS_rmdir, (long) file_name);
 }

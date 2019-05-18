@@ -26,7 +26,7 @@
 #endif
 #undef __MES_STDLIB_H
 #include_next <stdlib.h>
-#else  // ! WITH_GLIBC
+#else // ! WITH_GLIBC
 
 #include <sys/types.h>
 #include <alloca.h>
@@ -34,15 +34,15 @@
 double atof (char const *s);
 int atoi (char const *s);
 int atexit (void (*function) (void));
-void * calloc (size_t nmemb, size_t size);
+void *calloc (size_t nmemb, size_t size);
 void _exit (int status);
 void exit (int status);
 void free (void *ptr);
-char* getenv (char const* s);
-int setenv (char const* s, char const* v, int overwrite_p);
+char *getenv (char const *s);
+int setenv (char const *s, char const *v, int overwrite_p);
 void unsetenv (char const *name);
 void *malloc (size_t);
-void qsort (void *base, size_t nmemb, size_t size, int (*compar)(void const *, void const *));
+void qsort (void *base, size_t nmemb, size_t size, int (*compar) (void const *, void const *));
 int rand (void);
 void *realloc (void *p, size_t size);
 double strtod (char const *string, char **tailptr);
@@ -61,7 +61,7 @@ unsigned long long strtoull (char const *string, char **tailptr, int base);
 typedef int (*comparison_fn_t) (void const *, void const *);
 #endif
 
-void * bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare);
+void *bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare);
 
 #endif // ! WITH_GLIBC
 

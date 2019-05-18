@@ -24,7 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct symbol {
+struct symbol
+{
   int len;
   char str[10];
   //int len;
@@ -33,13 +34,13 @@ struct symbol {
 struct symbol *list[2];
 struct symbol s0;
 struct symbol s1;
-struct symbol** plist;
+struct symbol **plist;
 
 char *
 find0 ()
 {
-  strcpy (s0.str,  "foo");
-  strcpy (s1.str,  "bar");
+  strcpy (s0.str, "foo");
+  strcpy (s1.str, "bar");
   list[0] = &s0;
   list[1] = &s1;
   //return s0.str;
@@ -72,21 +73,30 @@ int
 main ()
 {
   char *s = find0 ();
-  eputs (s); eputs ("\n");
-  if (strcmp (s, "foo")) return 1;
-  if (strcmp (list[0]->str, "foo")) return 2;
+  eputs (s);
+  eputs ("\n");
+  if (strcmp (s, "foo"))
+    return 1;
+  if (strcmp (list[0]->str, "foo"))
+    return 2;
 
   s = find1 ();
-  eputs (s); eputs ("\n");
-  if (strcmp (s, "bar")) return 3;
-  if (strcmp (list[1]->str, "bar")) return 4;
+  eputs (s);
+  eputs ("\n");
+  if (strcmp (s, "bar"))
+    return 3;
+  if (strcmp (list[1]->str, "bar"))
+    return 4;
 
   s = find2 ();
-  eputs (s); eputs ("\n");
-  if (strcmp (s, "pbar")) return 5;
+  eputs (s);
+  eputs ("\n");
+  if (strcmp (s, "pbar"))
+    return 5;
 
   list[1]->len = 2;
-  if (list[1]->len != 2) return 6;
+  if (list[1]->len != 2)
+    return 6;
 
   return 0;
 }

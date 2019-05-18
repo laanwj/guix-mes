@@ -26,7 +26,7 @@
 #include <unistd.h>
 
 int
-__getdirentries (int filedes, char *buffer, size_t nbytes, off_t *basep)
+__getdirentries (int filedes, char *buffer, size_t nbytes, off_t * basep)
 {
   if (basep)
     *basep = lseek (filedes, (off_t) 0, SEEK_CUR);

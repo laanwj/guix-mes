@@ -26,7 +26,7 @@ int
 main ()
 {
   puts ("\n");
-  char buf[10] = {0,0,0,0,0,0,0,0,0,0};
+  char buf[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
   strncpy (buf, "mesxxx", 3);
   puts ("buf:");
   puts (buf);

@@ -22,24 +22,29 @@
 #include <stdio.h>
 
 size_t
-fwrite (void const *data, size_t size, size_t count, FILE *stream)
+fwrite (void const *data, size_t size, size_t count, FILE * stream)
 {
   if (__mes_debug () > 1)
     {
-      eputs ("fwrite "); eputs (itoa ((int)stream));
-      eputs ("  "); eputs (itoa (size)); eputs ("\n");
+      eputs ("fwrite ");
+      eputs (itoa ((int) stream));
+      eputs ("  ");
+      eputs (itoa (size));
+      eputs ("\n");
     }
 
-  if (! size || !count)
+  if (!size || !count)
     return 0;
-  int bytes = write ((int)stream, data, size * count);
+  int bytes = write ((int) stream, data, size * count);
 
   if (__mes_debug () > 2)
     {
-      eputs (" => "); eputs (itoa (bytes)); eputs ("\n");
+      eputs (" => ");
+      eputs (itoa (bytes));
+      eputs ("\n");
     }
 
   if (bytes > 0)
-    return bytes/size;
+    return bytes / size;
   return 0;
 }

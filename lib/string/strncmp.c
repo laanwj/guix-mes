@@ -21,7 +21,7 @@
 #include <string.h>
 
 int
-strncmp (char const* a, char const* b, size_t size)
+strncmp (char const *a, char const *b, size_t size)
 {
   if (!size)
     return 0;

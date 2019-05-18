@@ -37,8 +37,8 @@ struct bar
 int
 main ()
 {
-  struct foo f = {0, 0, 0, 0};
-  struct foo g = {1, 0, 0, 0};
+  struct foo f = { 0, 0, 0, 0 };
+  struct foo g = { 1, 0, 0, 0 };
   f.j = &f.i;
   g.j = &g.i;
   f.bar = &f;

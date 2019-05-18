@@ -19,8 +19,7 @@
  */
 
 int
-setitimer (int which, struct itimerval const *new,
-          struct itimerval *old)
+setitimer (int which, struct itimerval const *new, struct itimerval *old)
 {
-  return _sys_call3 (SYS_setitimer, (long)which, (long)new, (long)old);
+  return _sys_call3 (SYS_setitimer, (long) which, (long) new, (long) old);
 }

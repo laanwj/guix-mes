@@ -29,7 +29,7 @@ struct scm
 
 
 char g_arena[12];
-struct scm *g_cells = (struct scm*)g_arena;
+struct scm *g_cells = (struct scm *) g_arena;
 
 int
 main ()

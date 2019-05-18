@@ -51,13 +51,13 @@ main ()
   if (++i)
     goto ok0;
   return 1;
- ok0:
+ok0:
 
   oputs ("t: if (i--)\n");
   if (i--)
     goto ok1;
   return 1;
- ok1:
+ok1:
 
   return 0;
 }

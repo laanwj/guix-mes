@@ -45,25 +45,25 @@ typedef unsigned long size_t;
 typedef long ssize_t;
 #endif
 
-void * memchr (void const *block, int c, size_t size);
+void *memchr (void const *block, int c, size_t size);
 void *memcpy (void *dest, void const *src, size_t n);
 void *memmove (void *dest, void const *src, size_t n);
 void *memset (void *s, int c, size_t n);
-void * memchr (void const *block, int c, size_t size);
+void *memchr (void const *block, int c, size_t size);
 int memcmp (void const *s1, void const *s2, size_t n);
 
 char *strcat (char *dest, char const *src);
 char *strchr (char const *s, int c);
 int strcasecmp (char const *s1, char const *s2);
-int strcmp (char const*, char const*);
+int strcmp (char const *, char const *);
 char *strcpy (char *dest, char const *src);
-size_t strlen (char const*);
+size_t strlen (char const *);
 char *strncpy (char *to, char const *from, size_t size);
-int strncmp (char const*, char const*, size_t);
+int strncmp (char const *, char const *, size_t);
 char *strrchr (char const *s, int c);
 char *strstr (char const *haystack, char const *needle);
-char * strlwr (char *string);
-char * strupr (char *string);
+char *strlwr (char *string);
+char *strupr (char *string);
 
 
 char *strerror (int errnum);

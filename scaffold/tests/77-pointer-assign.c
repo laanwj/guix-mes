@@ -22,36 +22,38 @@
 
 #include <mes/lib.h>
 
-struct baz {
+struct baz
+{
   int i;
   int j;
 };
 
-struct foo {
+struct foo
+{
   int **bar;
 };
 
 void
 add0 (void *ptab)
 {
-  void **pp = *(void***)ptab;
- bla:
+  void **pp = *(void ***) ptab;
+bla:
   pp[0] = 0x11223344;
 }
 
 void
 add1 (void *ptab)
 {
-  void ***x = (void***)ptab;
- bla:
-  *(void***)ptab = 0x22334455;
+  void ***x = (void ***) ptab;
+bla:
+  *(void ***) ptab = 0x22334455;
 }
 
 void
 add2 (void *ptab)
 {
-  void ***x = (void***)ptab;
- bla:
+  void ***x = (void ***) ptab;
+bla:
   *x = 0x33445566;
 }
 
@@ -64,19 +66,30 @@ main ()
   int *p = &i;
   struct foo f;
   f.bar = &p;
-  eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
+  eputs ("f.bar:");
+  eputs (itoa (f.bar));
+  eputs ("\n");
 
   add0 (&f.bar);
-  eputs ("f.bar:"); eputs (itoa (*f.bar)); eputs ("\n");
-  if (*f.bar != 0x11223344) return 1;
+  eputs ("f.bar:");
+  eputs (itoa (*f.bar));
+  eputs ("\n");
+  if (*f.bar != 0x11223344)
+    return 1;
 
   add1 (&f.bar);
-  eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
-  if (f.bar != 0x22334455) return 2;
+  eputs ("f.bar:");
+  eputs (itoa (f.bar));
+  eputs ("\n");
+  if (f.bar != 0x22334455)
+    return 2;
 
   add2 (&f.bar);
-  eputs ("f.bar:"); eputs (itoa (f.bar)); eputs ("\n");
-  if (f.bar != 0x33445566) return 3;
+  eputs ("f.bar:");
+  eputs (itoa (f.bar));
+  eputs ("\n");
+  if (f.bar != 0x33445566)
+    return 3;
 
   hash_ident[0] = 10;
   *hash_ident = 0;
@@ -84,11 +97,13 @@ main ()
 
   struct baz b;
   b.i = b.j = 1;
-  if (b.i != 1) return 4;
+  if (b.i != 1)
+    return 4;
 
   struct baz *pb = &b;
   pb->i = pb->j = 1;
-  if (pb->i != 1) return 5;
+  if (pb->i != 1)
+    return 5;
 
   return 0;
 }

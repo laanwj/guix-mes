@@ -24,7 +24,7 @@ int g_time = 1;
 #define time time_
 #endif
 
-int*
+int *
 time ()
 {
   return &g_time;

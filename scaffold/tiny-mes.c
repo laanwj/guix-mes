@@ -33,14 +33,17 @@ char arena[300];
 typedef int SCM;
 
 SCM g_stack = 0;
-SCM r0 = 0; // a/env
-SCM r1 = 0; // param 1
-SCM r2 = 0; // save 2+load/dump
-SCM r3 = 0; // continuation
+SCM r0 = 0;                     // a/env
+SCM r1 = 0;                     // param 1
+SCM r2 = 0;                     // save 2+load/dump
+SCM r3 = 0;                     // continuation
 
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART};
+enum type_t
+{ TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING,
+    TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART };
 
-struct scm {
+struct scm
+{
   enum type_t type;
   SCM car;
   SCM cdr;
@@ -49,7 +52,7 @@ struct scm {
 #if __MESC__
 struct scm *g_cells = arena;
 #else
-struct scm *g_cells = (struct scm*)arena;
+struct scm *g_cells = (struct scm *) arena;
 #endif
 
 #define cell_nil 1
@@ -75,10 +78,29 @@ cdr (SCM x)
   return CDR (x);
 }
 
-SCM caar (SCM x) {return car (car (x));}
-SCM cadr (SCM x) {return car (cdr (x));}
-SCM cdar (SCM x) {return cdr (car (x));}
-SCM cddr (SCM x) {return cdr (cdr (x));}
+SCM
+caar (SCM x)
+{
+  return car (car (x));
+}
+
+SCM
+cadr (SCM x)
+{
+  return car (cdr (x));
+}
+
+SCM
+cdar (SCM x)
+{
+  return cdr (car (x));
+}
+
+SCM
+cddr (SCM x)
+{
+  return cdr (cdr (x));
+}
 
 SCM
 gc_peek_frame ()
@@ -195,7 +217,8 @@ display_ (SCM x)
         //puts ("<pair>\n");
         //if (cont != cell_f) puts "(");
         puts ("(");
-        if (x && x != cell_nil) display_ (CAR (x));
+        if (x && x != cell_nil)
+          display_ (CAR (x));
         if (CDR (x) && CDR (x) != cell_nil)
           {
 #if __GNUC__
@@ -218,17 +241,29 @@ display_ (SCM x)
       {
         switch (x)
           {
-          case 1: {puts ("()"); break;}
-          case 2: {puts ("#f"); break;}
-          case 3: {puts ("#t"); break;}
+          case 1:
+            {
+              puts ("()");
+              break;
+            }
+          case 2:
+            {
+              puts ("#f");
+              break;
+            }
+          case 3:
+            {
+              puts ("#t");
+              break;
+            }
           default:
             {
 #if __GNUC__
-        puts ("<x:");
-        puts (itoa (x));
-        puts (">");
+              puts ("<x:");
+              puts (itoa (x));
+              puts (">");
 #else
-        puts ("<x>");
+              puts ("<x>");
 #endif
             }
           }
@@ -238,24 +273,64 @@ display_ (SCM x)
       {
         switch (x)
           {
-          case 11: {puts (" . "); break;}
-          case 12: {puts ("lambda"); break;}
-          case 13: {puts ("begin"); break;}
-          case 14: {puts ("if"); break;}
-          case 15: {puts ("quote"); break;}
-          case 37: {puts ("car"); break;}
-          case 38: {puts ("cdr"); break;}
-          case 39: {puts ("null?"); break;}
-          case 40: {puts ("eq?"); break;}
-          case 41: {puts ("cons"); break;}
+          case 11:
+            {
+              puts (" . ");
+              break;
+            }
+          case 12:
+            {
+              puts ("lambda");
+              break;
+            }
+          case 13:
+            {
+              puts ("begin");
+              break;
+            }
+          case 14:
+            {
+              puts ("if");
+              break;
+            }
+          case 15:
+            {
+              puts ("quote");
+              break;
+            }
+          case 37:
+            {
+              puts ("car");
+              break;
+            }
+          case 38:
+            {
+              puts ("cdr");
+              break;
+            }
+          case 39:
+            {
+              puts ("null?");
+              break;
+            }
+          case 40:
+            {
+              puts ("eq?");
+              break;
+            }
+          case 41:
+            {
+              puts ("cons");
+              break;
+            }
           default:
             {
 #if __GNUC__
-        puts ("<s:");
-        puts (itoa (x));
-        puts (">");
+              puts ("<s:");
+              puts (itoa (x));
+              puts (">");
 #else
-        puts ("<s>");
+              puts ("<s>");
 #endif
             }
           }
@@ -280,29 +355,36 @@ display_ (SCM x)
 }
 
 SCM
-bload_env (SCM a) ///((internal))
+bload_env (SCM a)               ///((internal))
 {
   puts ("reading: ");
   char *mo = "module/mes/tiny-0-32.mo";
   puts (mo);
   puts ("\n");
   __stdin = open (mo, 0);
-  if (__stdin < 0) {eputs ("no such file: module/mes/tiny-0-32.mo\n");return 1;}
+  if (__stdin < 0)
+    {
+      eputs ("no such file: module/mes/tiny-0-32.mo\n");
+      return 1;
+    }
 
   // BOOM
   //char *p = arena;
-  char *p = (char*)g_cells;
+  char *p = (char *) g_cells;
   int c;
 
   c = getchar ();
   putchar (c);
-  if (c != 'M') exit (10);
+  if (c != 'M')
+    exit (10);
   c = getchar ();
   putchar (c);
-  if (c != 'E') exit (11);
+  if (c != 'E')
+    exit (11);
   c = getchar ();
   putchar (c);
-  if (c != 'S') exit (12);
+  if (c != 'S')
+    exit (12);
   puts (" *GOT MES*\n");
 
   // skip stack

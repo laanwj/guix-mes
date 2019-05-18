@@ -23,9 +23,8 @@
 #if WITH_GLIBC
 #undef __MES_SYS_SELECT_H
 #include_next <sys/select.h>
-#else  //! WITH_GLIBC
+#else //! WITH_GLIBC
 typedef int fd_set;
 #endif //! WITH_GLIBC
 
 #endif // __MES_SYS_SELECT_H
-

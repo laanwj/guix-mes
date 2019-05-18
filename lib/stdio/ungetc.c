@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 int
-ungetc (int c, FILE *stream)
+ungetc (int c, FILE * stream)
 {
-  return fdungetc (c, (long)stream);
+  return fdungetc (c, (long) stream);
 }

@@ -27,7 +27,7 @@ int g_depth;
 SCM fdisplay_ (SCM, int, int);
 
 SCM
-display_helper (SCM x, int cont, char* sep, int fd, int write_p)
+display_helper (SCM x, int cont, char *sep, int fd, int write_p)
 {
   fdputs (sep, fd);
   if (g_depth == 0)
@@ -43,17 +43,26 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
         {
           fdputs ("#", fd);
           long v = VALUE (x);
-          if (v == '\0') fdputs ("\\nul", fd);
-          else if (v == '\a') fdputs ("\\alarm", fd);
-          else if (v == '\b') fdputs ("\\backspace", fd);
-          else if (v == '\t') fdputs ("\\tab", fd);
-          else if (v == '\n') fdputs ("\\newline", fd);
-          else if (v == '\v') fdputs ("\\vtab", fd);
-          else if (v == '\f') fdputs ("\\page", fd);
+          if (v == '\0')
+            fdputs ("\\nul", fd);
+          else if (v == '\a')
+            fdputs ("\\alarm", fd);
+          else if (v == '\b')
+            fdputs ("\\backspace", fd);
+          else if (v == '\t')
+            fdputs ("\\tab", fd);
+          else if (v == '\n')
+            fdputs ("\\newline", fd);
+          else if (v == '\v')
+            fdputs ("\\vtab", fd);
+          else if (v == '\f')
+            fdputs ("\\page", fd);
           //Nyacc bug
           // else if (v == '\r') fdputs ("return", fd);
-          else if (v == 13) fdputs ("\\return", fd);
-          else if (v == ' ') fdputs ("\\space", fd);
+          else if (v == 13)
+            fdputs ("\\return", fd);
+          else if (v == ' ')
+            fdputs ("\\space", fd);
           else
             {
               if (v >= 32 && v <= 127)
@@ -93,15 +102,15 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     {
       if (!cont)
         fdputs ("(", fd);
-      if (CAR (x) == cell_circular
-          && CADR (x) != cell_closure)
+      if (CAR (x) == cell_circular && CADR (x) != cell_closure)
         {
           fdputs ("(*circ* . ", fd);
           int i = 0;
           x = CDR (x);
           while (x != cell_nil && i++ < 10)
             {
-              fdisplay_ (CAAR (x), fd, write_p); fdputs (" ", fd);
+              fdisplay_ (CAAR (x), fd, write_p);
+              fdputs (" ", fd);
               x = CDR (x);
             }
           fdputs (" ...)", fd);
@@ -122,17 +131,13 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       if (!cont)
         fdputs (")", fd);
     }
-  else if (t == TKEYWORD
-           || t == TPORT
-           || t == TSPECIAL
-           || t == TSTRING
-           || t == TSYMBOL)
+  else if (t == TKEYWORD || t == TPORT || t == TSPECIAL || t == TSTRING || t == TSYMBOL)
     {
       if (t == TPORT)
         {
           fdputs ("#<port ", fd);
           fdputs (itoa (PORT (x)), fd);
-          fdputs (" " ,fd);
+          fdputs (" ", fd);
           x = STRING (x);
         }
       if (t == TKEYWORD)
@@ -146,28 +151,40 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
 #else
       size_t length = LENGTH (x);
 #endif
-      for (size_t i=0; i < length; i++)
+      for (size_t i = 0; i < length; i++)
         {
           long v = write_p ? s[i] : -1;
-          if (v == '\0') fdputs ("\\0", fd);
-          else if (v == '\a') fdputs ("\\a", fd);
-          else if (v == '\b') fdputs ("\\b", fd);
-          else if (v == '\t') fdputs ("\\t", fd);
-          else if (v == '\v') fdputs ("\\v", fd);
-          else if (v == '\n') fdputs ("\\n", fd);
-          else if (v == '\f') fdputs ("\\f", fd);
-#if 1 //__MESC__
-      //Nyacc bug
-          else if (v == 13) fdputs ("\\r", fd);
-          else if (v == 27) fdputs ("\\e", fd);
+          if (v == '\0')
+            fdputs ("\\0", fd);
+          else if (v == '\a')
+            fdputs ("\\a", fd);
+          else if (v == '\b')
+            fdputs ("\\b", fd);
+          else if (v == '\t')
+            fdputs ("\\t", fd);
+          else if (v == '\v')
+            fdputs ("\\v", fd);
+          else if (v == '\n')
+            fdputs ("\\n", fd);
+          else if (v == '\f')
+            fdputs ("\\f", fd);
+#if 1                           //__MESC__
+          //Nyacc bug
+          else if (v == 13)
+            fdputs ("\\r", fd);
+          else if (v == 27)
+            fdputs ("\\e", fd);
 #else
           //else if (v == '\r') fdputs ("\\r", fd);
           //Nyacc crash
           //else if (v == '\e') fdputs ("\\e", fd);
 #endif
-          else if (v == '\\') fdputs ("\\\\", fd);
-          else if (v == '"') fdputs ("\\\"", fd);
-          else fdputc (s[i], fd);
+          else if (v == '\\')
+            fdputs ("\\\\", fd);
+          else if (v == '"')
+            fdputs ("\\\"", fd);
+          else
+            fdputc (s[i], fd);
         }
       if ((write_p && t == TSTRING) || t == TPORT)
         fdputc ('"', fd);
@@ -182,8 +199,7 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
       SCM printer = struct_ref_ (x, STRUCT_PRINTER);
       if (TYPE (printer) == TREF)
         printer = REF (printer);
-      if (TYPE (printer) == TCLOSURE
-          || builtin_p (printer) == cell_t)
+      if (TYPE (printer) == TCLOSURE || builtin_p (printer) == cell_t)
         apply (printer, cons (x, cell_nil), r0);
       else
         {
@@ -191,7 +207,7 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
           fdisplay_ (STRUCT (x), fd, write_p);
           SCM t = CAR (x);
           long size = LENGTH (x);
-          for (long i=2; i<size; i++)
+          for (long i = 2; i < size; i++)
             {
               fdputc (' ', fd);
               fdisplay_ (STRUCT (x) + i, fd, write_p);
@@ -203,7 +219,7 @@ display_helper (SCM x, int cont, char* sep, int fd, int write_p)
     {
       fdputs ("#(", fd);
       SCM t = CAR (x);
-      for (long i = 0; i<LENGTH (x); i++)
+      for (long i = 0; i < LENGTH (x); i++)
         {
           if (i)
             fdputc (' ', fd);
@@ -265,14 +281,14 @@ write_port_ (SCM x, SCM p)
 }
 
 SCM
-fdisplay_ (SCM x, int fd, int write_p) ///((internal))
+fdisplay_ (SCM x, int fd, int write_p)  ///((internal))
 {
   g_depth = 5;
   return display_helper (x, 0, "", fd, write_p);
 }
 
 SCM
-exit_ (SCM x) ///((name . "exit"))
+exit_ (SCM x)                   ///((name . "exit"))
 {
   assert (TYPE (x) == TNUMBER);
   exit (VALUE (x));
@@ -281,16 +297,18 @@ exit_ (SCM x) ///((name . "exit"))
 SCM
 frame_printer (SCM frame)
 {
-  fdputs ("#<", __stdout); display_ (struct_ref_ (frame, 2));
+  fdputs ("#<", __stdout);
+  display_ (struct_ref_ (frame, 2));
   fdputc (' ', __stdout);
-  fdputs ("procedure: ", __stdout); display_ (struct_ref_ (frame, 3));
+  fdputs ("procedure: ", __stdout);
+  display_ (struct_ref_ (frame, 3));
   fdputc ('>', __stdout);
 }
 
 SCM
-make_frame_type () ///((internal))
+make_frame_type ()              ///((internal))
 {
-  SCM record_type = cell_symbol_record_type; // FIXME
+  SCM record_type = cell_symbol_record_type;    // FIXME
   SCM fields = cell_nil;
   fields = cons (cell_symbol_procedure, fields);
   fields = cons (fields, cell_nil);
@@ -302,8 +320,8 @@ SCM
 make_frame (SCM stack, long index)
 {
   SCM frame_type = make_frame_type ();
-  long array_index = (STACK_SIZE-(index*FRAME_SIZE));
-  SCM procedure = g_stack_array[array_index+FRAME_PROCEDURE];
+  long array_index = (STACK_SIZE - (index * FRAME_SIZE));
+  SCM procedure = g_stack_array[array_index + FRAME_PROCEDURE];
   if (!procedure)
     procedure = cell_f;
   SCM values = cell_nil;
@@ -313,9 +331,9 @@ make_frame (SCM stack, long index)
 }
 
 SCM
-make_stack_type () ///((internal))
+make_stack_type ()              ///((internal))
 {
-  SCM record_type = cell_symbol_record_type; // FIXME
+  SCM record_type = cell_symbol_record_type;    // FIXME
   SCM fields = cell_nil;
   fields = cons (cstring_to_symbol ("frames"), fields);
   fields = cons (fields, cell_nil);
@@ -324,12 +342,12 @@ make_stack_type () ///((internal))
 }
 
 SCM
-make_stack (SCM stack) ///((arity . n))
+make_stack (SCM stack)          ///((arity . n))
 {
   SCM stack_type = make_stack_type ();
-  long size = (STACK_SIZE-g_stack) / FRAME_SIZE;
+  long size = (STACK_SIZE - g_stack) / FRAME_SIZE;
   SCM frames = make_vector__ (size);
-  for (long i=0; i<size; i++)
+  for (long i = 0; i < size; i++)
     {
       SCM frame = make_frame (stack, i);
       vector_set_x_ (frames, i, frame);
@@ -355,7 +373,7 @@ stack_ref (SCM stack, SCM index)
 }
 
 SCM
-xassq (SCM x, SCM a) ///for speed in core only
+xassq (SCM x, SCM a)            ///for speed in core only
 {
   while (a != cell_nil && x != CDAR (a))
     a = CDR (a);
@@ -366,30 +384,27 @@ SCM
 memq (SCM x, SCM a)
 {
   int t = TYPE (x);
-  if (t == TCHAR
-      || t == TNUMBER)
-      {
-        SCM v = VALUE (x);
-        while (a != cell_nil && v != VALUE (CAR (a)))
-          a = CDR (a);
-      }
-    else if (t == TKEYWORD)
-      {
-        while (a != cell_nil
-               && (TYPE (CAR (a)) != TKEYWORD
-                   || string_equal_p (x, CAR (a)) == cell_f))
-          a = CDR (a);
-      }
-    else
-      while (a != cell_nil && x != CAR (a))
+  if (t == TCHAR || t == TNUMBER)
+    {
+      SCM v = VALUE (x);
+      while (a != cell_nil && v != VALUE (CAR (a)))
         a = CDR (a);
+    }
+  else if (t == TKEYWORD)
+    {
+      while (a != cell_nil && (TYPE (CAR (a)) != TKEYWORD || string_equal_p (x, CAR (a)) == cell_f))
+        a = CDR (a);
+    }
+  else
+    while (a != cell_nil && x != CAR (a))
+      a = CDR (a);
   return a != cell_nil ? a : cell_f;
 }
 
 SCM
 equal2_p (SCM a, SCM b)
 {
- equal2:
+equal2:
   if (a == b)
     return cell_t;
   if (TYPE (a) == TPAIR && TYPE (b) == TPAIR)
@@ -408,7 +423,7 @@ equal2_p (SCM a, SCM b)
     {
       if (LENGTH (a) != LENGTH (b))
         return cell_f;
-      for (long i=0; i < LENGTH (a); i++)
+      for (long i = 0; i < LENGTH (a); i++)
         {
           SCM ai = VECTOR (a) + i;
           SCM bi = VECTOR (b) + i;

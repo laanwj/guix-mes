@@ -32,15 +32,15 @@
 
 union alloca_header
 {
-  char align[ALIGN_SIZE];	/* To force sizeof(union alloca_header).  */
+  char align[ALIGN_SIZE];       /* To force sizeof(union alloca_header).  */
   struct
-    {
-      union alloca_header *next;		/* For chaining headers.  */
-      char *deep;		/* For stack depth measure.  */
-    } h;
+  {
+    union alloca_header *next;  /* For chaining headers.  */
+    char *deep;                 /* For stack depth measure.  */
+  } h;
 };
 
-static union alloca_header *last_alloca_header = NULL;	/* -> last alloca header.  */
+static union alloca_header *last_alloca_header = NULL;  /* -> last alloca header.  */
 
 /* Return a void * to at least SIZE bytes of storage,
    which will be automatically reclaimed upon exit from
@@ -52,43 +52,42 @@ static union alloca_header *last_alloca_header = NULL;	/* -> last alloca header.
 void *
 alloca (size_t size)
 {
-  char probe;		/* Probes stack depth: */
+  char probe;                   /* Probes stack depth: */
   char *depth = ADDRESS_FUNCTION (probe);
 
   /* Reclaim garbage, defined as all alloca'd storage that
      was allocated from deeper in the stack than currently.  */
 
   {
-    union alloca_header *hp;	/* Traverses linked list.  */
+    union alloca_header *hp;    /* Traverses linked list.  */
 
     for (hp = last_alloca_header; hp != NULL;)
-      if ((STACK_DIR > 0 && hp->h.deep > depth)
-	  || (STACK_DIR < 0 && hp->h.deep < depth))
-	{
-	  union alloca_header *np = hp->h.next;
+      if ((STACK_DIR > 0 && hp->h.deep > depth) || (STACK_DIR < 0 && hp->h.deep < depth))
+        {
+          union alloca_header *np = hp->h.next;
 
-	  free ((void *) hp);	/* Collect garbage.  */
+          free ((void *) hp);   /* Collect garbage.  */
 
-	  hp = np;		/* -> next header.  */
-	}
+          hp = np;              /* -> next header.  */
+        }
       else
-	break;			/* Rest are not deeper.  */
+        break;                  /* Rest are not deeper.  */
 
-    last_alloca_header = hp;	/* -> last valid storage.  */
+    last_alloca_header = hp;    /* -> last valid storage.  */
 
   }
 
   if (size == 0)
-    return NULL;		/* No allocation required.  */
+    return NULL;                /* No allocation required.  */
 
   /* Allocate combined header + user data storage.  */
 
   {
-    void * new = malloc (sizeof (union alloca_header) + size);
+    void *new = malloc (sizeof (union alloca_header) + size);
     /* Address of header.  */
 
     if (new == 0)
-      abort();
+      abort ();
 
     ((union alloca_header *) new)->h.next = last_alloca_header;
     ((union alloca_header *) new)->h.deep = depth;

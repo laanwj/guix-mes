@@ -22,26 +22,26 @@
 #include <stdio.h>
 
 int
-_fungetc_p (FILE *stream)
+_fungetc_p (FILE * stream)
 {
-  return _fdungetc_p ((int)stream);
+  return _fdungetc_p ((int) stream);
 }
 
 size_t
-fread (void *data, size_t size, size_t count, FILE *stream)
+fread (void *data, size_t size, size_t count, FILE * stream)
 {
-  if (! size || !count)
+  if (!size || !count)
     return 0;
 
   size_t todo = size * count;
-  char *buf = (char*)data;
+  char *buf = (char *) data;
 
   int bytes = 0;
   while (_fungetc_p (stream) && todo-- && ++bytes)
     *buf++ = fgetc (stream);
   if (todo)
     {
-      int r = read ((int)stream, buf, todo);
+      int r = read ((int) stream, buf, todo);
       if (r < 0 && !bytes)
         bytes = r;
       else
@@ -50,19 +50,24 @@ fread (void *data, size_t size, size_t count, FILE *stream)
 
   if (__mes_debug ())
     {
-      eputs ("fread fd="); eputs (itoa ((int)stream));
-      eputs (" bytes="); eputs (itoa (bytes)); eputs ("\n");
+      eputs ("fread fd=");
+      eputs (itoa ((int) stream));
+      eputs (" bytes=");
+      eputs (itoa (bytes));
+      eputs ("\n");
       static char buf[4096];
       if (bytes > 0 && bytes < sizeof (buf))
         {
           strncpy (buf, data, bytes);
           buf[bytes] = 0;
-          eputs ("fread buf="); eputs (buf); eputs ("\n");
+          eputs ("fread buf=");
+          eputs (buf);
+          eputs ("\n");
         }
     }
 
   if (bytes > 0)
-    return bytes/size;
+    return bytes / size;
 
   return 0;
 }

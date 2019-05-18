@@ -20,14 +20,14 @@
 
 #include <mes/lib.h>
 
-int bla[2] = {0,-1};
+int bla[2] = { 0, -1 };
 
 int
 main ()
 {
   int *b = &bla;
 
-  int c[2] = {201, 211};
+  int c[2] = { 201, 211 };
   b[0] = 3;
 
   return 0;

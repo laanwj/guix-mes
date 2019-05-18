@@ -23,7 +23,9 @@
 int
 f (unsigned char x)
 {
-  eputs ("x="); eputs (itoa (x)); eputs ("\n");
+  eputs ("x=");
+  eputs (itoa (x));
+  eputs ("\n");
   return x;
 }
 
@@ -31,7 +33,7 @@ int
 main ()
 {
   unsigned int x = -1;
-  x = f(x);
+  x = f (x);
   if (x != 255)
     return 1;
   return 0;

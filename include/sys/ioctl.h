@@ -33,4 +33,3 @@ int ioctl (int fd, unsigned long request, ...);
 #endif // ! WITH_GLIBC
 
 #endif // __MES_SYS_IOCTL_H
-

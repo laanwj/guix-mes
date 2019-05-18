@@ -23,9 +23,9 @@
 #if WITH_GLIBC
 #undef __MES_MATH_H
 #include_next <math.h>
-#else  // ! WITH_GLIBC
+#else // ! WITH_GLIBC
 double ldexp (double x, int exp);
-#endif  // ! WITH_GLIBC
+#endif // ! WITH_GLIBC
 
 double fabs (double number);
 

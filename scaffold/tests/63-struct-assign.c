@@ -28,8 +28,8 @@ struct scm
 };
 
 
-struct scm a = {-1, 0,-1};
-struct scm b = { 0,-1, 0};
+struct scm a = { -1, 0, -1 };
+struct scm b = { 0, -1, 0 };
 
 int
 main ()

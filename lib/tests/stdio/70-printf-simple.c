@@ -54,7 +54,9 @@ main ()
     return 4;
 
   sprintf (buf, "%u", -1);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
 
 #if __i386__
   if (strcmp (buf, "4294967295"))
@@ -65,17 +67,20 @@ main ()
 #endif
 
   sprintf (buf, ">>%o<<\n", 12);
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>14<<\n"))
     return 7;
 
   sprintf (buf, ">>%x<<\n", 12);
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>c<<\n"))
     return 8;
 
   sprintf (buf, ">>%X<<\n", 12);
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>C<<\n"))
     return 9;
 

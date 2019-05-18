@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 char *
-getenv (char const* s)
+getenv (char const *s)
 {
   char **p = environ;
   int length = strlen (s);

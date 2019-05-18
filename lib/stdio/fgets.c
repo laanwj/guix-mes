@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 char *
-fgets (char *s, int count, FILE *stream)
+fgets (char *s, int count, FILE * stream)
 {
-  return fdgets (s, count, (int)stream);
+  return fdgets (s, count, (int) stream);
 }

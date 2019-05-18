@@ -22,13 +22,13 @@
 #include <limits.h>
 #include <sys/resource.h>
 
-int __ungetc_buf[RLIMIT_NOFILE+1] = {0};
+int __ungetc_buf[RLIMIT_NOFILE + 1] = { 0 };
 
 void
 __ungetc_init ()
 {
   if (__ungetc_buf[RLIMIT_NOFILE] == 0)
-    memset (__ungetc_buf, -1, (RLIMIT_NOFILE+1)*sizeof (int));
+    memset (__ungetc_buf, -1, (RLIMIT_NOFILE + 1) * sizeof (int));
 }
 
 int
@@ -46,7 +46,7 @@ fdgetc (int fd)
       if (r < 1)
         return -1;
       i = c;
-   }
+    }
   if (i < 0)
     i += 256;
 

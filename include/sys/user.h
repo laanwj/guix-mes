@@ -36,7 +36,7 @@ struct user_fpregs_struct
   long int fcs;
   long int foo;
   long int fos;
-  long int st_space [20];
+  long int st_space[20];
 };
 
 struct user_fpxregs_struct
@@ -51,8 +51,8 @@ struct user_fpxregs_struct
   long int fos;
   long int mxcsr;
   long int reserved;
-  long int st_space[32];   /* 8*16 bytes for each FP-reg = 128 bytes */
-  long int xmm_space[32];  /* 8*16 bytes for each XMM-reg = 128 bytes */
+  long int st_space[32];        /* 8*16 bytes for each FP-reg = 128 bytes */
+  long int xmm_space[32];       /* 8*16 bytes for each XMM-reg = 128 bytes */
   long int padding[56];
 };
 

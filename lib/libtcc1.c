@@ -27,7 +27,7 @@ __divdi3 (double a, double b)
   if (__mes_debug () && !stub)
     eputs ("__divdi3 stub\n");
   stub = 1;
-  return ((int)a / (int)b);
+  return ((int) a / (int) b);
 }
 
 double
@@ -37,7 +37,7 @@ __moddi3 (double a, double b)
   if (__mes_debug () && !stub)
     eputs ("__moddi3 stub\n");
   stub = 1;
-  return ((int) a %(int)b);
+  return ((int) a % (int) b);
 }
 
 unsigned long long
@@ -120,7 +120,7 @@ long
 int
 #else // !__TINYCC_
 long long
-#endif // !__TINYCC_
+#endif                          // !__TINYCC_
 __fixdfdi (double a1)
 {
   static int stub = 0;

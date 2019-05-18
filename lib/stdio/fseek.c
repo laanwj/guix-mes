@@ -22,13 +22,16 @@
 #include <stdio.h>
 
 int
-fseek (FILE *stream, long offset, int whence)
+fseek (FILE * stream, long offset, int whence)
 {
-  off_t pos = lseek ((int)stream, offset, whence);
+  off_t pos = lseek ((int) stream, offset, whence);
   if (__mes_debug ())
     {
-      eputs ("fread fd="); eputs (itoa ((int)stream));
-      eputs ("  =>"); eputs (itoa (pos)); eputs ("\n");
+      eputs ("fread fd=");
+      eputs (itoa ((int) stream));
+      eputs ("  =>");
+      eputs (itoa (pos));
+      eputs ("\n");
     }
   if (pos >= 0)
     return 0;

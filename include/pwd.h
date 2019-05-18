@@ -23,7 +23,7 @@
 #if WITH_GLIBC
 #undef __MES_PWD_H
 #include_next <pwd.h>
-#else  // ! WITH_GLIBC
+#else // ! WITH_GLIBC
 
 struct passwd
 {
@@ -36,9 +36,9 @@ struct passwd
   char *pw_shell;
 };
 
-struct passwd * getpwuid ();
+struct passwd *getpwuid ();
 
 
-#endif  // ! WITH_GLIBC
+#endif // ! WITH_GLIBC
 
 #endif // __MES_PWD_H

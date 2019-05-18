@@ -27,7 +27,8 @@ struct function
   int arity;
   char *name;
 };
-struct function g_fun = {&exit,1,"fun"};
+struct function g_fun = { &exit, 1, "fun" };
+
 int functions[2];
 int g_function = 0;
 

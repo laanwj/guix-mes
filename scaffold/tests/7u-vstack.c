@@ -28,7 +28,8 @@ struct foo
 
 #define VSTACK_SIZE 2
 
-struct foo __vstack[1+/*to make bcheck happy*/ VSTACK_SIZE] = {1,2,3,4};
+struct foo __vstack[1 + /*to make bcheck happy */ VSTACK_SIZE] = { 1, 2, 3, 4 };
+
 #define vstack (__vstack + 1)
 
 int

@@ -25,7 +25,9 @@ main ()
 {
   int **p = 1;
   int **q = -1;
-  oputs ("p - q"); oputs (itoa (p - q)); oputs ("\n");
+  oputs ("p - q");
+  oputs (itoa (p - q));
+  oputs ("\n");
 
   return 0;
 }

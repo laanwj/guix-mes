@@ -18,18 +18,22 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-struct foo {int length; char* string;};
+struct foo
+{
+  int length;
+  char *string;
+};
 
 int
 main ()
 {
-  struct foo f = {3, "foo"};
+  struct foo f = { 3, "foo" };
   struct foo *pf = &f;
-  char *p = (char*)&f;
+  char *p = (char *) &f;
   int i = 0;
-  i = ((struct foo*)p)->length;
+  i = ((struct foo *) p)->length;
   i = 0;
-  i = ((struct foo*)(p + i))->length;
+  i = ((struct foo *) (p + i))->length;
 
   return i - 3;
 }

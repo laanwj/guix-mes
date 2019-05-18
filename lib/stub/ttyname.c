@@ -30,6 +30,6 @@ ttyname (int filedes)
   stub = 1;
   errno = 0;
   if (isatty (filedes))
-      return "/dev/tty0";
+    return "/dev/tty0";
   return 0;
 }

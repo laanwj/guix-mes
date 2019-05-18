@@ -23,7 +23,9 @@
 long
 f (unsigned int x)
 {
-  eputs ("x="); eputs (utoa (x)); eputs ("\n");
+  eputs ("x=");
+  eputs (utoa (x));
+  eputs ("\n");
   return x;
 }
 
@@ -32,7 +34,9 @@ main ()
 {
   unsigned long x = -1;
   x = f (x);
-  eputs ("x="); eputs (ultoa (x)); eputs ("\n");
+  eputs ("x=");
+  eputs (ultoa (x));
+  eputs ("\n");
   if (x != 0xffffffff)
     return 1;
   return 0;

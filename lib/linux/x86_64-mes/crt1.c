@@ -33,8 +33,8 @@ _start ()
   asm ("mov____$i8,%rax !2");
   asm ("mov____%rax,0x32 &__stderr");
 
-#if 0 //MES_CCAMD64
-  asm ("add____$i32,%rbp %0x80"); // FIXME: corresponds to x86_64/as.scm function-preamble-fu
+#if 0                           //MES_CCAMD64
+  asm ("add____$i32,%rbp %0x80");       // FIXME: corresponds to x86_64/as.scm function-preamble-fu
 #endif
   asm ("mov____%rbp,%rax");
   asm ("add____$i8,%rax !8");
@@ -47,7 +47,7 @@ _start ()
 
   // FIXME: 64-bit addresses...
   asm ("mov____%rax,0x32 &environ");
-#if 0 //MES_CCAMD64
+#if 0                           //MES_CCAMD64
   asm ("mov____%rax,%rdx");     // amd
 #else
   asm ("push___%rax");          // bootstrap
@@ -55,7 +55,7 @@ _start ()
 
   asm ("mov____%rbp,%rax");
   asm ("add____$i8,%rax !16");
-#if 0 //MES_CCAMD64
+#if 0                           //MES_CCAMD64
   asm ("mov____%rax,%rsi");     // amd
 #else
   asm ("push___%rax");          // bootstrap
@@ -64,7 +64,7 @@ _start ()
   asm ("mov____%rbp,%rax");
   asm ("add____$i8,%rax !8");
   asm ("mov____(%rax),%rax");
-#if 0 //MES_CCAMD64
+#if 0                           //MES_CCAMD64
   asm ("mov____%rax,%rdi");     // amd
 #else
   asm ("push___%rax");          // bootstrap

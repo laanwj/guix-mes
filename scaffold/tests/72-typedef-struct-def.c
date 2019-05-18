@@ -34,7 +34,7 @@ typedef struct
 } bar;
 
 
-bar baz[2] = {1, 2, 3, 4, 5, 6};
+bar baz[2] = { 1, 2, 3, 4, 5, 6 };
 
 bar *list[2];
 
@@ -49,19 +49,21 @@ bar *list[2];
 int
 main ()
 {
-  foo f = {1};
+  foo f = { 1 };
   printf ("f.i=%d\n", f.i);
 
-  bar b = {1, 2, &f};
+  bar b = { 1, 2, &f };
   printf ("b.i=%d\n", b.i);
 
   printf ("b.f.i=%d\n", b.f.i);
-  if (b.f.i != 2) return 1;
+  if (b.f.i != 2)
+    return 1;
 
   printf ("b.p->i=%d\n", b.p->i);
-  if (b.p->i != 1) return 2;
+  if (b.p->i != 1)
+    return 2;
 
-  bar* p = &b;
+  bar *p = &b;
   p->i = 2;
   printf ("p->i=%d\n", b.i);
 
@@ -72,26 +74,31 @@ main ()
   printf ("p->i=%d\n", b.i);
 
   printf ("p->f.i=%d\n", p->f.i);
-  if (p->f.i != 2) return 3;
+  if (p->f.i != 2)
+    return 3;
 
   printf ("p->p->i=%d\n", p->p->i);
-  if (p->p->i != 1) return 4;
+  if (p->p->i != 1)
+    return 4;
 
-  bar** pp = &p;
+  bar **pp = &p;
   (*pp)->i = 3;
   printf ("(*pp)->i=%d\n", b.i);
 
   printf ("sizeof i:%d\n", sizeof (p->i));
-  if ((sizeof p->i) != 4) return 5;
+  if ((sizeof p->i) != 4)
+    return 5;
 
-  printf ("offsetof g=%d\n", (offsetof (bar ,f)));
+  printf ("offsetof g=%d\n", (offsetof (bar, f)));
 #if __MESC__
   //if ((offsetof (bar ,f)) != 4) return 6;
   //#define offsetof(type, field) (&((type *)0)->field)
-  if ((&((bar *)0)->f) != 4) return 6;
+  if ((&((bar *) 0)->f) != 4)
+    return 6;
 
 #else
-  if ((offsetof (bar ,f)) != 4) return 6;
+  if ((offsetof (bar, f)) != 4)
+    return 6;
 #endif
 
 

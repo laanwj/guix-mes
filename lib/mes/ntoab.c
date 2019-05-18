@@ -36,14 +36,15 @@ ntoab (long x, int base, int signed_p)
     }
 
   do
-     {
-       long i = u % base;
-       *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
-       u = u / base;
-     } while (u);
+    {
+      long i = u % base;
+      *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
+      u = u / base;
+    }
+  while (u);
 
   if (sign && *(p + 1) != '0')
     *p-- = '-';
 
-  return p+1;
+  return p + 1;
 }

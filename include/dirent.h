@@ -41,18 +41,18 @@
 
 #include <stddef.h>
 
-int __getdirentries (int filedes, char *buffer, size_t nbytes, off_t *basep);
+int __getdirentries (int filedes, char *buffer, size_t nbytes, off_t * basep);
 
 struct dirent
-  {
-    ino_t d_ino;
-    off_t d_off;
-    unsigned short int d_reclen;
+{
+  ino_t d_ino;
+  off_t d_off;
+  unsigned short int d_reclen;
 #if 0
-    unsigned char d_type;
+  unsigned char d_type;
 #endif
-    char d_name[256];		/* We must not include limits.h! */
-  };
+  char d_name[256];             /* We must not include limits.h! */
+};
 
 /* Open a directory stream on NAME.
    Return a DIR stream on the directory, or NULL if it could not be opened.  */
@@ -60,16 +60,16 @@ DIR *opendir (char const *name);
 
 /* Close the directory stream DIRP.
    Return 0 if successful, -1 if not.  */
-int closedir (DIR *dirp);
+int closedir (DIR * dirp);
 
 /* Read a directory entry from DIRP.
    Return a pointer to a `struct dirent' describing the entry,
    or NULL for EOF or error.  The storage returned may be overwritten
    by a later readdir call on the same DIR stream.  */
-struct dirent *readdir (DIR *dirp);
+struct dirent *readdir (DIR * dirp);
 
 /* Rewind DIRP to the beginning of the directory.  */
-extern void rewinddir (DIR *dirp);
+extern void rewinddir (DIR * dirp);
 
 #endif // ! WITH_GLIBC
 

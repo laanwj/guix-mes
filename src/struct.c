@@ -30,8 +30,8 @@ make_struct (SCM type, SCM fields, SCM printer)
   SCM v = alloc (size);
   SCM x = make_cell__ (TSTRUCT, size, v);
   g_cells[v] = g_cells[vector_entry (type)];
-  g_cells[v+1] = g_cells[vector_entry (printer)];
-  for (long i=2; i<size; i++)
+  g_cells[v + 1] = g_cells[vector_entry (printer)];
+  for (long i = 2; i < size; i++)
     {
       SCM e = cell_unspecified;
       if (fields != cell_nil)
@@ -39,7 +39,7 @@ make_struct (SCM type, SCM fields, SCM printer)
           e = CAR (fields);
           fields = CDR (fields);
         }
-      g_cells[v+i] = g_cells[vector_entry (e)];
+      g_cells[v + i] = g_cells[vector_entry (e)];
     }
   return x;
 }
@@ -71,7 +71,7 @@ struct_set_x_ (SCM x, long i, SCM e)
 {
   assert (TYPE (x) == TSTRUCT);
   assert (i < LENGTH (x));
-  g_cells[STRUCT (x)+i] = g_cells[vector_entry (e)];
+  g_cells[STRUCT (x) + i] = g_cells[vector_entry (e)];
   return cell_unspecified;
 }
 

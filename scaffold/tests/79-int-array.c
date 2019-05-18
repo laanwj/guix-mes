@@ -30,8 +30,8 @@ struct foo
 
 struct foo f;
 
-int bla[6] = {0,0,11223344, 55667788,0,0};
-int g_c[2] = {101, 111};
+int bla[6] = { 0, 0, 11223344, 55667788, 0, 0 };
+int g_c[2] = { 101, 111 };
 
 int
 main ()
@@ -48,29 +48,45 @@ main ()
   if (b[3] != 55667788)
     return 4;
 
-  eputs ("g_c[0]="); eputs (itoa (g_c[0])); eputs ("\n");
-  eputs ("g_c[1]="); eputs (itoa (g_c[1])); eputs ("\n");
+  eputs ("g_c[0]=");
+  eputs (itoa (g_c[0]));
+  eputs ("\n");
+  eputs ("g_c[1]=");
+  eputs (itoa (g_c[1]));
+  eputs ("\n");
 
   memcpy (&b[2], g_c, 2 * sizeof (int));
-  eputs ("b[2]:"); eputs (itoa (b[2])); eputs ("\n");
+  eputs ("b[2]:");
+  eputs (itoa (b[2]));
+  eputs ("\n");
 
   if (b[2] != 101)
     return 5;
-  eputs ("b[3]:"); eputs (itoa (b[3])); eputs ("\n");
+  eputs ("b[3]:");
+  eputs (itoa (b[3]));
+  eputs ("\n");
   if (b[3] != 111)
     return 6;
 
-  int c[2] = {201, 211};
-  eputs ("c[0]="); eputs (itoa (c[0])); eputs ("\n");
-  eputs ("c[1]="); eputs (itoa (c[1])); eputs ("\n");
+  int c[2] = { 201, 211 };
+  eputs ("c[0]=");
+  eputs (itoa (c[0]));
+  eputs ("\n");
+  eputs ("c[1]=");
+  eputs (itoa (c[1]));
+  eputs ("\n");
 
   memcpy (&b[4], c, 2 * sizeof (int));
 
-  eputs ("b[4]:"); eputs (itoa (b[4])); eputs ("\n");
+  eputs ("b[4]:");
+  eputs (itoa (b[4]));
+  eputs ("\n");
 
   if (b[4] != 201)
     return 7;
-  eputs ("b[5]:"); eputs (itoa (b[5])); eputs ("\n");
+  eputs ("b[5]:");
+  eputs (itoa (b[5]));
+  eputs ("\n");
   if (b[5] != 211)
     return 8;
 

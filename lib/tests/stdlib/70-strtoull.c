@@ -29,15 +29,19 @@ main ()
 {
   char *p = "42foo\n";
   int n = abtol (&p, 0);
-  if (n != 42) return 1;
+  if (n != 42)
+    return 1;
   eputs (p);
-  if (strcmp (p, "foo\n")) return 2;
+  if (strcmp (p, "foo\n"))
+    return 2;
 
   p = "2azar\n";
-  n = strtoull (p, (char**)&p, 16);
-  if (n != 42) return 3;
+  n = strtoull (p, (char **) &p, 16);
+  if (n != 42)
+    return 3;
   eputs (p);
-  if (strcmp (p, "zar\n")) return 4;
+  if (strcmp (p, "zar\n"))
+    return 4;
 
   return 0;
 }

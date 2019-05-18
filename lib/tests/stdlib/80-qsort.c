@@ -25,21 +25,31 @@
 int
 compare_int (void *a, void *b)
 {
-  eputs ("compare: "); eputs (itoa (*(int*)a)); eputs (" <? "); eputs (itoa (*(int*)b));
-  eputs (" => "); eputs (itoa (*(int*)a - *(int*)b)); eputs ("\n");
-  return *(int*)a - *(int*)b;
+  eputs ("compare: ");
+  eputs (itoa (*(int *) a));
+  eputs (" <? ");
+  eputs (itoa (*(int *) b));
+  eputs (" => ");
+  eputs (itoa (*(int *) a - *(int *) b));
+  eputs ("\n");
+  return *(int *) a - *(int *) b;
 }
 
 int
 main ()
 {
-  int lst[6] = {0, 5, 4, 3, 2, -1};
+  int lst[6] = { 0, 5, 4, 3, 2, -1 };
   qsort (lst, 6, sizeof (int), compare_int);
   for (int i = 0; i < 6; i++)
     {
-      eputs (itoa (i)); eputs (":"); eputs (itoa (lst[i])); eputs ("\n");
+      eputs (itoa (i));
+      eputs (":");
+      eputs (itoa (lst[i]));
+      eputs ("\n");
     }
-  if (lst[0] != -1) return 1;
-  if (lst[5] != 5) return 2;
+  if (lst[0] != -1)
+    return 1;
+  if (lst[5] != 5)
+    return 2;
   return 0;
 }

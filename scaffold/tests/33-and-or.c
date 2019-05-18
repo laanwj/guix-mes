@@ -47,14 +47,14 @@ main ()
   oputs ("t: if (1 && !0)\n");
   if (1 && !0)
     goto ok0;
-    return 1;
- ok0:
+  return 1;
+ok0:
 
   oputs ("t: if (f || t)\n");
   if (f || t)
     goto ok1;
   return 1;
- ok1:
+ok1:
 
   return 0;
 }

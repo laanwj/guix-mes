@@ -27,7 +27,7 @@ struct scm
   int cdr;
 };
 
-struct scm a = {-1, 0,-1};
+struct scm a = { -1, 0, -1 };
 
 int
 main ()

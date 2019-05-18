@@ -28,12 +28,12 @@ struct section
 
 struct sym
 {
-  char* name;
+  char *name;
   int index;
 };
 
-struct sym tab3[3] = {"foo", 0, "bar", 1, "baz", 2};
-struct sym tab[] = {"foo", 0, "bar", 1, "baz", 2};
+struct sym tab3[3] = { "foo", 0, "bar", 1, "baz", 2 };
+struct sym tab[] = { "foo", 0, "bar", 1, "baz", 2 };
 
 struct section section;
 
@@ -55,32 +55,44 @@ main ()
   int sym_size = 12;
 #endif
 
-  struct sym* p;
+  struct sym *p;
   p = tab3;
   section.data = tab;
   section.offset = 24;
 
   int size = sizeof (struct sym);
-  eputs ("size="); eputs (itoa (size)); eputs ("\n");
+  eputs ("size=");
+  eputs (itoa (size));
+  eputs ("\n");
   if (size != sym_size)
     return 1;
-  struct section* psection = &section;
-  p = (struct sym*)psection->data + 1;
-  struct sym* q = tab;
-  int i = (int)p;
-  i -= (int)q;
-  eputs ("diff="); eputs (itoa (i)); eputs ("\n");
+  struct section *psection = &section;
+  p = (struct sym *) psection->data + 1;
+  struct sym *q = tab;
+  int i = (int) p;
+  i -= (int) q;
+  eputs ("diff=");
+  eputs (itoa (i));
+  eputs ("\n");
   if (i != sym_size)
     return 2;
 
-  for_each_elem(psection, 1, p, struct section) {
-    eputs ("i="); eputs (itoa (p->index));
-    eputs (" name="); eputs (p->name); eputs ("\n");
+  for_each_elem (psection, 1, p, struct section)
+  {
+    eputs ("i=");
+    eputs (itoa (p->index));
+    eputs (" name=");
+    eputs (p->name);
+    eputs ("\n");
   }
 
-  for_each_elem2(psection, 1, p, struct section) {
-    eputs ("i="); eputs (itoa (p->index));
-    eputs (" name="); eputs (p->name); eputs ("\n");
+  for_each_elem2 (psection, 1, p, struct section)
+  {
+    eputs ("i=");
+    eputs (itoa (p->index));
+    eputs (" name=");
+    eputs (p->name);
+    eputs ("\n");
   }
 
   return 0;

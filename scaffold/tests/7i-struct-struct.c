@@ -37,7 +37,8 @@ struct foo
 
 struct anon
 {
-  struct {
+  struct
+  {
     int bar;
     int baz;
   };
@@ -47,21 +48,29 @@ struct anon
 int
 main ()
 {
-  struct foo f = {0,1,2};
+  struct foo f = { 0, 1, 2 };
   f.s.baz = 2;
-  oputs ("f.s.bar="); oputs (itoa (f.s.bar)); oputs ("\n");
+  oputs ("f.s.bar=");
+  oputs (itoa (f.s.bar));
+  oputs ("\n");
   if (f.s.bar != 1)
     return 1;
-  oputs ("f.s.baz="); oputs (itoa (f.s.baz)); oputs ("\n");
+  oputs ("f.s.baz=");
+  oputs (itoa (f.s.baz));
+  oputs ("\n");
   if (f.s.baz != 2)
     return 2;
 
-  struct anon a = {3,4};
+  struct anon a = { 3, 4 };
   a.baz = 4;
-  oputs ("a.bar="); oputs (itoa (a.bar)); oputs ("\n");
+  oputs ("a.bar=");
+  oputs (itoa (a.bar));
+  oputs ("\n");
   if (a.bar != 3)
     return 3;
-  oputs ("a.baz="); oputs (itoa (a.baz)); oputs ("\n");
+  oputs ("a.baz=");
+  oputs (itoa (a.baz));
+  oputs ("\n");
   if (a.baz != 4)
     return 4;
 

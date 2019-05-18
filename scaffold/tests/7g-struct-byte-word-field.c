@@ -23,7 +23,8 @@
 #include <inttypes.h>
 #include <string.h>
 
-struct option {
+struct option
+{
   char const *name;
   uint8_t index;
   uint16_t flags;
@@ -33,24 +34,32 @@ struct option {
 int
 main ()
 {
-  struct option h = {"help", 0, 10, 1};
-  struct option o = {"output", 1, 11, 1};
-  struct option v = {"version", 0, 0, 1};
+  struct option h = { "help", 0, 10, 1 };
+  struct option o = { "output", 1, 11, 1 };
+  struct option v = { "version", 0, 0, 1 };
 
-  if (strcmp (h.name, "help")) return 1;
-  if (h.index != 0) return 2;
-  if (h.flags != 10) return 3;
+  if (strcmp (h.name, "help"))
+    return 1;
+  if (h.index != 0)
+    return 2;
+  if (h.flags != 10)
+    return 3;
 
   struct option *p = &o;
-  if (strcmp (p->name, "output")) return 4;
-  if (p->index != 1) return 5;
-  if (p->flags != 11) return 6;
+  if (strcmp (p->name, "output"))
+    return 4;
+  if (p->index != 1)
+    return 5;
+  if (p->flags != 11)
+    return 6;
 
   p = &v;
   v.index = 2;
   p->flags = 12;
-  if (v.index != 2) return 7;
-  if (v.flags != 12) return 8;
+  if (v.index != 2)
+    return 7;
+  if (v.flags != 12)
+    return 8;
 
   return 0;
 }

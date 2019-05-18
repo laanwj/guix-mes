@@ -37,7 +37,7 @@ print (int a)
 int
 main ()
 {
-  int a[2] = {101, -1};
+  int a[2] = { 101, -1 };
   //eputs ("b:"); eputs (itoa (a[0])); eputs ("\n");
   int r = wrap (print (a[0]));
   if (r != 101)

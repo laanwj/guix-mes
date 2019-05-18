@@ -36,7 +36,7 @@ struct foo
 int
 main ()
 {
-  struct foo f = {1,2};
+  struct foo f = { 1, 2 };
 
   return 0;
 }

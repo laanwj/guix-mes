@@ -27,7 +27,9 @@ search_path (char const *file_name)
   char *path = getenv ("PATH");
   if (__mes_debug ())
     {
-      eputs ("\n search-path: "); eputs (file_name); eputs ("\n");
+      eputs ("\n search-path: ");
+      eputs (file_name);
+      eputs ("\n");
     }
   while (*path)
     {
@@ -38,7 +40,9 @@ search_path (char const *file_name)
       buf[end - path] = 0;
       if (__mes_debug ())
         {
-          eputs (" dir: "); eputs (buf); eputs ("\n");
+          eputs (" dir: ");
+          eputs (buf);
+          eputs ("\n");
         }
       if (buf[end - path] != '/')
         strcat (buf, "/");
@@ -47,7 +51,9 @@ search_path (char const *file_name)
         {
           if (__mes_debug ())
             {
-              eputs (" found: "); eputs (buf); eputs ("\n");
+              eputs (" found: ");
+              eputs (buf);
+              eputs ("\n");
             }
           return buf;
         }

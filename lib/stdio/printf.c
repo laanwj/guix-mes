@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 int
-printf (char const* format, ...)
+printf (char const *format, ...)
 {
   va_list ap;
   int r;

@@ -28,9 +28,9 @@
 
 //#define MES_MINI 1
 #if WITH_GLIBC
-long ARENA_SIZE = 100000000; // 2.3GiB
+long ARENA_SIZE = 100000000;    // 2.3GiB
 #else
-long ARENA_SIZE = 300000; // 32b: 3MiB, 64b: 6 MiB
+long ARENA_SIZE = 300000;       // 32b: 3MiB, 64b: 6 MiB
 #endif
 long MAX_ARENA_SIZE = 100000000;
 long STACK_SIZE = 20000;
@@ -444,9 +444,9 @@ struct scm *g_news = 0;
 #define CDADAR(x) CAR (CDR (CAR (CDR (x))))
 
 SCM apply_builtin (SCM fn, SCM x);
-SCM cstring_to_list (char const* s);
+SCM cstring_to_list (char const *s);
 SCM cstring_to_symbol (char const *s);
-SCM make_bytes (char const* s, size_t length);
+SCM make_bytes (char const *s, size_t length);
 SCM make_hash_table_ (long size);
 SCM read_input_file_env (SCM);
 SCM string_equal_p (SCM a, SCM b);
@@ -482,10 +482,9 @@ make_cell_ (SCM type, SCM car, SCM cdr)
 }
 
 SCM
-assoc_string (SCM x, SCM a) ///((internal))
+assoc_string (SCM x, SCM a)     ///((internal))
 {
-  while (a != cell_nil && (TYPE (CAAR (a)) != TSTRING
-                           || string_equal_p (x, CAAR (a)) == cell_f))
+  while (a != cell_nil && (TYPE (CAAR (a)) != TSTRING || string_equal_p (x, CAAR (a)) == cell_f))
     a = CDR (a);
   return a != cell_nil ? CAR (a) : cell_f;
 }
@@ -523,12 +522,11 @@ type_ (SCM x)
 SCM
 car_ (SCM x)
 {
-  return (TYPE (x) != TCONTINUATION
-          && (TYPE (CAR (x)) == TPAIR // FIXME: this is weird
-              || TYPE (CAR (x)) == TREF
-              || TYPE (CAR (x)) == TSPECIAL
-              || TYPE (CAR (x)) == TSYMBOL
-              || TYPE (CAR (x)) == TSTRING)) ? CAR (x) : MAKE_NUMBER (CAR (x));
+  return (TYPE (x) != TCONTINUATION && (TYPE (CAR (x)) == TPAIR // FIXME: this is weird
+                                        || TYPE (CAR (x)) == TREF
+                                        || TYPE (CAR (x)) == TSPECIAL
+                                        || TYPE (CAR (x)) == TSYMBOL
+                                        || TYPE (CAR (x)) == TSTRING)) ? CAR (x) : MAKE_NUMBER (CAR (x));
 }
 
 SCM
@@ -540,8 +538,7 @@ cdr_ (SCM x)
           && (TYPE (CDR (x)) == TPAIR
               || TYPE (CDR (x)) == TREF
               || TYPE (CDR (x)) == TSPECIAL
-              || TYPE (CDR (x)) == TSYMBOL
-              || TYPE (CDR (x)) == TSTRING)) ? CDR (x) : MAKE_NUMBER (CDR (x));
+              || TYPE (CDR (x)) == TSYMBOL || TYPE (CDR (x)) == TSTRING)) ? CDR (x) : MAKE_NUMBER (CDR (x));
 }
 
 SCM
@@ -571,7 +568,7 @@ cdr (SCM x)
 }
 
 SCM
-list (SCM x) ///((arity . n))
+list (SCM x)                    ///((arity . n))
 {
   return x;
 }
@@ -590,13 +587,11 @@ eq_p (SCM x, SCM y)
                && string_equal_p (x, y) == cell_t))
           || (TYPE (x) == TCHAR && TYPE (y) == TCHAR
               && VALUE (x) == VALUE (y))
-          || (TYPE (x) == TNUMBER && TYPE (y) == TNUMBER
-              && VALUE (x) == VALUE (y)))
-    ? cell_t : cell_f;
+          || (TYPE (x) == TNUMBER && TYPE (y) == TNUMBER && VALUE (x) == VALUE (y))) ? cell_t : cell_f;
 }
 
 SCM
-values (SCM x) ///((arity . n))
+values (SCM x)                  ///((arity . n))
 {
   SCM v = cons (0, x);
   TYPE (v) = TVALUES;
@@ -610,7 +605,7 @@ acons (SCM key, SCM value, SCM alist)
 }
 
 long
-length__ (SCM x) ///((internal))
+length__ (SCM x)                ///((internal))
 {
   long n = 0;
   while (x != cell_nil)
@@ -649,17 +644,17 @@ error (SCM key, SCM x)
 
 //  extra lib
 SCM
-assert_defined (SCM x, SCM e) ///((internal))
+assert_defined (SCM x, SCM e)   ///((internal))
 {
   if (e == cell_undefined)
     return error (cell_symbol_unbound_variable, x);
   return e;
 }
 
-SCM make_string (char const* s, size_t length);
+SCM make_string (char const *s, size_t length);
 
 SCM
-check_formals (SCM f, SCM formals, SCM args) ///((internal))
+check_formals (SCM f, SCM formals, SCM args)    ///((internal))
 {
   long flen = (TYPE (formals) == TNUMBER) ? VALUE (formals) : length__ (formals);
   long alen = length__ (args);
@@ -679,9 +674,9 @@ check_formals (SCM f, SCM formals, SCM args) ///((internal))
 }
 
 SCM
-check_apply (SCM f, SCM e) ///((internal))
+check_apply (SCM f, SCM e)      ///((internal))
 {
-  char* type = 0;
+  char *type = 0;
   if (f == cell_f || f == cell_t)
     type = "bool";
   if (f == cell_nil)
@@ -696,8 +691,7 @@ check_apply (SCM f, SCM e) ///((internal))
     type = "number";
   if (TYPE (f) == TSTRING)
     type = "string";
-  if (TYPE (f) == TSTRUCT
-      && builtin_p (f) == cell_f)
+  if (TYPE (f) == TSTRUCT && builtin_p (f) == cell_f)
     type = "#<...>";
   if (TYPE (f) == TBROKEN_HEART)
     type = "<3";
@@ -717,7 +711,7 @@ check_apply (SCM f, SCM e) ///((internal))
 }
 
 SCM
-gc_push_frame () ///((internal))
+gc_push_frame ()                ///((internal))
 {
   if (g_stack < 5)
     assert (!"STACK FULL");
@@ -730,17 +724,17 @@ gc_push_frame () ///((internal))
 }
 
 SCM
-gc_peek_frame () ///((internal))
+gc_peek_frame ()                ///((internal))
 {
   r3 = g_stack_array[g_stack];
-  r2 = g_stack_array[g_stack+1];
-  r1 = g_stack_array[g_stack+2];
-  r0 = g_stack_array[g_stack+3];
-  return g_stack_array[g_stack+FRAME_PROCEDURE];
+  r2 = g_stack_array[g_stack + 1];
+  r1 = g_stack_array[g_stack + 2];
+  r0 = g_stack_array[g_stack + 3];
+  return g_stack_array[g_stack + FRAME_PROCEDURE];
 }
 
 SCM
-gc_pop_frame () ///((internal))
+gc_pop_frame ()                 ///((internal))
 {
   SCM x = gc_peek_frame ();
   g_stack += 5;
@@ -801,8 +795,7 @@ pairlis (SCM x, SCM y, SCM a)
     return a;
   if (TYPE (x) != TPAIR)
     return cons (cons (x, y), a);
-  return cons (cons (car (x), car (y)),
-               pairlis (cdr (x), cdr (y), a));
+  return cons (cons (car (x), car (y)), pairlis (cdr (x), cdr (y), a));
 }
 
 SCM
@@ -811,17 +804,15 @@ assq (SCM x, SCM a)
   if (TYPE (a) != TPAIR)
     return cell_f;
   int t = TYPE (x);
-  if (t == TSYMBOL
-      || t == TSPECIAL)
+  if (t == TSYMBOL || t == TSPECIAL)
     while (a != cell_nil && x != CAAR (a))
       a = CDR (a);
-  else if (t == TCHAR
-           || t == TNUMBER)
-      {
-        SCM v = VALUE (x);
-        while (a != cell_nil && v != VALUE (CAAR (a)))
-          a = CDR (a);
-      }
+  else if (t == TCHAR || t == TNUMBER)
+    {
+      SCM v = VALUE (x);
+      while (a != cell_nil && v != VALUE (CAAR (a)))
+        a = CDR (a);
+    }
   else if (t == TKEYWORD)
     {
       while (a != cell_nil && string_equal_p (x, CAAR (a)) == cell_f)
@@ -876,7 +867,7 @@ set_env_x (SCM x, SCM e, SCM a)
 }
 
 SCM
-call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
+call_lambda (SCM e, SCM x, SCM aa, SCM a)       ///((internal))
 {
   SCM cl = cons (cons (cell_closure, x), x);
   r1 = e;
@@ -885,13 +876,13 @@ call_lambda (SCM e, SCM x, SCM aa, SCM a) ///((internal))
 }
 
 SCM
-make_closure_ (SCM args, SCM body, SCM a) ///((internal))
+make_closure_ (SCM args, SCM body, SCM a)       ///((internal))
 {
   return make_cell__ (TCLOSURE, cell_f, cons (cons (cell_circular, a), cons (args, body)));
 }
 
 SCM
-make_variable_ (SCM var) ///((internal))
+make_variable_ (SCM var)        ///((internal))
 {
   return make_cell__ (TVARIABLE, var, 0);
 }
@@ -905,7 +896,7 @@ macro_get_handle (SCM name)
 }
 
 SCM
-get_macro (SCM name) ///((internal))
+get_macro (SCM name)            ///((internal))
 {
   SCM m = macro_get_handle (name);
   if (m != cell_f)
@@ -914,13 +905,13 @@ get_macro (SCM name) ///((internal))
 }
 
 SCM
-macro_set_x (SCM name, SCM value) ///((internal))
+macro_set_x (SCM name, SCM value)       ///((internal))
 {
   return hashq_set_x (g_macros, name, value);
 }
 
 SCM
-push_cc (SCM p1, SCM p2, SCM a, SCM c) ///((internal))
+push_cc (SCM p1, SCM p2, SCM a, SCM c)  ///((internal))
 {
   SCM x = r3;
   r3 = c;
@@ -946,13 +937,14 @@ add_formals (SCM formals, SCM x)
 }
 
 int
-formal_p (SCM x, SCM formals) /// ((internal))
+formal_p (SCM x, SCM formals)   /// ((internal))
 {
   if (TYPE (formals) == TSYMBOL)
     {
       if (x == formals)
         return x;
-      else return cell_f;
+      else
+        return cell_f;
     }
   while (TYPE (formals) == TPAIR && CAR (formals) != x)
     formals = CDR (formals);
@@ -962,7 +954,7 @@ formal_p (SCM x, SCM formals) /// ((internal))
 }
 
 SCM
-expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
+expand_variable_ (SCM x, SCM formals, int top_p)        ///((internal))
 {
   while (TYPE (x) == TPAIR)
     {
@@ -973,8 +965,7 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
               SCM f = CAR (CDAR (x));
               formals = add_formals (formals, f);
             }
-          else if (CAAR (x) == cell_symbol_define
-                   || CAAR (x) == cell_symbol_define_macro)
+          else if (CAAR (x) == cell_symbol_define || CAAR (x) == cell_symbol_define_macro)
             {
               SCM f = CAR (CDAR (x));
               formals = add_formals (formals, f);
@@ -990,8 +981,7 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
               formals = add_formals (formals, f);
               x = CDR (x);
             }
-          else if (CAR (x) == cell_symbol_define
-                   || CAR (x) == cell_symbol_define_macro)
+          else if (CAR (x) == cell_symbol_define || CAR (x) == cell_symbol_define_macro)
             {
               SCM f = CADR (x);
               if (top_p && TYPE (f) == TPAIR)
@@ -1004,8 +994,7 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
           else if (TYPE (CAR (x)) == TSYMBOL
                    && CAR (x) != cell_symbol_boot_module
                    && CAR (x) != cell_symbol_current_module
-                   && CAR (x) != cell_symbol_primitive_load
-                   && !formal_p (CAR (x), formals))
+                   && CAR (x) != cell_symbol_primitive_load && !formal_p (CAR (x), formals))
             {
               SCM v = module_variable (r0, CAR (x));
               if (v != cell_f)
@@ -1019,7 +1008,7 @@ expand_variable_ (SCM x, SCM formals, int top_p) ///((internal))
 }
 
 SCM
-expand_variable (SCM x, SCM formals) ///((internal))
+expand_variable (SCM x, SCM formals)    ///((internal))
 {
   return expand_variable_ (x, formals, 1);
 }
@@ -1052,67 +1041,100 @@ eval_apply ()
   int t;
   long c;
 
- eval_apply:
-  if (r3 == cell_vm_evlis2) goto evlis2;
-  else if (r3 == cell_vm_evlis3) goto evlis3;
-  else if (r3 == cell_vm_eval_check_func) goto eval_check_func;
-  else if (r3 == cell_vm_eval2) goto eval2;
-  else if (r3 == cell_vm_apply2) goto apply2;
-  else if (r3 == cell_vm_if_expr) goto if_expr;
-  else if (r3 == cell_vm_begin_eval) goto begin_eval;
-  else if (r3 == cell_vm_eval_set_x) goto eval_set_x;
-  else if (r3 == cell_vm_macro_expand_car) goto macro_expand_car;
-  else if (r3 == cell_vm_return) goto vm_return;
-  else if (r3 == cell_vm_macro_expand_cdr) goto macro_expand_cdr;
-  else if (r3 == cell_vm_eval_define) goto eval_define;
-  else if (r3 == cell_vm_macro_expand) goto macro_expand;
-  else if (r3 == cell_vm_macro_expand_lambda) goto macro_expand_lambda;
-  else if (r3 == cell_vm_eval_pmatch_car) goto eval_pmatch_car;
-  else if (r3 == cell_vm_begin_expand_macro) goto begin_expand_macro;
-  else if (r3 == cell_vm_macro_expand_define) goto macro_expand_define;
-  else if (r3 == cell_vm_begin_expand_eval) goto begin_expand_eval;
-  else if (r3 == cell_vm_call_with_current_continuation2) goto call_with_current_continuation2;
-  else if (r3 == cell_vm_macro_expand_set_x) goto macro_expand_set_x;
-  else if (r3 == cell_vm_eval_pmatch_cdr) goto eval_pmatch_cdr;
-  else if (r3 == cell_vm_macro_expand_define_macro) goto macro_expand_define_macro;
-  else if (r3 == cell_vm_begin_primitive_load) goto begin_primitive_load;
+eval_apply:
+  if (r3 == cell_vm_evlis2)
+    goto evlis2;
+  else if (r3 == cell_vm_evlis3)
+    goto evlis3;
+  else if (r3 == cell_vm_eval_check_func)
+    goto eval_check_func;
+  else if (r3 == cell_vm_eval2)
+    goto eval2;
+  else if (r3 == cell_vm_apply2)
+    goto apply2;
+  else if (r3 == cell_vm_if_expr)
+    goto if_expr;
+  else if (r3 == cell_vm_begin_eval)
+    goto begin_eval;
+  else if (r3 == cell_vm_eval_set_x)
+    goto eval_set_x;
+  else if (r3 == cell_vm_macro_expand_car)
+    goto macro_expand_car;
+  else if (r3 == cell_vm_return)
+    goto vm_return;
+  else if (r3 == cell_vm_macro_expand_cdr)
+    goto macro_expand_cdr;
+  else if (r3 == cell_vm_eval_define)
+    goto eval_define;
+  else if (r3 == cell_vm_macro_expand)
+    goto macro_expand;
+  else if (r3 == cell_vm_macro_expand_lambda)
+    goto macro_expand_lambda;
+  else if (r3 == cell_vm_eval_pmatch_car)
+    goto eval_pmatch_car;
+  else if (r3 == cell_vm_begin_expand_macro)
+    goto begin_expand_macro;
+  else if (r3 == cell_vm_macro_expand_define)
+    goto macro_expand_define;
+  else if (r3 == cell_vm_begin_expand_eval)
+    goto begin_expand_eval;
+  else if (r3 == cell_vm_call_with_current_continuation2)
+    goto call_with_current_continuation2;
+  else if (r3 == cell_vm_macro_expand_set_x)
+    goto macro_expand_set_x;
+  else if (r3 == cell_vm_eval_pmatch_cdr)
+    goto eval_pmatch_cdr;
+  else if (r3 == cell_vm_macro_expand_define_macro)
+    goto macro_expand_define_macro;
+  else if (r3 == cell_vm_begin_primitive_load)
+    goto begin_primitive_load;
 
-  else if (r3 == cell_vm_evlis) goto evlis;
-  else if (r3 == cell_vm_apply) goto apply;
-  else if (r3 == cell_vm_eval) goto eval;
-  else if (r3 == cell_vm_eval_macro_expand_eval) goto eval_macro_expand_eval;
-  else if (r3 == cell_vm_eval_macro_expand_expand) goto eval_macro_expand_expand;
-  else if (r3 == cell_vm_begin) goto begin;
-  else if (r3 == cell_vm_begin_expand) goto begin_expand;
-  else if (r3 == cell_vm_begin_expand_primitive_load) goto begin_expand_primitive_load;
-  else if (r3 == cell_vm_if) goto vm_if;
-  else if (r3 == cell_vm_call_with_values2) goto call_with_values2;
-  else if (r3 == cell_unspecified) return r1;
+  else if (r3 == cell_vm_evlis)
+    goto evlis;
+  else if (r3 == cell_vm_apply)
+    goto apply;
+  else if (r3 == cell_vm_eval)
+    goto eval;
+  else if (r3 == cell_vm_eval_macro_expand_eval)
+    goto eval_macro_expand_eval;
+  else if (r3 == cell_vm_eval_macro_expand_expand)
+    goto eval_macro_expand_expand;
+  else if (r3 == cell_vm_begin)
+    goto begin;
+  else if (r3 == cell_vm_begin_expand)
+    goto begin_expand;
+  else if (r3 == cell_vm_begin_expand_primitive_load)
+    goto begin_expand_primitive_load;
+  else if (r3 == cell_vm_if)
+    goto vm_if;
+  else if (r3 == cell_vm_call_with_values2)
+    goto call_with_values2;
+  else if (r3 == cell_unspecified)
+    return r1;
   else
-    error (cell_symbol_system_error,
-           MAKE_STRING0 ("eval/apply unknown continuation"));
+    error (cell_symbol_system_error, MAKE_STRING0 ("eval/apply unknown continuation"));
 
- evlis:
+evlis:
   if (r1 == cell_nil)
     goto vm_return;
   if (TYPE (r1) != TPAIR)
     goto eval;
   push_cc (CAR (r1), r1, r0, cell_vm_evlis2);
   goto eval;
- evlis2:
+evlis2:
   push_cc (CDR (r2), r1, r0, cell_vm_evlis3);
   goto evlis;
- evlis3:
+evlis3:
   r1 = cons (r2, r1);
   goto vm_return;
 
- apply:
-  g_stack_array[g_stack+FRAME_PROCEDURE] = CAR (r1);
+apply:
+  g_stack_array[g_stack + FRAME_PROCEDURE] = CAR (r1);
   t = TYPE (CAR (r1));
   if (t == TSTRUCT && builtin_p (CAR (r1)) == cell_t)
     {
       check_formals (CAR (r1), builtin_arity (CAR (r1)), CDR (r1));
-      r1 = apply_builtin (CAR (r1), CDR (r1)); /// FIXME: move into eval_apply
+      r1 = apply_builtin (CAR (r1), CDR (r1));  /// FIXME: move into eval_apply
       goto vm_return;
     }
   else if (t == TCLOSURE)
@@ -1133,9 +1155,9 @@ eval_apply ()
       v = CONTINUATION (CAR (r1));
       if (LENGTH (v))
         {
-          for (t=0; t < LENGTH (v); t++)
-            g_stack_array[STACK_SIZE-LENGTH (v)+t] = vector_ref_ (v, t);
-          g_stack = STACK_SIZE-LENGTH (v);
+          for (t = 0; t < LENGTH (v); t++)
+            g_stack_array[STACK_SIZE - LENGTH (v) + t] = vector_ref_ (v, t);
+          g_stack = STACK_SIZE - LENGTH (v);
         }
       x = r1;
       gc_pop_frame ();
@@ -1150,17 +1172,17 @@ eval_apply ()
           push_cc (cons (CADR (r1), CADDR (r1)), r1, r0, cell_vm_return);
           goto apply;
         }
-      else if (c ==  cell_vm_eval)
+      else if (c == cell_vm_eval)
         {
           push_cc (CADR (r1), r1, CADDR (r1), cell_vm_return);
           goto eval;
         }
-      else if (c ==  cell_vm_begin_expand)
+      else if (c == cell_vm_begin_expand)
         {
           push_cc (cons (CADR (r1), cell_nil), r1, CADDR (r1), cell_vm_return);
           goto begin_expand;
         }
-      else if (c ==  cell_call_with_current_continuation)
+      else if (c == cell_call_with_current_continuation)
         {
           r1 = CDR (r1);
           goto call_with_current_continuation;
@@ -1203,17 +1225,17 @@ eval_apply ()
   // eputs ("\n");
   push_cc (CAR (r1), r1, r0, cell_vm_apply2);
   goto eval;
- apply2:
+apply2:
   check_apply (r1, CAR (r2));
   r1 = cons (r1, CDR (r2));
   goto apply;
 
- eval:
+eval:
   t = TYPE (r1);
   if (t == TPAIR)
     {
       c = CAR (r1);
-      if (c ==  cell_symbol_pmatch_car)
+      if (c == cell_symbol_pmatch_car)
         {
           push_cc (CADR (r1), r1, r0, cell_vm_eval_pmatch_car);
           goto eval;
@@ -1223,7 +1245,7 @@ eval_apply ()
           r1 = CAR (x);
           goto eval_apply;
         }
-      else if (c ==  cell_symbol_pmatch_cdr)
+      else if (c == cell_symbol_pmatch_cdr)
         {
           push_cc (CADR (r1), r1, r0, cell_vm_eval_pmatch_cdr);
           goto eval;
@@ -1233,26 +1255,26 @@ eval_apply ()
           r1 = CDR (x);
           goto eval_apply;
         }
-      else if (c ==  cell_symbol_quote)
+      else if (c == cell_symbol_quote)
         {
           x = r1;
           gc_pop_frame ();
           r1 = CADR (x);
           goto eval_apply;
         }
-      else if (c ==  cell_symbol_begin)
+      else if (c == cell_symbol_begin)
         goto begin;
-      else if (c ==  cell_symbol_lambda)
+      else if (c == cell_symbol_lambda)
         {
           r1 = make_closure_ (CADR (r1), CDDR (r1), r0);
           goto vm_return;
         }
-      else if (c ==  cell_symbol_if)
+      else if (c == cell_symbol_if)
         {
-          r1=CDR (r1);
+          r1 = CDR (r1);
           goto vm_if;
         }
-      else if (c ==  cell_symbol_set_x)
+      else if (c == cell_symbol_set_x)
         {
           push_cc (CAR (CDDR (r1)), r1, r0, cell_vm_eval_set_x);
           goto eval;
@@ -1272,9 +1294,7 @@ eval_apply ()
         }
       else
         {
-          if (TYPE (r1) == TPAIR
-              && (CAR (r1) == cell_symbol_define
-                  || CAR (r1) == cell_symbol_define_macro))
+          if (TYPE (r1) == TPAIR && (CAR (r1) == cell_symbol_define || CAR (r1) == cell_symbol_define_macro))
             {
               global_p = CAAR (r0) != cell_closure;
               macro_p = CAR (r1) == cell_symbol_define_macro;
@@ -1358,7 +1378,7 @@ eval_apply ()
         goto vm_return;
       if (r1 == cell_symbol_current_module)
         goto vm_return;
-      if (r1 == cell_symbol_begin) // FIXME
+      if (r1 == cell_symbol_begin)      // FIXME
         {
           r1 = cell_begin;
           goto vm_return;
@@ -1372,11 +1392,11 @@ eval_apply ()
       goto vm_return;
     }
   else if (t == TBROKEN_HEART)
-    error (cell_symbol_system_error,  r1);
+    error (cell_symbol_system_error, r1);
   else
     goto vm_return;
 
- macro_expand:
+macro_expand:
   {
     macro;
     expanders;
@@ -1394,16 +1414,14 @@ eval_apply ()
         goto vm_return;
       }
 
-    if (TYPE (r1) == TPAIR
-        && (macro = get_macro (CAR (r1))) != cell_f)
+    if (TYPE (r1) == TPAIR && (macro = get_macro (CAR (r1))) != cell_f)
       {
         r1 = cons (macro, CDR (r1));
         push_cc (r1, cell_nil, r0, cell_vm_macro_expand);
         goto apply;
       }
 
-    if (CAR (r1) == cell_symbol_define
-        || CAR (r1) == cell_symbol_define_macro)
+    if (CAR (r1) == cell_symbol_define || CAR (r1) == cell_symbol_define_macro)
       {
         push_cc (CDDR (r1), r1, r0, cell_vm_macro_expand_define);
         goto macro_expand;
@@ -1465,7 +1483,7 @@ eval_apply ()
     goto vm_return;
   }
 
- begin:
+begin:
   x = cell_unspecified;
   while (r1 != cell_nil)
     {
@@ -1503,7 +1521,7 @@ eval_apply ()
   goto vm_return;
 
 
- begin_expand:
+begin_expand:
   x = cell_unspecified;
   while (r1 != cell_nil)
     {
@@ -1516,7 +1534,7 @@ eval_apply ()
           if (CAAR (r1) == cell_symbol_primitive_load)
             {
               push_cc (CADR (CAR (r1)), r1, r0, cell_vm_begin_expand_primitive_load);
-              goto eval; // FIXME: expand too?!
+              goto eval;        // FIXME: expand too?!
             begin_expand_primitive_load:
               if (TYPE (r1) == TNUMBER && VALUE (r1) == 0)
                 ;
@@ -1562,10 +1580,10 @@ eval_apply ()
   r1 = x;
   goto vm_return;
 
- vm_if:
+vm_if:
   push_cc (CAR (r1), r1, r0, cell_vm_if_expr);
   goto eval;
- if_expr:
+if_expr:
   x = r1;
   r1 = r2;
   if (x != cell_f)
@@ -1581,33 +1599,33 @@ eval_apply ()
   r1 = cell_unspecified;
   goto vm_return;
 
- call_with_current_continuation:
+call_with_current_continuation:
   gc_push_frame ();
   x = MAKE_CONTINUATION (g_continuations++);
-  v = make_vector__ (STACK_SIZE-g_stack);
-  for (t=g_stack; t < STACK_SIZE; t++)
-    vector_set_x_ (v, t-g_stack, g_stack_array[t]);
+  v = make_vector__ (STACK_SIZE - g_stack);
+  for (t = g_stack; t < STACK_SIZE; t++)
+    vector_set_x_ (v, t - g_stack, g_stack_array[t]);
   CONTINUATION (x) = v;
   gc_pop_frame ();
   push_cc (cons (CAR (r1), cons (x, cell_nil)), x, r0, cell_vm_call_with_current_continuation2);
   goto apply;
- call_with_current_continuation2:
-  v = make_vector__ (STACK_SIZE-g_stack);
-  for (t=g_stack; t < STACK_SIZE; t++)
-    vector_set_x_ (v, t-g_stack, g_stack_array[t]);
+call_with_current_continuation2:
+  v = make_vector__ (STACK_SIZE - g_stack);
+  for (t = g_stack; t < STACK_SIZE; t++)
+    vector_set_x_ (v, t - g_stack, g_stack_array[t]);
   CONTINUATION (r2) = v;
   goto vm_return;
 
- call_with_values:
+call_with_values:
   push_cc (cons (CAR (r1), cell_nil), r1, r0, cell_vm_call_with_values2);
   goto apply;
- call_with_values2:
+call_with_values2:
   if (TYPE (r1) == TVALUES)
     r1 = CDR (r1);
   r1 = cons (CADR (r2), r1);
   goto apply;
 
- vm_return:
+vm_return:
   x = r1;
   gc_pop_frame ();
   r1 = x;
@@ -1615,7 +1633,7 @@ eval_apply ()
 }
 
 SCM
-apply (SCM f, SCM x, SCM a) ///((internal))
+apply (SCM f, SCM x, SCM a)     ///((internal))
 {
   push_cc (cons (f, x), cell_unspecified, r0, cell_unspecified);
   r3 = cell_vm_apply;
@@ -1623,7 +1641,7 @@ apply (SCM f, SCM x, SCM a) ///((internal))
 }
 
 SCM
-mes_g_stack (SCM a) ///((internal))
+mes_g_stack (SCM a)             ///((internal))
 {
   //g_stack = g_free + ARENA_SIZE;
   g_stack = STACK_SIZE;
@@ -1638,12 +1656,12 @@ mes_g_stack (SCM a) ///((internal))
 SCM g_symbol_max;
 
 SCM
-gc_init_cells () ///((internal))
+gc_init_cells ()                ///((internal))
 {
-  long arena_bytes = (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm);
-  void *p = malloc (arena_bytes+STACK_SIZE*sizeof (SCM));
-  g_cells = (struct scm *)p;
-  g_stack_array = (SCM*)(p + arena_bytes);
+  long arena_bytes = (ARENA_SIZE + JAM_SIZE) * sizeof (struct scm);
+  void *p = malloc (arena_bytes + STACK_SIZE * sizeof (SCM));
+  g_cells = (struct scm *) p;
+  g_stack_array = (SCM *) (p + arena_bytes);
 
   TYPE (0) = TVECTOR;
   LENGTH (0) = 1000;
@@ -1653,13 +1671,13 @@ gc_init_cells () ///((internal))
   VALUE (0) = 'c';
 
   // FIXME: remove MES_MAX_STRING, grow dynamically
-  g_buf = (char*)malloc (MAX_STRING);
+  g_buf = (char *) malloc (MAX_STRING);
 
   return 0;
 }
 
 void
-init_symbol (long x, long type, char const* name)
+init_symbol (long x, long type, char const *name)
 {
   TYPE (x) = type;
   int length = strlen (name);
@@ -1670,7 +1688,7 @@ init_symbol (long x, long type, char const* name)
 }
 
 SCM
-mes_symbols () ///((internal))
+mes_symbols ()                  ///((internal))
 {
   gc_init_cells ();
 
@@ -1864,7 +1882,7 @@ mes_environment (int argc, char *argv[])
 
 #if !MES_MINI
   SCM lst = cell_nil;
-  for (int i=argc-1; i>=0; i--)
+  for (int i = argc - 1; i >= 0; i--)
     lst = cons (MAKE_STRING0 (argv[i]), lst);
   a = acons (cell_symbol_argv, lst, a);
 #endif
@@ -1873,14 +1891,16 @@ mes_environment (int argc, char *argv[])
 }
 
 SCM
-init_builtin (SCM builtin_type, char const* name, int arity, SCM (*function) (SCM), SCM a)
+init_builtin (SCM builtin_type, char const *name, int arity, SCM (*function) (SCM), SCM a)
 {
   SCM s = cstring_to_symbol (name);
-  return acons (s, make_builtin (builtin_type, symbol_to_string (s), MAKE_NUMBER (arity), MAKE_NUMBER (function)), a);
+  return acons (s,
+                make_builtin (builtin_type, symbol_to_string (s), MAKE_NUMBER (arity),
+                              MAKE_NUMBER (function)), a);
 }
 
 SCM
-make_builtin_type () ///(internal))
+make_builtin_type ()            ///(internal))
 {
   SCM record_type = cell_symbol_record_type;
   SCM fields = cell_nil;
@@ -1922,18 +1942,16 @@ builtin_function (SCM builtin)
   return VALUE (struct_ref_ (builtin, 5));
 }
 #else
-SCM
-(*builtin_function (SCM builtin)) (SCM)
+SCM (*builtin_function (SCM builtin)) (SCM)
 {
-  return (function1_t)VALUE (struct_ref_ (builtin, 5));
+  return (function1_t) VALUE (struct_ref_ (builtin, 5));
 }
 #endif
 
 SCM
 builtin_p (SCM x)
 {
-  return (TYPE (x) == TSTRUCT && struct_ref_ (x, 2) == cell_symbol_builtin)
-    ? cell_t : cell_f;
+  return (TYPE (x) == TSTRUCT && struct_ref_ (x, 2) == cell_symbol_builtin) ? cell_t : cell_f;
 }
 
 SCM
@@ -1959,19 +1977,16 @@ builtin_printer (SCM builtin)
 }
 
 SCM
-apply_builtin (SCM fn, SCM x) ///((internal))
+apply_builtin (SCM fn, SCM x)   ///((internal))
 {
   int arity = VALUE (builtin_arity (fn));
-  if ((arity > 0 || arity == -1)
-      && x != cell_nil && TYPE (CAR (x)) == TVALUES)
+  if ((arity > 0 || arity == -1) && x != cell_nil && TYPE (CAR (x)) == TVALUES)
     x = cons (CADAR (x), CDR (x));
-  if ((arity > 1 || arity == -1)
-      && x != cell_nil && TYPE (CDR (x)) == TPAIR && TYPE (CADR (x)) == TVALUES)
+  if ((arity > 1 || arity == -1) && x != cell_nil && TYPE (CDR (x)) == TPAIR && TYPE (CADR (x)) == TVALUES)
     x = cons (CAR (x), cons (CDADAR (x), CDR (x)));
 
 #if __M2_PLANET__
-  FUNCTION fp = builtin_function (fn)
-  if (arity == 0)
+  FUNCTION fp = builtin_function (fn) if (arity == 0)
     return fp ();
   else if (arity == 1)
     return fp (CAR (x));
@@ -1985,31 +2000,31 @@ apply_builtin (SCM fn, SCM x) ///((internal))
   if (arity == 0)
     {
       //function0_t fp = f->function;
-      SCM (*fp) (void) = (function0_t)builtin_function (fn);
+      SCM (*fp) (void) = (function0_t) builtin_function (fn);
       return fp ();
     }
   else if (arity == 1)
     {
       //function1_t fp = f->function;
-      SCM (*fp) (SCM) = (function1_t)builtin_function (fn);
+      SCM (*fp) (SCM) = (function1_t) builtin_function (fn);
       return fp (CAR (x));
     }
   else if (arity == 2)
     {
       //function2_t fp = f->function;
-      SCM (*fp) (SCM, SCM) = (function2_t)builtin_function (fn);
+      SCM (*fp) (SCM, SCM) = (function2_t) builtin_function (fn);
       return fp (CAR (x), CADR (x));
     }
   else if (arity == 3)
     {
       //function3_t fp = f->function;
-      SCM (*fp) (SCM, SCM, SCM) = (function3_t)builtin_function (fn);
+      SCM (*fp) (SCM, SCM, SCM) = (function3_t) builtin_function (fn);
       return fp (CAR (x), CADR (x), CAR (CDDR (x)));
     }
   else if (arity == -1)
     {
       //functionn_t fp = f->function;
-      SCM (*fp) (SCM) = (function1_t)builtin_function (fn);
+      SCM (*fp) (SCM) = (function1_t) builtin_function (fn);
       return fp (x);
     }
 #endif //! __M2_PLANET__
@@ -2017,7 +2032,7 @@ apply_builtin (SCM fn, SCM x) ///((internal))
 }
 
 SCM
-mes_builtins (SCM a) ///((internal))
+mes_builtins (SCM a)            ///((internal))
 {
   // TODO minimal: cons, car, cdr, list, null_p, eq_p minus, plus
   // display_, display_error_, getenv
@@ -2025,157 +2040,157 @@ mes_builtins (SCM a) ///((internal))
   SCM builtin_type = make_builtin_type ();
 
   // src/gc.mes
-  a = init_builtin (builtin_type, "gc-check", 0, (function1_t)&gc_check, a);
-  a = init_builtin (builtin_type, "gc", 0, (function1_t)&gc, a);
+  a = init_builtin (builtin_type, "gc-check", 0, (function1_t) & gc_check, a);
+  a = init_builtin (builtin_type, "gc", 0, (function1_t) & gc, a);
   // src/hash.mes
-  a = init_builtin (builtin_type, "hashq", 2, (function1_t)&hashq, a);
-  a = init_builtin (builtin_type, "hash", 2, (function1_t)&hash, a);
-  a = init_builtin (builtin_type, "hashq-get-handle", 3, (function1_t)&hashq_get_handle, a);
-  a = init_builtin (builtin_type, "hashq-ref", 3, (function1_t)&hashq_ref, a);
-  a = init_builtin (builtin_type, "hash-ref", 3, (function1_t)&hash_ref, a);
-  a = init_builtin (builtin_type, "hashq-set!", 3, (function1_t)&hashq_set_x, a);
-  a = init_builtin (builtin_type, "hash-set!", 3, (function1_t)&hash_set_x, a);
-  a = init_builtin (builtin_type, "hash-table-printer", 1, (function1_t)&hash_table_printer, a);
-  a = init_builtin (builtin_type, "make-hash-table", 1, (function1_t)&make_hash_table, a);
+  a = init_builtin (builtin_type, "hashq", 2, (function1_t) & hashq, a);
+  a = init_builtin (builtin_type, "hash", 2, (function1_t) & hash, a);
+  a = init_builtin (builtin_type, "hashq-get-handle", 3, (function1_t) & hashq_get_handle, a);
+  a = init_builtin (builtin_type, "hashq-ref", 3, (function1_t) & hashq_ref, a);
+  a = init_builtin (builtin_type, "hash-ref", 3, (function1_t) & hash_ref, a);
+  a = init_builtin (builtin_type, "hashq-set!", 3, (function1_t) & hashq_set_x, a);
+  a = init_builtin (builtin_type, "hash-set!", 3, (function1_t) & hash_set_x, a);
+  a = init_builtin (builtin_type, "hash-table-printer", 1, (function1_t) & hash_table_printer, a);
+  a = init_builtin (builtin_type, "make-hash-table", 1, (function1_t) & make_hash_table, a);
   // src/lib.mes
-  a = init_builtin (builtin_type, "core:display", 1, (function1_t)&display_, a);
-  a = init_builtin (builtin_type, "core:display-error", 1, (function1_t)&display_error_, a);
-  a = init_builtin (builtin_type, "core:display-port", 2, (function1_t)&display_port_, a);
-  a = init_builtin (builtin_type, "core:write", 1, (function1_t)&write_, a);
-  a = init_builtin (builtin_type, "core:write-error", 1, (function1_t)&write_error_, a);
-  a = init_builtin (builtin_type, "core:write-port", 2, (function1_t)&write_port_, a);
-  a = init_builtin (builtin_type, "exit", 1, (function1_t)&exit_, a);
-  a = init_builtin (builtin_type, "frame-printer", 1, (function1_t)&frame_printer, a);
-  a = init_builtin (builtin_type, "make-stack", -1, (function1_t)&make_stack, a);
-  a = init_builtin (builtin_type, "stack-length", 1, (function1_t)&stack_length, a);
-  a = init_builtin (builtin_type, "stack-ref", 2, (function1_t)&stack_ref, a);
-  a = init_builtin (builtin_type, "xassq", 2, (function1_t)&xassq, a);
-  a = init_builtin (builtin_type, "memq", 2, (function1_t)&memq, a);
-  a = init_builtin (builtin_type, "equal2?", 2, (function1_t)&equal2_p, a);
-  a = init_builtin (builtin_type, "last-pair", 1, (function1_t)&last_pair, a);
-  a = init_builtin (builtin_type, "pair?", 1, (function1_t)&pair_p, a);
+  a = init_builtin (builtin_type, "core:display", 1, (function1_t) & display_, a);
+  a = init_builtin (builtin_type, "core:display-error", 1, (function1_t) & display_error_, a);
+  a = init_builtin (builtin_type, "core:display-port", 2, (function1_t) & display_port_, a);
+  a = init_builtin (builtin_type, "core:write", 1, (function1_t) & write_, a);
+  a = init_builtin (builtin_type, "core:write-error", 1, (function1_t) & write_error_, a);
+  a = init_builtin (builtin_type, "core:write-port", 2, (function1_t) & write_port_, a);
+  a = init_builtin (builtin_type, "exit", 1, (function1_t) & exit_, a);
+  a = init_builtin (builtin_type, "frame-printer", 1, (function1_t) & frame_printer, a);
+  a = init_builtin (builtin_type, "make-stack", -1, (function1_t) & make_stack, a);
+  a = init_builtin (builtin_type, "stack-length", 1, (function1_t) & stack_length, a);
+  a = init_builtin (builtin_type, "stack-ref", 2, (function1_t) & stack_ref, a);
+  a = init_builtin (builtin_type, "xassq", 2, (function1_t) & xassq, a);
+  a = init_builtin (builtin_type, "memq", 2, (function1_t) & memq, a);
+  a = init_builtin (builtin_type, "equal2?", 2, (function1_t) & equal2_p, a);
+  a = init_builtin (builtin_type, "last-pair", 1, (function1_t) & last_pair, a);
+  a = init_builtin (builtin_type, "pair?", 1, (function1_t) & pair_p, a);
   // src/math.mes
-  a = init_builtin (builtin_type, ">", -1, (function1_t)&greater_p, a);
-  a = init_builtin (builtin_type, "<", -1, (function1_t)&less_p, a);
-  a = init_builtin (builtin_type, "=", -1, (function1_t)&is_p, a);
-  a = init_builtin (builtin_type, "-", -1, (function1_t)&minus, a);
-  a = init_builtin (builtin_type, "+", -1, (function1_t)&plus, a);
-  a = init_builtin (builtin_type, "/", -1, (function1_t)&divide, a);
-  a = init_builtin (builtin_type, "modulo", 2, (function1_t)&modulo, a);
-  a = init_builtin (builtin_type, "*", -1, (function1_t)&multiply, a);
-  a = init_builtin (builtin_type, "logand", -1, (function1_t)&logand, a);
-  a = init_builtin (builtin_type, "logior", -1, (function1_t)&logior, a);
-  a = init_builtin (builtin_type, "lognot", 1, (function1_t)&lognot, a);
-  a = init_builtin (builtin_type, "logxor", -1, (function1_t)&logxor, a);
-  a = init_builtin (builtin_type, "ash", 2, (function1_t)&ash, a);
+  a = init_builtin (builtin_type, ">", -1, (function1_t) & greater_p, a);
+  a = init_builtin (builtin_type, "<", -1, (function1_t) & less_p, a);
+  a = init_builtin (builtin_type, "=", -1, (function1_t) & is_p, a);
+  a = init_builtin (builtin_type, "-", -1, (function1_t) & minus, a);
+  a = init_builtin (builtin_type, "+", -1, (function1_t) & plus, a);
+  a = init_builtin (builtin_type, "/", -1, (function1_t) & divide, a);
+  a = init_builtin (builtin_type, "modulo", 2, (function1_t) & modulo, a);
+  a = init_builtin (builtin_type, "*", -1, (function1_t) & multiply, a);
+  a = init_builtin (builtin_type, "logand", -1, (function1_t) & logand, a);
+  a = init_builtin (builtin_type, "logior", -1, (function1_t) & logior, a);
+  a = init_builtin (builtin_type, "lognot", 1, (function1_t) & lognot, a);
+  a = init_builtin (builtin_type, "logxor", -1, (function1_t) & logxor, a);
+  a = init_builtin (builtin_type, "ash", 2, (function1_t) & ash, a);
   // src/mes.mes
-  a = init_builtin (builtin_type, "core:make-cell", 3, (function1_t)&make_cell_, a);
-  a = init_builtin (builtin_type, "core:type", 1, (function1_t)&type_, a);
-  a = init_builtin (builtin_type, "core:car", 1, (function1_t)&car_, a);
-  a = init_builtin (builtin_type, "core:cdr", 1, (function1_t)&cdr_, a);
-  a = init_builtin (builtin_type, "cons", 2, (function1_t)&cons, a);
-  a = init_builtin (builtin_type, "car", 1, (function1_t)&car, a);
-  a = init_builtin (builtin_type, "cdr", 1, (function1_t)&cdr, a);
-  a = init_builtin (builtin_type, "list", -1, (function1_t)&list, a);
-  a = init_builtin (builtin_type, "null?", 1, (function1_t)&null_p, a);
-  a = init_builtin (builtin_type, "eq?", 2, (function1_t)&eq_p, a);
-  a = init_builtin (builtin_type, "values", -1, (function1_t)&values, a);
-  a = init_builtin (builtin_type, "acons", 3, (function1_t)&acons, a);
-  a = init_builtin (builtin_type, "length", 1, (function1_t)&length, a);
-  a = init_builtin (builtin_type, "error", 2, (function1_t)&error, a);
-  a = init_builtin (builtin_type, "append2", 2, (function1_t)&append2, a);
-  a = init_builtin (builtin_type, "append-reverse", 2, (function1_t)&append_reverse, a);
-  a = init_builtin (builtin_type, "core:reverse!", 2, (function1_t)&reverse_x_, a);
-  a = init_builtin (builtin_type, "pairlis", 3, (function1_t)&pairlis, a);
-  a = init_builtin (builtin_type, "assq", 2, (function1_t)&assq, a);
-  a = init_builtin (builtin_type, "assoc", 2, (function1_t)&assoc, a);
-  a = init_builtin (builtin_type, "set-car!", 2, (function1_t)&set_car_x, a);
-  a = init_builtin (builtin_type, "set-cdr!", 2, (function1_t)&set_cdr_x, a);
-  a = init_builtin (builtin_type, "set-env!", 3, (function1_t)&set_env_x, a);
-  a = init_builtin (builtin_type, "macro-get-handle", 1, (function1_t)&macro_get_handle, a);
-  a = init_builtin (builtin_type, "add-formals", 2, (function1_t)&add_formals, a);
-  a = init_builtin (builtin_type, "eval-apply", 0, (function1_t)&eval_apply, a);
-  a = init_builtin (builtin_type, "make-builtin-type", 0, (function1_t)&make_builtin_type, a);
-  a = init_builtin (builtin_type, "make-builtin", 4, (function1_t)&make_builtin, a);
-  a = init_builtin (builtin_type, "builtin-name", 1, (function1_t)&builtin_name, a);
-  a = init_builtin (builtin_type, "builtin-arity", 1, (function1_t)&builtin_arity, a);
-  a = init_builtin (builtin_type, "builtin?", 1, (function1_t)&builtin_p, a);
-  a = init_builtin (builtin_type, "builtin-printer", 1, (function1_t)&builtin_printer, a);
+  a = init_builtin (builtin_type, "core:make-cell", 3, (function1_t) & make_cell_, a);
+  a = init_builtin (builtin_type, "core:type", 1, (function1_t) & type_, a);
+  a = init_builtin (builtin_type, "core:car", 1, (function1_t) & car_, a);
+  a = init_builtin (builtin_type, "core:cdr", 1, (function1_t) & cdr_, a);
+  a = init_builtin (builtin_type, "cons", 2, (function1_t) & cons, a);
+  a = init_builtin (builtin_type, "car", 1, (function1_t) & car, a);
+  a = init_builtin (builtin_type, "cdr", 1, (function1_t) & cdr, a);
+  a = init_builtin (builtin_type, "list", -1, (function1_t) & list, a);
+  a = init_builtin (builtin_type, "null?", 1, (function1_t) & null_p, a);
+  a = init_builtin (builtin_type, "eq?", 2, (function1_t) & eq_p, a);
+  a = init_builtin (builtin_type, "values", -1, (function1_t) & values, a);
+  a = init_builtin (builtin_type, "acons", 3, (function1_t) & acons, a);
+  a = init_builtin (builtin_type, "length", 1, (function1_t) & length, a);
+  a = init_builtin (builtin_type, "error", 2, (function1_t) & error, a);
+  a = init_builtin (builtin_type, "append2", 2, (function1_t) & append2, a);
+  a = init_builtin (builtin_type, "append-reverse", 2, (function1_t) & append_reverse, a);
+  a = init_builtin (builtin_type, "core:reverse!", 2, (function1_t) & reverse_x_, a);
+  a = init_builtin (builtin_type, "pairlis", 3, (function1_t) & pairlis, a);
+  a = init_builtin (builtin_type, "assq", 2, (function1_t) & assq, a);
+  a = init_builtin (builtin_type, "assoc", 2, (function1_t) & assoc, a);
+  a = init_builtin (builtin_type, "set-car!", 2, (function1_t) & set_car_x, a);
+  a = init_builtin (builtin_type, "set-cdr!", 2, (function1_t) & set_cdr_x, a);
+  a = init_builtin (builtin_type, "set-env!", 3, (function1_t) & set_env_x, a);
+  a = init_builtin (builtin_type, "macro-get-handle", 1, (function1_t) & macro_get_handle, a);
+  a = init_builtin (builtin_type, "add-formals", 2, (function1_t) & add_formals, a);
+  a = init_builtin (builtin_type, "eval-apply", 0, (function1_t) & eval_apply, a);
+  a = init_builtin (builtin_type, "make-builtin-type", 0, (function1_t) & make_builtin_type, a);
+  a = init_builtin (builtin_type, "make-builtin", 4, (function1_t) & make_builtin, a);
+  a = init_builtin (builtin_type, "builtin-name", 1, (function1_t) & builtin_name, a);
+  a = init_builtin (builtin_type, "builtin-arity", 1, (function1_t) & builtin_arity, a);
+  a = init_builtin (builtin_type, "builtin?", 1, (function1_t) & builtin_p, a);
+  a = init_builtin (builtin_type, "builtin-printer", 1, (function1_t) & builtin_printer, a);
   // src/module.mes
-  a = init_builtin (builtin_type, "make-module-type", 0, (function1_t)&make_module_type, a);
-  a = init_builtin (builtin_type, "module-printer", 1, (function1_t)&module_printer, a);
-  a = init_builtin (builtin_type, "module-variable", 2, (function1_t)&module_variable, a);
-  a = init_builtin (builtin_type, "module-ref", 2, (function1_t)&module_ref, a);
-  a = init_builtin (builtin_type, "module-define!", 3, (function1_t)&module_define_x, a);
+  a = init_builtin (builtin_type, "make-module-type", 0, (function1_t) & make_module_type, a);
+  a = init_builtin (builtin_type, "module-printer", 1, (function1_t) & module_printer, a);
+  a = init_builtin (builtin_type, "module-variable", 2, (function1_t) & module_variable, a);
+  a = init_builtin (builtin_type, "module-ref", 2, (function1_t) & module_ref, a);
+  a = init_builtin (builtin_type, "module-define!", 3, (function1_t) & module_define_x, a);
   // src/posix.mes
-  a = init_builtin (builtin_type, "peek-byte", 0, (function1_t)&peek_byte, a);
-  a = init_builtin (builtin_type, "read-byte", 0, (function1_t)&read_byte, a);
-  a = init_builtin (builtin_type, "unread-byte", 1, (function1_t)&unread_byte, a);
-  a = init_builtin (builtin_type, "peek-char", 0, (function1_t)&peek_char, a);
-  a = init_builtin (builtin_type, "read-char", -1, (function1_t)&read_char, a);
-  a = init_builtin (builtin_type, "unread-char", 1, (function1_t)&unread_char, a);
-  a = init_builtin (builtin_type, "write-char", -1, (function1_t)&write_char, a);
-  a = init_builtin (builtin_type, "write-byte", -1, (function1_t)&write_byte, a);
-  a = init_builtin (builtin_type, "getenv", 1, (function1_t)&getenv_, a);
-  a = init_builtin (builtin_type, "setenv", 2, (function1_t)&setenv_, a);
-  a = init_builtin (builtin_type, "access?", 2, (function1_t)&access_p, a);
-  a = init_builtin (builtin_type, "current-input-port", 0, (function1_t)&current_input_port, a);
-  a = init_builtin (builtin_type, "open-input-file", 1, (function1_t)&open_input_file, a);
-  a = init_builtin (builtin_type, "open-input-string", 1, (function1_t)&open_input_string, a);
-  a = init_builtin (builtin_type, "set-current-input-port", 1, (function1_t)&set_current_input_port, a);
-  a = init_builtin (builtin_type, "current-output-port", 0, (function1_t)&current_output_port, a);
-  a = init_builtin (builtin_type, "current-error-port", 0, (function1_t)&current_error_port, a);
-  a = init_builtin (builtin_type, "open-output-file", -1, (function1_t)&open_output_file, a);
-  a = init_builtin (builtin_type, "set-current-output-port", 1, (function1_t)&set_current_output_port, a);
-  a = init_builtin (builtin_type, "set-current-error-port", 1, (function1_t)&set_current_error_port, a);
-  a = init_builtin (builtin_type, "chmod", 2, (function1_t)&chmod_, a);
-  a = init_builtin (builtin_type, "isatty?", 1, (function1_t)&isatty_p, a);
-  a = init_builtin (builtin_type, "primitive-fork", 0, (function1_t)&primitive_fork, a);
-  a = init_builtin (builtin_type, "execl", 2, (function1_t)&execl_, a);
-  a = init_builtin (builtin_type, "core:waitpid", 2, (function1_t)&waitpid_, a);
-  a = init_builtin (builtin_type, "current-time", 0, (function1_t)&current_time, a);
-  a = init_builtin (builtin_type, "gettimeofday", 0, (function1_t)&gettimeofday_, a);
-  a = init_builtin (builtin_type, "get-internal-run-time", 0, (function1_t)&get_internal_run_time, a);
-  a = init_builtin (builtin_type, "getcwd", 0, (function1_t)&getcwd_, a);
-  a = init_builtin (builtin_type, "dup", 1, (function1_t)&dup_, a);
-  a = init_builtin (builtin_type, "dup2", 2, (function1_t)&dup2_, a);
-  a = init_builtin (builtin_type, "delete-file", 1, (function1_t)&delete_file, a);
+  a = init_builtin (builtin_type, "peek-byte", 0, (function1_t) & peek_byte, a);
+  a = init_builtin (builtin_type, "read-byte", 0, (function1_t) & read_byte, a);
+  a = init_builtin (builtin_type, "unread-byte", 1, (function1_t) & unread_byte, a);
+  a = init_builtin (builtin_type, "peek-char", 0, (function1_t) & peek_char, a);
+  a = init_builtin (builtin_type, "read-char", -1, (function1_t) & read_char, a);
+  a = init_builtin (builtin_type, "unread-char", 1, (function1_t) & unread_char, a);
+  a = init_builtin (builtin_type, "write-char", -1, (function1_t) & write_char, a);
+  a = init_builtin (builtin_type, "write-byte", -1, (function1_t) & write_byte, a);
+  a = init_builtin (builtin_type, "getenv", 1, (function1_t) & getenv_, a);
+  a = init_builtin (builtin_type, "setenv", 2, (function1_t) & setenv_, a);
+  a = init_builtin (builtin_type, "access?", 2, (function1_t) & access_p, a);
+  a = init_builtin (builtin_type, "current-input-port", 0, (function1_t) & current_input_port, a);
+  a = init_builtin (builtin_type, "open-input-file", 1, (function1_t) & open_input_file, a);
+  a = init_builtin (builtin_type, "open-input-string", 1, (function1_t) & open_input_string, a);
+  a = init_builtin (builtin_type, "set-current-input-port", 1, (function1_t) & set_current_input_port, a);
+  a = init_builtin (builtin_type, "current-output-port", 0, (function1_t) & current_output_port, a);
+  a = init_builtin (builtin_type, "current-error-port", 0, (function1_t) & current_error_port, a);
+  a = init_builtin (builtin_type, "open-output-file", -1, (function1_t) & open_output_file, a);
+  a = init_builtin (builtin_type, "set-current-output-port", 1, (function1_t) & set_current_output_port, a);
+  a = init_builtin (builtin_type, "set-current-error-port", 1, (function1_t) & set_current_error_port, a);
+  a = init_builtin (builtin_type, "chmod", 2, (function1_t) & chmod_, a);
+  a = init_builtin (builtin_type, "isatty?", 1, (function1_t) & isatty_p, a);
+  a = init_builtin (builtin_type, "primitive-fork", 0, (function1_t) & primitive_fork, a);
+  a = init_builtin (builtin_type, "execl", 2, (function1_t) & execl_, a);
+  a = init_builtin (builtin_type, "core:waitpid", 2, (function1_t) & waitpid_, a);
+  a = init_builtin (builtin_type, "current-time", 0, (function1_t) & current_time, a);
+  a = init_builtin (builtin_type, "gettimeofday", 0, (function1_t) & gettimeofday_, a);
+  a = init_builtin (builtin_type, "get-internal-run-time", 0, (function1_t) & get_internal_run_time, a);
+  a = init_builtin (builtin_type, "getcwd", 0, (function1_t) & getcwd_, a);
+  a = init_builtin (builtin_type, "dup", 1, (function1_t) & dup_, a);
+  a = init_builtin (builtin_type, "dup2", 2, (function1_t) & dup2_, a);
+  a = init_builtin (builtin_type, "delete-file", 1, (function1_t) & delete_file, a);
   // src/reader.mes
-  a = init_builtin (builtin_type, "core:read-input-file-env", 2, (function1_t)&read_input_file_env_, a);
-  a = init_builtin (builtin_type, "read-input-file-env", 1, (function1_t)&read_input_file_env, a);
-  a = init_builtin (builtin_type, "read-env", 1, (function1_t)&read_env, a);
-  a = init_builtin (builtin_type, "reader-read-sexp", 3, (function1_t)&reader_read_sexp, a);
-  a = init_builtin (builtin_type, "reader-read-character", 0, (function1_t)&reader_read_character, a);
-  a = init_builtin (builtin_type, "reader-read-binary", 0, (function1_t)&reader_read_binary, a);
-  a = init_builtin (builtin_type, "reader-read-octal", 0, (function1_t)&reader_read_octal, a);
-  a = init_builtin (builtin_type, "reader-read-hex", 0, (function1_t)&reader_read_hex, a);
-  a = init_builtin (builtin_type, "reader-read-string", 0, (function1_t)&reader_read_string, a);
+  a = init_builtin (builtin_type, "core:read-input-file-env", 2, (function1_t) & read_input_file_env_, a);
+  a = init_builtin (builtin_type, "read-input-file-env", 1, (function1_t) & read_input_file_env, a);
+  a = init_builtin (builtin_type, "read-env", 1, (function1_t) & read_env, a);
+  a = init_builtin (builtin_type, "reader-read-sexp", 3, (function1_t) & reader_read_sexp, a);
+  a = init_builtin (builtin_type, "reader-read-character", 0, (function1_t) & reader_read_character, a);
+  a = init_builtin (builtin_type, "reader-read-binary", 0, (function1_t) & reader_read_binary, a);
+  a = init_builtin (builtin_type, "reader-read-octal", 0, (function1_t) & reader_read_octal, a);
+  a = init_builtin (builtin_type, "reader-read-hex", 0, (function1_t) & reader_read_hex, a);
+  a = init_builtin (builtin_type, "reader-read-string", 0, (function1_t) & reader_read_string, a);
   // src/strings.mes
-  a = init_builtin (builtin_type, "string=?", 2, (function1_t)&string_equal_p, a);
-  a = init_builtin (builtin_type, "symbol->string", 1, (function1_t)&symbol_to_string, a);
-  a = init_builtin (builtin_type, "symbol->keyword", 1, (function1_t)&symbol_to_keyword, a);
-  a = init_builtin (builtin_type, "keyword->string", 1, (function1_t)&keyword_to_string, a);
-  a = init_builtin (builtin_type, "string->symbol", 1, (function1_t)&string_to_symbol, a);
-  a = init_builtin (builtin_type, "make-symbol", 1, (function1_t)&make_symbol, a);
-  a = init_builtin (builtin_type, "string->list", 1, (function1_t)&string_to_list, a);
-  a = init_builtin (builtin_type, "list->string", 1, (function1_t)&list_to_string, a);
-  a = init_builtin (builtin_type, "read-string", -1, (function1_t)&read_string, a);
-  a = init_builtin (builtin_type, "string-append", -1, (function1_t)&string_append, a);
-  a = init_builtin (builtin_type, "string-length", 1, (function1_t)&string_length, a);
-  a = init_builtin (builtin_type, "string-ref", 2, (function1_t)&string_ref, a);
+  a = init_builtin (builtin_type, "string=?", 2, (function1_t) & string_equal_p, a);
+  a = init_builtin (builtin_type, "symbol->string", 1, (function1_t) & symbol_to_string, a);
+  a = init_builtin (builtin_type, "symbol->keyword", 1, (function1_t) & symbol_to_keyword, a);
+  a = init_builtin (builtin_type, "keyword->string", 1, (function1_t) & keyword_to_string, a);
+  a = init_builtin (builtin_type, "string->symbol", 1, (function1_t) & string_to_symbol, a);
+  a = init_builtin (builtin_type, "make-symbol", 1, (function1_t) & make_symbol, a);
+  a = init_builtin (builtin_type, "string->list", 1, (function1_t) & string_to_list, a);
+  a = init_builtin (builtin_type, "list->string", 1, (function1_t) & list_to_string, a);
+  a = init_builtin (builtin_type, "read-string", -1, (function1_t) & read_string, a);
+  a = init_builtin (builtin_type, "string-append", -1, (function1_t) & string_append, a);
+  a = init_builtin (builtin_type, "string-length", 1, (function1_t) & string_length, a);
+  a = init_builtin (builtin_type, "string-ref", 2, (function1_t) & string_ref, a);
   // src/struct.mes
-  a = init_builtin (builtin_type, "make-struct", 3, (function1_t)&make_struct, a);
-  a = init_builtin (builtin_type, "struct-length", 1, (function1_t)&struct_length, a);
-  a = init_builtin (builtin_type, "struct-ref", 2, (function1_t)&struct_ref, a);
-  a = init_builtin (builtin_type, "struct-set!", 3, (function1_t)&struct_set_x, a);
+  a = init_builtin (builtin_type, "make-struct", 3, (function1_t) & make_struct, a);
+  a = init_builtin (builtin_type, "struct-length", 1, (function1_t) & struct_length, a);
+  a = init_builtin (builtin_type, "struct-ref", 2, (function1_t) & struct_ref, a);
+  a = init_builtin (builtin_type, "struct-set!", 3, (function1_t) & struct_set_x, a);
   // src/vector.mes
-  a = init_builtin (builtin_type, "core:make-vector", 1, (function1_t)&make_vector_, a);
-  a = init_builtin (builtin_type, "vector-length", 1, (function1_t)&vector_length, a);
-  a = init_builtin (builtin_type, "vector-ref", 2, (function1_t)&vector_ref, a);
-  a = init_builtin (builtin_type, "vector-entry", 1, (function1_t)&vector_entry, a);
-  a = init_builtin (builtin_type, "vector-set!", 3, (function1_t)&vector_set_x, a);
-  a = init_builtin (builtin_type, "list->vector", 1, (function1_t)&list_to_vector, a);
-  a = init_builtin (builtin_type, "vector->list", 1, (function1_t)&vector_to_list, a);
+  a = init_builtin (builtin_type, "core:make-vector", 1, (function1_t) & make_vector_, a);
+  a = init_builtin (builtin_type, "vector-length", 1, (function1_t) & vector_length, a);
+  a = init_builtin (builtin_type, "vector-ref", 2, (function1_t) & vector_ref, a);
+  a = init_builtin (builtin_type, "vector-entry", 1, (function1_t) & vector_entry, a);
+  a = init_builtin (builtin_type, "vector-set!", 3, (function1_t) & vector_set_x, a);
+  a = init_builtin (builtin_type, "list->vector", 1, (function1_t) & list_to_vector, a);
+  a = init_builtin (builtin_type, "vector->list", 1, (function1_t) & vector_to_list, a);
 
   return a;
 }
@@ -2203,7 +2218,7 @@ open_boot (char *prefix, char const *boot, char const *location)
 }
 
 SCM
-read_boot () ///((internal))
+read_boot ()                    ///((internal))
 {
   __stdin = -1;
   char prefix[1024];
@@ -2350,7 +2365,9 @@ main (int argc, char *argv[])
         module_printer (m0);
       if (g_debug > 3)
         {
-          eputs ("ports:"); write_error_ (g_ports); eputs ("\n");
+          eputs ("ports:");
+          write_error_ (g_ports);
+          eputs ("\n");
         }
       eputs ("\n");
 

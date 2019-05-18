@@ -26,7 +26,9 @@
 int
 main (int argc, char *argv[])
 {
-  oputs ("argc="); oputs (itoa (argc)); oputs ("\n");
+  oputs ("argc=");
+  oputs (itoa (argc));
+  oputs ("\n");
   if (argc != 1)
     return 1;
 

@@ -22,20 +22,21 @@
 #include <string.h>
 
 int
-qsort_strcmp (void const* a, void const* b)
+qsort_strcmp (void const *a, void const *b)
 {
-  return strcmp (*((char**) a), *((char**) b));
+  return strcmp (*((char **) a), *((char **) b));
 }
 
 int
 main ()
 {
-  char* list[3] = {"foo", "foo", 0 };
+  char *list[3] = { "foo", "foo", 0 };
   oputs ("\nls:\n");
-  qsort (list, 2, sizeof (char*), qsort_strcmp);
+  qsort (list, 2, sizeof (char *), qsort_strcmp);
   for (int i = 0; i < 2; i++)
     {
-      oputs (list[i]); oputs ("\n");
+      oputs (list[i]);
+      oputs ("\n");
     }
 
   return 0;

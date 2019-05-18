@@ -21,9 +21,10 @@
 #include <mes/lib.h>
 #include <stdio.h>
 
-char *list[2] = {"foo\n", "bar\n"};
+char *list[2] = { "foo\n", "bar\n" };
 
-struct foo {
+struct foo
+{
   int a;
   int b;
   int c;
@@ -43,11 +44,17 @@ main ()
   void **ppv = 0;
   int **ppi = 0;
   int int_size = sizeof (int);
-  int ptr_size = sizeof (void*);
+  int ptr_size = sizeof (void *);
   int foo_size = sizeof (struct foo);
-  oputs ("int_size:"); oputs (itoa (int_size)); oputs ("\n");
-  oputs ("ptr_size:"); oputs (itoa (ptr_size)); oputs ("\n");
-  oputs ("foo_size:"); oputs (itoa (foo_size)); oputs ("\n");
+  oputs ("int_size:");
+  oputs (itoa (int_size));
+  oputs ("\n");
+  oputs ("ptr_size:");
+  oputs (itoa (ptr_size));
+  oputs ("\n");
+  oputs ("foo_size:");
+  oputs (itoa (foo_size));
+  oputs ("\n");
   // FIXME: add *14, *18
 #if __i386__
   int foo_size_14 = 224;
@@ -92,81 +99,113 @@ main ()
   if (strcmp (*p, "foo\n"))
     return 14;
 
-  struct foo* pfoo = 0;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  struct foo *pfoo = 0;
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   pfoo++;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo != foo_size)
     return 15;
 
   pfoo--;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo)
     return 16;
 
   pfoo++;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo != foo_size)
     return 17;
 
   long one = 1;
   long two = 2;
   pfoo = pfoo - one;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo)
     return 18;
 
   pfoo = pfoo + one;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo != foo_size)
     return 19;
 
   pfoo -= one;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo)
     return 20;
 
   pfoo += one;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo != foo_size)
     return 21;
 
-  eputs ("&one: "); eputs (itoa (&one)); eputs ("\n");
-  eputs ("&two: "); eputs (itoa (&two)); eputs ("\n");
+  eputs ("&one: ");
+  eputs (itoa (&one));
+  eputs ("\n");
+  eputs ("&two: ");
+  eputs (itoa (&two));
+  eputs ("\n");
 
   if (&one - 1 != &two)
     return 22;
 
-  struct foo* sym = foo_size + foo_size;
+  struct foo *sym = foo_size + foo_size;
   int i = sym + 16;
-  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  eputs ("i=");
+  eputs (itoa (i));
+  eputs ("\n");
   if (i != foo_size_18)
     return 23;
 
   int d = 16;
   i = sym + d;
-  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  eputs ("i=");
+  eputs (itoa (i));
+  eputs ("\n");
   if (i != foo_size_18)
     return 24;
 
   i = sym - 16;
-  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  eputs ("i=");
+  eputs (itoa (i));
+  eputs ("\n");
   if (i != -foo_size_14)
     return 25;
 
   i = sym - d;
-  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  eputs ("i=");
+  eputs (itoa (i));
+  eputs ("\n");
   if (i != -foo_size_14)
     return 26;
 
-  i = sym - (struct foo*)foo_size;
-  eputs ("i="); eputs (itoa (i)); eputs ("\n");
+  i = sym - (struct foo *) foo_size;
+  eputs ("i=");
+  eputs (itoa (i));
+  eputs ("\n");
   if (i != 1)
     return 27;
 
   pfoo = sym + 1;
   pfoo -= sym;
-  eputs ("pfoo="); eputs (itoa (pfoo)); eputs ("\n");
+  eputs ("pfoo=");
+  eputs (itoa (pfoo));
+  eputs ("\n");
   if (pfoo != 1)
     return 28;
 

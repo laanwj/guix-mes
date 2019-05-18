@@ -78,9 +78,9 @@ off_t lseek (int fd, off_t offset, int whence);
 ssize_t read (int fd, void *buffer, size_t size);
 #if __SBRK_CHAR_PTRDIFF
 /* xmalloc in binutils <= 2.10.1 uses this old prototype */
-char * sbrk (ptrdiff_t delta);
+char *sbrk (ptrdiff_t delta);
 #else
-void * sbrk (intptr_t delta);
+void *sbrk (intptr_t delta);
 #endif
 int unlink (char const *file_name);
 ssize_t write (int filedes, void const *buffer, size_t size);

@@ -35,7 +35,7 @@ char g_arena[84];
 #if __MESC__
 struct scm *g_cells = g_arena;
 #else
-struct scm *g_cells = (struct scm*)g_arena;
+struct scm *g_cells = (struct scm *) g_arena;
 #endif
 char *g_chars = g_arena;
 
@@ -51,7 +51,7 @@ get ()
 int
 main ()
 {
-  char *p = (char*)g_chars;
+  char *p = (char *) g_chars;
   int i = 0;
 
   oputs ("\n: ");

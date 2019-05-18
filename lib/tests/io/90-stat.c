@@ -29,24 +29,24 @@
 
 struct stat
 {
-  unsigned long  st_dev;
-  unsigned long  st_ino;
+  unsigned long st_dev;
+  unsigned long st_ino;
   unsigned short st_mode;
   unsigned short st_nlink;
   unsigned short st_uid;
   unsigned short st_gid;
-  unsigned long  st_rdev;
-  long           st_size;
-  unsigned int   st_blksize;
-  unsigned int   st_blocks;
-  long           st_atime;
-  unsigned long  st_atime_usec;
-  long           st_mtime;
-  unsigned long  st_mtime_usec;
-  long           st_ctime;
-  unsigned long  st_ctime_usec;
-  unsigned int   __foo0;
-  unsigned int   __foo1;
+  unsigned long st_rdev;
+  long st_size;
+  unsigned int st_blksize;
+  unsigned int st_blocks;
+  long st_atime;
+  unsigned long st_atime_usec;
+  long st_mtime;
+  unsigned long st_mtime_usec;
+  long st_ctime;
+  unsigned long st_ctime_usec;
+  unsigned int __foo0;
+  unsigned int __foo1;
 };
 #endif
 
@@ -74,27 +74,55 @@ main ()
   if (r < 0)
     return 1;
 
-  eputs ("st_dev="); eputs (itoa (sbuf.st_dev)); eputs ("\n");
-  eputs ("st_ino="); eputs (itoa (sbuf.st_ino)); eputs ("\n");
-  eputs ("st_mode="); eputs (itoa (sbuf.st_mode)); eputs ("\n");
-  eputs ("st_nlink="); eputs (itoa (sbuf.st_nlink)); eputs ("\n");
-  eputs ("st_uid="); eputs (itoa (sbuf.st_uid)); eputs ("\n");
-  eputs ("st_gid="); eputs (itoa (sbuf.st_gid)); eputs ("\n");
-  eputs ("st_rdev="); eputs (itoa (sbuf.st_rdev)); eputs ("\n");
-  eputs ("st_size="); eputs (itoa (sbuf.st_size)); eputs ("\n");
+  eputs ("st_dev=");
+  eputs (itoa (sbuf.st_dev));
+  eputs ("\n");
+  eputs ("st_ino=");
+  eputs (itoa (sbuf.st_ino));
+  eputs ("\n");
+  eputs ("st_mode=");
+  eputs (itoa (sbuf.st_mode));
+  eputs ("\n");
+  eputs ("st_nlink=");
+  eputs (itoa (sbuf.st_nlink));
+  eputs ("\n");
+  eputs ("st_uid=");
+  eputs (itoa (sbuf.st_uid));
+  eputs ("\n");
+  eputs ("st_gid=");
+  eputs (itoa (sbuf.st_gid));
+  eputs ("\n");
+  eputs ("st_rdev=");
+  eputs (itoa (sbuf.st_rdev));
+  eputs ("\n");
+  eputs ("st_size=");
+  eputs (itoa (sbuf.st_size));
+  eputs ("\n");
 
-  eputs ("st_blksize="); eputs (itoa (sbuf.st_blksize)); eputs ("\n");
-  eputs ("st_blocks="); eputs (itoa (sbuf.st_blocks)); eputs ("\n");
+  eputs ("st_blksize=");
+  eputs (itoa (sbuf.st_blksize));
+  eputs ("\n");
+  eputs ("st_blocks=");
+  eputs (itoa (sbuf.st_blocks));
+  eputs ("\n");
 
-  eputs ("st_atime="); eputs (itoa (sbuf.st_atime)); eputs ("\n");
+  eputs ("st_atime=");
+  eputs (itoa (sbuf.st_atime));
+  eputs ("\n");
   //eputs ("st_atime_nsec="); eputs (itoa (sbuf.st_atime_nsec)); eputs ("\n");
 
-  eputs ("st_mtime="); eputs (itoa (sbuf.st_mtime)); eputs ("\n");
+  eputs ("st_mtime=");
+  eputs (itoa (sbuf.st_mtime));
+  eputs ("\n");
   //eputs ("st_mtime_nsec="); eputs (itoa (sbuf.st_mtime_nsec)); eputs ("\n");
 
-  eputs ("st_ctime="); eputs (itoa (sbuf.st_ctime)); eputs ("\n");
+  eputs ("st_ctime=");
+  eputs (itoa (sbuf.st_ctime));
+  eputs ("\n");
   //eputs ("st_ctime_nsec="); eputs (itoa (sbuf.st_ctime_nsec)); eputs ("\n");
 
-  eputs ("size:"); eputs (itoa (sizeof (struct stat))); eputs ("\n");
+  eputs ("size:");
+  eputs (itoa (sizeof (struct stat)));
+  eputs ("\n");
   return 0;
 }

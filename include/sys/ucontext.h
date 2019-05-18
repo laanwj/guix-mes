@@ -26,4 +26,3 @@
 #endif // (WITH_GLIBC)
 
 #endif // __MES_SYS_UCONTEXT_H
-

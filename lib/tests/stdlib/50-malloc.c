@@ -39,14 +39,14 @@ main (int argc, char *argv[])
   oputs (itoa (p));
   oputs ("\n");
   int i;
-  for (i = 0; i < size; i=i+1)
+  for (i = 0; i < size; i = i + 1)
     {
       oputs ("set ");
       oputs (itoa (i));
       oputs ("\n");
       p[i] = i;
     }
-  for (i = 0; i < size; i=i+1)
+  for (i = 0; i < size; i = i + 1)
     {
       oputs (itoa (i));
       oputs (": ");

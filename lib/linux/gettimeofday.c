@@ -23,5 +23,5 @@
 int
 gettimeofday (struct timeval *tv, struct timezone *tz)
 {
-  return _sys_call2 (SYS_gettimeofday, (long)tv, (long)tz);
+  return _sys_call2 (SYS_gettimeofday, (long) tv, (long) tz);
 }

@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 FILE *
-freopen (char const *file_name, char const *opentype, FILE *stream)
+freopen (char const *file_name, char const *opentype, FILE * stream)
 {
   fclose (stream);
   return fopen (file_name, opentype);

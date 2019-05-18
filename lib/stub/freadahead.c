@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 size_t
-freadahead (FILE *fp)
+freadahead (FILE * fp)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)

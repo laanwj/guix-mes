@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 int
-fflush (FILE *stream)
+fflush (FILE * stream)
 {
-  fsync ((int)stream);
+  fsync ((int) stream);
 }

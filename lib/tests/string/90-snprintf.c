@@ -28,8 +28,10 @@ int
 main ()
 {
   int n = snprintf (0, 0, "%s", "0123456");
-  eputs ("***n="); eputs (itoa (n)); eputs ("\n");
-  exit(n != 7);
+  eputs ("***n=");
+  eputs (itoa (n));
+  eputs ("\n");
+  exit (n != 7);
 
   /* if (n) */
   /*   return 1; */

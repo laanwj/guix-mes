@@ -21,5 +21,5 @@
 int
 rename (char const *old_name, char const *new_name)
 {
-  return _sys_call2 (SYS_rename, (long)old_name, (long)new_name);
+  return _sys_call2 (SYS_rename, (long) old_name, (long) new_name);
 }

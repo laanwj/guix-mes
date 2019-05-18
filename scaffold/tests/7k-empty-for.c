@@ -24,7 +24,7 @@ main ()
   int i = 1;
   for (;;)
     if (!i--)
-    break;
+      break;
 
   return i + 1;
 }

@@ -23,7 +23,7 @@ int foo[2], *bar;
 int
 main ()
 {
-  bar = foo+1;
+  bar = foo + 1;
   foo[0] = 1;
   *bar = 1;
   return *foo - bar[0];

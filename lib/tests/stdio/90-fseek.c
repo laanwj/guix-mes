@@ -30,7 +30,7 @@ main ()
   int fd = open ("COPYING", 0);
   if (fd <= 0)
     return 1;
-  FILE* f = fdopen (fd, "r");
+  FILE *f = fdopen (fd, "r");
   int r = fseek (f, 0, SEEK_CUR);
   if (r != 0)
     return 2;
@@ -43,14 +43,17 @@ main ()
     return 4;
 
   pos = ftell (f);
-  eputs ("size="); eputs (itoa (pos)); eputs ("\n");
+  eputs ("size=");
+  eputs (itoa (pos));
+  eputs ("\n");
   if (pos != 35147)
     return 5;
   r = fseek (f, 0, SEEK_SET);
 
   char buf[4096];
   fgets (buf, 200, f);
-  eputs ("buf:"); eputs (buf);
+  eputs ("buf:");
+  eputs (buf);
   if (strcmp (buf, "                    GNU GENERAL PUBLIC LICENSE\n"))
     return 6;
 

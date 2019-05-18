@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 int
-fprintf (FILE *stream, char const *format, ...)
+fprintf (FILE * stream, char const *format, ...)
 {
   va_list ap;
   va_start (ap, format);

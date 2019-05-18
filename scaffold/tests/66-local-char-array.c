@@ -46,33 +46,35 @@ calloc (size_t nmemb, size_t size)
 }
 
 /* {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'} */
-char little_endian_table[16] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46};
+char little_endian_table[16] =
+  { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46 };
 
-char*
-little_endian (unsigned value, char* c, int number_of_bytes)
+char *
+little_endian (unsigned value, char *c, int number_of_bytes)
 {
-  char table[16] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46};
+  char table[16] =
+    { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46 };
 
-  switch(number_of_bytes)
+  switch (number_of_bytes)
     {
     case 4:
       {
         c[6] = table[value >> 28];
-        c[7] = table[(value >> 24)% 16];
+        c[7] = table[(value >> 24) % 16];
       }
     case 3:
       {
-        c[4] = table[(value >> 20)% 16];
-        c[5] = table[(value >> 16)% 16];
+        c[4] = table[(value >> 20) % 16];
+        c[5] = table[(value >> 16) % 16];
       }
     case 2:
       {
-        c[2] = table[(value >> 12)% 16];
-        c[3] = table[(value >> 8)% 16];
+        c[2] = table[(value >> 12) % 16];
+        c[3] = table[(value >> 8) % 16];
       }
     case 1:
       {
-        c[0] = table[(value >> 4)% 16];
+        c[0] = table[(value >> 4) % 16];
         c[1] = table[value % 16];
         break;
       }
@@ -85,19 +87,25 @@ little_endian (unsigned value, char* c, int number_of_bytes)
 int
 main ()
 {
-  char table[3] = {'0', '1', '2'};
+  char table[3] = { '0', '1', '2' };
 
   char *s;
   s = calloc (10, sizeof (char));
-  eputs ("2="); eputs (little_endian (2, s, 1)); eputs ("\n");
+  eputs ("2=");
+  eputs (little_endian (2, s, 1));
+  eputs ("\n");
   if (strcmp (s, "02"))
     return 1;
 
-  eputs ("8="); eputs (little_endian (8, s, 2)); eputs ("\n");
+  eputs ("8=");
+  eputs (little_endian (8, s, 2));
+  eputs ("\n");
   if (strcmp (s, "0800"))
     return 2;
 
-  eputs ("16="); eputs (little_endian (16, s, 4)); eputs ("\n");
+  eputs ("16=");
+  eputs (little_endian (16, s, 4));
+  eputs ("\n");
   if (strcmp (s, "10000000"))
     return 3;
 

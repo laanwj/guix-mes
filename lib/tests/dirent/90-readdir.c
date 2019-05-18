@@ -26,9 +26,9 @@
 #include <string.h>
 
 int
-qsort_strcmp (void const* a, void const* b)
+qsort_strcmp (void const *a, void const *b)
 {
-  return strcmp (*((char**) a), *((char**) b));
+  return strcmp (*((char **) a), *((char **) b));
 }
 
 int
@@ -55,7 +55,7 @@ main ()
     return 6;
 
   int i = 0;
-  char* list[6] = {0};
+  char *list[6] = { 0 };
   struct dirent *entry = readdir (d);
   if (!entry)
     return 7;
@@ -96,10 +96,11 @@ main ()
     return 12;
 
   oputs ("\nls:\n");
-  qsort (list, 5, sizeof (char*), qsort_strcmp);
+  qsort (list, 5, sizeof (char *), qsort_strcmp);
   for (int i = 0; i < 5; i++)
     {
-      oputs (list[i]); oputs ("\n");
+      oputs (list[i]);
+      oputs ("\n");
     }
 
   if (strcmp (list[0], "."))

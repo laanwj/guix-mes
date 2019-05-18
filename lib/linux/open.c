@@ -21,7 +21,7 @@
 int
 _open3 (char const *file_name, int flags, int mask)
 {
-  int r = _sys_call3 (SYS_open, (long)file_name, (int)flags, (int)mask);
+  int r = _sys_call3 (SYS_open, (long) file_name, (int) flags, (int) mask);
   __ungetc_init ();
   if (r > 2)
     __ungetc_buf[r] = -1;

@@ -25,26 +25,29 @@
 #include <string.h>
 #include <stdlib.h>
 
-int main()
+int
+main ()
 {
-	FILE* test = fopen("tmp", "a+");
-	FILE* hold = fopen("tmp", "r");
-	int a;
-	int b;
-	int i = 1000;
-	do
-	{
-		a = fgetc(test);
-		b = fgetc(hold);
-		fprintf(stdout, "%c == %c\n", a, b);
-		if(i < 1000)
-		{
-			fflush(test);
-			fputc('a', test);
-		}
-		if(b == EOF) exit(EXIT_SUCCESS);
-		i = i + 1;
-	}while (a == b);
-	fprintf(stderr, "OOOPS you were not supposed to get here\n");
-	exit(EXIT_FAILURE);
+  FILE *test = fopen ("tmp", "a+");
+  FILE *hold = fopen ("tmp", "r");
+  int a;
+  int b;
+  int i = 1000;
+  do
+    {
+      a = fgetc (test);
+      b = fgetc (hold);
+      fprintf (stdout, "%c == %c\n", a, b);
+      if (i < 1000)
+        {
+          fflush (test);
+          fputc ('a', test);
+        }
+      if (b == EOF)
+        exit (EXIT_SUCCESS);
+      i = i + 1;
+    }
+  while (a == b);
+  fprintf (stderr, "OOOPS you were not supposed to get here\n");
+  exit (EXIT_FAILURE);
 }

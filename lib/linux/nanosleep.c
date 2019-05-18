@@ -19,8 +19,7 @@
  */
 
 int
-nanosleep (const struct timespec *requested_time,
-           struct timespec *remaining)
+nanosleep (const struct timespec *requested_time, struct timespec *remaining)
 {
-  return _sys_call2 (SYS_nanosleep, (long)requested_time, (long)remaining);
+  return _sys_call2 (SYS_nanosleep, (long) requested_time, (long) remaining);
 }

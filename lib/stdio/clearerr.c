@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 void
-clearerr (FILE *stream)
+clearerr (FILE * stream)
 {
   errno = 0;
 }

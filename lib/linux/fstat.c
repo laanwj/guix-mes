@@ -21,5 +21,5 @@
 int
 fstat (int filedes, struct stat *statbuf)
 {
-  return _sys_call2 (SYS_fstat, (int)filedes, (long)statbuf);
+  return _sys_call2 (SYS_fstat, (int) filedes, (long) statbuf);
 }

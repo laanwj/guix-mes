@@ -20,16 +20,26 @@
 
 #include <mes/lib.h>
 
-struct info {int flag;};
-struct foo {int length; char* string; struct info info;};
-struct foo stack[] = {{3, "foo", {11}},{4, "baar", {12}}};
+struct info
+{
+  int flag;
+};
+struct foo
+{
+  int length;
+  char *string;
+  struct info info;
+};
+struct foo stack[] = { {3, "foo", {11}}, {4, "baar", {12}} };
 
 int
 main ()
 {
-  oputs (stack[0].string); oputs ("\n");
-  oputs (stack[1].string); oputs ("\n");
-  struct foo* top = &stack[1];
+  oputs (stack[0].string);
+  oputs ("\n");
+  oputs (stack[1].string);
+  oputs ("\n");
+  struct foo *top = &stack[1];
   int i;
   int j;
   i = (top--)->info.flag;

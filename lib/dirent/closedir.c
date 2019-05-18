@@ -37,7 +37,7 @@
 /* Close the directory stream DIRP.
    Return 0 if successful, -1 if not.  */
 int
-closedir (DIR *dirp)
+closedir (DIR * dirp)
 {
   int filedes;
 

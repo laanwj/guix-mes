@@ -32,9 +32,9 @@
 #else // ! WITH_GLIBC
 
 #ifndef _IOFBF
-#define _IOFBF 0 /* Fully buffered.  */
-#define _IOLBF 1 /* Line buffered.  */
-#define _IONBF 2 /* No buffering.  */
+#define _IOFBF 0                /* Fully buffered.  */
+#define _IOLBF 1                /* Line buffered.  */
+#define _IONBF 2                /* No buffering.  */
 #endif
 
 #ifndef BUFSIZ
@@ -58,35 +58,35 @@
 FILE *fdopen (int fd, char const *mode);
 FILE *fopen (char const *file_name, char const *mode);
 int eputc (int c);
-int eputs (char const* s);
-int fclose (FILE *stream);
-int feof (FILE *stream);
-int ferror (FILE *stream);
-int fflush (FILE *stream);
-int fgetc (FILE* stream);
-char *fgets (char *s, int size, FILE *stream);
-int fprintf (FILE *stream, char const *format, ...);
-int fpurge (FILE *stream);
-int fputc (int c, FILE *stream);
-int fputs (char const* s, FILE *stream);
-int fseek (FILE *stream, long offset, int whence);
-int getc (FILE *stream);
+int eputs (char const *s);
+int fclose (FILE * stream);
+int feof (FILE * stream);
+int ferror (FILE * stream);
+int fflush (FILE * stream);
+int fgetc (FILE * stream);
+char *fgets (char *s, int size, FILE * stream);
+int fprintf (FILE * stream, char const *format, ...);
+int fpurge (FILE * stream);
+int fputc (int c, FILE * stream);
+int fputs (char const *s, FILE * stream);
+int fseek (FILE * stream, long offset, int whence);
+int getc (FILE * stream);
 int getchar (void);
 char *getlogin (void);
-int printf (char const* format, ...);
-int putc (int c, FILE* stream);
+int printf (char const *format, ...);
+int putc (int c, FILE * stream);
 int putchar (int c);
-int puts (char const* s);
+int puts (char const *s);
 int remove (char const *file_name);
-int setvbuf (FILE *stream, char *buf, int mode, size_t size);
-int snprintf(char *str,  size_t size,  char const *format, ...);
-int sprintf (char *str, char const* format, ...);
+int setvbuf (FILE * stream, char *buf, int mode, size_t size);
+int snprintf (char *str, size_t size, char const *format, ...);
+int sprintf (char *str, char const *format, ...);
 int sscanf (char const *str, const char *format, ...);
-int ungetc (int c, FILE* stream);
-long ftell (FILE *stream);
-size_t fread (void *ptr, size_t size, size_t count, FILE *stream);
-size_t freadahead (FILE *fp);
-size_t fwrite (void const *ptr, size_t size, size_t count, FILE *stream);
+int ungetc (int c, FILE * stream);
+long ftell (FILE * stream);
+size_t fread (void *ptr, size_t size, size_t count, FILE * stream);
+size_t freadahead (FILE * fp);
+size_t fwrite (void const *ptr, size_t size, size_t count, FILE * stream);
 
 #endif // ! WITH_GLIBC
 

@@ -31,20 +31,20 @@ qswap (void *a, void *b, size_t size)
 }
 
 size_t
-qpart (void *base, size_t count, size_t size, int (*compare)(void const *, void const *))
+qpart (void *base, size_t count, size_t size, int (*compare) (void const *, void const *))
 {
-  void* p = base + count*size;
+  void *p = base + count * size;
   size_t i = 0;
   for (size_t j = 0; j < count; j++)
     {
-      int c = compare (base+j*size, p);
+      int c = compare (base + j * size, p);
       if (c < 0)
         {
-#if 1 //__x86_64__
-          qswap (base+i*size, base+j*size, size);
+#if 1                           //__x86_64__
+          qswap (base + i * size, base + j * size, size);
 #else
-          int p1 = base+i*size;
-          int p2 = base+j*size;
+          int p1 = base + i * size;
+          int p2 = base + j * size;
           qswap (p1, p2, size);
 #endif
           i++;
@@ -52,23 +52,23 @@ qpart (void *base, size_t count, size_t size, int (*compare)(void const *, void 
       else if (c == 0)
         i++;
     }
-  if (compare (base+count*size, base+i*size) < 0)
-    qswap (base+i*size, base+count*size, size);
+  if (compare (base + count * size, base + i * size) < 0)
+    qswap (base + i * size, base + count * size, size);
   return i;
 }
 
 void
-qsort (void *base, size_t count, size_t size, int (*compare)(void const *, void const *))
+qsort (void *base, size_t count, size_t size, int (*compare) (void const *, void const *))
 {
   if (count > 1)
     {
-      int p = qpart (base, count-1, size, compare);
+      int p = qpart (base, count - 1, size, compare);
       qsort (base, p, size, compare);
-#if 1 //__x86_64__
-      qsort (base+p*size, count-p, size, compare);
+#if 1                           //__x86_64__
+      qsort (base + p * size, count - p, size, compare);
 #else
-      int p1 = base+p*size;
-      int p2 = count-p;
+      int p1 = base + p * size;
+      int p2 = count - p;
       qsort (p1, p2, size, compare);
 #endif
     }

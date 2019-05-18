@@ -28,29 +28,32 @@
 void
 add (void *ptab, int *nb_ptr, void *data)
 {
-    int nb, nb_alloc;
-    int **pp;
+  int nb, nb_alloc;
+  int **pp;
 
-    nb = *nb_ptr;
-    pp = *(void ***)ptab;
-    /* every power of two we double array size */
-    if ((nb & (nb - 1)) == 0) {
-        if (!nb)
-            nb_alloc = 1;
-        else
-            nb_alloc = nb * 2;
-          pp = realloc (pp, nb_alloc * sizeof(void *));
-        *(void***)ptab = pp;
+  nb = *nb_ptr;
+  pp = *(void ***) ptab;
+  /* every power of two we double array size */
+  if ((nb & (nb - 1)) == 0)
+    {
+      if (!nb)
+        nb_alloc = 1;
+      else
+        nb_alloc = nb * 2;
+      pp = realloc (pp, nb_alloc * sizeof (void *));
+      *(void ***) ptab = pp;
     }
-    pp[nb++] = data;
-    *nb_ptr = nb;
+  pp[nb++] = data;
+  *nb_ptr = nb;
 }
 
-typedef struct file4 {
+typedef struct file4
+{
   char name[4];
 } file4_struct;
 
-typedef struct file12 {
+typedef struct file12
+{
   int foo;
   int bar;
   char name[4];
@@ -59,7 +62,8 @@ typedef struct file12 {
 //#define file file4
 #define file file12
 
-struct state {
+struct state
+{
   int bla;
   char **paths;
   int path_count;
@@ -75,7 +79,7 @@ main ()
 {
   struct state *s = &g_s;
 
-  char* file_name = "file-name";
+  char *file_name = "file-name";
   struct file *file;
 
   file = malloc (sizeof (struct file) + strlen (file_name));
@@ -85,30 +89,56 @@ main ()
   char *path_name = "foo:bar:baz";
   add (&s->paths, &s->path_count, path_name);
 
-  if (strcmp (*s->paths, path_name)) return 1;
+  if (strcmp (*s->paths, path_name))
+    return 1;
 
-  eputs ("&PATHS="); eputs (itoa (&s->paths)); eputs ("\n");
-  eputs ("&FILES="); eputs (itoa (&s->files)); eputs ("\n");
+  eputs ("&PATHS=");
+  eputs (itoa (&s->paths));
+  eputs ("\n");
+  eputs ("&FILES=");
+  eputs (itoa (&s->files));
+  eputs ("\n");
 
   // struct file *fs;
   // eputs ("foo\n");
   // fs = s->files[0];
   struct file *fs = s->files[0];
-  eputs ("add s=   "); eputs (itoa (s)); eputs ("\n");
-  eputs ("add fs=  "); eputs (itoa (fs)); eputs ("\n");
-  eputs ("&fs->[0]="); eputs (itoa (fs->name)); eputs ("\n");
-  eputs ("fs->name="); eputs (fs->name); eputs ("\n");
+  eputs ("add s=   ");
+  eputs (itoa (s));
+  eputs ("\n");
+  eputs ("add fs=  ");
+  eputs (itoa (fs));
+  eputs ("\n");
+  eputs ("&fs->[0]=");
+  eputs (itoa (fs->name));
+  eputs ("\n");
+  eputs ("fs->name=");
+  eputs (fs->name);
+  eputs ("\n");
 
-  eputs ("ps=      "); eputs (itoa (s->paths)); eputs ("\n");
-  eputs ("*ps      "); eputs (*s->paths); eputs ("\n");
+  eputs ("ps=      ");
+  eputs (itoa (s->paths));
+  eputs ("\n");
+  eputs ("*ps      ");
+  eputs (*s->paths);
+  eputs ("\n");
 
-  if (strcmp (fs->name, file_name)) return 2;
+  if (strcmp (fs->name, file_name))
+    return 2;
 
-  eputs ("&fs->[0]="); eputs (itoa (fs->name)); eputs ("\n");
-  eputs ("fs->name="); eputs (fs->name); eputs ("\n");
+  eputs ("&fs->[0]=");
+  eputs (itoa (fs->name));
+  eputs ("\n");
+  eputs ("fs->name=");
+  eputs (fs->name);
+  eputs ("\n");
 
-  eputs ("ps=      "); eputs (itoa (s->paths)); eputs ("\n");
-  eputs ("*ps      "); eputs (*s->paths); eputs ("\n");
+  eputs ("ps=      ");
+  eputs (itoa (s->paths));
+  eputs ("\n");
+  eputs ("*ps      ");
+  eputs (*s->paths);
+  eputs ("\n");
 
 
   file = malloc (sizeof (struct file) + strlen (file_name));
@@ -119,28 +149,46 @@ main ()
   struct file **pf = s->files;
   fs = pf[0];
   eputs ("\n");
-  eputs ("&fs0*=    "); eputs (itoa (&pf[0])); eputs ("\n");
+  eputs ("&fs0*=    ");
+  eputs (itoa (&pf[0]));
+  eputs ("\n");
 
-  eputs ("fs0*=     "); eputs (itoa (fs)); eputs ("\n");
+  eputs ("fs0*=     ");
+  eputs (itoa (fs));
+  eputs ("\n");
   fs = s->files[0];
-  eputs ("fs0*=     "); eputs (itoa (fs)); eputs ("\n");
+  eputs ("fs0*=     ");
+  eputs (itoa (fs));
+  eputs ("\n");
   eputs ("\n");
 
   pf = s->files;
   fs = pf[1];
-  eputs ("&fs1*=    "); eputs (itoa (&pf[1])); eputs ("\n");
-  eputs ("fs1*=     "); eputs (itoa (fs)); eputs ("\n");
-  fs = s->files[1];
-  eputs ("fs1*=     "); eputs (itoa (fs)); eputs ("\n");
+  eputs ("&fs1*=    ");
+  eputs (itoa (&pf[1]));
   eputs ("\n");
-  if (strcmp (fs->name, file_name)) return 3;
+  eputs ("fs1*=     ");
+  eputs (itoa (fs));
+  eputs ("\n");
+  fs = s->files[1];
+  eputs ("fs1*=     ");
+  eputs (itoa (fs));
+  eputs ("\n");
+  eputs ("\n");
+  if (strcmp (fs->name, file_name))
+    return 3;
 
   fs = g_s.files[0];
-  eputs ("gfs0*=    "); eputs (itoa (fs)); eputs ("\n");
-  fs = g_s.files[1];
-  eputs ("gfs1*=    "); eputs (itoa (fs)); eputs ("\n");
+  eputs ("gfs0*=    ");
+  eputs (itoa (fs));
   eputs ("\n");
-  if (strcmp (fs->name, file_name)) return 3;
+  fs = g_s.files[1];
+  eputs ("gfs1*=    ");
+  eputs (itoa (fs));
+  eputs ("\n");
+  eputs ("\n");
+  if (strcmp (fs->name, file_name))
+    return 3;
 
 
   return 0;

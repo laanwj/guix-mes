@@ -21,5 +21,5 @@
 int
 access (char const *file_name, int how)
 {
-  return _sys_call2 (SYS_access, (long)file_name, (int)how);
+  return _sys_call2 (SYS_access, (long) file_name, (int) how);
 }

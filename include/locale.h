@@ -38,7 +38,7 @@
 #endif
 // *INDENT-ON*
 
-char * setlocale (int category, char const *locale);
+char *setlocale (int category, char const *locale);
 
 #endif // ! WITH_GLIBC
 

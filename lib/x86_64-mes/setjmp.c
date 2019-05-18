@@ -23,18 +23,18 @@
 void
 longjmp (jmp_buf env, int val)
 {
-#if 0 //MES_CCAMD64
+#if 0                           //MES_CCAMD64
   asm ("push___%rdi");
 #endif
   val = val == 0 ? 1 : val;
-#if 0 //MES_CCAMD64
+#if 0                           //MES_CCAMD64
   asm ("pop____%rdi");
   asm ("mov____0x8(%rdi),%rbp !0x00");  // env->__bp
   asm ("mov____0x8(%rdi),%rbx !0x08");  // env->__pc
   asm ("mov____0x8(%rdi),%rsp !0x10");  // env->__sp
-  asm ("jmp____*%rbx");                 // jmp *PC
+  asm ("jmp____*%rbx");         // jmp *PC
 #else
-  asm ("mov____0x8(%rbp),%rbp !0x10"); // env*
+  asm ("mov____0x8(%rbp),%rbp !0x10");  // env*
 
   asm ("mov____0x8(%rbp),%rbx !0x08");  // env.__pc
   asm ("mov____0x8(%rbp),%rsp !0x10");  // env.__sp
@@ -46,9 +46,9 @@ longjmp (jmp_buf env, int val)
 }
 
 int
-setjmp (__jmp_buf *env)
+setjmp (__jmp_buf * env)
 {
-#if 0 //MES_CCAMD64
+#if 0                           //MES_CCAMD64
   asm ("mov____%rbp,%rax");
   asm ("add____$i32,%rax %0x80");
 
@@ -62,10 +62,10 @@ setjmp (__jmp_buf *env)
   asm ("add____$i32,%rsi %0x10");
   asm ("mov____%rsi,0x8(%rdi) !0x10");
 #else
-  long *p = (long*)&env;
+  long *p = (long *) &env;
   env[0].__bp = p[-2];
   env[0].__pc = p[-1];
-  env[0].__sp = (long)&env;
+  env[0].__sp = (long) &env;
 #endif
   return 0;
 }

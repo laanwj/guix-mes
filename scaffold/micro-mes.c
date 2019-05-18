@@ -35,10 +35,10 @@ int g_free = 0;
 
 SCM g_symbols = 0;
 SCM g_stack = 0;
-SCM r0 = 0; // a/env
-SCM r1 = 0; // param 1
-SCM r2 = 0; // save 2+load/dump
-SCM r3 = 0; // continuation
+SCM r0 = 0;                     // a/env
+SCM r1 = 0;                     // param 1
+SCM r2 = 0;                     // save 2+load/dump
+SCM r3 = 0;                     // continuation
 
 SCM
 mes_environment ()
@@ -47,7 +47,7 @@ mes_environment ()
 }
 
 SCM
-bload_env (SCM a) ///((internal))
+bload_env (SCM a)               ///((internal))
 {
   eputs ("bload_env\n");
   return 0;
@@ -57,7 +57,7 @@ int
 main (int argc, char *argv[])
 {
 #if __GNUC__
-  g_debug = (int)getenv ("MES_DEBUG");
+  g_debug = (int) getenv ("MES_DEBUG");
 #endif
   //if (getenv ("MES_ARENA")) ARENA_SIZE = atoi (getenv ("MES_ARENA"));
 

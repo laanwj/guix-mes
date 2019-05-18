@@ -21,7 +21,7 @@
 #include <mes/lib.h>
 
 int
-eputs (char const* s)
+eputs (char const *s)
 {
   int i = strlen (s);
   write (__stderr, s, i);

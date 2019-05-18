@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 int
-fgetc (FILE *stream)
+fgetc (FILE * stream)
 {
-  return fdgetc ((long)stream);
+  return fdgetc ((long) stream);
 }

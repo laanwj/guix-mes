@@ -27,12 +27,14 @@ main ()
   strcpy (buf, "foo");
 
   strcat (buf, " bar");
-  eputs (buf); eputs ("\n");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, "foo bar"))
-   return 1;
+    return 1;
 
   strncat (buf, " bazzzz", 4);
-  eputs (buf); eputs ("\n");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, "foo bar baz"))
     return 2;
 

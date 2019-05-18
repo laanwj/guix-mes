@@ -41,9 +41,9 @@ longjmp (jmp_buf env, int val)
 int
 setjmp (jmp_buf env)
 {
-  long *p = (long*)&env;
+  long *p = (long *) &env;
   env[0].__bp = p[-2];
   env[0].__pc = p[-1];
-  env[0].__sp = (long)&env;
+  env[0].__sp = (long) &env;
   return 0;
 }

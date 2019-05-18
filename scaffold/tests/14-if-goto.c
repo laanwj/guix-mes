@@ -24,10 +24,10 @@ main ()
   if (0 == 0)
     goto ok;
   return 1;
- ok:
+ok:
   if (0 != 1)
     goto ok1;
   return 1;
- ok1:
+ok1:
   return 0;
 }

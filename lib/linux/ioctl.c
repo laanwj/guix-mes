@@ -24,7 +24,7 @@ ioctl (int filedes, unsigned long command, ...)
   va_list ap;
   va_start (ap, command);
   int data = va_arg (ap, int);
-  int r = _sys_call3 (SYS_ioctl, (int)filedes, (long)command, (int)data);
+  int r = _sys_call3 (SYS_ioctl, (int) filedes, (long) command, (int) data);
   va_end (ap);
   return r;
 }

@@ -25,14 +25,18 @@ main ()
 {
   char *s = "int";
   char c = s[0];
-  if (c != 'i') return 1;
-  int i = ((unsigned char *)s)[0];
-  if (i != 'i') return 2;
+  if (c != 'i')
+    return 1;
+  int i = ((unsigned char *) s)[0];
+  if (i != 'i')
+    return 2;
 
   c = s[1];
-  if (c != 'n') return 3;
-  i = ((unsigned char *)s)[1];
-  if (i != 'n') return 3;
+  if (c != 'n')
+    return 3;
+  i = ((unsigned char *) s)[1];
+  if (i != 'n')
+    return 3;
 
   return 0;
 }

@@ -79,83 +79,84 @@ main (int c)
     goto ok0;
 
   return 111;
- ok0:
+ok0:
 
   oputs ("t: if (0); return 1; else;\n");
   if (0)
-    return 12; else
+    return 12;
+  else
     goto ok1;
- ok1:
+ok1:
 
   oputs ("t: if (t)\n");
   if (t)
     goto ok2;
 
   return 13;
- ok2:
+ok2:
 
   oputs ("t: if (one > 0)\n");
   if (one > 0)
     goto ok3;
 
   return 14;
- ok3:
+ok3:
 
   oputs ("t: if (one < 2)\n");
   if (one < 2)
     goto ok4;
 
   return 15;
- ok4:
+ok4:
 
   oputs ("t: if (one >= 0)\n");
   if (one >= 0)
     goto ok5;
 
   return 16;
- ok5:
+ok5:
 
   oputs ("t: if (one >= 1)\n");
   if (one >= 0)
     goto ok6;
 
   return 17;
- ok6:
+ok6:
 
   oputs ("t: if (one <= 2)\n");
   if (one <= 2)
     goto ok7;
 
   return 18;
- ok7:
+ok7:
 
   oputs ("t: if (one <= 1)\n");
   if (one <= 1)
     goto ok8;
 
   return 19;
- ok8:
+ok8:
 
   oputs ("t: if (!0)\n");
   if (!0)
     goto ok9;
 
   return 20;
- ok9:
+ok9:
 
   oputs ("t: if (one == 1)\n");
   if (one == 1)
     goto ok10;
 
   return 21;
- ok10:
+ok10:
 
   oputs ("t: if (one != 0)\n");
   if (one != 0)
     goto ok11;
 
   return 22;
- ok11:
+ok11:
   ;
 
   int m1 = -1;

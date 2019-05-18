@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 int
-dump (char const *name, char const* contents)
+dump (char const *name, char const *contents)
 {
   unlink (name);
   FILE *f = fopen (name, "w");
@@ -40,7 +40,7 @@ main ()
 {
   char *line = "The first line.\n";
   char *contents = "The first line.\nThe second line.\nThe last line.\n";
-  char* end = "That's all folks!\n";
+  char *end = "That's all folks!\n";
 
   char *tmp = "foo";
 
@@ -53,7 +53,9 @@ main ()
   char buf[80];
   memset (buf, 0, sizeof (buf));
   fread (buf, strlen (line), 1, t);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, line))
     return 2;
 
@@ -62,7 +64,9 @@ main ()
   fseek (t, 0, SEEK_SET);
   memset (buf, 0, sizeof (buf));
   fread (buf, strlen (line), 1, t);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, line))
     return 3;
 
@@ -76,7 +80,9 @@ main ()
   fseek (t, 0, SEEK_SET);
   memset (buf, 0, sizeof (buf));
   fread (buf, strlen (end), 1, t);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, end))
     return 5;
 
@@ -98,7 +104,9 @@ main ()
   fseek (t, 0, SEEK_SET);
   memset (buf, 0, sizeof (buf));
   fread (buf, strlen (line), 1, t);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, line))
     return 8;
 
@@ -106,7 +114,9 @@ main ()
 
   fseek (t, 0, SEEK_SET);
   fread (buf, strlen (line), 1, t);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, line))
     return 9;
 

@@ -23,8 +23,8 @@ struct foo
   int bar;
 };
 
-struct foo*
-test (struct foo* f)
+struct foo *
+test (struct foo *f)
 {
   void (*fun) () = test;
   return f;
@@ -33,7 +33,7 @@ test (struct foo* f)
 int
 main ()
 {
-  struct foo f = {1};
+  struct foo f = { 1 };
   int i = test (&f)->bar;
   return test (&f)->bar - i;
 }

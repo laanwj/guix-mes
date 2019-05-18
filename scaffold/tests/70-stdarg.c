@@ -23,7 +23,7 @@
 
 int
 //stdarg1 (long one, ...)
-stdarg1 (long* one, ...)
+stdarg1 (long *one, ...)
 {
   va_list ap;
   char c;
@@ -37,7 +37,9 @@ stdarg1 (long* one, ...)
 #endif
   c = va_arg (ap, char);
   r = c;
-  eputs ("c:"); eputs (itoa (c)); eputs ("\n");
+  eputs ("c:");
+  eputs (itoa (c));
+  eputs ("\n");
 
   va_end (ap);
   return r;
@@ -45,7 +47,7 @@ stdarg1 (long* one, ...)
 
 int
 ///stdarg2 (long one, long two, ...)
-stdarg2 (long* one, long* two, ...)
+stdarg2 (long *one, long *two, ...)
 {
   va_list ap;
   char c;
@@ -59,7 +61,9 @@ stdarg2 (long* one, long* two, ...)
 #endif
   c = va_arg (ap, char);
   r = c;
-  eputs ("c:"); eputs (itoa (c)); eputs ("\n");
+  eputs ("c:");
+  eputs (itoa (c));
+  eputs ("\n");
 
   va_end (ap);
   return r;
@@ -67,7 +71,7 @@ stdarg2 (long* one, long* two, ...)
 
 int
 //stdarg3 (long one, long two, long three, ...)
-stdarg3 (long *one, long* two, long* three, ...)
+stdarg3 (long *one, long *two, long *three, ...)
 {
   va_list ap;
   char c;
@@ -81,7 +85,9 @@ stdarg3 (long *one, long* two, long* three, ...)
 #endif
   c = va_arg (ap, char);
   r = c;
-  eputs ("c:"); eputs (itoa (c)); eputs ("\n");
+  eputs ("c:");
+  eputs (itoa (c));
+  eputs ("\n");
 
   va_end (ap);
   return r;

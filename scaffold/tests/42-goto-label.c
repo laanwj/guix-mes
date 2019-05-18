@@ -23,7 +23,7 @@
 int
 label (int c)
 {
- label:
+label:
   if (c == 0)
     return c;
   c--;

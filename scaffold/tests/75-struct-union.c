@@ -21,7 +21,8 @@
 #include <mes/lib.h>
 #include <stdio.h>
 
-union u {
+union u
+{
   int bar;
   int baz;
 };
@@ -33,7 +34,8 @@ struct foo
 
 struct anon
 {
-  union {
+  union
+  {
     int bar;
     int baz;
   };
@@ -43,17 +45,21 @@ struct anon
 int
 main ()
 {
-  struct foo f = {2};
+  struct foo f = { 2 };
   printf ("f.u.bar=%d\n", f.u.bar);
-  if (f.u.bar != 2) return 1;
+  if (f.u.bar != 2)
+    return 1;
   printf ("f.u.baz=%d\n", f.u.baz);
-  if (f.u.baz != 2) return 1;
+  if (f.u.baz != 2)
+    return 1;
 
-  struct anon a = {2};
+  struct anon a = { 2 };
   printf ("a.bar=%d\n", a.bar);
-  if (a.bar != 2) return 1;
+  if (a.bar != 2)
+    return 1;
   printf ("a.baz=%d\n", a.baz);
-  if (a.baz != 2) return 1;
-  
+  if (a.baz != 2)
+    return 1;
+
   return 0;
 }

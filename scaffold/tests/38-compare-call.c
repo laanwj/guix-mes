@@ -20,7 +20,9 @@
 
 #include <mes/lib-mini.h>
 
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART};
+enum type_t
+{ TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING,
+    TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART };
 
 int
 add (int a, int b)
@@ -102,13 +104,13 @@ main ()
   if (strlen ("."))
     goto ok1;
   return 11;
- ok1:
+ok1:
 
   oputs ("t: if (strlen (p) == 3)\n");
   if (strlen (p) == 3)
     goto ok2;
   return 12;
- ok2:
+ok2:
 
   return 0;
 }

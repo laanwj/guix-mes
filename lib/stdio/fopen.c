@@ -28,19 +28,21 @@
 #define open _open3
 #endif
 
-FILE*
+FILE *
 fopen (char const *file_name, char const *opentype)
 {
   if (__mes_debug ())
     {
-      eputs ("fopen "); eputs (file_name);
-      eputs (" "); eputs (opentype); eputs ("\n");
+      eputs ("fopen ");
+      eputs (file_name);
+      eputs (" ");
+      eputs (opentype);
+      eputs ("\n");
     }
 
   int fd;
   int mode = 0600;
-  if ((opentype[0] == 'a' || !strcmp (opentype, "r+"))
-      && !access (file_name, O_RDONLY))
+  if ((opentype[0] == 'a' || !strcmp (opentype, "r+")) && !access (file_name, O_RDONLY))
     {
       int flags = O_RDWR;
       if (opentype[0] == 'a')
@@ -58,7 +60,9 @@ fopen (char const *file_name, char const *opentype)
 
   if (__mes_debug ())
     {
-      eputs (" => fd="); eputs (itoa (fd)); eputs ("\n");
+      eputs (" => fd=");
+      eputs (itoa (fd));
+      eputs ("\n");
     }
 
   if (!fd)
@@ -68,7 +72,7 @@ fopen (char const *file_name, char const *opentype)
     }
   if (fd < 0)
     fd = 0;
-  return (FILE*)fd;
+  return (FILE *) fd;
 }
 
 #undef open

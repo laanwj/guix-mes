@@ -69,35 +69,35 @@ main ()
   if (*g_chars == 'B')
     goto ok1;
   return 1;
-  ok1:
+ok1:
 
   oputs ("t: *x == 'B'\n");
   x = g_arena;
   if (*x == 'B')
     goto ok2;
   return 1;
- ok2:
+ok2:
 
   oputs ("t: *y == 'B'\n");
   y = g_chars;
   if (*y == 'B')
     goto ok3;
   return 1;
- ok3:
+ok3:
 
   oputs ("t: *x == 'R'\n");
   g_chars[0] = 'R';
   if (*x == 'R')
     goto ok4;
   return 1;
- ok4:
+ok4:
 
   oputs ("t: *x++ == 'C'\n");
   *x++ = c;
   if (*g_chars == 'C')
     goto ok5;
   return 1;
- ok5:
+ok5:
 
   return 0;
 }

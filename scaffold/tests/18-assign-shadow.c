@@ -24,7 +24,9 @@ int
 main ()
 {
   int c = 0;
-  {int c = 3;}
+  {
+    int c = 3;
+  }
   if (c)
     return 1;
 

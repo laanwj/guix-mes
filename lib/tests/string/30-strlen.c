@@ -26,7 +26,7 @@ main ()
   if (strlen ("mes") == 3)
     goto ok;
   return 1;
- ok:
+ok:
   if (strlen ("mes") != 3)
     return 1;
   return 0;

@@ -32,7 +32,7 @@ main ()
   assert (1);
 
   puts ("t: assert (f==0) ?\n");
-  assert (f==0);
+  assert (f == 0);
 
   return 0;
 }

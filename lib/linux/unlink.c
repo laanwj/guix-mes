@@ -21,5 +21,5 @@
 int
 unlink (char const *file_name)
 {
-  return _sys_call1 (SYS_unlink, (long)file_name);
+  return _sys_call1 (SYS_unlink, (long) file_name);
 }

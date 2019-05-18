@@ -21,5 +21,5 @@
 off_t
 lseek (int filedes, off_t offset, int whence)
 {
-  return _sys_call3 (SYS_lseek, (int)filedes, (long)offset, (int)whence);
+  return _sys_call3 (SYS_lseek, (int) filedes, (long) offset, (int) whence);
 }

@@ -21,5 +21,5 @@
 int
 getrusage (int processes, struct rusage *rusage)
 {
-  return _sys_call2 (SYS_getrusage, (int)processes, (long)rusage);
+  return _sys_call2 (SYS_getrusage, (int) processes, (long) rusage);
 }

@@ -78,13 +78,13 @@ main ()
   if (1 == inc (0))
     goto ok0;
   return 10;
- ok0:
+ok0:
 
   oputs ("t: 0 < inc (0)\n");
   if (0 < inc (0))
     goto ok1;
   return 11;
- ok1:
+ok1:
 
   oputs ("t: inc (0) + 2 != 3\n");
   if (inc (0) + inc (1) != 3)
@@ -92,7 +92,7 @@ main ()
 
   oputs ("t: 4/2=");
   i = 4 / 2;
-  if (i!=2)
+  if (i != 2)
     return 13;
   i += 48;
   putchar (i);
@@ -100,17 +100,17 @@ main ()
 
   oputs ("t: 3*4=\n");
   i = 3 * 4;
-  if (i!=12)
+  if (i != 12)
     return 14;
 
   oputs ("t: i /= 4\n");
   i /= 4;
-  if (i!=3)
+  if (i != 3)
     return 15;
 
   oputs ("t: i *= 4\n");
   i *= 4;
-  if (i!=12)
+  if (i != 12)
     return 16;
 
   oputs ("t: 1 << 3\n");
@@ -159,11 +159,11 @@ main ()
     return 27;
 
   oputs ("t: 3 == 3\n");
-  if ((3 == 3) !=  1)
+  if ((3 == 3) != 1)
     return 28;
 
   oputs ("t: 3 != 3\n");
-  if ((3 != 3) !=  0)
+  if ((3 != 3) != 0)
     return 29;
 
   oputs ("t: 011 == 15\n");
@@ -171,7 +171,7 @@ main ()
     return 30;
 
   oputs ("t: 0b11 == 3\n");
-  if (0b11 != 3)
+  if (0 b11 != 3)
     return 31;
 
   oputs ("t: 0x11 == 3\n");

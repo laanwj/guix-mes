@@ -25,7 +25,7 @@
 static int sint;
 static int sint2, sint3;
 typedef unsigned int size;
-static void*
+static void *
 test (size u)
 {
   void *r;
@@ -37,7 +37,7 @@ static int i = 2;
 int
 main ()
 {
-  void (*foo)() = &test;
+  void (*foo) () = &test;
   test (0);
   return 0;
 }

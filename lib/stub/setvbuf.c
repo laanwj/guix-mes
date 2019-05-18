@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 int
-setvbuf (FILE *stream, char *buf, int mode, size_t size)
+setvbuf (FILE * stream, char *buf, int mode, size_t size)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)

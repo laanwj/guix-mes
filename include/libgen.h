@@ -28,7 +28,7 @@
 #include_next <libgen.h>
 
 #else // ! WITH_GLIBC
-char* dirname (char*);
+char *dirname (char *);
 #endif // ! WITH_GLIBC
 
 #endif // __MES_LIBGEN_H

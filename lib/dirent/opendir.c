@@ -47,12 +47,12 @@ opendir (char const *name)
   if (name[0] == '\0')
     {
       /* POSIX.1-1990 says an empty name gets ENOENT;
-	 but `open' might like it fine.  */
+         but `open' might like it fine.  */
       errno = ENOENT;
       return 0;
     }
 
-  fd = open (name, O_RDONLY|O_DIRECTORY);
+  fd = open (name, O_RDONLY | O_DIRECTORY);
   if (fd < 0)
     return 0;
 

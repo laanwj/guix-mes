@@ -22,7 +22,7 @@
 #include <string.h>
 
 int
-strcmp (char const* a, char const* b)
+strcmp (char const *a, char const *b)
 {
   while (*a && *b && *a == *b)
     {

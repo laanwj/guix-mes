@@ -28,7 +28,9 @@ main (int argc, char *argv[])
 {
   oputs ("\n");
   oputs ("t: argv[0] == \"scaffold/test....\"\n");
-  oputs ("argv0="); oputs (argv[0]); oputs ("\n");
+  oputs ("argv0=");
+  oputs (argv[0]);
+  oputs ("\n");
   if (strncmp (argv[0], "scaffold/test", 5))
     return 1;
 

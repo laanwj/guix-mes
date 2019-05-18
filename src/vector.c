@@ -23,8 +23,8 @@ make_vector__ (long k)
 {
   SCM v = alloc (k);
   SCM x = make_cell__ (TVECTOR, k, v);
-  for (long i=0; i<k; i++)
-    g_cells[v+i] = g_cells[vector_entry (cell_unspecified)];
+  for (long i = 0; i < k; i++)
+    g_cells[v + i] = g_cells[vector_entry (cell_unspecified)];
   return x;
 }
 
@@ -75,7 +75,7 @@ vector_set_x_ (SCM x, long i, SCM e)
 {
   assert (TYPE (x) == TVECTOR);
   assert (i < LENGTH (x));
-  g_cells[VECTOR (x)+i] = g_cells[vector_entry (e)];
+  g_cells[VECTOR (x) + i] = g_cells[vector_entry (e)];
   return cell_unspecified;
 }
 
@@ -105,7 +105,7 @@ vector_to_list (SCM v)
   SCM x = cell_nil;
   for (long i = LENGTH (v); i; i--)
     {
-      SCM e = VECTOR (v)+i-1;
+      SCM e = VECTOR (v) + i - 1;
       if (TYPE (e) == TREF)
         e = REF (e);
       x = cons (e, x);

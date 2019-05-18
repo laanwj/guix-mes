@@ -23,9 +23,9 @@
 size_t bytes_cells (size_t length);
 
 SCM
-gc_up_arena () ///((internal))
+gc_up_arena ()                  ///((internal))
 {
-  long old_arena_bytes = (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm);
+  long old_arena_bytes = (ARENA_SIZE + JAM_SIZE) * sizeof (struct scm);
   if (ARENA_SIZE >> 1 < MAX_ARENA_SIZE >> 2)
     {
       ARENA_SIZE <<= 1;
@@ -33,9 +33,9 @@ gc_up_arena () ///((internal))
       GC_SAFETY <<= 1;
     }
   else
-    ARENA_SIZE = MAX_ARENA_SIZE -JAM_SIZE;
-  long arena_bytes = (ARENA_SIZE+JAM_SIZE)*sizeof (struct scm);
-  void *p = realloc (g_cells-1, arena_bytes+STACK_SIZE*sizeof (SCM));
+    ARENA_SIZE = MAX_ARENA_SIZE - JAM_SIZE;
+  long arena_bytes = (ARENA_SIZE + JAM_SIZE) * sizeof (struct scm);
+  void *p = realloc (g_cells - 1, arena_bytes + STACK_SIZE * sizeof (SCM));
   if (!p)
     {
       eputs ("realloc failed, g_free=");
@@ -46,15 +46,15 @@ gc_up_arena () ///((internal))
       assert (0);
       exit (1);
     }
-  g_cells = (struct scm*)p;
-  memcpy (p + arena_bytes, p + old_arena_bytes, STACK_SIZE*sizeof (SCM));
+  g_cells = (struct scm *) p;
+  memcpy (p + arena_bytes, p + old_arena_bytes, STACK_SIZE * sizeof (SCM));
   g_cells++;
 
   return 0;
 }
 
 void
-gc_flip () ///((internal))
+gc_flip ()                      ///((internal))
 {
   if (g_debug > 2)
     {
@@ -64,22 +64,21 @@ gc_flip () ///((internal))
     }
   if (g_free > JAM_SIZE)
     JAM_SIZE = g_free + g_free / 2;
-  memcpy (g_cells-1, g_news-1, (g_free+2)*sizeof (struct scm));
+  memcpy (g_cells - 1, g_news - 1, (g_free + 2) * sizeof (struct scm));
 }
 
 SCM
-gc_copy (SCM old) ///((internal))
+gc_copy (SCM old)               ///((internal))
 {
   if (TYPE (old) == TBROKEN_HEART)
     return g_cells[old].car;
   SCM new = g_free++;
   g_news[new] = g_cells[old];
-  if (NTYPE (new) == TSTRUCT
-      || NTYPE (new) == TVECTOR)
+  if (NTYPE (new) == TSTRUCT || NTYPE (new) == TVECTOR)
     {
       NVECTOR (new) = g_free;
-      for (long i=0; i<LENGTH (old); i++)
-        g_news[g_free++] = g_cells[VECTOR (old)+i];
+      for (long i = 0; i < LENGTH (old); i++)
+        g_news[g_free++] = g_cells[VECTOR (old) + i];
     }
   else if (NTYPE (new) == TBYTES)
     {
@@ -91,10 +90,18 @@ gc_copy (SCM old) ///((internal))
 
       if (g_debug > 4)
         {
-          eputs ("gc copy bytes: "); eputs (src); eputs ("\n");
-          eputs ("    length: "); eputs (itoa (LENGTH (old))); eputs ("\n");
-          eputs ("    nlength: "); eputs (itoa (NLENGTH (new))); eputs ("\n");
-          eputs ("        ==> "); eputs (dest); eputs ("\n");
+          eputs ("gc copy bytes: ");
+          eputs (src);
+          eputs ("\n");
+          eputs ("    length: ");
+          eputs (itoa (LENGTH (old)));
+          eputs ("\n");
+          eputs ("    nlength: ");
+          eputs (itoa (NLENGTH (new)));
+          eputs ("\n");
+          eputs ("        ==> ");
+          eputs (dest);
+          eputs ("\n");
         }
     }
   TYPE (old) = TBROKEN_HEART;
@@ -103,49 +110,36 @@ gc_copy (SCM old) ///((internal))
 }
 
 SCM
-gc_relocate_car (SCM new, SCM car) ///((internal))
+gc_relocate_car (SCM new, SCM car)      ///((internal))
 {
   g_news[new].car = car;
   return cell_unspecified;
 }
 
 SCM
-gc_relocate_cdr (SCM new, SCM cdr) ///((internal))
+gc_relocate_cdr (SCM new, SCM cdr)      ///((internal))
 {
   g_news[new].cdr = cdr;
   return cell_unspecified;
 }
 
 void
-gc_loop (SCM scan) ///((internal))
+gc_loop (SCM scan)              ///((internal))
 {
   SCM car;
   SCM cdr;
   while (scan < g_free)
     {
       if (NTYPE (scan) == TBROKEN_HEART)
-        error (cell_symbol_system_error,  cstring_to_symbol ("gc"));
-      if (NTYPE (scan) == TMACRO
-          || NTYPE (scan) == TPAIR
-          || NTYPE (scan) == TREF
-          || scan == 1 // null
+        error (cell_symbol_system_error, cstring_to_symbol ("gc"));
+      if (NTYPE (scan) == TMACRO || NTYPE (scan) == TPAIR || NTYPE (scan) == TREF || scan == 1  // null
           || NTYPE (scan) == TVARIABLE)
         {
           car = gc_copy (g_news[scan].car);
           gc_relocate_car (scan, car);
         }
-      if ((NTYPE (scan) == TCLOSURE
-           || NTYPE (scan) == TCONTINUATION
-           || NTYPE (scan) == TKEYWORD
-           || NTYPE (scan) == TMACRO
-           || NTYPE (scan) == TPAIR
-           || NTYPE (scan) == TPORT
-           || NTYPE (scan) == TSPECIAL
-           || NTYPE (scan) == TSTRING
-           || NTYPE (scan) == TSYMBOL
-           || scan == 1 // null
-           || NTYPE (scan) == TVALUES)
-          && g_news[scan].cdr) // allow for 0 terminated list of symbols
+      if ((NTYPE (scan) == TCLOSURE || NTYPE (scan) == TCONTINUATION || NTYPE (scan) == TKEYWORD || NTYPE (scan) == TMACRO || NTYPE (scan) == TPAIR || NTYPE (scan) == TPORT || NTYPE (scan) == TSPECIAL || NTYPE (scan) == TSTRING || NTYPE (scan) == TSYMBOL || scan == 1     // null
+           || NTYPE (scan) == TVALUES) && g_news[scan].cdr)     // allow for 0 terminated list of symbols
         {
           cdr = gc_copy (g_news[scan].cdr);
           gc_relocate_cdr (scan, cdr);
@@ -166,7 +160,7 @@ gc_check ()
 }
 
 SCM
-gc_init_news () ///((internal))
+gc_init_news ()                 ///((internal))
 {
   g_news = g_cells + g_free;
   NTYPE (0) = TVECTOR;
@@ -179,7 +173,7 @@ gc_init_news () ///((internal))
 }
 
 SCM
-gc_ () ///((internal))
+gc_ ()                          ///((internal))
 {
   gc_init_news ();
   if (g_debug == 2)
@@ -195,7 +189,7 @@ gc_ () ///((internal))
   g_free = 1;
 
 #if __MESC__
-  if (ARENA_SIZE < MAX_ARENA_SIZE && (long)g_news > 0)
+  if (ARENA_SIZE < MAX_ARENA_SIZE && (long) g_news > 0)
 #else
   if (ARENA_SIZE < MAX_ARENA_SIZE && g_news > 0)
 #endif
@@ -205,9 +199,9 @@ gc_ () ///((internal))
       if (g_debug > 2)
         {
           eputs (" up[");
-          eputs (itoa ((unsigned long)g_cells));
+          eputs (itoa ((unsigned long) g_cells));
           eputs (",");
-          eputs (itoa ((unsigned long)g_news));
+          eputs (itoa ((unsigned long) g_news));
           eputs (":");
           eputs (itoa (ARENA_SIZE));
           eputs (",");
@@ -217,14 +211,14 @@ gc_ () ///((internal))
       gc_up_arena ();
     }
 
-  for (long i=g_free; i<g_symbol_max; i++)
+  for (long i = g_free; i < g_symbol_max; i++)
     gc_copy (i);
   g_symbols = gc_copy (g_symbols);
   g_macros = gc_copy (g_macros);
   g_ports = gc_copy (g_ports);
   m0 = gc_copy (m0);
-  for (long i=g_stack; i<STACK_SIZE; i++)
-    g_stack_array[i]= gc_copy (g_stack_array[i]);
+  for (long i = g_stack; i < STACK_SIZE; i++)
+    g_stack_array[i] = gc_copy (g_stack_array[i]);
   gc_loop (1);
 }
 

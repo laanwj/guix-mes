@@ -23,7 +23,7 @@
 #include <string.h>
 
 int
-vsnprintf (char *str, size_t size, char const* format, va_list ap)
+vsnprintf (char *str, size_t size, char const *format, va_list ap)
 {
   char const *p = format;
   int count = 0;
@@ -112,9 +112,7 @@ vsnprintf (char *str, size_t size, char const* format, va_list ap)
           case 'X':
             {
               long d = va_arg (ap, long);
-              int base = c == 'o' ? 8
-                : c == 'x' || c == 'X' ? 16
-                : 10;
+              int base = c == 'o' ? 8 : c == 'x' || c == 'X' ? 16 : 10;
               char const *s = ntoab (d, base, c != 'u' && c != 'x' && c != 'X');
               if (c == 'X')
                 strupr (s);

@@ -21,7 +21,7 @@
 #include <mes/lib.h>
 
 int
-puts (char const* s)
+puts (char const *s)
 {
   oputs (s);
   return oputs ("\n");

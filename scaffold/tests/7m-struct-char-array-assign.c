@@ -20,7 +20,8 @@
 
 #include <mes/lib.h>
 
-struct file {
+struct file
+{
   char *ptr;
   char buffer[20];
 };
@@ -36,7 +37,8 @@ main ()
   eputs ("***\n");
   f.ptr[1] = 'X';
 
-  eputs (f.ptr); eputs ("\n");
+  eputs (f.ptr);
+  eputs ("\n");
 
   return 0;
 }

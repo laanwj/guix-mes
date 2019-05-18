@@ -21,5 +21,5 @@
 int
 kill (pid_t pid, int signum)
 {
-  return _sys_call2 (SYS_kill, (long)pid, (long)signum);
+  return _sys_call2 (SYS_kill, (long) pid, (long) signum);
 }

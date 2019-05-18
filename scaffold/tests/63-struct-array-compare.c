@@ -29,7 +29,7 @@ struct scm
 
 
 char g_arena[24];
-struct scm *g_cells = (struct scm*)g_arena;
+struct scm *g_cells = (struct scm *) g_arena;
 
 int
 main ()
@@ -45,7 +45,7 @@ main ()
   if (g_cells[0].type == g_cells[1].type)
     goto ok;
   return 1;
- ok:
+ok:
 
   return 0;
 }

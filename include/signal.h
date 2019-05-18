@@ -118,7 +118,7 @@ typedef struct siginfo_t
 #if __MESC__
 typedef long sighandler_t;
 #else
-typedef void (*sighandler_t)(int);
+typedef void (*sighandler_t) (int);
 #endif
 
 struct sigaction
@@ -199,14 +199,14 @@ struct _libc_fpstate
 typedef struct _libc_fpstate *fpregset_t;
 
 typedef struct
-  {
-    gregset_t gregs;
-    /* Due to Linux's history we have to use a pointer here.  The SysV/i386
-       ABI requires a struct with the values.  */
-    fpregset_t fpregs;
-    unsigned long int oldmask;
-    unsigned long int cr2;
-  } mcontext_t;
+{
+  gregset_t gregs;
+  /* Due to Linux's history we have to use a pointer here.  The SysV/i386
+     ABI requires a struct with the values.  */
+  fpregset_t fpregs;
+  unsigned long int oldmask;
+  unsigned long int cr2;
+} mcontext_t;
 
 /* Userlevel context.  */
 typedef struct ucontext
@@ -222,19 +222,19 @@ typedef struct ucontext
 
 int kill (pid_t pid, int signum);
 int sigaction (int signum, struct sigaction const *act, struct sigaction *oldact);
-int sigaddset (sigset_t *set, int signum);
+int sigaddset (sigset_t * set, int signum);
 #if __MESC__
-void* signal (int signum, void * action);
+void *signal (int signum, void *action);
 #else
 sighandler_t signal (int signum, sighandler_t action);
 #endif
-int sigemptyset (sigset_t *set);
+int sigemptyset (sigset_t * set);
 #ifndef SIG_BLOCK
 #define SIG_BLOCK 0
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
 #endif
-int sigprocmask (int how, sigset_t const *set, sigset_t *oldset);
+int sigprocmask (int how, sigset_t const *set, sigset_t * oldset);
 
 #endif //! WITH_GLIBC
 

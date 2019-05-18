@@ -53,22 +53,26 @@ main ()
     return 3;
 
   sprintf (buf, ">%3d<", 11);
-  eputs (buf); eputs ("\n");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, "> 11<"))
     return 4;
 
   sprintf (buf, ">%03d<", 22);
-  eputs (buf); eputs ("\n");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, ">022<"))
     return 5;
 
   sprintf (buf, ">%-10d<", 33);
-  eputs (buf); eputs ("\n");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, ">33        <"))
     return 6;
 
   sprintf (buf, ">%0d<", 44);
-  eputs (buf); eputs ("\n");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, ">44<"))
     return 7;
 
@@ -80,12 +84,16 @@ main ()
   printf (">>%-*s<<\n", 10, "baz");
 
   sprintf (buf, "%ld", 42);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, "42"))
     return 8;
 
   sprintf (buf, "%u", -1);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
 
 #if __i386__
   if (strcmp (buf, "4294967295"))
@@ -96,52 +104,62 @@ main ()
 #endif
 
   sprintf (buf, ">>%.5s<<\n", "hello, world");
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>hello<<\n"))
     return 10;
 
   sprintf (buf, ">>%.*s<<\n", 5, "hello, world");
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>hello<<\n"))
     return 11;
 
   sprintf (buf, ">>%.*s<<\n", 20, "hello, world");
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>hello, world<<\n"))
     return 12;
 
   sprintf (buf, ">>%.*s<<\n", 10, "foo");
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>foo<<\n"))
     return 13;
 
   sprintf (buf, ">>%*s<<\n", 10, "bar");
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>       bar<<\n"))
     return 14;
 
   sprintf (buf, ">>%-*s<<\n", 10, "baz");
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>baz       <<\n"))
     return 15;
 
   sprintf (buf, ">>%ld<<\n", 12);
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>12<<\n"))
     return 16;
 
   sprintf (buf, ">>%o<<\n", 12);
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>14<<\n"))
     return 17;
 
   sprintf (buf, ">>%x<<\n", 12);
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>c<<\n"))
     return 18;
 
   sprintf (buf, ">>%X<<\n", 12);
-  eputs ("buf="); eputs (buf);
+  eputs ("buf=");
+  eputs (buf);
   if (strcmp (buf, ">>C<<\n"))
     return 19;
 
@@ -153,7 +171,9 @@ main ()
 #endif
 
   sprintf (buf, "foo%nbar\n", &n);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, "foobar\n"))
     return 21;
   if (n != 3)
@@ -164,7 +184,9 @@ main ()
 #endif
 
   sprintf (buf, "%12.8d\n", 12345);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, "    00012345\n"))
     return 23;
 

@@ -22,15 +22,15 @@
 
 struct foo
 {
-    char *s;
+  char *s;
 #if __i386__
-    long bar;
+  long bar;
 #endif
-    char baz;
-    char bla;
+  char baz;
+  char bla;
 };
 
-char g_arena[40] = {0};
+char g_arena[40] = { 0 };
 
 int
 main ()

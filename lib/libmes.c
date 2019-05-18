@@ -57,7 +57,7 @@ mes_open (char const *file_name, int flags, int mask)
   if (r > 2)
     __ungetc_buf[r] = -1;
   return r;
- }
+}
 
 #include <mes/eputs.c>
 #include <mes/oputs.c>

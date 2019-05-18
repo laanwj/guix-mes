@@ -39,7 +39,7 @@ int atoi (char const *s);
 int eputc (int c);
 int fdgetc (int fd);
 int fdputc (int c, int fd);
-int fdputs (char const* s, int fd);
+int fdputs (char const *s, int fd);
 int fdungetc (int c, int fd);
 int _fdungetc_p (int fd);
 int isdigit (int c);
@@ -49,7 +49,7 @@ int mes_open (char const *file_name, int flags, int mask);
 int _open2 (char const *file_name, int flags);
 int _open3 (char const *file_name, int flags, int mask);
 int oputc (int c);
-int oputs (char const* s);
+int oputs (char const *s);
 char *search_path (char const *file_name);
 
 #endif //__MES_LIB_H

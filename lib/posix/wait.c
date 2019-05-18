@@ -23,5 +23,5 @@
 pid_t
 wait (int *status_ptr)
 {
-  return waitpid  (-1, status_ptr, 0);
+  return waitpid (-1, status_ptr, 0);
 }

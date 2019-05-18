@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 int
-putc (int c, FILE* stream)
+putc (int c, FILE * stream)
 {
-  return fdputc (c, (long)stream);
+  return fdputc (c, (long) stream);
 }

@@ -21,7 +21,7 @@
 #include <mes/lib.h>
 
 size_t
-strlen (char const* s)
+strlen (char const *s)
 {
   int i = 0;
   while (s[i])

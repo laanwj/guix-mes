@@ -21,5 +21,5 @@
 int
 dup (int old)
 {
-  return _sys_call1 (SYS_dup, (int)old);
+  return _sys_call1 (SYS_dup, (int) old);
 }

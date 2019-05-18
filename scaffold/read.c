@@ -29,8 +29,9 @@ main (int argc, char *argv[])
   int c = getchar ();
   if (c != 'm')
     return 1;
-  while (c != EOF) {
-    putchar (c);
-    c = getchar ();
-  }
+  while (c != EOF)
+    {
+      putchar (c);
+      c = getchar ();
+    }
 }

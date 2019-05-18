@@ -21,8 +21,7 @@
 #include <mes/lib.h>
 
 size_t
-strftime (char *s, size_t size, char const *template,
-          struct tm const *brokentime)
+strftime (char *s, size_t size, char const *template, struct tm const *brokentime)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)

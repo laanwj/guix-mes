@@ -36,7 +36,8 @@ inc (int i)
   return i + 1;
 }
 
-struct scm {
+struct scm
+{
   int type;
   int car;
   int cdr;
@@ -47,12 +48,24 @@ char g_arena[84];
 #if __MESC__
 struct scm *g_cells = g_arena;
 #else
-struct scm *g_cells = (struct scm*)g_arena;
+struct scm *g_cells = (struct scm *) g_arena;
 #endif
 char *g_chars = g_arena;
 
-int foo () {oputs ("t: foo\n"); return 0;};
-int bar (int i) {oputs ("t: bar\n"); return 0;};
+int
+foo ()
+{
+  oputs ("t: foo\n");
+  return 0;
+};
+
+int
+bar (int i)
+{
+  oputs ("t: bar\n");
+  return 0;
+};
+
 struct function
 {
   int (*function) (void);
@@ -60,9 +73,9 @@ struct function
   //long arity;
   char *name;
 };
-struct function g_fun = {&exit,1,"fun"};
-struct function g_foo = {&foo,0,"foo"};
-struct function g_bar = {&bar,1,"bar"};
+struct function g_fun = { &exit, 1, "fun" };
+struct function g_foo = { &foo, 0, "foo" };
+struct function g_bar = { &bar, 1, "bar" };
 
 void *functions[2];
 //int functions[2];
@@ -70,7 +83,9 @@ void *functions[2];
 struct function g_functions[2];
 int g_function = 0;
 
-enum type_t {TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING, TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART};
+enum type_t
+{ TCHAR, TCLOSURE, TCONTINUATION, TFUNCTION, TKEYWORD, TMACRO, TNUMBER, TPAIR, TREF, TSPECIAL, TSTRING,
+    TSYMBOL, TVALUES, TVECTOR, TBROKEN_HEART };
 
 typedef int SCM;
 int g_free = 3;
@@ -85,7 +100,8 @@ int ARENA_SIZE = 200;
 
 #define CAAR(x) CAR (CAR (x))
 
-struct scm scm_fun = {TFUNCTION,0,0};
+struct scm scm_fun = { TFUNCTION, 0, 0 };
+
 SCM cell_fun;
 
 
@@ -123,7 +139,7 @@ main ()
   TYPE (1) = 1;
   CAR (1) = 2;
   CDR (1) = 3;
-  g_cells[0+add(0, 0)] = g_cells[0+inc(0)];
+  g_cells[0 + add (0, 0)] = g_cells[0 + inc (0)];
   if (TYPE (0) != 1)
     return 7;
   if (CAR (0) != 2)
@@ -142,7 +158,7 @@ main ()
   if (TYPE (0) == TYPE (1))
     goto ok;
   return 10;
- ok:
+ok:
 
   g_cells[0].car = 1;
   g_cells[1].car = 2;
@@ -182,7 +198,7 @@ main ()
     return 17;
 
   oputs ("t: struct fun = {&exit,1,\"exit\"};\n");
-  struct function fun = {&exit,1,"exit"};
+  struct function fun = { &exit, 1, "exit" };
 
   oputs ("t: fun.arity != 1;\n");
   if (fun.arity != 1)
@@ -204,7 +220,7 @@ main ()
   g_functions[g_function++] = g_foo;
 
   oputs ("t: pbar->arity == 1\n");
-  struct function* barp = &g_bar;
+  struct function *barp = &g_bar;
   if (barp->arity != 1)
     return 22;
 

@@ -21,7 +21,7 @@
 #include <string.h>
 
 char *
-strpbrk (char const *string, char const* stopset)
+strpbrk (char const *string, char const *stopset)
 {
   char *p = string;
   while (*p)

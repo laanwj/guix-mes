@@ -21,5 +21,5 @@
 int
 setgid (gid_t newgid)
 {
-  return _sys_call1 (SYS_setgid, (long)newgid);
+  return _sys_call1 (SYS_setgid, (long) newgid);
 }

@@ -30,7 +30,7 @@ struct scm
 int
 main ()
 {
-  struct scm a = {-1, 0,-1};
+  struct scm a = { -1, 0, -1 };
 
   if (a.type != -1)
     return 1;

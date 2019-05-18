@@ -47,7 +47,7 @@ main ()
   int size = ftell (t);
   fprintf (stderr, "  size=>%d\n", size);
   fseek (t, 0, SEEK_SET);
-  char *p = (char*)malloc (size + 1);
+  char *p = (char *) malloc (size + 1);
   fread (p, size, 1, t);
   fwrite (p, size, 1, n);
 
@@ -59,7 +59,9 @@ main ()
   char buf[200];
   fflush (n);
   fread (buf, strlen (header_plus_data), 1, test);
-  eputs ("buf="); eputs (buf); eputs ("\n");
+  eputs ("buf=");
+  eputs (buf);
+  eputs ("\n");
   if (strcmp (buf, header_plus_data))
     return 1;
 

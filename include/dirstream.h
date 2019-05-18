@@ -37,16 +37,16 @@
 
 /* Directory stream type.  */
 struct __dirstream
-  {
-    int fd;			/* File descriptor.  */
+{
+  int fd;                       /* File descriptor.  */
 
-    char *data;			/* Directory block.  */
-    size_t allocation;		/* Space allocated for the block.  */
-    size_t size;		/* Total valid data in the block.  */
-    size_t offset;		/* Current offset into the block.  */
+  char *data;                   /* Directory block.  */
+  size_t allocation;            /* Space allocated for the block.  */
+  size_t size;                  /* Total valid data in the block.  */
+  size_t offset;                /* Current offset into the block.  */
 
-    off_t filepos;		/* Position of next entry to read.  */
-  };
+  off_t filepos;                /* Position of next entry to read.  */
+};
 
 typedef struct __dirstream DIR;
 

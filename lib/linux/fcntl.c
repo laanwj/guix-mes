@@ -24,7 +24,7 @@ fcntl (int filedes, int command, ...)
   va_list ap;
   va_start (ap, command);
   int data = va_arg (ap, int);
-  int r = _sys_call3 (SYS_fcntl, (int)filedes, (int)command, (int)data);
+  int r = _sys_call3 (SYS_fcntl, (int) filedes, (int) command, (int) data);
   va_end (ap);
   return r;
 }

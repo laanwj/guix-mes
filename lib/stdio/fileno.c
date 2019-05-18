@@ -21,7 +21,7 @@
 #include <stdio.h>
 
 int
-fileno (FILE *stream)
+fileno (FILE * stream)
 {
-  return (int)stream;
+  return (int) stream;
 }

@@ -39,4 +39,5 @@ __argz_extract (const char *argz, size_t len, char **argv)
     }
   *argv = 0;
 }
+
 weak_alias (__argz_extract, argz_extract)
