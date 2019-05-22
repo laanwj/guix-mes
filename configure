@@ -4,7 +4,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 !#
 
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; configure: This file is part of GNU Mes.
 ;;;
@@ -370,8 +370,7 @@ Some influential environment variables:
 (define (main args)
   (let* ((options (parse-opts args))
          (build-type (option-ref options 'build %host-type))
-
-         (host-type (option-ref options 'host %host-type))(prefix "/usr/local")
+         (host-type (option-ref options 'host build-type))
 
          (prefix "/usr/local")
          (prefix (option-ref options 'prefix prefix))
@@ -497,8 +496,9 @@ Some influential environment variables:
            (build-type (or (and cc (gulp-pipe* cc "-dumpmachine")) build-type))
            (build-type-list (string-split build-type #\-))
            (mes-cpu (car build-type-list))
-           (mes-cpu (if (member mes-cpu '("i386" "i486" "i586" "i686")) "x86"
-                        mes-cpu))
+           (mes-cpu (cond ((member mes-cpu '("i386" "i486" "i586" "i686")) "x86")
+                          ((member mes-cpu '("arm" "armv4" "armv7l")) "arm")
+                          (else mes-cpu)))
            (mes-bits (if (member mes-cpu '("x86_64")) "64"
                          "32"))
            (mes-libc (if system-libc? "system" "mes"))
@@ -525,8 +525,12 @@ Some influential environment variables:
                                  line pairs))
                   (loop (read-line in 'concat))))))))
 
-      (when (and (not (member mes-system '("x86-linux-mes" "x86_64-linux-mes"))) (not with-courage?))
-        (stderr "platform not supported: ~a, try --with-courage\n" mes-system)
+      (when (and (not (member mes-system '("arm-linux-mes"
+                                           "x86-linux-mes"
+                                           "x86_64-linux-mes")))
+                 (not with-courage?))
+        (stderr "platform not supported: ~a
+See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
         (exit 1))
       (when (pair? missing)
         (stderr "\nMissing dependencies: ~a\n" (string-join (map dependency-name missing)))

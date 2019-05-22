@@ -36,6 +36,8 @@ if $courageous; then
 fi
 
 case "$mes_cpu" in
+    arm)
+        stage0_cpu=armv7l;;
     x86_64)
         stage0_cpu=amd64;;
     x86)

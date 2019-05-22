@@ -54,6 +54,29 @@ else
     prefix=${prefix-/usr/local}
 fi
 
+# parse --build=BUILD
+p=${cmdline/ --build=/ -build=}
+if [ "$p" != "$cmdline" ]; then
+    p=${p##* -build=}
+    p=${p% *}
+    p=${p% -*}
+    build=${p-$build}
+else
+    build=$build
+fi
+
+# parse --host=HOST
+p=${cmdline/ --host=/ -host=}
+if [ "$p" != "$cmdline" ]; then
+    p=${p##* -host=}
+    p=${p% *}
+    p=${p% -*}
+    host=${p-$build}
+
+else
+    host=${host-$build}
+fi
+
 # parse --program-prefix=
 p=${cmdline/ --program-prefix=/ -program-prefix=}
 if test "$p" != "$cmdline"; then
@@ -179,6 +202,10 @@ if test "$mes_cpu" = i386\
         || test "$mes_cpu" = i586\
         || test "$mes_cpu" = i686; then
     mes_cpu=x86
+fi
+if test "$mes_cpu" = armv4\
+        || test "$arch" = armv7l; then
+    mes_cpu=arm
 fi
 
 case "$host" in

@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -21,7 +21,6 @@
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 getopt-long)
-  #:use-module (mes guile)
   #:use-module (mes misc)
 
   #:use-module (mescc i386 info)
@@ -30,6 +29,7 @@
   #:use-module (mescc compile)
   #:use-module (mescc M1)
   #:export (mescc:preprocess
+            mescc:get-host
             mescc:compile
             mescc:assemble
             mescc:link))
@@ -54,7 +54,7 @@
          (prefix (option-ref options 'prefix ""))
          (machine (option-ref options 'machine "32"))
          (arch (if (equal? machine "32") "__i386__=1" "__x86_64__=1"))
-         (defines (cons arch defines)))
+         (defines (cons (arch-get-define options) defines)))
     (with-output-to-file ast-file-name
       (lambda _ (for-each (cut c->ast prefix defines includes write <>) files)))))
 
@@ -87,18 +87,13 @@
          (dir (dirname file-name))
          (includes (cons dir includes))
          (prefix (option-ref options 'prefix ""))
-         (machine (option-ref options 'machine "32"))
-         (info (if (equal? machine "32") (x86-info)  (x86_64-info)))
-         (arch (if (equal? machine "32") "__i386__=1" "__x86_64__=1"))
-         (defines (cons arch defines)))
+         (defines (cons (arch-get-define options) defines)))
     (with-input-from-file file-name
-      (cut c99-input->info info #:prefix prefix #:defines defines #:includes includes))))
+      (cut c99-input->info (arch-get-info options) #:prefix prefix #:defines defines #:includes includes))))
 
 (define (E->info options file-name)
-  (let* ((ast (with-input-from-file file-name read))
-         (machine (option-ref options 'machine "32"))
-         (info (if (equal? machine "32") (x86-info)  (x86_64-info))))
-    (c99-ast->info info ast)))
+  (let ((ast (with-input-from-file file-name read)))
+    (c99-ast->info (arch-get-info options) ast)))
 
 (define (mescc:assemble options)
   (let* ((files (option-ref options '() '("a.c")))
@@ -173,21 +168,12 @@
                                ((option-ref options 'assemble #f)
                                 (replace-suffix input-file-name ".o"))
                                (else (replace-suffix M1-file-name ".o"))))
-         (machine (option-ref options 'machine "32"))
-         (architecture (cond
-                        ((equal? machine "32") "x86")
-                        ((equal? machine "64") "amd64")
-                        (else "1")))
-         (m1-macros (cond
-                     ((equal? machine "32") "x86.M1")
-                     ((equal? machine "64") "x86_64.M1")
-                     (else "x86.M1")))
          (verbose? (option-ref options 'verbose #f))
          (M1 (or (getenv "M1") "M1"))
          (command `(,M1
                     "--LittleEndian"
-                    "--architecture" ,architecture
-                    "-f" ,(arch-find options m1-macros)
+                    "--architecture" ,(arch-get-architecture options)
+                    "-f" ,(arch-find options (arch-get-m1-macros options))
                     ,@(append-map (cut list "-f" <>) M1-files)
                     "-o" ,hex2-file-name)))
     (when verbose?
@@ -201,12 +187,8 @@
                               (else "a.out")))
          (verbose? (option-ref options 'verbose #f))
          (hex2 (or (getenv "HEX2") "hex2"))
-         (machine (option-ref options 'machine "32"))
-         (architecture (cond
-                         ((equal? machine "32") "x86")
-                         ((equal? machine "64") "amd64")
-                         (else "1")))
          (base-address (option-ref options 'base-address "0x1000000"))
+         (machine (arch-get-machine options))
          (elf-footer (or elf-footer
                          (arch-find options (string-append
                                              "elf" machine "-footer-single-main.hex2"))))
@@ -215,7 +197,7 @@
                               `("-f" ,(arch-find options "crt1.o"))))
          (command `(,hex2
                     "--LittleEndian"
-                    "--architecture" ,architecture
+                    "--architecture" ,(arch-get-architecture options)
                     "--BaseAddress" ,base-address
                     "-f" ,(arch-find options (string-append "elf" machine "-header.hex2"))
                     ,@start-files
@@ -235,13 +217,8 @@
          (blood-elf-footer (string-append hex2-file-name ".blood-elf"))
          (verbose? (option-ref options 'verbose #f))
          (blood-elf (or (getenv "BLOOD_ELF") "blood-elf"))
-         (machine (option-ref options 'machine "32"))
-         (m1-macros (cond
-                     ((equal? machine "32") "x86.M1")
-                     ((equal? machine "64") "x86_64.M1")
-                     (else "x86.M1")))
          (command `(,blood-elf
-                      "-f" ,(arch-find options m1-macros)
+                      "-f" ,(arch-find options (arch-get-m1-macros options))
                       ,@(append-map (cut list "-f" <>) M1-files)
                       "-o" ,M1-blood-elf-footer)))
     (when verbose?
@@ -255,7 +232,8 @@
   (let* ((parts (string-split file-name #\.))
          (base (if (pair? (cdr parts)) (drop-right parts 1)))
          (old-suffix (last parts))
-         (program-prefix (cond ((string-prefix? "x86-mes-" old-suffix) ".x86-mes-")
+         (program-prefix (cond ((string-prefix? "arm-mes-" old-suffix) ".arm-mes-")
+                               ((string-prefix? "x86-mes-" old-suffix) ".x86-mes-")
                                ((string-prefix? "x86_64-mes-" old-suffix) ".x86_64-mes-")
                                (else "."))))
     (if (string-null? suffix)
@@ -269,11 +247,7 @@
 (define* (arch-find options file-name)
   (let* ((srcdest (or (getenv "srcdest") ""))
          (srcdir-lib (string-append srcdest "lib"))
-         (machine (option-ref options 'machine "32"))
-         (arch (cond
-                ((equal? machine "32") "x86-mes")
-                ((equal? machine "64") "x86_64-mes")
-                (else "x86-mes")))
+         (arch (string-append (arch-get options) "-mes"))
          (path (cons* "."
                       srcdir-lib
                       (prefix-file options "lib")
@@ -301,22 +275,69 @@
       (exit (status:exit-val status)))
     status))
 
+(define (arch-get options)
+  (let* ((machine (option-ref options 'machine #f))
+         (arch (option-ref options 'arch #f)))
+    (if machine (cond ((member arch '("x86" "x86_64")) (cond ((equal? machine "32") "x86")
+                                                             ((equal? machine "64") "x86_64")))
+                      ((equal? arch "arm") (cond ((equal? machine "32") "arm"))))
+        arch)))
+
+(define (mescc:get-host options)
+  (let ((cpu (arch-get options))
+        (kernel "linux"))
+    (string-join (list cpu kernel "mes") "-")))
+
+(define (arch-get-info options)
+  (let ((arch (arch-get options)))
+    (cond ((equal? arch "arm") (armv4-info))
+          ((equal? arch "x86") (x86-info))
+          ((equal? arch "x86_64") (x86_64-info)))))
+
+(define (arch-get-define options)
+  (let ((arch (arch-get options)))
+    (cond ((equal? arch "arm") "__arm__=1")
+          ((equal? arch "x86") "__i386__=1")
+          ((equal? arch "x86_64") "__x86_64__=1"))))
+
+(define (arch-get-machine options)
+  (let* ((machine (option-ref options 'machine #f))
+         (arch (option-ref options 'arch #f)))
+    (or machine
+        (if (member arch '("x86_64")) "64"
+            "32"))))
+
+(define (arch-get-m1-macros options)
+  (let ((arch (arch-get options)))
+    (cond ((equal? arch "arm") "arm.M1")
+          ((equal? arch "x86") "x86.M1")
+          ((equal? arch "x86_64") "x86_64.M1"))))
+
+(define (arch-get-architecture options)
+  (let ((arch (arch-get options)))
+    (cond ((equal? arch "arm") "armv7l")
+          ((equal? arch "x86") "x86")
+          ((equal? arch "x86_64") "amd64"))))
+
 (define (multi-opt option-name) (lambda (o) (and (eq? (car o) option-name) (cdr o))))
 
 (define (.c? o) (or (string-suffix? ".c" o)
                     (string-suffix? ".M2" o)))
 (define (.E? o) (or (string-suffix? ".E" o)
                     (string-suffix? ".mes-E" o)
+                    (string-suffix? ".arm-mes-E" o)
                     (string-suffix? ".x86-mes-E" o)
                     (string-suffix? ".x86_64-mes-E" o)))
 (define (.S? o) (or (string-suffix? ".S" o)
                     (string-suffix? ".mes-S" o)
+                    (string-suffix? ".arm-mes-S" o)
                     (string-suffix? ".x86-mes-S" o)
                     (string-suffix? ".x86_64-mes-S" o)
                     (string-suffix? "S" o)
                     (string-suffix? ".M1" o)))
 (define (.o? o) (or (string-suffix? ".o" o)
                     (string-suffix? ".mes-o" o)
+                    (string-suffix? ".arm-mes-o" o)
                     (string-suffix? ".x86-mes-o" o)
                     (string-suffix? ".x86_64-mes-o" o)
                     (string-suffix? ".hex2" o)))

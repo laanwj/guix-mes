@@ -19,6 +19,11 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+(cond-expand
+ (mes)
+ (guile
+  (define %arch (car (string-split %host-type #\-)))))
+
 (setenv "%prefix" (or (getenv "MES_PREFIX")
                       (if (string-prefix? "@prefix" "@prefix@")
                           ""
@@ -26,6 +31,9 @@
 
 (setenv "%version" (if (string-prefix? "@VERSION" "@VERSION@") "git"
                        "@VERSION@"))
+
+(setenv "%arch" (if (string-prefix? "@mes_cpu" "@mes_cpu@") %arch
+                       "@mes_cpu@"))
 
 (cond-expand
  (mes

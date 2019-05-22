@@ -1,5 +1,5 @@
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -28,8 +28,20 @@ cleaning-p:=$(filter clean%, $(MAKECMDGOALS))$(filter %clean, $(MAKECMDGOALS))
 
 ifndef cleaning-p
 include .config.make
+ifneq ($(prefix),)
+prefix-arg=--prefix=$(prefix)
+endif
+ifneq ($(build),)
+build-arg=--build=$(build)
+endif
+ifneq ($(host),)
+host-arg=--host=$(host)
+endif
+ifeq ($(mes_libc),system)
+--with-system-libc=system
+endif
 .config.make:
-	${srcdir}/configure --prefix=$(prefix)
+	${srcdir}/configure $(prefix_arg) $(host-arg) $(build-arg) $(with-system-libc)
 endif
 
 PHONY_TARGETS:=\

@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -19,6 +19,7 @@
 (define-module (mescc)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 getopt-long)
+  #:use-module (mes guile)
   #:use-module (mes misc)
   #:use-module (mescc mescc)
   #:export (mescc:main))
@@ -35,6 +36,7 @@
  (guile
   (define-macro (mes-use-module . rest) #t)))
 
+(define %host-arch (or (getenv "%arch") %arch))
 (define %prefix (getenv "%prefix"))
 (define %version (getenv "%version"))
 
@@ -53,6 +55,7 @@
 (define (parse-opts args)
   (let* ((option-spec
           '((align)
+            (arch (value #t))
             (assemble (single-char #\c))
             (base-address (value #t))
             (compile (single-char #\S))
@@ -79,20 +82,17 @@
             (language (single-char #\x) (value #t))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
-         (machine (option-ref options 'machine "32"))
          (files (option-ref options '() '()))
-         (usage? (and (not help?) (null? files)))
-         (version? (option-ref options 'version #f)))
-    (cond ((option-ref options 'dumpmachine #f)
-           (cond ((equal? machine "32") (display "x86-linux-mes\n"))
-                 (else (display "x86_64-linux-mes\n")))
-           (exit 0))
-          (version? (format #t "mescc (GNU Mes) ~a\n" %version) (exit 0))
+         (dumpmachine? (option-ref options 'dumpmachine #f))
+         (version? (option-ref options 'version #f))
+         (usage? (and (not dumpmachine?) (not help?) (not version?) (null? files))))
+    (cond (version? (format #t "mescc (GNU Mes) ~a\n" %version) (exit 0))
           (else
            (and (or help? usage?)
                 (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
   --align             align globals
+  --arch=ARCH         compile for ARCH [~a]
   -dumpmachine        display the compiler's target machine
   --base-address=ADRRESS
                       use BaseAddress ADDRESS [0x1000000]
@@ -128,7 +128,7 @@ Environment variables:
 Report bugs to: bug-mes@gnu.org
 GNU Mes home page: <http://gnu.org/software/mes/>
 General help using GNU software: <http://gnu.org/gethelp/>
-")
+" %host-arch)
                 (exit (or (and usage? 2) 0)))
            options))))
 
@@ -147,6 +147,9 @@ General help using GNU software: <http://gnu.org/gethelp/>
          (args (append-map unclump-single args))
          (options (parse-opts args))
          (options (acons 'prefix %prefix options))
+         (arch (option-ref options 'arch %host-arch))
+         (options (if arch (acons 'arch arch options) options))
+         (dumpmachine? (option-ref options 'dumpmachine #f))
          (preprocess? (option-ref options 'preprocess #f))
          (compile? (option-ref options 'compile #f))
          (assemble? (option-ref options 'assemble #f))
@@ -154,7 +157,8 @@ General help using GNU software: <http://gnu.org/gethelp/>
     (when verbose?
       (setenv "NYACC_TRACE" "yes")
       (format (current-error-port) "options=~s\n" options))
-    (cond (preprocess? (mescc:preprocess options))
+    (cond (dumpmachine? (display (mescc:get-host options)))
+          (preprocess? (mescc:preprocess options))
           (compile? (mescc:compile options))
           (assemble? (mescc:assemble options))
           (else (mescc:link options)))))

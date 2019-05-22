@@ -1419,9 +1419,15 @@ mes_environment (int argc, char *argv[])
 #endif
   a = acons (cell_symbol_compiler, MAKE_STRING0 (compiler), a);
 
-  char *arch = "x86";
-#if __x86_64__
+  char *arch;
+#if __i386__
+  arch = "x86";
+#elif __arm__
+  arch = "arm";
+#elif __x86_64__
   arch = "x86_64";
+#else
+#error arch not supported
 #endif
   a = acons (cell_symbol_arch, MAKE_STRING0 (arch), a);
 

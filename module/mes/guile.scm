@@ -32,6 +32,8 @@
             <cell:symbol>
             <cell:vector>
 
+            %arch
+            %compiler
             append2
             core:apply
             core:car
@@ -53,6 +55,12 @@
             )
   ;;#:re-export (open-input-file open-input-string with-input-from-string)
   )
+
+(cond-expand
+ (guile-2)
+ (guile
+  (define %host-type (string-append (utsname:machine (uname)) "linux-gnu")))
+ (else))
 
 (cond-expand
  (guile
@@ -84,6 +92,8 @@
   (define <cell:string> 10)
   (define <cell:symbol> 11)
   (define <cell:vector> 15)
+  (define %arch (car (string-split %host-type #\-)))
+  (define %compiler "gnuc")
 
   (define %compiler "gnuc")
   (define keyword->string (compose symbol->string keyword->symbol))
