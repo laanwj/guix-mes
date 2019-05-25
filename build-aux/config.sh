@@ -142,23 +142,23 @@ fi
 if [ "$arch" = "x86" ]; then
     HEX2FLAGS=${HEX2FLAGS-"
 --LittleEndian
---Architecture 1
+--architecture x86
 --BaseAddress 0x1000000
 "}
     M1FLAGS=${M1FLAGS-"
 --LittleEndian
---Architecture 1
+--architecture x86
 "}
     bits=32
 elif [ "$arch" = "x86_64" ]; then
     HEX2FLAGS=${HEX2FLAGS-"
 --LittleEndian
---Architecture 2
+--architecture amd64
 --BaseAddress 0x1000000
 "}
     M1FLAGS=${M1FLAGS-"
 --LittleEndian
---Architecture 2
+--architecture amd64
 "}
     bits=64
 fi

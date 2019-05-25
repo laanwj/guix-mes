@@ -10,16 +10,16 @@ MES_ARENA=${MES_ARENA-100000000}
 MES_MAX_ARENA=${MES_MAX_ARENA-100000000}
 MES_STACK=${MES_STACK-500000}
 
-hex2 --LittleEndian --Architecture 1 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-0header.hex2 -f lib/x86-mes/elf32-body-exit-42.hex2 -f lib/x86-mes/elf-0footer.hex2 --exec_enable -o lib/x86-mes/0exit-42
-hex2 --LittleEndian --Architecture 1 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-header.hex2 -f lib/x86-mes/elf32-body-exit-42.hex2 -f lib/x86-mes/elf32-footer-single-main.hex2 --exec_enable -o lib/x86-mes/exit-42
-M1 --LittleEndian --Architecture 1 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/crt1.S -o lib/x86-mes/crt1.o
-M1 --LittleEndian --Architecture 1 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/libc.S -o lib/x86-mes/libc.o
-M1 --LittleEndian --Architecture 1 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/mes.S -o src/mes.o
+hex2 --LittleEndian --architecture x86 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-0header.hex2 -f lib/x86-mes/elf32-body-exit-42.hex2 -f lib/x86-mes/elf-0footer.hex2 --exec_enable -o lib/x86-mes/0exit-42
+hex2 --LittleEndian --architecture x86 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-header.hex2 -f lib/x86-mes/elf32-body-exit-42.hex2 -f lib/x86-mes/elf32-footer-single-main.hex2 --exec_enable -o lib/x86-mes/exit-42
+M1 --LittleEndian --architecture x86 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/crt1.S -o lib/x86-mes/crt1.o
+M1 --LittleEndian --architecture x86 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/libc.S -o lib/x86-mes/libc.o
+M1 --LittleEndian --architecture x86 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/mes.S -o src/mes.o
 blood-elf -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/mes.S -f @MES_SEED@/x86-mes/libc.S -o src/mes.S.blood-elf
-M1 --LittleEndian --Architecture 1 -f src/mes.S.blood-elf -o src/mes.o.blood-elf
-hex2 --LittleEndian --Architecture 1 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-header.hex2 -f lib/x86-mes/crt1.o -f lib/x86-mes/libc.o -f src/mes.o -f src/mes.o.blood-elf --exec_enable -o src/mes
-M1 --LittleEndian --Architecture 1 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/libc+tcc.S -o lib/x86-mes/libc+tcc.o
-M1 --LittleEndian --Architecture 1 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/libc+gnu.S -o lib/x86-mes/libc+gnu.o
+M1 --LittleEndian --architecture x86 -f src/mes.S.blood-elf -o src/mes.o.blood-elf
+hex2 --LittleEndian --architecture x86 --BaseAddress 0x1000000 -f lib/x86-mes/elf32-header.hex2 -f lib/x86-mes/crt1.o -f lib/x86-mes/libc.o -f src/mes.o -f src/mes.o.blood-elf --exec_enable -o src/mes
+M1 --LittleEndian --architecture x86 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/libc+tcc.S -o lib/x86-mes/libc+tcc.o
+M1 --LittleEndian --architecture x86 -f lib/x86-mes/x86.M1 -f @MES_SEED@/x86-mes/libc+gnu.S -o lib/x86-mes/libc+gnu.o
 
 @GUILE@ -e main -L module scripts/mescc.scm -c -D 'VERSION="@VERSION@"' -D 'MODULEDIR="@moduledir@"' -D 'PREFIX="@prefix@"' -I . -I lib -I include -v -g -L lib/linux/x86-mes -L lib/linux -L lib/x86-mes -L lib -L @MES_SEED@ -o lib/linux/x86-mes/crt1.o lib/linux/x86-mes/crt1.c
 

@@ -65,7 +65,7 @@ trace "M1         libc.S" $M1\
       -o lib/$mes_arch/libc.o
 trace "M1         mes.S" $M1\
       --LittleEndian\
-      --Architecture 1\
+      --architecture x86\
       -f ${srcdest}lib/$mes_arch/$arch.M1\
       -f $MES_SEED/$mes_arch/mes.S\
       -o src/mes.o
@@ -76,7 +76,7 @@ trace "BLOOD_ELF  mes.S" $BLOOD_ELF\
         -o src/mes.S.blood-elf
 trace "M1         mes.blood-elf" $M1\
       --LittleEndian\
-      --Architecture 1\
+      --architecture x86\
       -f src/mes.S.blood-elf\
       -o src/mes.o.blood-elf
 trace "HEX2       mes.o" $HEX2\
