@@ -29,22 +29,22 @@ void
 _start ()
 {
   asm (
-       "mov    $0,%%rax\n\t"
-       "mov    %%rax,%0\n"
+       "mov    $0,%%eax\n\t"
+       "mov    %%eax,%0\n"
        : "=r" (__stdin)
        : //no inputs ""
        );
 
   asm (
-       "mov    $1,%%rax\n\t"
-       "mov    %%rax,%0\n"
+       "mov    $1,%%eax\n\t"
+       "mov    %%eax,%0\n"
        : "=r" (__stdout)
        : //no inputs ""
        );
 
   asm (
-       "mov    $2,%%rax\n\t"
-       "mov    %%rax,%0\n"
+       "mov    $2,%%eax\n\t"
+       "mov    %%eax,%0\n"
        : "=r" (__stderr)
        : //no inputs ""
        );
