@@ -27,7 +27,7 @@ memchr (void const *block, int c, size_t size)
   while (size--)
     {
       if (c == *p)
-        return p;
+        return (void *) p;
       p++;
     }
   return 0;
