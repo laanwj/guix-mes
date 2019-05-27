@@ -225,7 +225,7 @@ gc_ ()                          ///((internal))
 SCM
 gc ()
 {
-  if (g_debug > 4)
+  if (g_debug > 5)
     {
       eputs ("symbols: ");
       write_error_ (g_symbols);
@@ -237,7 +237,7 @@ gc ()
   gc_push_frame ();
   gc_ ();
   gc_pop_frame ();
-  if (g_debug > 4)
+  if (g_debug > 5)
     {
       eputs ("symbols: ");
       write_error_ (g_symbols);

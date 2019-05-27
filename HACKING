@@ -132,8 +132,10 @@ enough to work on compiling tinycc's tcc.c albeit a somewhat modified version.
      - list of symbol
      - opened input strings
      - gc details
-  5) usage of opened input strings
-
+  5) lots of data
+     - usage of opened input strings
+     - bytes read
+  6) globals
 
 * Bugs
 ** mes: performance, Mes is now 2-10x slower than Guile.
