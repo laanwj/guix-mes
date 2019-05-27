@@ -151,6 +151,13 @@ actual: -./,),(-*,(
 ** mes+mescc: parse tcc.c->tcc.E works, compile tcc.E -> tcc.M1 segfaults.
   time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH ../mes/scripts/mescc -E -o tcc.E -I . -I ../mes/lib -I ../mes/include -D 'CONFIG_TCCDIR="usr/lib/tcc"' -D 'CONFIG_TCC_CRTPREFIX="usr/lib:{B}/lib:."' -D 'CONFIG_TCC_ELFINTERP="/gnu/store/70jxsnpffkl7fdb7qv398n8yi1a3w5nx-glibc-2.26.105-g0890d5379c/lib/ld-linux.so.2"' -D 'CONFIG_TCC_LIBPATHS="/home/janneke/src/tinycc/usr/lib:{B}/lib:."' -D 'CONFIG_TCC_SYSINCLUDEPATHS="../mes/include:usr/include:{B}/include"' -D CONFIG_USE_LIBGCC=1 -D 'TCC_LIBGCC="/home/janneke/src/tinycc/usr/lib/libc+tcc-gcc.mlibc-o"' -D CONFIG_TCC_STATIC=1 -D ONE_SOURCE=yes -D TCC_TARGET_I386=1 -D BOOTSTRAP=1 tcc.c
   time GUILE_LOAD_PATH=/home/janneke/src/nyacc/module:$GUILE_LOAD_PATH MES_ARENA=200000000 ../mes/scripts/mescc -c -o tcc.M1 tcc.E
+** mescc: 64 bit compiled mes loses top 4 bytes
+*** 64 bit mescc-compiled mes:
+  #x100000000 => 0
+  (modulo 1 #x100000000) => divide-by-zero
+*** 64 bit gcc-compiled mes:
+  #x100000000 => 0
+  (modulo 1 #x100000000) => 1
 ** mescc: 7n-struct-struct-array.c:  struct file f = {"first.h"};
 ** test/match.test ("nyacc-simple"): hygiene problem in match
 * OLD: Booting from LISP-1.5 into Mes

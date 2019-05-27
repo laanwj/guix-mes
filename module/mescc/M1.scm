@@ -81,13 +81,16 @@
   (if hex? (string-append "%0x" (dec->hex o))
       (string-append "%" (number->string o))))
 
+(define mesc? (string=? %compiler "mesc"))
+
 (define (hex2:immediate8 o)
-  (if hex? (string-append "%0x" (dec->hex (modulo o #x100000000))
+  ;; FIXME: #x100000000 => 0 divide-by-zero when compiled with 64 bit mesc
+  (if hex? (string-append "%0x" (dec->hex (if mesc? 0 (modulo o #x100000000)))
                           " %0x" (if (< o 0) "-1"
-                                     (dec->hex (quotient o #x100000000))))
-      (string-append "%" (number->string (dec->hex (modulo o #x100000000)))
+                                     (dec->hex (if mesc? o (quotient o #x100000000)))))
+      (string-append "%" (number->string (dec->hex (if mesc? 0 (modulo o #x100000000))))
                      " %" (if (< o 0) "-1"
-                              (number->string (dec->hex (quotient o #x100000000)))))))
+                              (number->string (dec->hex (if mesc? o (quotient o #x100000000))))))))
 
 (define* (display-join o #:optional (sep ""))
   (let loop ((o o))

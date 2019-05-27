@@ -45,6 +45,7 @@
             core:write-error
             core:write-port
             core:type
+            %compiler
             equal2?
             pmatch-car
             pmatch-cdr
@@ -82,6 +83,8 @@
   (define <cell:string> 10)
   (define <cell:symbol> 11)
   (define <cell:vector> 15)
+
+  (define %compiler "gnuc")
 
   (define (core:type x)
     (cond ((guile:keyword? x) <cell:keyword>)
