@@ -274,7 +274,8 @@
                 ((equal? machine "32") "x86-mes")
                 ((equal? machine "64") "x86_64-mes")
                 (else "x86-mes")))
-         (path (cons* srcdir-lib
+         (path (cons* "."
+                      srcdir-lib
                       (prefix-file options "lib")
                       (filter-map (multi-opt 'library-dir) options)))
          (arch-file-name (string-append arch "/" file-name))
