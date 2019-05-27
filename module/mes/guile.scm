@@ -47,6 +47,7 @@
             core:type
             %compiler
             equal2?
+            keyword->string
             pmatch-car
             pmatch-cdr
             )
@@ -85,6 +86,7 @@
   (define <cell:vector> 15)
 
   (define %compiler "gnuc")
+  (define keyword->string (compose symbol->string keyword->symbol))
 
   (define (core:type x)
     (cond ((guile:keyword? x) <cell:keyword>)

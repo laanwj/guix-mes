@@ -248,6 +248,15 @@
   (or (null? x)
       (and (pair? x) (list? (cdr x)))))
 
+(cond-expand
+ (guile)
+ (mes
+  (define (boolean? x)
+    (or (eq? x #f) (eq? x #t)))
+  (define (char? x)
+    (and (eq? (core:type x) <cell:char>)
+         (> (char->integer x) -1)))))
+
 ;; -*-scheme-*-
 
 ;;; GNU Mes --- Maxwell Equations of Software

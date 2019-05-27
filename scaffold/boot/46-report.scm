@@ -54,7 +54,7 @@
   (list
    'begin
    (list display "test: ") (list display name)
-   (list result t)))
+   (list (quote result) t)))
 
 (pass-if "first dummy" #t)
 

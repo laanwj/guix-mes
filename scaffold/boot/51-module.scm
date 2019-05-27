@@ -17,8 +17,7 @@
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (cond-expand
- (guile
-  (set! %load-path (append %load-path '("mes/module"))))
+ (guile)
  (mes
   (define (cons* . rest)
     (if (null? (cdr rest)) (car rest)

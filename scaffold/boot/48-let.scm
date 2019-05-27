@@ -16,15 +16,15 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-(define (map1 f lst)
+(define (map f lst)
   (if (null? lst) (list)
-      (cons (f (car lst)) (map1 f (cdr lst)))))
+      (cons (f (car lst)) (map f (cdr lst)))))
 
 (define (cadr x) (car (cdr x)))
 
 (define-macro (let bindings . rest)
-  (cons (cons 'lambda (cons (map1 car bindings) rest))
-        (map1 cadr bindings)))
+  (cons (cons 'lambda (cons (map car bindings) rest))
+        (map cadr bindings)))
 
 (let ((x 0)) x)
 (let ((y 0)) y)

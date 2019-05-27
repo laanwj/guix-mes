@@ -26,7 +26,7 @@
   (list
    'begin
    (list core:display "test: ") (list core:display name)
-   (list result t)))
+   (list (quote result) t)))
 
 (define-macro (pass-if-eq name expect . body)
   (list 'pass-if name (list eq? expect (cons 'begin body))))

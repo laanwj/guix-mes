@@ -26,6 +26,6 @@
   (list
    'begin
    (list core:display "test: ") (list core:display name)
-   (list result t)))
+   (list (quote result) t)))
 
 (pass-if "first dummy" #t)

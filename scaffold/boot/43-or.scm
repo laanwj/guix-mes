@@ -28,7 +28,7 @@
   (or #t a))
 
 (define-macro (foo bar)
-  (list f bar))
+  (list 'f bar))
 
 (foo 3)
 
