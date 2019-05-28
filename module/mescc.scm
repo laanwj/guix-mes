@@ -79,11 +79,13 @@
             (language (single-char #\x) (value #t))))
          (options (getopt-long args option-spec))
          (help? (option-ref options 'help #f))
+         (machine (option-ref options 'machine "32"))
          (files (option-ref options '() '()))
          (usage? (and (not help?) (null? files)))
          (version? (option-ref options 'version #f)))
     (cond ((option-ref options 'dumpmachine #f)
-           (display "x86-mes")
+           (cond ((equal? machine "32") (display "x86-linux-mes\n"))
+                 (else (display "x86_64-linux-mes\n")))
            (exit 0))
           (version? (format #t "mescc (GNU Mes) ~a\n" %version) (exit 0))
           (else
@@ -91,7 +93,7 @@
                 (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
   --align             align globals
-  -dumpmachine        display the compiler's target processor
+  -dumpmachine        display the compiler's target machine
   --base-address=ADRRESS
                       use BaseAddress ADDRESS [0x1000000]
   -D DEFINE[=VALUE]   define DEFINE [VALUE=1]
