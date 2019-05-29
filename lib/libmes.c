@@ -41,7 +41,7 @@
 #include <mes/fdputs.c>
 #include <mes/fdungetc.c>
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #include <fcntl.h>
 #include <stdarg.h>
 // The Mes C Library defines and initializes these in crt1
@@ -62,7 +62,7 @@ mes_open (char const *file_name, int flags, int mask)
 #include <mes/eputs.c>
 #include <mes/oputs.c>
 
-#else // !WITH_GLIBC
+#else // !SYSTEM_LIBC
 
 int
 mes_open (char const *file_name, int flags, int mask)
@@ -70,7 +70,7 @@ mes_open (char const *file_name, int flags, int mask)
   return _open3 (file_name, flags, mask);
 }
 
-#endif // !WITH_GLIBC
+#endif // !SYSTEM_LIBC
 
 #include <mes/eputc.c>
 #include <mes/oputc.c>

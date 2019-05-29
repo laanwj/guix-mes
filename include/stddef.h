@@ -20,10 +20,10 @@
 #ifndef __MES_STDDEF_H
 #define __MES_STDDEF_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_STDDEF_H
 #include_next <stddef.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #include <sys/types.h>
 #include <stdint.h>
@@ -37,6 +37,6 @@
 #endif // !__MESC__
 #endif // offsetof
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_STDDEF_H

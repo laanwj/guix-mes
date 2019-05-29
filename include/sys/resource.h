@@ -20,11 +20,11 @@
 #ifndef __MES_SYS_RESOURCE_H
 #define __MES_SYS_RESOURCE_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_RESOURCE_H
 #include_next <sys/resource.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #include <sys/time.h>
 
@@ -55,6 +55,6 @@ struct rusage
 
 int getrusage (int processes, struct rusage *rusage);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_RESOURCE_H

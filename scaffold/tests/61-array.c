@@ -26,7 +26,7 @@
 
 char *env[] = { "foo", "bar", "baz", 0 };
 
-#if 0                           //!WITH_GLIBC
+#if 0                           //!SYSTEM_LIBC
 #define getenv xgetenv
 
 char *

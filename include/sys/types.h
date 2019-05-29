@@ -20,10 +20,10 @@
 #ifndef __MES_SYS_TYPES_H
 #define __MES_SYS_TYPES_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_TYPES_H
 #include_next <sys/types.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #include <endian.h>
 
@@ -135,6 +135,6 @@ typedef long ssize_t;
 typedef unsigned uid_t;
 #endif
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_TYPES_H

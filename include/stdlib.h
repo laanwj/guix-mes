@@ -20,13 +20,13 @@
 #ifndef __MES_STDLIB_H
 #define __MES_STDLIB_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STDLIB_H
 #include_next <stdlib.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #include <sys/types.h>
 #include <alloca.h>
@@ -63,6 +63,6 @@ typedef int (*comparison_fn_t) (void const *, void const *);
 
 void *bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_STDLIB_H

@@ -27,7 +27,7 @@
 #include <mes/lib.h>
 
 //#define MES_MINI 1
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 long ARENA_SIZE = 100000000;    // 2.3GiB
 #else
 long ARENA_SIZE = 300000;       // 32b: 3MiB, 64b: 6 MiB

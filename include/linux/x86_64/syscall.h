@@ -77,7 +77,7 @@
 #define SYS_getegid   0x6c
 #define SYS_getppid   0x6e
 
-// make+WITH_GLIBC
+// make+SYSTEM_LIBC
 #define SYS_rt_sigprocmask 0x0e
 
 #endif // __MES_LINUX_X86_64_SYSCALL_H

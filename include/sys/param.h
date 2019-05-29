@@ -20,12 +20,12 @@
 #ifndef __MES_SYS_PARAM_H
 #define __MES_SYS_PARAM_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_PARAM_H
 #include_next <sys/param.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_PARAM_H

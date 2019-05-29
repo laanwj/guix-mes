@@ -21,14 +21,14 @@
 #ifndef __MES_GETOPT_H
 #define __MES_GETOPT_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_GETOPT_H
 #include_next <getopt.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 #include <endian.h>
 int isdigit (int);
 int isxdigit (int);
@@ -57,6 +57,6 @@ int getopt_long (int argc, char *const *argv, char const *options,
 int getopt_long_only (int argc, char *const *argv, char const *options,
                       struct option const *long_options, int *opt_index);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_GETOPT_H

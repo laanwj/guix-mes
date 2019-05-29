@@ -20,10 +20,10 @@
 #ifndef __MES_PWD_H
 #define __MES_PWD_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_PWD_H
 #include_next <pwd.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 struct passwd
 {
@@ -39,6 +39,6 @@ struct passwd
 struct passwd *getpwuid ();
 
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_PWD_H

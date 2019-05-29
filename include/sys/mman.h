@@ -20,10 +20,10 @@
 #ifndef __MES_SYS_MMAN_H
 #define __MES_SYS_MMAN_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_MMAN_H
 #include_next <sys/mman.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
@@ -37,7 +37,7 @@ typedef unsigned long size_t;
 
 int mprotect (void *addr, size_t len, int prot);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_MMAN_H
 

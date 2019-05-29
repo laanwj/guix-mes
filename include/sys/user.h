@@ -20,11 +20,11 @@
 #ifndef __MES_SYS_USER_H
 #define __MES_SYS_USER_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_USER_H
 #include_next <sys/user.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 /* These are the 32-bit x86 structures.  */
 struct user_fpregs_struct
@@ -106,6 +106,6 @@ struct user
 #define HOST_STACK_END_ADDR  (u.start_stack + u.u_ssize * NBPG)
 // *INDENT-ON*
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_USER_H

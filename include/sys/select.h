@@ -20,11 +20,11 @@
 #ifndef __MES_SYS_SELECT_H
 #define __MES_SYS_SELECT_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_SELECT_H
 #include_next <sys/select.h>
-#else //! WITH_GLIBC
+#else //! SYSTEM_LIBC
 typedef int fd_set;
-#endif //! WITH_GLIBC
+#endif //! SYSTEM_LIBC
 
 #endif // __MES_SYS_SELECT_H

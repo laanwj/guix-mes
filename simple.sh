@@ -30,8 +30,8 @@ rm -f src/strings.h
 # GLIBC build
 rm -rf out-glibc
 mkdir out-glibc
-gcc -c -D WITH_GLIBC=1 -I include -I lib -o out-glibc/libmes.o lib/libmes.c
-gcc -c -D WITH_GLIBC=1 -D VERSION=\"0.19\" -D MODULEDIR=\"module\" -D PREFIX=\"/usr/local\" -I include -o out-glibc/mes.o src/mes.c
+gcc -c -D SYSTEM_LIBC=1 -I include -I lib -o out-glibc/libmes.o lib/libmes.c
+gcc -c -D SYSTEM_LIBC=1 -D VERSION=\"0.19\" -D MODULEDIR=\"module\" -D PREFIX=\"/usr/local\" -I include -o out-glibc/mes.o src/mes.c
 gcc out-glibc/mes.o out-glibc/libmes.o -o out-glibc/mes
 
 MES_PREFIX=mes out-glibc/mes --help

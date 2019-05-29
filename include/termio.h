@@ -20,14 +20,14 @@
 #ifndef __MES_TERMIO_H
 #define __MES_TERMIO_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_TERMIO_H
 #include_next <termio.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #define TIOCGWINSZ	0x5413
 #define TCGETA		0x5405
@@ -59,6 +59,6 @@ struct termio
   unsigned char c_cc[8];
 };
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_TERMIO_H

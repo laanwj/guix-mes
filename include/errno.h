@@ -20,13 +20,13 @@
 #ifndef __MES_ERRNO_H
 #define __MES_ERRNO_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_ERRNO_H
 #include_next <errno.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef __MES_ERRNO_T
 #define __MES_ERRNO_T 1
@@ -65,6 +65,6 @@ extern char *sys_errlist[];
 extern int sys_nerr;
 #endif // !__MESC__
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_ERRNO_H

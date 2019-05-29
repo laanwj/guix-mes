@@ -20,17 +20,17 @@
 #ifndef __MES_STDBOOL_H
 #define __MES_STDBOOL_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STDBOOL_H
 #include_next <stdbool.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 typedef int bool;
 #define false 0
 #define true 1
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_STDBOOL_H

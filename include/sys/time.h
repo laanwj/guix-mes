@@ -20,11 +20,11 @@
 #ifndef __MES_SYS_TIME_H
 #define __MES_SYS_TIME_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_TIME_H
 #include_next <sys/time.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 struct timeval
 {
@@ -51,6 +51,6 @@ struct itimerval
 int gettimeofday (struct timeval *tv, struct timezone *tz);
 int setitimer (int which, struct itimerval const *new, struct itimerval *old);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_TIME_H

@@ -20,10 +20,10 @@
 #ifndef __MES_SETJMP_H
 #define __MES_SETJMP_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SETJMP_H
 #include_next <setjmp.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 typedef struct
 {
@@ -42,6 +42,6 @@ jmp_buf buf;
 void longjmp (jmp_buf env, int val);
 int setjmp (jmp_buf env);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SETJMP_H

@@ -20,14 +20,14 @@
 #ifndef __MES_LIMITS_H
 #define __MES_LIMITS_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_LIMITS_H
 #include_next <limits.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #include <stdint.h>
 
@@ -36,6 +36,6 @@
 #define PATH_MAX 512
 #define _POSIX_OPEN_MAX 16
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_LIMITS_H

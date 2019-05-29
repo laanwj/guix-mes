@@ -18,8 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if WITH_GLIBC
-#error "WITH_GLIBC not supported"
+#if SYSTEM_LIBC
+#error "SYSTEM_LIBC not supported"
 #endif
 
 #include <stdio.h>

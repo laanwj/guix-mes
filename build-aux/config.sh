@@ -98,7 +98,7 @@ CPPFLAGS=${CPPFLAGS-"
 -I ${srcdest}include
 "}
 
-[ "$with_glibc_p" ] && CPPFLAGS="$CPPFLAGS -D WITH_GLIBC=1"
+[ "$with_glibc_p" ] && CPPFLAGS="$CPPFLAGS -D SYSTEM_LIBC=1"
 
 LDFLAGS=${LDFLAGS-"
 -v

@@ -20,13 +20,12 @@
 #ifndef __MES_MATH_H
 #define __MES_MATH_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_MATH_H
 #include_next <math.h>
-#else // ! WITH_GLIBC
-double ldexp (double x, int exp);
-#endif // ! WITH_GLIBC
-
+#else // ! SYSTEM_LIBC
 double fabs (double number);
+double ldexp (double value, int exponent);
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_MATH_H

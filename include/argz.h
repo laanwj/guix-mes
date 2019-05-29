@@ -20,14 +20,14 @@
 #ifndef __MES_ARGZ_H
 #define __MES_ARGZ_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_ARGZ_H
 #include_next <argz.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef libc_hidden_def
 #define libc_hidden_def(x)
@@ -37,6 +37,6 @@
 size_t __argz_count (char const *argz, size_t len);
 void __argz_extract (char const *argz, size_t len, char **argv);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_ARGZ_H

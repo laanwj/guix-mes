@@ -20,14 +20,14 @@
 #ifndef __MES_CTYPE_H
 #define __MES_CTYPE_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_CTYPE_H
 #include_next <ctype.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 #include <endian.h>
 
 int isalnum (int c);
@@ -45,6 +45,6 @@ int isxdigit (int c);
 int tolower (int c);
 int toupper (int c);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_CTYPE_H

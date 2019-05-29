@@ -20,14 +20,14 @@
 #ifndef __MES_ALLOCA_H
 #define __MES_ALLOCA_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_ALLOCA_H
 #include_next <alloca.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef __MES_SIZE_T
 #define __MES_SIZE_T
@@ -43,6 +43,6 @@ char *alloca (int);
 void *alloca (size_t size);
 #endif
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_ALLOCA_H

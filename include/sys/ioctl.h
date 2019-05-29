@@ -20,16 +20,16 @@
 #ifndef __MES_SYS_IOCTL_H
 #define __MES_SYS_IOCTL_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_IOCTL_H
 #include_next <sys/ioctl.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #define TCGETS 0x5401
 #define TCGETA 0x5405
 int ioctl (int fd, unsigned long request, ...);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_IOCTL_H

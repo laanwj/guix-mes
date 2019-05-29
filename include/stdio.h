@@ -22,14 +22,14 @@
 
 #include <mes/lib.h>
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STDIO_H
 #include_next <stdio.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef _IOFBF
 #define _IOFBF 0                /* Fully buffered.  */
@@ -88,6 +88,6 @@ size_t fread (void *ptr, size_t size, size_t count, FILE * stream);
 size_t freadahead (FILE * fp);
 size_t fwrite (void const *ptr, size_t size, size_t count, FILE * stream);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_STDIO_H

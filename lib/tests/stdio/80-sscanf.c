@@ -26,7 +26,7 @@
 int
 main ()
 {
-#if __GNUC__ && __x86_64__ && !WITH_GLIBC
+#if __GNUC__ && __x86_64__ && !SYSTEM_LIBC
   return 0;
 #endif
   int i;

@@ -20,10 +20,10 @@
 #ifndef __MES_TIME_H
 #define __MES_TIME_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_TIME_H
 #include_next <time.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef __MES_TIME_T
 #define __MES_TIME_T 1
@@ -62,6 +62,6 @@ struct tm *gmtime (time_t const *time);
 
 time_t time (time_t * tloc);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_TIME_H

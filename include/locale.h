@@ -20,14 +20,14 @@
 #ifndef __MES_LOCALE_H
 #define __MES_LOCALE_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_LOCALE_H
 #include_next <locale.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 // *INDENT-OFF*
 #ifndef LC_ALL
@@ -40,6 +40,6 @@
 
 char *setlocale (int category, char const *locale);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_LOCALE_H

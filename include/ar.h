@@ -21,14 +21,14 @@
 #ifndef __MES_AR_H
 #define __MES_AR_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_AR_H
 #include_next <ar.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 // Taken from GNU C Library 2.2.5
 
@@ -51,6 +51,6 @@ struct ar_hdr
   char ar_fmag[2];              /* Always contains ARFMAG.  */
 };
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_ARGZ_H

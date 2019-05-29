@@ -20,10 +20,10 @@
 #ifndef __MES_STDARG_H
 #define __MES_STDARG_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_STDARG_H
 #include_next <stdarg.h>
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #include <sys/types.h>
 
@@ -43,6 +43,6 @@ int vsprintf (char *str, char const *format, va_list ap);
 int vsnprintf (char *str, size_t size, char const *format, va_list ap);
 int vsscanf (char const *s, char const *template, va_list ap);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_STDARG_H

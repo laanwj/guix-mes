@@ -20,11 +20,11 @@
 #ifndef __MES_DLFCN_H
 #define __MES_DLFCN_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_DLFCN_H
 #include_next <dlfcn.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #define RTLD_LAZY	0x00001
 #define RTLD_NOW	0x00002
@@ -39,6 +39,6 @@
 void *dlopen (char const *filename, int flags);
 int dlclose (void *handle);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_DLFCN_H

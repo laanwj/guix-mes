@@ -20,14 +20,14 @@
 #ifndef __MES_STRING_H
 #define __MES_STRING_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_STRING_H
 #include_next <string.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef NULL
 #define NULL 0
@@ -69,6 +69,6 @@ char *strupr (char *string);
 char *strerror (int errnum);
 void perror (char const *message);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_STRING_H

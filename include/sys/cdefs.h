@@ -20,9 +20,9 @@
 #ifndef __MES_SYS_CDEFS_H
 #define __MES_SYS_CDEFS_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_CDEFS_H
 #include_next <sys/cdefs.h>
-#endif // (WITH_GLIBC)
+#endif // (SYSTEM_LIBC)
 
 #endif // __MES_SYS_CDEFS_H

@@ -20,14 +20,14 @@
 #ifndef __MES_FCNTL_H
 #define __MES_FCNTL_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #undef __MES_FCNTL_H
 #include_next <fcntl.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 // *INDENT-OFF*
 #define O_RDONLY          0
@@ -53,6 +53,6 @@ int dup2 (int old, int new);
 int fcntl (int filedes, int command, ...);
 int open (char const *s, int flags, ...);
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_FCNTL_H

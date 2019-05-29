@@ -20,11 +20,11 @@
 #ifndef __MES_SYS_TIMES_H
 #define __MES_SYS_TIMES_H 1
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_TIMES_H
 #include_next <sys/times.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #ifndef __MES_CLOCK_T
 #define __MES_CLOCK_T
@@ -48,6 +48,6 @@ struct tms
   clock_t tms_cstime;
 };
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_TIMES_H

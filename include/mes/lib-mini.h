@@ -21,7 +21,7 @@
 #ifndef __MES_LIB_MINI_H
 #define __MES_LIB_MINI_H
 
-#if !WITH_GLIBC
+#if !SYSTEM_LIBC
 
 #ifndef _SIZE_T
 #define _SIZE_T
@@ -83,10 +83,10 @@ int eputs (char const *s);
 int puts (char const *s);
 int oputs (char const *s);
 
-#if !WITH_GLIBC
+#if !SYSTEM_LIBC
 size_t strlen (char const *s);
 ssize_t _write ();
 ssize_t write (int filedes, void const *buffer, size_t size);
-#endif // !WITH_GLIBC
+#endif // !SYSTEM_LIBC
 
 #endif //__MES_LIB_MINI_H

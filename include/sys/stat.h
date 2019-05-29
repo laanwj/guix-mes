@@ -20,11 +20,11 @@
 #ifndef __MES_SYS_STAT_H
 #define __MES_SYS_STAT_H 1lei
 
-#if WITH_GLIBC
+#if SYSTEM_LIBC
 #undef __MES_SYS_STAT_H
 #include_next <sys/stat.h>
 
-#else // ! WITH_GLIBC
+#else // ! SYSTEM_LIBC
 
 #include <time.h>
 #include <sys/types.h>
@@ -114,6 +114,6 @@ int stat (char const *file_name, struct stat *buf);
 #define S_IRWXG 00070
 #define S_IRWXO 00007
 
-#endif // ! WITH_GLIBC
+#endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_STAT_H
