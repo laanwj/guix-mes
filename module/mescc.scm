@@ -59,6 +59,7 @@
             (define (single-char #\D) (value #t))
             (debug-info (single-char #\g))
             (dumpmachine)
+            (fno-builtin)
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
             (library-dir (single-char #\L) (value #t))
@@ -66,6 +67,7 @@
             (machine (single-char #\m) (value #t))
             (nodefaultlibs)
             (nostartfiles)
+            (nostdinc)
             (nostdlib)
             (preprocess (single-char #\E))
             (std (value #t))
@@ -111,6 +113,10 @@ Usage: mescc [OPTION]... FILE...
   -w,--write=TYPE     dump Nyacc AST using TYPE {pretty-print,write}
   -x LANGUAGE         specify LANGUAGE of the following input files
 
+Ignored for GCC compatibility
+  -fno-builtin
+  -nostdinc
+
 Environment variables:
 
   MES=BINARY          run on mes-executable BINARY {mes,guile}
@@ -126,8 +132,10 @@ General help using GNU software: <http://gnu.org/gethelp/>
 
 (define (mescc:main args)
   (let* ((single-dash-options '("-dumpmachine"
+                                "-fno-builtin"
                                 "-nodefaultlibs"
                                 "-nostartfiles"
+                                "-nostdinc"
                                 "-nostdlib"
                                 "-std"))
          (args (map (lambda (o)
