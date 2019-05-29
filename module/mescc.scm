@@ -38,7 +38,7 @@
 (define %prefix (getenv "%prefix"))
 (define %version (getenv "%version"))
 
-(when (and=> (getenv "V") (lambda (v) (> (string->number v) 1)))
+(when (and=> (getenv "V") (lambda (v) (and (= (string-length v) 1) (> (string->number v) 1))))
   (format (current-error-port) "mescc[~a]...\n" %scheme))
 
 (define (unclump-single o)
