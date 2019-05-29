@@ -41,9 +41,33 @@ if [ ! -f $bindir/mescc.scm ]; then
    bindir=$(dirname $0)
 fi
 
+# Workaround for second getopt-long parsing by Mes' boot-0.scm.
+args=""
+for i in "$@"; do
+    case "$i" in
+        -[a-zA-Z]) args="$args $i";;
+        -D[a-zA-Z]*) args="$args -D ${i:2}";;
+        -I[a-zA-Z]*) args="$args -I ${i:2}";;
+        -L[a-zA-Z]*) args="$args -L ${i:2}";;
+        -l[a-zA-Z]*) args="$args -l ${i:2}";;
+        -dumpmachine|-fno-builtin|-nodefaultlibs|-nostartfiles|-nostdinc|-nostdlib|-std=*) args="$args -$i";;
+        *) args="$args $i";;
+    esac
+done
+
+sep=
+if [ "$(basename ${SCHEME-$MES})" = "mes" ]; then
+    sep=--
+fi
+
 ${SCHEME-$MES} \
-     --no-auto-compile\
-     -e main\
-     -L @guile_site_dir@\
-     -C @guile_site_ccache_dir@\
-     $bindir/mescc.scm "$@"
+    --no-auto-compile\
+    -e main\
+    -L @guile_site_dir@\
+    -C @guile_site_ccache_dir@\
+    $bindir/mescc.scm\
+    $sep\
+    "$@"
+
+# ..but using -- "$@" that seems no longer necessary!
+#    $args
