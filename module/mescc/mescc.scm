@@ -198,7 +198,7 @@
 (define* (hex2->elf options hex2-files #:key elf-footer)
   (let* ((input-file-name (car (option-ref options '() '("a.c"))))
          (elf-file-name (cond ((option-ref options 'output #f))
-                              (else (replace-suffix input-file-name ""))))
+                              (else "a.out")))
          (verbose? (option-ref options 'verbose #f))
          (hex2 (or (getenv "HEX2") "hex2"))
          (machine (option-ref options 'machine "32"))
