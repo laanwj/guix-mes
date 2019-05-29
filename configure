@@ -557,7 +557,7 @@ Some influential environment variables:
                      ("@sysconfdir@" . ,sysconfdir)
 
                      ("@GUILE_EFFECTIVE_VERSION@" . ,(effective-version))
-                     ("@V@" . ,(if disable-silent-rules? 1 0))
+                     ("@V@" . ,(if disable-silent-rules? "1" "0"))
 
                      ("@AR@" . ,(or (file-name "ar" deps) ""))
                      ("@BASH@" . ,(or (file-name "bash" deps) ""))

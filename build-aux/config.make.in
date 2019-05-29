@@ -40,6 +40,7 @@ PACKAGE:=@PACKAGE@
 PERL:=@PERL@
 TINYCC_PREFIX:=@TINYCC_PREFIX@
 VERSION:=@VERSION@
+V:=@V@
 
 abs_top_builddir:=@abs_top_builddir@
 abs_top_srcdir:=@abs_top_srcdir@

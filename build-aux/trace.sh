@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ -z "$V" -o "$V0" = 0 ]; then
+if [ -z "$V" -o "$V" = 0 ]; then
     trace () {
         echo "  $1"
         shift
