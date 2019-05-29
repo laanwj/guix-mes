@@ -34,6 +34,20 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 (pass-if "first dummy" #t)
 (pass-if-not "second dummy" #f)
 
+(pass-if-equal "map 1,2"
+               '((0 . a))
+               (map (lambda (x y) (cons x y)) '(0) '(a b)))
+
+(pass-if-equal "map 2,1"
+               '((0 . a))
+               (map (lambda (x y) (cons x y)) '(0 1) '(a)))
+
+(pass-if "for-each 1,2"
+         (for-each (lambda (x y) (cons x y)) '(0) '(a b)))
+
+(pass-if "for-each 2,1"
+         (for-each (lambda (x y) (cons x y)) '(0 1) '(a)))
+
 (pass-if-equal "fold"
                '(3 2 1)
                (fold cons '() '(1 2 3)))
