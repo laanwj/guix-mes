@@ -942,7 +942,7 @@
 
         (,char (guard (char? char))
                (let ((info (allocate-register info)))
-                 (append-text info (wrap-as (as info 'value->r char)))))
+                 (append-text info (wrap-as (as info 'value->r (char->integer char))))))
 
         ((p-expr (ident ,name))
          (let ((info (allocate-register info)))
