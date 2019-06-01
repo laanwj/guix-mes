@@ -29,21 +29,7 @@
 
 #else // ! SYSTEM_LIBC
 
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef __MES_SIZE_T
-#define __MES_SIZE_T
-#undef size_t
-typedef unsigned long size_t;
-#endif
-
-#ifndef __MES_SSIZE_T
-#define __MES_SSIZE_T
-#undef ssize_t
-typedef long ssize_t;
-#endif
+#include <sys/types.h>
 
 void *memchr (void const *block, int c, size_t size);
 void *memcpy (void *dest, void const *src, size_t n);
