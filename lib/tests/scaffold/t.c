@@ -139,7 +139,7 @@ main (int argc, char *argv[])
     return 9;
   if (TCHAR != 0)
     return 11;
-  if (strncmp (argv[0], "scaffold/test", 5))
+  if (strncmp (argv[0], "test/scaffold", 5))
     return 12;
   if (strcmp (env[0], "foo"))
     return 13;

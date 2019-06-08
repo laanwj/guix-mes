@@ -34,20 +34,20 @@ qsort_strcmp (void const *a, void const *b)
 int
 main ()
 {
-  DIR *d = opendir ("lib/tests/dirent/readdir-fu");
+  DIR *d = opendir ("../lib/tests/dirent/readdir-fu");
   if (d)
     return 1;
   if (errno != ENOENT)
     return 2;
 
-  d = opendir ("lib/tests/dirent/90-readdir.c");
+  d = opendir ("../lib/tests/dirent/90-readdir.c");
   if (d)
     return 3;
   if (errno != ENOTDIR)
     return 4;
 
   errno = 0;
-  d = opendir ("lib/tests/dirent/readdir.dir");
+  d = opendir ("../lib/tests/dirent/readdir.dir");
   if (!d)
     return 5;
 

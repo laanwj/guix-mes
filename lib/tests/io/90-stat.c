@@ -66,7 +66,7 @@ main ()
   // char *name = "boo";
   // errno = 0;
   // fprintf (stderr, "%s: %s\n", name, strerror (errno));
-  int fd = open ("COPYING", 0);
+  int fd = open ("../COPYING", 0);
 
   struct stat sbuf;
 

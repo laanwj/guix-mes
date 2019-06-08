@@ -26,9 +26,6 @@
 int
 main ()
 {
-#if __GNUC__ && __x86_64__ && !SYSTEM_LIBC
-  return 0;
-#endif
   int i;
   int r = sscanf ("42", "%d", &i);
   if (r != 1)
