@@ -27,8 +27,8 @@
 #undef __MES_ASSERT_H
 #include_next <assert.h>
 #else // ! SYSTEM_LIBC
-#define assert(x) ((x) ? (void)0 : assert_fail (#x))
-void assert_fail (char *s);
+#define assert(x) ((x) ? (void)0 : __assert_fail (#x))
+void __assert_fail (char *s);
 #endif // ! SYSTEM_LIBC
 
 #endif // __MES_ASSERT_H

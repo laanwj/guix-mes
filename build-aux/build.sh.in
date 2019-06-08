@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -20,34 +20,128 @@
 
 set -e
 
-. ./config.status
-. ${srcdest}build-aux/config.sh
+if test "$1" = "help"; then
+    cat <<EOF
+Run:
+  ./build.sh      to build mes
+  ./check.sh      to check mes
+  ./install.sh    to install mes
+EOF
+    exit 0
+fi
 
-if [ -n "$GUILE" -a "$GUILE" != true ]; then
+if test "$V" = 2; then
+    set -x
+fi
+
+set -u
+. ./config.sh
+
+if $courageous; then
+    echo "Applying courage"
+    set +e
+fi
+
+sh ${srcdest}build-aux/build-scaffold.sh
+
+if test -n "$GUILE" -a "$GUILE" != true; then
     sh ${srcdest}build-aux/build-guile.sh
 fi
 
-if [ "$gcc_p$tcc_p" ]; then
-    sh ${srcdest}build-aux/build-mes.sh
-elif [ -d "$MES_SEED" ]; then
-    sh ${srcdest}build-aux/bootstrap-mes.sh
+debug=
+#debug=-g
+
+CFLAGS="
+$debug
+"
+
+if test $mes_libc = mes; then
+    CFLASG="$CFLAGS
+-nostdinc
+-nostdlib
+-fno-builtin
+"
 fi
 
-## FIXME: remove this and have user configure/build/install for each compiler?
-unset CFLAGS CPPFLAGS LDFLAGS gcc_p tcc_p with_glibc_p
-MES=guile
-mesc_p=1
-mes_p=1
-mes_arch=x86-mes
-program_prefix=$mes_arch-
-CC="./pre-inst-env mescc"
+CPPFLAGS="
+-D HAVE_CONFIG_H=1
+-I ../include
+-I ${srcdir}/../include
+-I ${srcdir}/../include/$mes_kernel/$mes_cpu
+"
 
-sh ${srcdest}build-aux/build-mes.sh
-cp src/${program_prefix}mes src/mes
-
-if [ "$arch" = x86_64 ]; then
-    MES_CFLAGS='-m 64'
-    mes_arch=x86_64-mes
-    program_prefix=$mes_arch-
-    sh ${srcdest}build-aux/build-mes.sh
+LDFLAGS="
+$debug
+-L .
+"
+if test $mes_libc = mes; then
+    LDFLAGS="$LDFLAGS
+-nostdlib
+"
 fi
+LIBS=-lc
+
+export CFLAGS
+export CPPFLAGS
+export LDFLAGS
+export LIBS
+
+if test $compiler = gcc; then
+    (
+        mkdir -p gcc-lib
+        cp config.sh gcc-lib
+        cd gcc-lib
+        if test -z "$srcdest"; then
+            srcdest=../
+            srcdir=../
+        fi
+        CPPFLAGS="
+-D HAVE_CONFIG_H=1
+-I include
+-I ${srcdest}include
+-I ${srcdest}include/$mes_kernel/$mes_cpu
+"
+        sh ${srcdest}build-aux/build-lib.sh
+        cp crt1.o ..
+    )
+fi
+
+(
+    if test $compiler = gcc; then
+        LDFLAGS="$LDFLAGS
+-L gcc-lib
+"
+    fi
+
+    CPPFLAGS="
+-D HAVE_CONFIG_H=1
+-I include
+-I ${srcdest}include
+-I ${srcdest}include/$mes_kernel/$mes_cpu
+"
+    sh ${srcdest}build-aux/build-mes.sh
+)
+
+(
+    mkdir -p mescc-lib
+    cp config.sh mescc-lib
+    cd mescc-lib
+    sed -i s,mes_libc=system,mes_libc=mes, config.sh
+    mkdir -p include/mes
+    cp -p ../include/mes/config.h include/mes/config.h
+    sed -i 's,#define SYSTEM_LIBC 1,#undef SYSTEM_LIBC,' include/mes/config.h
+    if test -z "$srcdest"; then
+        srcdest=../
+        srcdir=../
+    fi
+        CPPFLAGS="
+-D HAVE_CONFIG_H=1
+-I include
+-I ${srcdest}include
+-I ${srcdest}include/$mes_kernel/$mes_cpu
+"
+    compiler=mescc
+    AR="${srcdest}pre-inst-env ar"
+    CC="${srcdest}pre-inst-env mescc -m $mes_bits"
+    sh ${srcdest}build-aux/build-lib.sh
+)

@@ -18,6 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <mes/lib.h>
+#include <fcntl.h>
+
 ssize_t
 read (int filedes, void *buffer, size_t size)
 {

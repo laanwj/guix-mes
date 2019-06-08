@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,26 +18,14 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void
-_exit (int status)
-{
-#if 1                           // !MES_CCAMD64
-  asm ("mov____0x8(%rbp),%rdi !0x10");
-#endif
+#ifndef __MES_SYSCALL_H
+#define __MES_SYSCALL_H
 
-  asm ("mov____$i32,%rax SYS_exit");
-  asm ("syscall");
-}
+long _sys_call (long sys_call);
+long _sys_call1 (long sys_call, long one);
+long _sys_call2 (long sys_call, long one, long two);
+long _sys_call3 (long sys_call, long one, long two, long three);
+long _sys_call4 (long sys_call, long one, long two, long three, long four);
+long _sys_call6 (long sys_call, long one, long two, long three, long four, long five, long six);
 
-void
-_write (int filedes, void const *buffer, size_t size)
-{
-#if 1                           // !MES_CCAMD64
-  asm ("mov____0x8(%rbp),%rdi !0x10");
-  asm ("mov____0x8(%rbp),%rsi !0x18");
-  asm ("mov____0x8(%rbp),%rdx !0x20");
-#endif
-
-  asm ("mov____$i32,%rax SYS_write");
-  asm ("syscall");
-}
+#endif //__MES_SYSCALL_H

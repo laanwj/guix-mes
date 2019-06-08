@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -27,7 +27,7 @@ fwrite (void const *data, size_t size, size_t count, FILE * stream)
   if (__mes_debug () > 1)
     {
       eputs ("fwrite ");
-      eputs (itoa ((int) stream));
+      eputs (itoa ((int) (long) stream));
       eputs ("  ");
       eputs (itoa (size));
       eputs ("\n");
@@ -35,7 +35,7 @@ fwrite (void const *data, size_t size, size_t count, FILE * stream)
 
   if (!size || !count)
     return 0;
-  int bytes = write ((int) stream, data, size * count);
+  int bytes = write ((int) (long) stream, data, size * count);
 
   if (__mes_debug () > 2)
     {

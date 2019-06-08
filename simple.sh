@@ -20,21 +20,89 @@
 
 set -ex
 
-# We need mes/module/mes/boot-0.scm created
-# Create traditional GNU config.h with the needed defines?
-./configure
-
-rm -f src/strings.h
-
 ################################################################################
-# GLIBC build
-rm -rf out-glibc
-mkdir out-glibc
-gcc -c -D SYSTEM_LIBC=1 -I include -I lib -o out-glibc/libmes.o lib/libmes.c
-gcc -c -D SYSTEM_LIBC=1 -D VERSION=\"0.19\" -D MODULEDIR=\"module\" -D PREFIX=\"/usr/local\" -I include -o out-glibc/mes.o src/mes.c
-gcc out-glibc/mes.o out-glibc/libmes.o -o out-glibc/mes
+# SYSTEM_LIBC build
 
-MES_PREFIX=mes out-glibc/mes --help
+## Clean ##
+rm -rf out-system-libc
+mkdir out-system-libc
+
+## Configure ##
+mes_cpu=x86_64
+mes_bits=64
+cat > include/mes/config.h <<EOF
+#define SYSTEM_LIBC 1
+#define VERSION "git"
+#define pkgdatadir "/usr/local/share/mes"
+EOF
+
+## Build ##
+gcc -g -D HAVE_CONFIG_H=1 -I include\
+    -o out-system-libc/mes\
+    \
+    lib/mes/eputs.c\
+    lib/mes/oputs.c\
+    \
+    lib/mes/itoa.c\
+    lib/mes/ltoa.c\
+    lib/mes/ltoab.c\
+    lib/mes/ultoa.c\
+    lib/mes/utoa.c\
+    lib/mes/eputc.c\
+    lib/mes/fdgetc.c\
+    lib/mes/fdputc.c\
+    lib/mes/fdputs.c\
+    lib/mes/fdungetc.c\
+    lib/mes/mes_open.c\
+    lib/mes/ntoab.c\
+    lib/mes/oputc.c\
+    \
+    src/gc.c\
+    src/hash.c\
+    src/lib.c\
+    src/math.c\
+    src/mes.c\
+    src/module.c\
+    src/posix.c\
+    src/reader.c\
+    src/string.c\
+    src/struct.c\
+    src/vector.c
+
+## Check ##
+
+# Any light?
+out-system-libc/mes --help
+
+# Simplest of tests
+echo '(display "hello\n")' | MES_BOOT=boot-01.scm out-system-libc/mes
+
+# Basic test.  We should be safe, but there are ~30 more in tests/*.test.
+MES_DEBUG=4 MES=out-system-libc/mes tests/base.test
+
+# GC test
+MES_DEBUG=3 MES_ARENA=10000 MES_MAX_ARENA=10000 MES_BOOT=scaffold/gc-test.scm out-system-libc/mes
+
+# MesCC test
+MES_DEBUG=2 MES=out-system-libc/mes sh -x scripts/mescc -m $mes_bits -nostdlib\
+         -I include -I include/$mes_kernel/$mes_cpu\
+         -o out-system-libc/hello\
+         lib/linux/$mes_cpu-mes-mescc/crt1.c\
+         \
+         lib/mes/eputs.c\
+         \
+         lib/linux/$mes_cpu-mes-mescc/mini.c\
+         \
+         lib/posix/write.c\
+         lib/string/strlen.c\
+         \
+         scaffold/hello.c
+set +e
+out-system-libc/hello
+r=$?
+if [ $r != 42 ]; then
+   exit 1
+fi
 
 ################################################################################
 # Mes C lib build
@@ -44,16 +112,148 @@ MES_PREFIX=mes out-glibc/mes --help
 # or
 #    guix environment --ad-hoc -e '(begin (use-modules (gnu packages cross-base)) (list (cross-binutils "i686-unknown-linux-gnu") (cross-gcc "i686-unknown-linux-gnu")))'
 
+## Clean ##
 rm -rf out-mes
 mkdir out-mes
-i686-unknown-linux-gnu-gcc -c -g -O0 -nostdinc -fno-builtin -fno-stack-protector -I include -o out-mes/crt1.o lib/linux/x86-mes-gcc/crt1.c
-i686-unknown-linux-gnu-gcc -c -g -O0 -nostdinc -fno-builtin -fno-stack-protector -I include -I lib -o out-mes/libc.o lib/libc.c
-i686-unknown-linux-gnu-gcc -c -g -O0 -nostdinc -fno-builtin -fno-stack-protector -I include -D VERSION=\"0.19\" -D MODULEDIR=\"module\" -D PREFIX=\"/usr/local\" -o out-mes/mes.o src/mes.c
-i686-unknown-linux-gnu-gcc -g -nostdlib -o out-mes/mes out-mes/crt1.o out-mes/mes.o out-mes/libc.o
 
-# Test it, use ./pre-inst-env out-mes/mes --help or simply
-MES_PREFIX=mes out-mes/mes --help
+## Configure ##
+mes_kernel=linux
+CC=gcc
+mes_cpu=x86_64
+#CC=i686-unknown-linux-gnu-gcc
+#mes_cpu=x86
+cat > include/mes/config.h <<EOF
+// #define SYSTEM_LIBC 0
+#define VERSION "git"
+#define pkgdatadir "/usr/local/share/mes"
+EOF
 
-################################################################################
-# To silence warnings, add
-# -Wno-discarded-qualifiers -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -Wno-pointer-sign -Wno-int-conversion -Wno-incompatible-pointer-types
+## Build ##
+compiler=gcc     # not configurable
+$CC -g -D HAVE_CONFIG_H=1 -I include -I include/$mes_kernel/$mes_cpu\
+    -nostdinc -nostdlib -fno-builtin -fno-stack-protector\
+    -o out-mes/mes\
+    \
+    lib/linux/$mes_cpu-mes-gcc/crt1.c\
+    \
+    lib/mes/eputs.c\
+    lib/mes/oputs.c\
+    \
+    lib/posix/write.c\
+    lib/string/strlen.c\
+    lib/stdlib/puts.c\
+    lib/stdlib/exit.c\
+    lib/$mes_kernel/$mes_cpu-mes-$compiler/mini.c\
+    \
+    lib/mes/itoa.c\
+    lib/mes/ltoa.c\
+    lib/mes/ltoab.c\
+    lib/mes/ultoa.c\
+    lib/mes/utoa.c\
+    lib/mes/eputc.c\
+    lib/mes/fdgetc.c\
+    lib/mes/fdputc.c\
+    lib/mes/fdputs.c\
+    lib/mes/fdungetc.c\
+    lib/mes/mes_open.c\
+    lib/mes/ntoab.c\
+    lib/mes/oputc.c\
+    \
+    lib/stdlib/atoi.c\
+    lib/mes/abtol.c\
+    lib/ctype/isdigit.c\
+    lib/ctype/isnumber.c\
+    lib/ctype/isspace.c\
+    lib/ctype/isxdigit.c\
+    \
+    lib/mes/__assert_fail.c\
+    lib/mes/__mes_debug.c\
+    lib/posix/execv.c\
+    lib/posix/getenv.c\
+    lib/posix/isatty.c\
+    lib/posix/setenv.c\
+    lib/posix/wait.c\
+    lib/stdio/fgetc.c\
+    lib/stdio/fputc.c\
+    lib/stdio/fputs.c\
+    lib/stdio/getc.c\
+    lib/stdio/getchar.c\
+    lib/stdio/putc.c\
+    lib/stdio/putchar.c\
+    lib/stdio/ungetc.c\
+    lib/stdlib/free.c\
+    lib/stdlib/malloc.c\
+    lib/stdlib/realloc.c\
+    lib/string/memchr.c\
+    lib/string/memcmp.c\
+    lib/string/memcpy.c\
+    lib/string/memset.c\
+    lib/string/strcmp.c\
+    lib/string/strcpy.c\
+    lib/string/strncmp.c\
+    \
+    lib/linux/access.c\
+    lib/linux/brk.c\
+    lib/linux/chmod.c\
+    lib/linux/clock_gettime.c\
+    lib/linux/dup.c\
+    lib/linux/dup2.c\
+    lib/linux/execve.c\
+    lib/linux/fork.c\
+    lib/linux/fsync.c\
+    lib/linux/getcwd.c\
+    lib/linux/gettimeofday.c\
+    lib/linux/ioctl.c\
+    lib/linux/open.c\
+    lib/linux/read.c\
+    lib/linux/time.c\
+    lib/linux/unlink.c\
+    lib/linux/waitpid.c\
+    lib/linux/$mes_cpu-mes-$compiler/syscall.c\
+    \
+    src/gc.c\
+    src/hash.c\
+    src/lib.c\
+    src/math.c\
+    src/mes.c\
+    src/module.c\
+    src/posix.c\
+    src/reader.c\
+    src/string.c\
+    src/struct.c\
+    src/vector.c
+
+## Check ##
+
+# Any light?
+out-mes/mes --help
+
+# Simplest of tests
+echo '(display "hello\n")' | MES_BOOT=boot-01.scm out-mes/mes
+
+# Basic test.  We should be safe, but there are ~30 more in tests/*.test.
+MES_DEBUG=4 MES=out-mes/mes tests/base.test
+
+# GC test
+MES_DEBUG=3 MES_ARENA=10000 MES_MAX_ARENA=10000 MES_BOOT=scaffold/gc-test.scm out-mes/mes
+
+# MesCC test
+MES_DEBUG=2 MES=out-mes/mes sh -x scripts/mescc -m $mes_bits -nostdlib\
+         -I include -I include/$mes_kernel/$mes_cpu\
+         -o out-mes/hello\
+         lib/linux/$mes_cpu-mes-mescc/crt1.c\
+         \
+         lib/mes/eputs.c\
+         \
+         lib/linux/$mes_cpu-mes-mescc/mini.c\
+         \
+         lib/posix/write.c\
+         lib/string/strlen.c\
+         \
+         scaffold/hello.c
+set +e
+out-mes/hello
+r=$?
+if [ $r != 42 ]; then
+   exit 1
+fi

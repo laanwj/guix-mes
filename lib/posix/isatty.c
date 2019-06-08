@@ -18,7 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <unistd.h>
+#include <mes/lib.h>
+#include <sys/ioctl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <termio.h>
 
 typedef unsigned char cc_t;
 typedef unsigned int speed_t;

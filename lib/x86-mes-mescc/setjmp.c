@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,22 +18,30 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#include <setjmp.h>
+#include <stdlib.h>
 
-char *
-fdgets (char *s, int count, int fd)
+void
+longjmp (jmp_buf env, int val)
 {
-  int c = 0;
-  char *p = s;
-  while (--count > 0 && c != '\n')
-    {
-      c = fdgetc (fd);
-      if (c == EOF)
-        break;
-      *p++ = c;
-    }
-  if (p == s && (c == EOF || count == -1))
-    return 0;
-  *p = 0;
-  return s;
+  val = val == 0 ? 1 : val;
+  ///asm ("mov____0x8(%ebp),%eax !0x0c"); // val
+  asm ("mov____0x8(%ebp),%ebp !0x08");  // env*
+
+  asm ("mov____0x8(%ebp),%ebx !0x4");   // env.__pc
+  asm ("mov____0x8(%ebp),%esp !0x8");   // env.__sp
+  asm ("mov____0x8(%ebp),%ebp !0x0");   // env.__bp
+  asm ("jmp____*%ebx");
+  // not reached
+  exit (42);
+}
+
+int
+setjmp (__jmp_buf * env)
+{
+  long *p = (long *) &env;
+  env[0].__bp = p[-2];
+  env[0].__pc = p[-1];
+  env[0].__sp = (long) &env;
+  return 0;
 }

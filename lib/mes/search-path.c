@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,6 +19,9 @@
  */
 
 #include <mes/lib.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 char *
 search_path (char const *file_name)

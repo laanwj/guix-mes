@@ -20,31 +20,45 @@
 
 #set -e
 
-. ./config.status
-. ${srcdest}build-aux/config.sh
-. ${srcdest}build-aux/trace.sh
+. ./config.sh
 
-GUILE=${GUILE-$(command -v guile)} || true
-if [ -z "$GUILE" -o "$GUILE" = true ]; then
-    GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-2.2}
-else
-    GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-$(guile -c '(display (effective-version))')}
+v=
+_v=
+if test "$V" = 2; then
+    set -x
+fi
+if test "$V" -gt 0; then
+    v=v
+    _v=-v
 fi
 
-datadir=${datadir-$prefix/share}
-docdir=${docdir-$datadir/doc/mes-$VERSION}
-infodir=${infodir-$datadir/info}
-mandir=${mandir-$datadir/man}
-moduledir=${moduledir-$datadir/mes/module}
-guile_site_dir=${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION}
-guile_site_ccache_dir=${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache}
+set -u
 
-MES_PREFIX=${MES_PREFIX-$prefix/share/mes}
+rm ${DESTDIR}${bindir}/mes
+rm ${DESTDIR}${bindir}/ar
+rm ${DESTDIR}${bindir}/mescc
+rm ${DESTDIR}${bindir}/mescc.scm
+rm ${DESTDIR}${bindir}/diff.scm
+rmdir ${DESTDIR}${bindir} || :
 
-rm $DESTDIR$prefix/bin/mes
-rm $DESTDIR$prefix/bin/mescc
-rm -f $DESTDIR$prefix/bin/diff.scm
-rmdir $DESTDIR$prefix/bin || :
+rm -r ${DESTDIR}${libdir}/$mes_cpu-mes
+rm ${DESTDIR}${libdir}/libc-mini.a
+rm ${DESTDIR}${libdir}/libmes.a
+if cmp gcc-lib/libc.a ${DESTDIR}${libdir}/libc.a; then
+    rm ${DESTDIR}${libdir}/libc.a
+fi
+if cmp gcc-lib/libtcc1.a ${DESTDIR}${libdir}/libtcc1.a; then
+    rm ${DESTDIR}${libdir}/libtcc1.a
+fi
+rm ${DESTDIR}${libdir}/libc+tcc.a
+rm ${DESTDIR}${libdir}/libc+gnu.a
+
+rm -r ${DESTDIR}${includedir}/mes
+rm $(grep -lr _MES_ ${DESTDIR}${includedir})
+rmdir ${DESTDIR}${includedir}/linux/x86
+rmdir ${DESTDIR}${includedir}/linux/x86_64
+rmdir ${DESTDIR}${includedir}/linux
+rmdir -p ${DESTDIR}${includedir}/sys
 
 for i in\
     AUTHORS\
@@ -56,28 +70,27 @@ for i in\
     NEWS\
     README\
     ;do
-    rm $DESTDIR$docdir/$i || :;
+    rm ${DESTDIR}${docdir}/$i || :;
 done
 
-rmdir $DESTDIR$docdir || :
+rm -r ${DESTDIR}${pkgdatadir}
+rm -r ${DESTDIR}${guile_site_ccache_dir}/mes
+rm -r ${DESTDIR}${guile_site_ccache_dir}/mescc
 
-rm -r $DESTDIR$MES_PREFIX
-rm -r $DESTDIR$guile_site_ccache_dir/mes
-rm -r $DESTDIR$guile_site_ccache_dir/mescc
+rm -r ${DESTDIR}${guile_site_dir}/mes
+rm ${DESTDIR}${guile_site_dir}/mescc.scm
+rm -r ${DESTDIR}${guile_site_dir}/mescc
 
-rm -r $DESTDIR$guile_site_dir/mes
-rm -r $DESTDIR$guile_site_dir/mescc
+rm ${DESTDIR}${infodir}/dir
+rm ${DESTDIR}${infodir}/mes.info*
+rm ${DESTDIR}${infodir}/images/gcc-mesboot*
+rm ${DESTDIR}${infodir}/images/README
+rm ${DESTDIR}${mandir}/man1/mes.1
+rm ${DESTDIR}${mandir}/man1/mescc.1
 
-rm $DESTDIR$prefix/share/info/dir
-rm $DESTDIR$prefix/share/info/mes.info*
-rm $DESTDIR$prefix/share/info/images/gcc-mesboot*
-rm $DESTDIR$prefix/share/info/images/README
-rm $DESTDIR$mandir/man1/mes.1
-rm $DESTDIR$mandir/man1/mescc.1
-
-rmdir -p $DESTDIR$prefix/share/doc
-rmdir -p $DESTDIR$prefix/share/info/images
-rmdir -p $DESTDIR$guile_site_dir
-rmdir -p $DESTDIR$guile_site_ccache_dir
-rmdir -p $DESTDIR$mandir/man1
+rmdir -p ${DESTDIR}${docdir}
+rmdir -p ${DESTDIR}${infodir}/images
+rmdir -p ${DESTDIR}${guile_site_dir}
+rmdir -p ${DESTDIR}${guile_site_ccache_dir}
+rmdir -p ${DESTDIR}${mandir}/man1
 true

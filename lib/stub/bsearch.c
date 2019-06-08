@@ -18,26 +18,19 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <linux/chdir.c>
-#include <linux/fcntl.c>
-#include <linux/fstat.c>
-#include <linux/getdents.c>
-#include <linux/getegid.c>
-#include <linux/geteuid.c>
-#include <linux/getgid.c>
-#include <linux/getpid.c>
-#include <linux/getppid.c>
-#include <linux/getrusage.c>
-#include <linux/getuid.c>
-#include <linux/kill.c>
-#include <linux/link.c>
-#include <linux/lstat.c>
-#include <linux/mkdir.c>
-#include <linux/nanosleep.c>
-#include <linux/pipe.c>
-#include <linux/rename.c>
-#include <linux/setgid.c>
-#include <linux/settimer.c>
-#include <linux/setuid.c>
-#include <linux/signal.c>
-#include <linux/sigprogmask.c>
+#include <mes/lib.h>
+#include <stdlib.h>
+
+void *
+#if __MESC__
+bsearch (void const *key, void const *array, size_t count, size_t size, void (*compare) ())
+#else
+bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare)
+#endif
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("bsearch stub\n");
+  stub = 1;
+  return 0;
+}

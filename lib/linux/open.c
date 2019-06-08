@@ -18,13 +18,19 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <mes/lib.h>
+#include <fcntl.h>
+#include <stdarg.h>
+
 int
 _open3 (char const *file_name, int flags, int mask)
 {
   int r = _sys_call3 (SYS_open, (long) file_name, (int) flags, (int) mask);
   __ungetc_init ();
   if (r > 2)
-    __ungetc_buf[r] = -1;
+    __ungetc_clear (r);
   return r;
 }
 

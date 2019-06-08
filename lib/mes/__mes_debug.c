@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,29 +18,19 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <setjmp.h>
+#include "mes/lib.h"
+#include <stdlib.h>
 
-void
-longjmp (jmp_buf env, int val)
-{
-  val = val == 0 ? 1 : val;
-  ///asm ("mov____0x8(%ebp),%eax !0x0c"); // val
-  asm ("mov____0x8(%ebp),%ebp !0x08");  // env*
-
-  asm ("mov____0x8(%ebp),%ebx !0x4");   // env.__pc
-  asm ("mov____0x8(%ebp),%esp !0x8");   // env.__sp
-  asm ("mov____0x8(%ebp),%ebp !0x0");   // env.__bp
-  asm ("jmp____*%ebx");
-  // not reached
-  exit (42);
-}
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 int
-setjmp (__jmp_buf * env)
+__mes_debug ()
 {
-  long *p = (long *) &env;
-  env[0].__bp = p[-2];
-  env[0].__pc = p[-1];
-  env[0].__sp = (long) &env;
-  return 0;
+  static int __mes_debug = -1;
+  if (__mes_debug == -1)
+    {
+      char *p = getenv ("MES_DEBUG");
+      __mes_debug = p ? MAX (atoi (p), 1) : 0;
+    }
+  return __mes_debug;
 }

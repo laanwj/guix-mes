@@ -18,6 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mes/lib.h"
+#include "mes/mes.h"
+
+#include <assert.h>
+
+#include <limits.h>
+#include <string.h>
+
+long MAX_STRING;
+
 void
 assert_max_string (size_t i, char const *msg, char *string)
 {

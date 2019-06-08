@@ -23,5 +23,5 @@
 int
 index (char const *s, int c)
 {
-  return strchr (s, c);
+  return (int) (long) strchr (s, c);
 }

@@ -32,6 +32,12 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
   #:use-module (ice-9 rdelim)
   #:export (main))
 
+(define *shell* "sh")
+(define PACKAGE "mes")
+(define PACKAGE-NAME "GNU Mes")
+(define PACKAGE-BUGREPORT "bug-mes@gnu.org")
+(define VERSION "0.19")
+
 (cond-expand
  (guile)
  (mes (mes-use-module (srfi srfi-1))
@@ -62,10 +68,6 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
   (or (search-path (string-split (getenv "PATH") #\:) name)
       (and (and warn? (format (current-error-port) "warning: not found: ~a\n" name))
            default)))
-
-(define *shell* "sh")
-(define PACKAGE "mes")
-(define VERSION "0.19")
 
 ;;; Utility
 (define (logf port string . rest)
@@ -279,6 +281,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
             (bindir (value #t))
             (datadir (value #t))
             (docdir (value #t))
+            (includedir (value #t))
             (libdir (value #t))
             (srcdir (value #t))
             (sysconfdir (value #t))
@@ -290,14 +293,15 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
             (with-courage)
             (infodir (value #t))
             (mandir (value #t))
+            (disable-colors)
+            (enable-colors)
             (disable-silent-rules)
             (enable-silent-rules)
+            (with-system-libc)
 
             (enable-fast-install)       ; Ignored for Guix
-            (includedir (value #t))     ; Ignored for Debian
             (mandir (value #t))         ; Ignored for Debian
             (localstatedir (value #t))  ; Ignored for Debian
-            (libdir (value #t))         ; Ignored for Debian
             (libexecdir (value #t))     ; Ignored for Debian
             (runstatedir (value #t))    ; Ignored for Debian
             (disable-maintainer-mode)   ; Ignored for Debian
@@ -320,17 +324,24 @@ Defaults for the options are specified in brackets.
 Options:
   -h, --help           display this help
       --build=BUILD    configure for building on BUILD [guessed]
+      --colors         no colorized output
       --disable-silent-rules
                        verbose build output [V=1]
       --host=HOST      cross-compile to build programs to run on HOST [BUILD]
-      --mes            use Mes C Library
   -v, --verbose        be verbose
-  --with-courage       assert being courageous to configure for unsupported platform
+  --with-courage       Assert that even if this platform is unsupported,
+                       you will be courageous and port GNU Mes to it
+                       (see \"Porting GNU Mes\" in the manual.)
   --with-cheating      cheat using Guile instead of Mes
+  --with-system-libc   use system libc
 
 Installation directories:
   --prefix=DIR         install in prefix DIR [~a]
+
+  --bindir=DIR         user executables [PREFIX/bin]
+  --includedir=DIR     C header files [PREFIX/include]
   --infodir=DIR        info documentation [PREFIX/share/info]
+  --libdir=DIR         object code libraries [EPREFIX/lib]
   --mandir=DIR         man pages [PREFIX/share/man]
 
 Program names:
@@ -343,8 +354,6 @@ Ignored for Guix:
 Ignored for Debian:
   --disable-dependency-tracking
   --disable-maintainer-mode
-  --includedir=DIR
-  --libdir=DIR
   --libexecdir=DIR
   --localstatedir=DIR
   --runstatedir=DIR
@@ -356,7 +365,6 @@ Some influential environment variables:
   GUILD             guild command
   MES_FOR_BUILD     build system MES [can be mes or guile]
   MES_SEED          location of mes-seed
-  TINYCC_PREFIX     location of tinycc [for tests/test2]
 " PACKAGE VERSION (getenv "prefix")))
 
 (define (main args)
@@ -376,11 +384,9 @@ Some influential environment variables:
          (bindir (option-ref options 'bindir "${prefix}/bin"))
          (datadir (option-ref options 'datadir "${prefix}/share"))
          (docdir (option-ref options 'docdir "${datadir}/doc/mes-${VERSION}"))
+         (includedir (option-ref options 'libdir "${prefix}/include"))
          (libdir (option-ref options 'libdir "${prefix}/lib"))
-         (moduledir "${datadir}/mes/module")
-         (moduledir/ (string-append
-                      (gulp-pipe* "echo" prefix)
-                      "/share/mes/module/"))
+         (pkgdatadir (string-append datadir "/mes"))
          (guile-effective-version (effective-version))
          (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
                              (string-append prefix "/share/guile/site/" guile-effective-version)))
@@ -397,8 +403,11 @@ Some influential environment variables:
 
          (with-cheating? (option-ref options 'with-cheating #f))
          (with-courage? (option-ref options 'with-courage #f))
+         (disable-colors? (option-ref options 'disable-colors #f))
+         (enable-colors? (option-ref options 'enable-colors #f))
          (disable-silent-rules? (option-ref options 'disable-silent-rules #f))
          (enable-silent-rules? (option-ref options 'enable-silent-rules #f))
+         (with-system-libc? (option-ref options 'with-system-libc #f))
          (vars (filter (cut string-index <> #\=) (option-ref options '() '())))
          (help? (option-ref options 'help #f))
          (mes? (option-ref options 'mes #f)))
@@ -425,6 +434,7 @@ Some influential environment variables:
                        (list (make-dep "hex2" #:version '(0 3))
                              (make-dep "M1" #:version '(0 3))
                              (make-dep "blood-elf" #:version '(0 1))
+                             (make-dep "diff" #:optional? #t)
                              (make-dep "guile" #:version '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile") #:optional? #t)
                              (make-dep "mes" #:version '(0 18) #:optional? #t)
                              (make-dep "guix" #:version '(0 13) #:optional? #t)
@@ -483,16 +493,23 @@ Some influential environment variables:
                      (cons (check-link-c cc (make-dep "if cc can create executables" #:data "int main () {return 0;}"))
                            deps)
                      deps))
-           (mes? (or mes? (not (file-name "if cc can create executables" deps))))
+           (system-libc? (and with-system-libc? (file-name "if cc can create executables" deps)))
            (build-type (or (and cc (gulp-pipe* cc "-dumpmachine")) build-type))
-           (arch (car (string-split build-type #\-)))
-           (arch (if (member arch '("i386" "i486" "i586" "i686")) "x86"
-                     arch))
-           (mes-arch arch)
-           (mes-arch (if mes? (string-append mes-arch "-mes") mes-arch))
-           (mes-arch (if gcc? (string-append mes-arch "-gcc") mes-arch))
-           (mes-arch (if tcc? (string-append mes-arch "-gcc") mes-arch))
-           (posix? (and (not mesc?) (not mes?))))
+           (build-type-list (string-split build-type #\-))
+           (mes-cpu (car build-type-list))
+           (mes-cpu (if (member mes-cpu '("i386" "i486" "i586" "i686")) "x86"
+                        mes-cpu))
+           (mes-bits (if (member mes-cpu '("x86_64")) "64"
+                         "32"))
+           (mes-libc (if system-libc? "system" "mes"))
+
+           (kernel-list (filter (compose not (cut equal? <> "unknown")) (cdr build-type-list)))
+           (mes-kernel (cond ((or (equal? '("linux" "gnu") kernel-list)
+                                  (equal? "linux" (car kernel-list))) "linux")
+                             ((equal? '( "gnu") kernel-list) "gnu")
+                             (else "unknown")))
+           (compiler (if gcc? "gcc" "mescc"))
+           (mes-system (string-join (list mes-cpu mes-kernel "mes") "-")))
 
       (define* (substitute file-name pairs
                            #:key (target (if (string-suffix? ".in" file-name)
@@ -508,8 +525,8 @@ Some influential environment variables:
                                  line pairs))
                   (loop (read-line in 'concat))))))))
 
-      (when (and (not (member arch '("x86" "x86_64"))) (not with-courage?))
-        (stderr "platform not supported: ~a, try --with-courage\n" arch)
+      (when (and (not (member mes-system '("x86-linux-mes" "x86_64-linux-mes"))) (not with-courage?))
+        (stderr "platform not supported: ~a, try --with-courage\n" mes-system)
         (exit 1))
       (when (pair? missing)
         (stderr "\nMissing dependencies: ~a\n" (string-join (map dependency-name missing)))
@@ -523,18 +540,20 @@ Some influential environment variables:
                (zero? (system* "git" "commit" "--allow-empty" "-m" "Import mes")))))
 
       (let ((pairs `(("@PACKAGE@" . ,PACKAGE)
+                     ("@PACKAGE_NAME@" . ,PACKAGE-NAME)
+                     ("@PACKAGE_BUGREPORT@" . ,PACKAGE-BUGREPORT)
                      ("@VERSION@" . ,VERSION)
 
-                     ("@arch@" . ,arch)
                      ("@build@" . ,build-type)
                      ("@host@" . ,host-type)
 
-                     ("@gcc_p@" . ,(if gcc? "1" ""))
-                     ("@mes_arch@" . ,mes-arch)
-                     ("@mes_p@" . ,(if mes? "1" ""))
-                     ("@mesc_p@" . ,(if mesc? "1" ""))
-                     ("@with_glibc_p@" . ,(if posix? "1" ""))
-                     ("@tcc_p@" . ,(if tcc? "1" ""))
+                     ("@courageous@" . ,(if with-courage? "true" "false"))
+                     ("@compiler@" . ,compiler)
+                     ("@mes_bits@" . ,mes-bits)
+                     ("@mes_kernel@" . ,mes-kernel)
+                     ("@mes_cpu@" . ,mes-cpu)
+                     ("@mes_libc@" . ,mes-libc)
+                     ("@mes_system@" . ,mes-system)
 
                      ("@abs_top_srcdir@" . ,abs-top-srcdir)
                      ("@abs_top_builddir@" . ,abs-top-builddir)
@@ -547,21 +566,24 @@ Some influential environment variables:
                      ("@program_prefix@" . ,program-prefix)
                      ("@bindir@" . ,bindir)
                      ("@datadir@" . ,datadir)
+                     ("@pkgdatadir@" . ,pkgdatadir)
                      ("@docdir@" . ,docdir)
                      ("@guile_site_ccache_dir@" . ,guile-site-ccache-dir)
                      ("@guile_site_dir@" . ,guile-site-dir)
                      ("@infodir@" . ,infodir)
+                     ("@includedir@" . ,includedir)
                      ("@libdir@" . ,libdir)
                      ("@mandir@" . ,mandir)
-                     ("@moduledir@" . ,moduledir)
                      ("@sysconfdir@" . ,sysconfdir)
 
                      ("@GUILE_EFFECTIVE_VERSION@" . ,(effective-version))
+                     ("@colors@" . ,(if disable-colors? "no" "yes"))
                      ("@V@" . ,(if disable-silent-rules? "1" "0"))
 
                      ("@AR@" . ,(or (file-name "ar" deps) ""))
                      ("@BASH@" . ,(or (file-name "bash" deps) ""))
                      ("@CC@" . ,(or (file-name "cc" deps) ""))
+                     ("@DIFF@" . ,(or (file-name "diff" deps) (string-append abs-top-builddir "/pre-inst-env diff.scm")))
                      ("@DOT@" . ,(or (file-name "dot" deps) ""))
                      ("@GIT@" . ,(or (file-name "git" deps) ""))
                      ("@GUILE@" . ,guile)
@@ -578,7 +600,6 @@ Some influential environment variables:
                      ("@HEX2FLAGS@" . ,(or (getenv "HEX2FLAGS") ""))
                      ("@M1FLAGS@" . ,(or (getenv "M1FLAGS") ""))
 
-                     ("mes/module/" . ,(string-append moduledir/))
                      ,@(map
                         (lambda (o)
                           (cons (string-append "@" (variable-name o) "@") (or (format #f "~a" (dependency-file-name o)) "")))
@@ -596,35 +617,52 @@ Some influential environment variables:
                       (substitute src pairs #:target target)))
                   '(
                     "build-aux/GNUmakefile.in"
-                    "build-aux/config.status.in"
+                    "build-aux/config.sh.in"
                     "build-aux/build.sh.in"
-                    "build-aux/bootstrap.sh.in"
                     "build-aux/check.sh.in"
                     "build-aux/install.sh.in"
                     "build-aux/pre-inst-env.in"
                     "build-aux/uninstall.sh.in"
-                    "mes/module/mes/boot-0.scm.in"
+                    "scripts/ar.in"
                     "scripts/mescc.scm.in"
                     "scripts/mescc.in"
                     ))
         (chmod "pre-inst-env" #o755)
+        (chmod "scripts/ar" #o755)
         (chmod "scripts/mescc" #o755)
         (chmod "scripts/mescc.scm" #o755)
         (chmod "build.sh" #o755)
-        (chmod "bootstrap.sh" #o755)
         (chmod "check.sh" #o755)
         (chmod "install.sh" #o755)
         (chmod "uninstall.sh" #o755)
+
+        (system* "mkdir" "-p" "include/mes")
+        (let ((pkgdatadir (gulp-pipe* "sh" "-c" (string-append "prefix=" prefix
+                                                               ";datadir=" datadir
+                                                               ";echo ${datadir}/mes"))))
+          (with-output-to-file "include/mes/config.h"
+            (lambda _
+              (if system-libc?
+                  (display "#define SYSTEM_LIBC 1
+")
+                  (display "#undef SYSTEM_LIBC
+"))
+              (display (string-append "
+#define VERSION \"" VERSION "\"
+#define pkgdatadir \"" pkgdatadir "\"
+")))))
         (substitute (string-append srcdest "build-aux/config.make.in") pairs #:target ".config.make"))
 
       (let ((make (and=> (file-name "make" deps) basename)))
-        (format (current-output-port)
-                "
-GNU Mes is configured for ~a
+        (display (string-append "
+GNU Mes is configured for
+   compiler: " compiler "
+   cpu:      " mes-cpu "
+   bits:     " mes-bits "
+   libc:     " mes-libc "
+   kernel:   " mes-kernel "
+   system:   " mes-system "
 
 Run:
-  ~a            to build mes
-  ~a help       for help on other targets\n"
-                mes-arch
-                (or make "./build.sh")
-                (or make "./build.sh"))))))
+  " (or make "./build.sh") "           to build mes
+  " (or make "./build.sh") " help      for help on other targets\n"))))))

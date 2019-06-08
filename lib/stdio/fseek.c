@@ -20,15 +20,16 @@
 
 #include <mes/lib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 int
 fseek (FILE * stream, long offset, int whence)
 {
-  off_t pos = lseek ((int) stream, offset, whence);
+  off_t pos = lseek ((int) (long) stream, offset, whence);
   if (__mes_debug ())
     {
       eputs ("fread fd=");
-      eputs (itoa ((int) stream));
+      eputs (itoa ((int) (long) stream));
       eputs ("  =>");
       eputs (itoa (pos));
       eputs ("\n");

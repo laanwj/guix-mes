@@ -1,7 +1,7 @@
-#! /bin/sh
+#! @BASH@
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -18,20 +18,19 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-set -e
-. ./config.status
-. ${srcdest}build-aux/config.sh
-
-sh ${srcdest}build-aux/test-cc.sh $1
-
-if [ ! "$mesc_p" ]; then
-    #FIXME: c&p
-    unset CFLAGS CPPFLAGS LDFLAGS gcc_p tcc_p with_glibc_p
-    MES=${MES-guile}
-    mesc_p=1
-    mes_p=1
-    mes_arch=x86-mes
-    program_prefix=$mes_arch-
-    CC="./pre-inst-env mescc"
-    sh ${srcdest}build-aux/test-cc.sh $1
+if [ "$V" = 2 ]; then
+    set -x
 fi
+
+command=$1
+archive=$2
+shift
+shift
+M1_archive=$(dirname "$archive")/$(basename "$archive" .a).S
+declare -a M1_objects
+for o in "$@"; do
+    ((i++))
+    M1_objects[$i]=$(dirname "$o")/$(basename "$o" .o).S
+done
+cat "${M1_objects[@]}" > "$M1_archive"
+cat "$@" > "$archive"

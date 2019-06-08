@@ -18,6 +18,9 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+
 int
 link (char const *old_name, char const *new_name)
 {

@@ -1,4 +1,4 @@
-#! /bin/sh
+#! @SHELL@
 
 # GNU Mes --- Maxwell Equations of Software
 # Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
@@ -20,34 +20,44 @@
 
 set -e
 
-. ./config.status
+. ./config.sh
 
-mes_prefix=@prefix@/share/mes
+v=
+_v=
+if test "$V" = 2; then
+    set -x
+fi
+if test "$V" -gt 0; then
+    v=v
+    _v=-v
+fi
 
-# use bash or lose if pipes fail
-if [ -n "$BASHOPTS" ]; then
+set -u
+
+# Use bash or lose if pipes fail
+if test -n "$BASHOPTS"; then
    set -o pipefail
 fi
 
-mkdir -p ${DESTDIR}@bindir@
-if [ -f src/x86-mes-mes ]; then
-    cp src/x86-mes-mes ${DESTDIR}@bindir@/mes
-fi
-cp scripts/mescc.scm ${DESTDIR}@bindir@/mescc.scm
-cp scripts/mescc ${DESTDIR}@bindir@/mescc
+DESTDIR=${DESTDIR-}
+mkdir -p ${DESTDIR}${bindir}
+cp $_v src/mes ${DESTDIR}${bindir}/mes
+cp $_v scripts/ar ${DESTDIR}${bindir}/ar
+cp $_v scripts/mescc.scm ${DESTDIR}${bindir}/mescc.scm
+cp $_v scripts/mescc ${DESTDIR}${bindir}/mescc
 
 sed \
-    -e "s,^#! /bin/sh,#! @SHELL@," \
-    scripts/diff.scm > ${DESTDIR}@bindir@/diff.scm
-chmod +x ${DESTDIR}@bindir@/diff.scm
+    -e "s,^#! /bin/sh,#! ${SHELL}," \
+    scripts/diff.scm > ${DESTDIR}${bindir}/diff.scm
+chmod +x ${DESTDIR}${bindir}/diff.scm
 
-mkdir -p ${DESTDIR}@docdir@
+mkdir -p ${DESTDIR}${docdir}
 
-if [ -n "@PERL@" ]\
-       && [ -n "@GIT@" ]\
-       && @PERL@ -v > /dev/null\
-       && @GIT@ status > /dev/null; then
-    @PERL@ ${srcdest}build-aux/gitlog-to-changelog --srcdir=. > ChangeLog
+if test -n "${PERL}"\
+       && test -n "${GIT}"\
+       && ${PERL} -v > /dev/null\
+       && ${GIT} status > /dev/null; then
+    ${PERL} ${srcdest}build-aux/gitlog-to-changelog --srcdir=. > ChangeLog+
 fi
 
 cp\
@@ -58,66 +68,50 @@ cp\
     INSTALL\
     NEWS\
     README\
-    ${DESTDIR}@docdir@
+    ${DESTDIR}${docdir}
 
-if [ -f ChangeLog ]; then
-    cp ChangeLog ${DESTDIR}@docdir@
+if test -f ChangeLog+; then
+    cp $_v ChangeLog+ ${DESTDIR}${docdir}/ChangeLog
+    rm -f ChangeLog+
 else
-    cp ChangeLog ${DESTDIR}@docdir@
+    cp $_v ChangeLog ${DESTDIR}${docdir}
 fi
 
-mkdir -p $DESTDIR$mes_prefix
-rm -f $(find lib -type f -a -executable)
-rm -f $(find lib/tests -type f -a -name '*.1')
-rm -f $(find lib/tests -type f -a -name '*.2')
-rm -f $(find lib/tests -type f -a -name '*.o')
-rm -f $(find lib/tests -type f -a -name '*.log')
-rm -f $(find lib/tests -type f -a -name '*.x86-mes*')
-rm -f $(find lib/tests -type f -a -name '*.x86_64-mes*')
-rm -f $(find scaffold -type f -a -executable)
-rm -f $(find scaffold -type f -a -name '*.1')
-rm -f $(find scaffold -type f -a -name '*.2')
-rm -f $(find scaffold -type f -a -name '*.o')
-rm -f $(find scaffold -type f -a -name '*.S')
-rm -f $(find scaffold -type f -a -name '*.log')
-rm -f $(find scaffold -type f -a -name '*.x86-mes*')
-rm -f $(find scaffold -type f -a -name '*.x86_64-mes*')
-if [ -z "$srcdest" ]; then
-    tar -cf- include lib | tar -xf- -C $DESTDIR$mes_prefix
-    tar -cf- --exclude='*.go' module | tar -xf- -C $DESTDIR$mes_prefix
-    tar -cf- scaffold | tar -xf- -C $DESTDIR$mes_prefix
+mkdir -p $DESTDIR$libdir
+mkdir -p $DESTDIR$pkgdatadir
+# rm -f $(find lib -type f -a -executable)
+# rm -f $(find scaffold -type f -a -executable)
+tar -cf- -C ${srcdir} include lib/$mes_cpu-mes | tar -${v}xf- -C $DESTDIR$prefix
+if test -z "$srcdest"; then
+    tar -cf- --exclude='*.go' module | tar -${v}xf- -C $DESTDIR$pkgdatadir
 else
-    tar -cf- -C ${srcdest} include lib | tar -xf- -C $DESTDIR$mes_prefix
-    tar -cf- -C lib | tar -xf- -C $DESTDIR$mes_prefix
-    tar -cf- -C ${srcdest} module | tar -xf- -C $DESTDIR$mes_prefix
-    tar -cf- -C ${srcdest} scaffold | tar -xf- -C $DESTDIR$mes_prefix
+    tar -cf- -C ${srcdest} module | tar -${v}xf- -C $DESTDIR$pkgdatadir
 fi
-tar -cf- -C ${srcdest}mes module | tar -xf- -C $DESTDIR$mes_prefix
-
-if [ -f src/mes.x86-mes-S ]; then
-    cp src/mes.x86-mes-S $DESTDIR$mes_prefix/lib/x86-mes/mes.S
+tar -cf- -C ${srcdest}mes module | tar -${v}xf- -C $DESTDIR$pkgdatadir
+if test -d gcc-lib/$mes_cpu-mes; then
+    tar -cf- -C gcc-lib/$mes_cpu-mes . | tar -${v}xf- -C $DESTDIR$libdir
 fi
-if [ -f src/mes.x86_64-mes-S ]; then
-    cp src/mes.x86_64-mes-S $DESTDIR$mes_prefix/lib/x86_64-mes/mes.S
+if test -d mescc-lib/$mes_cpu-mes; then
+    tar -cf- -C mescc-lib $mes_cpu-mes | tar -${v}xf- -C $DESTDIR$libdir
 fi
 
-mkdir -p ${DESTDIR}@guile_site_dir@
-mkdir -p ${DESTDIR}@guile_site_ccache_dir@
-tar -cf- -C ${srcdest}module --exclude='*.go' . | tar -xf- -C ${DESTDIR}@guile_site_dir@
-tar -cf- -C module --exclude='*.scm' . | tar -xf- -C ${DESTDIR}@guile_site_ccache_dir@
+mkdir -p ${DESTDIR}${guile_site_dir}
+mkdir -p ${DESTDIR}${guile_site_ccache_dir}
+tar -cf- -C ${srcdest}module --exclude='*.go' . | tar -${v}xf- -C ${DESTDIR}${guile_site_dir}
+tar -cf- -C module --exclude='*.scm' . | tar -${v}xf- -C ${DESTDIR}${guile_site_ccache_dir}
 
-if [ -f doc/mes.info ]; then
-    mkdir -p ${DESTDIR}@infodir@
-    tar -cf- doc/mes.info* doc/images | tar -xf- --strip-components=1 -C ${DESTDIR}@infodir@
-    install-info --info-dir=${DESTDIR}@infodir@ doc/mes.info
+if test -f doc/mes.info; then
+    mkdir -p ${DESTDIR}${infodir}
+    tar -cf- doc/mes.info* doc/images | tar -${v}xf- --strip-components=1 -C ${DESTDIR}${infodir}
+    install-info --info-dir=${DESTDIR}${infodir} doc/mes.info
 fi
 
-if [ -f doc/mes.1 ]; then
-    mkdir -p ${DESTDIR}@mandir@/man1
-    cp doc/mes.1 ${DESTDIR}@mandir@/man1/
+if test -f doc/mes.1; then
+    mkdir -p ${DESTDIR}${mandir}/man1
+    cp $_v doc/mes.1 ${DESTDIR}${mandir}/man1/
 fi
 
-if [ -f doc/mescc.1 ]; then
-    mkdir -p ${DESTDIR}@mandir@/man1
-    cp doc/mescc.1 ${DESTDIR}@mandir@/man1/
+if test -f doc/mescc.1; then
+    mkdir -p ${DESTDIR}${mandir}/man1
+    cp $_v doc/mescc.1 ${DESTDIR}${mandir}/man1/
 fi

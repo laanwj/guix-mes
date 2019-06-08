@@ -17,6 +17,8 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 export PACKAGE
+export PACKAGE_NAME
+export PACKAGE_BUGREPORT
 export VERSION
 
 export abs_top_builddir
@@ -40,6 +42,14 @@ export mandir
 export moduledir
 export sysconfdir
 
+export compiler
+export courageous
+export mes_system
+export mes_cpu
+export mes_bits
+export mes_libc
+export mes_kernel
+
 ifdef V
 export V
 endif
@@ -48,16 +58,8 @@ ifdef DESTDIR
 export DESTDIR
 endif
 
-ifdef arch
-export arch
-endif
-
 ifdef CC
 export CC
-endif
-
-ifdef CC64
-export CC64
 endif
 
 ifdef BLOOD_ELF
@@ -112,10 +114,6 @@ ifdef PERL
 export PERL
 endif
 
-ifdef TCC
-export TCC
-endif
-
 ifdef GUILE_LOAD_PATH
 export GUILE_LOAD_PATH
 endif
@@ -138,8 +136,4 @@ endif
 
 ifdef M1FLAGS
 export M1FLAGS
-endif
-
-ifdef TINYCC_PREFIX
-export TINYCC_PREFIX
 endif

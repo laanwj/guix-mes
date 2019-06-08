@@ -2,7 +2,7 @@
 --no-auto-compile -e main -L @guile_site_dir@ -C @guile_site_ccache_dir@ -s
 !#
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -22,7 +22,7 @@
 (setenv "%prefix" (or (getenv "MES_PREFIX")
                       (if (string-prefix? "@prefix" "@prefix@")
                           ""
-                          "@prefix@/share/mes")))
+                          "@prefix@")))
 
 (setenv "%version" (if (string-prefix? "@VERSION" "@VERSION@") "git"
                        "@VERSION@"))

@@ -18,13 +18,13 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// CONSTANT STRUCT_TYPE 0
-#define STRUCT_TYPE 0
-// CONSTANT STRUCT_PRINTER 1
-#define STRUCT_PRINTER 1
+#include "mes/lib.h"
+#include "mes/mes.h"
+
+#include <assert.h>
+#include <stdlib.h>
 
 int g_depth;
-SCM fdisplay_ (SCM, int, int);
 
 SCM
 display_helper (SCM x, int cont, char *sep, int fd, int write_p)

@@ -19,12 +19,10 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
+. ./config.sh
+set -u
 
-. ./config.status
-. ${srcdest}build-aux/config.sh
-. ${srcdest}build-aux/trace.sh
-
-tests="
+TESTS="
 tests/boot.test
 tests/read.test
 tests/srfi-0.test
@@ -57,28 +55,8 @@ tests/match.test
 tests/psyntax.test
 "
 
-mkdir -p tests
-set +e
-fail=0
-total=0
-for t in $tests; do
-    if [ ! -f $t ]; then
-        echo $t: [SKIP];
-        continue
-    fi
-    ${top_builddir}/pre-inst-env sh "$t" > $t.${mes}log 2>&1
-    r=$?
-    total=$(expr $total + 1)
-    if [ $r = 0 ]; then
-        echo $t: [${mes}OK]
-    else
-        echo $t: [${mes}FAIL]
-        fail=$(expr $fail + 1)
-    fi
-done
-if [ $fail != 0 ]; then
-    echo FAILED: $fail/$total
-    exit 1
-else
-    echo PASS: $total
-fi
+XFAIL_TESTS=
+
+test_ext=.test
+log_compiler=sh
+. ${srcdest}build-aux/test-suite.sh

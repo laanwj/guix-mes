@@ -18,6 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <stdarg.h>
+#include <sys/ioctl.h>
+
 int
 ioctl (int filedes, unsigned long command, ...)
 {

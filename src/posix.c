@@ -18,17 +18,19 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mes/lib.h"
+#include "mes/mes.h"
+
+#include <assert.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
-
-int readchar ();
-int unreadchar ();
 
 int
 peekchar ()

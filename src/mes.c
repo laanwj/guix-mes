@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,92 +18,35 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fcntl.h>
-#include <stdio.h>
+#include "mes/lib.h"
+#include "mes/mes.h"
+
 #include <assert.h>
-#include <stdint.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mes/lib.h>
+#include <string.h>
 
-//#define MES_MINI 1
-#if SYSTEM_LIBC
-long ARENA_SIZE = 100000000;    // 2.3GiB
-#else
-long ARENA_SIZE = 300000;       // 32b: 3MiB, 64b: 6 MiB
-#endif
-long MAX_ARENA_SIZE = 100000000;
-long STACK_SIZE = 20000;
+char g_datadir[1024];
+int g_debug;
+char *g_buf;
+SCM g_continuations;
+SCM g_symbols;
+SCM g_symbol_max;
 
-long JAM_SIZE = 20000;
-long GC_SAFETY = 2000;
-
-long MAX_STRING = 524288;
-
-char *g_arena = 0;
-typedef long SCM;
-
-int g_debug = 0;
-long g_free = 0;
-
-char *g_buf = 0;
-
-SCM g_continuations = 0;
-SCM g_symbols = 0;
-SCM g_stack = 0;
-SCM *g_stack_array = 0;
-#define FRAME_SIZE 5
-#define FRAME_PROCEDURE 4
 // a/env
-SCM r0 = 0;
+SCM r0;
 // param 1
-SCM r1 = 0;
+SCM r1;
 // save 2
-SCM r2 = 0;
+SCM r2;
 // continuation
-SCM r3 = 0;
+SCM r3;
 // current-module
-SCM m0 = 0;
+SCM m0;
 // macro
-SCM g_macros = 0;
-SCM g_ports = 1;
-
-// CONSTANT TBYTES         0
-#define TBYTES             0
-// CONSTANT TCHAR          1
-#define TCHAR              1
-// CONSTANT TCLOSURE       2
-#define TCLOSURE           2
-// CONSTANT TCONTINUATION  3
-#define TCONTINUATION      3
-// CONSTANT TKEYWORD       4
-#define TKEYWORD           4
-// CONSTANT TMACRO         5
-#define TMACRO             5
-// CONSTANT TNUMBER        6
-#define TNUMBER            6
-// CONSTANT TPAIR          7
-#define TPAIR              7
-// CONSTANT TPORT          8
-#define TPORT              8
-// CONSTANT TREF           9
-#define TREF               9
-// CONSTANT TSPECIAL      10
-#define TSPECIAL          10
-// CONSTANT TSTRING       11
-#define TSTRING           11
-// CONSTANT TSTRUCT       12
-#define TSTRUCT           12
-// CONSTANT TSYMBOL       13
-#define TSYMBOL           13
-// CONSTANT TVALUES       14
-#define TVALUES           14
-// CONSTANT TVARIABLE     15
-#define TVARIABLE         15
-// CONSTANT TVECTOR       16
-#define TVECTOR           16
-// CONSTANT TBROKEN_HEART 17
-#define TBROKEN_HEART     17
+SCM g_macros;
+SCM g_ports;
 
 #if __MESC__
 typedef long function0_t;
@@ -118,338 +61,6 @@ typedef SCM (*function2_t) (SCM, SCM);
 typedef SCM (*function3_t) (SCM, SCM, SCM);
 typedef SCM (*functionn_t) (SCM);
 #endif // !__MESC__
-
-struct scm
-{
-  long type;
-  SCM car;
-  SCM cdr;
-};
-
-#if __MESC__
-//FIXME
-char *foobar = 0;
-struct scm *g_cells = foobar;
-struct scm *g_news = foobar;
-#else
-struct scm *g_cells = 0;
-struct scm *g_news = 0;
-#endif
-
-// CONSTANT cell_nil 1
-#define cell_nil 1
-// CONSTANT cell_f 2
-#define cell_f 2
-// CONSTANT cell_t 3
-#define cell_t 3
-// CONSTANT cell_dot 4
-#define cell_dot 4
-// CONSTANT cell_arrow 5
-#define cell_arrow 5
-// CONSTANT cell_undefined 6
-#define cell_undefined 6
-// CONSTANT cell_unspecified 7
-#define cell_unspecified 7
-// CONSTANT cell_closure 8
-#define cell_closure 8
-// CONSTANT cell_circular 9
-#define cell_circular 9
-// CONSTANT cell_begin 10
-#define cell_begin 10
-// CONSTANT cell_call_with_current_continuation 11
-#define cell_call_with_current_continuation 11
-
-// CONSTANT cell_vm_apply 12
-#define cell_vm_apply 12
-// CONSTANT cell_vm_apply2 13
-#define cell_vm_apply2 13
-// CONSTANT cell_vm_begin 14
-#define cell_vm_begin 14
-// CONSTANT cell_vm_begin_eval 15
-#define cell_vm_begin_eval 15
-// CONSTANT cell_vm_begin_expand 16
-#define cell_vm_begin_expand 16
-// CONSTANT cell_vm_begin_expand_eval 17
-#define cell_vm_begin_expand_eval 17
-// CONSTANT cell_vm_begin_expand_macro 18
-#define cell_vm_begin_expand_macro 18
-// CONSTANT cell_vm_begin_expand_primitive_load 19
-#define cell_vm_begin_expand_primitive_load 19
-// CONSTANT cell_vm_begin_primitive_load 20
-#define cell_vm_begin_primitive_load 20
-// CONSTANT cell_vm_begin_read_input_file 21
-#define cell_vm_begin_read_input_file 21
-// CONSTANT cell_vm_call_with_current_continuation2 22
-#define cell_vm_call_with_current_continuation2 22
-// CONSTANT cell_vm_call_with_values2 23
-#define cell_vm_call_with_values2 23
-// CONSTANT cell_vm_eval 24
-#define cell_vm_eval 24
-// CONSTANT cell_vm_eval2 25
-#define cell_vm_eval2 25
-// CONSTANT cell_vm_eval_check_func 26
-#define cell_vm_eval_check_func 26
-// CONSTANT cell_vm_eval_define 27
-#define cell_vm_eval_define 27
-// CONSTANT cell_vm_eval_macro_expand_eval 28
-#define cell_vm_eval_macro_expand_eval 28
-// CONSTANT cell_vm_eval_macro_expand_expand 29
-#define cell_vm_eval_macro_expand_expand 29
-// CONSTANT cell_vm_eval_pmatch_car 30
-#define cell_vm_eval_pmatch_car 30
-// CONSTANT cell_vm_eval_pmatch_cdr 31
-#define cell_vm_eval_pmatch_cdr 31
-// CONSTANT cell_vm_eval_set_x 32
-#define cell_vm_eval_set_x 32
-// CONSTANT cell_vm_evlis 33
-#define cell_vm_evlis 33
-// CONSTANT cell_vm_evlis2 34
-#define cell_vm_evlis2 34
-// CONSTANT cell_vm_evlis3 35
-#define cell_vm_evlis3 35
-// CONSTANT cell_vm_if 36
-#define cell_vm_if 36
-// CONSTANT cell_vm_if_expr 37
-#define cell_vm_if_expr 37
-// CONSTANT cell_vm_macro_expand 38
-#define cell_vm_macro_expand 38
-// CONSTANT cell_vm_macro_expand_car 39
-#define cell_vm_macro_expand_car 39
-// CONSTANT cell_vm_macro_expand_cdr 40
-#define cell_vm_macro_expand_cdr 40
-// CONSTANT cell_vm_macro_expand_define 41
-#define cell_vm_macro_expand_define 41
-// CONSTANT cell_vm_macro_expand_define_macro 42
-#define cell_vm_macro_expand_define_macro 42
-// CONSTANT cell_vm_macro_expand_lambda 43
-#define cell_vm_macro_expand_lambda 43
-// CONSTANT cell_vm_macro_expand_set_x 44
-#define cell_vm_macro_expand_set_x 44
-// CONSTANT cell_vm_return 45
-#define cell_vm_return 45
-
-// CONSTANT cell_symbol_dot 46
-#define cell_symbol_dot 46
-// CONSTANT cell_symbol_lambda 47
-#define cell_symbol_lambda 47
-// CONSTANT cell_symbol_begin 48
-#define cell_symbol_begin 48
-// CONSTANT cell_symbol_if 49
-#define cell_symbol_if 49
-// CONSTANT cell_symbol_quote 50
-#define cell_symbol_quote 50
-// CONSTANT cell_symbol_define 51
-#define cell_symbol_define 51
-// CONSTANT cell_symbol_define_macro 52
-#define cell_symbol_define_macro 52
-
-// CONSTANT cell_symbol_quasiquote 53
-#define cell_symbol_quasiquote 53
-// CONSTANT cell_symbol_unquote 54
-#define cell_symbol_unquote 54
-// CONSTANT cell_symbol_unquote_splicing 55
-#define cell_symbol_unquote_splicing 55
-// CONSTANT cell_symbol_syntax 56
-#define cell_symbol_syntax 56
-// CONSTANT cell_symbol_quasisyntax 57
-#define cell_symbol_quasisyntax 57
-// CONSTANT cell_symbol_unsyntax 58
-#define cell_symbol_unsyntax 58
-// CONSTANT cell_symbol_unsyntax_splicing 59
-#define cell_symbol_unsyntax_splicing 59
-
-// CONSTANT cell_symbol_set_x 60
-#define cell_symbol_set_x 60
-
-// CONSTANT cell_symbol_sc_expand 61
-#define cell_symbol_sc_expand 61
-// CONSTANT cell_symbol_macro_expand 62
-#define cell_symbol_macro_expand 62
-// CONSTANT cell_symbol_portable_macro_expand 63
-#define cell_symbol_portable_macro_expand 63
-// CONSTANT cell_symbol_sc_expander_alist 64
-#define cell_symbol_sc_expander_alist 64
-
-// CONSTANT cell_symbol_call_with_values 65
-#define cell_symbol_call_with_values 65
-// CONSTANT cell_symbol_call_with_current_continuation 66
-#define cell_symbol_call_with_current_continuation 66
-// CONSTANT cell_symbol_boot_module 67
-#define cell_symbol_boot_module 67
-// CONSTANT cell_symbol_current_module 68
-#define cell_symbol_current_module 68
-// CONSTANT cell_symbol_primitive_load 69
-#define cell_symbol_primitive_load 69
-// CONSTANT cell_symbol_read_input_file 70
-#define cell_symbol_read_input_file 70
-// CONSTANT cell_symbol_write 71
-#define cell_symbol_write 71
-// CONSTANT cell_symbol_display 72
-#define cell_symbol_display 72
-
-// CONSTANT cell_symbol_car 73
-#define cell_symbol_car 73
-// CONSTANT cell_symbol_cdr 74
-#define cell_symbol_cdr 74
-// CONSTANT cell_symbol_not_a_number 75
-#define cell_symbol_not_a_number 75
-// CONSTANT cell_symbol_not_a_pair 76
-#define cell_symbol_not_a_pair 76
-// CONSTANT cell_symbol_system_error 77
-#define cell_symbol_system_error 77
-// CONSTANT cell_symbol_throw 78
-#define cell_symbol_throw 78
-// CONSTANT cell_symbol_unbound_variable 79
-#define cell_symbol_unbound_variable 79
-// CONSTANT cell_symbol_wrong_number_of_args 80
-#define cell_symbol_wrong_number_of_args 80
-// CONSTANT cell_symbol_wrong_type_arg 81
-#define cell_symbol_wrong_type_arg 81
-
-// CONSTANT cell_symbol_buckets 82
-#define cell_symbol_buckets 82
-// CONSTANT cell_symbol_builtin 83
-#define cell_symbol_builtin 83
-// CONSTANT cell_symbol_frame 84
-#define cell_symbol_frame 84
-// CONSTANT cell_symbol_hashq_table 85
-#define cell_symbol_hashq_table 85
-// CONSTANT cell_symbol_module 86
-#define cell_symbol_module 86
-// CONSTANT cell_symbol_procedure 87
-#define cell_symbol_procedure 87
-// CONSTANT cell_symbol_record_type 88
-#define cell_symbol_record_type 88
-// CONSTANT cell_symbol_size 89
-#define cell_symbol_size 89
-// CONSTANT cell_symbol_stack 90
-#define cell_symbol_stack 90
-
-// CONSTANT cell_symbol_argv 91
-#define cell_symbol_argv 91
-// CONSTANT cell_symbol_mes_prefix 92
-#define cell_symbol_mes_prefix 92
-// CONSTANT cell_symbol_mes_version 93
-#define cell_symbol_mes_version 93
-
-// CONSTANT cell_symbol_internal_time_units_per_second 94
-#define cell_symbol_internal_time_units_per_second 94
-// CONSTANT cell_symbol_compiler 95
-#define cell_symbol_compiler 95
-// CONSTANT cell_symbol_arch 96
-#define cell_symbol_arch 96
-// CONSTANT cell_symbol_pmatch_car 97
-#define cell_symbol_pmatch_car 97
-// CONSTANT cell_symbol_pmatch_cdr 98
-#define cell_symbol_pmatch_cdr 98
-
-// CONSTANT cell_type_bytes 99
-#define cell_type_bytes 99
-// CONSTANT cell_type_char 100
-#define cell_type_char 100
-// CONSTANT cell_type_closure 101
-#define cell_type_closure 101
-// CONSTANT cell_type_continuation 102
-#define cell_type_continuation 102
-// CONSTANT cell_type_function 103
-#define cell_type_function 103
-// CONSTANT cell_type_keyword 104
-#define cell_type_keyword 104
-// CONSTANT cell_type_macro 105
-#define cell_type_macro 105
-// CONSTANT cell_type_number 106
-#define cell_type_number 106
-// CONSTANT cell_type_pair 107
-#define cell_type_pair 107
-// CONSTANT cell_type_port 108
-#define cell_type_port 108
-// CONSTANT cell_type_ref 109
-#define cell_type_ref 109
-// CONSTANT cell_type_special 110
-#define cell_type_special 110
-// CONSTANT cell_type_string 111
-#define cell_type_string 111
-// CONSTANT cell_type_struct 112
-#define cell_type_struct 112
-// CONSTANT cell_type_symbol 113
-#define cell_type_symbol 113
-// CONSTANT cell_type_values 114
-#define cell_type_values 114
-// CONSTANT cell_type_variable 115
-#define cell_type_variable 115
-// CONSTANT cell_type_vector 116
-#define cell_type_vector 116
-// CONSTANT cell_type_broken_heart 117
-#define cell_type_broken_heart 117
-
-// CONSTANT cell_test 118
-#define cell_test 118
-
-#include "mes/builtins.h"
-
-#define TYPE(x) g_cells[x].type
-#define CAR(x) g_cells[x].car
-#define CDR(x) g_cells[x].cdr
-
-#define NTYPE(x) g_news[x].type
-#define NCAR(x) g_news[x].car
-#define NCDR(x) g_news[x].cdr
-
-#define BYTES(x) g_cells[x].car
-#define LENGTH(x) g_cells[x].car
-#define REF(x) g_cells[x].car
-#define START(x) (g_cells[x].car >> 16)
-#define LEN(x) (g_cells[x].car & 0xffff)
-#define VARIABLE(x) g_cells[x].car
-
-#define CLOSURE(x) g_cells[x].cdr
-#define CONTINUATION(x) g_cells[x].cdr
-
-#define CBYTES(x) (char*)&g_cells[x].cdr
-#define CSTRING_STRUCT(x) (char*)&g_cells[x.cdr].cdr
-
-#define MACRO(x) g_cells[x].car
-#define NAME(x) g_cells[x].cdr
-#define PORT(x) g_cells[x].car
-#define STRING(x) g_cells[x].cdr
-#define STRUCT(x) g_cells[x].cdr
-#define VALUE(x) g_cells[x].cdr
-#define VECTOR(x) g_cells[x].cdr
-
-#define NLENGTH(x) g_news[x].car
-#define NCBYTES(x) (char*)&g_news[x].cdr
-#define NVALUE(x) g_news[x].cdr
-#define NSTRING(x) g_news[x].cdr
-#define NVECTOR(x) g_news[x].cdr
-
-#define CSTRING(x) CBYTES (STRING (x))
-
-#define MAKE_BYTES0(x) make_bytes (x, strlen (x))
-#define NAME_SYMBOL(symbol,name) {size_t s = strlen (name); CAR (symbol) = s; CDR (symbol) = make_bytes (name, s);}
-
-#define MAKE_CHAR(n) make_cell__ (TCHAR, 0, n)
-#define MAKE_CONTINUATION(n) make_cell__ (TCONTINUATION, n, g_stack)
-#define MAKE_NUMBER(n) make_cell__ (TNUMBER, 0, (long)n)
-#define MAKE_REF(n) make_cell__ (TREF, n, 0)
-#define MAKE_STRING0(x) make_string (x, strlen (x))
-#define MAKE_STRING_PORT(x) make_cell__ (TPORT, -length__ (g_ports) - 2, x)
-#define MAKE_MACRO(name, x) make_cell__ (TMACRO, x, STRING (name))
-
-#define CAAR(x) CAR (CAR (x))
-#define CADR(x) CAR (CDR (x))
-#define CDAR(x) CDR (CAR (x))
-#define CDDR(x) CDR (CDR (x))
-#define CADAR(x) CAR (CDR (CAR (x)))
-#define CADDR(x) CAR (CDR (CDR (x)))
-#define CDADAR(x) CAR (CDR (CAR (CDR (x))))
-
-SCM apply_builtin (SCM fn, SCM x);
-SCM cstring_to_list (char const *s);
-SCM cstring_to_symbol (char const *s);
-SCM make_bytes (char const *s, size_t length);
-SCM make_hash_table_ (long size);
-SCM read_input_file_env (SCM);
-SCM string_equal_p (SCM a, SCM b);
 
 SCM
 alloc (long n)
@@ -624,8 +235,6 @@ length (SCM x)
   return MAKE_NUMBER (length__ (x));
 }
 
-SCM apply (SCM, SCM, SCM);
-
 SCM
 error (SCM key, SCM x)
 {
@@ -650,8 +259,6 @@ assert_defined (SCM x, SCM e)   ///((internal))
     return error (cell_symbol_unbound_variable, x);
   return e;
 }
-
-SCM make_string (char const *s, size_t length);
 
 SCM
 check_formals (SCM f, SCM formals, SCM args)    ///((internal))
@@ -708,37 +315,6 @@ check_apply (SCM f, SCM e)      ///((internal))
       return error (cell_symbol_wrong_type_arg, cons (e, f));
     }
   return cell_unspecified;
-}
-
-SCM
-gc_push_frame ()                ///((internal))
-{
-  if (g_stack < 5)
-    assert (!"STACK FULL");
-  g_stack_array[--g_stack] = cell_f;
-  g_stack_array[--g_stack] = r0;
-  g_stack_array[--g_stack] = r1;
-  g_stack_array[--g_stack] = r2;
-  g_stack_array[--g_stack] = r3;
-  return g_stack;
-}
-
-SCM
-gc_peek_frame ()                ///((internal))
-{
-  r3 = g_stack_array[g_stack];
-  r2 = g_stack_array[g_stack + 1];
-  r1 = g_stack_array[g_stack + 2];
-  r0 = g_stack_array[g_stack + 3];
-  return g_stack_array[g_stack + FRAME_PROCEDURE];
-}
-
-SCM
-gc_pop_frame ()                 ///((internal))
-{
-  SCM x = gc_peek_frame ();
-  g_stack += 5;
-  return x;
 }
 
 SCM
@@ -1012,11 +588,6 @@ expand_variable (SCM x, SCM formals)    ///((internal))
 {
   return expand_variable_ (x, formals, 1);
 }
-
-SCM struct_ref_ (SCM x, long i);
-SCM vector_ref_ (SCM x, long i);
-SCM make_vector__ (long k);
-SCM vector_set_x_ (SCM x, long i, SCM e);
 
 SCM
 eval_apply ()
@@ -1652,30 +1223,6 @@ mes_g_stack (SCM a)             ///((internal))
   return r0;
 }
 
-// Jam Collector
-SCM g_symbol_max;
-
-SCM
-gc_init_cells ()                ///((internal))
-{
-  long arena_bytes = (ARENA_SIZE + JAM_SIZE) * sizeof (struct scm);
-  void *p = malloc (arena_bytes + STACK_SIZE * sizeof (SCM));
-  g_cells = (struct scm *) p;
-  g_stack_array = (SCM *) (p + arena_bytes);
-
-  TYPE (0) = TVECTOR;
-  LENGTH (0) = 1000;
-  VECTOR (0) = 0;
-  g_cells++;
-  TYPE (0) = TCHAR;
-  VALUE (0) = 'c';
-
-  // FIXME: remove MES_MAX_STRING, grow dynamically
-  g_buf = (char *) malloc (MAX_STRING);
-
-  return 0;
-}
-
 void
 init_symbol (long x, long type, char const *name)
 {
@@ -1690,8 +1237,6 @@ init_symbol (long x, long type, char const *name)
 SCM
 mes_symbols ()                  ///((internal))
 {
-  gc_init_cells ();
-
   g_free = cell_symbol_test + 1;
   g_symbol_max = g_free;
   g_symbols = make_hash_table_ (500);
@@ -1796,7 +1341,7 @@ mes_symbols ()                  ///((internal))
   init_symbol (cell_symbol_stack, TSYMBOL, "<stack>");
 
   init_symbol (cell_symbol_argv, TSYMBOL, "%argv");
-  init_symbol (cell_symbol_mes_prefix, TSYMBOL, "%prefix");
+  init_symbol (cell_symbol_mes_datadir, TSYMBOL, "%datadir");
   init_symbol (cell_symbol_mes_version, TSYMBOL, "%version");
 
   init_symbol (cell_symbol_internal_time_units_per_second, TSYMBOL, "internal-time-units-per-second");
@@ -1835,7 +1380,7 @@ mes_symbols ()                  ///((internal))
   a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
 
   a = acons (cell_symbol_mes_version, MAKE_STRING0 (VERSION), a);
-  a = acons (cell_symbol_mes_prefix, MAKE_STRING0 (PREFIX), a);
+  a = acons (cell_symbol_mes_datadir, MAKE_STRING0 (g_datadir), a);
 
   a = acons (cell_type_bytes, MAKE_NUMBER (TBYTES), a);
   a = acons (cell_type_char, MAKE_NUMBER (TCHAR), a);
@@ -2196,59 +1741,77 @@ mes_builtins (SCM a)            ///((internal))
 }
 
 int
-open_boot (char *prefix, char const *boot, char const *location)
+try_open_boot (char *file_name, char const *boot, char const *location)
 {
-  strcpy (prefix + strlen (prefix), boot);
+  strcpy (file_name + strlen (file_name), boot);
   if (g_debug > 1)
     {
       eputs ("mes: reading boot-0 [");
       eputs (location);
       eputs ("]: ");
-      eputs (prefix);
+      eputs (file_name);
       eputs ("\n");
     }
-  int fd = mes_open (prefix, O_RDONLY, 0);
+  int fd = mes_open (file_name, O_RDONLY, 0);
   if (g_debug && fd > 0)
     {
       eputs ("mes: read boot-0: ");
-      eputs (prefix);
+      eputs (file_name);
       eputs ("\n");
     }
   return fd;
 }
 
-SCM
-read_boot ()                    ///((internal))
+void
+open_boot ()
 {
   __stdin = -1;
-  char prefix[1024];
   char boot[1024];
+  char file_name[1024];
+  strcpy (g_datadir, ".");
+  if (g_debug > 1)
+    {
+      eputs (";;; pkgdatadir=");
+      eputs (pkgdatadir);
+      eputs ("\n");
+    }
   if (getenv ("MES_BOOT"))
     strcpy (boot, getenv ("MES_BOOT"));
   else
     strcpy (boot, "boot-0.scm");
   if (getenv ("MES_PREFIX"))
     {
-      strcpy (prefix, getenv ("MES_PREFIX"));
-      strcpy (prefix + strlen (prefix), "/module");
-      strcpy (prefix + strlen (prefix), "/mes/");
-      __stdin = open_boot (prefix, boot, "MES_PREFIX");
+      strcpy (g_datadir, getenv ("MES_PREFIX"));
+      strcpy (file_name, g_datadir);
+      strcpy (file_name + strlen (file_name), "/module/mes/");
+      __stdin = try_open_boot (file_name, boot, "MES_PREFIX");
+      if (__stdin < 0)
+        {
+          strcpy (g_datadir, getenv ("MES_PREFIX"));
+          strcpy (g_datadir + strlen (g_datadir), "/share/mes");
+          strcpy (file_name, g_datadir);
+          strcpy (file_name + strlen (file_name), "/module/mes/");
+          __stdin = try_open_boot (file_name, boot, "MES_PREFIX/share/mes");
+        }
     }
   if (__stdin < 0)
     {
-      char const *p = MODULEDIR "/mes/";
-      strcpy (prefix, p);
-      __stdin = open_boot (prefix, boot, "MODULEDIR");
+      strcpy (g_datadir, pkgdatadir);
+      strcpy (file_name, g_datadir);
+      strcpy (file_name + strlen (file_name), "/module/mes/");
+      __stdin = try_open_boot (file_name, boot, "pkgdatadir");
     }
   if (__stdin < 0)
     {
-      strcpy (prefix, "mes/module/mes/");
-      __stdin = open_boot (prefix, boot, ".");
+      strcpy (g_datadir, "mes");
+      strcpy (file_name, g_datadir);
+      strcpy (file_name + strlen (file_name), "/module/mes/");
+      __stdin = try_open_boot (file_name, boot, "mes");
     }
   if (__stdin < 0)
     {
-      prefix[0] = 0;
-      __stdin = open_boot (prefix, boot, "<boot>");
+      file_name[0] = 0;
+      __stdin = try_open_boot (file_name, boot, "<boot>");
     }
   if (__stdin < 0)
     {
@@ -2257,49 +1820,31 @@ read_boot ()                    ///((internal))
       eputs ("\n");
       exit (1);
     }
+}
 
+SCM
+read_boot ()                    ///((internal))
+{
   r2 = read_input_file_env (r0);
   __stdin = STDIN;
   return r2;
 }
 
-#include "hash.c"
-#include "module.c"
-#include "posix.c"
-#include "math.c"
-#include "lib.c"
-#include "vector.c"
-#include "string.c"
-#include "struct.c"
-#include "gc.c"
-#include "reader.c"
-
-int
-main (int argc, char *argv[])
+void
+init ()
 {
   char *p;
   if (p = getenv ("MES_DEBUG"))
     g_debug = atoi (p);
-  if (g_debug > 1)
-    {
-      eputs (";;; MODULEDIR=");
-      eputs (MODULEDIR);
-      eputs ("\n");
-    }
-  if (p = getenv ("MES_MAX_ARENA"))
-    MAX_ARENA_SIZE = atoi (p);
-  if (p = getenv ("MES_ARENA"))
-    ARENA_SIZE = atoi (p);
-  JAM_SIZE = ARENA_SIZE / 10;
-  if (p = getenv ("MES_JAM"))
-    JAM_SIZE = atoi (p);
-  GC_SAFETY = ARENA_SIZE / 100;
-  if (p = getenv ("MES_SAFETY"))
-    GC_SAFETY = atoi (p);
-  if (p = getenv ("MES_STACK"))
-    STACK_SIZE = atoi (p);
-  if (p = getenv ("MES_MAX_STRING"))
-    MAX_STRING = atoi (p);
+  open_boot ();
+  gc_init ();
+  g_ports = 1;
+}
+
+int
+main (int argc, char *argv[])
+{
+  init ();
 
   SCM a = mes_environment (argc, argv);
   a = mes_builtins (a);

@@ -18,37 +18,34 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-if [ ! "$config_status" ]; then
-    . ./config.status
-fi
+set -e
 
-. ${srcdest}build-aux/config.sh
+. ./config.sh
+
 . ${srcdest}build-aux/trace.sh
 GUILE_AUTO_COMPILE=0
 
-set -e
-
 SCM_FILES="
-${srcdest}module/mes/getopt-long.scm
-${srcdest}module/mes/guile.scm
-${srcdest}module/mes/misc.scm
-${srcdest}module/mes/test.scm
-${srcdest}module/mescc/M1.scm
-${srcdest}module/mescc/as.scm
-${srcdest}module/mescc/bytevectors.scm
-${srcdest}module/mescc/compile.scm
-${srcdest}module/mescc/i386/as.scm
-${srcdest}module/mescc/i386/info.scm
-${srcdest}module/mescc/x86_64/as.scm
-${srcdest}module/mescc/x86_64/info.scm
-${srcdest}module/mescc/info.scm
-${srcdest}module/mescc.scm
-${srcdest}module/mescc/mescc.scm
-${srcdest}module/mescc/preprocess.scm
+module/mes/getopt-long.scm
+module/mes/guile.scm
+module/mes/misc.scm
+module/mes/test.scm
+module/mescc/M1.scm
+module/mescc/as.scm
+module/mescc/bytevectors.scm
+module/mescc/compile.scm
+module/mescc/i386/as.scm
+module/mescc/i386/info.scm
+module/mescc/x86_64/as.scm
+module/mescc/x86_64/info.scm
+module/mescc/info.scm
+module/mescc.scm
+module/mescc/mescc.scm
+module/mescc/preprocess.scm
 "
 
 SCRIPTS="
-${srcdest}build-aux/mes-snarf.scm
+build-aux/mes-snarf.scm
 "
 
 export host=$($GUILE -c "(display %host-type)")
@@ -61,7 +58,8 @@ fi
 for i in $SCM_FILES $SCRIPTS; do
     b=$(basename $i)
     go=${i%%.scm}.go
-    if [ $i -nt $go ]; then
-        trace "GUILEC     $i" $GUILD compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $i
+    f=${srcdest}$i
+    if test $f -nt $go; then
+        trace "GUILEC     $f" $GUILD compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $f
     fi
 done

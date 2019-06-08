@@ -18,6 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <sys/stat.h>
+
 int
 fstat (int filedes, struct stat *statbuf)
 {

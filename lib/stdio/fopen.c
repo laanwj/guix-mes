@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  * Copyright © 2018 Jeremiah Orians <jeremiah@pdp10.guru>
  *
  * This file is part of GNU Mes.
@@ -20,13 +20,11 @@
  */
 
 #include <mes/lib.h>
+#include <assert.h>
+#include <fcntl.h>
 #include <stdio.h>
-
-//#if __GNUC__ && __x86_64__
-#if __x86_64__
-#undef open
-#define open _open3
-#endif
+#include <string.h>
+#include <unistd.h>
 
 FILE *
 fopen (char const *file_name, char const *opentype)
@@ -53,10 +51,10 @@ fopen (char const *file_name, char const *opentype)
     {
       char *plus_p = strchr (opentype, '+');
       int flags = plus_p ? O_RDWR | O_CREAT : O_WRONLY | O_CREAT | O_TRUNC;
-      fd = open (file_name, flags, mode);
+      fd = _open3 (file_name, flags, mode);
     }
   else
-    fd = open (file_name, 0, 0);
+    fd = _open3 (file_name, 0, 0);
 
   if (__mes_debug ())
     {
@@ -68,11 +66,11 @@ fopen (char const *file_name, char const *opentype)
   if (!fd)
     {
       eputs (" ***MES LIB C*** fopen of stdin: signal me in band\n");
-      exit (1);
+      assert (0);
     }
   if (fd < 0)
     fd = 0;
-  return (FILE *) fd;
+  return (FILE *) (long) fd;
 }
 
 #undef open

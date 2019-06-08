@@ -27,9 +27,6 @@
 int
 main ()
 {
-#if __GNUC__ && __x86_64__
-  return 0;
-#endif
   char *s = "mes";
   char c = 'm';
   int i = 3;

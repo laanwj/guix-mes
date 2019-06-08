@@ -23,5 +23,5 @@
 FILE *
 fdopen (int fd, char const *mode)
 {
-  return (FILE *) fd;
+  return (FILE *) (long) fd;
 }

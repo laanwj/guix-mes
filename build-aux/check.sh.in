@@ -20,13 +20,71 @@
 
 set -e
 
-. ./config.status
-. ${srcdest}build-aux/config.sh
-. ${srcdest}build-aux/trace.sh
+. ./config.sh
 
-./pre-inst-env bash ${srcdest}build-aux/check-boot.sh
-./pre-inst-env sh ${srcdest}build-aux/check-mes.sh
-./pre-inst-env bash ${srcdest}build-aux/check-mescc.sh
-if [ -d $TINYCC_PREFIX/tests/tests2 ] ;then
-    ./pre-inst-env sh ${srcdest}build-aux/check-tcc.sh
+if $courageous; then
+    echo "Applying courage"
+    set +e
 fi
+
+CFLAGS=
+if test $mes_libc = mes; then
+    CFLAGS="
+-nostdinc
+-nostdlib
+-fno-builtin
+"
+fi
+
+CPPFLAGS="
+-D HAVE_CONFIG_H=1
+-I ../include
+-I ${srcdir}/include
+-I ${srcdir}/include/$mes_kernel/$mes_cpu
+"
+
+LIBS=
+LDFLAGS=
+if test $mes_libc = mes; then
+    LDFLAGS="
+-nostdlib
+"
+    LIBS=-lc
+fi
+
+export CFLAGS
+export CPPFLAGS
+export LDFLAGS
+#export LIBS
+
+./pre-inst-env sh ${srcdest}build-aux/check-boot.sh
+./pre-inst-env sh ${srcdest}build-aux/check-mes.sh
+
+if test $compiler = gcc; then
+    (
+        cd gcc-lib
+        srcdest=$srcdir/../
+        srcdir=../$srcdir
+        ../pre-inst-env sh ${srcdest}build-aux/check-mescc.sh
+    )
+fi
+
+(
+    cd mescc-lib
+    srcdest=$srcdir/../
+    srcdir=../$srcdir
+    compiler=mescc
+    mes_lib=mes
+    CFLAGS="
+-nostdinc
+-nostdlib
+-fno-builtin
+"
+    LDFLAGS="
+-nostdlib
+"
+    LIBS=-lc
+    AR="${srcdest}pre-inst-env ar"
+    CC="${srcdest}pre-inst-env mescc"
+    ../pre-inst-env sh ${srcdest}build-aux/check-mescc.sh
+)

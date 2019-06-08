@@ -14,6 +14,7 @@
 *.guile
 *.guile-log
 *.log
+*.trs
 *.mes-gcc
 *.mes-gcc-o
 *.mes-gcc-out
@@ -140,12 +141,12 @@
 
 /config.status
 /pre-inst-env
-/bootstrap.sh
 /build.sh
 /check.sh
 /install.sh
 /uninstall.sh
 /mes/module/mes/boot-0.scm
+/scripts/ar
 /scripts/mescc.scm
 /scripts/mescc
 /doc/images/gcc-mesboot-graph.png
@@ -156,3 +157,8 @@
 /doc/web/
 /lib/x86_64-mes/0exit-42
 /lib/x86_64-mes/exit-42
+/config.sh
+/include/mes/config.h
+/gcc-lib
+/mescc-lib
+/bin

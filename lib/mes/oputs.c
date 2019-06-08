@@ -19,6 +19,7 @@
  */
 
 #include <mes/lib.h>
+#include <string.h>
 
 int
 oputs (char const *s)

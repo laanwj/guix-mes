@@ -18,7 +18,14 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mes/lib.h"
+#include "mes/mes.h"
+
+#include <assert.h>
+#include <ctype.h>
 #include <limits.h>
+#include <stdio.h>
+#include <string.h>
 
 void
 assert_number (char const *name, SCM x)

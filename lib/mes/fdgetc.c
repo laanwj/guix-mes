@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,15 +20,37 @@
 
 #include <mes/lib.h>
 #include <limits.h>
+#include <string.h>
 #include <sys/resource.h>
+#include <unistd.h>
 
-int __ungetc_buf[RLIMIT_NOFILE + 1] = { 0 };
+#define __UNGETC_MAX 1024
+
+int __ungetc_buf[__UNGETC_MAX + 1] = { 0 };
+
+int
+__ungetc_p (int filedes)
+{
+  return __ungetc_buf[filedes] >= 0;
+}
 
 void
 __ungetc_init ()
 {
-  if (__ungetc_buf[RLIMIT_NOFILE] == 0)
-    memset (__ungetc_buf, -1, (RLIMIT_NOFILE + 1) * sizeof (int));
+  if (__ungetc_buf[__UNGETC_MAX] == 0)
+    memset (__ungetc_buf, -1, (__UNGETC_MAX + 1) * sizeof (int));
+}
+
+void
+__ungetc_clear (int filedes)
+{
+  __ungetc_buf[filedes] = -1;
+}
+
+void
+__ungetc_set (int filedes, int c)
+{
+  __ungetc_buf[filedes] = c;
 }
 
 int
@@ -45,7 +67,7 @@ fdgetc (int fd)
       int r = read (fd, &c, 1);
       if (r < 1)
         return -1;
-      i = c;
+      i = (int) c;
     }
   if (i < 0)
     i += 256;

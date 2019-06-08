@@ -18,6 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 unsigned int

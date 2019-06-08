@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,19 +17,29 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef __MES_GRP_H
+#define __MES_GRP_H 1
 
-#include <errno.h>
+#if SYSTEM_LIBC
+#undef __MES_GRP_H
+#include_next <pwd.h>
+#else // ! SYSTEM_LIBC
 
-#if __MESC__ && __i386__
-#include <linux/x86-mes/mini.c>
-#elif __MESC__ && __x86_64__
-#include <linux/x86_64-mes/mini.c>
-#elif __i386__
-#include <linux/x86-mes-gcc/mini.c>
-#elif __x86_64__
-#include <linux/x86_64-mes-gcc/mini.c>
-#else
-#error arch not supported
-#endif
+#include <sys/types.h>
 
-#include <posix/write.c>
+struct group
+{
+  char *gr_name;
+  gid_t gr_gid;
+  char **gr_mem;
+};
+
+struct group *getgrent (void);
+void endgrent (void);
+void setgrent (void);
+struct group *getgrgid (gid_t gid);
+struct group *getgrnam (char const *name);
+
+#endif // ! SYSTEM_LIBC
+
+#endif // __MES_GRP_H

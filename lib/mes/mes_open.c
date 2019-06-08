@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,26 +20,6 @@
 
 #include <mes/lib.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <ctype/isdigit.c>
-#include <ctype/isxdigit.c>
-#include <ctype/isspace.c>
-#include <ctype/isnumber.c>
-
-#include <mes/abtol.c>
-#include <stdlib/atoi.c>
-#include <mes/ntoab.c>
-#include <mes/ltoab.c>
-#include <mes/itoa.c>
-#include <mes/ltoa.c>
-#include <mes/ultoa.c>
-#include <mes/utoa.c>
-#include <mes/fdgetc.c>
-#include <mes/fdputc.c>
-#include <mes/fdputs.c>
-#include <mes/fdungetc.c>
 
 #if SYSTEM_LIBC
 #include <fcntl.h>
@@ -53,14 +33,11 @@ int
 mes_open (char const *file_name, int flags, int mask)
 {
   __ungetc_init ();
-  int r = open (file_name, flags, mask);
-  if (r > 2)
-    __ungetc_buf[r] = -1;
-  return r;
+  int filedes = open (file_name, flags, mask);
+  if (filedes > 2)
+    __ungetc_clear (filedes);
+  return filedes;
 }
-
-#include <mes/eputs.c>
-#include <mes/oputs.c>
 
 #else // !SYSTEM_LIBC
 
@@ -71,6 +48,3 @@ mes_open (char const *file_name, int flags, int mask)
 }
 
 #endif // !SYSTEM_LIBC
-
-#include <mes/eputc.c>
-#include <mes/oputc.c>

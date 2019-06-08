@@ -19,13 +19,16 @@
  */
 
 #include <mes/lib.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int
 vsscanf (char const *s, char const *template, va_list ap)
 {
-  char const *p = s;
+  char *p = (char *) s;
   char const *t = template;
   int count = 0;
   while (*t && *p)
@@ -59,7 +62,7 @@ vsscanf (char const *s, char const *template, va_list ap)
           case 'u':
             {
               int *d = va_arg (ap, int *);
-              *d = abtol (&p, 10);
+              *d = abtol ((char const **)&p, 10);
               count++;
               break;
             }

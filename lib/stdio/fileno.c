@@ -23,5 +23,5 @@
 int
 fileno (FILE * stream)
 {
-  return (int) stream;
+  return (int) (long) stream;
 }

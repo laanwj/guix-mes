@@ -18,6 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <signal.h>
+#include <unistd.h>
+
 int
 sigprocmask (int how, sigset_t const *set, sigset_t * oldset)
 {

@@ -18,9 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SCM struct_ref_ (SCM x, long i);
-SCM struct_set_x_ (SCM x, long i, SCM e);
-SCM cstring_to_symbol (char const *s);
+#include "mes/lib.h"
+#include "mes/mes.h"
+
+#include <assert.h>
 
 SCM
 make_module_type ()             ///(internal))

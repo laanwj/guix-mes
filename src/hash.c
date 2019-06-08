@@ -18,9 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SCM make_vector__ (long k);
-SCM vector_ref_ (SCM x, long i);
-SCM vector_set_x_ (SCM x, long i, SCM e);
+#include "mes/lib.h"
+#include "mes/mes.h"
+
+#include <assert.h>
+#include <string.h>
 
 int
 hash_cstring (char const *s, long size)

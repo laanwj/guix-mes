@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,18 +18,23 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
+#include <mes/lib.h>
+#include <stdio.h>
 
-void *
-#if __MESC__
-bsearch (void const *key, void const *array, size_t count, size_t size, void (*compare) ())
-#else
-bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare)
-#endif
+char *
+fdgets (char *s, int count, int fd)
 {
-  static int stub = 0;
-  if (__mes_debug () && !stub)
-    eputs ("bsearch stub\n");
-  stub = 1;
-  return 0;
+  int c = 0;
+  char *p = s;
+  while (--count > 0 && c != '\n')
+    {
+      c = fdgetc (fd);
+      if (c == EOF)
+        break;
+      *p++ = c;
+    }
+  if (p == s && (c == EOF || count == -1))
+    return 0;
+  *p = 0;
+  return s;
 }

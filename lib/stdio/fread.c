@@ -20,11 +20,13 @@
 
 #include <mes/lib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 int
-_fungetc_p (FILE * stream)
+__fungetc_p (FILE * stream)
 {
-  return _fdungetc_p ((int) stream);
+  return __ungetc_p ((int) (long) stream);
 }
 
 size_t
@@ -37,11 +39,11 @@ fread (void *data, size_t size, size_t count, FILE * stream)
   char *buf = (char *) data;
 
   int bytes = 0;
-  while (_fungetc_p (stream) && todo-- && ++bytes)
+  while (__fungetc_p (stream) && todo-- && ++bytes)
     *buf++ = fgetc (stream);
   if (todo)
     {
-      int r = read ((int) stream, buf, todo);
+      int r = read ((int) (long) stream, buf, todo);
       if (r < 0 && !bytes)
         bytes = r;
       else
@@ -51,7 +53,7 @@ fread (void *data, size_t size, size_t count, FILE * stream)
   if (__mes_debug ())
     {
       eputs ("fread fd=");
-      eputs (itoa ((int) stream));
+      eputs (itoa ((int) (long) stream));
       eputs (" bytes=");
       eputs (itoa (bytes));
       eputs ("\n");

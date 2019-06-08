@@ -1,7 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright (C) 1993 Free Software Foundation, Inc.
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -31,5 +31,5 @@ __getdirentries (int filedes, char *buffer, size_t nbytes, off_t * basep)
   if (basep)
     *basep = lseek (filedes, (off_t) 0, SEEK_CUR);
 
-  return read (filedes, buf, nbytes);
+  return read (filedes, buffer, nbytes);
 }

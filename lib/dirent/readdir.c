@@ -32,6 +32,8 @@
 
 #include <dirstream.h>
 
+int getdents (int filedes, char *buffer, size_t nbytes);
+
 /* Read a directory entry from DIRP.  */
 struct dirent *
 readdir (DIR * dirp)

@@ -18,7 +18,9 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mes/lib.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #if __SBRK_CHAR_PTRDIFF
 char *

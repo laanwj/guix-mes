@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,6 +19,7 @@
  */
 
 #include <mes/lib.h>
+#include <assert.h>
 
 int
 fdungetc (int c, int fd)
@@ -26,19 +27,13 @@ fdungetc (int c, int fd)
   __ungetc_init ();
   if (c == -1)
     return c;
-  else if (__ungetc_buf[fd] != -1)
+  else if (__ungetc_p (fd))
     {
       eputs (" ***MES C LIB*** fdungetc ungetc buffer overflow fd=");
       eputs (itoa (fd));
       eputs ("\n");
-      exit (1);
+      assert (0);
     }
-  __ungetc_buf[fd] = c;
+  __ungetc_set (fd, c);
   return c;
-}
-
-int
-_fdungetc_p (int fd)
-{
-  return __ungetc_buf[fd] >= 0;
 }

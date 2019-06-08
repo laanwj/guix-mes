@@ -18,6 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <sys/types.h>
+
 int
 getdents (int filedes, char *buffer, size_t nbytes)
 {

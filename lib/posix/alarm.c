@@ -19,6 +19,7 @@
  */
 
 #include <unistd.h>
+#include <sys/time.h>
 
 unsigned int
 alarm (unsigned int seconds)

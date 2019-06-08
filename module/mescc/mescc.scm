@@ -140,7 +140,7 @@
                                     '("c")))
          (libraries (filter-map (multi-opt 'library) options))
          (libraries (delete-duplicates (append libraries default-libraries)))
-         (hex2-libraries (map (cut find-library options ".o" <>) libraries))
+         (hex2-libraries (map (cut find-library options ".a" <>) libraries))
          (hex2-files (append hex2-files hex2-libraries))
          (S-files (append S-files (map (cut find-library options ".S" <>)  libraries)))
          (debug-info? (option-ref options 'debug-info #f))

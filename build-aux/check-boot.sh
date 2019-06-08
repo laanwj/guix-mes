@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -19,120 +19,104 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
+. ./config.sh
+set -u
 
-. ./config.status
-. ${srcdest}build-aux/config.sh
-. ${srcdest}build-aux/trace.sh
+TESTS="
 
-tests="
+scaffold/boot/00-zero.scm
+scaffold/boot/01-true.scm
+scaffold/boot/02-symbol.scm
+scaffold/boot/03-string.scm
+scaffold/boot/04-quote.scm
+scaffold/boot/05-list.scm
+scaffold/boot/06-tick.scm
+scaffold/boot/07-if.scm
+scaffold/boot/08-if-if.scm
 
-00-zero.scm
-01-true.scm
-02-symbol.scm
-03-string.scm
-04-quote.scm
-05-list.scm
-06-tick.scm
-07-if.scm
-08-if-if.scm
+scaffold/boot/10-cons.scm
+scaffold/boot/11-list.scm
+scaffold/boot/11-vector.scm
+scaffold/boot/12-car.scm
+scaffold/boot/13-cdr.scm
+scaffold/boot/14-exit.scm
+scaffold/boot/15-display.scm
 
-10-cons.scm
-11-list.scm
-11-vector.scm
-12-car.scm
-13-cdr.scm
-14-exit.scm
-15-display.scm
+scaffold/boot/16-if-eq-quote.scm
 
-16-if-eq-quote.scm
+scaffold/boot/17-memq.scm
+scaffold/boot/17-memq-keyword.scm
+scaffold/boot/17-string-equal.scm
+scaffold/boot/17-equal2.scm
+scaffold/boot/17-string-append.scm
+scaffold/boot/17-open-input-string.scm
 
-17-memq.scm
-17-memq-keyword.scm
-17-string-equal.scm
-17-equal2.scm
-17-string-append.scm
-17-open-input-string.scm
+scaffold/boot/20-define.scm
+scaffold/boot/20-define-quoted.scm
+scaffold/boot/20-define-quote.scm
 
-20-define.scm
-20-define-quoted.scm
-20-define-quote.scm
+scaffold/boot/21-define-procedure.scm
+scaffold/boot/22-define-procedure-2.scm
+scaffold/boot/23-begin.scm
+scaffold/boot/24-begin-define.scm
+scaffold/boot/25-begin-define-2.scm
+scaffold/boot/26-begin-define-later.scm
+scaffold/boot/27-lambda-define.scm
+scaffold/boot/28-define-define.scm
+scaffold/boot/29-lambda-define.scm
+scaffold/boot/2a-lambda-lambda.scm
+scaffold/boot/2b-define-lambda.scm
+scaffold/boot/2c-define-lambda-recurse.scm
+scaffold/boot/2d-define-lambda-set.scm
+scaffold/boot/2d-compose.scm
+scaffold/boot/2e-define-first.scm
+scaffold/boot/2f-define-second.scm
+scaffold/boot/2f-define-second-lambda.scm
+scaffold/boot/2g-vector.scm
 
-21-define-procedure.scm
-22-define-procedure-2.scm
-23-begin.scm
-24-begin-define.scm
-25-begin-define-2.scm
-26-begin-define-later.scm
-27-lambda-define.scm
-28-define-define.scm
-29-lambda-define.scm
-2a-lambda-lambda.scm
-2b-define-lambda.scm
-2c-define-lambda-recurse.scm
-2d-define-lambda-set.scm
-2d-compose.scm
-2e-define-first.scm
-2f-define-second.scm
-2f-define-second-lambda.scm
-2g-vector.scm
+scaffold/boot/30-capture.scm
+scaffold/boot/31-capture-define.scm
+scaffold/boot/32-capture-modify-close.scm
+scaffold/boot/32-capture-modify-close.scm
+scaffold/boot/33-procedure-override-close.scm
+scaffold/boot/34-cdr-override-close.scm
+scaffold/boot/35-closure-modify.scm
+scaffold/boot/36-closure-override.scm
+scaffold/boot/37-closure-lambda.scm
+scaffold/boot/38-simple-format.scm
+scaffold/boot/39-global-define-override.scm
+scaffold/boot/3a-global-define-lambda-override.scm
 
-30-capture.scm
-31-capture-define.scm
-32-capture-modify-close.scm
-32-capture-modify-close.scm
-33-procedure-override-close.scm
-34-cdr-override-close.scm
-35-closure-modify.scm
-36-closure-override.scm
-37-closure-lambda.scm
-38-simple-format.scm
-39-global-define-override.scm
-3a-global-define-lambda-override.scm
+scaffold/boot/40-define-macro.scm
+scaffold/boot/41-when.scm
+scaffold/boot/42-if-when.scm
+scaffold/boot/43-or.scm
+scaffold/boot/44-or-if.scm
+scaffold/boot/45-pass-if.scm
+scaffold/boot/46-report.scm
+scaffold/boot/47-pass-if-eq.scm
+scaffold/boot/48-let.scm
+scaffold/boot/49-macro-override.scm
+scaffold/boot/4a-define-macro-define-macro.scm
+scaffold/boot/4b-define-macro-define.scm
+scaffold/boot/4c-quasiquote.scm
+scaffold/boot/4d-let-map.scm
+scaffold/boot/4e-let-global.scm
+scaffold/boot/4f-string-split.scm
 
-40-define-macro.scm
-41-when.scm
-42-if-when.scm
-43-or.scm
-44-or-if.scm
-45-pass-if.scm
-46-report.scm
-47-pass-if-eq.scm
-48-let.scm
-49-macro-override.scm
-4a-define-macro-define-macro.scm
-4b-define-macro-define.scm
-4c-quasiquote.scm
-4d-let-map.scm
-4e-let-global.scm
-4f-string-split.scm
-
-50-string-append.scm
-50-string-join.scm
-50-primitive-load.scm
-51-module.scm
-52-define-module.scm
-53-closure-display.scm
-
-60-let-syntax.scm
+scaffold/boot/50-keyword.scm
+scaffold/boot/50-make-string.scm
+scaffold/boot/50-string-join.scm
+scaffold/boot/50-primitive-load.scm
+scaffold/boot/53-closure-display.scm
+scaffold/boot/60-let-syntax.scm
+scaffold/boot/call-cc.scm
+scaffold/boot/memory.scm
+scaffold/boot/numbers.scm
 "
 
-for i in $tests; do
-    echo -n $i
-    if [ ! -f scaffold/boot/$i ]; then
-        echo ' [SKIP]'
-        continue;
-    fi
-    x=$(
-        if [ "$MES" = guile -o "$(basename $MES)" = guile ]; then
-            trace "TEST       $i.guile" $GUILE -L ${srcdest}module -C module -L . <(echo '(use-modules (mes guile))'; cat scaffold/boot/$i)
-        elif [ -z "${i/5[0-9]-*/}" ]; then
-            cat scaffold/boot/$i | MES_BOOT=${srcdest}boot-00.scm trace "TEST       $i" $MES 2>&1;
-        elif [ -z "${i/6[0-9]-*/}" ]; then
-            cat scaffold/boot/$i | MES_BOOT=${srcdest}boot-01.scm trace "TEST       $i" $MES 2>&1;
-        else
-            MES_BOOT=${srcdest}scaffold/boot/$i trace "TEST       $i" $MES 2>&1;
-        fi
-     ) \
-        && echo ' [OK]' \
-        || (r=$?; echo ' [FAIL]'; echo -e "$x"; echo scaffold/boot/$i; exit $r)
-done
+XFAIL_TESTS=
+
+test_ext=.scm
+log_compiler=${srcdest}build-aux/test-boot.sh
+. ${srcdest}build-aux/test-suite.sh

@@ -25,6 +25,8 @@
 #include_next <pwd.h>
 #else // ! SYSTEM_LIBC
 
+#include <sys/types.h>
+
 struct passwd
 {
   char *pw_name;

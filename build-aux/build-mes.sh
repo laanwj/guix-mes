@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -19,68 +19,39 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 set -e
+set -u
 
-if [ ! "$config_status" ]; then
-    . ./config.status
+V=${V-1}
+
+if [ "$V" = 2 ]; then
+    set -x
 fi
 
-. ${srcdest}build-aux/config.sh
+. ./config.sh
 . ${srcdest}build-aux/trace.sh
 . ${srcdest}build-aux/cc.sh
 
-[ "$mes_p" ] && (program_prefix= compile lib/linux/$mes_arch/crt1)
-[ "$mes_p" -a ! "$gcc_p" ] && cp -f lib/linux/$mes_arch/crt1.S lib/$mes_arch/crt1.S
-[ "$mes_p" -a ! "$gcc_p" ] && cp -f lib/linux/$mes_arch/crt1.o lib/$mes_arch/crt1.o
+trap 'test -f .log && cat .log' EXIT
 
- [ ! "$mesc_p" -a ! "$with_glibc_p" ] && (program_prefix= compile lib/linux/$mes_arch/crt0)
-[ "$mes_p" -a "$gcc_p" ] && (program_prefix= compile lib/linux/$mes_arch/crti)
-[ "$mes_p" -a "$gcc_p" ] && (program_prefix= compile lib/linux/$mes_arch/crtn)
+srcdest=${srcdest-}
+mes_sources="
+src/gc.c
+src/hash.c
+src/lib.c
+src/math.c
+src/mes.c
+src/module.c
+src/posix.c
+src/reader.c
+src/string.c
+src/struct.c
+src/vector.c
+"
 
-[ ! "$mes_p" -a ! "$mesc_p" ] && compile lib/libmes
-[ ! "$mes_p" -a ! "$mesc_p" ] && archive lib/libmes
-
-[ "$mes_p" ] && compile lib/libc-mini
-[ "$mes_p" ] && archive lib/libc-mini
-
-[ "$mes_p" ] && compile lib/libc
-[ "$mes_p" ] && archive lib/libc
-
-[ "$mes_p"  ] && compile lib/libc+tcc
-[ "$mes_p"  ] && archive lib/libc+tcc
-
-[ "$mes_p" ] && compile lib/libc+gnu
-[ "$mes_p" ] && archive lib/libc+gnu
-
-[ "$mes_p" -a ! "$mesc_p" ] && compile lib/libtcc1
-[ "$mes_p" -a ! "$mesc_p" ] && archive lib/libtcc1
-
-[ "$mes_p" -a ! "$mesc_p" ] && compile lib/libg
-[ "$mes_p" -a ! "$mesc_p" ] && archive lib/libg
-
-[ "$mes_p" -a ! "$mesc_p" ] && compile lib/libgetopt
-[ "$mes_p" -a ! "$mesc_p" ] && archive lib/libgetopt
-
-compile scaffold/main
-(libc= link scaffold/main)
-
-compile scaffold/hello
-(libc="-l c-mini" link scaffold/hello)
-
-compile scaffold/argv
-(libc="-l c-mini" link scaffold/argv)
-
-[ "$mes_p" ] && compile lib/tests/stdlib/50-malloc
-[ "$mes_p" ] && link lib/tests/stdlib/50-malloc
-
-[ "$mes_p" ] && compile lib/tests/posix/50-getenv
-[ "$mes_p" ] && link lib/tests/posix/50-getenv
-
-
-[ "$mes_p" ] && compile scaffold/micro-mes
-[ "$mes_p" ] && link scaffold/micro-mes
-
-[ "$mes_p" ] && compile scaffold/tiny-mes
-[ "$mes_p" ] && link scaffold/tiny-mes
-
-compile src/mes
+for c in $mes_sources; do
+    compile $c
+done
+if test $mes_libc = system; then
+    LIBS=-lmes
+fi
 link src/mes

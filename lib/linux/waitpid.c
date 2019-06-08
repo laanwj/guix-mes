@@ -18,6 +18,10 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <sys/types.h>
+
 pid_t
 waitpid (pid_t pid, int *status_ptr, int options)
 {

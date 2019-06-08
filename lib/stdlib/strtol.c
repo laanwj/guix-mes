@@ -20,6 +20,7 @@
 
 #include <mes/lib.h>
 #include <stdlib.h>
+#include <string.h>
 
 long
 strtol (char const *string, char **tailptr, int base)
@@ -31,9 +32,9 @@ strtol (char const *string, char **tailptr, int base)
     }
   if (tailptr)
     {
-      *tailptr = string;
-      return abtol (tailptr, base);
+      *tailptr = (char *) string;
+      return abtol ((char const **) tailptr, base);
     }
-  char **p = &string;
-  return abtol (p, base);
+  char **p = (char **) &string;
+  return abtol ((char const **) p, base);
 }

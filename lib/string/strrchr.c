@@ -28,12 +28,12 @@ strrchr (char const *s, int c)
     return 0;
   char const *p = s + n;
   if (!*p && !c)
-    return p;
+    return (char *) p;
   p--;
   while (n-- && (*p || !c))
     {
       if (c == *p)
-        return p;
+        return (char *) p;
       p--;
     }
   return 0;

@@ -19,6 +19,7 @@
  */
 
 #include <mes/lib.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <string.h>
 

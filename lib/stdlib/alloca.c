@@ -3,7 +3,7 @@
 
    Taken from GNU binutils 2.10.1.
    Minor changes
-   Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+   Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
    This implementation of the PWB library alloca function,
    which is used to allocate space off the run-time stack so
@@ -24,6 +24,7 @@
    allocating any.  It is a good idea to use alloca(0) in
    your main control loop, etc. to force garbage collection.  */
 
+#include <stdlib.h>
 #include <unistd.h>
 
 #define ALIGN_SIZE 4

@@ -1,5 +1,5 @@
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -16,32 +16,41 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
+objects=
 compile () {
-    flags=
-    [ "$mesc_p" ] && flags="$LDFLAGS $MES_CFLAGS"
-    trace "CC         $1.c" $CC -c $CPPFLAGS $CFLAGS $flags -o "$1".${program_prefix}o "${srcdest}$1".c
-}
-
-archive () {
-    l=$1
-    shift
-    objects=$(for i in $@; do echo $i.${program_prefix}o; done)
-    [ -z "$objects" ] && objects=$l.${program_prefix}o
-    out=$(dirname "$l")/$mes_arch/$(basename "$l").a
-    d=$(dirname $out)
-    mkdir -p $d
-    if [ "$mesc_p" ]; then
-        trace "AR         $l.a" mv $l.${program_prefix}o $(dirname $l)/$mes_arch/$(basename $l).o\
-            && mv $l.${program_prefix}S $(dirname $l)/$mes_arch/$(basename $l).S
-    else
-        trace "AR         $l.a" $AR cr $out $objects\
-            && mv $objects $d
+    c=${srcdest}$1
+    b=$(basename $c .c)
+    o=$b.o
+    objects="$objects $o"
+    if test $c -nt $o; then
+        trace "CC         $c" $CC -c $CPPFLAGS $CFLAGS -o $o $c
+        $CC -c $CPPFLAGS $CFLAGS -o $o $c
     fi
 }
 
+archive () {
+    archive=$1
+    shift
+    sources="$@"
+    objects=
+    for c in $sources; do
+        b=$(basename $c .c)
+        o=$b.o
+        compile $c
+    done
+    trace "AR         $archive" $AR crD $archive $objects
+    objects=
+}
+
 link () {
-    lib=$libc
-    [ "$with_glibc_p" ] && lib='-l mes'
-    out=$(dirname "$1")/${program_prefix}$(basename "$1")
-    trace "CCLD       $1" $CC $CFLAGS $LDFLAGS -o" $out" $crt1 "$1".${program_prefix}o $2 $lib
+    out=$1
+    d=$(dirname $out)
+    mkdir -p $d
+    if test $mes_libc = system; then
+        crt1=
+    else
+        crt1=crt1.o
+    fi
+    trace "CCLD       $out" $CC $CFLAGS $LDFLAGS -o $out $crt1 $objects $LIBS
+    objects=
 }

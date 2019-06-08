@@ -35,21 +35,27 @@ char *ltoab (long x, int base);
 char *ntoab (long number, int base, int signed_p);
 char *ultoa (unsigned long number);
 char *utoa (unsigned number);
-int atoi (char const *s);
 int eputc (int c);
 int fdgetc (int fd);
+char * fdgets (char *s, int count, int fd);
 int fdputc (int c, int fd);
 int fdputs (char const *s, int fd);
 int fdungetc (int c, int fd);
-int _fdungetc_p (int fd);
-int isdigit (int c);
-int isspace (int c);
-int isxdigit (int c);
 int mes_open (char const *file_name, int flags, int mask);
 int _open2 (char const *file_name, int flags);
 int _open3 (char const *file_name, int flags, int mask);
 int oputc (int c);
 int oputs (char const *s);
 char *search_path (char const *file_name);
+
+#if !SYSTEM_LIBC
+
+extern char *__brk;
+extern void (*__call_at_exit) (void);
+void __assert_fail (char *s);
+void _exit (int code);
+long brk (void *addr);
+
+#endif // !SYSTEM_LIBC
 
 #endif //__MES_LIB_H

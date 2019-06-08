@@ -87,7 +87,7 @@ src/${program_prefix}mes: build
 clean:
 	git clean -dfx\
 	    -e .config.make\
-	    -e config.status\
+	    -e config.sh\
 	    -e GNUmakefile\
 	    -e build.sh\
 	    -e check.sh\
@@ -95,7 +95,6 @@ clean:
 	    -e uninstall.sh\
 	    -e pre-inst-env\
 	    -e scripts/mescc\
-	    -e "mes"/module/mes/boot-0.scm\
 
 #
 

@@ -27,7 +27,7 @@ strchr (char const *s, int c)
   while (*p || !c)
     {
       if (c == *p)
-        return p;
+        return (char *) p;
       p++;
     }
   return 0;

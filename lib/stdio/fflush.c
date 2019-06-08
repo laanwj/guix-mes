@@ -19,9 +19,11 @@
  */
 
 #include <stdio.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 int
 fflush (FILE * stream)
 {
-  fsync ((int) stream);
+  fsync ((long) stream);
 }

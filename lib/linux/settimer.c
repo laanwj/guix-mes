@@ -18,6 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <sys/time.h>
+#include <unistd.h>
+
 int
 setitimer (int which, struct itimerval const *new, struct itimerval *old)
 {

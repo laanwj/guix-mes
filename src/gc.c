@@ -18,9 +18,88 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
+#include "mes/lib.h"
+#include "mes/mes.h"
 
-size_t bytes_cells (size_t length);
+#include <assert.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+
+long ARENA_SIZE;
+long MAX_ARENA_SIZE;
+long STACK_SIZE;
+long JAM_SIZE;
+long GC_SAFETY;
+long MAX_STRING;
+char *g_arena;
+long g_free;
+SCM g_stack;
+SCM *g_stack_array;
+struct scm *g_cells;
+struct scm *g_news;
+
+SCM
+gc_init ()                ///((internal))
+{
+#if SYSTEM_LIBC
+  ARENA_SIZE = 100000000;    // 2.3GiB
+#else
+  ARENA_SIZE = 300000;       // 32b: 3MiB, 64b: 6 MiB
+#endif
+  MAX_ARENA_SIZE = 100000000;
+  STACK_SIZE = 20000;
+
+  JAM_SIZE = 20000;
+  GC_SAFETY = 2000;
+  MAX_STRING = 524288;
+
+  char *p;
+  if (p = getenv ("MES_MAX_ARENA"))
+    MAX_ARENA_SIZE = atoi (p);
+  if (p = getenv ("MES_ARENA"))
+    ARENA_SIZE = atoi (p);
+  JAM_SIZE = ARENA_SIZE / 10;
+  if (p = getenv ("MES_JAM"))
+    JAM_SIZE = atoi (p);
+  GC_SAFETY = ARENA_SIZE / 100;
+  if (p = getenv ("MES_SAFETY"))
+    GC_SAFETY = atoi (p);
+  if (p = getenv ("MES_STACK"))
+    STACK_SIZE = atoi (p);
+  if (p = getenv ("MES_MAX_STRING"))
+    MAX_STRING = atoi (p);
+
+  long arena_bytes = (ARENA_SIZE + JAM_SIZE) * sizeof (struct scm);
+  void *a = malloc (arena_bytes + STACK_SIZE * sizeof (SCM));
+  g_cells = (struct scm *) a;
+  g_stack_array = (SCM *) (a + arena_bytes);
+
+  TYPE (0) = TVECTOR;
+  LENGTH (0) = 1000;
+  VECTOR (0) = 0;
+  g_cells++;
+  TYPE (0) = TCHAR;
+  VALUE (0) = 'c';
+
+  // FIXME: remove MES_MAX_STRING, grow dynamically
+  g_buf = (char *) malloc (MAX_STRING);
+
+  return 0;
+}
+
+SCM
+gc_init_news ()                 ///((internal))
+{
+  g_news = g_cells + g_free;
+  NTYPE (0) = TVECTOR;
+  NLENGTH (0) = 1000;
+  NVECTOR (0) = 0;
+  g_news++;
+  NTYPE (0) = TCHAR;
+  NVALUE (0) = 'n';
+  return 0;
+}
 
 SCM
 gc_up_arena ()                  ///((internal))
@@ -160,19 +239,6 @@ gc_check ()
 }
 
 SCM
-gc_init_news ()                 ///((internal))
-{
-  g_news = g_cells + g_free;
-  NTYPE (0) = TVECTOR;
-  NLENGTH (0) = 1000;
-  NVECTOR (0) = 0;
-  g_news++;
-  NTYPE (0) = TCHAR;
-  NVALUE (0) = 'n';
-  return 0;
-}
-
-SCM
 gc_ ()                          ///((internal))
 {
   gc_init_news ();
@@ -246,4 +312,35 @@ gc ()
       write_error_ (r0);
       eputs ("\n");
     }
+}
+
+SCM
+gc_push_frame ()                ///((internal))
+{
+  if (g_stack < 5)
+    assert (!"STACK FULL");
+  g_stack_array[--g_stack] = cell_f;
+  g_stack_array[--g_stack] = r0;
+  g_stack_array[--g_stack] = r1;
+  g_stack_array[--g_stack] = r2;
+  g_stack_array[--g_stack] = r3;
+  return g_stack;
+}
+
+SCM
+gc_peek_frame ()                ///((internal))
+{
+  r3 = g_stack_array[g_stack];
+  r2 = g_stack_array[g_stack + 1];
+  r1 = g_stack_array[g_stack + 2];
+  r0 = g_stack_array[g_stack + 3];
+  return g_stack_array[g_stack + FRAME_PROCEDURE];
+}
+
+SCM
+gc_pop_frame ()                 ///((internal))
+{
+  SCM x = gc_peek_frame ();
+  g_stack += 5;
+  return x;
 }

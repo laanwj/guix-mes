@@ -171,7 +171,7 @@ ok1:
     return 30;
 
   oputs ("t: 0b11 == 3\n");
-  if (0 b11 != 3)
+  if (0b11 != 3)
     return 31;
 
   oputs ("t: 0x11 == 3\n");

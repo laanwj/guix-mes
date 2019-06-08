@@ -83,6 +83,7 @@ struct stat
 // *INDENT-ON*
 
 int chmod (char const *file_name, mode_t mode);
+int fstat (int filedes, struct stat *buf);
 int mkdir (char const *file_name, mode_t mode);
 int chown (char const *file_name, uid_t owner, gid_t group);
 int rmdir (char const *file_name);

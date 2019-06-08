@@ -19,6 +19,7 @@
  */
 
 #include <mes/lib.h>
+#include <stdarg.h>
 #include <unistd.h>
 
 int
@@ -36,12 +37,12 @@ execl (char const *file_name, char const *arg, ...)
   va_list ap;
   va_start (ap, arg);
 
-  argv[i++] = file_name;
+  argv[i++] = (char *)file_name;
   arg = va_arg (ap, char const *);
   while (arg)
     {
       argv[i++] = arg;
-      arg = va_arg (ap, char const *);
+      arg = va_arg (ap, char *);
       if (__mes_debug () > 2)
         {
           eputs ("arg[");

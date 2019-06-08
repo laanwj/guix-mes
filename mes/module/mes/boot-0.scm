@@ -136,10 +136,7 @@
       (if (null? (cdr rest)) (car rest)
           (append2 (car rest) (apply append (cdr rest))))))
 
-(define %prefix (getenv "MES_PREFIX"))
-(define %moduledir
-  (if (not %prefix) "mes/module/"
-      (string-append %prefix "/module/")))
+(define %moduledir (string-append %datadir "/module/"))
 
 (include (string-append %moduledir "mes/type-0.mes"))
 
@@ -175,8 +172,6 @@
 (define-macro (use-modules . rest) #t)
 ;; end boot-03.scm
 
-(define %version (if (eq? (car (string->list "@VERSION@")) #\@) "git"
-                     "@VERSION@"))
 (define (effective-version) %version)
 
 (mes-use-module (srfi srfi-1))
@@ -186,7 +181,7 @@
 (mes-use-module (mes posix))
 
 (define-macro (include-from-path file)
-  (let loop ((path (cons* %moduledir "@srcdir@/module" (string-split (or (getenv "GUILE_LOAD_PATH") "") #\:))))
+  (let loop ((path (cons* %moduledir "module" (string-split (or (getenv "GUILE_LOAD_PATH") "") #\:))))
     (cond ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 2)) string->number))
            (core:display-error (string-append "include-from-path: " file " [PATH:" (string-join path ":") "]\n")))
           ((and=> (getenv "MES_DEBUG") (compose (lambda (o) (> o 1)) string->number))

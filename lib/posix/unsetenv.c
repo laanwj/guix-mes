@@ -18,6 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mes/lib.h>
+#include <string.h>
 #include <unistd.h>
 
 void

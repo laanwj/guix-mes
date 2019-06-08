@@ -16,11 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-config_status=1
-AR="@AR@"
+config_sh=1
+AR=${AR-"@AR@"}
 BASH="@BASH@"
 BLOOD_ELF="@BLOOD_ELF@"
-CC="@CC@"
+CC=${CC-"@CC@"}
+DIFF=${DIFF-@DIFF@}
 DOT="@DOT@"
 GIT="@GIT@"
 GUILD="@GUILD@"
@@ -37,10 +38,13 @@ MES_FOR_BUILD="@MES_FOR_BUILD@"
 MES_SEED="@MES_SEED@"
 NYACC="@NYACC@"
 PACKAGE="@PACKAGE@"
+PACKAGE_NAME="@PACKAGE_NAME@"
+PACKAGE_BUGREPORT="@PACKAGE_BUGREPORT@"
 PERL="@PERL@"
 TINYCC_PREFIX="@TINYCC_PREFIX@"
 VERSION="@VERSION@"
-V="@V@"
+V=${V-"@V@"}
+colors=${colors-@colors@}
 
 abs_top_builddir="@abs_top_builddir@"
 abs_top_srcdir="@abs_top_srcdir@"
@@ -48,26 +52,44 @@ arch="@arch@"
 build="@build@"
 host="@host@"
 
-mes_arch="@mes_arch@"
-gcc_p="@gcc_p@"
-mes_p="@mes_p@"
-mesc_p="@mesc_p@"
-tcc_p="@tcc_p@"
+compiler=${compiler-@compiler@}
+courageous=${courageous-@courageous@}
+mes_system=@mes_system@
+mes_cpu=@mes_cpu@
+mes_bits=@mes_bits@
+mes_libc=@mes_libc@
+mes_kernel=@mes_kernel@
 
 prefix="@prefix@"
 
 bindir="@bindir@"
 datadir="@datadir@"
+pkgdatadir="@pkgdatadir@"
 docdir="@docdir@"
 guile_site_ccache_dir="@guile_site_ccache_dir@"
 guile_site_dir="@guile_site_dir@"
+includedir="@includedir@"
 infodir="@infodir@"
 libdir="@libdir@"
 mandir="@mandir@"
 moduledir="@moduledir@"
 with_glibc_p="@with_glibc_p@"
 program_prefix="@program_prefix@"
-srcdest="@srcdest@"
-srcdir="@srcdir@"
+srcdest=${srcdest-"@srcdest@"}
+srcdir=${srcdir-"@srcdir@"}
 sysconfdir="@sysconfdir@"
 top_builddir="@top_builddir@"
+
+export PACKAGE
+export PACKAGE_NAME
+export PACKAGE_BUGREPORT
+export AR
+export CC
+export DIFF
+export V
+export colors
+export compiler
+export courageous
+export srcdest
+export srcdir
+export GUILE_AUTO_COMPILE

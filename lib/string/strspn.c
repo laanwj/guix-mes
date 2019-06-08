@@ -23,7 +23,7 @@
 size_t
 strspn (char const *string, char const *skipset)
 {
-  char *p = string;
+  char *p = (char *) string;
   while (*p)
     if (!strchr (skipset, *p))
       break;

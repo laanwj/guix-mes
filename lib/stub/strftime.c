@@ -19,6 +19,7 @@
  */
 
 #include <mes/lib.h>
+#include <time.h>
 
 size_t
 strftime (char *s, size_t size, char const *template, struct tm const *brokentime)
@@ -27,5 +28,5 @@ strftime (char *s, size_t size, char const *template, struct tm const *brokentim
   if (__mes_debug () && !stub)
     eputs ("strftime stub\n");
   stub = 1;
-  return template;
+  return 0;
 }

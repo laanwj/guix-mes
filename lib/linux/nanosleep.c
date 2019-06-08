@@ -18,8 +18,13 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <time.h>
+#include <sys/time.h>
+
 int
-nanosleep (const struct timespec *requested_time, struct timespec *remaining)
+nanosleep (struct timespec const *requested_time, struct timespec const *remaining)
 {
   return _sys_call2 (SYS_nanosleep, (long) requested_time, (long) remaining);
 }

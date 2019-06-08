@@ -44,8 +44,6 @@
   (define (string . lst)
     (list->string lst))
 
-  (define %prefix (getenv "MES_PREFIX"))
-
   (define (not x) (if x #f #t))
   (define (map1 f lst)
     (if (null? lst) (list)
@@ -53,10 +51,7 @@
 
   (define map map1)
 
-  (define %moduledir
-    (if (not %prefix ) "mes/module/"
-        (list->string
-         (append (string->list %prefix) (string->list "/module/")))))
+  (define %moduledir (string-append %datadir "/module/"))
 
   (define-macro (load file)
     (list 'begin

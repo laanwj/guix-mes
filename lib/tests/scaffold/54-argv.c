@@ -27,11 +27,11 @@ int
 main (int argc, char *argv[])
 {
   oputs ("\n");
-  oputs ("t: argv[0] == \"test/scaffold....\"\n");
+  oputs ("t: argv[0] == \"lib/test/scaffold....\"\n");
   oputs ("argv0=");
   oputs (argv[0]);
   oputs ("\n");
-  if (strncmp (argv[0], "test/scaffold", 5))
+  if (strncmp (argv[0], "lib/test/scaffold", 5))
     return 1;
 
   oputs ("t: *argv\"\n");

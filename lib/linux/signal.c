@@ -18,6 +18,11 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/syscall.h>
+#include <syscall.h>
+#include <unistd.h>
+#include <signal.h>
+
 #if __x86_64__
 void
 _restorer (void)

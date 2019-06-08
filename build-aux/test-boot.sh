@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -20,30 +20,19 @@
 
 set -e
 
-if [ ! "$config_status" ]; then
-    . ./config.status
+if [ "$V" = 2 ]; then
+    set -x
 fi
 
-. ${srcdest}build-aux/config.sh
-. ${srcdest}build-aux/trace.sh
-. ${srcdest}build-aux/cc.sh
+t=${1-scaffold/boot/00-zero.scm}
+b=$(basename "$t" .scm)
 
-t=${1-scaffold/tests/t}
-o="$t"
-
-rm -f "${program_prefix}$o"
-compile "$t"
-link "$t"
-
-r=0
-[ -f "$t".exit ] && r=$(cat "$t".exit)
-set +e
-$(dirname "$o")/${program_prefix}$(basename "$o") $ARGS > "$o".${program_prefix}1 2> "$o".${program_prefix}2
-m=$?
-cat "$o".${program_prefix}1
-set -e
-
-[ $m = $r ]
-if [ -f "$t".stdout ]; then
-    $DIFF -ub "$t".stdout "$o".${program_prefix}1
+if [ "$(basename $MES)" = guile ]; then
+    $MES -L ${srcdest}module -C module -L . -c '(begin (use-modules (mes guile)) (include-from-path "'"$t"'"))'
+elif [ -z "${b/5[0-9]-*/}" ]; then
+    cat "$t" | MES_BOOT=boot-00.scm $MES
+elif [ -z "${b/6[0-9]-*/}" ]; then
+    cat "$t" | MES_BOOT=boot-01.scm $MES
+else
+    MES_BOOT=$t $MES;
 fi
