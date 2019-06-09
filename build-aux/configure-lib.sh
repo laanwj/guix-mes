@@ -227,6 +227,7 @@ lib/math/fabs.c
 lib/mes/fdgets.c
 lib/posix/alarm.c
 lib/posix/execl.c
+lib/posix/execlp.c
 lib/posix/mktemp.c
 lib/posix/raise.c
 lib/posix/sbrk.c

@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,47 +19,27 @@
  */
 
 #include <mes/lib.h>
+#include <errno.h>
 #include <stdarg.h>
-#include <unistd.h>
 
 int
-vexec (char const *file_name, va_list ap)
-{
-  char *arg = va_arg (ap, char *);
-  char *argv[1000];             // POSIX minimum 4096
-  int i = 0;
-
-  argv[i++] = (char *) file_name;
-  while (arg)
-    {
-      argv[i++] = arg;
-      arg = va_arg (ap, char *);
-      if (__mes_debug () > 2)
-        {
-          eputs ("arg[");
-          eputs (itoa (i));
-          eputs ("]: ");
-          eputs (argv[i - 1]);
-          eputs ("\n");
-        }
-    }
-  argv[i] = 0;
-  int r = execv (file_name, argv);
-  va_end (ap);
-  return r;
-}
-
-int
-execl (char const *file_name, char const *arg, ...)
+execlp (char const *file_name, char const *arg, ...)
 {
   va_list ap;
   int r;
   va_start (ap, arg);
+  if (file_name[0] != '/')
+    file_name = search_path (file_name);
   if (__mes_debug () > 2)
     {
-      eputs ("execl ");
-      eputs (file_name);
+      eputs ("execlp ");
+      eputs (file_name ? file_name : "0");
       eputs ("\n");
+    }
+  if (!file_name)
+    {
+      errno = ENOENT;
+      return -1;
     }
   r = vexec (file_name, ap);
   va_end (ap);

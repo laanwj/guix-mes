@@ -200,6 +200,7 @@ if test -z "$bootstrap"; then
     TESTS="$TESTS
 lib/tests/dirent/90-readdir.c
 lib/tests/io/90-stat.c
+lib/tests/posix/90-execlp.c
 lib/tests/posix/90-unsetenv.c
 lib/tests/signal/90-signal.c
 lib/tests/stdio/90-fopen.c
