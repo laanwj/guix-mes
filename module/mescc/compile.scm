@@ -1713,6 +1713,10 @@
       ((asm-expr ,gnuc (,null ,arg0 . string))
        (append-text info (wrap-as (asm->m1 arg0))))
 
+      ;; Nyacc 0.90.2
+      ((asm-expr ,gnuc (string ,arg0))
+       (append-text info (wrap-as (asm->m1 arg0))))
+
       ((expr-stmt (fctn-call (p-expr (ident ,name)) (expr-list . ,expr-list)))
        (if (equal? name "asm") (let ((arg0 (cadr (cadar expr-list))))
                                  (append-text info (wrap-as (asm->m1 arg0))))

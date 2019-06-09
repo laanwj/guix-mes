@@ -40,7 +40,7 @@
        '(("0.85.3" (1 2 3))
          ("0.86.0" (1 2 3)))
        *nyacc-version*)
-      '(1 2 3)))
+      '((1 2 3))))
 
 (define (progress o)
   (when (and o (getenv "NYACC_DEBUG"))
@@ -114,6 +114,7 @@
 
 (define (ast-strip-comment o)
   (pmatch o
+    ((@ (comment . ,comment)) #f) ; Nyacc 0.90.2/0.93.0?
     ((comment . ,comment) #f)
     (((comment . ,comment) . ,t) (filter-map ast-strip-comment t))
     (((comment . ,comment) . ,cdr) cdr)
