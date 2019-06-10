@@ -57,6 +57,9 @@ export CPPFLAGS
 export LDFLAGS
 #export LIBS
 
+recheck=${recheck-false}
+export recheck
+
 ./pre-inst-env sh ${srcdest}build-aux/check-boot.sh
 ./pre-inst-env sh ${srcdest}build-aux/check-mes.sh
 

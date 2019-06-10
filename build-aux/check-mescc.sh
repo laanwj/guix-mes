@@ -266,6 +266,7 @@ lib/tests/string/90-snprintf.c
     fi
 fi
 
+recheck=${recheck-false}
 test_ext=.c
 log_compiler=${srcdest}build-aux/test-c.sh
 . ${srcdest}build-aux/test-suite.sh

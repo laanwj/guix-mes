@@ -29,6 +29,13 @@ subdir=$(basename $(pwd))
 TEST_LOGS=
 for t in $TESTS; do
     b=$(dirname $t)/$(basename $t $test_ext)
+    TEST_LOGS="$TEST_LOGS $b.log"
+    if test -e $b.log \
+            && test -e $b.trs\
+            && ! $recheck; then
+        echo `grep :test-result $b.trs | cut -d' ' -f 2`: $b
+        continue
+    fi
     d=$(dirname $t)
     case " `echo $XFAIL_TESTS` " in
         *[\ \	]$t[\ \	]*)
@@ -46,7 +53,6 @@ for t in $TESTS; do
        --expect-failure $fail\
        -- $log_compiler\
        ${srcdest}$t
-    TEST_LOGS="$TEST_LOGS $b.log"
 done
 
 if test $colors = yes; then
