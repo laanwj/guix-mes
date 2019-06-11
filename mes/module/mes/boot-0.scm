@@ -239,7 +239,7 @@ Scheme interpreter for bootstrapping the GNU system.
 
 Options:
   [-s] FILE            load source code from FILE, and exit
-  -c EXPR              evalute expression EXPR, and exit
+  -c EXPR              evaluate expression EXPR, and exit
   --                   stop scanning arguments; run interactively
 
 The above switches stop argument processing, and pass all
