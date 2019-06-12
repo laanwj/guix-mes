@@ -18,7 +18,9 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mes/lib.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if !__MESC__
 typedef char wchar_t[];

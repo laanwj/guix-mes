@@ -20,7 +20,11 @@
 
 #include <string.h>
 
+#if INDEX_INT
 int
+#else
+char *
+#endif
 rindex (char const *s, int c)
 {
   return strrchr (s, c);

@@ -114,7 +114,7 @@ vsnprintf (char *str, size_t size, char const *format, va_list ap)
             {
               long d = va_arg (ap, long);
               int base = c == 'o' ? 8 : c == 'x' || c == 'X' ? 16 : 10;
-              char const *s = ntoab (d, base, c != 'u' && c != 'x' && c != 'X');
+              char *s = ntoab (d, base, c != 'u' && c != 'x' && c != 'X');
               if (c == 'X')
                 strupr (s);
               int length = strlen (s);

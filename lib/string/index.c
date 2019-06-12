@@ -20,8 +20,12 @@
 
 #include <string.h>
 
+#if INDEX_INT
 int
+#else
+char *
+#endif
 index (char const *s, int c)
 {
-  return (int) (long) strchr (s, c);
+  return strchr (s, c);
 }

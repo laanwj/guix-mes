@@ -33,7 +33,7 @@ vfprintf (FILE * f, char const *format, va_list ap)
     if (*p != '%')
       {
         count++;
-        fputc (*p++, fd);
+        fputc (*p++, f);
       }
     else
       {
@@ -88,7 +88,7 @@ vfprintf (FILE * f, char const *format, va_list ap)
           {
           case '%':
             {
-              fputc (*p, fd);
+              fputc (*p, f);
               count++;
               break;
             }
@@ -96,7 +96,7 @@ vfprintf (FILE * f, char const *format, va_list ap)
             {
               char _c;
               _c = va_arg (ap, long);
-              fputc (_c, fd);
+              fputc (_c, f);
               break;
             }
           case 'd':
@@ -108,7 +108,7 @@ vfprintf (FILE * f, char const *format, va_list ap)
             {
               long d = va_arg (ap, long);
               int base = c == 'o' ? 8 : c == 'x' || c == 'X' ? 16 : 10;
-              char const *s = ntoab (d, base, c != 'u' && c != 'x' && c != 'X');
+              char *s = ntoab (d, base, c != 'u' && c != 'x' && c != 'X');
               if (c == 'X')
                 strupr (s);
               int length = strlen (s);

@@ -38,7 +38,7 @@ execl (char const *file_name, char const *arg, ...)
   va_start (ap, arg);
 
   argv[i++] = (char *)file_name;
-  arg = va_arg (ap, char const *);
+  arg = (char *) va_arg (ap, char const *);
   while (arg)
     {
       argv[i++] = arg;

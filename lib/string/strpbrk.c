@@ -23,7 +23,7 @@
 char *
 strpbrk (char const *string, char const *stopset)
 {
-  char *p = string;
+  char *p = (char *) string;
   while (*p)
     if (strchr (stopset, *p))
       break;

@@ -36,6 +36,7 @@ typedef int (*comparison_fn_t) (void const *, void const *);
 #include <sys/types.h>
 #include <alloca.h>
 
+void abort (void);
 double atof (char const *s);
 int atoi (char const *s);
 int atexit (void (*function) (void));

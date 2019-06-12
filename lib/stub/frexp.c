@@ -20,7 +20,7 @@
 
 #include <mes/lib.h>
 
-int
+double
 frexp (int x)
 {
   static int stub = 0;
