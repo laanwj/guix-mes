@@ -83,4 +83,8 @@
 // make+POSIX
 #define SYS_sigprocmask 0x7e
 
+// tar
+#define SYS_symlink   0x53
+#define SYS_readlink  0x55
+
 #endif // __MES_LINUX_X86_SYSCALL_H

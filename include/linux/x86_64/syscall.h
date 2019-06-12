@@ -80,4 +80,8 @@
 // make+SYSTEM_LIBC
 #define SYS_rt_sigprocmask 0x0e
 
+// tar
+#define SYS_symlink   0x58
+#define SYS_readlink  0x59
+
 #endif // __MES_LINUX_X86_64_SYSCALL_H

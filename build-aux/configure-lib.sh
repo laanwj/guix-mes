@@ -308,12 +308,14 @@ lib/linux/lstat.c
 lib/linux/mkdir.c
 lib/linux/nanosleep.c
 lib/linux/pipe.c
+lib/linux/readlink.c
 lib/linux/rename.c
 lib/linux/setgid.c
 lib/linux/settimer.c
 lib/linux/setuid.c
 lib/linux/signal.c
 lib/linux/sigprogmask.c
+lib/linux/symlink.c
 "
 fi
 

@@ -77,15 +77,17 @@ gid_t getegid (void);
 pid_t getpid (void);
 pid_t getppid (void);
 int isatty (int fd);
-int link (char const *oldname, char const *newname);
+int link (char const *old_name, char const *new_name);
 off_t lseek (int fd, off_t offset, int whence);
 ssize_t read (int fd, void *buffer, size_t size);
+ssize_t readlink (char const *file_name, char *buffer, size_t size);
 #if __SBRK_CHAR_PTRDIFF
 /* xmalloc in binutils <= 2.10.1 uses this old prototype */
 char *sbrk (ptrdiff_t delta);
 #else
 void *sbrk (intptr_t delta);
 #endif
+int symlink (char const *old_name, char const *new_name);
 int unlink (char const *file_name);
 ssize_t write (int filedes, void const *buffer, size_t size);
 pid_t getpid (void);
