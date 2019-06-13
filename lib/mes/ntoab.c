@@ -18,6 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <mes/lib.h>
 
 char *
