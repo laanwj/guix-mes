@@ -46,32 +46,83 @@ case "$mes_cpu" in
         stage0_cpu=$mes_cpu;;
 esac
 
-trace "HEX2       0exit-42.hex2" $HEX2\
-    --LittleEndian\
-    --architecture $stage0_cpu\
-    --BaseAddress 0x1000000\
-    -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0header.hex2\
-    -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-exit-42.hex2\
-    -f ${srcdest}lib/$mes_cpu-mes/elf-0footer.hex2\
-    --exec_enable\
-    -o 0exit-42
+trace "CCLD       ${srcdest}lib/$mes_cpu-mes-$compiler/exit-42.S" $CC\
+      -nostdlib\
+      -g\
+      ${srcdest}lib/$mes_cpu-mes-$compiler/exit-42.S\
+      -o exit-42
+
+trace "TEST       exit-42"
+{ set +e; ./exit-42; r=$?; set -e; }
+[ $r != 42 ] && echo "  => $r"
+[ $r == 42 ]
+
+trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0exit-42.hex2" $HEX2\
+      --LittleEndian\
+      --architecture $stage0_cpu\
+      --BaseAddress 0x1000000\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0header.hex2\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0exit-42.hex2\
+      --exec_enable\
+      -o 0exit-42
 
 trace "TEST       0exit-42"
 { set +e; ./0exit-42; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r"
 [ $r == 42 ]
 
-trace "HEX2       exit-42.hex2" $HEX2\
-    --LittleEndian\
-    --architecture $stage0_cpu\
-    --BaseAddress 0x1000000\
-    -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-header.hex2\
-    -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-exit-42.hex2\
-    -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-footer-single-main.hex2\
-    --exec_enable\
-    -o exit-42
+trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-exit-42.hex2" $HEX2\
+      --LittleEndian\
+      --architecture $stage0_cpu\
+      --BaseAddress 0x1000000\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-header.hex2\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-exit-42.hex2\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-footer-single-main.hex2\
+      --exec_enable\
+      -o body-exit-42
 
-trace "TEST       exit-42"
-{ set +e; ./exit-42; r=$?; set -e; }
+trace "TEST       body-exit-42"
+{ set +e; ./body-exit-42; r=$?; set -e; }
 [ $r != 42 ] && echo "  => $r"
 [ $r == 42 ]
+
+### FIXME: c&p from exit-42
+trace "CCLD       ${srcdest}lib/$mes_cpu-mes-$compiler/hello-mes.S" $CC\
+      -nostdlib\
+      -g\
+      ${srcdest}lib/$mes_cpu-mes-$compiler/hello-mes.S\
+      -o hello-mes
+
+trace "TEST       hello-mes"
+{ set +e; ./hello-mes; r=$?; set -e; }
+[ $r != 0 ] && echo "  => $r"
+[ $r == 0 ]
+
+trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0hello-mes.hex2" $HEX2\
+      --LittleEndian\
+      --architecture $stage0_cpu\
+      --BaseAddress 0x1000000\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0header.hex2\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0hello-mes.hex2\
+      --exec_enable\
+      -o 0hello-mes
+
+trace "TEST       0hello-mes"
+{ set +e; ./0hello-mes; r=$?; set -e; }
+[ $r != 0 ] && echo "  => $r"
+[ $r == 0 ]
+
+trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-hello-mes.hex2" $HEX2\
+      --LittleEndian\
+      --architecture $stage0_cpu\
+      --BaseAddress 0x1000000\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-header.hex2\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-hello-mes.hex2\
+      -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-footer-single-main.hex2\
+      --exec_enable\
+      -o body-hello-mes
+
+trace "TEST       body-hello-mes"
+{ set +e; ./body-hello-mes; r=$?; set -e; }
+[ $r != 0 ] && echo "  => $r"
+[ $r == 0 ]

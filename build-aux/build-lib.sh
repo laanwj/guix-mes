@@ -357,26 +357,26 @@ fi
 
 archive libc-mini.a $libc_mini_SOURCES
 cp libc-mini.a $mes_cpu-mes
-if test -e libc-mini.S; then
-    cp libc-mini.S $mes_cpu-mes
+if test -e libc-mini.s; then
+    cp libc-mini.s $mes_cpu-mes
 fi
 
 archive libmes.a $libmes_SOURCES
 cp libmes.a $mes_cpu-mes
-if test -e libmes.S; then
-    cp libmes.S $mes_cpu-mes
+if test -e libmes.s; then
+    cp libmes.s $mes_cpu-mes
 fi
 
 archive libc.a $libc_SOURCES
 cp libc.a $mes_cpu-mes
-if test -e libc.S; then
+if test -e libc.s; then
     cp libc.S $mes_cpu-mes
 fi
 
 archive libc+tcc.a $libc_tcc_SOURCES
 cp libc+tcc.a $mes_cpu-mes
-if test -e libc+tcc.S; then
-    cp libc+tcc.S $mes_cpu-mes
+if test -e libc+tcc.s; then
+    cp libc+tcc.s $mes_cpu-mes
 fi
 
 if $courageous; then
@@ -385,18 +385,18 @@ fi
 
 archive libc+gnu.a $libc_gnu_SOURCES
 cp libc+gnu.a $mes_cpu-mes
-if test -e libc+gnu.S; then
-    cp libc+gnu.S $mes_cpu-mes
+if test -e libc+gnu.s; then
+    cp libc+gnu.s $mes_cpu-mes
 fi
 
 archive libtcc1.a $libtcc1_SOURCES
 cp libtcc1.a $mes_cpu-mes
-if test -e libtcc1.S; then
-    cp libtcc1.S $mes_cpu-mes
+if test -e libtcc1.s; then
+    cp libtcc1.s $mes_cpu-mes
 fi
 
 archive libgetopt.a lib/posix/getopt.c
 cp libgetopt.a $mes_cpu-mes
-if test -e libgetopt.S; then
-    cp libgetopt.S $mes_cpu-mes
+if test -e libgetopt.s; then
+    cp libgetopt.s $mes_cpu-mes
 fi

@@ -2,7 +2,7 @@
 *~
 .#*
 *.E
-*.S
+*.s
 *.blood-elf
 *.blood-elf-M1
 *.blood-elf-hex2
@@ -162,3 +162,9 @@
 /gcc-lib
 /mescc-lib
 /bin
+/0exit-42
+/0hello-mes
+/body-exit-42
+/body-hello-mes
+/exit-42
+/hello-mes

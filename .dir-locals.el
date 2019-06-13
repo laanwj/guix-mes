@@ -26,6 +26,7 @@
             (indent-tabs-mode . nil)))
 
  (makefile-mode . ((indent-tabs-mode . t)))
+ (asm-mode . ((indent-tabs-mode . t)))
 
  (nil . ((indent-tabs-mode . nil)
          (fill-column . 72)))

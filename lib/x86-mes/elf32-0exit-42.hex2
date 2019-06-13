@@ -18,33 +18,17 @@
 
 ### Commentary:
 
-# elf32-body-exit-42.hex2: `exit 42' for i686-linux written in hex2
-# assembly, for usage with generic elf32-header.hex2 and
-# elf32-footer-single-main.hex.
-
-# This ELF binary contains a symbol table, which means that objdump and
-# gdb can be used to inspect and debug.
+# elf32-exit-42.hex2: `exit 42' for i686-linux written in hex2 assembly,
+# for usage with elf32-0header.hex2.  This produces a 112-byte binary
+# (70 hex).  Inspiration was taken from GNU Gcc output of exit-42.S.
 
 ### Code:
 
-# @200
+# @60
 :ELF_text
-:_start
-e8 %main                       # call   +11 <main>
-00 00 00
-00 00 00 00
-00 00 00 00
-
-# @210
-:main
-bb 2a 00 00 00                 # mov    $42,%ebx
-b8 01 00 00 00                 # mov    $0x1,%eax
+b8 01 00 00 00                 # mov    $1, %eax
+bb 2a 00 00 00                 # mov    $42, %ebx
 cd 80                          # int    $0x80
 f4                             # hlt
-
-00 00 00                       # align
-
-# @220
-:ELF_data
-65 78 69 74 34 32 20 64 61 74 61 20 68 65 72 65 # exit42 data here"
-00
+00 00 00                       # align to @70
+:ELF_end

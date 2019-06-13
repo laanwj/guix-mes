@@ -26,11 +26,11 @@ command=$1
 archive=$2
 shift
 shift
-M1_archive=$(dirname "$archive")/$(basename "$archive" .a).S
+M1_archive=$(dirname "$archive")/$(basename "$archive" .a).s
 declare -a M1_objects
 for o in "$@"; do
     ((i++))
-    M1_objects[$i]=$(dirname "$o")/$(basename "$o" .o).S
+    M1_objects[$i]=$(dirname "$o")/$(basename "$o" .o).s
 done
 cat "${M1_objects[@]}" > "$M1_archive"
 cat "$@" > "$archive"
