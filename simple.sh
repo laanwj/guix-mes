@@ -43,6 +43,7 @@ gcc -g -D HAVE_CONFIG_H=1 -I include\
     lib/mes/eputs.c\
     lib/mes/oputs.c\
     \
+    lib/mes/div.c\
     lib/mes/itoa.c\
     lib/mes/ltoa.c\
     lib/mes/ltoab.c\
@@ -145,6 +146,7 @@ $CC -g -D HAVE_CONFIG_H=1 -I include -I include/$mes_kernel/$mes_cpu\
     lib/stdlib/exit.c\
     lib/$mes_kernel/$mes_cpu-mes-$compiler/mini.c\
     \
+    lib/mes/div.c\
     lib/mes/itoa.c\
     lib/mes/ltoa.c\
     lib/mes/ltoab.c\
