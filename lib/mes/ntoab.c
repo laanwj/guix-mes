@@ -42,7 +42,12 @@ ntoab (long x, int base, int signed_p)
   do
     {
       unsigned long i;
+#if __MESC__
       u = __mesabi_uldiv(u, (unsigned long) base, &i);
+#else
+      i = i % base;
+      u = u / base;
+#endif
       *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
     }
   while (u);
