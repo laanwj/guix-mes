@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -17,35 +17,11 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __MES_CTYPE_H
-#define __MES_CTYPE_H 1
 
-#if SYSTEM_LIBC
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#undef __MES_CTYPE_H
-#include_next <ctype.h>
+#include <ctype.h>
 
-#else // ! SYSTEM_LIBC
-#include <endian.h>
-
-int isalnum (int c);
-int isalpha (int c);
-int isascii (int c);
-int iscntrl (int c);
-int isdigit (int c);
-int isgraph (int c);
-int islower (int c);
-int isnumber (int c, int base);
-int isprint (int c);
-int ispunct (int c);
-int isspace (int c);
-int isupper (int c);
-int isxdigit (int c);
-int tolower (int c);
-int toupper (int c);
-
-#endif // ! SYSTEM_LIBC
-
-#endif // __MES_CTYPE_H
+int
+isgraph (int c)
+{
+  return c > 32 && c < 127;
+}

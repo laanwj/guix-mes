@@ -217,6 +217,7 @@ lib/ctype/isalnum.c
 lib/ctype/isalpha.c
 lib/ctype/isascii.c
 lib/ctype/iscntrl.c
+lib/ctype/isgraph.c
 lib/ctype/isprint.c
 lib/ctype/ispunct.c
 lib/dirent/__getdirentries.c
