@@ -45,14 +45,14 @@ struct stat
   unsigned short st_uid;
   unsigned short st_gid;
   unsigned long  st_rdev;
-  long           st_size;
+  long           st_size; /* Linux: unsigned long; glibc: off_t (i.e. signed) */
   unsigned long  st_blksize;
   unsigned long  st_blocks;
-  time_t         st_atime;
+  time_t         st_atime; /* Linux: unsigned long; glibc: time_t */
   unsigned long  st_atime_usec;
-  time_t         st_mtime;
+  time_t         st_mtime; /* Linux: unsigned long; glibc: time_t */
   unsigned long  st_mtime_usec;
-  time_t         st_ctime;
+  time_t         st_ctime; /* Linux: unsigned long; glibc: time_t */
   unsigned long  st_ctime_usec;
   unsigned long  __foo0;
   unsigned long  __foo1;
