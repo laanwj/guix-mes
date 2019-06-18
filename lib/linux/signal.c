@@ -23,7 +23,8 @@
 #include <unistd.h>
 #include <signal.h>
 
-#if __x86_64__
+#if __i386__
+#else
 void
 _restorer (void)
 {
