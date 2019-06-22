@@ -66,6 +66,15 @@ vsscanf (char const *s, char const *template, va_list ap)
               count++;
               break;
             }
+          case 'e':
+          case 'f':
+          case 'g':
+          case 'E':
+          case 'G':
+            {
+              float *f = va_arg (ap, float *);
+              *f = strtod (p, &p);
+            }
           default:
             {
               eputs ("vsscanf: not supported: %:");
