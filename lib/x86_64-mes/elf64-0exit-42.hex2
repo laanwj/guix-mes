@@ -1,5 +1,5 @@
 ### GNU Mes --- Maxwell Equations of Software
-### Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright © 2017,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ###
 ### This file is part of GNU Mes.
 ###
@@ -18,34 +18,19 @@
 
 ### Commentary:
 
-# elf64-body-exit-42.hex2: `exit 42' for x86_64-linux written in hex2
-# assembly, for usage with generic elf64-header.hex2 and
-# elf64-footer-single-main.hex.
-
-# This ELF binary contains a symbol table, which means that objdump and
-# gdb can be used to inspect and debug.
+# elf64-exit-42.hex2: `exit 42' for x86_64-linux written in hex2
+# assembly, for usage with elf64-0header.hex2.  This produces a 160-byte
+# binary (a0 hex).  Inspiration was taken from GNU Gcc output of
+# exit-42.S.
 
 ### Code:
 
-# @300
+# @80
 :ELF_text
-:_start
-# exit(42)
-e8 %main                       # call  +11 <main>
-00 00 00
-00 00 00 00
-00 00 00 00
-
-# @310
-:main
 48 b8 3c 00 00 00 00 00 00 00  # movabs $0x3c,%rax
 48 bf 2a 00 00 00 00 00 00 00  # movabs $42,%rdi
 0f 05                          # syscall
 f4                             # hlt
 
-00 00 00 00 00 00 00 00 00     # align to 330
-
-# @330
-:ELF_data
-65 78 69 74 34 32 20 64 61 74 61 20 68 65 72 65 # exit42 data here"
-00
+00 00 00 00 00 00 00 00 00     # align to @a0
+:ELF_end

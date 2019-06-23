@@ -18,11 +18,11 @@
 
 ### Commentary:
 
-# elf64-body-exit-42.hex2: `exit 42' for x86_64-linux written in hex2
-# assembly, for usage with generic elf64-header.hex2 and
+# elf64-body-hello-mes.hex2: `Hello, GNU Mes!' for x86_64-linux written
+# in hex2 assembly, for usage with generic elf64-header.hex2 and
 # elf64-footer-single-main.hex.
 
-# This ELF binary contains a symbol table, which means that objdump and
+# This ELF binary contains a symbol table which means that objdump and
 # gdb can be used to inspect and debug.
 
 ### Code:
@@ -38,14 +38,26 @@ e8 %main                       # call  +11 <main>
 
 # @310
 :main
+                               # print <hello>
+48 b8 01 00 00 00 00 00 00 00  # movabs $1,%rax
+48 bf 01 00 00 00 00 00 00 00  # movabs $1,%rdi
+48 be &hello 00 00 00 00       # movabs $<hello>,%rsi
+48 ba %bye>hello 00 00 00 00   # mov    $(bye-hello),%rdx
+0f 05                          # syscall
+
+                               # exit 0
 48 b8 3c 00 00 00 00 00 00 00  # movabs $0x3c,%rax
-48 bf 2a 00 00 00 00 00 00 00  # movabs $42,%rdi
+48 bf 00 00 00 00 00 00 00 00  # movabs $0,%rdi
 0f 05                          # syscall
 f4                             # hlt
 
-00 00 00 00 00 00 00 00 00     # align to 330
+00 00 00 00 00 00 00 00 00     # align to @360
+00 00 00 00 00 00
 
-# @330
+# @360
 :ELF_data
-65 78 69 74 34 32 20 64 61 74 61 20 68 65 72 65 # exit42 data here"
-00
+:hello
+48 65 6c 6c 6f 2c 20 47        # Hello, G
+4e 55 20 4d 65 73 21 0a        # NU Mes!\n
+:bye
+:ELF_end
