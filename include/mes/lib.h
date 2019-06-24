@@ -48,6 +48,7 @@ int _open3 (char const *file_name, int flags, int mask);
 int oputc (int c);
 int oputs (char const *s);
 char *search_path (char const *file_name);
+ssize_t _read (int fd, void *buffer, size_t size);
 
 extern char *__brk;
 extern void (*__call_at_exit) (void);

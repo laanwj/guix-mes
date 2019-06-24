@@ -88,6 +88,7 @@ lib/mes/__mes_debug.c
 lib/posix/execv.c
 lib/posix/getenv.c
 lib/posix/isatty.c
+lib/posix/read.c
 lib/posix/setenv.c
 lib/posix/wait.c
 lib/stdio/fgetc.c
@@ -125,7 +126,7 @@ lib/linux/getcwd.c
 lib/linux/gettimeofday.c
 lib/linux/ioctl.c
 lib/linux/open.c
-lib/linux/read.c
+lib/linux/_read.c
 lib/linux/time.c
 lib/linux/unlink.c
 lib/linux/waitpid.c
