@@ -35,54 +35,54 @@ int g_hello_int[] = { 0, 1, 2, 3, 4, 5 };
 int
 main (int argc)
 {
-  // oputs ("0:"); oputs (g_hello); oputs ("\n");
-  // oputs ("2:"); oputs (g_hello2); oputs ("\n");
-  // oputs ("3:"); oputs (g_hello3); oputs ("\n");
-  // if (strcmp (g_hello, g_hello2))
-  //   return 1;
+  oputs ("0:"); oputs (g_hello); oputs ("\n");
+  oputs ("2:"); oputs (g_hello2); oputs ("\n");
+  oputs ("3:"); oputs (g_hello3); oputs ("\n");
+  if (strcmp (g_hello, g_hello2))
+    return 1;
 
-  // if (strcmp (g_hello, g_hello3))
-  //   return 2;
+  if (strcmp (g_hello, g_hello3))
+    return 2;
 
-  // char hello[] =
-  //   "hello\n"
-  //   "world\n"
-  //   ;
+  char hello[] =
+    "hello\n"
+    "world\n"
+    ;
 
-  // char *hello2 =
-  //   "hello\n"
-  //   "world\n"
-  //   ;
+  char *hello2 =
+    "hello\n"
+    "world\n"
+    ;
 
-  // oputs (hello);
-  // oputs (hello2);
-  // if (strcmp (hello, hello2))
-  //   return 3;
+  oputs (hello);
+  oputs (hello2);
+  if (strcmp (hello, hello2))
+    return 3;
 
-  // char hello3[] =
-  //   {
-  //     'h', 'e', 'l', 'l', 'o', '\n',
-  //     'w', 'o', 'r', 'l', 'd', '\n',
-  //     '\0',
-  //   }
-  //   ;
+  char hello3[] =
+    {
+      'h', 'e', 'l', 'l', 'o', '\n',
+      'w', 'o', 'r', 'l', 'd', '\n',
+      '\0',
+    }
+    ;
 
-  // oputs (hello3);
-  // if (strcmp (hello, hello3))
-  //   return 4;
+  oputs (hello3);
+  if (strcmp (hello, hello3))
+    return 4;
 
-  // if (g_hello_int[0])
-  //   return 5;
+  if (g_hello_int[0])
+    return 5;
 
   if (g_hello_int[1] != 1)
     return 6;
 
-  // int hello_int[] = {0, 1, 2, 3, 4, 5};
-  // if (hello_int[0])
-  //   return 7;
+  int hello_int[] = {0, 1, 2, 3, 4, 5};
+  if (hello_int[0])
+    return 7;
 
-  // if (hello_int[1] != 1)
-  //   return 8;
+  if (hello_int[1] != 1)
+    return 8;
 
   return 0;
 }

@@ -101,36 +101,34 @@ main ()
     return 6;
 #endif
 
+  printf ("(*pp)->b.i=%d\n", (*pp)->f.i);
+  if ((*pp)->f.i != 2) return 7;
 
+  if (baz[0].i != 1) return 8;
+  printf ("baz[0].f.i=%d\n", baz[0].f.i);
+  if (baz[0].f.i != 2) return 9;
 
-  // printf ("(*pp)->b.i=%d\n", (*pp)->f.i);
-  // if ((*pp)->f.i != 2) return 7;
+  printf ("baz[1].i=%d\n", baz[1].i);
+  if (baz[1].i != 4) return 10;
+  printf ("baz[1].f.i=%d\n", baz[1].f.i);
+  if (baz[1].f.i != 5) return 11;
 
-  // if (baz[0].i != 1) return 8;
-  // printf ("baz[0].f.i=%d\n", baz[0].f.i);
-  // if (baz[0].f.i != 2) return 9;
+  bar one = {0};
+  printf ("one.i\n", one.i);
+  if (one.i != 0) return 12;
+  printf ("one.f.i\n", one.f.i);
+  if (one.f.i != 0) return 13;
 
-  // printf ("baz[1].i=%d\n", baz[1].i);
-  // if (baz[1].i != 4) return 10;
-  // printf ("baz[1].f.i=%d\n", baz[1].f.i);
-  // if (baz[1].f.i != 5) return 11;
+  bar b0 = {2};
+  struct foo f0 = {0};
+  struct foo *pf = &f0;
+  list[0] = &b0;
+  list[0]->p = pf;
 
-  // bar one = {0};
-  // printf ("one.i\n", one.i);
-  // if (one.i != 0) return 12;
-  // printf ("one.f.i\n", one.f.i);
-  // if (one.f.i != 0) return 13;
-
-  // bar b0 = {2};
-  // struct foo f0 = {0};
-  // struct foo *pf = &f0;
-  // list[0] = &b0;
-  // list[0]->p = pf;
-
-  // eputs ("b0.i="); eputs (itoa (b0.i)); eputs ("\n");
-  // if (b0.i != 2) return 14;
-  // eputs ("b0.p->i="); eputs (itoa (b0.p->i)); eputs ("\n");
-  // if (b0.p->i != 0) return 15;
+  eputs ("b0.i="); eputs (itoa (b0.i)); eputs ("\n");
+  if (b0.i != 2) return 14;
+  eputs ("b0.p->i="); eputs (itoa (b0.p->i)); eputs ("\n");
+  if (b0.p->i != 0) return 15;
 
   return 0;
 }
