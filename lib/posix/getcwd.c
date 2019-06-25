@@ -18,19 +18,8 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <linux/syscall.h>
-#include <syscall.h>
 #include <limits.h>
 #include <sys/types.h>
-
-char *
-_getcwd (char *buffer, size_t size)
-{
-  int r = _sys_call2 (SYS_getcwd, (long) buffer, (long) size);
-  if (r >= 0)
-    return buffer;
-  return 0;
-}
 
 char *
 getcwd (char *buffer, size_t size)

@@ -41,6 +41,7 @@ char * fdgets (char *s, int count, int fd);
 int fdputc (int c, int fd);
 int fdputs (char const *s, int fd);
 int fdungetc (int c, int fd);
+char * _getcwd (char *buffer, size_t size);
 int isnumber (int c, int base);
 int mes_open (char const *file_name, int flags, int mask);
 int _open2 (char const *file_name, int flags);

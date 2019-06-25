@@ -86,9 +86,11 @@ $libmes_SOURCES
 lib/mes/__assert_fail.c
 lib/mes/__mes_debug.c
 lib/posix/execv.c
+lib/posix/getcwd.c
 lib/posix/getenv.c
 lib/posix/isatty.c
 lib/posix/read.c
+lib/posix/open.c
 lib/posix/setenv.c
 lib/posix/wait.c
 lib/stdio/fgetc.c
@@ -122,10 +124,10 @@ lib/linux/dup2.c
 lib/linux/execve.c
 lib/linux/fork.c
 lib/linux/fsync.c
-lib/linux/getcwd.c
+lib/linux/_getcwd.c
 lib/linux/gettimeofday.c
 lib/linux/ioctl.c
-lib/linux/open.c
+lib/linux/_open3.c
 lib/linux/_read.c
 lib/linux/time.c
 lib/linux/unlink.c
