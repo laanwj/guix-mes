@@ -101,6 +101,7 @@ lib/tests/scaffold/48-global-static.c
 lib/tests/assert/50-assert.c
 lib/tests/mes/50-itoa.c
 lib/tests/posix/50-getenv.c
+lib/tests/stdlib/50-malloc.c
 lib/tests/string/50-strcmp.c
 lib/tests/string/50-strcpy.c
 lib/tests/string/50-strncmp.c

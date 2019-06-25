@@ -21,6 +21,7 @@
 
 // Taken from GNU C Library 2.2.5
 
+#include <mes/lib.h>
 #include <errno.h>
 #include <limits.h>
 #include <stddef.h>

@@ -21,6 +21,7 @@
 
 // Taken from GNU C Library 1.06.4
 
+#include <mes/lib.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <unistd.h>

@@ -19,6 +19,7 @@
  */
 
 #include <mes/lib.h>
+#include <errno.h>
 
 int
 rewind (int x)

@@ -22,7 +22,7 @@
 
 #if SYSTEM_LIBC
 #undef __MES_GRP_H
-#include_next <pwd.h>
+#include_next <grp.h>
 #else // ! SYSTEM_LIBC
 
 #include <sys/types.h>

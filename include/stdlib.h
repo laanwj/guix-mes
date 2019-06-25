@@ -20,6 +20,11 @@
 #ifndef __MES_STDLIB_H
 #define __MES_STDLIB_H 1
 
+#ifndef __MES_COMPARISON_FN_T
+#define __MES_COMPARISON_FN_T
+typedef int (*comparison_fn_t) (void const *, void const *);
+#endif
+
 #if SYSTEM_LIBC
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -55,11 +60,6 @@ unsigned long long strtoull (char const *string, char **tailptr, int base);
 
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
-
-#ifndef __MES_COMPARISON_FN_T
-#define __MES_COMPARISON_FN_T
-typedef int (*comparison_fn_t) (void const *, void const *);
-#endif
 
 void *bsearch (void const *key, void const *array, size_t count, size_t size, comparison_fn_t compare);
 

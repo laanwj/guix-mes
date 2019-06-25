@@ -19,7 +19,7 @@
  */
 
 #include <mes/lib.h>
-#include <pwd.h>
+#include <errno.h>
 
 int
 rand (void)

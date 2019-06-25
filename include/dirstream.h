@@ -22,7 +22,7 @@
 #ifndef __MES_DIRSTREAM_H
 #define __MES_DIRSTREAM_H 1
 
-#if SYSTEM_LIBC
+#if SYSTEM_LIBC && HAVE_DIRSTREAM_H
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif

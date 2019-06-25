@@ -19,10 +19,11 @@
  */
 
 #include <mes/lib.h>
+#include <errno.h>
 #include <pwd.h>
 
 struct passwd *
-getpwuid ()
+getpwuid (uid_t uid)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)

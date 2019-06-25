@@ -18,6 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mes/lib.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -26,7 +27,7 @@ printf (char const *format, ...)
 {
   va_list ap;
   int r;
-#if __GNUC__ && __x86_64__
+#if __GNUC__ && __x86_64__ && !SYSTEM_LIBC
 #define __FUNCTION_ARGS 1
   ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
 #undef __FUNCTION_ARGS

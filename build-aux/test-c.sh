@@ -50,7 +50,7 @@ fi
 
 if test $mes_libc = system; then
     crt1=
-    LIBS=-lmes
+    LIBS='-l mes'
 else
     crt1=crt1.o
 fi

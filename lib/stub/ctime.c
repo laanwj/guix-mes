@@ -19,6 +19,7 @@
  */
 
 #include <mes/lib.h>
+#include <errno.h>
 #include <time.h>
 
 int

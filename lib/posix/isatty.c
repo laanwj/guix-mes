@@ -24,6 +24,7 @@
 #include <string.h>
 #include <termio.h>
 
+#if !SYSTEM_LIBC
 typedef unsigned char cc_t;
 typedef unsigned int speed_t;
 typedef unsigned int tcflag_t;
@@ -39,6 +40,7 @@ struct termios
   cc_t c_line;
   cc_t c_cc[NCCS];
 };
+#endif
 
 struct ktermios
 {

@@ -25,6 +25,7 @@
 #include <setjmp.h>
 
 int foo;
+jmp_buf buf;
 
 void
 second ()

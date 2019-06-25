@@ -30,7 +30,7 @@ stdarg1 (long *one, ...)
   int r;
 
   va_start (ap, one);
-#if __GNUC__ && __x86_64__
+#if __GNUC__ && __x86_64__ && !SYSTEM_LIBC
 #define __FUNCTION_ARGS 1
   ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
 #undef __FUNCTION_ARGS
@@ -54,7 +54,7 @@ stdarg2 (long *one, long *two, ...)
   int r;
 
   va_start (ap, two);
-#if __GNUC__ && __x86_64__
+#if __GNUC__ && __x86_64__ && !SYSTEM_LIBC
 #define __FUNCTION_ARGS 2
   ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
 #undef __FUNCTION_ARGS
@@ -78,7 +78,7 @@ stdarg3 (long *one, long *two, long *three, ...)
   int r;
 
   va_start (ap, three);
-#if __GNUC__ && __x86_64__
+#if __GNUC__ && __x86_64__ && !SYSTEM_LIBC
 #define __FUNCTION_ARGS 3
   ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
 #undef __FUNCTION_ARGS

@@ -41,6 +41,7 @@ char * fdgets (char *s, int count, int fd);
 int fdputc (int c, int fd);
 int fdputs (char const *s, int fd);
 int fdungetc (int c, int fd);
+int isnumber (int c, int base);
 int mes_open (char const *file_name, int flags, int mask);
 int _open2 (char const *file_name, int flags);
 int _open3 (char const *file_name, int flags, int mask);
@@ -48,10 +49,10 @@ int oputc (int c);
 int oputs (char const *s);
 char *search_path (char const *file_name);
 
-#if !SYSTEM_LIBC
-
 extern char *__brk;
 extern void (*__call_at_exit) (void);
+
+#if !SYSTEM_LIBC
 void __assert_fail (char *s);
 void _exit (int code);
 long brk (void *addr);
