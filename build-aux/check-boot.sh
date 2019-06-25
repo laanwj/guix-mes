@@ -118,5 +118,5 @@ scaffold/boot/numbers.scm
 XFAIL_TESTS=
 
 test_ext=.scm
-log_compiler=${srcdest}build-aux/test-boot.sh
+log_compiler="${SHELL} ${srcdest}build-aux/test-boot.sh"
 . ${srcdest}build-aux/test-suite.sh
