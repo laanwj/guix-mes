@@ -41,6 +41,7 @@ PACKAGE="@PACKAGE@"
 PACKAGE_NAME="@PACKAGE_NAME@"
 PACKAGE_BUGREPORT="@PACKAGE_BUGREPORT@"
 PERL="@PERL@"
+SHELL="@SHELL@"
 TINYCC_PREFIX="@TINYCC_PREFIX@"
 VERSION="@VERSION@"
 V=${V-"@V@"}
@@ -86,6 +87,7 @@ export PACKAGE_BUGREPORT
 export AR
 export CC
 export DIFF
+export SHELL
 export V
 export colors
 export compiler

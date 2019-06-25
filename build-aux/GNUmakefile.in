@@ -92,7 +92,7 @@ all: doc
 doc: build
 
 build:
-	./build.sh
+	$(SHELL) build.sh
 
 src/${program_prefix}mes: build
 
@@ -129,20 +129,20 @@ clean-go:
 	rm -f $(shell find . -name '*.go')
 
 check:
-	./check.sh
+	$(SHELL) check.sh
 
 check-mescc:
-	./pre-inst-env build-aux/check-mescc.sh
+	$(SHELL) pre-inst-env build-aux/check-mescc.sh
 
 # Mes does not feature post-install checks yet, so we're great!
 installcheck:
 	true
 
 install:
-	./install.sh
+	$(SHELL) install.sh
 
 uninstall:
-	./uninstall.sh
+	$(SHELL) uninstall.sh
 
 doc/version.texi: ${srcdest}doc/mes.texi GNUmakefile
 	@mkdir -p $(@D)

@@ -44,7 +44,7 @@ for t in $TESTS; do
             fail=no;;
     esac
     mkdir -p $d
-    sh ${srcdest}build-aux/test-driver\
+    ${SHELL} ${srcdest}build-aux/test-driver\
        --test-name $t \
        --log-file $b.log\
        --trs-file $b.trs\

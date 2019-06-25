@@ -60,15 +60,15 @@ export LDFLAGS
 recheck=${recheck-false}
 export recheck
 
-./pre-inst-env sh ${srcdest}build-aux/check-boot.sh
-./pre-inst-env sh ${srcdest}build-aux/check-mes.sh
+./pre-inst-env ${SHELL} ${srcdest}build-aux/check-boot.sh
+./pre-inst-env ${SHELL} ${srcdest}build-aux/check-mes.sh
 
 if test $compiler = gcc; then
     (
         cd gcc-lib
         srcdest=$srcdir/../
         srcdir=../$srcdir
-        ../pre-inst-env sh ${srcdest}build-aux/check-mescc.sh
+        ../pre-inst-env ${SHELL} ${srcdest}build-aux/check-mescc.sh
     )
 fi
 
@@ -89,5 +89,5 @@ fi
     LIBS=-lc
     AR="${srcdest}pre-inst-env ar"
     CC="${srcdest}pre-inst-env mescc"
-    ../pre-inst-env sh ${srcdest}build-aux/check-mescc.sh
+    ../pre-inst-env ${SHELL} ${srcdest}build-aux/check-mescc.sh
 )

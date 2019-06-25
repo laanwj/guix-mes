@@ -58,5 +58,5 @@ tests/psyntax.test
 XFAIL_TESTS=
 
 test_ext=.test
-log_compiler=sh
+log_compiler=${SHELL}
 . ${srcdest}build-aux/test-suite.sh

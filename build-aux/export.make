@@ -114,6 +114,10 @@ ifdef PERL
 export PERL
 endif
 
+ifdef SHELL
+export SHELL
+endif
+
 ifdef GUILE_LOAD_PATH
 export GUILE_LOAD_PATH
 endif

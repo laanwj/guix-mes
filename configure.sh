@@ -106,6 +106,8 @@ M1=${M1-$(command -v M1)}
 MES_FOR_BUILD=${MES_FOR_BUILD-$(command -v mes || command -v guile || echo mes)}
 GIT=${GIT-$(command -v git)} || true
 PERL=${PERL-$(command -v perl)} || true
+SHELL=${BASH-$SHELL}
+
 MES_SEED=${MES_SEED-../mes-seed}
 
 if test "$srcdir" = .; then

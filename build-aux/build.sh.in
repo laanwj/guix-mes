@@ -42,10 +42,10 @@ if $courageous; then
     set +e
 fi
 
-sh ${srcdest}build-aux/build-scaffold.sh
+${SHELL} ${srcdest}build-aux/build-scaffold.sh
 
 if test -n "$GUILE" -a "$GUILE" != true; then
-    sh ${srcdest}build-aux/build-guile.sh
+    ${SHELL} ${srcdest}build-aux/build-guile.sh
 fi
 
 debug=
@@ -101,7 +101,7 @@ if test $compiler = gcc; then
 -I ${srcdest}include
 -I ${srcdest}include/$mes_kernel/$mes_cpu
 "
-        sh ${srcdest}build-aux/build-lib.sh
+        ${SHELL} ${srcdest}build-aux/build-lib.sh
         cp crt1.o ..
     )
 fi
@@ -119,7 +119,7 @@ fi
 -I ${srcdest}include
 -I ${srcdest}include/$mes_kernel/$mes_cpu
 "
-    sh ${srcdest}build-aux/build-mes.sh
+    ${SHELL} ${srcdest}build-aux/build-mes.sh
 )
 
 (
@@ -143,5 +143,5 @@ fi
     compiler=mescc
     AR="${srcdest}pre-inst-env ar"
     CC="${srcdest}pre-inst-env mescc -m $mes_bits"
-    sh ${srcdest}build-aux/build-lib.sh
+    ${SHELL} ${srcdest}build-aux/build-lib.sh
 )

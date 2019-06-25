@@ -269,5 +269,5 @@ fi
 
 recheck=${recheck-false}
 test_ext=.c
-log_compiler=${srcdest}build-aux/test-c.sh
+log_compiler="${SHELL} ${srcdest}build-aux/test-c.sh"
 . ${srcdest}build-aux/test-suite.sh
