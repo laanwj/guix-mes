@@ -28,6 +28,7 @@ void __ungetc_init ();
 void __ungetc_clear (int filedes);
 void __ungetc_set (int filedes, int c);
 int __ungetc_p (int filedes);
+double abtod (char const **p, int base);
 long abtol (char const **p, int base);
 char *itoa (int number);
 char *ltoa (long number);

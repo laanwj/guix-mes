@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,13 +20,22 @@
 
 #include <mes/lib.h>
 #include <stdlib.h>
+#include <string.h>
 
 double
 strtod (char const *string, char **tailptr)
 {
-  static int stub = 0;
-  if (__mes_debug () && !stub)
-    eputs ("strtod stub\n");
-  stub = 1;
-  return 0;
+  int base = 10;
+  if (!strncmp (string, "0x", 2))
+    {
+      string += 2;
+      base = 16;
+    }
+  if (tailptr)
+    {
+      *tailptr = (char *) string;
+      return abtod ((char const **) tailptr, base);
+    }
+  char **p = (char **) &string;
+  return abtod ((char const **) p, base);
 }

@@ -19,32 +19,35 @@
  */
 
 #include <mes/lib.h>
-#include <ctype.h>
 
-long
-abtol (char const **p, int base)
+double
+abtod (char const **p, int base)
 {
   char const *s = *p;
-  int i = 0;
+  double d = 0;
   int sign_p = 0;
   if (!base)
     base = 10;
-  while (isspace (*s))
-    s++;
-  if (*s && *s == '+')
-    s++;
-  if (*s && *s == '-')
+  double dbase = base;
+  long i = abtol (&s, base);
+  long f = 0;
+  long e = 0;
+  if (*s == '.')
     {
-      sign_p = 1;
       s++;
+      f = abtol (&s, base);
     }
-  while (isnumber (*s, base))
+  if (*s == 'e')
     {
-      i *= base;
-      int m = *s > '9' ? 'a' - 10 : '0';
-      i += *s - m;
       s++;
+      e = abtol (&s, base);
     }
+  d = i + f / dbase;
+  if (e < 0)
+    while (e++)
+      d = d / dbase;
+  while (e--)
+    d = d * dbase;
   *p = s;
-  return sign_p ? -i : i;
+  return sign_p ? -d : d;
 }
