@@ -105,6 +105,7 @@ lib/tests/stdlib/50-malloc.c
 lib/tests/string/50-strcmp.c
 lib/tests/string/50-strcpy.c
 lib/tests/string/50-strncmp.c
+lib/tests/posix/50-open-read.c
 lib/tests/scaffold/51-pointer-sub.c
 lib/tests/scaffold/54-argc.c
 lib/tests/scaffold/54-argv.c

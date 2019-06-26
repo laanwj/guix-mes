@@ -20,6 +20,10 @@
 
 set -e
 
+if test -z "$config_sh"; then
+    . ./config.sh
+fi
+
 if [ "$V" = 2 ]; then
     set -x
 fi
@@ -29,7 +33,7 @@ b=$(dirname "$t")/$(basename "$t" .c)
 o="$b"
 o=lib/tests/${b#*lib/tests/}
 if [ "$o" = "$b" ]; then
-    o=$(basename "$t" .c)
+    o=./$(basename "$t" .c)
 fi
 
 rm -f "$o"
