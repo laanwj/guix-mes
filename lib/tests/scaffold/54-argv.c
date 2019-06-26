@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -27,20 +27,25 @@ int
 main (int argc, char *argv[])
 {
   oputs ("\n");
-  oputs ("t: argv[0] == \"lib/test/scaffold....\"\n");
+  oputs ("t: argv[0] == \"lib/tests/scaffold....\"\n");
   oputs ("argv0=");
   oputs (argv[0]);
   oputs ("\n");
-  if (strncmp (argv[0], "lib/test/scaffold", 5))
+  if (strcmp (argv[0], "lib/tests/scaffold/54-argv"))
     return 1;
 
   oputs ("t: *argv\"\n");
   oputs (*argv);
   oputs ("\n");
 
-  oputs ("t: if (argc > 1 && !strcmp (argv[1], \"--help\")\n");
-  if (argc > 1 && !strcmp (argv[1], "--help"))
+  if (argc != 5)
     return 2;
+
+  if (strcmp (argv[1], "-s"))
+    return 3;
+
+  if (strcmp (argv[2], "--long"))
+    return 4;
 
   return 0;
 }

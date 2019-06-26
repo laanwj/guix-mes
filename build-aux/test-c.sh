@@ -59,8 +59,7 @@ $CC -c $CPPFLAGS $CFLAGS -o "$o".o "$t"
 $CC $CFLAGS $LDFLAGS -L . -o "$o" $crt1 "$o".o $LIBS
 
 set +e
-#timeout 2 "$o" -s --long file0 file1 > "$o".1 2> "$o".2
-timeout 2 "$o" > "$o".1 2> "$o".2
+timeout 2 "$o" -s --long file0 file1 > "$o".1 2> "$o".2
 r=$?
 set -e
 if [ -f "$b".exit ]; then

@@ -29,7 +29,7 @@ main (int argc, char *argv[])
   oputs ("argc=");
   oputs (itoa (argc));
   oputs ("\n");
-  if (argc != 1)
+  if (argc != 5)
     return 1;
 
   return 0;

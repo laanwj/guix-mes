@@ -107,6 +107,7 @@ lib/tests/string/50-strcpy.c
 lib/tests/string/50-strncmp.c
 lib/tests/scaffold/51-pointer-sub.c
 lib/tests/scaffold/54-argc.c
+lib/tests/scaffold/54-argv.c
 lib/tests/scaffold/55-char-array.c
 lib/tests/scaffold/60-math.c
 lib/tests/scaffold/61-array.c
@@ -210,7 +211,6 @@ lib/tests/scaffold/a1-global-no-clobber.c
 "
 
 XFAIL_TESTS="
-lib/tests/scaffold/54-argv.c
 lib/tests/stdio/90-sprintf.c
 lib/tests/stdio/90-sprintf.c
 "
