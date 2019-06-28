@@ -18,10 +18,12 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
-srcdir="@srcdir@"
 abs_top_srcdir="@abs_top_srcdir@"
+export abs_top_srcdir
 abs_top_builddir="@abs_top_builddir@"
+export abs_top_builddir
 prefix=${prefix-@prefix@}
+export prefix
 program_prefix=${program_prefix-@program_prefix@}
 
 MES_PREFIX=${MES_PREFIX-${abs_top_srcdir}/mes}

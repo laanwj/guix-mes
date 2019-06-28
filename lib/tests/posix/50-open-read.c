@@ -30,9 +30,12 @@ main (int argc, char const *argv[])
 {
   eputs ("test:getenv\n");
   char file_name[PATH_MAX];
-  char *srcdir = getenv ("srcdir");
-  if (!srcdir)
-    return 1;
+  char *srcdir = getenv ("abs_top_srcdir");
+  if (! srcdir) // for running by hand
+    srcdir = ".";
+  eputs ("srcdir=");
+  eputs (srcdir);
+  eputs ("\n");
   strcpy (file_name, srcdir);
   strcpy (file_name + strlen (srcdir), "/lib/tests/posix/data/open-read");
   eputs ("test open:");
@@ -40,13 +43,13 @@ main (int argc, char const *argv[])
   eputs ("\n");
   int filedes = open (file_name, 0, 0);
   if (filedes <= 2)
-    return 2;
+    return 1;
   char buf[20];
   int n = read (filedes, buf, sizeof (buf));
   if (n != 5)
-    return 3;
+    return 2;
   if (strcmp (buf, "hello"))
-    return 4;
+    return 3;
   eputs ("test read: ");
   eputs (buf);
   eputs ("\n");
