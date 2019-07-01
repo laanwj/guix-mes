@@ -60,7 +60,9 @@ unsigned long __mesabi_uldiv(unsigned long a, unsigned long b, unsigned long* re
     }
 }
 
-/* Note: Rounds towards zero */
+/* Note: Rounds towards zero.
+   Maintainer: Be careful to satisfy quot * b + rem == a.
+               That means that rem can be negative. */
 ldiv_t ldiv(long a, long b)
 {
   ldiv_t result;
@@ -68,13 +70,16 @@ ldiv_t ldiv(long a, long b)
   assert(b != LONG_MIN);
   if (a != LONG_MIN)
     {
-      if (a < 0)
+      int negative_a = (a < 0);
+      if (negative_a)
         a = -a;
       if (b < 0)
         b = -b;
       result.quot = __mesabi_uldiv(a, b, &result.rem);
       if (negate_result)
         result.quot = -result.quot;
+      if (negative_a)
+        result.rem = -result.rem;
       return result;
     }
   else
@@ -95,7 +100,7 @@ ldiv_t ldiv(long a, long b)
           long x;
           for (x = 0; a <= -b; a += b)
             ++x;
-          result.rem = -a;
+          result.rem = a; /* negative */
           result.quot = x;
         }
       if (negate_result)
