@@ -64,15 +64,42 @@ unsigned long __mesabi_uldiv(unsigned long a, unsigned long b, unsigned long* re
 ldiv_t ldiv(long a, long b)
 {
   ldiv_t result;
-  int negative_result = (a < 0) ^ (b < 0);
-  assert(a != LONG_MIN && b != LONG_MIN);
-
-  if (a < 0)
-    a = -a;
-  if (b < 0)
-    b = -b;
-  result.quot = __mesabi_uldiv(a, b, &result.rem);
-  if (negative_result)
-    result.quot = -result.quot;
-  return result;
+  int negate_result = (a < 0) ^ (b < 0);
+  assert(b != LONG_MIN);
+  if (a != LONG_MIN)
+    {
+      if (a < 0)
+        a = -a;
+      if (b < 0)
+        b = -b;
+      result.quot = __mesabi_uldiv(a, b, &result.rem);
+      if (negate_result)
+        result.quot = -result.quot;
+      return result;
+    }
+  else
+    {
+      result.rem = 0;
+      if (b < 0)
+        b = -b;
+      if (b == 1)
+        {
+          result.quot = a;
+          /* Since result.quot is already negative, don't negate it again. */
+          negate_result = !negate_result;
+        }
+      else if (b == 0)
+        __mesabi_div0();
+      else
+        {
+          long x;
+          for (x = 0; a <= -b; a += b)
+            ++x;
+          result.rem = -a;
+          result.quot = x;
+        }
+      if (negate_result)
+        result.quot = -result.quot;
+      return result;
+    }
 }
