@@ -71,6 +71,9 @@ main ()
 
   struct stat sbuf;
 
+  if (fd < 0)
+    return 2;
+
   int r = fstat (fd, &sbuf);
   if (r < 0)
     return 1;
