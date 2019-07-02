@@ -32,10 +32,15 @@ _open2 (char const *file_name, int flags)
 int
 open (char const *file_name, int flags, ...)
 {
-  va_list ap;
-  va_start (ap, flags);
-  int mask = va_arg (ap, int);
-  int r = _open3 (file_name, flags, mask);
-  va_end (ap);
-  return r;
+  if (flags & O_CREAT)
+    {
+      va_list ap;
+      va_start (ap, flags);
+      int mask = va_arg (ap, int);
+      int r = _open3 (file_name, flags, mask);
+      va_end (ap);
+      return r;
+    }
+  else
+    return _open2(file_name, flags);
 }
