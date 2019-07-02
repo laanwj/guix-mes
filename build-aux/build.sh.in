@@ -57,7 +57,7 @@ $debug
 "
 
 if test $mes_libc = mes; then
-    CFLASG="$CFLAGS
+    CFLAGS="$CFLAGS
 -nostdinc
 -nostdlib
 -fno-builtin
