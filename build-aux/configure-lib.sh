@@ -249,6 +249,7 @@ lib/stdlib/abort.c
 lib/stdlib/abs.c
 lib/stdlib/alloca.c
 lib/stdlib/atexit.c
+lib/stdlib/atof.c
 lib/stdlib/atol.c
 lib/stdlib/mbstowcs.c
 lib/string/bcmp.c

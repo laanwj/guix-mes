@@ -20,12 +20,9 @@
 
 #include <mes/lib.h>
 
-int
-atof (int x)
+double
+atof (char const *string)
 {
-  static int stub = 0;
-  if (__mes_debug () && !stub)
-    eputs ("atof stub\n");
-  stub = 1;
-  return 0;
+  char const *p = string;
+  return abtod (&p, 0);
 }
