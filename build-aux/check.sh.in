@@ -29,7 +29,7 @@ fi
 
 CFLAGS=
 if test $mes_libc = mes; then
-    CFLAGS="
+    CFLAGS="${CFLAGS}
 -static
 -nostdinc
 -nostdlib
