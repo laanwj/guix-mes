@@ -47,7 +47,7 @@ signal (int signum, sighandler_t action)
   setup_action.sa_restorer = _restorer;
   bitindex = signum - 1;
   itembitcount = 8 * sizeof(setup_action.sa_mask.items[0]);
-  setup_action.sa_mask.items[bitindex / itembitcount] = 1 << (bitindex % itembitcount);
+  setup_action.sa_mask.items[bitindex / itembitcount] = 1UL << (bitindex % itembitcount);
   old.sa_handler = SIG_DFL;
   setup_action.sa_flags = SA_RESTORER | SA_RESTART;
   int r = _sys_call4 (SYS_rt_sigaction, signum, &setup_action, &old, sizeof (sigset_t));
