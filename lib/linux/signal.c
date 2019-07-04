@@ -32,9 +32,6 @@ _restorer (void)
 }
 #endif
 
-# define __sigmask(sig) \
-  (((unsigned long int) 1) << (((sig) - 1) % (8 * sizeof (unsigned long int))))
-
 sighandler_t
 signal (int signum, sighandler_t action)
 {
