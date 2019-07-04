@@ -44,6 +44,16 @@ signal (int signum, sighandler_t action)
   unsigned short itembitcount;
 
   setup_action.sa_handler = action;
+  /* The sa_restorer is not used.  Reason:
+     * The kernel uses its own restorer anyway by pretending we gave one on
+     our side (no, really).
+     glibc still has a custom restorer because they want to be able to
+     backtrace.  gdb has a second part that detects a specific instruction
+     sequence and then fixes up the backtrace.  Since we don't use that
+     specific instruction sequence and also the non-siginfo restorer
+     is complicated (pops foreign item off the stack--so needs inline
+     assembly) and we don't support great debuggability in other places,
+     I've decided to take the easy way out for now. */
   /*setup_action.sa_restorer = _restorer_for_siginfo;*/
   bitindex = signum - 1;
   itembitcount = 8 * sizeof(setup_action.sa_mask.items[0]);
