@@ -41,12 +41,16 @@ signal (int signum, sighandler_t action)
 #if __i386__
   return _sys_call2 (SYS_signal, signum, action);
 #else
-  static struct sigaction setup_action = { -1 };
+  static struct sigaction setup_action = { 0 };
   static struct sigaction old = { 0 };
+  unsigned short bitindex;
+  unsigned short itembitcount;
 
   setup_action.sa_handler = action;
   setup_action.sa_restorer = _restorer;
-  setup_action.sa_mask = __sigmask (signum);
+  bitindex = signum - 1;
+  itembitcount = 8 * sizeof(setup_action.sa_mask.items[0]);
+  setup_action.sa_mask.items[bitindex / itembitcount] = 1 << (bitindex % itembitcount);
   old.sa_handler = SIG_DFL;
   setup_action.sa_flags = SA_RESTORER | SA_RESTART;
   int r = _sys_call4 (SYS_rt_sigaction, signum, &setup_action, &old, sizeof (sigset_t));

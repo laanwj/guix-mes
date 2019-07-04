@@ -25,8 +25,13 @@
 #include_next <signal.h>
 #else //! SYSTEM_LIBC
 
+#define _NSIG 64
 
-typedef long sigset_t;
+#define _SIGSET_NITEMS (_NSIG / (8 * sizeof(unsigned long)))
+
+typedef struct {
+  unsigned long items[_SIGSET_NITEMS];
+} sigset_t;
 typedef long stack_t;
 
 #include <sys/types.h>
