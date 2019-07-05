@@ -21,6 +21,7 @@
 #include <mes/lib.h>
 #include <limits.h>
 #include <sys/types.h>
+#include <mes/lib.h>
 
 char *
 getcwd (char *buffer, size_t size)
