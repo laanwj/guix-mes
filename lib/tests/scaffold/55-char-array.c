@@ -17,6 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <string.h>
+#include <mes/lib-mini.h>
 
 char g_hello[] = "hello\n" "world\n";
 
