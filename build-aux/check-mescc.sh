@@ -234,7 +234,6 @@ lib/tests/scaffold/91-goto-array.c
 
     if test $mes_cpu = x86; then
         XFAIL_TESTS="$XFAIL_TESTS
-lib/tests/scaffold/60-math.c
 "
     fi
 
