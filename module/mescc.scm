@@ -73,6 +73,7 @@
             (nostdinc)
             (nostdlib)
             (preprocess (single-char #\E))
+            (static)
             (std (value #t))
             (output (single-char #\o) (value #t))
             (optimize (single-char #\O) (value #t))
@@ -117,7 +118,9 @@ Usage: mescc [OPTION]... FILE...
 
 Ignored for GCC compatibility
   -fno-builtin
+  -no-pie
   -nostdinc
+  -static
 
 Environment variables:
 
@@ -135,10 +138,12 @@ General help using GNU software: <http://gnu.org/gethelp/>
 (define (mescc:main args)
   (let* ((single-dash-options '("-dumpmachine"
                                 "-fno-builtin"
+                                "-no-pie"
                                 "-nodefaultlibs"
                                 "-nostartfiles"
                                 "-nostdinc"
                                 "-nostdlib"
+                                "-static"
                                 "-std"))
          (args (map (lambda (o)
                       (if (member o single-dash-options) (string-append "-" o)

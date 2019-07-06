@@ -30,6 +30,7 @@ fi
 CFLAGS=
 if test $mes_libc = mes; then
     CFLAGS="
+-static
 -nostdinc
 -nostdlib
 -fno-builtin
