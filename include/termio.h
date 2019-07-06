@@ -49,6 +49,14 @@
 #define   CS8	0000060
 #define PARENB	0000400
 
+struct winsize
+{
+  unsigned short ws_row;
+  unsigned short ws_col;
+  unsigned short ws_xpixel;
+  unsigned short ws_ypixel;
+};
+
 struct termio
 {
   unsigned short c_iflag;
