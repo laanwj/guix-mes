@@ -49,7 +49,6 @@ if test "$p" != "$cmdline"; then
     p=${p% *}
     p=${p% -*}
     prefix=${p-/usr/local}
-
 else
     prefix=${prefix-/usr/local}
 fi
@@ -72,8 +71,7 @@ if [ "$p" != "$cmdline" ]; then
     p=${p% *}
     p=${p% -*}
     host=${p-$build}
-
-else
+elif test -n "$build"; then
     host=${host-$build}
 fi
 
@@ -130,13 +128,13 @@ docdir=$(eval echo ${docdir-$datadir/doc/mes-$VERSION})
 infodir=$(eval echo ${infodir-$datadir/info})
 includedir=$(eval echo ${libdir-$prefix/include})
 libdir=$(eval echo ${libdir-$prefix/lib})
+pkgdatadir=$(eval echo ${pkgdatadir-$datadir/mes})
 mandir=$(eval echo ${mandir-$datadir/man})
-moduledir=$(eval echo ${moduledir-$datadir/mes/module})
-moduledir_="$moduledir/"
 guile_site_dir=$(eval echo ${guile_site_dir-$prefix/share/guile/site/$GUILE_EFFECTIVE_VERSION})
 guile_site_ccache_dir=$(eval echo ${guile_site_ccache_dir-$prefix/lib/guile/$GUILE_EFFECTIVE_VERSION/site-ccache})
 
 subst () {
+    echo "creating $2"
     sed \
     -e s,"@PACKAGE@,$PACKAGE,"\
     -e s,"@PACKAGE_NAME@,$PACKAGE_NAME,"\
@@ -167,7 +165,7 @@ subst () {
     -e s,"@includedir@,$includedir,"\
     -e s,"@libdir@,$libdir,"\
     -e s,"@mandir@,$mandir,"\
-    -e s,"@moduledir@,$moduledir,"\
+    -e s,"@pkgdatadir@,$pkgdatadir,"\
     -e s,"@sysconfdir@,$sysconfdir,"\
     -e s,"@GUILE_EFFECTIVE_VERSION@,$GUILE_EFFECTIVE_VERSION,"\
     -e s,"@V@,$V,"\
@@ -189,7 +187,6 @@ subst () {
     -e s,"@MES_SEED@,$MES_SEED,"\
     -e s,"@MES_SEED@,$MES_SEED,"\
     -e s,"@SHELL@,$SHELL,"\
-    -e s,"mes/module/,$moduledir/,"\
     $1 > $2
 }
 
@@ -208,6 +205,9 @@ fi
 if test "$mes_cpu" = armv4\
         || test "$arch" = armv7l; then
     mes_cpu=arm
+fi
+if test "$mes_cpu" = amd64; then
+    mes_cpu=x86_64
 fi
 
 case "$host" in
@@ -238,6 +238,8 @@ mes_system=$mes_cpu-$mes_kernel-mes
 
 subst ${srcdest}build-aux/GNUmakefile.in GNUmakefile
 subst ${srcdest}build-aux/config.sh.in config.sh
+subst ${srcdest}build-aux/bootstrap.sh.in bootstrap.sh
+chmod +x bootstrap.sh
 subst ${srcdest}build-aux/build.sh.in build.sh
 chmod +x build.sh
 subst ${srcdest}build-aux/check.sh.in check.sh
@@ -256,6 +258,7 @@ subst ${srcdest}build-aux/uninstall.sh.in uninstall.sh
 chmod +x uninstall.sh
 
 mkdir -p include/mes
+rm -f include/mes/config.h
 if test $mes_libc = system; then
     cat >> include/mes/config.h <<EOF
 #define SYSTEM_LIBC 1
@@ -266,9 +269,8 @@ else
 EOF
 fi
 cat >> include/mes/config.h <<EOF
-#define VERSION '"'$VERSION'"'
-#define pkgdatadir "'"$pkgdatadir'"'
-
+#define VERSION "$VERSION"
+#define pkgdatadir "$pkgdatadir"
 EOF
 
 cat <<EOF

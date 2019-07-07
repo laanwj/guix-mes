@@ -53,6 +53,7 @@ arch:=@arch@
 build:=@build@
 host:=@host@
 
+bootstrap:=
 compiler:=@compiler@
 courageous:=@courageous@
 mes_system:=@mes_system@

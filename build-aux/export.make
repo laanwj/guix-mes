@@ -42,6 +42,7 @@ export mandir
 export moduledir
 export sysconfdir
 
+export bootstrap
 export compiler
 export courageous
 export mes_system

@@ -141,6 +141,7 @@
 
 /config.status
 /pre-inst-env
+/bootstrap.sh
 /build.sh
 /check.sh
 /install.sh

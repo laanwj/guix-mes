@@ -32,5 +32,6 @@ for o in "$@"; do
     ((i++))
     M1_objects[$i]=$(dirname "$o")/$(basename "$o" .o).s
 done
+mkdir -p $(dirname "$archive")
 cat "${M1_objects[@]}" > "$M1_archive"
 cat "$@" > "$archive"

@@ -18,6 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mes/lib.h>
 #include <limits.h>
 #include <sys/types.h>
 
