@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -102,33 +102,21 @@ main ()
 #endif
 
   printf ("(*pp)->b.i=%d\n", (*pp)->f.i);
-  if ((*pp)->f.i != 2) return 7;
+  if ((*pp)->f.i != 2)
+    return 7;
 
-  if (baz[0].i != 1) return 8;
+  if (baz[0].i != 1)
+    return 8;
   printf ("baz[0].f.i=%d\n", baz[0].f.i);
-  if (baz[0].f.i != 2) return 9;
+  if (baz[0].f.i != 2)
+    return 9;
 
   printf ("baz[1].i=%d\n", baz[1].i);
-  if (baz[1].i != 4) return 10;
+  if (baz[1].i != 4)
+    return 10;
   printf ("baz[1].f.i=%d\n", baz[1].f.i);
-  if (baz[1].f.i != 5) return 11;
-
-  bar one = {0};
-  printf ("one.i\n", one.i);
-  if (one.i != 0) return 12;
-  printf ("one.f.i\n", one.f.i);
-  if (one.f.i != 0) return 13;
-
-  bar b0 = {2};
-  struct foo f0 = {0};
-  struct foo *pf = &f0;
-  list[0] = &b0;
-  list[0]->p = pf;
-
-  eputs ("b0.i="); eputs (itoa (b0.i)); eputs ("\n");
-  if (b0.i != 2) return 14;
-  eputs ("b0.p->i="); eputs (itoa (b0.p->i)); eputs ("\n");
-  if (b0.p->i != 0) return 15;
+  if (baz[1].f.i != 5)
+    return 11;
 
   return 0;
 }

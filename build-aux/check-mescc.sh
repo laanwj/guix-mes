@@ -133,6 +133,7 @@ lib/tests/stdlib/70-strtoull.c
 lib/tests/string/70-strchr.c
 lib/tests/scaffold/71-struct-array.c
 lib/tests/scaffold/72-typedef-struct-def.c
+lib/tests/scaffold/72-typedef-struct-def-local.c
 lib/tests/scaffold/73-union-hello.c
 lib/tests/scaffold/73-union.c
 lib/tests/scaffold/74-multi-line-string.c
@@ -221,6 +222,7 @@ if test $compiler = mescc; then
 lib/tests/scaffold/17-compare-unsigned-char-le.c
 lib/tests/scaffold/17-compare-unsigned-short-le.c
 lib/tests/scaffold/66-local-char-array.c
+lib/tests/scaffold/72-typedef-struct-def-local.c
 lib/tests/scaffold/90-goto-var.c
 lib/tests/scaffold/91-goto-array.c
 "
