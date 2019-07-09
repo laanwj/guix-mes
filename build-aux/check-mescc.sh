@@ -110,7 +110,6 @@ lib/tests/scaffold/51-pointer-sub.c
 lib/tests/scaffold/54-argc.c
 lib/tests/scaffold/54-argv.c
 lib/tests/scaffold/55-char-array.c
-lib/tests/scaffold/60-math.c
 lib/tests/scaffold/61-array.c
 lib/tests/scaffold/62-array.c
 lib/tests/scaffold/63-struct.c
@@ -274,6 +273,12 @@ lib/tests/string/90-snprintf.c
 "
     fi
 fi
+
+# Tests that fail or pass nondeterministically
+BROKEN_TESTS="
+lib/tests/scaffold/60-math.c
+"
+
 
 recheck=${recheck-false}
 test_ext=.c
