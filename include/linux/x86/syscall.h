@@ -86,5 +86,6 @@
 // tar
 #define SYS_symlink   0x53
 #define SYS_readlink  0x55
+#define SYS_mknod     0x0e
 
 #endif // __MES_LINUX_X86_SYSCALL_H

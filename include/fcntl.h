@@ -48,6 +48,7 @@
 #define F_GETFL 3
 #define F_SETFL 4
 
+#define creat(file_name, mode) open (file_name, O_WRONLY | O_CREAT | O_TRUNC, mode)
 int dup (int old);
 int dup2 (int old, int new);
 int fcntl (int filedes, int command, ...);

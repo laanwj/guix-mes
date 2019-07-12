@@ -312,6 +312,7 @@ lib/linux/kill.c
 lib/linux/link.c
 lib/linux/lstat.c
 lib/linux/mkdir.c
+lib/linux/mknod.c
 lib/linux/nanosleep.c
 lib/linux/pipe.c
 lib/linux/readlink.c
