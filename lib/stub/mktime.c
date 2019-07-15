@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,18 +19,15 @@
  */
 
 #include <mes/lib.h>
-#include <errno.h>
 #include <time.h>
-#include <sys/time.h>
 
-struct tm *
-localtime (time_t const *timep)
+int
+mktime (struct tm *broken_time)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
-    eputs ("localtime stub\n");
+    eputs ("mktime stub\n");
   stub = 1;
   errno = 0;
-  static struct tm zero = { 0 };
-  return &zero;
+  return 0;
 }

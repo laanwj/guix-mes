@@ -275,6 +275,7 @@ lib/stub/getlogin.c
 lib/stub/getpwnam.c
 lib/stub/getpwuid.c
 lib/stub/gmtime.c
+lib/stub/mktime.c
 lib/stub/pclose.c
 lib/stub/popen.c
 lib/stub/rand.c
