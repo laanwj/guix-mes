@@ -74,8 +74,10 @@ int setgid (gid_t newgid);
 int setuid (uid_t newuid);
 uid_t geteuid (void);
 gid_t getegid (void);
+pid_t getpgrp (void);
 pid_t getpid (void);
 pid_t getppid (void);
+int getpgid (pid_t pid);
 int isatty (int fd);
 int link (char const *old_name, char const *new_name);
 off_t lseek (int fd, off_t offset, int whence);
@@ -90,7 +92,6 @@ void *sbrk (intptr_t delta);
 int symlink (char const *old_name, char const *new_name);
 int unlink (char const *file_name);
 ssize_t write (int filedes, void const *buffer, size_t size);
-pid_t getpid (void);
 
 #endif // ! SYSTEM_LIBC
 

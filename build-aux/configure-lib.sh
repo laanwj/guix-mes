@@ -272,6 +272,8 @@ lib/stub/freadahead.c
 lib/stub/frexp.c
 lib/stub/fscanf.c
 lib/stub/getlogin.c
+lib/stub/getpgid.c
+lib/stub/getpgrp.c
 lib/stub/getpwnam.c
 lib/stub/getpwuid.c
 lib/stub/gmtime.c
