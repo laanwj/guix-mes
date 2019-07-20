@@ -115,6 +115,10 @@ ifdef PERL
 export PERL
 endif
 
+ifdef SCHEME
+export SCHEME
+endif
+
 ifdef SHELL
 export SHELL
 endif
