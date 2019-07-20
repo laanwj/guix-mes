@@ -349,7 +349,7 @@
     ((bits . ,bits) bits)
     (_ (list o))))
 
-(define (struct->init-fields o)
+(define (struct->init-fields o) ;; FIXME REMOVEME: non-recursive unroll
   (pmatch o
     (_ (guard (and (type? o) (eq? (type:type o) 'struct)))
        (append-map struct->init-fields (type:description o)))
@@ -2230,16 +2230,21 @@
            (int->bv type (expr->number info fixed) info))
          (int->bv type (expr->number info fixed) info)))
     ((initzer (initzer-list . ,inits))
-     (if (structured-type? type)
-         (let* ((fields (map cdr (struct->init-fields type)))
-                (missing (max 0 (- (length fields) (length inits))))
-                (inits (append inits
-                               (map (const '(fixed "0")) (iota missing)))))
-           (map (cut init->data <> <> info) fields inits))
-         (begin
-           (stderr "array-init-element->data: oops:~s\n" o)
-           (stderr "type:~s\n" type)
-           (error "array-init-element->data: unstructured not supported: " o))))
+     (cond ((structured-type? type)
+            (let* ((fields (map cdr (struct->init-fields type)))
+                   (missing (max 0 (- (length fields) (length inits))))
+                   (inits (append inits
+                                  (map (const '(fixed "0")) (iota missing)))))
+              (map (cut array-init-element->data <> <> info) fields inits)))
+           ((c-array? type)
+            (let* ((missing (max 0 (- (c-array:count type) (length inits))))
+                   (inits (append inits
+                                  (map (const '(fixed "0")) (iota missing)))))
+              (map (cut array-init-element->data (c-array:type type) <> info) inits)))
+         (else
+          (stderr "array-init-element->data: oops:~s\n" o)
+          (stderr "type:~s\n" type)
+          (error "array-init-element->data: not supported: " o))))
     (_ (init->data type o info))
     (_ (error "array-init-element->data: not supported: " o))))
 
@@ -2248,7 +2253,8 @@
     ((initzer (initzer-list . ,inits))
      (let ((type (c-array:type type)))
        (if (structured-type? type)
-           (let* ((fields (length (struct->init-fields type))))
+           (let* ((init-fields (struct->init-fields type)) ;; FIXME
+                  (count (length init-fields)))
              (let loop ((inits inits))
                (if (null? inits) '()
                    (let ((init (car inits)))
@@ -2256,10 +2262,11 @@
                        ((initzer (initzer-list . ,car-inits))
                         (append (array-init-element->data type init info)
                                 (loop (cdr inits))))
-                       (_ (let* ((count (min (length inits) fields))
+                       (_
+                        (let* ((count (min (length inits) (length init-fields)))
                                  (field-inits (list-head inits count)))
-                            (append (array-init-element->data type `(initzer-list ,@field-inits) info)
-                                    (loop (list-tail inits count))))))))))
+                          (append (array-init-element->data type `(initzer-list ,@field-inits) info)
+                           (loop (list-tail inits count))))))))))
            (map (cut array-init-element->data type <> info) inits))))
 
     (((initzer (initzer-list . ,inits)))
