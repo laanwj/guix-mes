@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -39,7 +39,6 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages texinfo)
-  #:use-module ((guix build utils) #:select (with-directory-excursion))
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
   #:use-module (guix gexp)
@@ -50,74 +49,35 @@
 
 (define %source-dir (getcwd))
 
-(define git-file?
-  (let* ((pipe (with-directory-excursion %source-dir
-                 (open-pipe* OPEN_READ "git" "ls-files")))
-         (files (let loop ((lines '()))
-                  (match (read-line pipe)
-                    ((? eof-object?)
-                     (reverse lines))
-                    (line
-                     (loop (cons line lines))))))
-         (status (close-pipe pipe)))
-    (lambda (file stat)
-      (match (stat:type stat)
-        ('directory #t)
-        ((or 'regular 'symlink)
-         (any (cut string-suffix? <> file) files))
-        (_ #f)))))
-
-(define-public nyacc
-  (package
-    (name "nyacc")
-    (version "0.86.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://savannah/nyacc/"
-                                  name "-" version ".tar.gz"))
-              (patches (search-patches "nyacc-binary-literals.patch"))
-              (sha256
-               (base32
-                "0lkd9lyspvhxlfs0496gsllwinh62jk9wij6gpadvx9gwz6yavd9"))))
-    (build-system gnu-build-system)
-    (native-inputs
-     `(("guile" ,guile-2.2)))
-    (synopsis "LALR(1) Parser Generator in Guile")
-    (description
-     "NYACC is an LALR(1) parser generator implemented in Guile.
-The syntax and nomenclature should be considered not stable.  It comes with
-extensive examples, including parsers for the Javascript and C99 languages.")
-    (home-page "https://savannah.nongnu.org/projects/nyacc")
-    (license (list gpl3+ lgpl3+))))
-
 (define-public mescc-tools
   (package
     (name "mescc-tools")
-    (version "0.5.2")
-     (source (origin
-               (method url-fetch)
-               (uri (string-append "http://git.savannah.nongnu.org/cgit/"
-                                   "mescc-tools.git/snapshot/"
-                                   "mescc-tools-Release_" version
-                                   ".tar.gz"))
-               (patches (search-patches "mescc-tools-boot.patch"))
-               (file-name (string-append name "-" version ".tar.gz"))
-               (sha256
-                (base32
-                 "01x7bhmgwyf6mc2g1hcvibhps98nllacqm4f0j5l51b1mbi18pc2"))))
+    (version "0.6.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "http://git.savannah.nongnu.org/cgit/mescc-tools.git/snapshot/"
+                    name "-Release_" version
+                    ".tar.gz"))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1dmni3q1l36n7y4dzpzqb60d970d8xmaznl88gaa4lhinkr4bl3i"))))
     (build-system gnu-build-system)
     (supported-systems '("i686-linux" "x86_64-linux"))
     (arguments
-     `(#:make-flags (list (string-append "PREFIX=" (assoc-ref %outputs "out")))
+     `(#:make-flags (list (string-append "PREFIX=" (assoc-ref %outputs "out"))
+                          "CC=gcc")
        #:test-target "test"
        #:phases (modify-phases %standard-phases
                   (delete 'configure))))
     (synopsis "Tools for the full source bootstrapping process")
     (description
      "Mescc-tools is a collection of tools for use in a full source
-bootstrapping process.  Currently consists of the M1 macro assembler and the
-hex2 linker.")
-    (home-page "https://github.com/oriansj/mescc-tools")
+bootstrapping process.  It consists of the M1 macro assembler, the hex2
+linker, the blood-elf symbol table generator, the kaem shell, exec_enable and
+get_machine.")
+    (home-page "https://savannah.nongnu.org/projects/mescc-tools")
     (license gpl3+)))
 
 (define-public mes
@@ -177,4 +137,6 @@ Guile.")
       (inherit mes)
       (name "mes.git")
       (version (string-append version "-" revision "." (string-take commit 7)))
-      (source (local-file %source-dir #:recursive? #t #:select? git-file?)))))
+      (source (local-file %source-dir
+                          #:recursive? #t
+                          #:select? (git-predicate %source-dir))))))

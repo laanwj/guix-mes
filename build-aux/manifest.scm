@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 ;;; This file is part of GNU Mes.
 ;;;
@@ -17,6 +17,7 @@
 ;;; along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (guix packages))
-(set! %load-path (cons "guix" %load-path))
-(include "../.guix.scm")
+(define %source-dir (dirname (dirname (current-filename))))
+(add-to-load-path (string-append %source-dir "/guix"))
+(use-modules (git mes))
 (packages->manifest (map cadr (package-direct-inputs mes)))

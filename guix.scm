@@ -1,7 +1,7 @@
-;;; .guix.scm -- Guix package definition
+;;; guix.scm -- Guix package definition
 
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -22,19 +22,21 @@
 ;;
 ;; GNU Guix development package.  To build and install, run:
 ;;
-;;   guix package -f .guix.scm
+;;   guix package -f guix.scm
 ;;
 ;; To build it, but not install it, run:
 ;;
-;;   guix build -f .guix.scm
+;;   guix build -f guix.scm
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix environment -l .guix.scm
+;;   guix environment -l guix.scm
 ;;
 ;;; Code:
 
-(set! %load-path (cons "guix" %load-path))
+(define %source-dir (dirname (current-filename)))
+(add-to-load-path (string-append %source-dir "/guix"))
+
 (use-modules (git mes))
 
 ;; Return it here so `guix build/environment/package' can consume it directly.
