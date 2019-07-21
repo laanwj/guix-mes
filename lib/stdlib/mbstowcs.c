@@ -22,9 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !__MESC__
-typedef char wchar_t[];
-
 size_t
 mbstowcs (wchar_t * wstring, char const *string, size_t size)
 {
@@ -35,4 +32,3 @@ mbstowcs (wchar_t * wstring, char const *string, size_t size)
   strcpy (wstring, string);
   return strlen (string);
 }
-#endif

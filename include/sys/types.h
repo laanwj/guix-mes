@@ -138,6 +138,15 @@ typedef long ssize_t;
 typedef unsigned uid_t;
 #endif
 
+#ifndef __WCHAR_T
+#define __WCHAR_T
+#ifndef __MES_WCHAR_T
+#define __MES_WCHAR_T
+#undef wchar_t
+typedef int wchar_t;
+#endif
+#endif
+
 #endif // ! SYSTEM_LIBC
 
 #endif // __MES_SYS_TYPES_H
