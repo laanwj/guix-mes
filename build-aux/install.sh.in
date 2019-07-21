@@ -56,7 +56,7 @@ mkdir -p ${DESTDIR}${docdir}
 if test -n "${PERL}"\
        && test -n "${GIT}"\
        && ${PERL} -v > /dev/null\
-       && ${GIT} status > /dev/null; then
+       && ! test -f .git-for-build; then
     ${PERL} ${srcdest}build-aux/gitlog-to-changelog --srcdir=. > ChangeLog+
 fi
 

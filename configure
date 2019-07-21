@@ -541,6 +541,7 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
           ;; Debian wants to run `make clean' from a tarball
           (and (zero? (system* "git" "init"))
                (zero? (system* "git" "add" "."))
+               (zero? (system* "touch" ".git-for-build"))
                (zero? (system* "git" "commit" "--allow-empty" "-m" "Import mes")))))
 
       (let ((pairs `(("@PACKAGE@" . ,PACKAGE)
