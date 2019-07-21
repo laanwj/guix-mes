@@ -147,7 +147,7 @@
 /install.sh
 /uninstall.sh
 /mes/module/mes/boot-0.scm
-/scripts/ar
+/scripts/mesar
 /scripts/mescc.scm
 /scripts/mescc
 /doc/images/gcc-mesboot-graph.png

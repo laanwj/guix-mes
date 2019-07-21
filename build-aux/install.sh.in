@@ -42,7 +42,7 @@ fi
 DESTDIR=${DESTDIR-}
 mkdir -p ${DESTDIR}${bindir}
 cp $_v src/mes ${DESTDIR}${bindir}/mes
-cp $_v scripts/ar ${DESTDIR}${bindir}/ar
+cp $_v scripts/mesar ${DESTDIR}${bindir}/mesar
 cp $_v scripts/mescc.scm ${DESTDIR}${bindir}/mescc.scm
 cp $_v scripts/mescc ${DESTDIR}${bindir}/mescc
 

@@ -88,7 +88,7 @@ fi
 -nostdlib
 "
     LIBS=-lc
-    AR="${srcdest}pre-inst-env ar"
+    AR="${srcdest}pre-inst-env mesar"
     CC="${srcdest}pre-inst-env mescc"
     ../pre-inst-env ${SHELL} ${srcdest}build-aux/check-mescc.sh
 )

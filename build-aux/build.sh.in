@@ -142,7 +142,7 @@ fi
 -I ${srcdest}include/$mes_kernel/$mes_cpu
 "
     compiler=mescc
-    AR="${srcdest}pre-inst-env ar"
+    AR="${srcdest}pre-inst-env mesar"
     CC="${srcdest}pre-inst-env mescc -m $mes_bits"
     ${SHELL} ${srcdest}build-aux/build-lib.sh
 )

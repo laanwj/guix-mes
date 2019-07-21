@@ -248,8 +248,8 @@ subst ${srcdest}build-aux/install.sh.in install.sh
 chmod +x install.sh
 subst ${srcdest}build-aux/pre-inst-env.in pre-inst-env
 chmod +x pre-inst-env
-subst ${srcdest}scripts/ar.in scripts/ar
-chmod +x scripts/ar
+subst ${srcdest}scripts/mesar.in scripts/mesar
+chmod +x scripts/mesar
 subst ${srcdest}scripts/mescc.scm.in scripts/mescc.scm
 chmod +x scripts/mescc.scm
 subst ${srcdest}scripts/mescc.in scripts/mescc
