@@ -181,6 +181,7 @@ lib/tests/scaffold/7u-struct-func.c
 lib/tests/scaffold/7u-struct-size10.c
 lib/tests/scaffold/7u-vstack.c
 lib/tests/scaffold/70-array-in-struct-init.c
+lib/tests/scaffold/70-struct-short-enum-init.c
 lib/tests/setjmp/80-setjmp.c
 lib/tests/stdio/80-sscanf.c
 lib/tests/stdlib/80-qsort.c
