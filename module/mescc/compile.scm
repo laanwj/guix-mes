@@ -1314,7 +1314,9 @@
                 (type (ident->type info name))
                 (rank (ident->rank info name))
                 (reg-size (->size "*" info))
-                (size (if (> rank 1) reg-size 1)))
+                (size (cond ((= rank 1) (ast-type->size info `(p-expr (ident ,name))))
+                            ((> rank 1) reg-size)
+                            (else 1))))
            (append-text info ((ident-add info) name size))))
 
         ((assn-expr (de-ref (post-dec (p-expr (ident ,name)))) (op ,op) ,b)
@@ -1322,7 +1324,9 @@
                 (type (ident->type info name))
                 (rank (ident->rank info name))
                 (reg-size (->size "*" info))
-                (size (if (> rank 1) reg-size 1)))
+                (size (cond ((= rank 1) (ast-type->size info `(p-expr (ident ,name))))
+                            ((> rank 1) reg-size)
+                            (else 1))))
            (append-text info ((ident-add info) name (- size)))))
 
         ((assn-expr ,a (op ,op) ,b)
