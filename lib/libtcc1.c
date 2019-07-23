@@ -27,7 +27,7 @@ __divdi3 (double a, double b)
   if (__mes_debug () && !stub)
     eputs ("__divdi3 stub\n");
   stub = 1;
-  return ((int) a / (int) b);
+  return ((long) a / (long) b);
 }
 
 double
@@ -37,65 +37,115 @@ __moddi3 (double a, double b)
   if (__mes_debug () && !stub)
     eputs ("__moddi3 stub\n");
   stub = 1;
-  return ((int) a % (int) b);
+  return ((long) a % (long) b);
 }
 
+#if HAVE_LONG_LONG
 unsigned long long
 __udivdi3 (unsigned long long a, unsigned long long b)
+#else
+unsigned long
+__udivdi3 (unsigned long a, long ah, unsigned long b)
+#endif
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__udivdi3 stub\n");
   stub = 1;
-  int ai = a;
-  int bi = b;
+  if (!b)
+    return 0;
+  unsigned long ai = a;
+  unsigned long bi = b;
   return ai / bi;
 }
 
+#if HAVE_LONG_LONG
 unsigned long long
 __umoddi3 (unsigned long long a, unsigned long long b)
+#else
+unsigned long
+__umoddi3 (unsigned long a, long ah, unsigned long b)
+#endif
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__umoddi3 stub\n");
   stub = 1;
-  int ai = a;
-  int bi = b;
+  unsigned long ai = a;
+  unsigned long bi = b;
   return ai % bi;
 }
 
+#if HAVE_LONG_LONG
 unsigned long long
-__lshrdi3 (unsigned long long a, int b)
+__lshrdi3 (unsigned long long a, long b)
+#else
+unsigned long
+__lshrdi3 (unsigned long a, long ah, long b)
+#endif
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__lshrdi3 stub\n");
   stub = 1;
+#if 0 // In some instances, this recurses
   return a >> b;
+#else
+  for (int i = 0; i < b; i++)
+    a /= 2;
+  return a;
+#endif
 }
 
+#if HAVE_LONG_LONG
 long long
-__ashldi3 (long long a, int b)
+__ashldi3 (long long a, long b)
+#else
+long
+__ashldi3 (long a, long ah, long b)
+#endif
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__ashldi3 stub\n");
   stub = 1;
+#if 0 // In some instances, this recurses
   return a << b;
+#else
+  for (int i = 0; i < b; i++)
+    a += a;
+  return a;
+#endif
 }
 
+#if HAVE_LONG_LONG
 long long
-__ashrdi3 (long long a, int b)
+__ashrdi3 (long long a, long b)
+#else
+long
+__ashrdi3 (long a, long ah, long b)
+#endif
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__ashrdi3 stub\n");
   stub = 1;
+#if 0 // In some instances, this recurses
   return a >> b;
+#else
+  for (int i = 0; i < b; i++)
+    a /= 2;
+  return a;
+#endif
 }
 
+#if HAVE_LONG_LONG && HAVE_FLOAT
 long double
 __floatundixf (unsigned long long a)
+#else
+double
+__floatundixf (unsigned long a)
+#endif
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
@@ -104,7 +154,11 @@ __floatundixf (unsigned long long a)
   return 0;
 }
 
+#if HAVE_LONG_LONG
 unsigned long long
+#else
+unsigned long
+#endif
 __fixunsxfdi (double a1)
 {
   static int stub = 0;
@@ -118,9 +172,9 @@ __fixunsxfdi (double a1)
 long
 #elif __TINYC__
 int
-#else // !__TINYCC_
+#else // !__TINYCC__
 long long
-#endif                          // !__TINYCC_
+#endif // !__TINYCC__
 __fixdfdi (double a1)
 {
   static int stub = 0;
@@ -130,8 +184,13 @@ __fixdfdi (double a1)
   return 0;
 }
 
+#if HAVE_LONG_LONG
 unsigned long long
 __fixxfdi (double a1)
+#else
+unsigned long
+__fixxfdi (double a1)
+#endif
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
@@ -140,7 +199,11 @@ __fixxfdi (double a1)
   return 0;
 }
 
+#if HAVE_LONG_LONG
 long long
+#else
+long
+#endif
 __fixsfdi (double a1)
 {
   static int stub = 0;
