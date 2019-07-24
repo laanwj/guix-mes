@@ -271,6 +271,8 @@ lib/stub/fpurge.c
 lib/stub/freadahead.c
 lib/stub/frexp.c
 lib/stub/fscanf.c
+lib/stub/getgrgid.c
+lib/stub/getgrnam.c
 lib/stub/getlogin.c
 lib/stub/getpgid.c
 lib/stub/getpgrp.c
@@ -283,6 +285,7 @@ lib/stub/popen.c
 lib/stub/rand.c
 lib/stub/rewind.c
 lib/stub/setbuf.c
+lib/stub/setgrent.c
 lib/stub/setlocale.c
 lib/stub/setvbuf.c
 lib/stub/sigaddset.c
