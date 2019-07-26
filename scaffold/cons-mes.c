@@ -941,7 +941,7 @@ main (int argc, char *argv[])
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
       eputs ("Mes ");
-      return eputs (VERSION);
+      return eputs (MES_VERSION);
     };
 #else
   if (argc > 1 && !strcmp (argv[1], "--version"))

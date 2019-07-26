@@ -269,8 +269,8 @@ else
 EOF
 fi
 cat >> include/mes/config.h <<EOF
-#define VERSION "$VERSION"
-#define pkgdatadir "$pkgdatadir"
+#define MES_VERSION "$VERSION"
+#define MES_PKGDATADIR "$pkgdatadir"
 EOF
 
 cat <<EOF

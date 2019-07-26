@@ -1379,7 +1379,7 @@ mes_symbols ()                  ///((internal))
   a = acons (cell_symbol_current_module, cell_symbol_current_module, a);
   a = acons (cell_symbol_call_with_current_continuation, cell_call_with_current_continuation, a);
 
-  a = acons (cell_symbol_mes_version, MAKE_STRING0 (VERSION), a);
+  a = acons (cell_symbol_mes_version, MAKE_STRING0 (MES_VERSION), a);
   a = acons (cell_symbol_mes_datadir, MAKE_STRING0 (g_datadir), a);
 
   a = acons (cell_type_bytes, MAKE_NUMBER (TBYTES), a);
@@ -1778,7 +1778,7 @@ open_boot ()
   if (g_debug > 1)
     {
       eputs (";;; pkgdatadir=");
-      eputs (pkgdatadir);
+      eputs (MES_PKGDATADIR);
       eputs ("\n");
     }
   if (getenv ("MES_BOOT"))
@@ -1802,7 +1802,7 @@ open_boot ()
     }
   if (__stdin < 0)
     {
-      strcpy (g_datadir, pkgdatadir);
+      strcpy (g_datadir, MES_PKGDATADIR);
       strcpy (file_name, g_datadir);
       strcpy (file_name + strlen (file_name), "/module/mes/");
       __stdin = try_open_boot (file_name, boot, "pkgdatadir");

@@ -656,8 +656,8 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                   (display "#undef SYSTEM_LIBC
 "))
               (display (string-append "
-#define VERSION \"" VERSION "\"
-#define pkgdatadir \"" pkgdatadir "\"
+#define MES_VERSION \"" VERSION "\"
+#define MES_PKGDATADIR \"" pkgdatadir "\"
 ")))))
         (substitute (string-append srcdest "build-aux/config.make.in") pairs #:target ".config.make"))
 
