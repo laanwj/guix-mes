@@ -57,7 +57,7 @@
          (arch (if (equal? machine "32") "__i386__=1" "__x86_64__=1"))
          (defines (cons (arch-get-define options) defines)))
     (with-output-to-file ast-file-name
-      (lambda _ (for-each (cut c->ast prefix defines includes write <>) files)))))
+      (lambda _ (for-each (cut c->ast prefix defines includes pretty-print/write <>) files)))))
 
 (define (c->ast prefix defines includes write file-name)
   (with-input-from-file file-name
