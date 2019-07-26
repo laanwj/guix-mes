@@ -2330,8 +2330,7 @@
     (((ftn-declr (ident ,name) . ,_))
      (let ((functions (.functions info)))
        (if (member name functions) info
-           (let* ((type (ftn-declr:get-type info `(ftn-declr (ident ,name) ,@_)))
-                  (function (make-function name type  #f)))
+           (let ((function (make-function name type #f)))
              (clone info #:functions (cons (cons name function) functions))))))
     (((ftn-declr (scope (ptr-declr ,pointer (ident ,name))) ,param-list) ,init)
      (let* ((rank (pointer->rank pointer))
@@ -2622,11 +2621,6 @@
     (((decl-spec-list (stor-spec ,store) (type-spec ,type)) . _)
      (ast->type type info))
     (_ (error "fctn-defn:get-type: not supported:" o))))
-
-(define (ftn-declr:get-type info o)
-  (pmatch o
-    ((ftn-declr (ident _) . _) #f)
-    (_ (error "fctn-decrl:get-type: not supported:" o))))
 
 (define (fctn-defn:get-statement o)
   (pmatch o
