@@ -49,8 +49,8 @@
   (if %reduced-register-count %reduced-register-count
    (length (append (.registers info) (.allocated info)))))
 
-(define* (c99-input->info info #:key (prefix "") (defines '()) (includes '()))
-  (let ((ast (c99-input->ast #:prefix prefix #:defines defines #:includes includes)))
+(define* (c99-input->info info #:key (prefix "") (defines '()) (includes '()) (arch ""))
+  (let ((ast (c99-input->ast #:prefix prefix #:defines defines #:includes includes #:arch arch)))
     (c99-ast->info info ast)))
 
 (define* (c99-ast->info info o)

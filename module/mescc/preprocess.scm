@@ -77,10 +77,20 @@
 
 (define mes? (pair? (current-module)))
 
-(define* (c99-input->full-ast #:key (prefix "") (defines '()) (includes '()))
-  (let ((sys-include (if (equal? prefix "") "include" (string-append prefix "/share/include"))))
+(define* (c99-input->full-ast #:key (prefix "") (defines '()) (includes '()) (arch ""))
+  (let* ((sys-include (if (equal? prefix "") "include"
+                          (string-append prefix "/include")))
+         (kernel "linux")
+         (kernel-include (string-append sys-include "/" kernel "/" arch)))
     (parse-c99
-     #:inc-dirs (append includes (cons* sys-include "include" "lib" (or (and=> (getenv "C_INCLUDE_PATH") (cut string-split <> #\:)) '())))
+     #:inc-dirs (append
+                 includes
+                 (cons* kernel-include
+                        sys-include
+                        (append (or (and=> (getenv "CPATH")
+                                           (cut string-split <> #\:)) '())
+                                (or (and=> (getenv "C_INCLUDE_PATH")
+                                           (cut string-split <> #\:)) '()))))
      #:cpp-defs `(
                   "NULL=0"
                   "__linux__=1"
@@ -92,9 +102,9 @@
                   ,@defines)
      #:mode 'code)))
 
-(define* (c99-input->ast #:key (prefix "") (defines '()) (includes '()))
+(define* (c99-input->ast #:key (prefix "") (defines '()) (includes '()) (arch ""))
   (stderr "parsing: input\n")
-  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:prefix prefix #:defines defines #:includes includes)))
+  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:prefix prefix #:defines defines #:includes includes #:arch arch)))
 
 (define (ast-strip-comment o)
   (pmatch o

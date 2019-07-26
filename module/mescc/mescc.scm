@@ -54,14 +54,14 @@
          (includes (cons dir includes))
          (prefix (option-ref options 'prefix ""))
          (machine (option-ref options 'machine "32"))
-         (arch (if (equal? machine "32") "__i386__=1" "__x86_64__=1"))
+         (arch (arch-get options))
          (defines (cons (arch-get-define options) defines)))
     (with-output-to-file ast-file-name
-      (lambda _ (for-each (cut c->ast prefix defines includes pretty-print/write <>) files)))))
+      (lambda _ (for-each (cut c->ast prefix defines includes arch pretty-print/write <>) files)))))
 
-(define (c->ast prefix defines includes write file-name)
+(define (c->ast prefix defines includes arch write file-name)
   (with-input-from-file file-name
-    (cut write (c99-input->ast #:prefix prefix #:defines defines #:includes includes))))
+    (cut write (c99-input->ast #:prefix prefix #:defines defines #:includes includes #:arch arch))))
 
 (define (mescc:compile options)
   (let* ((files (option-ref options '() '("a.c")))
@@ -89,9 +89,10 @@
          (dir (dirname file-name))
          (includes (cons dir includes))
          (prefix (option-ref options 'prefix ""))
-         (defines (cons (arch-get-define options) defines)))
+         (defines (cons (arch-get-define options) defines))
+         (arch (arch-get options)))
     (with-input-from-file file-name
-      (cut c99-input->info (arch-get-info options) #:prefix prefix #:defines defines #:includes includes))))
+      (cut c99-input->info (arch-get-info options) #:prefix prefix #:defines defines #:includes includes #:arch arch))))
 
 (define (E->info options file-name)
   (let ((ast (with-input-from-file file-name read)))
