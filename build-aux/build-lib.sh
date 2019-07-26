@@ -79,3 +79,26 @@ cp libgetopt.a $mes_cpu-mes
 if test -e libgetopt.s; then
     cp libgetopt.s $mes_cpu-mes
 fi
+
+cp ${srcdest}lib/$mes_kernel/$mes_cpu-mes-$compiler/crt*.c $mes_cpu-mes
+
+rm -f libc+gnu.c
+cat > libc+gnu.c <<EOF
+// Generated from Mes -- do not edit
+// compiler: $compiler
+// cpu:      $mes_cpu
+// bits:     $mes_bits
+// libc:     $mes_libc
+// kernel:   $mes_kernel
+// system:   $mes_system
+
+EOF
+for c in $libc_gnu_SOURCES; do
+    echo "// $c" >> libc+gnu.c
+    cat ${srcdest}$c >> libc+gnu.c
+    echo >> libc+gnu.c
+done
+cp libc+gnu.c $mes_cpu-mes
+
+cp ${srcdest}lib/libtcc1.c $mes_cpu-mes
+cp ${srcdest}lib/posix/getopt.c $mes_cpu-mes/libgetopt.c
