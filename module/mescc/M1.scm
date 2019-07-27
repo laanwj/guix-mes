@@ -100,12 +100,19 @@
           (display sep))
       (loop (cdr o)))))
 
+(define (global-string? o)
+  (and (pair? o) (pair? (car o)) (eq? (caar o) #:string)))
+
+(define (global-extern? o)
+  (and=> (global:storage o) (cut eq? <> 'extern)))
+
 (define* (info->M1 file-name o #:key align? verbose?)
   (let* ((functions (.functions o))
          (function-names (map car functions))
          (globals (.globals o))
-         (global-names (map car globals))
-         (strings (filter (lambda (g) (and (pair? g) (eq? (car g) #:string))) global-names))
+         (globals (filter (negate (compose global-extern? cdr)) globals))
+         (strings (filter global-string? globals))
+         (strings (map car strings))
          (reg-size (type:size (assoc-ref (.types o) "*"))))
     (define (string->label o)
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
@@ -245,4 +252,5 @@
       (display "\n\n:HEX2_data\n"))
     (when verbose?
       (display "M1: globals\n" (current-error-port)))
-    (for-each write-global globals)))
+    (for-each write-global (filter global-string? globals))
+    (for-each write-global (filter (negate global-string?) globals))))
