@@ -35,9 +35,9 @@
             infos->M1
             M1:merge-infos))
 
-(define* (infos->M1 file-name infos #:key align?)
+(define* (infos->M1 file-name infos #:key align? verbose?)
   (let ((info (fold M1:merge-infos (make <info>) infos)))
-    (info->M1 file-name info #:align? align?)))
+    (info->M1 file-name info #:align? align? #:verbose? verbose?)))
 
 (define (M1:merge-infos o info)
   (clone info
@@ -100,7 +100,7 @@
           (display sep))
       (loop (cdr o)))))
 
-(define* (info->M1 file-name o #:key align?)
+(define* (info->M1 file-name o #:key align? verbose?)
   (let* ((functions (.functions o))
          (function-names (map car functions))
          (globals (.globals o))
@@ -186,7 +186,8 @@
                  (display-join (map text->M1 o) " "))
                 (else (error "line->M1 invalid line:" o)))
           (newline))
-        (display (string-append "    :" name "\n") (current-error-port))
+        (when verbose?
+          (display (string-append "    :" name "\n") (current-error-port)))
         (display (string-append "\n\n:" name "\n"))
         (for-each line->M1 (apply append text))))
     (define (write-global o)
@@ -212,8 +213,8 @@
                      ((global? (cdr o)) (global->string (cdr o)))
                      (else (car o))))
              (string? (string-prefix? "_string" label))
-             (foo (if (not (eq? (car (string->list label)) #\_))
-                      (display (string-append "    :" label "\n") (current-error-port))))
+             (foo (when (and verbose? (not (eq? (car (string->list label)) #\_)))
+                    (display (string-append "    :" label "\n") (current-error-port))))
              (data ((compose global:value cdr) o))
              (data (filter-map labelize data))
              (len (length data))
@@ -236,10 +237,12 @@
               (display-join  text " ")
               (display-align (length text))))
         (newline)))
-    (display "M1: functions\n" (current-error-port))
+    (when verbose?
+      (display "M1: functions\n" (current-error-port)))
     (for-each write-function (filter cdr functions))
     (when (assoc-ref functions "main")
       (display "\n\n:ELF_data\n") ;; FIXME
       (display "\n\n:HEX2_data\n"))
-    (display "M1: globals\n" (current-error-port))
+    (when verbose?
+      (display "M1: globals\n" (current-error-port)))
     (for-each write-global globals)))

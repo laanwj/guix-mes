@@ -49,12 +49,14 @@
   (if %reduced-register-count %reduced-register-count
    (length (append (.registers info) (.allocated info)))))
 
-(define* (c99-input->info info #:key (prefix "") (defines '()) (includes '()) (arch ""))
-  (let ((ast (c99-input->ast #:prefix prefix #:defines defines #:includes includes #:arch arch)))
-    (c99-ast->info info ast)))
+(define* (c99-input->info info #:key (prefix "") (defines '()) (includes '()) (arch "") verbose?)
+  (let ((ast (c99-input->ast #:prefix prefix #:defines defines #:includes includes #:arch arch #:verbose? verbose?)))
+    (c99-ast->info info ast #:verbose? verbose?)))
 
-(define* (c99-ast->info info o)
-  (stderr "compiling: input\n")
+(define* (c99-ast->info info o #:key verbose?)
+  (when verbose?
+    (stderr "compiling: input\n")
+    (set! mescc:trace mescc:trace-verbose))
   (let ((info (ast->info o info)))
     (clean-info info)))
 
@@ -427,8 +429,11 @@
 (define (make-local-entry name type id)
   (cons name (make-local name type id)))
 
-(define* (mescc:trace name #:optional (type ""))
+(define* (mescc:trace-verbose name #:optional (type ""))
   (format (current-error-port) "    :~a~a\n" name type))
+
+(define* (mescc:trace name #:optional (type ""))
+  #t)
 
 (define (expr->arg o i info)
   (pmatch o

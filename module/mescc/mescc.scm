@@ -28,11 +28,13 @@
   #:use-module (mescc preprocess)
   #:use-module (mescc compile)
   #:use-module (mescc M1)
-  #:export (mescc:preprocess
+  #:export (count-opt
+            mescc:preprocess
             mescc:get-host
             mescc:compile
             mescc:assemble
-            mescc:link))
+            mescc:link
+            multi-opt))
 
 (define GUILE-with-output-to-file with-output-to-file)
 (define (with-output-to-file file-name thunk)
@@ -55,13 +57,14 @@
          (prefix (option-ref options 'prefix ""))
          (machine (option-ref options 'machine "32"))
          (arch (arch-get options))
-         (defines (cons (arch-get-define options) defines)))
+         (defines (cons (arch-get-define options) defines))
+         (verbose? (count-opt options 'verbose)))
     (with-output-to-file ast-file-name
-      (lambda _ (for-each (cut c->ast prefix defines includes arch pretty-print/write <>) files)))))
+      (lambda _ (for-each (cut c->ast prefix defines includes arch pretty-print/write verbose? <>) files)))))
 
-(define (c->ast prefix defines includes arch write file-name)
+(define (c->ast prefix defines includes arch write verbose? file-name)
   (with-input-from-file file-name
-    (cut write (c99-input->ast #:prefix prefix #:defines defines #:includes includes #:arch arch))))
+    (cut write (c99-input->ast #:prefix prefix #:defines defines #:includes includes #:arch arch #:verbose? verbose?))))
 
 (define (mescc:compile options)
   (let* ((files (option-ref options '() '("a.c")))
@@ -71,12 +74,12 @@
                                    (option-ref options 'output #f)))
                              (else (replace-suffix input-base ".s"))))
          (infos (map (cut file->info options <>) files))
-         (verbose? (option-ref options 'verbose #f))
+         (verbose? (count-opt options 'verbose))
          (align? (option-ref options 'align #f)))
     (when verbose?
       (stderr "dumping: ~a\n" M1-file-name))
     (with-output-to-file M1-file-name
-      (cut infos->M1 M1-file-name infos #:align? align?))
+      (cut infos->M1 M1-file-name infos #:align? align? #:verbose? verbose?))
     M1-file-name))
 
 (define (file->info options file-name)
@@ -90,13 +93,15 @@
          (includes (cons dir includes))
          (prefix (option-ref options 'prefix ""))
          (defines (cons (arch-get-define options) defines))
-         (arch (arch-get options)))
+         (arch (arch-get options))
+         (verbose? (count-opt options 'verbose)))
     (with-input-from-file file-name
-      (cut c99-input->info (arch-get-info options) #:prefix prefix #:defines defines #:includes includes #:arch arch))))
+      (cut c99-input->info (arch-get-info options) #:prefix prefix #:defines defines #:includes includes #:arch arch #:verbose? verbose?))))
 
 (define (E->info options file-name)
-  (let ((ast (with-input-from-file file-name read)))
-    (c99-ast->info (arch-get-info options) ast)))
+  (let ((ast (with-input-from-file file-name read))
+        (verbose? (count-opt options 'verbose)))
+    (c99-ast->info (arch-get-info options) ast #:verbose? verbose?)))
 
 (define (mescc:assemble options)
   (let* ((files (option-ref options '() '("a.c")))
@@ -155,7 +160,7 @@
          (M1-file-name (replace-suffix hex2-file-name ".s"))
          (options (acons 'compile #t options)) ; ugh
          (options (acons 'output hex2-file-name options))
-         (verbose? (option-ref options 'verbose #f))
+         (verbose? (count-opt options 'verbose))
          (align? (option-ref options 'align #f)))
     (when verbose?
       (stderr "dumping: ~a\n" M1-file-name))
@@ -173,7 +178,7 @@
                                ((option-ref options 'assemble #f)
                                 (replace-suffix input-base ".o"))
                                (else (replace-suffix M1-file-name ".o"))))
-         (verbose? (option-ref options 'verbose #f))
+         (verbose? (count-opt options 'verbose))
          (M1 (or (getenv "M1") "M1"))
          (command `(,M1
                     "--LittleEndian"
@@ -181,7 +186,7 @@
                     "-f" ,(arch-find options (arch-get-m1-macros options))
                     ,@(append-map (cut list "-f" <>) M1-files)
                     "-o" ,hex2-file-name)))
-    (when verbose?
+    (when (and verbose? (> verbose? 1))
       (stderr "~a\n" (string-join command)))
     (and (zero? (apply assert-system* command))
          hex2-file-name)))
@@ -190,7 +195,7 @@
   (let* ((input-file-name (car (option-ref options '() '("a.c"))))
          (elf-file-name (cond ((option-ref options 'output #f))
                               (else "a.out")))
-         (verbose? (option-ref options 'verbose #f))
+         (verbose? (count-opt options 'verbose))
          (hex2 (or (getenv "HEX2") "hex2"))
          (base-address (option-ref options 'base-address "0x1000000"))
          (machine (arch-get-machine options))
@@ -210,7 +215,7 @@
                     "-f" ,elf-footer
                     "--exec_enable"
                     "-o" ,elf-file-name)))
-    (when verbose?
+    (when (and verbose? (> verbose? 1))
       (stderr "~a\n" (string-join command)))
     (and (zero? (apply assert-system* command))
          elf-file-name)))
@@ -220,13 +225,13 @@
          (M1-blood-elf-footer (string-append M1-file-name ".blood-elf"))
          (hex2-file-name (replace-suffix M1-file-name ".o"))
          (blood-elf-footer (string-append hex2-file-name ".blood-elf"))
-         (verbose? (option-ref options 'verbose #f))
+         (verbose? (count-opt options 'verbose))
          (blood-elf (or (getenv "BLOOD_ELF") "blood-elf"))
          (command `(,blood-elf
                       "-f" ,(arch-find options (arch-get-m1-macros options))
                       ,@(append-map (cut list "-f" <>) M1-files)
                       "-o" ,M1-blood-elf-footer)))
-    (when verbose?
+    (when (and verbose? (> verbose? 1))
         (format (current-error-port) "~a\n" (string-join command)))
     (and (zero? (apply assert-system* command))
          (let* ((options (acons 'compile #t options)) ; ugh
@@ -258,9 +263,9 @@
                       (prefix-file options "lib")
                       (filter-map (multi-opt 'library-dir) options)))
          (arch-file-name (string-append arch "/" file-name))
-         (verbose? (option-ref options 'verbose #f)))
+         (verbose? (count-opt options 'verbose)))
     (let ((file (search-path path arch-file-name)))
-      (when verbose?
+      (when (and verbose? (> verbose? 1))
         (stderr "arch-find=~s\n" arch-file-name)
         (stderr "     path=~s\n" path)
         (stderr "  => ~s\n" file))
@@ -325,6 +330,9 @@
           ((equal? arch "x86_64") "amd64"))))
 
 (define (multi-opt option-name) (lambda (o) (and (eq? (car o) option-name) (cdr o))))
+(define (count-opt options option-name)
+  (let ((lst (filter-map (multi-opt option-name) options)))
+    (and (pair? lst) (length lst))))
 
 (define (.c? o) (or (string-suffix? ".c" o)
                     (string-suffix? ".M2" o)))

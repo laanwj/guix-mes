@@ -158,10 +158,11 @@ General help using GNU software: <http://gnu.org/gethelp/>
          (preprocess? (option-ref options 'preprocess #f))
          (compile? (option-ref options 'compile #f))
          (assemble? (option-ref options 'assemble #f))
-         (verbose? (option-ref options 'verbose (getenv "MES_DEBUG"))))
+         (verbose? (count-opt options 'verbose)))
     (when verbose?
       (setenv "NYACC_TRACE" "yes")
-      (format (current-error-port) "options=~s\n" options))
+      (when (> verbose? 1)
+        (format (current-error-port) "options=~s\n" options)))
     (cond (dumpmachine? (display (mescc:get-host options)))
           (preprocess? (mescc:preprocess options))
           (compile? (mescc:compile options))

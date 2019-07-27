@@ -77,34 +77,40 @@
 
 (define mes? (pair? (current-module)))
 
-(define* (c99-input->full-ast #:key (prefix "") (defines '()) (includes '()) (arch ""))
+(define* (c99-input->full-ast #:key (prefix "") (defines '()) (includes '()) (arch "") verbose?)
   (let* ((sys-include (if (equal? prefix "") "include"
                           (string-append prefix "/include")))
          (kernel "linux")
-         (kernel-include (string-append sys-include "/" kernel "/" arch)))
+         (kernel-include (string-append sys-include "/" kernel "/" arch))
+         (includes (append
+                    includes
+                    (cons* kernel-include
+                           sys-include
+                           (append (or (and=> (getenv "CPATH")
+                                              (cut string-split <> #\:)) '())
+                                   (or (and=> (getenv "C_INCLUDE_PATH")
+                                              (cut string-split <> #\:)) '())))))
+         (defines `(
+                    "NULL=0"
+                    "__linux__=1"
+                    "_POSIX_SOURCE=0"
+                    "SYSTEM_LIBC=0"
+                    "__STDC__=1"
+                    "__MESC__=1"
+                    ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
+                    ,@defines)))
+    (when (and verbose? (> verbose? 1))
+      (stderr "includes: ~s\n" includes)
+      (stderr "defines: ~s\n" defines))
     (parse-c99
-     #:inc-dirs (append
-                 includes
-                 (cons* kernel-include
-                        sys-include
-                        (append (or (and=> (getenv "CPATH")
-                                           (cut string-split <> #\:)) '())
-                                (or (and=> (getenv "C_INCLUDE_PATH")
-                                           (cut string-split <> #\:)) '()))))
-     #:cpp-defs `(
-                  "NULL=0"
-                  "__linux__=1"
-                  "_POSIX_SOURCE=0"
-                  "SYSTEM_LIBC=0"
-                  "__STDC__=1"
-                  "__MESC__=1"
-                  ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
-                  ,@defines)
+     #:inc-dirs includes
+     #:cpp-defs defines
      #:mode 'code)))
 
-(define* (c99-input->ast #:key (prefix "") (defines '()) (includes '()) (arch ""))
-  (stderr "parsing: input\n")
-  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:prefix prefix #:defines defines #:includes includes #:arch arch)))
+(define* (c99-input->ast #:key (prefix "") (defines '()) (includes '()) (arch "") verbose?)
+  (when verbose?
+    (stderr "parsing: input\n"))
+  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:prefix prefix #:defines defines #:includes includes #:arch arch #:verbose? verbose?)))
 
 (define (ast-strip-comment o)
   (pmatch o
