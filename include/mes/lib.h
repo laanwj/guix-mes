@@ -54,11 +54,14 @@ ssize_t _read (int fd, void *buffer, size_t size);
 extern char *__brk;
 extern void (*__call_at_exit) (void);
 
+#define __FILEDES_MAX 512
+
 #if !SYSTEM_LIBC
 void __assert_fail (char *s);
+ssize_t __buffered_read (int filedes, void *buffer, size_t size);
+size_t __buffered_read_clear (int filedes);
 void _exit (int code);
 long brk (void *addr);
-
 #endif // !SYSTEM_LIBC
 
 #endif //__MES_LIB_H

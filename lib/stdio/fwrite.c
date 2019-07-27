@@ -20,6 +20,7 @@
 
 #include <mes/lib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 size_t
 fwrite (void const *data, size_t size, size_t count, FILE * stream)
@@ -35,7 +36,12 @@ fwrite (void const *data, size_t size, size_t count, FILE * stream)
 
   if (!size || !count)
     return 0;
-  int bytes = write ((int) (long) stream, data, size * count);
+  // FIXME: should be in write, but that's libc-mini.
+  int filedes = (long) stream;
+  size_t skip = __buffered_read_clear (filedes);
+  if (skip)
+    lseek (filedes, -skip, SEEK_CUR);
+  int bytes = write (filedes, data, size * count);
 
   if (__mes_debug () > 2)
     {

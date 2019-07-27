@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -25,11 +25,12 @@
 int
 fseek (FILE * stream, long offset, int whence)
 {
-  off_t pos = lseek ((int) (long) stream, offset, whence);
+  int filedes = (long) stream;
+  off_t pos = lseek (filedes, offset, whence);
   if (__mes_debug ())
     {
       eputs ("fread fd=");
-      eputs (itoa ((int) (long) stream));
+      eputs (itoa (filedes));
       eputs ("  =>");
       eputs (itoa (pos));
       eputs ("\n");

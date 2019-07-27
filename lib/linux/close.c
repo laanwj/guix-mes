@@ -25,7 +25,7 @@
 int
 close (int filedes)
 {
-  if (filedes > 2)
-    __ungetc_clear (filedes);
+  __ungetc_clear (filedes);
+  __buffered_read_clear (filedes);
   return _sys_call1 (SYS_close, (int) filedes);
 }

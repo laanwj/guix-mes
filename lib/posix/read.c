@@ -24,7 +24,7 @@
 ssize_t
 read (int filedes, void *buffer, size_t size)
 {
-  ssize_t bytes = _read (filedes, buffer, size);
+  ssize_t bytes = __buffered_read (filedes, buffer, size);
   if (__mes_debug () > 4)
     {
       if (bytes == 1)

@@ -78,6 +78,7 @@ fi
 libc_SOURCES="
 $libmes_SOURCES
 lib/mes/__assert_fail.c
+lib/mes/__buffered_read.c
 lib/mes/__mes_debug.c
 lib/posix/execv.c
 lib/posix/getcwd.c
@@ -101,6 +102,7 @@ lib/stdlib/realloc.c
 lib/string/memchr.c
 lib/string/memcmp.c
 lib/string/memcpy.c
+lib/string/memmove.c
 lib/string/memset.c
 lib/string/strcmp.c
 lib/string/strcpy.c
@@ -171,7 +173,6 @@ lib/stdlib/strtoll.c
 lib/stdlib/strtoul.c
 lib/stdlib/strtoull.c
 lib/string/memmem.c
-lib/string/memmove.c
 lib/string/strcat.c
 lib/string/strchr.c
 lib/string/strlwr.c

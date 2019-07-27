@@ -24,9 +24,7 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
-#define __UNGETC_MAX 1024
-
-int __ungetc_buf[__UNGETC_MAX + 1] = { 0 };
+int __ungetc_buf[__FILEDES_MAX + 1] = { 0 };
 
 int
 __ungetc_p (int filedes)
@@ -37,8 +35,8 @@ __ungetc_p (int filedes)
 void
 __ungetc_init ()
 {
-  if (__ungetc_buf[__UNGETC_MAX] == 0)
-    memset (__ungetc_buf, -1, (__UNGETC_MAX + 1) * sizeof (int));
+  if (__ungetc_buf[__FILEDES_MAX] == 0)
+    memset (__ungetc_buf, -1, (__FILEDES_MAX + 1) * sizeof (int));
 }
 
 void

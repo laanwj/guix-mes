@@ -18,12 +18,17 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <mes/lib.h>
 #include <linux/syscall.h>
 #include <syscall.h>
+#include <stdio.h>
 #include <sys/types.h>
 
 off_t
 lseek (int filedes, off_t offset, int whence)
 {
+  size_t skip = __buffered_read_clear (filedes);
+  if (whence == SEEK_CUR)
+    offset -= skip;
   return _sys_call3 (SYS_lseek, (int) filedes, (long) offset, (int) whence);
 }

@@ -167,12 +167,14 @@ $CC -g -D HAVE_CONFIG_H=1 -I include -I include/$mes_kernel/$mes_cpu\
     lib/ctype/isxdigit.c\
     \
     lib/mes/__assert_fail.c\
+    lib/mes/__buffered_read.c\
     lib/mes/__mes_debug.c\
     lib/posix/execv.c\
     lib/posix/getcwd.c\
     lib/posix/getenv.c\
     lib/posix/isatty.c\
     lib/posix/open.c\
+    lib/posix/read.c\
     lib/posix/setenv.c\
     lib/posix/wait.c\
     lib/stdio/fgetc.c\
@@ -189,6 +191,7 @@ $CC -g -D HAVE_CONFIG_H=1 -I include -I include/$mes_kernel/$mes_cpu\
     lib/string/memchr.c\
     lib/string/memcmp.c\
     lib/string/memcpy.c\
+    lib/string/memmove.c\
     lib/string/memset.c\
     lib/string/strcmp.c\
     lib/string/strcpy.c\
@@ -207,7 +210,7 @@ $CC -g -D HAVE_CONFIG_H=1 -I include -I include/$mes_kernel/$mes_cpu\
     lib/linux/gettimeofday.c\
     lib/linux/ioctl.c\
     lib/linux/_open3.c\
-    lib/linux/read.c\
+    lib/linux/_read.c\
     lib/linux/time.c\
     lib/linux/unlink.c\
     lib/linux/waitpid.c\

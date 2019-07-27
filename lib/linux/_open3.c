@@ -29,6 +29,9 @@ _open3 (char const *file_name, int flags, int mask)
   int r = _sys_call3 (SYS_open, (long) file_name, (int) flags, (int) mask);
   __ungetc_init ();
   if (r > 2)
-    __ungetc_clear (r);
+    {
+      __ungetc_clear (r);
+      __buffered_read_clear (r);
+    }
   return r;
 }

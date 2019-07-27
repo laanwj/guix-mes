@@ -41,9 +41,10 @@ fread (void *data, size_t size, size_t count, FILE * stream)
   int bytes = 0;
   while (__fungetc_p (stream) && todo-- && ++bytes)
     *buf++ = fgetc (stream);
+  int filedes = (long) stream;
   if (todo)
     {
-      int r = read ((int) (long) stream, buf, todo);
+      int r = read (filedes, buf, todo);
       if (r < 0 && !bytes)
         bytes = r;
       else
@@ -52,18 +53,18 @@ fread (void *data, size_t size, size_t count, FILE * stream)
 
   if (__mes_debug ())
     {
+      static char debug_buf[4096];
       eputs ("fread fd=");
-      eputs (itoa ((int) (long) stream));
+      eputs (itoa (filedes));
       eputs (" bytes=");
       eputs (itoa (bytes));
       eputs ("\n");
-      static char buf[4096];
-      if (bytes > 0 && bytes < sizeof (buf))
+      if (bytes > 0 && bytes < sizeof (debug_buf))
         {
-          strncpy (buf, data, bytes);
+          strncpy (debug_buf, data, bytes);
           buf[bytes] = 0;
           eputs ("fread buf=");
-          eputs (buf);
+          eputs (debug_buf);
           eputs ("\n");
         }
     }
