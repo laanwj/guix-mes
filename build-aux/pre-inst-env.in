@@ -26,7 +26,7 @@ prefix=${prefix-@prefix@}
 export prefix
 program_prefix=${program_prefix-@program_prefix@}
 
-MES_PREFIX=${MES_PREFIX-${abs_top_srcdir}/mes}
+MES_PREFIX=${MES_PREFIX-${abs_top_srcdir}}
 export MES_PREFIX
 
 GUILE_LOAD_COMPILED_PATH="$abs_top_builddir/scripts:$abs_top_builddir/module${GUILE_LOAD_COMPILED_PATH:+:}$GUILE_LOAD_COMPILED_PATH"

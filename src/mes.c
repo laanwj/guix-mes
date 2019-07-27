@@ -1788,6 +1788,7 @@ open_boot ()
   if (getenv ("MES_PREFIX"))
     {
       strcpy (g_datadir, getenv ("MES_PREFIX"));
+      strcpy (g_datadir + strlen (g_datadir), "/mes");
       strcpy (file_name, g_datadir);
       strcpy (file_name + strlen (file_name), "/module/mes/");
       __stdin = try_open_boot (file_name, boot, "MES_PREFIX");
@@ -1809,10 +1810,13 @@ open_boot ()
     }
   if (__stdin < 0)
     {
-      strcpy (g_datadir, "mes");
+      g_datadir[0] = 0;
+      if (getenv ("srcdest"))
+        strcpy (g_datadir, getenv ("srcdest"));
+      strcpy (g_datadir + strlen (g_datadir), "mes");
       strcpy (file_name, g_datadir);
       strcpy (file_name + strlen (file_name), "/module/mes/");
-      __stdin = try_open_boot (file_name, boot, "mes");
+      __stdin = try_open_boot (file_name, boot, "${srcdest}mes");
     }
   if (__stdin < 0)
     {
