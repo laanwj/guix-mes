@@ -18,21 +18,17 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mes/lib-mini.h>
+#include <mes/lib.h>
 #include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
 
 ssize_t
 write (int filedes, void const *buffer, size_t size)
 {
-#if 0 // !MES_MINI
-  // FIXME: libc-mini has no __buffered_read_clear, lseek.
-  // and libc includes libc-mini...how to override?
-  // Let's hope everyone uses fwrite, or lseek for RDWR
-  // semantics...
   size_t skip = __buffered_read_clear (filedes);
   if (skip)
     lseek (filedes, -skip, SEEK_CUR);
-#endif
   int r = _write (filedes, buffer, size);
   if (r < 0)
     {

@@ -29,47 +29,60 @@ fi
 
 . ./config.sh
 
-libc_mini_SOURCES="
+libc_mini_shared_SOURCES="
 lib/mes/eputs.c
 lib/mes/oputs.c
 "
 
 if test $mes_libc = mes; then
-    libc_mini_SOURCES="$libc_mini_SOURCES
-lib/posix/write.c
-lib/string/strlen.c
-lib/stdlib/puts.c
-lib/stdlib/exit.c
+    libc_mini_shared_SOURCES="$libc_mini_shared_SOURCES
 lib/$mes_kernel/$mes_cpu-mes-$compiler/mini.c
+lib/stdlib/exit.c
+lib/stdlib/puts.c
+lib/string/strlen.c
+"
+fi
+
+libc_mini_SOURCES="$libc_mini_shared_SOURCES"
+
+if test $mes_libc = mes; then
+    libc_mini_SOURCES="$libc_mini_SOURCES
+lib/mes/write.c
 "
 fi
 
 libmes_SOURCES="
-$libc_mini_SOURCES
+$libc_mini_shared_SOURCES
 lib/ctype/isnumber.c
 lib/mes/abtol.c
-lib/mes/itoa.c
-lib/mes/ltoa.c
-lib/mes/ltoab.c
-lib/mes/ultoa.c
-lib/mes/utoa.c
 lib/mes/eputc.c
 lib/mes/fdgetc.c
 lib/mes/fdputc.c
 lib/mes/fdputs.c
 lib/mes/fdungetc.c
+lib/mes/itoa.c
+lib/mes/ltoa.c
+lib/mes/ltoab.c
 lib/mes/mes_open.c
 lib/mes/ntoab.c
 lib/mes/oputc.c
+lib/mes/ultoa.c
+lib/mes/utoa.c
 "
 
 if test $mes_libc = mes; then
     libmes_SOURCES="$libmes_SOURCES
-lib/stdlib/atoi.c
 lib/ctype/isdigit.c
 lib/ctype/isspace.c
 lib/ctype/isxdigit.c
+lib/posix/write.c
+lib/stdlib/atoi.c
 "
+    if test $mes_kernel = linux; then
+        libmes_SOURCES="$libmes_SOURCES
+lib/linux/lseek.c
+"
+    fi
 else
     libmes_SOURCES="$libmes_SOURCES
 "
@@ -192,7 +205,6 @@ lib/$mes_cpu-mes-$compiler/setjmp.c
 if test $mes_kernel = linux; then
     libc_tcc_SOURCES="$libc_tcc_SOURCES
 lib/linux/close.c
-lib/linux/lseek.c
 lib/linux/rmdir.c
 lib/linux/stat.c
 "

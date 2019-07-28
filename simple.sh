@@ -93,7 +93,7 @@ MES_DEBUG=2 MES=out-system-libc/mes sh -x scripts/mescc -m $mes_bits -nostdlib\
          \
          lib/linux/$mes_cpu-mes-mescc/mini.c\
          \
-         lib/posix/write.c\
+         lib/mes/write.c\
          lib/string/strlen.c\
          \
          scaffold/hello.c
@@ -197,6 +197,8 @@ $CC -g -D HAVE_CONFIG_H=1 -I include -I include/$mes_kernel/$mes_cpu\
     lib/string/strcpy.c\
     lib/string/strncmp.c\
     \
+    lib/linux/lseek.c\
+    \
     lib/linux/access.c\
     lib/linux/brk.c\
     lib/linux/chmod.c\
@@ -252,7 +254,7 @@ MES_DEBUG=2 MES=out-mes/mes sh -x scripts/mescc -m $mes_bits -nostdlib\
          \
          lib/linux/$mes_cpu-mes-mescc/mini.c\
          \
-         lib/posix/write.c\
+         lib/mes/write.c\
          lib/string/strlen.c\
          \
          scaffold/hello.c

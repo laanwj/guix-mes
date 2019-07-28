@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,34 +19,18 @@
  */
 
 #include <mes/lib.h>
-#include <stdio.h>
-#include <unistd.h>
+#include <errno.h>
 
-size_t
-fwrite (void const *data, size_t size, size_t count, FILE * stream)
+ssize_t
+write (int filedes, void const *buffer, size_t size)
 {
-  if (__mes_debug () > 1)
+  int r = _write (filedes, buffer, size);
+  if (r < 0)
     {
-      eputs ("fwrite ");
-      eputs (itoa ((int) (long) stream));
-      eputs ("  ");
-      eputs (itoa (size));
-      eputs ("\n");
+      errno = -r;
+      r = -1;
     }
-
-  if (!size || !count)
-    return 0;
-  int filedes = (long) stream;
-  int bytes = write (filedes, data, size * count);
-
-  if (__mes_debug () > 2)
-    {
-      eputs (" => ");
-      eputs (itoa (bytes));
-      eputs ("\n");
-    }
-
-  if (bytes > 0)
-    return bytes / size;
-  return 0;
+  else
+    errno = 0;
+  return r;
 }
