@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -23,12 +23,13 @@
 #include <pwd.h>
 
 struct passwd *
-getpwnam (const char *NAME)
+getpwnam (const char *name)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("getpwnam stub\n");
   stub = 1;
   errno = 0;
-  return 0;
+  static struct passwd root = { "root", "*", 0, 0, "", "/root", "/bin/sh" };
+  return &root;
 }
