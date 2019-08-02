@@ -6,7 +6,7 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 ;;; -*-scheme-*-
 
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -30,6 +30,7 @@ exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests 
 (mes-use-module (mes test))
 (pass-if-equal "string->number" 42 (string->number "42"))
 (pass-if-equal "string->number neg" -42 (string->number "-42"))
+(pass-if-equal "string->number #hex" 170 (string->number "#xaa"))
 (pass-if-not "string->number hex" (string->number "aa"))
 (pass-if-equal "string->number hex" 170 (string->number "aa" 16))
 (pass-if-equal "string->number float" 1 (inexact->exact (string->number "1.0")))
