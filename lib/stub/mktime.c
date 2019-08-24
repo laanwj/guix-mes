@@ -19,9 +19,10 @@
  */
 
 #include <mes/lib.h>
+#include <errno.h>
 #include <time.h>
 
-int
+time_t
 mktime (struct tm *broken_time)
 {
   static int stub = 0;
