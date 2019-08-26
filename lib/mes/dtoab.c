@@ -29,7 +29,7 @@ dtoab (double d, int base, int signed_p)
   long i = (long) d;
   char *p = ntoab (i, base, signed_p);
   strcpy (dtoa_buf, p);
-  long f = (d - (double) i) * (double) 100000000000;
+  long f = (d - (double) i) * (double) 100000000;
   if (f)
     {
       if (f < 0)

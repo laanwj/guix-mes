@@ -28,7 +28,7 @@ main ()
   char *p = dtoab (d, 10, 1);
   puts (p);
 
-  d = -3.141592653589;
+  d = -3.14159265;
   p = dtoab (d, 10, 1);
   puts (p);
 
