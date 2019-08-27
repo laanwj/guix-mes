@@ -188,7 +188,7 @@ vfprintf (FILE * f, char const *format, va_list ap)
           case 'g':
           case 'G':
             {
-              double d = va_arg (ap, double);
+              double d = va_arg8 (ap, double);
               char *s = dtoab (d, 10, 1);
               if (c == 'E' || c == 'G')
                 strupr (s);

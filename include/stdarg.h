@@ -34,6 +34,8 @@
 typedef char *va_list;
 #define va_start(ap, last) (void)((ap) = (char*)(&(last) + 1))
 #define va_arg(ap, type) (type)(((long*)((ap) = ((ap) + sizeof (void*))))[-1])
+#define va_align(ap, alignment) ((((unsigned long) (unsigned char*) ap) + (alignment) - 1) &~ (alignment - 1))
+#define va_arg8(ap, type) (type)(((double*)((ap) = (va_align((ap), 8) + sizeof(double))))[-1])
 #define va_end(ap) (void)((ap) = 0)
 #define va_copy(dest, src) dest = src
 
