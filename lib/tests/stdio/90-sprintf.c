@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libmes.h>
+#include <mes/lib.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,8 +26,18 @@ int
 main ()
 {
   char buf[20];
-  double d = 0;
-  sprintf (buf, "%.6g", d);
+
+  int i = 0;
+  printf ("%3.6d\n", i);
+  sprintf (buf, "%3.6d", i);
+  puts (buf);
+
+  double d = 1;
+  printf ("%3.6f\n", d);
+  sprintf (buf, "%3.6f", d);
+  puts (buf);
+  printf ("%3.6g\n", d);
+  sprintf (buf, "%3.6g", d);
   puts (buf);
 
   return 0;
