@@ -87,7 +87,7 @@ typedef unsigned long uintptr_t;
 #ifndef __MES_OFF_T
 #define __MES_OFF_T
 #undef off_t
-typedef unsigned long off_t;
+typedef long off_t;
 #endif
 
 #ifndef __MES_OFF64_T
