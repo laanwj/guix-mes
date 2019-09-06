@@ -243,7 +243,9 @@ lib/stdio/feof.c
 lib/stdio/fgets.c
 lib/stdio/fileno.c
 lib/stdio/freopen.c
+lib/stdio/fscanf.c
 lib/stdio/perror.c
+lib/stdio/vfscanf.c
 lib/stdlib/__exit.c
 lib/stdlib/abort.c
 lib/stdlib/abs.c
@@ -270,7 +272,6 @@ lib/stub/ctime.c
 lib/stub/fpurge.c
 lib/stub/freadahead.c
 lib/stub/frexp.c
-lib/stub/fscanf.c
 lib/stub/getgrgid.c
 lib/stub/getgrnam.c
 lib/stub/getlogin.c

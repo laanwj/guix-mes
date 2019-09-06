@@ -23,7 +23,7 @@
 #include <stdio.h>
 
 int
-sscanf (char const *str, const char *template, ...)
+sscanf (char const *str, char const *template, ...)
 {
   va_list ap;
   va_start (ap, template);

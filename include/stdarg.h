@@ -41,6 +41,7 @@ typedef char *va_list;
 
 int vexec (char const *file_name, va_list ap);
 int vfprintf (FILE * stream, char const *template, va_list ap);
+int vfscanf (FILE * stream, char const *template, va_list ap);
 int vprintf (char const *format, va_list ap);
 int vsprintf (char *str, char const *format, va_list ap);
 int vsnprintf (char *str, size_t size, char const *format, va_list ap);

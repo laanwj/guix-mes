@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -19,15 +19,15 @@
  */
 
 #include <mes/lib.h>
-#include <errno.h>
-#include <unistd.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 int
-fscanf (FILE *stream, char const *template, ...)
+fscanf (FILE * stream, char const *template, ...)
 {
-  static int stub = 0;
-  if (__mes_debug () && !stub)
-    eputs ("fscan stub\n");
-  stub = 1;
-  return 0;
+  va_list ap;
+  va_start (ap, template);
+  int r = vfscanf (stream, template, ap);
+  va_end (ap);
+  return r;
 }
