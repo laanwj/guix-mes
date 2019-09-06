@@ -81,6 +81,8 @@ srcdir=${srcdir-"@srcdir@"}
 sysconfdir="@sysconfdir@"
 top_builddir="@top_builddir@"
 
+MES_PREFIX=${MES_PREFIX-$abs_top_srcdir}
+
 export PACKAGE
 export PACKAGE_NAME
 export PACKAGE_BUGREPORT
@@ -95,3 +97,4 @@ export courageous
 export srcdest
 export srcdir
 export GUILE_AUTO_COMPILE
+export MES_PREFIX

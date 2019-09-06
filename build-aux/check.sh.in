@@ -20,6 +20,13 @@
 
 set -e
 
+MES_ARENA=${MES_ARENA-20000000}
+export MES_ARENA
+MES_MAX_ARENA=${MES_MAX_ARENA-${MES_ARENA}}
+export MES_MAX_ARENA
+MES_STACK=${MES_STACK-5000000}
+export MES_STACK
+
 . ./config.sh
 
 if $courageous; then
