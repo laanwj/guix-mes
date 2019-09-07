@@ -60,7 +60,11 @@ signal (int signum, sighandler_t action)
   setup_action.sa_mask.items[bitindex / itembitcount] = 1UL << (bitindex % itembitcount);
   old.sa_handler = SIG_DFL;
   setup_action.sa_flags = SA_RESTART;
-  int r = _sys_call4 (SYS_rt_sigaction, signum, &setup_action, &old, sizeof (sigset_t));
+#if __x86_64__
+  /* Tell kernel that we use a restorer, on penalty of segfault.  */
+  setup_action.sa_flags |= SA_RESTORER;
+#endif
+  int r = _sys_call4 (SYS_rt_sigaction, signum, (long)&setup_action, (long)&old, sizeof (sigset_t));
   if (r)
     return 0;
   return old.sa_handler;
