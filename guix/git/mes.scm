@@ -38,6 +38,7 @@
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages perl)
+  #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages texinfo)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
@@ -80,6 +81,45 @@ get_machine.")
     (home-page "https://savannah.nongnu.org/projects/mescc-tools")
     (license gpl3+)))
 
+(define-public nyacc
+  (package
+    (name "nyacc")
+    (version "0.99.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://savannah/nyacc/nyacc-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0hl5qxx19i4x1r0839sxm19ziqq65g4hy97yik81cc2yb9yvgyv3"))
+              (modules '((guix build utils)))
+              (snippet
+               '(begin
+                  (substitute* (find-files "." "^Makefile\\.in$")
+                    (("^SITE_SCM_DIR =.*")
+                     "SITE_SCM_DIR = \
+@prefix@/share/guile/site/@GUILE_EFFECTIVE_VERSION@\n")
+                    (("^SITE_SCM_GO_DIR =.*")
+                     "SITE_SCM_GO_DIR = \
+@prefix@/lib/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache\n")
+                    (("^INFODIR =.*")
+                     "INFODIR = @prefix@/share/info\n")
+                    (("^DOCDIR =.*")
+                     "DOCDIR = @prefix@/share/doc/$(PACKAGE_TARNAME)\n"))
+                  #t))))
+    (build-system gnu-build-system)
+    (native-inputs
+     `(("pkg-config" ,pkg-config)))
+    (inputs
+     `(("guile" ,guile-2.2)))
+    (synopsis "LALR(1) Parser Generator in Guile")
+    (description
+     "NYACC is an LALR(1) parser generator implemented in Guile.
+The syntax and nomenclature should be considered not stable.  It comes with
+extensive examples, including parsers for the Javascript and C99 languages.")
+    (home-page "https://savannah.nongnu.org/projects/nyacc")
+    (license (list gpl3+ lgpl3+))))
+
 (define-public mes
   (let ((triplet "i686-unknown-linux-gnu")
         (version "0.19"))
@@ -112,13 +152,7 @@ get_machine.")
          ("perl" ,perl)                ; build-aux/gitlog-to-changelog
          ("texinfo" ,texinfo)))
       (arguments
-       `(#:strip-binaries? #f ; binutil's strip b0rkes MesCC/M1/hex2 binaries
-         #:phases
-         (modify-phases %standard-phases
-           (add-before 'build 'make-git-source-writable
-           (lambda* (#:key outputs #:allow-other-keys)
-             (for-each make-file-writable
-                       (find-files "." ".*\\.M1")))))))
+       `(#:strip-binaries? #f)) ; binutil's strip b0rkes MesCC/M1/hex2 binaries
       (synopsis "Scheme interpreter and C compiler for full source bootstrapping")
       (description
        "GNU Mes--Maxwell Equations of Software--brings the Reduced Binary Seed
