@@ -328,11 +328,6 @@
     (field:pointer field)))
 
 (define (field-size info struct field)
-  (if (eq? (type:type struct) 'union) 0
-      (let ((field (field-field info struct field)))
-        (field:size field info))))
-
-(define (field-size info struct field)
   (let ((field (field-field info struct field)))
     (field:size field info)))
 
