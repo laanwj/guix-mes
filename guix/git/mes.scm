@@ -122,7 +122,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
 
 (define-public mes
   (let ((triplet "i686-unknown-linux-gnu")
-        (version "0.19"))
+        (version "0.20"))
     (package
       (name "mes")
       (version version)
@@ -131,7 +131,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
                 (uri (string-append
                       "https://ftp.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
                 (sha256
-                 (base32 #!mes!# "1dsaaqyanzsq9m5wrcd2bjhb3qd6928c9q97rg5r730pyqjwxyxf"))))
+                 (base32 #!mes!# "06qkwkahcpzk5v4qydpvcvzm7lx8g8pflc48f9l7bpjz6hl5lk4s"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
@@ -164,7 +164,7 @@ Guile.")
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.19")
+ (let ((version "0.20")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package

@@ -36,7 +36,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 (define PACKAGE "mes")
 (define PACKAGE-NAME "GNU Mes")
 (define PACKAGE-BUGREPORT "bug-mes@gnu.org")
-(define VERSION "0.19")
+(define VERSION "0.20")
 
 (cond-expand
  (guile)
@@ -435,7 +435,7 @@ Some influential environment variables:
                              (make-dep "blood-elf" #:version '(0 6))
                              (make-dep "diff" #:optional? #t)
                              (make-dep "guile" #:version '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile") #:optional? #t)
-                             (make-dep "mes" #:version '(0 18) #:optional? #t)
+                             (make-dep "mes" #:version '(0 20) #:optional? #t)
                              (make-dep "guix" #:version '(0 13) #:optional? #t)
                              (make-dep "ar" #:version '(2 10) #:optional? #t)
                              (make-dep "sh" #:version '(0) #:optional? #t)
