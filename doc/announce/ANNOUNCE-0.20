@@ -7,7 +7,9 @@ We are pleased to announce the release of GNU Mes 0.20, representing
 147 commits over 38 weeks.
 
 Mes has now brought the Reduced Binary Seed bootstrap to Guix (bootstrap
-a GNU/Linux system without binary GNU toolchain or equivalent).
+a GNU/Linux system without binary GNU toolchain or equivalent).  It
+should land in Guix master any day now: a big thank you to everyone who
+helped, notably Ludovic and Mark.
 
 This release is a step towards the upcoming Scheme-only bootstrap and
 bringing Mes into NixOS and Debian.  This effort is now sponsored by
@@ -67,8 +69,8 @@ Packages are available in Guix master.
 
   Here are the MD5 and SHA1 checksums:
 
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.20.tar.gz
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.20.tar.gz
+  df839a83e4a2ad6c2a4accc5bf17b1a7  mes-0.20.tar.gz
+  38d4cb3fa28fa1f5fc57fea9e046d4d8052bbb8c  mes-0.20.tar.gz
 
   [*] Use a .sig file to verify that the corresponding file (without the
   .sig suffix) is intact.  First, be sure to download both the .sig file
@@ -82,6 +84,11 @@ Packages are available in Guix master.
     gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 
   and rerun the 'gpg --verify' command.
+
+* Get informed, get involved
+
+  See https://bootstrappable.org
+  Join #bootstrappable on irc.freenode.net.
 
 * Changes in 0.20 since 0.19
  ** Core
@@ -107,6 +114,9 @@ Packages are available in Guix master.
  *** signal now uses sigaction correctly for non-x86.
  *** string->number now support #x hex-prefix.
  *** ungetc now has a buffer per file handle.
+
+Greetings,
+janneke and Danny.
 
 [0] https://www.gnu.org/software/mes
 [1] http://joyofsource.com/reduced-binary-seed-bootstrap.html

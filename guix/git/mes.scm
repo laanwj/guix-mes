@@ -131,7 +131,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
                 (uri (string-append
                       "https://ftp.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
                 (sha256
-                 (base32 #!mes!# "06qkwkahcpzk5v4qydpvcvzm7lx8g8pflc48f9l7bpjz6hl5lk4s"))))
+                 (base32 #!mes!# "04pajp8v31na34ls4730ig5f6miiplhdvkmsb9ls1b8bbmw2vb4n"))))
       (build-system gnu-build-system)
       (supported-systems '("i686-linux" "x86_64-linux"))
       (propagated-inputs
