@@ -53,7 +53,7 @@
 (define-public mescc-tools
   (package
     (name "mescc-tools")
-    (version "0.6.0")
+    (version "0.6.1")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -63,7 +63,7 @@
               (file-name (string-append name "-" version ".tar.gz"))
               (sha256
                (base32
-                "1dmni3q1l36n7y4dzpzqb60d970d8xmaznl88gaa4lhinkr4bl3i"))))
+                "06jpvq6xfjzn2al6b4rdwd3zv3h4cvilc4n9gqcnjr9cr6wjpw2n"))))
     (build-system gnu-build-system)
     (supported-systems '("i686-linux" "x86_64-linux"))
     (arguments
