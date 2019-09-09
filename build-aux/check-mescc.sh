@@ -255,9 +255,7 @@ fi
 
 if test $mes_cpu = x86_64; then
     XFAIL_TESTS="$XFAIL_TESTS
-lib/tests/stdio/70-printf-simple.c
 lib/tests/stdio/70-printf-stdarg.c
-lib/tests/stdio/70-printf.c
 "
 fi
 
@@ -273,6 +271,8 @@ if test $compiler = gcc; then
     if test $mes_cpu = x86_64; then
         XFAIL_TESTS="$XFAIL_TESTS
 lib/tests/stdio/70-printf-hello.c
+lib/tests/stdio/70-printf-simple.c
+lib/tests/stdio/70-printf.c
 lib/tests/scaffold/70-extern.c
 lib/tests/stdio/80-sscanf.c
 lib/tests/mes/90-abtod.c

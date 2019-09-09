@@ -42,8 +42,8 @@ ntoab (long x, int base, int signed_p)
   do
     {
       unsigned long i;
-#if __MESC__
-      u = __mesabi_uldiv(u, (unsigned long) base, &i);
+#if __MESC__ && __arm__
+      u = __mesabi_uldiv (u, (unsigned long) base, &i);
 #else
       i = u % base;
       u = u / base;
