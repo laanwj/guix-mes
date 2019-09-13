@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -22,11 +22,11 @@
 #include <math.h>
 
 double
-ldexp (double value, int exponent)
+log (double x)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
-    eputs ("ldexp stub\n");
+    eputs ("log stub\n");
   stub = 1;
   return 0;
 }
