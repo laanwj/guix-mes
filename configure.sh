@@ -25,8 +25,8 @@ srcdir=${srcdir-$(dirname $0)}
 . ${srcdest}build-aux/trace.sh
 
 # parse --with-system-libc
-cmdline=$(echo " $@")
-p=${cmdline/ --with-system-libc/}
+cmdline=$(echo "$@")
+p=$(echo $cmdline | sed s,--with-system-libc,,)
 if test "$p" != "$cmdline"; then
     mes_libc=${mes_libc-system}
 else
@@ -35,7 +35,7 @@ fi
 
 # parse --with-courage
 cmdline=$(echo " $@")
-p=${cmdline/ --with-courage/}
+p=$(echo $cmdline | sed s,--with-courage,,)
 if test "$p" != "$cmdline"; then
     courageous=true
 else
@@ -43,44 +43,40 @@ else
 fi
 
 # parse --prefix=PREFIX
-p=${cmdline/ --prefix=/ -prefix=}
+p=$(echo $cmdline | sed s,.*--prefix=,-prefix=,)
 if test "$p" != "$cmdline"; then
-    p=${p##* -prefix=}
-    p=${p% *}
-    p=${p% -*}
+    p=$(echo $p | sed s,.*-prefix=,,)
+    p=$(echo $p | sed 's, .*,,')
     prefix=${p-/usr/local}
 else
     prefix=${prefix-/usr/local}
 fi
 
 # parse --build=BUILD
-p=${cmdline/ --build=/ -build=}
+p=$(echo $cmdline | sed s,.*--build=,-build=,)
 if [ "$p" != "$cmdline" ]; then
-    p=${p##* -build=}
-    p=${p% *}
-    p=${p% -*}
+    p=$(echo $p | sed s,.*-build=,,)
+    p=$(echo $p | sed 's, .*,,')
     build=${p-$build}
 else
     build=$build
 fi
 
 # parse --host=HOST
-p=${cmdline/ --host=/ -host=}
+p=$(echo $cmdline | sed s,.*--host=,-host=,)
 if [ "$p" != "$cmdline" ]; then
-    p=${p##* -host=}
-    p=${p% *}
-    p=${p% -*}
+    p=$(echo $p | sed s,.*-host=,,)
+    p=$(echo $p | sed 's, .*,,')
     host=${p-$build}
 elif test -n "$build"; then
     host=${host-$build}
 fi
 
 # parse --program-prefix=
-p=${cmdline/ --program-prefix=/ -program-prefix=}
+p=$(echo $cmdline | sed s,.*--program-prefix=,-program-prefix=,)
 if test "$p" != "$cmdline"; then
-    p=${p##* -program-prefix=}
-    p=${p% *}
-    p=${p% -*}
+    p=$(echo $p | sed s,.*-program-prefix=,,)
+    p=$(echo $p | sed 's, .*,,')
     program_prefix=$p
 fi
 
