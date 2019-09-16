@@ -1,4 +1,4 @@
-#! @BASH@
+#! @SHELL@
 
 # GNU Mes --- Maxwell Equations of Software
 # Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
@@ -27,11 +27,10 @@ archive=$2
 shift
 shift
 M1_archive=$(dirname "$archive")/$(basename "$archive" .a).s
-declare -a M1_objects
 for o in "$@"; do
-    ((i++))
-    M1_objects[$i]=$(dirname "$o")/$(basename "$o" .o).s
+    s=$(dirname "$o")/$(basename "$o" .o).s
+    M1_objects="$M1_objects $s"
 done
 mkdir -p $(dirname "$archive")
-cat "${M1_objects[@]}" > "$M1_archive"
+cat $M1_objects > "$M1_archive"
 cat "$@" > "$archive"
