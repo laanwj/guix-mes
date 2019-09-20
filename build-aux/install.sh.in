@@ -77,15 +77,18 @@ else
     cp $_v ChangeLog ${DESTDIR}${docdir}
 fi
 
+if test -f module/mescc.go; then
+    __exclude_go=--exclude='*.go'
+    __exclude_scm=--exclude='*.scm'
+fi
+
 mkdir -p $DESTDIR$includedir
 mkdir -p $DESTDIR$libdir
 mkdir -p $DESTDIR$pkgdatadir
-# rm -f $(find lib -type f -a -executable)
-# rm -f $(find scaffold -type f -a -executable)
 tar -cf- -C ${srcdir}/include . | tar -${v}xf- -C $DESTDIR$includedir
 tar -cf- -C ${srcdir}/lib $mes_cpu-mes | tar -${v}xf- -C $DESTDIR$libdir
 if test -z "$srcdest"; then
-    tar -cf- --exclude='*.go' module | tar -${v}xf- -C $DESTDIR$pkgdatadir
+    tar -cf- $__exclude_go module | tar -${v}xf- -C $DESTDIR$pkgdatadir
 else
     tar -cf- -C ${srcdest} module | tar -${v}xf- -C $DESTDIR$pkgdatadir
 fi
@@ -99,8 +102,8 @@ fi
 
 mkdir -p ${DESTDIR}${guile_site_dir}
 mkdir -p ${DESTDIR}${guile_site_ccache_dir}
-tar -cf- -C ${srcdest}module --exclude='*.go' . | tar -${v}xf- -C ${DESTDIR}${guile_site_dir}
-tar -cf- -C module --exclude='*.scm' . | tar -${v}xf- -C ${DESTDIR}${guile_site_ccache_dir}
+tar -cf- -C ${srcdest}module $__exclude_go . | tar -${v}xf- -C ${DESTDIR}${guile_site_dir}
+tar -cf- -C module $__exclude_scm . | tar -${v}xf- -C ${DESTDIR}${guile_site_ccache_dir}
 
 if test -f doc/mes.info; then
     mkdir -p ${DESTDIR}${infodir}
