@@ -81,3 +81,15 @@ for c in $mes_SOURCES; do
 done
 echo "CCLD       src/mes"
 $CC -nostdlib -o src/mes -L mescc-lib mescc-lib/crt1.o $objects -lc
+
+(
+    mkdir -p gcc-lib
+    cp config.sh gcc-lib
+    cd gcc-lib
+    compiler=gcc
+    if test -z "$srcdest"; then
+        srcdest=../
+        srcdir=../
+    fi
+    @SHELL@ ${srcdest}build-aux/build-source-lib.sh
+)

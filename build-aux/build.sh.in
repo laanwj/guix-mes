@@ -87,15 +87,15 @@ export CPPFLAGS
 export LDFLAGS
 export LIBS
 
-if test $compiler = gcc; then
-    (
-        mkdir -p gcc-lib
-        cp config.sh gcc-lib
-        cd gcc-lib
-        if test -z "$srcdest"; then
-            srcdest=../
-            srcdir=../
-        fi
+(
+    mkdir -p gcc-lib
+    cp config.sh gcc-lib
+    cd gcc-lib
+    if test -z "$srcdest"; then
+        srcdest=../
+        srcdir=../
+    fi
+    if test $compiler = gcc; then
         CPPFLAGS="
 -D HAVE_CONFIG_H=1
 -I include
@@ -104,8 +104,9 @@ if test $compiler = gcc; then
 "
         ${SHELL} ${srcdest}build-aux/build-lib.sh
         cp crt1.o ..
-    )
-fi
+    fi
+    compiler=gcc ${SHELL} ${srcdest}build-aux/build-source-lib.sh
+)
 
 (
     if test $compiler = gcc; then
@@ -145,4 +146,5 @@ fi
     AR="${srcdest}pre-inst-env mesar"
     CC="${srcdest}pre-inst-env mescc -m $mes_bits"
     ${SHELL} ${srcdest}build-aux/build-lib.sh
+    ${SHELL} ${srcdest}build-aux/build-source-lib.sh
 )
