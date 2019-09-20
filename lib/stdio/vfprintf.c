@@ -48,6 +48,11 @@ vfprintf (FILE * f, char const *format, va_list ap)
             c = *++p;
           }
         char pad = ' ';
+        if (c == ' ')
+          {
+            pad = c;
+            c = *p++;
+          }
         if (c == '0')
           {
             pad = c;
