@@ -24,61 +24,35 @@ VERSION=0.20
 srcdir=${srcdir-$(dirname $0)}
 . ${srcdest}build-aux/trace.sh
 
-# parse --with-system-libc
-cmdline=$(echo "$@")
-p=$(echo $cmdline | sed s,--with-system-libc,,)
-if test "$p" != "$cmdline"; then
-    mes_libc=${mes_libc-system}
-else
-    mes_libc=mes
-fi
+# parse arguments
+while [ $# -gt 0 ]; do
+    case $1 in
+        (--with-courage)
+            courageous=true
+            ;;
+        (--with-system-libc)
+            mes_libc=system
+            ;;
+        (--build=*)
+            build=${1#--build=}
+            ;;
+        (--host=*)
+            host=${1#--host=}
+            ;;
+        (--prefix=*)
+            prefix=${1#--prefix=}
+            ;;
+        (--program-prefix=*)
+            program_prefix=${1#--program-prefix=}
+            ;;
+    esac
+    shift
+done
 
-# parse --with-courage
-cmdline=$(echo " $@")
-p=$(echo $cmdline | sed s,--with-courage,,)
-if test "$p" != "$cmdline"; then
-    courageous=true
-else
-    courageous=false
-fi
-
-# parse --prefix=PREFIX
-p=$(echo $cmdline | sed s,.*--prefix=,-prefix=,)
-if test "$p" != "$cmdline"; then
-    p=$(echo $p | sed s,.*-prefix=,,)
-    p=$(echo $p | sed 's, .*,,')
-    prefix=${p-/usr/local}
-else
-    prefix=${prefix-/usr/local}
-fi
-
-# parse --build=BUILD
-p=$(echo $cmdline | sed s,.*--build=,-build=,)
-if [ "$p" != "$cmdline" ]; then
-    p=$(echo $p | sed s,.*-build=,,)
-    p=$(echo $p | sed 's, .*,,')
-    build=${p-$build}
-else
-    build=$build
-fi
-
-# parse --host=HOST
-p=$(echo $cmdline | sed s,.*--host=,-host=,)
-if [ "$p" != "$cmdline" ]; then
-    p=$(echo $p | sed s,.*-host=,,)
-    p=$(echo $p | sed 's, .*,,')
-    host=${p-$build}
-elif test -n "$build"; then
-    host=${host-$build}
-fi
-
-# parse --program-prefix=
-p=$(echo $cmdline | sed s,.*--program-prefix=,-program-prefix=,)
-if test "$p" != "$cmdline"; then
-    p=$(echo $p | sed s,.*-program-prefix=,,)
-    p=$(echo $p | sed 's, .*,,')
-    program_prefix=$p
-fi
+prefix=${prefix-/usr/local}
+mes_libc=${mes_libc-mes}
+courageous=${courageous-false}
+host=${host-$build}
 
 AR=${AR-$(command -v ar)} || true
 BASH=${BASH-$(command -v bash)}
