@@ -77,7 +77,6 @@ scaffold/boot/2g-vector.scm
 scaffold/boot/30-capture.scm
 scaffold/boot/31-capture-define.scm
 scaffold/boot/32-capture-modify-close.scm
-scaffold/boot/32-capture-modify-close.scm
 scaffold/boot/33-procedure-override-close.scm
 scaffold/boot/34-cdr-override-close.scm
 scaffold/boot/35-closure-modify.scm
