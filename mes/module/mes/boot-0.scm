@@ -265,7 +265,7 @@ General help using GNU software: <http://gnu.org/gethelp/>
              (setenv "GUILE_LOAD_PATH" (string-append dir ":" (getenv "GUILE_LOAD_PATH")))))
     (when command
       (let* ((prev (set-current-input-port (open-input-string command)))
-             (expr (read-input-file-env (current-module)))
+             (expr (cons 'begin (read-input-file-env (current-module))))
              (set-current-input-port prev))
         (primitive-eval expr)
         (exit 0)))
