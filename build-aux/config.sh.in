@@ -52,7 +52,7 @@ arch="@arch@"
 build="@build@"
 host="@host@"
 
-bootstrap=${bootstrap-}
+bootstrap=${bootstrap-@bootstrap@}
 compiler=${compiler-@compiler@}
 courageous=${courageous-@courageous@}
 mes_system=@mes_system@

@@ -110,6 +110,7 @@ subst () {
     -e s,"@PACKAGE_NAME@,$PACKAGE_NAME,"\
     -e s,"@PACKAGE_BUGREPORT@,$PACKAGE_BUGREPORT,"\
     -e s,"@VERSION@,$VERSION,"\
+    -e s,"@bootstrap@,yes,"\
     -e s,"@build@,$build,"\
     -e s,"@host@,$host,"\
     -e s,"@compiler@,$compiler,"\

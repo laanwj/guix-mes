@@ -27,9 +27,11 @@ _v=
 if test "$V" = 2; then
     set -x
 fi
-if test "$V" -gt 0; then
-    v=v
-    _v=-v
+if test -n "$V"; then
+    if test "$V" -gt 0; then
+        v=v
+        _v=-v
+    fi
 fi
 
 set -u
@@ -77,6 +79,8 @@ else
     cp $_v ChangeLog ${DESTDIR}${docdir}
 fi
 
+__exclude_go=
+__exclude_scm=
 if test -f module/mescc.go; then
     __exclude_go=--exclude='*.go'
     __exclude_scm=--exclude='*.scm'
