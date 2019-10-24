@@ -242,6 +242,10 @@ COMMIT=$(shell test -e ${srcdest}.git && (cd ${srcdir} && git describe --dirty 2
 TARBALL_VERSION=$(COMMIT:v%=%)
 TARBALL_DIR:=$(PACKAGE)-$(TARBALL_VERSION)
 TARBALL:=$(TARBALL_DIR).tar.gz
+# Be friendly to Debian; avoid using EPOCH
+MTIME=$(shell git show HEAD --format=%ct --no-patch 2>/dev/null)
+# Reproducible tarball
+TAR_FLAGS=--sort=name --mtime=@$(MTIME) --owner=0 --group=0 --numeric-owner --mode=go=rX,u+rw,a-s
 
 .tarball-version:
 	echo $(COMMIT) > $@
@@ -251,6 +255,7 @@ GIT_LS_FILES:=git ls-files
 ifeq ($(wildcard .git),)
 GIT_ARCHIVE_HEAD:=tar -cf-
 GIT_LS_FILES:=find
+MTIME:=0
 endif
 
 dist: $(TARBALL)
@@ -270,11 +275,12 @@ generate-ChangeLog:
 	mv generate-ChangeLog ChangeLog
 
 $(TARBALL): .tarball-version | generate-ChangeLog
-	($(GIT_LS_FILES)\
-	    --exclude=$(TARBALL_DIR);\
-	    echo $^ | tr ' ' '\n')\
-	    | GZIP=-n tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner\
-	    --transform=s,^,$(TARBALL_DIR)/,S -T- -czf $@
+	($(GIT_LS_FILES)				\
+	    --exclude=$(TARBALL_DIR);			\
+	    echo $^ | tr ' ' '\n')			\
+	    | tar $(TAR_FLAGS)				\
+	    --transform=s,^,$(TARBALL_DIR)/,S -T- -cf-	\
+	    | gzip -c --no-name > $@
 	git checkout ChangeLog
 
 ifdef GUIX
