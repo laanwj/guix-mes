@@ -248,6 +248,7 @@ lib/tests/scaffold/91-goto-array.c
 
     if test $mes_cpu = x86_64; then
         XFAIL_TESTS="$XFAIL_TESTS
+lib/tests/dirent/90-readdir.c
 lib/tests/scaffold/a0-call-trunc-int.c
 "
     fi
