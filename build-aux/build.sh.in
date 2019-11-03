@@ -43,7 +43,9 @@ if $courageous; then
     set +e
 fi
 
-${SHELL} ${srcdest}build-aux/build-scaffold.sh
+if test "$compiler" != bootstrap; then
+    ${SHELL} ${srcdest}build-aux/build-scaffold.sh
+fi
 
 if test -n "$GUILE" -a "$GUILE" != true; then
     ${SHELL} ${srcdest}build-aux/build-guile.sh
@@ -73,6 +75,7 @@ fi
     compiler=gcc ${SHELL} ${srcdest}build-aux/build-source-lib.sh
 )
 
+
 (
     if test $compiler = gcc; then
         AM_LDFLAGS="$AM_LDFLAGS
@@ -86,7 +89,9 @@ fi
 -I ${srcdest}include
 -I ${srcdest}include/$mes_kernel/$mes_cpu
 "
-    ${SHELL} ${srcdest}build-aux/build-mes.sh
+    if test "$compiler" != bootstrap; then
+        ${SHELL} ${srcdest}build-aux/build-mes.sh
+    fi
 )
 
 (
@@ -118,5 +123,7 @@ fi
     ${SHELL} ${srcdest}build-aux/build-source-lib.sh
     if $bootstrap; then
         ${SHELL} ${srcdest}build-aux/build-mes.sh
+        cp -f bin/mes-mescc ../bin
+        cp -f bin/mes ../bin
     fi
 )

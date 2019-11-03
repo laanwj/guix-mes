@@ -378,10 +378,11 @@ Ignored for Debian:
 Some influential environment variables:
   CC                C compiler command
   CFLAGS            C compiler flags
+  CPPFLAGS          C preprocessor flags
+  LDFLAGS           C linker flags
   GUILE             guile command
   GUILD             guild command
   MES_FOR_BUILD     build system MES [can be mes or guile]
-  MES_SEED          location of mes-seed
 " PACKAGE VERSION (getenv "prefix")))
 
 (define (main args)
@@ -435,12 +436,7 @@ Some influential environment variables:
     (when %verbose?
       (stderr "configure args=~s\n" args))
     (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
-    (let* ((mes-seed (or (getenv "MES_SEED")
-                         (string-append srcdest "../mes-seed")))
-           (mes-seed (and mes-seed
-                          (file-exists? (string-append mes-seed "/x86-mes/mes.S"))
-                          mes-seed))
-           (tinycc-prefix (or (getenv "TINYCC_PREFIX")
+    (let* ((tinycc-prefix (or (getenv "TINYCC_PREFIX")
                               (string-append srcdest "../tinycc-prefix")))
            (cross? (not (equal? host-type build-type)))
            (gcc (or (getenv "CC") (if cross? (string-append host-type "-" "gcc") "gcc")))
@@ -575,7 +571,7 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@build@" . ,build-type)
                      ("@host@" . ,host-type)
 
-                     ("@bootstrap@" . ,(if with-courage? "true" "false"))
+                     ("@bootstrap@" . ,(if with-bootstrap? "true" "false"))
                      ("@courageous@" . ,(if with-courage? "true" "false"))
                      ("@compiler@" . ,compiler)
                      ("@mes_bits@" . ,mes-bits)
@@ -621,7 +617,6 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@MAKEINFO@" . ,(or (file-name "makeinfo" deps) ""))
                      ("@MES_FOR_BUILD@" . ,(or (file-name "mes" deps)
                                                guile))
-                     ("@MES_SEED@" . ,(or mes-seed ""))
                      ("@PERL@" . ,(or (file-name "perl" deps) ""))
                      ("#SCHEME=\"@SCHEME@\"" . ,(if with-cheating? (string-append "\nSCHEME=\"" guile "\"") ""))
                      ("@SCHEME@" . ,(if with-cheating? guile ""))
@@ -639,9 +634,8 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                           (cons (string-append "@" (variable-name o) "@") (or (format #f "~a" (dependency-file-name o)) "")))
                         deps))))
 
-        (when (and (not cc)
-                   (not mes-seed))
-          (format (current-error-port) "must supply C compiler or MES_SEED/x86-mes/mes.S\n")
+        (unless cc
+          (format (current-error-port) "must supply a C compiler")
           (exit 2))
         (for-each (lambda (o)
                     (let* ((src (string-append srcdest o))
@@ -689,13 +683,15 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
       (let ((make (and=> (file-name "make" deps) basename)))
         (display (string-append "
 GNU Mes is configured for
-   compiler: " compiler "
-   cpu:      " mes-cpu "
-   bits:     " mes-bits "
-   libc:     " mes-libc "
-   kernel:   " mes-kernel "
-   system:   " mes-system "
-   tools:    " (if numbered-arch? "numbered" "named") " arch
+   compiler:   " compiler "
+   cpu:        " mes-cpu "
+   bits:       " mes-bits "
+   libc:       " mes-libc "
+   kernel:     " mes-kernel "
+   system:     " mes-system "
+   tools:      " (if numbered-arch? "numbered" "named") " arch
+   bootstrap:  " (if with-bootstrap? "yes" "no") "
+   courageous: " (if with-courage? "yes" "no") "
 
 Run:
   " (or make "./build.sh") "           to build mes

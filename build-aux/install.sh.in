@@ -43,7 +43,13 @@ fi
 
 DESTDIR=${DESTDIR-}
 mkdir -p ${DESTDIR}${bindir}
-cp $_v src/mes ${DESTDIR}${bindir}/mes
+cp $_v bin/mes ${DESTDIR}${bindir}/mes
+if test -f bin/mes-gcc; then
+    cp $_v bin/mes-gcc ${DESTDIR}${bindir}/mes-gcc
+fi
+if test -f bin/mes-mescc; then
+    cp $_v bin/mes-mescc ${DESTDIR}${bindir}/mes-mescc
+fi
 cp $_v scripts/mesar ${DESTDIR}${bindir}/mesar
 cp $_v scripts/mescc.scm ${DESTDIR}${bindir}/mescc.scm
 cp $_v scripts/mescc ${DESTDIR}${bindir}/mescc

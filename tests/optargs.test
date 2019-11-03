@@ -1,6 +1,6 @@
 #! /bin/sh
 # -*-scheme-*-
-exec ${MES-src/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests optargs)' -s "$0" "$@"
+exec ${MES-bin/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests optargs)' -s "$0" "$@"
 !#
 
 ;;; -*-scheme-*-

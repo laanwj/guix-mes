@@ -96,8 +96,10 @@ for c in $mes_SOURCES; do
     fi
     objects="$objects $o"
 done
-echo "  CCLD     src/mes"
-$CC -nostdlib -o src/mes -L mescc-lib mescc-lib/crt1.o $objects -lc
+echo "  CCLD     bin/mes-mescc"
+mkdir -p bin
+$CC -nostdlib -o bin/mes-mescc -L mescc-lib mescc-lib/crt1.o $objects -lc
+cp bin/mes-mescc bin/mes
 
 (
     mkdir -p gcc-lib

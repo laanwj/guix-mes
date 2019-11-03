@@ -53,4 +53,5 @@ done
 if test $mes_libc = system; then
     LIBS=-lmes
 fi
-link src/mes
+link bin/mes-$compiler
+cp bin/mes-$compiler bin/mes

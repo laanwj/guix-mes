@@ -23,7 +23,7 @@
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 if [ "$MES" != guile ]; then
-    MES=${MES-$(dirname $0)/../src/mes}
+    MES=${MES-$(dirname $0)/../bin/mes}
     MES_BOOT=boot-02.scm exec $MES < $0
 fi
 

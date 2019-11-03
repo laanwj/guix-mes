@@ -521,7 +521,7 @@ build-aux/check-boot.sh
 Run a single Mes boot test
 
 @example
-MES_BOOT=scaffold/boot/00-zero.scm src/mes
+MES_BOOT=scaffold/boot/00-zero.scm bin/mes
 @end example
 
 Run a single Mes Scheme test

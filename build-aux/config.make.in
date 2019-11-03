@@ -35,7 +35,6 @@ LDFLAGS:=@LDFLAGS@
 MAKEINFO:=@MAKEINFO@
 M1:=@M1@
 MES_FOR_BUILD:=@MES_FOR_BUILD@
-MES_SEED:=@MES_SEED@
 NYACC:=@NYACC@
 PACKAGE:=@PACKAGE@
 PACKAGE_NAME:=@PACKAGE_NAME@
@@ -53,7 +52,7 @@ arch:=@arch@
 build:=@build@
 host:=@host@
 
-bootstrap:=
+bootstrap:=@bootstrap@
 compiler:=@compiler@
 courageous:=@courageous@
 mes_system:=@mes_system@

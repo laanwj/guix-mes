@@ -83,10 +83,6 @@ ifdef MES_FOR_BUILD
 export MES_FOR_BUILD
 endif
 
-ifdef MES_SEED
-export MES_SEED
-endif
-
 ifdef MESCC
 export MESCC
 endif

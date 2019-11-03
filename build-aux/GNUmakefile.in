@@ -97,7 +97,7 @@ build:
 src/${program_prefix}mes: build
 
 clean:
-	rm -f *.o *.s src/mes
+	rm -f *.o *.s bin/mes bin/mes-gcc bin/mes-mescc
 	rm -f mes.{aux,cp,cps,fn,info,log,tmp,toc,vr,vrs}
 	rm -f .log build.log
 	rm -f 0exit-42 0hello-mes exit-42 body-exit-42 body-hello-mes hello-mes
@@ -112,6 +112,7 @@ clean:
 	rm -rf mescc-lib/*.o mescc-lib/*.s mescc-lib/*.a mescc-lib/*-mes
 	rm -f mescc-lib/libc+gnu.c
 	rm -f mescc-lib/.log mescc-lib/build.log
+	rm -rf mescc/bin
 	rm -f scaffold/boot/*.log scaffold/boot/*.trs
 	rm -f test-suite.log tests/*.log tests/*.trs
 	rm -f scaffold/*.s scaffold/*.o

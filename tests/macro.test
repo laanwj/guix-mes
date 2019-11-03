@@ -2,7 +2,7 @@
 # -*-scheme-*-
 if [ "$MES" != guile ]; then
     export MES_BOOT=boot-02.scm
-    MES=${MES-$(dirname $0)/../src/mes}
+    MES=${MES-$(dirname $0)/../bin/mes}
     $MES < $0
     exit $?
 else

@@ -82,8 +82,6 @@ GIT=${GIT-$(command -v git)} || true
 PERL=${PERL-$(command -v perl)} || true
 SHELL=${BASH-$SHELL}
 
-MES_SEED=${MES_SEED-../mes-seed}
-
 if test "$srcdir" = .; then
     top_builddir=.
 else
@@ -169,8 +167,6 @@ subst () {
     -e s,"@M1@,$M1,"\
     -e s,"@M1FLAGS@,$M1FLAGS,"\
     -e s,"@MES_FOR_BUILD@,$MES_FOR_BUILD,"\
-    -e s,"@MES_SEED@,$MES_SEED,"\
-    -e s,"@MES_SEED@,$MES_SEED,"\
     -e s,"@numbered_arch@,$numbered_arch,"\
     -e s,"@SHELL@,$SHELL,"\
     $1 > $2
@@ -264,13 +260,15 @@ EOF
 
 cat <<EOF
 GNU Mes is configured for
-   compiler: $compiler
-   cpu:      $mes_cpu
-   bits:     $mes_bits
-   libc:     $mes_libc
-   kernel:   $mes_kernel
-   system:   $mes_system
-   tools:    $mes_tools arch
+   compiler:   $compiler
+   cpu:        $mes_cpu
+   bits:       $mes_bits
+   libc:       $mes_libc
+   kernel:     $mes_kernel
+   system:     $mes_system
+   tools:      $mes_tools arch
+   courageous: $courageous
+   bootstrap:  yes
 
 Run:
   sh bootstrap.sh  to bootstrap build mes

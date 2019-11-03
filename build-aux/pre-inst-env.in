@@ -36,10 +36,10 @@ if [ -n "$srcdest" ]; then
 fi
 export GUILE_LOAD_COMPILED_PATH GUILE_LOAD_PATH
 
-PATH="$abs_top_builddir/scripts:$abs_top_builddir/scripts:$abs_top_builddir/src:$abs_top_builddir/build-aux:$PATH"
+PATH="$abs_top_builddir/scripts:$abs_top_builddir/scripts:$abs_top_builddir/bin:$abs_top_builddir/build-aux:$PATH"
 export PATH
 
-MES=${MES-${abs_top_builddir}/src/${program_prefix}mes}
+MES=${MES-${abs_top_builddir}/bin/${program_prefix}mes}
 export MES
 
 bindir=${abs_top_builddir}/scripts
