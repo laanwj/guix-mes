@@ -1,22 +1,22 @@
                                                               -*- org -*-
 #+TITLE: bootstrappable.org project
 
-Copyright © 2016, 2017, 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
 * What?
-** Full source bootstrapping for GuixSD
+** Full source bootstrapping for GNU Guix
 
-A package in GuixSD is can be uniquely identified by the hash of its
-source code, its dependencies and its build recipe.
+A package in Guix is uniquely identified by the hash of its source code,
+its dependencies, and its build recipe.
 
 Every package can be built from source, except for the bootstrap
 binaries.
 
-*** From the GuixSD manual
+*** From the Guix manual
 
    The distribution is fully “bootstrapped” and “self-contained”: each
 package is built based solely on other packages in the distribution.
@@ -25,7 +25,7 @@ The root of this dependency graph is a small set of “bootstrap
 binaries”, provided by the ‘(gnu packages bootstrap)’ module.  For more
 information on bootstrapping, *note Bootstrapping::.
 
-**** GuixSD bootstrap tarballs
+**** Guix bootstrap tarballs
 
 $ du -schx $(readlink $(guix build bootstrap-tarballs)/*)
 2.1M	/gnu/store/9623n4bq6iq5c8cwwdq99qb7d0xj93ym-binutils-static-stripped-tarball-2.28.1/binutils-static-stripped-2.28.1-x86_64-linux.tar.xz
@@ -66,7 +66,7 @@ about the bootstrap binaries and compilers?
 ** Software: MesCC-tools, M2-Planet, GNU Mes and MesCC
 ** MesCC-tools
 
-    https://github.com/oriansj/mescc-tools
+    https://savannah.gnu.org/projects/mescc-tools
 
 *** hex.0: ~500 byte well-documented, self-hosting hex assembler
 
@@ -101,13 +101,13 @@ be source.
 * TODO
 ** remove or upstream patches from tcc-boot
 ** prepare src/mes.c for M2-Planet transpiler.
-** arm, the Hurd
+** ARM, the Hurd
 ** fix bootstrap-loops: (Nyacc?, mes.M2, psyntax.pp?)
 ** make GNU gcc (8.0?) bootstrappable again, remove [need for] tcc stage
 * DONE
-** upstream mes-boot to GuixSD.
-** replace GuixSD bootstrap for x86_64.
-** replace GuixSD bootstrap for x86.
+** upstream mes-boot to Guix.
+** replace Guix bootstrap for x86_64.
+** replace Guix bootstrap for x86.
 ** add full source gcc-4.7 package build.
 ** bootstrap gcc+glibc-built binutils-20.1, gcc-4.1.0.
 ** have tcc-boot compile gnutools triplet: binutils-2.14, gcc-2.95.3, glibc-2.2.5.

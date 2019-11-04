@@ -1,7 +1,7 @@
                                                               -*- org -*-
 #+TITLE: Building and Installing GNU Mes
 
-Copyright © 2016, 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -19,12 +19,14 @@ similar way.
 * Regular build
 ** Prerequisites
 *** Guix
-    guix environment -l guix.scm     #64 bit + 32bit
-    guix environment --system=i686-linux -l guix.scm #32 bit only
+   #+BEGIN_SRC bash
+   guix environment -l guix.scm     #64 bit + 32bit
+   guix environment --system=i686-linux -l guix.scm #32 bit only
+   #+END_SRC
 
 *** Other GNU/Linux
-  - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.5 is known to work.
-  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.86.0 is known to work.
+  - [[https://savannah.gnu.org/projects/mescc-tools/][mescc-tools]], 0.6.1 is known to work.
+  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.93.0 is known to work.
   - GNU Gcc, 4.9.3 is known to work.
   - GNU Guile, version 2.0.12 or is know to work.
   - SH, /bin/sh, GNU Bash 4.3 is known to work.
@@ -34,37 +36,54 @@ similar way.
   - Perl, 5.22 is known to work.
 
 ** Build it
+
+   #+BEGIN_SRC bash
    ./configure
    make
+   #+END_SRC
 
 ** Check it
+
+   #+BEGIN_SRC bash
    make check
+   #+END_SRC
 
 ** Install it
+
+   #+BEGIN_SRC bash
    make install
+   #+END_SRC
 
 * Guix it
-   guix package -f guix.scm
+
+   #+BEGIN_SRC bash
+   guix build -f guix.scm
+   #+END_SRC
 
 * Bootstrap build
 
-The bootstrap build is being developed in Guix, on wip-bootstrap, see
-http://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/mes.scm?h=wip-bootstrap
+The bootstrap build is part of Guix, see
+https://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/commencement.scm
 
 ** Prerequisites
-  - [[https://github.com/oriansj/mescc-tools][mescc-tools]], 0.5 is known to work.
-  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.86.0 is known to work.
-  - [[https://gitlab.com/janneke/mes-seed][mes-seed]], 0.17.1 is known to work.
+  - [[https://savannah.gnu.org/projects/mescc-tools/][mescc-tools]], 0.6.1 is known to work.
+  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.93.0 is known to work.
 
 ** Build it
-   <setup environment, e.g. prefix, MES_SEED>
-   ./configure.sh [--prefix=<prefix>]
-   ./build.sh
+
+   #+BEGIN_SRC bash
+   sh configure.sh [--prefix=<prefix>]
+   sh bootstrap.sh
+   #+END_SRC
 
 ** Check it
 
-   ./check.sh
+   #+BEGIN_SRC bash
+   sh check.sh
+   #+END_SRC
 
 ** Install it
 
-   ./install.sh
+   #+BEGIN_SRC bash
+   sh install.sh
+   #+END_SRC

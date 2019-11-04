@@ -67,9 +67,9 @@ cp\
     BOOTSTRAP\
     COPYING\
     HACKING\
-    INSTALL\
     NEWS\
     README\
+    ROADMAP\
     ${DESTDIR}${docdir}
 
 if test -f ChangeLog+; then

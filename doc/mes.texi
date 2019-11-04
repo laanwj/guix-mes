@@ -13,7 +13,7 @@
 @set OPENPGP-SIGNING-KEY-ID 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 
 @copying
-Copyright @copyright{} 2018 Jan (janneke) Nieuwenhuizen@*
+Copyright @copyright{} 2018,2019 Jan (janneke) Nieuwenhuizen@*
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -34,7 +34,7 @@ Documentation License''.
 
 @titlepage
 @title GNU Mes Reference Manual
-@subtitle Full Source Bootstrapping of the GNU Guix Operating System
+@subtitle Full Source Bootstrapping for the GNU system
 @author Jan (janneke) Nieuwenhuizen
 
 @page
@@ -124,8 +124,9 @@ that we can trust.
 Mes consists of a mutual self-hosting Scheme interpreter written in C
 and a Nyacc-based (see @pxref{NYACC User's Guide,,, nyacc-ug, NYACC
 User's Guide}) C compiler written in Scheme.  The Scheme interpreter
-@file{mes.c} is about 5000LOC of restricted C and intended to be
-bootstrappable using a very simple C compiler.
+@file{mes.c} is about 5,000LOC of restricted C, to be compiled with
+M2-Planet@footnote{See @url{https://github.com/oriansj/m2-planet}}, a
+very simple C compiler.
 
 If we want to trust our computers to do what we instructed them to do
 then we need to be able to inspect all instructions---all
@@ -255,10 +256,10 @@ binary seed that all software distributions inject are the so called
 @emph{bootstrap binaries}.  Bootstrap binaries are the initial binary
 seeds that are used to start building the distribution.
 
-The GNU Guix operating system has a relatively small closure of
-bootstrap binaries: GNU binutils, GNU gcc, GNU Libc, GNU Guile, and
-``Static binaries'' (think: bash, bzip2, coreutils, gawk, grep, gzip,
-patch, sed, tar, xz).
+The GNU Guix operating system, version 1.0 had a relatively small
+closure of bootstrap binaries: GNU binutils, GNU gcc, GNU Libc, GNU
+Guile, and ``Static binaries'' (think: bash, bzip2, coreutils, gawk,
+grep, gzip, patch, sed, tar, xz).
 
 @example
 $ du -schx $(readlink $(guix build bootstrap-tarballs)/*)
@@ -270,8 +271,8 @@ $ du -schx $(readlink $(guix build bootstrap-tarballs)/*)
 33M	total
 @end example
 
-only a 33MB download that unpacks to 252BM of opaque binaries, that we
-most probably have the source of, shall we review these together? ;-)
+only a 33MB download that unpacks to a 252MB @emph{seed} of opaque
+binary code.
 
 @example
 $ for i in $(readlink $(guix build bootstrap-tarballs)/*);\
@@ -284,6 +285,13 @@ $ du -schx *
 5.2M	share
 252M	total
 @end example
+
+During the Guix 1.1 development series we managed to create the first
+reduction by 50% of the Guix @emph{bootstrap binaries}@footnote{See
+@url{https://guix.gnu.org/blog/2019/guix-reduces-bootstrap-seed-by-50/}}.
+This was a very important step because the ~250MB @emph{seed} of binary
+code was practically non-auditable, which makes it hard to establish
+what source code produced them.
 
 @node Full Source Bootstrap
 @section  Full Source Bootstrap
@@ -433,7 +441,7 @@ enjoy software Freedom 1.
 
 @cindex installing Mes
 Mes is available for download from its website at
-@url{http://www.gnu.org/pub/gnu/mes/}.  This section describes the
+@url{https://www.gnu.org/pub/gnu/mes/}.  This section describes the
 software requirements of Mes, as well as how to install it and get ready
 to use it.
 
@@ -458,21 +466,14 @@ GNU Mes depends on the following packages:
 @item @url{http://gnu.org/software/guile/, GNU Guile}, version 2.0.13 or
 later, including 2.2.x;
 @item @url{http://www.gnu.org/software/make/, GNU Make}.
-@item @url{https://savannah.gnu.org/projects/nyacc/, NYACC},  0.86.0 is known to work.
+@item @url{https://savannah.gnu.org/projects/nyacc/, NYACC}, 0.93.0 or later, including 0.99.0.
 @item @url{http://gcc.gnu.org, GCC's gcc}, version 2.95.3 or later.
-@end itemize
-
-The following dependencies are optional:
-
-@itemize
-@item
-Installing @url{https://github.com/oriansj/mescc-tools/, mescc-tools},
-version 0.5 or later, will allow you to have MesCC assemble and link.
+@item @url{https://savannah.gnu.org/projects/mescc-tools/, mescc-tools}, version 0.6.1 or later,
 @end itemize
 
 @cindex Guile, compatibility
 Mes is compatible with GNU Guile, so it is possible to share the same
-Scheme code between both.  Of course, Mes only supports the minimal
+Scheme code between both.  Currently Mes only supports the minimal
 subset of R5RS and Guile extensions to run MesCC.
 
 @node Bootstrap Requirements
@@ -483,23 +484,21 @@ package.  The bootstrap build procedure for Mes is similar to building
 GNU software and goes like this
 
 @example
-export prefix=/usr/local # for example
-export MES_SEED=../mes   # for example
-# optionally set some other environment variables
-sh build.sh
+sh configure.sh --prefix=/your/prefix/here
+sh bootstrap.sh
 sh check.sh
 sh install.sh
 @end example
 
-See @file{build.sh} for inspiration on what environment variables to
-set.
+See @file{configure.sh} and @file{bootstrap.sh} for inspiration on what
+environment variables to set.
 
 Bootstrapping Mes depends on the following packages:
 
 @itemize
 @item a POSIX-compatible shell
-@item @url{https://github.com/oriansj/mescc-tools/, mescc-tools}, version 0.5 or later.
-@item @url{http://gitlab.com/janneke/mes-seed/, mes-seed}, version 0.17 or later.
+@item @url{https://github.com/oriansj/mescc-tools/, mescc-tools}, version 0.6.1 or later.
+@item @url{https://savannah.gnu.org/projects/nyacc/, NYACC}, 0.93.0 or later, including 0.99.0.
 @end itemize
 
 @node Running the Test Suites
@@ -593,34 +592,51 @@ responsibility.
 @node The Mes Bootstrap Process
 @section The Mes Bootstrap Process
 
-The Mes full source bootstrap process@footnote{TBH, the current state of
-affairs demands to label this a `Reduced Binary Seed bootstrap'} is
-currently being developed in Guix@footnote{See
-@file{gnu/packages/commencement.scm} in the @var{core-updates} branch in Guix
+The Reduced Binary Seed bootstrap currently adopted by Guix@footnote{See
+@file{gnu/packages/commencement.scm} in the @var{master} branch in Guix
 git
-@url{http://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/mes.scm?h=wip-bootstrap}}.
-In it's intiial form it is only available for x86-linux.
+@url{http://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/commencement.scm}}.
+In its intiial form it is only available for x86-linux.
 
 Currently, it goes like this:
 
 @verbatim
-mescc-tools-source + mescc-tools-seed => mescc-tools
-
-mes-source + mescc-tools + mescc-seed => mes
-
-tcc-source + mes + tinycc-seed => tcc
-
-binutils-source + mes + tcc => binutils0
-
-gcc-source + tcc + binutils0 => gcc-core
-
-glibc-source + kernel-headers-source + binutils0 + gcc => glibc0
-
-binutils-source + binutils0 + gcc + glibc => binutils
-
-gcc-source + binutils + gcc-core + glibc => gcc
-
-glibc-source + binutils + gcc + glibc0 => glibc
+                         gcc-mesboot (4.9.4)
+                                ^
+                                |
+                        glibc-mesboot (2.16.0)
+                                ^
+                                |
+                         gcc-mesboot1 (4.7.4)
+                                ^
+                                |
+                        binutils-mesboot (2.20.1a)
+                                ^
+                                |
+                         gcc-mesboot0 (2.95.3)
+                                ^
+                                |
+                         glibc-mesboot0 (2.2.5)
+                                ^
+                                |
+                        gcc-core-mesboot (2.95.3)
+                                ^
+                                |
+    make-mesboot0, diffutils-mesboot, binutils-mesboot0 (2.20.1a)
+                                ^
+                                |
+                            tcc-boot
+                                ^
+                                |
+                            tcc-boot0
+                                ^
+                                |
+                            mes-boot
+                                ^
+                                |
+                                *
+              bootstrap-mescc-tools, bootstrap-mes (~10MB)
+      bootstrap-bash, bootstrap-coreutils&co, bootstrap-guile (~120MB)
 @end verbatim
 
 @c This graph is generated from wip-bootstrap, doing:
@@ -636,14 +652,14 @@ that builds the rest of Guix.
 Work is ongoing to remove these binary seeds that were intentionally
 injected by our own doing as temporary shortcut
 @example
-mescc-tools-seed, mes-seed, tinycc-seed
+bootstrap-mescc-tools (seed), bootstrap-mes (seed)
 @end example
 
 For now, these additional non-bootstrapped dependencies (i.e., binary
 seeds) are taken for granted
 
 @example
-BOOTSTRAP-GUILE, bash, bzip2, coreutils, gawk, grep, gzip, patch, sed,
+bootstrap-guile, bash, bzip2, coreutils, gawk, grep, gzip, patch, sed,
 tar, xz
 @end example
 
@@ -659,7 +675,7 @@ The @command{mes} command is the Scheme interpreter whose prime
 directive is to run the @command{MesCC} program.
 
 For convenience and testing purposes, @command{mes} tries to mimic
-Guile.
+guile.
 
 @example
 mes @var{option}@dots{} @file{FILE}@dots{}
@@ -704,9 +720,6 @@ variable.
 @item -C,--compiled-path=@var{directory}
 Accepted and ignored for Guile compatibility.
 
-@item ---dump
-dump binary program to stdout
-
 @item -l @var{file}
 Load Scheme source code from @var{file}, and continue processing the
 command line.
@@ -720,9 +733,6 @@ and the command-line arguments---the list provided by the
 
 @item -h@r{, }--help
 Display help on invoking Mes, and then exit.
-
-@item ---load
-load binary program [module/mes/boot-0.32-mo]
 
 @item -v@r{, }--version
 Display the current version of Mes, and then exit.

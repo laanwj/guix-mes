@@ -254,7 +254,7 @@ GNU Mes is configured for
    system:   $mes_system
 
 Run:
-  ./build.sh      to build mes
-  ./check.sh      to check mes
-  ./install.sh    to install mes
+  sh build.sh      to build mes
+  sh check.sh      to check mes
+  sh install.sh    to install mes
 EOF
