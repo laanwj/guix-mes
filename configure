@@ -382,7 +382,7 @@ Some influential environment variables:
 
          (bindir (option-ref options 'bindir "${prefix}/bin"))
          (datadir (option-ref options 'datadir "${prefix}/share"))
-         (docdir (option-ref options 'docdir "${datadir}/doc/mes-${VERSION}"))
+         (docdir (option-ref options 'docdir "${datadir}/doc/mes"))
          (includedir (option-ref options 'includedir "${prefix}/include"))
          (libdir (option-ref options 'libdir "${prefix}/lib"))
          (pkgdatadir (string-append datadir "/mes"))

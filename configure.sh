@@ -94,7 +94,7 @@ else
 fi
 bindir=$(eval echo ${bindir-$prefix/bin})
 datadir=$(eval echo ${datadir-$prefix/share})
-docdir=$(eval echo ${docdir-$datadir/doc/mes-$VERSION})
+docdir=$(eval echo ${docdir-$datadir/doc/mes})
 infodir=$(eval echo ${infodir-$datadir/info})
 includedir=$(eval echo ${includedir-$prefix/include})
 libdir=$(eval echo ${libdir-$prefix/lib})
