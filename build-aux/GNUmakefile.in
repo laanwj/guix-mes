@@ -192,7 +192,7 @@ else
 $(warning info: graphvis missing: no images)
 endif
 
-man: doc/mes.1 doc/mescc.1
+man: doc/mes.1 doc/mescc.1 doc/mesar.1
 
 # disable builtin-rules
 %.o: %.s
@@ -204,10 +204,19 @@ man: doc/mes.1 doc/mescc.1
 %: %.c
 
 doc/mes.1: src/${program_prefix}mes | build
-	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
+	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN)				\
+	    --name="Scheme interpreter for bootstrapping the GNU system"	\
+	    $(<F) > $@
 
 doc/mescc.1: scripts/mescc src/${program_prefix}mes | build
-	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN) $(<F) > $@
+	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN)				\
+	    --name="C99 compiler in Scheme for bootstrapping the GNU system"	\
+	    $(<F) > $@
+
+doc/mesar.1: scripts/mescc src/${program_prefix}mes | build
+	MES_ARENA=10000000 ./pre-inst-env $(HELP2MAN)	\
+	    --name="Archiver for MesCC"			\
+	    $(<F) > $@
 
 html: doc/html/index.html
 
