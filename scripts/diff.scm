@@ -113,10 +113,28 @@ exec ${MES-mes} -L ${0%/*} -e '(diff)' -s "$0" "$@"
                                      (cdr a-lines) (cdr b-lines))))))))))
 
 (define (main args)
-  (let* ((files (cdr args))
-         (files (if (string-prefix? "-" (car files)) (cdr files) files))
-         (hunks (apply diff-files (list-head files 2))))
-    (when (pair? hunks)
-      (display (string-join (append-map hunk->lines hunks) "\n"))
-      (newline)
-      (exit 1))))
+  (let ((files (cdr args)))
+    (when (or (null? files)
+              (equal? (car files) "-h")
+              (equal? (car files) "--help"))
+      (display "
+Usage: diff.scm [OPTION]... FILES
+Compare FILES line by line.
+
+Options:
+  -u,--unified        display unified diff (default)
+  -h,--help           display this help and exit
+  -V,--version        display version information and exit
+")
+      (exit (if (null? files) 2 0)))
+    (when (or (equal? (car files) "-V")
+              (equal? (car files) "--version"))
+      (display "
+diff.scm (GNU Mes) 0.20
+"))
+    (let* ((files (if (string-prefix? "-" (car files)) (cdr files) files))
+           (hunks (apply diff-files (list-head files 2))))
+     (when (pair? hunks)
+       (display (string-join (append-map hunk->lines hunks) "\n"))
+       (newline)
+       (exit 1)))))

@@ -22,10 +22,56 @@ if [ "$V" = 2 ]; then
     set -x
 fi
 
+# parse arguments
+while [ $# -gt 0 ]; do
+    case $1 in
+        (-h|--help)
+        cat <<EOF
+Usage: mesar [OPTION]... COMMAND ARCHIVE-FILE FILE...
+Archiver for MesCC.
+
+Commands:
+  r[ab][f][u]  - replace existing or insert new file(s) into the archive
+  [c]          - do not warn if the library had to be created
+  [D]          - use zero for timestamps and uids/gids (default)
+
+are ignored and assumed to be "crD".
+
+Options:
+  -h,--help           display this help and exit
+  -V,--version        display version information and exit
+EOF
+        exit 0
+            ;;
+        (-V|--version)
+        cat <<EOF
+mesar (GNU Mes) @VERSION@
+EOF
+        exit 0
+        ;;
+        -*) shift
+        ;;
+        *) break
+        ;;
+    esac
+done
+
 command=$1
-archive=$2
 shift
+if [ -z "$command" ]; then
+    echo "AR: Usage error: missing command." 1>&2
+    exit 2
+fi
+archive=$1
 shift
+if [ -z "$archive" ]; then
+    echo "AR: Usage error: missing archive" 1>&2
+    exit 2
+fi
+if [ $# -eq 0 ]; then
+    echo "AR: Usage error: missing object files" 1>&2
+    exit 2
+fi
 M1_archive=$(dirname "$archive")/$(basename "$archive" .a).s
 for o in "$@"; do
     s=$(dirname "$o")/$(basename "$o" .o).s

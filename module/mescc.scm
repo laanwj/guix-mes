@@ -92,6 +92,9 @@
            (and (or help? usage?)
                 (format (or (and usage? (current-error-port)) (current-output-port)) "\
 Usage: mescc [OPTION]... FILE...
+C99 compiler in Scheme for bootstrapping the GNU system.
+
+Options:
   --align             align globals
   --arch=ARCH         compile for ARCH [~a]
   -dumpmachine        display the compiler's target machine
@@ -112,7 +115,7 @@ Usage: mescc [OPTION]... FILE...
   -O LEVEL            use optimizing LEVEL
   -S                  preprocess and compile only; do not assemble or link
   --std=STANDARD      assume that the input sources are for STANDARD
-  -v, --version       display version and exit
+  -V,--version        display version and exit
   -w,--write=TYPE     dump Nyacc AST using TYPE {pretty-print,write}
   -x LANGUAGE         specify LANGUAGE of the following input files
 

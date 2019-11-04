@@ -213,6 +213,7 @@
               (load-path (single-char #\L) (value #t))
               (main (single-char #\e) (value #t))
               (source (single-char #\s) (value #t))
+              (version (single-char #\v))
               (version (single-char #\V)))))
       (getopt-long args option-spec #:stop-at-first-non-option #t)))
   (define (source-arg? o)
@@ -234,8 +235,9 @@
           (exit 0))
      (and (or help? usage?)
           (display "Usage: mes [OPTION]... [FILE]...
-Evaluate code with Mes, interactively or from a script.
+Scheme interpreter for bootstrapping the GNU system.
 
+Options:
   [-s] FILE            load source code from FILE, and exit
   -c EXPR              evalute expression EXPR, and exit
   --                   stop scanning arguments; run interactively

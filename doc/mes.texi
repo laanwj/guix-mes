@@ -85,6 +85,7 @@ Bootstrapping
 * The Mes Bootstrap Process::   How Mes will make you yogurt from pure milk.
 * Invoking Mes::                Running Mes, a minimalist Guile lookalike.
 * Invoking MesCC::              Running the MesCC bootstrap compiler.
+* Invoking mesar::
 
 Invoking Mes
 
@@ -98,6 +99,7 @@ Contributing
 
 * Building from Git::           The latest and greatest.
 * Running Mes From the Source Tree::  Hacker tricks.
+* Porting GNU Mes::             Teach Mes about your platform.
 * The Perfect Setup::           The right tools.
 * Coding Style::                Hygiene of the contributor.
 * Submitting Patches::          Share your work.
@@ -585,6 +587,7 @@ responsibility.
 * The Mes Bootstrap Process::   How Mes will make you yogurt from pure milk.
 * Invoking Mes::                Running Mes, a minimalist Guile lookalike.
 * Invoking MesCC::              Running the MesCC bootstrap compiler.
+* Invoking mesar::
 @end menu
 
 @node The Mes Bootstrap Process
@@ -874,7 +877,7 @@ preprocess and compile only; do not assemble or link
 @item --std=STANDARD
 assume that the input sources are for STANDARD
 
-@item -v, --version
+@item -V,--version
 display version and exit
 
 @item -w,--write=TYPE
@@ -918,6 +921,34 @@ during the parsing phase.
 
 @end table
 
+@node Invoking mesar
+@section Invoking mesar
+
+@example
+mesar @var{option}@dots{} @var{command} @file{ARCHIVE-FILE} @file{FILE}@dots{}
+@end example
+
+The @var{command} is ignored for compatibility with @file{ar}
+
+@example
+  r[ab][f][u]  - replace existing or insert new file(s) into the archive
+  [c]          - do not warn if the library had to be created
+  [D]          - use zero for timestamps and uids/gids (default)
+@end example
+
+and assumed to be @var{crD}.
+
+The @var{option}s can be among the following:
+
+@table @code
+
+@item -h, --help
+display this help and exit
+
+@item -V,--version
+display version and exit
+
+@end table
 
 @c *********************************************************************
 @node Contributing
