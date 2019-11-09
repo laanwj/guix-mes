@@ -278,7 +278,6 @@ lib/tests/stdio/70-printf.c
 lib/tests/scaffold/70-extern.c
 lib/tests/stdio/80-sscanf.c
 lib/tests/mes/90-abtod.c
-lib/tests/dirent/90-readdir.c
 lib/tests/posix/90-execlp.c
 lib/tests/string/90-snprintf.c
 "
