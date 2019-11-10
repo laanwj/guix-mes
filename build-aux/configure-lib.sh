@@ -263,6 +263,7 @@ lib/stub/ctime.c
 lib/stub/fpurge.c
 lib/stub/freadahead.c
 lib/stub/frexp.c
+lib/stub/fscanf.c
 lib/stub/getlogin.c
 lib/stub/getpwnam.c
 lib/stub/getpwuid.c
@@ -270,6 +271,7 @@ lib/stub/gmtime.c
 lib/stub/pclose.c
 lib/stub/popen.c
 lib/stub/rand.c
+lib/stub/rewind.c
 lib/stub/setbuf.c
 lib/stub/setlocale.c
 lib/stub/setvbuf.c
