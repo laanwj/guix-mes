@@ -122,7 +122,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
 
 (define-public mes
   (let ((triplet "i686-unknown-linux-gnu")
-        (version "0.20"))
+        (version "0.21"))
     (package
       (name "mes")
       (version version)
@@ -164,7 +164,7 @@ Guile.")
       (license gpl3+))))
 
 (define-public mes.git
- (let ((version "0.20")
+ (let ((version "0.21")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package

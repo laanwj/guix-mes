@@ -36,7 +36,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 (define PACKAGE "mes")
 (define PACKAGE-NAME "GNU Mes")
 (define PACKAGE-BUGREPORT "bug-mes@gnu.org")
-(define VERSION "0.20")
+(define VERSION "0.21")
 
 (cond-expand
  (guile)
