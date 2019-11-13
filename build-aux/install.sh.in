@@ -77,11 +77,13 @@ else
     cp $_v ChangeLog ${DESTDIR}${docdir}
 fi
 
+mkdir -p $DESTDIR$includedir
 mkdir -p $DESTDIR$libdir
 mkdir -p $DESTDIR$pkgdatadir
 # rm -f $(find lib -type f -a -executable)
 # rm -f $(find scaffold -type f -a -executable)
-tar -cf- -C ${srcdir} include lib/$mes_cpu-mes | tar -${v}xf- -C $DESTDIR$prefix
+tar -cf- -C ${srcdir}/include . | tar -${v}xf- -C $DESTDIR$includedir
+tar -cf- -C ${srcdir}/lib $mes_cpu-mes | tar -${v}xf- -C $DESTDIR$libdir
 if test -z "$srcdest"; then
     tar -cf- --exclude='*.go' module | tar -${v}xf- -C $DESTDIR$pkgdatadir
 else
