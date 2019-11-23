@@ -22,13 +22,13 @@
 #include <errno.h>
 #include <time.h>
 
-int
-ctime (int x)
+char *
+ctime (time_t const *time)
 {
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("ctime stub\n");
   stub = 1;
   errno = 0;
-  return 0;
+  return "now";
 }
