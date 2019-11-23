@@ -23,6 +23,9 @@
 #if SYSTEM_LIBC
 #undef __MES_STDARG_H
 #include_next <stdarg.h>
+
+#define va_arg8(ap, type) va_arg(ap, type)
+
 #else // ! SYSTEM_LIBC
 
 #include <sys/types.h>
