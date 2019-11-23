@@ -256,7 +256,7 @@ endif
 dist: $(TARBALL)
 
 sign: $(TARBALL)
-	gpg --detach-sign $<
+	gpg -a --output $(TARBALL).sig --detach-sig $(TARBALL)
 	git checkout ChangeLog
 
 tree-clean-p:
