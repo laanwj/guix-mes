@@ -58,7 +58,7 @@ int
 __tcgetattr (int filedes, struct termios *termios_p)
 {
   struct ktermios kernel_termios;
-  int r = ioctl (filedes, TCGETS, &kernel_termios);
+  int r = ioctl3 (filedes, TCGETS, (long) &kernel_termios);
 
   termios_p->c_iflag = kernel_termios.c_iflag;
   termios_p->c_oflag = kernel_termios.c_oflag;

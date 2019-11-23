@@ -33,3 +33,10 @@ ioctl (int filedes, unsigned long command, ...)
   va_end (ap);
   return r;
 }
+
+int
+ioctl3 (int filedes, unsigned long command, long data)
+{
+  int r = _sys_call3 (SYS_ioctl, filedes, command, data);
+  return r;
+}
