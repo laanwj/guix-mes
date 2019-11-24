@@ -188,7 +188,10 @@ current_input_port ()
 SCM
 open_input_file (SCM file_name)
 {
-  return MAKE_NUMBER (mes_open (CSTRING (file_name), O_RDONLY, 0));
+  int filedes = mes_open (CSTRING (file_name), O_RDONLY, 0);
+  if (filedes == -1)
+    error (cell_symbol_system_error, cons (MAKE_STRING0 ("No such file or directory"), file_name));
+  return MAKE_NUMBER (filedes);
 }
 
 SCM
