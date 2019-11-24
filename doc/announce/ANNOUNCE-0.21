@@ -12,7 +12,7 @@ https://guix.gnu.org/blog/2019/guix-reduces-bootstrap-seed-by-50/
 
 This release supports a Scheme-only bootstrap: Mes can now be built with
 Gash and the experimental Gash Core Utils instead of using GNU Awk, GNU
-Bash, the GNU Core Utilities, GNU Grep, GNU Gzip, GNU Make, GNU Sed, and
+Bash, the GNU Core Utilities, GNU Grep, GNU Gzip, GNU Make, GNU SED, and
 GNU Tar.  Also, the Mes C Library now supports bootstrapping those.
 Finally, this release brings Mes as a package to Debian GNU/Linux.
 
@@ -75,8 +75,8 @@ Packages are available in Guix master.
 
   Here are the MD5 and SHA1 checksums:
 
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.21.tar.gz
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.21.tar.gz
+  dea43529d2d84fb4b9d81bdd9efcc715  mes-0.21.tar.gz
+  35721a81feeab6e0d5913b8bf78f18951edbb964  mes-0.21.tar.gz
 
   [*] Use a .sig file to verify that the corresponding file (without the
   .sig suffix) is intact.  First, be sure to download both the .sig file
@@ -106,7 +106,7 @@ Packages are available in Guix master.
  *** Mes C Library now has limited float support in vfprintf, vsnprintf, vsscanf.
  **** 7 new functions
  abtod, atof, creat, dtoab, execlp, isgraph, mknod, readlink, strtod,
- symblink.
+ symlink.
  **** 5 new stubs
  getgrgid, getgrnam, getpgid, getpgrp, mktime, setgrent.
  ** Noteworthy bug fixes
