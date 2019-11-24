@@ -24,16 +24,28 @@
  (guile
   (define %arch (car (string-split %host-type #\-)))))
 
-(setenv "%prefix" (or (getenv "MES_PREFIX")
+(define %prefix (or (getenv "MES_PREFIX")
                       (if (string-prefix? "@prefix" "@prefix@")
                           ""
                           "@prefix@")))
 
-(setenv "%version" (if (string-prefix? "@VERSION" "@VERSION@") "git"
-                       "@VERSION@"))
+(define %includedir (or (getenv "includedir")
+                        (string-append %prefix "/include")))
 
-(setenv "%arch" (if (string-prefix? "@mes_cpu" "@mes_cpu@") %arch
-                       "@mes_cpu@"))
+(define %libdir (or (getenv "libdir")
+                    (string-append %prefix "/lib")))
+
+(define %version (if (string-prefix? "@VERSION" "@VERSION@") "git"
+                     "@VERSION@"))
+
+(define %arch (if (string-prefix? "@mes_cpu" "@mes_cpu@") %arch
+                  "@mes_cpu@"))
+
+(setenv "%prefix" %prefix)
+(setenv "%includedir" %includedir)
+(setenv "%libdir" %libdir)
+(setenv "%version" %version)
+(setenv "%arch" %arch)
 
 (cond-expand
  (mes

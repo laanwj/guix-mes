@@ -53,6 +53,7 @@
          (dir (dirname input-file-name))
          (defines (reverse (filter-map (multi-opt 'define) options)))
          (includes (reverse (filter-map (multi-opt 'include) options)))
+         (includes (cons (option-ref options 'includedir #f) includes))
          (includes (cons dir includes))
          (prefix (option-ref options 'prefix ""))
          (machine (option-ref options 'machine "32"))
@@ -87,9 +88,10 @@
         ((.E? file-name) (E->info options file-name))))
 
 (define (c->info options file-name)
-  (let* ((defines (reverse (filter-map (multi-opt 'define) options)))
+  (let* ((dir (dirname file-name))
+         (defines (reverse (filter-map (multi-opt 'define) options)))
          (includes (reverse (filter-map (multi-opt 'include) options)))
-         (dir (dirname file-name))
+         (includes (cons (option-ref options 'includedir #f) includes))
          (includes (cons dir includes))
          (prefix (option-ref options 'prefix ""))
          (defines (cons (arch-get-define options) defines))
@@ -260,7 +262,7 @@
          (arch (string-append (arch-get options) "-mes"))
          (path (cons* "."
                       srcdir-lib
-                      (prefix-file options "lib")
+                      (option-ref options 'libdir "lib")
                       (filter-map (multi-opt 'library-dir) options)))
          (arch-file-name (string-append arch "/" file-name))
          (verbose? (count-opt options 'verbose)))
@@ -271,12 +273,6 @@
         (stderr "  => ~s\n" file))
       (or file
           (error (format #f "mescc: file not found: ~s" arch-file-name))))))
-
-(define (prefix-file options file-name)
-  (let ((prefix (option-ref options 'prefix "")))
-    (define (prefix-file o)
-      (if (string-null? prefix) o (string-append prefix "/" o)))
-    (prefix-file file-name)))
 
 (define (assert-system* . args)
   (let ((status (apply system* args)))

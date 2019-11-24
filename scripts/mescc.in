@@ -38,7 +38,11 @@ GUILE_LOAD_PATH=@guile_site_dir@${GUILE_LOAD_PATH+:}${GUILE_LOAD_PATH}
 export GUILE_LOAD_PATH
 
 MES=${MES-@prefix@/bin/mes}
-bindir=${bindir-@bindir@/mes}
+bindir=${bindir-@bindir@}
+includedir=${includedir-@includedir@}
+export includedir
+libdir=${libdir-@libdir@}
+export libdir
 
 if [ ! -f $bindir/mescc.scm ]; then
    bindir=$(dirname $0)

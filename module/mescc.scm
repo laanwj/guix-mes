@@ -38,6 +38,8 @@
 
 (define %host-arch (or (getenv "%arch") %arch))
 (define %prefix (getenv "%prefix"))
+(define %includedir (getenv "%includedir"))
+(define %libdir (getenv "%libdir"))
 (define %version (getenv "%version"))
 
 (when (and=> (getenv "V") (lambda (v) (and (= (string-length v) 1) (> (string->number v) 1))))
@@ -155,6 +157,8 @@ General help using GNU software: <http://gnu.org/gethelp/>
          (args (append-map unclump-single args))
          (options (parse-opts args))
          (options (acons 'prefix %prefix options))
+         (options (acons 'includedir %includedir options))
+         (options (acons 'libdir %libdir options))
          (arch (option-ref options 'arch %host-arch))
          (options (if arch (acons 'arch arch options) options))
          (dumpmachine? (option-ref options 'dumpmachine #f))
