@@ -25,10 +25,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-int
-qsort_strcmp (void const *a, void const *b)
+int dot_seen = 0;
+int dot_dot_seen = 0;
+int dir_seen = 0;
+int file_seen = 0;
+int link_seen = 0;
+
+void
+check_seen (char const* name)
 {
-  return strcmp (*((char **) a), *((char **) b));
+  if (!strcmp (name, "."))
+    dot_seen = 1;
+  if (!strcmp (name, ".."))
+    dot_dot_seen = 1;
+  if (!strcmp (name, "dir"))
+    dir_seen = 1;
+  if (!strcmp (name, "file"))
+    file_seen = 1;
+  if (!strcmp (name, "link"))
+    link_seen = 1;
 }
 
 int
@@ -55,59 +70,60 @@ main ()
     return 6;
 
   int i = 0;
-  char *list[6] = { 0 };
+
   struct dirent *entry = readdir (d);
   if (!entry)
     return 7;
   oputs (entry->d_name);
   oputs ("\n");
-  list[i++] = entry->d_name;
+  check_seen (entry->d_name);
 
   entry = readdir (d);
   if (!entry)
     return 8;
   oputs (entry->d_name);
   oputs ("\n");
-  list[i++] = entry->d_name;
+  check_seen (entry->d_name);
 
   entry = readdir (d);
   if (!entry)
     return 9;
   oputs (entry->d_name);
   oputs ("\n");
-  list[i++] = entry->d_name;
+  check_seen (entry->d_name);
 
   entry = readdir (d);
   if (!entry)
     return 10;
   oputs (entry->d_name);
   oputs ("\n");
-  list[i++] = entry->d_name;
+  check_seen (entry->d_name);
 
   entry = readdir (d);
   if (!entry)
     return 11;
   oputs (entry->d_name);
   oputs ("\n");
-  list[i++] = entry->d_name;
+  check_seen (entry->d_name);
 
   entry = readdir (d);
   if (entry)
     return 12;
 
-  oputs ("\nls:\n");
-  qsort (list, 5, sizeof (char *), qsort_strcmp);
-  for (int i = 0; i < 5; i++)
-    {
-      oputs (list[i]);
-      oputs ("\n");
-    }
-
-  if (strcmp (list[0], "."))
+  if (!dot_seen)
     return 13;
 
-  if (strcmp (list[4], "link"))
+  if (!dot_dot_seen)
     return 14;
+
+  if (!dir_seen)
+    return 15;
+
+  if (!file_seen)
+    return 16;
+
+  if (!link_seen)
+    return 17;
 
   return 0;
 }
