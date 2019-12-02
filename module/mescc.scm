@@ -65,6 +65,7 @@
             (debug-info (single-char #\g))
             (dumpmachine)
             (fno-builtin)
+            (fno-stack-protector)
             (help (single-char #\h))
             (include (single-char #\I) (value #t))
             (library-dir (single-char #\L) (value #t))
@@ -123,6 +124,7 @@ Options:
 
 Ignored for GCC compatibility
   -fno-builtin
+  -fno-stack-protector
   -no-pie
   -nostdinc
   -static
@@ -143,6 +145,7 @@ General help using GNU software: <http://gnu.org/gethelp/>
 (define (mescc:main args)
   (let* ((single-dash-options '("-dumpmachine"
                                 "-fno-builtin"
+                                "-fno-stack-protector"
                                 "-no-pie"
                                 "-nodefaultlibs"
                                 "-nostartfiles"
