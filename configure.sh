@@ -58,6 +58,8 @@ AR=${AR-$(command -v ar)} || true
 BASH=${BASH-$(command -v bash)}
 BLOOD_ELF=${BLOOD_ELF-$(command -v blood-elf)}
 CC=${CC-$(command -v gcc)} || true
+CFLAGS=${CFLAGS-}
+CPPFLAGS=${CPPFLAGS-}
 DIFF=${DIFF-$(command -v diff || echo $PWD/pre-inst-env diff.scm)}
 GUILD=${GUILD-$(command -v guild)} || true
 GUILE_TOOLS=${GUILE_TOOLS-$(command -v guile-tools)} || true
@@ -70,6 +72,7 @@ if test ! "$GUILD"; then
 fi
 GUILE=${GUILE-$(command -v guile)} || true
 HEX2=${HEX2-$(command -v hex2)}
+LDPFLAGS=${LDFLAGS-}
 M1=${M1-$(command -v M1)}
 MES_FOR_BUILD=${MES_FOR_BUILD-$(command -v mes || command -v guile || echo mes)}
 GIT=${GIT-$(command -v git)} || true

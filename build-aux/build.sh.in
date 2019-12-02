@@ -51,40 +51,40 @@ fi
 debug=
 #debug=-g
 
-CFLAGS="
+AM_CFLAGS="
 -static
 $debug
 "
 
 if test $mes_libc = mes; then
-    CFLAGS="$CFLAGS
+    AM_CFLAGS="$AM_CFLAGS
 -nostdinc
 -nostdlib
 -fno-builtin
 "
 fi
 
-CPPFLAGS="
+AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
 -I ../include
 -I ${srcdir}/../include
 -I ${srcdir}/../include/$mes_kernel/$mes_cpu
 "
 
-LDFLAGS="
+AM_LDFLAGS="
 $debug
 -L .
 "
 if test $mes_libc = mes; then
-    LDFLAGS="$LDFLAGS
+    AM_LDFLAGS="$AM_LDFLAGS
 -nostdlib
 "
 fi
 LIBS=-lc
 
-export CFLAGS
-export CPPFLAGS
-export LDFLAGS
+export AM_CFLAGS CFLAGS
+export AM_CPPFLAGS CPPFLAGS
+export AM_LDFLAGS LDFLAGS
 export LIBS
 
 (
@@ -96,7 +96,7 @@ export LIBS
         srcdir=../
     fi
     if test $compiler = gcc; then
-        CPPFLAGS="
+        AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
 -I include
 -I ${srcdest}include
@@ -110,12 +110,12 @@ export LIBS
 
 (
     if test $compiler = gcc; then
-        LDFLAGS="$LDFLAGS
+        AM_LDFLAGS="$AM_LDFLAGS
 -L gcc-lib
 "
     fi
 
-    CPPFLAGS="
+    AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
 -I include
 -I ${srcdest}include
@@ -136,7 +136,7 @@ export LIBS
         srcdest=../
         srcdir=../
     fi
-        CPPFLAGS="
+        AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
 -I include
 -I ${srcdest}include
@@ -145,6 +145,10 @@ export LIBS
     compiler=mescc
     AR="${srcdest}pre-inst-env mesar"
     CC="${srcdest}pre-inst-env mescc -m $mes_bits"
+    # No user overrides for MesCC, they are probably intended for GCC
+    CFLAGS=
+    CPPFLAGS=
+    LDFLAGS=
     ${SHELL} ${srcdest}build-aux/build-lib.sh
     ${SHELL} ${srcdest}build-aux/build-source-lib.sh
 )

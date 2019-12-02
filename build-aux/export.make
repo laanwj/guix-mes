@@ -131,12 +131,28 @@ ifdef GUILE_LOAD_COMPILED_PATH
 export GUILE_LOAD_COMPILED_PATH
 endif
 
+ifdef AM_CFLAGS
+export AM_CFLAGS
+endif
+
+ifdef AM_CPPFLAGS
+export AM_CPPFLAGS
+endif
+
+ifdef AM_LDFLAGS
+export AM_LDFLAGS
+endif
+
 ifdef CFLAGS
 export CFLAGS
 endif
 
 ifdef CPPFLAGS
 export CPPFLAGS
+endif
+
+ifdef LDFLAGS
+export LDFLAGS
 endif
 
 ifdef HEX2FLAGS

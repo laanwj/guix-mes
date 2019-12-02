@@ -23,8 +23,8 @@ compile () {
     o=$b.o
     objects="$objects $o"
     if test $c -nt $o; then
-        trace "CC         $c" $CC -c $CPPFLAGS $CFLAGS -o $o $c
-        $CC -c $CPPFLAGS $CFLAGS -o $o $c
+        trace "CC         $c" $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS -o $o $c
+        $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS -o $o $c
     fi
 }
 
@@ -51,6 +51,6 @@ link () {
     else
         crt1=crt1.o
     fi
-    trace "CCLD       $out" $CC $CFLAGS $LDFLAGS -o $out $crt1 $objects $LIBS
+    trace "CCLD       $out" $CC $AM_CFLAGS $CFLAGS $AM_LDFLAGS $LDFLAGS -o $out $crt1 $objects $LIBS
     objects=
 }

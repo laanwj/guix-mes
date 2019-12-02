@@ -612,6 +612,8 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@SHELL@" . ,shell)
 
                      ("@CFLAGS@" . ,(or (getenv "CFLAGS") ""))
+                     ("@CPPFLAGS@" . ,(or (getenv "CPPFLAGS") ""))
+                     ("@LDFLAGS@" . ,(or (getenv "LDFLAGS") ""))
                      ("@HEX2FLAGS@" . ,(or (getenv "HEX2FLAGS") ""))
                      ("@M1FLAGS@" . ,(or (getenv "M1FLAGS") ""))
 
