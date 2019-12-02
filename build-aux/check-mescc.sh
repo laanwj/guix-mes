@@ -226,7 +226,6 @@ lib/tests/scaffold/a1-global-no-clobber.c
 fi
 
 XFAIL_TESTS="
-lib/tests/mes/90-abtod.c
 lib/tests/stdio/90-sprintf.c
 "
 
@@ -236,6 +235,7 @@ lib/tests/scaffold/17-compare-unsigned-char-le.c
 lib/tests/scaffold/17-compare-unsigned-short-le.c
 lib/tests/scaffold/66-local-char-array.c
 lib/tests/scaffold/72-typedef-struct-def-local.c
+lib/tests/mes/90-abtod.c
 lib/tests/mes/90-dtoab.c
 lib/tests/scaffold/90-goto-var.c
 lib/tests/scaffold/91-goto-array.c
@@ -261,7 +261,6 @@ fi
 
 if test $compiler = gcc; then
     XFAIL_TESTS="$XFAIL_TESTS
-lib/tests/mes/90-abtod.c
 "
 
     if test $mes_cpu = x86; then
@@ -277,7 +276,6 @@ lib/tests/stdio/70-printf-simple.c
 lib/tests/stdio/70-printf.c
 lib/tests/scaffold/70-extern.c
 lib/tests/stdio/80-sscanf.c
-lib/tests/mes/90-abtod.c
 lib/tests/posix/90-execlp.c
 lib/tests/string/90-snprintf.c
 "

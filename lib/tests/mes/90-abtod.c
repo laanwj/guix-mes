@@ -26,9 +26,10 @@ int
 main ()
 {
   char *s = "1.2e3";
-  char *p = s;
+  char const *p = s;
   double d = abtod (&p, 0);
-  printf ("%f\n", d);
+  if (d != 1200)
+    return d;
 
   return 0;
 }
