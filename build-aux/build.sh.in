@@ -48,8 +48,7 @@ if test -n "$GUILE" -a "$GUILE" != true; then
     ${SHELL} ${srcdest}build-aux/build-guile.sh
 fi
 
-debug=
-#debug=-g
+debug=${debug--g}
 
 AM_CFLAGS="
 -static
