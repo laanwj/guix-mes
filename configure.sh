@@ -244,7 +244,6 @@ EOF
 fi
 cat >> include/mes/config.h <<EOF
 #define MES_VERSION "$VERSION"
-#define MES_PKGDATADIR "$pkgdatadir"
 EOF
 
 cat <<EOF

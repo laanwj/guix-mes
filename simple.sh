@@ -33,7 +33,6 @@ mes_bits=64
 cat > include/mes/config.h <<EOF
 #define SYSTEM_LIBC 1
 #define MES_VERSION "git"
-#define MES_PKGDATADIR "/usr/local/share/mes"
 EOF
 
 ## Build ##
@@ -126,7 +125,6 @@ mes_cpu=x86_64
 cat > include/mes/config.h <<EOF
 // #define SYSTEM_LIBC 0
 #define MES_VERSION "git"
-#define MES_PKGDATADIR "/usr/local/share/mes"
 EOF
 
 ## Build ##

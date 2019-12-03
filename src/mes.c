@@ -1775,12 +1775,6 @@ open_boot ()
   char boot[1024];
   char file_name[1024];
   strcpy (g_datadir, ".");
-  if (g_debug > 1)
-    {
-      eputs (";;; pkgdatadir=");
-      eputs (MES_PKGDATADIR);
-      eputs ("\n");
-    }
   if (getenv ("MES_BOOT"))
     strcpy (boot, getenv ("MES_BOOT"));
   else
@@ -1800,13 +1794,6 @@ open_boot ()
           strcpy (file_name + strlen (file_name), "/module/mes/");
           __stdin = try_open_boot (file_name, boot, "MES_PREFIX/share/mes");
         }
-    }
-  if (__stdin < 0)
-    {
-      strcpy (g_datadir, MES_PKGDATADIR);
-      strcpy (file_name, g_datadir);
-      strcpy (file_name + strlen (file_name), "/module/mes/");
-      __stdin = try_open_boot (file_name, boot, "pkgdatadir");
     }
   if (__stdin < 0)
     {

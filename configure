@@ -666,7 +666,6 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
 "))
               (display (string-append "
 #define MES_VERSION \"" VERSION "\"
-#define MES_PKGDATADIR \"" pkgdatadir "\"
 ")))))
         (substitute (string-append srcdest "build-aux/config.make.in") pairs #:target ".config.make"))
 
