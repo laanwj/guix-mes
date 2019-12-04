@@ -138,8 +138,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
        `(("mescc-tools" ,mescc-tools)
          ("nyacc" ,nyacc)))
       (native-inputs
-       `(("git" ,git)
-         ("guile" ,guile-2.2)
+       `(("guile" ,guile-2.2)
          ,@(if (string-prefix? "x86_64-linux" (or (%current-target-system)
                                                   (%current-system)))
                ;; Use cross-compiler rather than #:system "i686-linux" to get

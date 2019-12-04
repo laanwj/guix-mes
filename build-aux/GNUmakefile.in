@@ -97,27 +97,36 @@ build:
 src/${program_prefix}mes: build
 
 clean:
-	git clean -dfx\
-	    -e .config.make\
-	    -e config.sh\
-	    -e GNUmakefile\
-	    -e build.sh\
-	    -e check.sh\
-	    -e install.sh\
-	    -e uninstall.sh\
-	    -e pre-inst-env\
-	    -e scripts/mescc\
+	rm -f *.o *.s src/mes
+	rm -f mes.{aux,cp,cps,fn,info,log,tmp,toc,vr,vrs}
+	rm -f .log build.log
+	rm -f 0exit-42 0hello-mes exit-42 body-exit-42 body-hello-mes hello-mes
+	rm -f build-aux/mes-snarf.go
+	rm -f module/mescc.go
+	rm -f module/mes/*.go module/mescc/*.go
+	rm -f module/mescc/i386/*.go
+	rm -f module/mescc/x86_64/*.go
+	rm -rf gcc-lib/*.o gcc-lib/*.s gcc-lib/*.a gcc-lib/*-mes
+	rm -rf mescc-lib/*.o mescc-lib/*.s mescc-lib/*.a mescc-lib/*-mes
+	rm -f scaffold/boot/*.log scaffold/boot/*.trs
+	rm -f test-suite.log tests/*.log tests/*.trs
+	rm -f scaffold/*.s scaffold/*.o
+	rm -f doc/images/gcc-mesboot-graph.{eps,pdf,png}
+	rm -f doc/mes.1 doc/mesar.1 doc/mescc.1
+	rm -f .config .config.E .config.o
 
-#
-
-# Mes does not cache anything on the file system; therefore clean
-distclean:
-	git clean -dfX
+distclean: clean
+	rm -f GNUmakefile bootstrap.sh build.sh check.sh install.sh uninstall.sh
+	rm -f include/mes/config.h
+	rm -f .config.make config.sh mescc-lib/config.sh gcc-lib/config.sh
+	rm -f scripts/mesar scripts/mescc scripts/mescc.scm scripts/m2-merge
+	rm -f TAGS
 
 mostlyclean: clean
 
-maintainer-clean:
-	git clean -dfx
+maintainer-clean: distclean
+	rm -f doc/mes.info
+	rm -f doc/version.texi
 
 TAGS:
 	etags ${srcdest}lib/*.c ${srcdest}lib/*/*.c ${srcdest}src/*.c ${srcdest}include/*.h ${srcdest}include/sys/*.h

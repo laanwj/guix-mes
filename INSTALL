@@ -32,7 +32,6 @@ similar way.
   - SH, /bin/sh, GNU Bash 4.3 is known to work.
   - GNU coreutils
   - sed, GNU sed 4.2 is known to work.
-  - git, 2.10 is known to work.
   - Perl, 5.22 is known to work.
 
 ** Build it
