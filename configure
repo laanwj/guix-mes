@@ -501,7 +501,7 @@ Some influential environment variables:
                          "32"))
            (mes-libc (if system-libc? "system" "mes"))
 
-           (kernel-list (filter (compose not (cut equal? <> "unknown")) (cdr build-type-list)))
+           (kernel-list (filter (compose not (cut member <> '("pc" "unknown"))) (cdr build-type-list)))
            (mes-kernel (cond ((or (equal? '("linux" "gnu") kernel-list)
                                   (equal? "linux" (car kernel-list))) "linux")
                              ((equal? '( "gnu") kernel-list) "gnu")
