@@ -86,10 +86,10 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 (define (verbose string . rest)
   (if %verbose? (apply stderr (cons string rest))))
 
-(define (gulp-pipe* . command)
+(define (gulp-pipe command)
   (let* ((err (current-error-port))
          (foo (set-current-error-port (open-output-file ".error")))
-         (port (apply open-pipe* OPEN_READ command))
+         (port (open-pipe command "r"))
          (output (read-string port))
          (status (close-pipe port))
          (error (with-input-from-file ".error" read-string)))
@@ -99,6 +99,9 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
     (verbose "command[~a]: ~s => ~a [~a]\n" status command output error)
     (if (not (zero? status)) ""
         (string-trim-right (string-append output error)))))
+
+(define (gulp-pipe* . command)
+  (gulp-pipe (string-join command)))
 
 (define (tuple< a b)
   (cond
@@ -200,13 +203,9 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
             (stdout "checking for ~a~a... " name
                     (if (null? expected) ""
                         (format #f " [~a]" (version->string expected))))
-            (let* ((output (gulp-pipe* command version-option))
-                   ;;(foo (stderr "output=~s\n" output))
+            (let* ((output (gulp-pipe (string-append command " " (if version-option version-option ""))))
                    (actual (string->version output))
-                   ;;(foo (stderr "actual=~s\n" actual))
-                   ;;(foo (stderr "expected=~s\n" expected))
                    (pass? (and actual (tuple< expected actual)))
-                   ;;(foo (stderr "PASS?~s\n" pass?))
                    (dependency (set-field dependency (dependency-version-found) actual)))
               (stdout "~a ~a\n" (if pass? (if (pair? actual) "" " yes")
                                     (if actual " no, found" "no"))
@@ -448,7 +447,7 @@ Some influential environment variables:
                              (make-dep "help2man" #:version '(1 47) #:optional? #t)
                              (make-dep "perl" #:version '(5) #:optional? #t))))
            (guile (file-name "guile" deps))
-           (deps (if guile (cons (check-program-version (make-dep "nyacc" #:version '(0 86 0) #:commands (list (string-append guile " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t))
+           (deps (if guile (cons (check-program-version (make-dep "nyacc" #:version '(0 99 0) #:commands (list (string-append guile " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t #:version-option #f))
                                  deps)
                      deps))
            (guile (or guile "guile"))
