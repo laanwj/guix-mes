@@ -30,22 +30,22 @@ MES_PREFIX=${MES_PREFIX-$PWD}
 . build-aux/configure-lib.sh
 
 CPPFLAGS="-D HAVE_CONFIG_H=1 -I include"
-CFLAGS=""
+AM_CFLAGS=""
 mkdir -p mescc-lib
 cp config.sh mescc-lib/config.sh
 cd mescc-lib
 srcdest=../
-CPPFLAGS="-D HAVE_CONFIG_H=1 -I ${srcdest}include -I ${srcdest}include/$mes_kernel/$mes_cpu"
+AM_CPPFLAGS="-D HAVE_CONFIG_H=1 -I ${srcdest}include -I ${srcdest}include/$mes_kernel/$mes_cpu"
 
 mkdir $mes_cpu-mes
-$CC -c $CPPFLAGS $CFLAGS ${srcdest}lib/$mes_kernel/$mes_cpu-mes-$compiler/crt1.c
+$CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}lib/$mes_kernel/$mes_cpu-mes-$compiler/crt1.c
 cp crt1.o $mes_cpu-mes
 cp crt1.s $mes_cpu-mes
 
 objects=
 for c in $libc_mini_SOURCES; do
     echo "CC         $c"
-    $CC -c $CPPFLAGS $CFLAGS ${srcdest}$c
+    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
     objects="$objects $o"
 done
@@ -55,7 +55,7 @@ $AR crD $mes_cpu-mes/libc-mini.a $objects
 objects=
 for c in $libc_SOURCES; do
     echo "CC         $c"
-    $CC -c $CPPFLAGS $CFLAGS ${srcdest}$c
+    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
     objects="$objects $o"
 done
@@ -65,7 +65,7 @@ $AR crD $mes_cpu-mes/libc.a $objects
 objects=
 for c in $libc_tcc_SOURCES; do
     echo "CC         $c"
-    $CC -c $CPPFLAGS $CFLAGS ${srcdest}$c
+    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
     objects="$objects $o"
 done
@@ -79,7 +79,7 @@ CPPFLAGS="-D HAVE_CONFIG_H=1 -I ${srcdest}include -I ${srcdest}include/$mes_kern
 objects=
 for c in $mes_SOURCES; do
     echo "CC         $c"
-    $CC -c $CPPFLAGS $CFLAGS ${srcdest}$c
+    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
     objects="$objects $o"
 done

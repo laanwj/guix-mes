@@ -252,23 +252,39 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
       (if result (set-field dependency (dependency-file-name) name)
           dependency))))
 
+(define (cflags-list)
+  (let ((cflags (getenv "CFLAGS")))
+    (if cflags (list cflags)
+        '())))
+
+(define (ldflags-list)
+  (let ((ldflags (getenv "LDFLAGS")))
+    (if ldflags (list ldflags)
+        '())))
+
 (define (check-preprocess-header-c cc header)
   (with-output-to-file ".config.c"
     (cut format #t "#include \"~a\"" header))
-  (with-error-to-file "/dev/null"
-    (cut zero? (system* cc "-E" "-o" ".config.E" ".config.c"))))
+  (let ((test (lambda _ (apply system* `(,cc "-E" "-o" ".config.E" ,@(cflags-list) ".config.c")))))
+    (zero? (if %verbose? (test)
+               (with-error-to-file "/dev/null"
+                 test)))))
 
 (define (check-compile-string-c cc string)
   (with-output-to-file ".config.c"
     (cut display string))
-  (with-error-to-file "/dev/null"
-    (cut zero? (system* cc "--std=gnu99" "-c" "-o" ".config.o" ".config.c"))))
+  (let ((test (lambda _ (apply system* `(,cc "--std=gnu99" "-c" "-o" ".config.o" ,@(cflags-list) ".config.c")))))
+    (zero? (if %verbose? (test)
+               (with-error-to-file "/dev/null"
+                 test)))))
 
 (define (check-link-string-c cc string)
   (with-output-to-file ".config.c"
     (cut display string))
-  (with-error-to-file "/dev/null"
-    (cut zero? (system* cc "--std=gnu99" "-o" ".config" ".config.c"))))
+  (let ((test (lambda _ (apply system* `(,cc "--std=gnu99" "-o" ".config" ,@(cflags-list) ,@(ldflags-list) ".config.c")))))
+    (zero? (if %verbose? (test)
+               (with-error-to-file "/dev/null"
+                 test)))))
 
 (define (parse-opts args)
   (let* ((option-spec
@@ -600,9 +616,9 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@SCHEME@" . ,(if with-cheating? guile ""))
                      ("@SHELL@" . ,shell)
 
-                     ("@CFLAGS@" . ,(or (getenv "CFLAGS") ""))
+                     ("@CFLAGS@" . ,(or (getenv "CFLAGS") "-static -g"))
                      ("@CPPFLAGS@" . ,(or (getenv "CPPFLAGS") ""))
-                     ("@LDFLAGS@" . ,(or (getenv "LDFLAGS") ""))
+                     ("@LDFLAGS@" . ,(or (getenv "LDFLAGS") "-static -g"))
                      ("@HEX2FLAGS@" . ,(or (getenv "HEX2FLAGS") ""))
                      ("@M1FLAGS@" . ,(or (getenv "M1FLAGS") ""))
 
