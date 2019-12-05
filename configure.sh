@@ -22,6 +22,10 @@ set -e
 
 VERSION=0.21
 srcdir=${srcdir-$(dirname $0)}
+srcdest=
+if test "$srcdir" != "."; then
+    srcdest=$srcdir/
+fi
 . ${srcdest}build-aux/trace.sh
 
 # parse arguments
@@ -210,6 +214,7 @@ fi
 
 mes_system=$mes_cpu-$mes_kernel-mes
 
+mkdir -p scripts
 subst ${srcdest}build-aux/GNUmakefile.in GNUmakefile
 subst ${srcdest}build-aux/config.sh.in config.sh
 subst ${srcdest}build-aux/bootstrap.sh.in bootstrap.sh

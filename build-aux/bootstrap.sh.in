@@ -27,17 +27,22 @@ MES_STACK=${MES_STACK-5000000}
 export MES_STACK
 MES_PREFIX=${MES_PREFIX-$PWD}
 
-. build-aux/configure-lib.sh
+. ./config.sh
+. ${srcdest}build-aux/configure-lib.sh
+. ${srcdest}build-aux/cflags.sh
 
 CPPFLAGS="-D HAVE_CONFIG_H=1 -I include"
 AM_CFLAGS=""
 mkdir -p mescc-lib
 cp config.sh mescc-lib/config.sh
 cd mescc-lib
-srcdest=../
+srcdest=../${srcdest}
+ln -sf ${srcdest}mes .
+ln -sf ${srcdest}module .
+ln -sf ${srcdest}src .
 AM_CPPFLAGS="-D HAVE_CONFIG_H=1 -I ${srcdest}include -I ${srcdest}include/$mes_kernel/$mes_cpu"
 
-mkdir $mes_cpu-mes
+mkdir -p $mes_cpu-mes
 $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}lib/$mes_kernel/$mes_cpu-mes-$compiler/crt1.c
 cp crt1.o $mes_cpu-mes
 cp crt1.s $mes_cpu-mes

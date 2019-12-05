@@ -36,6 +36,7 @@ fi
 
 set -u
 . ./config.sh
+. ${srcdest}build-aux/cflags.sh
 
 if $courageous; then
     echo "Applying courage"
@@ -47,41 +48,6 @@ ${SHELL} ${srcdest}build-aux/build-scaffold.sh
 if test -n "$GUILE" -a "$GUILE" != true; then
     ${SHELL} ${srcdest}build-aux/build-guile.sh
 fi
-
-AM_CFLAGS=
-
-if test $mes_libc = mes; then
-    AM_CFLAGS="
--static
-"
-    AM_CFLAGS="$AM_CFLAGS
--nostdinc
--nostdlib
--fno-builtin
-"
-fi
-
-AM_CPPFLAGS="
--D HAVE_CONFIG_H=1
--I ../include
--I ${srcdir}/../include
--I ${srcdir}/../include/$mes_kernel/$mes_cpu
-"
-
-AM_LDFLAGS="
--L .
-"
-if test $mes_libc = mes; then
-    AM_LDFLAGS="$AM_LDFLAGS
--nostdlib
-"
-fi
-LIBS=-lc
-
-export AM_CFLAGS CFLAGS
-export AM_CPPFLAGS CPPFLAGS
-export AM_LDFLAGS LDFLAGS
-export LIBS
 
 (
     mkdir -p gcc-lib
