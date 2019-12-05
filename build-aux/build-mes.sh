@@ -21,7 +21,7 @@
 set -e
 set -u
 
-V=${V-1}
+V=${V-}
 
 if [ "$V" = 2 ]; then
     set -x
@@ -33,7 +33,6 @@ fi
 
 trap 'test -f .log && cat .log' EXIT
 
-srcdest=${srcdest-}
 mes_sources="
 src/gc.c
 src/hash.c

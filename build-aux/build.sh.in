@@ -58,6 +58,9 @@ fi
         srcdir=../
     fi
     if test $compiler = gcc; then
+        AM_LDFLAGS="$AM_LDFLAGS
+-L gcc-lib
+"
         AM_CPPFLAGS="
 -D HAVE_CONFIG_H=1
 -I include
