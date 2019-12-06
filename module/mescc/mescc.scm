@@ -73,6 +73,7 @@
          (input-base (basename input-file-name))
          (M1-file-name (cond ((and (option-ref options 'compile #f)
                                    (option-ref options 'output #f)))
+                             ((string-suffix? ".S" input-file-name) input-file-name)
                              (else (replace-suffix input-base ".s"))))
          (infos (map (cut file->info options <>) files))
          (verbose? (count-opt options 'verbose))
@@ -150,7 +151,8 @@
          (hex2-files (append hex2-files hex2-libraries))
          (s-files (append s-files (map (cut find-library options ".s" <>)  libraries)))
          (debug-info? (option-ref options 'debug-info #f))
-         (s-files (cons (replace-suffix input-file-name ".s") s-files))
+         (s-files (if (string-suffix? ".S" input-file-name) s-files
+                      (cons (replace-suffix input-file-name ".s") s-files)))
          (elf-footer (and debug-info?
                           (or (M1->blood-elf options s-files)
                               (exit 1)))))
