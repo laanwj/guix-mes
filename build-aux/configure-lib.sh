@@ -47,7 +47,7 @@ libc_mini_SOURCES="$libc_mini_shared_SOURCES"
 
 if test $mes_libc = mes; then
     libc_mini_SOURCES="$libc_mini_SOURCES
-lib/mes/write.c
+lib/mes/mini-write.c
 "
 fi
 
@@ -101,7 +101,7 @@ lib/posix/getcwd.c
 lib/posix/getenv.c
 lib/posix/isatty.c
 lib/posix/open.c
-lib/posix/read.c
+lib/posix/buffered-read.c
 lib/posix/setenv.c
 lib/posix/wait.c
 lib/stdio/fgetc.c

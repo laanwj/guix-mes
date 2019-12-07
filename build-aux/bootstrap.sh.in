@@ -49,32 +49,38 @@ cp crt1.s $mes_cpu-mes
 
 objects=
 for c in $libc_mini_SOURCES; do
-    echo "CC         $c"
-    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
+    if test ${srcdest}$c -nt $o; then
+        echo "  CC       $c"
+        $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
+    fi
     objects="$objects $o"
 done
-echo "AR         $mes_cpu-mes/libc-mini.a"
+echo "  AR       $mes_cpu-mes/libc-mini.a"
 $AR crD $mes_cpu-mes/libc-mini.a $objects
 
 objects=
 for c in $libc_SOURCES; do
-    echo "CC         $c"
-    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
+    if test ${srcdest}$c -nt $o; then
+        echo "  CC       $c"
+        $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
+    fi
     objects="$objects $o"
 done
-echo "AR         $mes_cpu-mes/libc.a"
+echo "  AR       $mes_cpu-mes/libc.a"
 $AR crD $mes_cpu-mes/libc.a $objects
 
 objects=
 for c in $libc_tcc_SOURCES; do
-    echo "CC         $c"
-    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
+    if test ${srcdest}$c -nt $o; then
+        echo "  CC       $c"
+        $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
+    fi
     objects="$objects $o"
 done
-echo "AR         $mes_cpu-mes/libc+tcc.a"
+echo "  AR       $mes_cpu-mes/libc+tcc.a"
 $AR crD $mes_cpu-mes/libc+tcc.a $objects
 
 cd ..
@@ -83,12 +89,14 @@ CPPFLAGS="-D HAVE_CONFIG_H=1 -I ${srcdest}include -I ${srcdest}include/$mes_kern
 
 objects=
 for c in $mes_SOURCES; do
-    echo "CC         $c"
-    $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
     o=$(basename $c .c).o
+    if test ${srcdest}$c -nt $o; then
+        echo "  CC       $c"
+        $CC -c $AM_CPPFLAGS $CPPFLAGS $AM_CFLAGS $CFLAGS ${srcdest}$c
+    fi
     objects="$objects $o"
 done
-echo "CCLD       src/mes"
+echo "  CCLD     src/mes"
 $CC -nostdlib -o src/mes -L mescc-lib mescc-lib/crt1.o $objects -lc
 
 (
