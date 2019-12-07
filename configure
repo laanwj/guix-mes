@@ -448,9 +448,9 @@ Some influential environment variables:
            (deps (fold (lambda (program results)
                          (cons (check-program-version program) results))
                        '()
-                       (list (make-dep "hex2" #:version '(0 6))
-                             (make-dep "M1" #:version '(0 6))
-                             (make-dep "blood-elf" #:version '(0 6))
+                       (list (make-dep "hex2")
+                             (make-dep "M1")
+                             (make-dep "blood-elf")
                              (make-dep "diff" #:optional? #t)
                              (make-dep "guile" #:version '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile") #:optional? #t)
                              (make-dep "mes" #:version '(0 20) #:optional? #t)
@@ -534,7 +534,13 @@ Some influential environment variables:
                       (file-name "bash" deps)
                       (and (file-exists? "/bin/sh") "/bin/sh")
                       (file-name "sh" deps)
-                      "sh")))
+                      "sh"))
+           (hex2 (file-name "hex2" deps))
+           (numbered-arch? (begin
+                             (stdout "checking for stage0 architecture flag... ")
+                             (let ((numbered? (and hex2 (string-contains (gulp-pipe (string-append hex2 " --help 2>&1" )) "--Architecture 12345"))))
+                               (stdout (if numbered? "numbered\n" "named\n"))
+                               numbered?))))
 
       (define* (substitute file-name pairs
                            #:key (target (if (string-suffix? ".in" file-name)
@@ -625,6 +631,7 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@LDFLAGS@" . ,(or (getenv "LDFLAGS") "-static -g"))
                      ("@HEX2FLAGS@" . ,(or (getenv "HEX2FLAGS") ""))
                      ("@M1FLAGS@" . ,(or (getenv "M1FLAGS") ""))
+                     ("@numbered_arch@" . ,(if numbered-arch? "true" "false"))
 
                      ,@(map
                         (lambda (o)
@@ -687,6 +694,7 @@ GNU Mes is configured for
    libc:     " mes-libc "
    kernel:   " mes-kernel "
    system:   " mes-system "
+   tools:    " (if numbered-arch? "numbered" "named") " arch
 
 Run:
   " (or make "./build.sh") "           to build mes

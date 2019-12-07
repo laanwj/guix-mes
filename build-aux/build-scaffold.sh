@@ -44,13 +44,21 @@ fi
 
 case "$mes_cpu" in
     arm)
-        stage0_cpu=armv7l;;
+        stage0_arch=40
+        stage0_cpu=armv7l
+        ;;
     x86_64)
-        stage0_cpu=amd64;;
+        stage0_arch=2
+        stage0_cpu=amd64
+        ;;
     x86)
-        stage0_cpu=x86;;
+        stage0_arch=1
+        stage0_cpu=x86
+        ;;
     *)
-        stage0_cpu=$mes_cpu;;
+        stage0_arch=1
+        stage0_cpu=$mes_cpu
+        ;;
 esac
 
 trace "CCLD       ${srcdest}lib/$mes_cpu-mes-$compiler/exit-42.S" $CC\
@@ -64,9 +72,15 @@ trace "TEST       exit-42"
 [ $r != 42 ] && echo "  => $r"
 [ $r = 42 ]
 
+if $numbered_arch; then
+    stage0_cpu_flag="--Architecture $stage0_arch";
+else
+    stage0_cpu_flag="--architecture $stage0_cpu";
+fi
+
 trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0exit-42.hex2" $HEX2\
       --LittleEndian\
-      --architecture $stage0_cpu\
+      $stage0_cpu_flag\
       --BaseAddress 0x1000000\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0header.hex2\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0exit-42.hex2\
@@ -80,7 +94,7 @@ trace "TEST       0exit-42"
 
 trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-exit-42.hex2" $HEX2\
       --LittleEndian\
-      --architecture $stage0_cpu\
+      $stage0_cpu_flag\
       --BaseAddress 0x1000000\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-header.hex2\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-exit-42.hex2\
@@ -107,7 +121,7 @@ trace "TEST       hello-mes"
 
 trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0hello-mes.hex2" $HEX2\
       --LittleEndian\
-      --architecture $stage0_cpu\
+      $stage0_cpu_flag\
       --BaseAddress 0x1000000\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0header.hex2\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-0hello-mes.hex2\
@@ -121,7 +135,7 @@ trace "TEST       0hello-mes"
 
 trace "HEX2       ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-hello-mes.hex2" $HEX2\
       --LittleEndian\
-      --architecture $stage0_cpu\
+      $stage0_cpu_flag\
       --BaseAddress 0x1000000\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-header.hex2\
       -f ${srcdest}lib/$mes_cpu-mes/elf$mes_bits-body-hello-mes.hex2\

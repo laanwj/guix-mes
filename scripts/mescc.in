@@ -43,6 +43,8 @@ includedir=${includedir-@includedir@}
 export includedir
 libdir=${libdir-@libdir@}
 export libdir
+numbered_arch=${numbered_arch=@numbered_arch@}
+export numbered_arch
 
 if [ ! -f $bindir/mescc.scm ]; then
    bindir=$(dirname $0)

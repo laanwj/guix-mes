@@ -41,6 +41,7 @@
 (define %includedir (getenv "%includedir"))
 (define %libdir (getenv "%libdir"))
 (define %version (getenv "%version"))
+(define %numbered-arch? (and=> (getenv "%numbered_arch") (lambda (x) (equal? x "true"))))
 
 (when (and=> (getenv "V") (lambda (v) (and (= (string-length v) 1) (> (string->number v) 1))))
   (format (current-error-port) "mescc[~a]...\n" %scheme))
@@ -75,6 +76,7 @@
             (nostartfiles)
             (nostdinc)
             (nostdlib)
+            (numbered-arch?)
             (preprocess (single-char #\E))
             (static)
             (std (value #t))
@@ -103,6 +105,7 @@ Options:
   -dumpmachine        display the compiler's target machine
   --base-address=ADRRESS
                       use BaseAddress ADDRESS [0x1000000]
+  --numbered-arch     mescc-tools use numbered arch
   -D DEFINE[=VALUE]   define DEFINE [VALUE=1]
   -E                  preprocess only; do not compile, assemble or link
   -g                  add debug info [GDB, objdump] TODO: hex2 footer
@@ -164,6 +167,8 @@ General help using GNU software: <http://gnu.org/gethelp/>
          (options (acons 'libdir %libdir options))
          (arch (option-ref options 'arch %host-arch))
          (options (if arch (acons 'arch arch options) options))
+         (numbered-arch? (option-ref options 'numbered-arch? %numbered-arch?))
+         (options (acons 'numbered-arch? numbered-arch? options))
          (dumpmachine? (option-ref options 'dumpmachine #f))
          (preprocess? (option-ref options 'preprocess #f))
          (compile? (option-ref options 'compile #f))

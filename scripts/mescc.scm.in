@@ -41,11 +41,17 @@
 (define %arch (if (string-prefix? "@mes_cpu" "@mes_cpu@") %arch
                   "@mes_cpu@"))
 
+(define %numbered-arch? (if (getenv "numbered_arch") (and=> (getenv "numbered_arch")
+                                                            (lambda (x) (equal? x "true")))
+                            (if (string-prefix? "@numbered_arch" "@numbered_arch@") #f
+                                (equal? "@numbered_arch@" "true"))))
+
 (setenv "%prefix" %prefix)
 (setenv "%includedir" %includedir)
 (setenv "%libdir" %libdir)
 (setenv "%version" %version)
 (setenv "%arch" %arch)
+(setenv "%numbered_arch" (if %numbered-arch? "true" "false"))
 
 (cond-expand
  (mes

@@ -116,7 +116,7 @@ fi
     LDFLAGS=
     ${SHELL} ${srcdest}build-aux/build-lib.sh
     ${SHELL} ${srcdest}build-aux/build-source-lib.sh
-    if bootstrap; then
+    if $bootstrap; then
         ${SHELL} ${srcdest}build-aux/build-mes.sh
     fi
 )

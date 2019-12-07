@@ -99,6 +99,14 @@ if test -z "$GUILE" -o "$GUILE" = true; then
 else
     GUILE_EFFECTIVE_VERSION=${GUILE_EFFECTIVE_VERSION-$(guile -c '(display (effective-version))')}
 fi
+
+numbered_arch=false
+mes_tools=named
+if ( $HEX2 --help 2>&1 ) | grep -q "\-\-Architecture 12345"; then
+    numbered_arch=true
+    mes_tools=numbered
+fi
+
 bindir=$(eval echo ${bindir-$prefix/bin})
 datadir=$(eval echo ${datadir-$prefix/share})
 docdir=$(eval echo ${docdir-$datadir/doc/mes})
@@ -164,6 +172,7 @@ subst () {
     -e s,"@MES_FOR_BUILD@,$MES_FOR_BUILD,"\
     -e s,"@MES_SEED@,$MES_SEED,"\
     -e s,"@MES_SEED@,$MES_SEED,"\
+    -e s,"@numbered_arch@,$numbered_arch,"\
     -e s,"@SHELL@,$SHELL,"\
     $1 > $2
 }
@@ -259,6 +268,7 @@ GNU Mes is configured for
    libc:     $mes_libc
    kernel:   $mes_kernel
    system:   $mes_system
+   tools:    $mes_tools arch
 
 Run:
   sh build.sh      to build mes

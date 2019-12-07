@@ -54,6 +54,7 @@ abs_top_srcdir="@abs_top_srcdir@"
 arch="@arch@"
 build="@build@"
 host="@host@"
+numbered_arch=${numbered_arch-"@numbered_arch@"}
 
 bootstrap=${bootstrap-@bootstrap@}
 compiler=${compiler-@compiler@}
