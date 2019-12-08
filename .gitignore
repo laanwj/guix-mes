@@ -37,34 +37,7 @@
 *.stderr
 *.stdout
 
-*.x86-out
-
-*.x86-mes-E
-*.x86-mes-S
-*.x86-mes-gcc-a
-*.x86-mes-gcc-o
-*.x86-mes-gcc-out
-*.x86-mes-gcc-stdout
-*.x86-mes-o
-*.x86-mes-out
-*.x86-mes-stdout
-
-*.x86_64-mes-E
-*.x86_64-mes-S
-*.x86_64-mes-gcc-a
-*.x86_64-mes-gcc-o
-*.x86_64-mes-gcc-out
-*.x86_64-mes-gcc-stdout
-*.x86_64-mes-o
-*.x86_64-mes-out
-*.x86_64-mes-stdout
-*.x86_64-out
-
-/lib/x86-mes/0exit-42
-/lib/x86-mes/exit-42
-
 /lib/tests/*/[0-9a][0-9a-z]-*
-/lib/tests/*/x86-mes-*
 !/lib/tests/*/*.c
 !/lib/tests/*/*.exit
 !/lib/tests/*/*.stdout
@@ -75,10 +48,6 @@
 /scaffold/micro-mes
 /scaffold/tiny-mes
 
-/scaffold/x86-mes-*
-/scaffold/x86_64-mes-*
-
-/scaffold/tests/x86-mes-*
 /scaffold/tests/[0-9a][0-9a-z]-*
 /scaffold/tests/t.*
 !/scaffold/tests/*.c
@@ -88,9 +57,6 @@
 /.config.make
 /.store
 /.tarball-version
-
-#keep this: bootstrap
-#/mes.mes
 
 /out
 ?
@@ -104,12 +70,21 @@
 /doc/fosdem/fosdem.tex
 /doc/fosdem/fosdem.toc
 /doc/fosdem/fosdem.*vrb
-/doc/mes
 /doc/mes.1
 /doc/mes.info
 /doc/mes.pdf
+/doc/mesar.1
 /doc/mescc.1
 /doc/version.texi
+/mes.aux
+/mes.cp
+/mes.cps
+/mes.fn
+/mes.info
+/mes.tmp
+/mes.toc
+/mes.vr
+/mes.vrs
 
 /config.status
 /pre-inst-env
@@ -128,8 +103,6 @@
 /doc/images/gcc-mesboot-graph.eps
 /doc/images/gcc-mesboot-graph.pdf
 /doc/web/
-/lib/x86_64-mes/0exit-42
-/lib/x86_64-mes/exit-42
 /config.sh
 /include/mes/config.h
 /gcc-lib
