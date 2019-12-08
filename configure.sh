@@ -39,6 +39,7 @@ while [ $# -gt 0 ]; do
             ;;
         (--build=*)
             build=${1#--build=}
+            host=${host-$build}
             ;;
         (--host=*)
             host=${1#--host=}
@@ -56,7 +57,6 @@ done
 prefix=${prefix-/usr/local}
 mes_libc=${mes_libc-mes}
 courageous=${courageous-false}
-host=${host-$build}
 
 AR=${AR-$(command -v ar)} || true
 BASH=${BASH-$(command -v bash)}
@@ -271,7 +271,7 @@ GNU Mes is configured for
    tools:    $mes_tools arch
 
 Run:
-  sh build.sh      to build mes
+  sh bootstrap.sh  to bootstrap build mes
   sh check.sh      to check mes
   sh install.sh    to install mes
 EOF
