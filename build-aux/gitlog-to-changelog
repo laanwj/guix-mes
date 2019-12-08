@@ -3,7 +3,7 @@ eval '(exit $?0)' && eval 'exec perl -wS "$0" "$@"'
     if 0;
 # Convert git log output to ChangeLog format.
 
-my $VERSION = '2016-10-16 06:30'; # UTC
+my $VERSION = '2019-12-08 20:13'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
@@ -345,7 +345,7 @@ sub git_dir_option($)
                   ? '  (tiny change)' : '');
 
       my $date_line = sprintf "%s  %s$tiny\n",
-        strftime ("%Y-%m-%d", localtime ($1)), $2;
+        strftime ("%Y-%m-%d", gmtime ($1)), $2;
 
       my @coauthors = grep /^Co-authored-by:.*$/, @line;
       # Omit meta-data lines we've already interpreted.
