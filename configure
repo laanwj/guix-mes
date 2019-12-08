@@ -304,6 +304,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
             (mes)
             (help (single-char #\h))
             (verbose (single-char #\v))
+            (with-bootstrap)
             (with-cheating)
             (with-courage)
             (infodir (value #t))
@@ -344,6 +345,7 @@ Options:
                        verbose build output [V=1]
       --host=HOST      cross-compile to build programs to run on HOST [BUILD]
   -v, --verbose        be verbose
+  --with-bootstrap     After building mes with CC, build mes with MesCC
   --with-courage       Assert that even if this platform is unsupported,
                        you will be courageous and port GNU Mes to it
                        (see \"Porting GNU Mes\" in the manual.)
@@ -415,6 +417,7 @@ Some influential environment variables:
          (top-builddir (if (equal? srcdir ".") "."
                            abs-top-builddir))
 
+         (with-bootstrap? (option-ref options 'with-bootstrap #f))
          (with-cheating? (option-ref options 'with-cheating #f))
          (with-courage? (option-ref options 'with-courage #f))
          (disable-colors? (option-ref options 'disable-colors #f))
@@ -565,6 +568,7 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@build@" . ,build-type)
                      ("@host@" . ,host-type)
 
+                     ("@bootstrap@" . ,(if with-courage? "true" "false"))
                      ("@courageous@" . ,(if with-courage? "true" "false"))
                      ("@compiler@" . ,compiler)
                      ("@mes_bits@" . ,mes-bits)
