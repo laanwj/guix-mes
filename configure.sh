@@ -58,7 +58,6 @@ prefix=${prefix-/usr/local}
 mes_libc=${mes_libc-mes}
 courageous=${courageous-false}
 
-AR=${AR-$(command -v ar)} || true
 BASH=${BASH-$(command -v bash)}
 BLOOD_ELF=${BLOOD_ELF-$(command -v blood-elf)}
 CC=${CC-$(command -v gcc)} || true
@@ -213,13 +212,16 @@ case "$mes_cpu" in
         mes_bits=32;;
 esac
 #
-if $CC --version | grep gcc; then #2>/dev/null; then
+if $CC --version | grep gcc; then
     compiler=gcc
-elif $CC --version | grep tcc; then #2>/dev/null; then
+elif $CC --version | grep tcc; then
     compiler=gcc
 else
     compiler=mescc
+    AR=${AR-$PWD/scripts/mesar}
 fi
+
+AR=${AR-$(command -v ar)} || true
 
 mes_system=$mes_cpu-$mes_kernel-mes
 
