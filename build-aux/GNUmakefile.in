@@ -107,7 +107,11 @@ clean:
 	rm -f module/mescc/i386/*.go
 	rm -f module/mescc/x86_64/*.go
 	rm -rf gcc-lib/*.o gcc-lib/*.s gcc-lib/*.a gcc-lib/*-mes
+	rm -f gcc-lib/libc+gnu.c
+	rm -f gcc-lib/.log gcc-lib/build.log
 	rm -rf mescc-lib/*.o mescc-lib/*.s mescc-lib/*.a mescc-lib/*-mes
+	rm -f mescc-lib/libc+gnu.c
+	rm -f mescc-lib/.log mescc-lib/build.log
 	rm -f scaffold/boot/*.log scaffold/boot/*.trs
 	rm -f test-suite.log tests/*.log tests/*.trs
 	rm -f scaffold/*.s scaffold/*.o
