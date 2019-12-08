@@ -37,10 +37,10 @@
   (define-macro (mes-use-module . rest) #t)))
 
 (define %host-arch (or (getenv "%arch") %arch))
-(define %prefix (getenv "%prefix"))
-(define %includedir (getenv "%includedir"))
-(define %libdir (getenv "%libdir"))
-(define %version (getenv "%version"))
+(define %prefix (or (getenv "%prefix") "mes"))
+(define %includedir (or (getenv "%includedir") "include"))
+(define %libdir (or (getenv "%libdir") "."))
+(define %version (or (getenv "%version") "0.0"))
 (define %numbered-arch? (and=> (getenv "%numbered_arch") (lambda (x) (equal? x "true"))))
 
 (when (and=> (getenv "V") (lambda (v) (and (= (string-length v) 1) (> (string->number v) 1))))
@@ -183,3 +183,5 @@ General help using GNU software: <http://gnu.org/gethelp/>
           (compile? (mescc:compile options))
           (assemble? (mescc:assemble options))
           (else (mescc:link options)))))
+
+(define main mescc:main)

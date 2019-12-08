@@ -136,6 +136,9 @@
       (if (null? (cdr rest)) (car rest)
           (append2 (car rest) (apply append (cdr rest))))))
 
+(if (not (defined? '%datadir))
+    (module-define! (current-module) '%datadir "mes"))
+
 (define %moduledir (string-append %datadir "/module/"))
 
 (include (string-append %moduledir "mes/type-0.mes"))
