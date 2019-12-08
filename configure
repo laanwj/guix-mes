@@ -455,7 +455,7 @@ Some influential environment variables:
                              (make-dep "ar" #:version '(2 10) #:optional? #t)
                              (make-dep "sh" #:version '(0) #:optional? #t)
                              (make-dep "bash" #:version '(2 0) #:optional? #t)
-                             (make-dep "guild" #:version '(2 0) #:commands '("guild" "guile-tools"))
+                             (make-dep "guild" #:version '(2 0) #:commands '("guild" "guile-tools" "true"))
                              (make-dep "cc" #:commands (list gcc tcc mescc) #:optional? #t)
                              (make-dep "make" #:optional? #t)
                              (make-dep "makeinfo" #:optional? #t)
