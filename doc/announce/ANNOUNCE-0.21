@@ -37,18 +37,18 @@ Packages are available in Guix master.
 
   GNU Mes[0] brings a Reduced Binary Seed bootstrap[1] to GNU Guix[2].
   This bootstrap has halved the size of opaque, uninspectable binaries
-  that were needed to bootstrap Guix.  The final goal is to help create
-  a full source bootstrap as part of the bootstrappable builds[3] effort
-  for any interested UNIX-like operating system.
+  that were needed to bootstrap Guix 1.0.  The final goal is to help
+  create a full source bootstrap as part of the bootstrappable builds[3]
+  effort for any interested UNIX-like operating system.
 
-  It consists of a mutual self-hosting Scheme interpreter written in
-  ~5,000 LOC of simple C and a Nyacc-based C compiler written in Scheme.
-  This mes.c is being simplified[4] to be transpiled by M2-Planet[5].
+  Mes consists of a mutual self-hosting Scheme interpreter written in
+  ~5,000 LOC of simple C, and a C compiler written in Scheme.  This
+  mes.c is being simplified[4] to be transpiled by M2-Planet[5].
 
   The Scheme interpreter has a Garbage Collector, a library of loadable
   Scheme modules-- notably Dominique Boucher's LALR[6], Pre-R6RS
   [portable syntax-case[7] with R7RS ellipsis, Matt Wette's Nyacc[8]
-  --and test suite just enough to support a REPL and a C99 compiler:
+  --and test suite, just enough to support a REPL and a C99 compiler:
   MesCC.
 
   Mes+MesCC can compile an only lightly patched TinyCC[9] that is

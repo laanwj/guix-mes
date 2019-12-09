@@ -4,20 +4,20 @@
 #+SUBTITLE: Maxwell Equations of Software
 
 [[https://www.gnu.org/software/mes][GNU Mes]] is a Scheme interpreter and C compiler for bootstrapping the GNU
-system.  Since version 0.20 it brings a [[https://guix.gnu.org/blog/2019/guix-reduces-bootstrap-seed-by-50/][Reduced Binary Seed bootstrap]] to
-[[https://www.gnu.org/software/guix][GNU Guix]].  This bootstrap has halved the size of opaque, uninspectable
-binaries that were needed to bootstrap Guix 1.0.  The final goal is to
-help create a full source bootstrap as part of the [[http://bootstrappable.org][bootstrappable builds]]
+System.  Since version 0.22 it has again helped to halve the size of
+opaque, uninspectable binary seeds that are currently being used in the
+[[https://guix.gnu.org/blog/2019/guix-reduces-bootstrap-seed-by-50/][Reduced Binary Seed bootstrap]] of [[https://www.gnu.org/software/guix][GNU Guix]].  The final goal is to help
+create a full source bootstrap as part of the [[http://bootstrappable.org][bootstrappable builds]]
 effort for UNIX-like operating systems.
 
-Mes consists of a mutual self-hosting Scheme interpreter written in
-~5,000 LOC of simple C, and a C compiler written in Scheme.  This mes.c
-is [[https://github.com/oriansj/mes-m2][being simplified]] to be transpiled by [[https://github.com/oriansj/m2-planet][M2-Planet]].
+The Scheme interpreter is written in ~5,000 LOC of simple C, and the C
+compiler written in Scheme and these are mutual self-hosting.  This
+mes.c is [[https://github.com/oriansj/mes-m2][being simplified]] to be transpiled by [[https://github.com/oriansj/m2-planet][M2-Planet]].
 
-The Scheme interpreter has a Garbage Collector, a library of loadable
-Scheme modules-- notably Dominique Boucher's [[https://github.com/schemeway/lalr-scm][LALR]], Pre-R6RS [[https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html][portable
-syntax-case]] with R7RS ellipsis, Matt Wette's [[https://www.nongnu.org/nyacc][Nyacc]] --and test suite just
-enough to support a REPL and a C99 compiler: MesCC.
+Mes has a Garbage Collector, a library of loadable Scheme modules--
+notably Dominique Boucher's [[https://github.com/schemeway/lalr-scm][LALR]], Pre-R6RS [[https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html][portable syntax-case]] with
+R7RS ellipsis, Matt Wette's [[https://www.nongnu.org/nyacc][Nyacc]] --and test suite, just enough to
+support a REPL and a C99 compiler: mescc.
 
 Mes+MesCC can compile an only [[http://gitlab.com/janneke/tinycc][lightly patched TinyCC]] that is
 self-hosting.  Using this tcc and the Mes C library we now have a

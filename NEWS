@@ -10,6 +10,41 @@ Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to bug-mes@gnu.org.
 
+* Changes in 0.22 since 0.21
+** Core
+*** Mes now builds reproducibly with MesCC, cross distribution
+Using --with-bootstrap on x86, a bin/mes-mescc is compiled with
+mes+mescc, that shall have sha256sum
+
+    9e0bcb1633c58e7bc415f6ea27cee7951d6b0658e13cdc147e992b31a14625fb  bin/mes-mescc
+
+This has been verified on GNU Guix, Debian GNU/Linux and NixOS.
+*** Mes now builds reproducibly with Guile+MesCC vs Mes+MesCC.
+*** Mes now builds reproducibly with Tiny CC-built MesCC.
+*** configure now respects the user's CFLAGS, CPPFLAGS and LDFLAGS.
+*** Mes now supports mescc-tools 0.5.2 next to 0.6.1.
+This allows introducing the Scheme-only bootstrap without updating or
+adding new bootstrap binary seeds into GNU Guix.
+*** Mes now runs when configured --with-courage on the Hurd:
+    GNU debian 0.9 GNU-Mach 1.8+git20170609-486/Hurd-0.9 i686-AT386 GNU
+Note that mescc does not run; fork and exec are not yet implemented.
+*** Mes now configures --with-courage on x86-FreeBSD 12.1
+The initial ELF scaffold tests: exit-42.S, 0exit-42.hex2,
+body-exit-42.hex2, hello-mes.S, 0hello-mes.hex2, body-hello-mes.hex2
+pass.
+*** configure now has a --with-bootstrap option.
+This adds the reproducible bootstrap build of bin/mes-mescc, using
+mes+mescc.
+*** configure prefers $CC over gcc; tcc over gcc, gcc over cc.
+*** Mes now prints an error when attempting to read a file that does not exist.
+*** Mes no longer depends on GIT.
+** Noteworthy bug fixes
+*** Several annoying build problems were fixed, for non-Guix systems.
+*** A bug with buffered-read was fixed.
+This means that bash-2.05 can now build glibc-2.2.5; notably it now
+successfully executes make-syscall.sh.
+*** A bug with execlp, execvp for file names containing a slash was fixed.
+This should allow make-3.80 running scripts that have "#! ./move-if-change".
 * Changes in 0.21 since 0.20
 ** Core
 *** Mes can now be bootstrapped with Gash and Gash Core Utils.
@@ -48,6 +83,7 @@ take-while.
 *** 1 new function
 __mesabi_uldiv.
 ** Noteworthy bug fixes
+*** map and for-each now support lists with unequal length.
 *** interger division has been fixed.
 *** isatty now looks at terminfo.
 *** signal now uses sigaction correctly for non-x86.

@@ -1,64 +1,31 @@
                                                               -*- org -*-
 #+TITLE: Hacking GNU Mes
 
-Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
-
-  Copying and distribution of this file, with or without modification,
-  are permitted in any medium without royalty provided the copyright
-  notice and this notice are preserved.
-
 * SETUP
     guix environment -l guix.scm     #64 bit + 32bit
 
+    CC=i686-unkown-linux-gnu-gcc ./configure
 or
+    ./configure
 
-    guix environment --system=i686-linux -l guix.scm #32 bit only
-
-or
-
-    guix package --profile=~/.config/guix/mes --manifest=build-aux/manifest.scm
-    . ~/.config/guix/mes/etc/profile
+The 64bit bootstrap is not supported; MesCC needs work to be able to
+compile a functional tinycc.
 
 * BUILD
-There are two major modes to build Mes: true bootstrap and
-development.
 
-** DEVELOPMENT BUILD
-To help development we assume ./configure sets these variables for make
+GNU Guile can be used as a replacement for Mes.  It's faster and has
+much better error handling.
 
-   CC     -- gcc (or i686-unknown-linux-gnu-gcc sans libc)
-   GUILE  -- guile
-   HEX2   -- hex2
-   MES    -- unset
-   M1     -- M1
-   prefix -- ""
+   #+BEGIN_SRC bash
+   make MES=guile
+   make check MES=guile
+   #+END_SRC
 
-Mes is supposed to serve as a full equivalent for Guile, however Mes
-is still about 2 to 10 times slower than Guile.  That's why we usually
-don't use Mes during development, configure --with-cheating.
+Configure to compile with Tiny CC
 
-Gcc is used to verify the sanity of our C sources.
-
-i686-unknown-linux-gnu-gcc is used to compare hex/assembly, to test
-the gcc variant of Mes C Libirary.
-Target prefix: x86-mes-gcc.
-
-gcc -nostdinc,-nostdlib is used to compare hex/assembly, to test the
-64bit variant of Mes C Library.  Target prefix: x86_64-mes-gcc.
-
-Guile is used to develop MesCC, the C compiler in Scheme that during
-bootstrapping will be executed by Mes.
-
-** BOOTSTRAP BUILD
-
-    ./configure.sh [--prefix=PREFIX]
-    ./bootstrap.sh
-    ./install.sh
-
-In bootstrap mode, we don't have gcc (CC), we don't have a 32 bit gcc,
-we have no guile (GUILE)...but we should have hex2, M1, and mes.M1.
-That's a bootstrap problem which is currently ignored by using the
-mes-seed package.  mes.M1 will be produced by M2-Planet from mes.c.
+   #+BEGIN_SRC bash
+   ./configure CC=tcc --host=i686-unknown-linux-gnu --with-courage
+   #+END_SRC
 
 * DEBUG
   MES_DEBUG=<level> mes
@@ -83,7 +50,7 @@ mes-seed package.  mes.M1 will be produced by M2-Planet from mes.c.
 
 * Bugs
 ** mes: performance, Mes is now 2-10x slower than Guile.
-** mes/mescc lack support for the Hurd.
+** mes/mescc lack support for fork/exec on the Hurd.
 ** mes: gcc-x86_64 compiled mes segfaults with small arena, or gc_up_arena.
 ** mes: gcc-x86 compiled, tests/srfi-13.test number->string INT-MIN fails:
 test: number->string INT-MIN: fail
@@ -214,3 +181,10 @@ https://notabug.org/rain1/hex86/src/master/tests/hex0b3.hex86
            https://jamey.thesharps.us/2016/07/15/testing-strategies-for-corrode/
            ("Randomized testing with Csmith and C-Reduce")  [10:58]
 ** linux syscalls: https://fedora.juszkiewicz.com.pl/syscalls.html
+* legalese
+
+Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.

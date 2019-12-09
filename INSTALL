@@ -41,6 +41,19 @@ similar way.
    make
    #+END_SRC
 
+If you get something like
+
+   #+BEGIN_SRC bash
+   mes.c:(.text+0x8da0): undefined reference to `__stack_chk_fail'
+   #+END_SRC
+
+then your compiler inserts stack protection code.  The Mes C Library
+does not support that.  Turn it off lik this
+
+   #+BEGIN_SRC bash
+   ./configure CFLAGS=-fno-stack-protector
+   #+END_SRC
+
 ** Check it
 
    #+BEGIN_SRC bash
@@ -86,3 +99,13 @@ https://git.savannah.gnu.org/cgit/guix.git/tree/gnu/packages/commencement.scm
    #+BEGIN_SRC bash
    sh install.sh
    #+END_SRC
+* Regular build and bootstrap combine
+
+To build mes.c using MesCC, configure using --with-bootstrap:
+
+   #+BEGIN_SRC bash
+   ./configure --with-bootstrap
+   make
+   #+END_SRC
+
+This creates bin/mes-gcc and bin/mes-mescc.
