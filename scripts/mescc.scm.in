@@ -22,7 +22,11 @@
 (cond-expand
  (mes)
  (guile
-  (define %arch (car (string-split %host-type #\-)))))
+  (define %arch (car (string-split %host-type #\-)))
+  (define %kernel (car (filter
+                        (compose not
+                                 (lambda (x) (member x '("pc" "portbld" "unknown"))))
+                        (cdr (string-split %host-type #\-)))))))
 
 (define %prefix (or (getenv "MES_PREFIX")
                       (if (string-prefix? "@prefix" "@prefix@")
@@ -41,6 +45,9 @@
 (define %arch (if (string-prefix? "@mes_cpu" "@mes_cpu@") %arch
                   "@mes_cpu@"))
 
+(define %kernel (if (string-prefix? "@mes_kernel" "@mes_kernel@") %kernel
+                    "@mes_kernel@"))
+
 (define %numbered-arch? (if (getenv "numbered_arch") (and=> (getenv "numbered_arch")
                                                             (lambda (x) (equal? x "true")))
                             (if (string-prefix? "@numbered_arch" "@numbered_arch@") #f
@@ -51,6 +58,7 @@
 (setenv "%libdir" %libdir)
 (setenv "%version" %version)
 (setenv "%arch" %arch)
+(setenv "%kernel" %kernel)
 (setenv "%numbered_arch" (if %numbered-arch? "true" "false"))
 
 (cond-expand

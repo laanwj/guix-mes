@@ -516,12 +516,11 @@ Some influential environment variables:
            (mes-bits (if (member mes-cpu '("x86_64")) "64"
                          "32"))
            (mes-libc (if system-libc? "system" "mes"))
-
-           (kernel-list (filter (compose not (cut member <> '("pc" "unknown"))) (cdr host-type-list)))
-           (mes-kernel (cond ((or (equal? '("linux" "gnu") kernel-list)
-                                  (equal? "linux" (car kernel-list))) "linux")
-                             ((equal? '( "gnu") kernel-list) "gnu")
-                             (else "unknown")))
+           (mes-kernel (car (filter
+                             (compose not
+                                      (cut member <> '("pc" "portbld" "unknown")))
+                             (cdr host-type-list))))
+           (mes-kernel (if (string-prefix? "freebsd" mes-kernel) "freebsd" mes-kernel))
            (compiler (if gcc? "gcc" "mescc"))
            (mes-system (string-join (list mes-cpu mes-kernel "mes") "-"))
            (bash (or (and (file-exists? "/bin/bash") "/bin/bash")

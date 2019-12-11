@@ -203,9 +203,11 @@
          (hex2 (or (getenv "HEX2") "hex2"))
          (base-address (option-ref options 'base-address "0x1000000"))
          (machine (arch-get-machine options))
-         (elf-footer (or elf-footer
-                         (arch-find options (string-append
-                                             "elf" machine "-footer-single-main.hex2"))))
+         (elf-footer
+          (or elf-footer
+              (kernel-find
+               options
+               (string-append "elf" machine "-footer-single-main.hex2"))))
          (start-files (if (or (option-ref options 'nostartfiles #f)
                               (option-ref options 'nostdlib #f)) '()
                               `("-f" ,(arch-find options "crt1.o"))))
@@ -213,7 +215,9 @@
                     "--LittleEndian"
                     ,@(arch-get-architecture options)
                     "--BaseAddress" ,base-address
-                    "-f" ,(arch-find options (string-append "elf" machine "-header.hex2"))
+                    "-f" ,(kernel-find
+                           options
+                           (string-append "elf" machine "-header.hex2"))
                     ,@start-files
                     ,@(append-map (cut list "-f" <>) hex2-files)
                     "-f" ,elf-footer
@@ -258,7 +262,7 @@
 (define (find-library options ext o)
   (arch-find options (string-append "lib" o ext)))
 
-(define* (arch-find options file-name)
+(define* (arch-find options file-name #:key kernel)
   (let* ((srcdest (or (getenv "srcdest") ""))
          (srcdir-lib (string-append srcdest "lib"))
          (arch (string-append (arch-get options) "-mes"))
@@ -267,6 +271,8 @@
                       (option-ref options 'libdir "lib")
                       (filter-map (multi-opt 'library-dir) options)))
          (arch-file-name (string-append arch "/" file-name))
+         (arch-file-name (if kernel (string-append kernel "/" arch-file-name)
+                             arch-file-name))
          (verbose? (count-opt options 'verbose)))
     (let ((file (search-path path arch-file-name)))
       (when (and verbose? (> verbose? 1))
@@ -275,6 +281,11 @@
         (stderr "  => ~s\n" file))
       (or file
           (error (format #f "mescc: file not found: ~s" arch-file-name))))))
+
+(define (kernel-find options file-name)
+  (let ((kernel (option-ref options 'kernel "linux")))
+    (or (arch-find options file-name #:kernel kernel)
+        (arch-find options file-name))))
 
 (define (assert-system* . args)
   (let ((status (apply system* args)))
@@ -293,7 +304,7 @@
 
 (define (mescc:get-host options)
   (let ((cpu (arch-get options))
-        (kernel "linux"))
+        (kernel (option-ref options 'kernel "linux")))
     (string-join (list cpu kernel "mes") "-")))
 
 (define (arch-get-info options)

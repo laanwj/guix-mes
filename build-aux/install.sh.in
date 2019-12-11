@@ -97,6 +97,7 @@ mkdir -p $DESTDIR$libdir
 mkdir -p $DESTDIR$pkgdatadir
 tar -cf- -C ${srcdir}/include . | tar -${v}xf- -C $DESTDIR$includedir
 tar -cf- -C ${srcdir}/lib $mes_cpu-mes | tar -${v}xf- -C $DESTDIR$libdir
+tar -cf- -C ${srcdir}/lib $mes_kernel/$mes_cpu-mes | tar -${v}xf- -C $DESTDIR$libdir
 if test -z "$srcdest"; then
     tar -cf- $__exclude_go module | tar -${v}xf- -C $DESTDIR$pkgdatadir
 else

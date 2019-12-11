@@ -37,6 +37,7 @@
   (define-macro (mes-use-module . rest) #t)))
 
 (define %host-arch (or (getenv "%arch") %arch))
+(define %host-kernel (or (getenv "%kernel") "linux")) ;; FIXME
 (define %prefix (or (getenv "%prefix") "mes"))
 (define %includedir (or (getenv "%includedir") "include"))
 (define %libdir (or (getenv "%libdir") "."))
@@ -102,6 +103,7 @@ C99 compiler in Scheme for bootstrapping the GNU system.
 Options:
   --align             align globals
   --arch=ARCH         compile for ARCH [~a]
+  --kernel=ARCH       compile for KERNEL [~a]
   -dumpmachine        display the compiler's target machine
   --base-address=ADRRESS
                       use BaseAddress ADDRESS [0x1000000]
@@ -141,7 +143,7 @@ Environment variables:
 Report bugs to: bug-mes@gnu.org
 GNU Mes home page: <http://gnu.org/software/mes/>
 General help using GNU software: <http://gnu.org/gethelp/>
-" %host-arch)
+" %host-arch %host-kernel)
                 (exit (or (and usage? 2) 0)))
            options))))
 
@@ -167,6 +169,8 @@ General help using GNU software: <http://gnu.org/gethelp/>
          (options (acons 'libdir %libdir options))
          (arch (option-ref options 'arch %host-arch))
          (options (if arch (acons 'arch arch options) options))
+         (kernel (option-ref options 'kernel %host-kernel))
+         (options (acons 'kernel kernel options))
          (numbered-arch? (option-ref options 'numbered-arch? %numbered-arch?))
          (options (acons 'numbered-arch? numbered-arch? options))
          (dumpmachine? (option-ref options 'dumpmachine #f))
