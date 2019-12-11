@@ -32,3 +32,14 @@ ioctl (int filedes, unsigned long command, ...)
   errno = 0;
   return 0;
 }
+
+int
+ioctl3 (int filedes, unsigned long command, long data)
+{
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("ioctl3 stub\n");
+  stub = 1;
+  errno = 0;
+  return 0;
+}
