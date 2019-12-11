@@ -58,7 +58,7 @@ prefix=${prefix-/usr/local}
 mes_libc=${mes_libc-mes}
 courageous=${courageous-false}
 
-BASH=${BASH-$(command -v bash)}
+BASH=${BASH-$(command -v bash || command -v sh)}
 BLOOD_ELF=${BLOOD_ELF-$(command -v blood-elf)}
 CC=${CC-$(command -v gcc)} || true
 CFLAGS=${CFLAGS-}
@@ -197,6 +197,8 @@ case "$host" in
         mes_kernel=linux;;
     *gnu)
         mes_kernel=gnu;;
+    *freebsd*)
+        mes_kernel=frreebsd;;
     *)
         mes_kernel=linux;;
 esac
