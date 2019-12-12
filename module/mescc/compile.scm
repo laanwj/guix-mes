@@ -42,6 +42,7 @@
             c99-input->object))
 
 (define mes? (pair? (current-module)))
+(define mes-or-reproducible? #t)
 (define (cc-amd? info) #f)              ; use AMD calling convention?
 ;; (define %reduced-register-count #f)     ; use all registers?
 (define %reduced-register-count 2)      ; use reduced instruction set
@@ -581,7 +582,7 @@
   (wrap-as `((#:comment ,o))))
 
 (define (ast->comment o)
-  (if mes? '()
+  (if mes-or-reproducible? '()
       (let* ((source (with-output-to-string (lambda () (pretty-print-c99 o))))
              ;; Nyacc fixups
              (source (string-substitute source "\\" "\\\\"))
@@ -1514,7 +1515,7 @@
          info))
 
       ((or ,a ,b)
-       (let* ((here (number->string (length (if mes? (.text info)
+       (let* ((here (number->string (length (if mes-or-reproducible? (.text info)
                                                 (filter (negate comment?) (.text info))))))
               (skip-b-label (string-append label "_skip_b_" here))
               (b-label (string-append label "_b_" here))

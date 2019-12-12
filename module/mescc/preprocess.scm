@@ -31,6 +31,8 @@
   #:use-module (mes guile)
   #:export (c99-input->ast))
 
+(define mes-or-reproducible? #t)
+
 (when (getenv "MESC_DEBUG")
   (format (current-error-port) "*nyacc-version*=~a\n" *nyacc-version*))
 
@@ -97,7 +99,7 @@
                     "SYSTEM_LIBC=0"
                     "__STDC__=1"
                     "__MESC__=1"
-                    ,(if mes? "__MESC_MES__=1" "__MESC_MES__=0")
+                    ,(if mes-or-reproducible? "__MESC_MES__=1" "__MESC_MES__=0")
                     ,@defines)))
     (when (and verbose? (> verbose? 1))
       (stderr "includes: ~s\n" includes)
