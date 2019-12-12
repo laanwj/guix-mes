@@ -273,7 +273,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 (define (check-compile-string-c cc string)
   (with-output-to-file ".config.c"
     (cut display string))
-  (let ((test (lambda _ (apply system* `(,cc "--std=gnu99" "-c" "-o" ".config.o" ,@(cflags-list) ".config.c")))))
+  (let ((test (lambda _ (apply system* `(,cc "-std=gnu99" "-c" "-o" ".config.o" ,@(cflags-list) ".config.c")))))
     (zero? (if %verbose? (test)
                (with-error-to-file "/dev/null"
                  test)))))
@@ -281,7 +281,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 (define (check-link-string-c cc string)
   (with-output-to-file ".config.c"
     (cut display string))
-  (let ((test (lambda _ (apply system* `(,cc "--std=gnu99" "-o" ".config" ,@(cflags-list) ,@(ldflags-list) ".config.c")))))
+  (let ((test (lambda _ (apply system* `(,cc "-std=gnu99" "-o" ".config" ,@(cflags-list) ,@(ldflags-list) ".config.c")))))
     (zero? (if %verbose? (test)
                (with-error-to-file "/dev/null"
                  test)))))
@@ -436,9 +436,7 @@ Some influential environment variables:
     (when %verbose?
       (stderr "configure args=~s\n" args))
     (for-each (lambda (v) (apply setenv (string-split v #\=))) vars)
-    (let* ((tinycc-prefix (or (getenv "TINYCC_PREFIX")
-                              (string-append srcdest "../tinycc-prefix")))
-           (cross? (not (equal? host-type build-type)))
+    (let* ((cross? (not (equal? host-type build-type)))
            (gcc (or (getenv "CC") (if cross? (string-append host-type "-" "gcc") "gcc")))
            (tcc (or (getenv "TCC") "tcc"))
            (mescc (or (getenv "MESCC") "mescc"))
@@ -457,6 +455,8 @@ Some influential environment variables:
                              (make-dep "bash" #:version '(2 0) #:optional? #t)
                              (make-dep "guild" #:version '(2 0) #:commands '("guild" "guile-tools" "true"))
                              (make-dep "cc" #:commands (list gcc "cc" tcc mescc) #:optional? #t)
+                             (make-dep "tcc" #:commands (list tcc "tcc") #:optional? #t #:version-option "-v")
+                             (make-dep "mescc" #:commands (list mescc "mescc") #:optional? #t)
                              (make-dep "make" #:optional? #t #:commands '("gmake" "make"))
                              (make-dep "makeinfo" #:optional? #t)
                              (make-dep "dot" #:version-option "-V" #:optional? #t)
@@ -467,15 +467,14 @@ Some influential environment variables:
                                  deps)
                      deps))
            (guile (or guile "guile"))
-           (cc (file-name "cc" deps))
+           (cc (or (file-name "cc" deps)
+                   (file-name "tcc" deps)
+                   (file-name "mescc" deps)))
            (deps (if cc
                      (cons* (check-header-c cc (make-dep "limits.h"))
                             (check-header-c cc (make-dep "stdio.h" #:optional? #t))
                             deps)
                      deps))
-           (deps (cons (check-file (make-dep "tinycc-prefix" #:optional? #t
-                                             #:file-name tinycc-prefix))
-                       deps))
            (missing (filter (conjoin (negate dependency-file-name)
                                      (negate dependency-optional?)) deps))
            (deps (if cc
@@ -493,9 +492,9 @@ Some influential environment variables:
 "))
                            deps)
                      deps))
-           (mesc? (file-name "cc is Mes C" deps))
+           (mesc? (file-name "cc is MES C" deps))
            (deps (if cc
-                     (cons (check-compile-c cc (make-dep "cc is Tiny CC" #:data "#if !defined (__TINYCC__)
+                     (cons (check-compile-c cc (make-dep "cc is Tiny CC" #:data "#if !defined (__TINYC__)
 #error no tinycc
 #endif
 "))
@@ -507,7 +506,8 @@ Some influential environment variables:
                            deps)
                      deps))
            (system-libc? (and with-system-libc? (file-name "if cc can create executables" deps)))
-           (host-type (or (and cc (gulp-pipe* cc "-dumpmachine")) host-type))
+           (host-type (or (and cc (let ((dump (gulp-pipe* cc "-dumpmachine")))
+                                    (and (not (string-null? dump)) dump))) host-type))
            (host-type-list (string-split host-type #\-))
            (mes-cpu (car host-type-list))
            (mes-cpu (cond ((member mes-cpu '("i386" "i486" "i586" "i686")) "x86")
@@ -521,7 +521,7 @@ Some influential environment variables:
                                       (cut member <> '("pc" "portbld" "unknown")))
                              (cdr host-type-list))))
            (mes-kernel (if (string-prefix? "freebsd" mes-kernel) "freebsd" mes-kernel))
-           (compiler (if gcc? "gcc" "mescc"))
+           (compiler (cond (gcc? "gcc") (tcc? "gcc") (else "mescc")))
            (mes-system (string-join (list mes-cpu mes-kernel "mes") "-"))
            (bash (or (and (file-exists? "/bin/bash") "/bin/bash")
                      (file-name "bash" deps)
@@ -606,7 +606,7 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
 
                      ("@AR@" . ,(or (file-name "ar" deps) ""))
                      ("@BASH@" . ,bash)
-                     ("@CC@" . ,(or (file-name "cc" deps) ""))
+                     ("@CC@" . ,(or (file-name "cc" deps) (file-name "tcc" deps) ""))
                      ("@DIFF@" . ,(or (file-name "diff" deps) (string-append abs-top-builddir "/pre-inst-env diff.scm")))
                      ("@DOT@" . ,(or (file-name "dot" deps) ""))
                      ("@GIT@" . ,(or (file-name "git" deps) ""))
