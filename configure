@@ -388,6 +388,7 @@ Some influential environment variables:
   LDFLAGS           C linker flags
   GUILE             guile command
   GUILD             guild command
+  GUILE_LOAD_PATH   guile load path; where to find Nyacc
   MES_FOR_BUILD     build system MES [can be mes or guile]
 " PACKAGE VERSION (getenv "prefix")))
 
@@ -410,6 +411,8 @@ Some influential environment variables:
          (includedir (option-ref options 'includedir "${prefix}/include"))
          (libdir (option-ref options 'libdir "${prefix}/lib"))
          (pkgdatadir (string-append datadir "/mes"))
+         (guile-load-path (if (and (pair? %load-path) (equal? (car %load-path) ".")) (cdr %load-path)
+                              %load-path))
          (guile-effective-version (effective-version))
          (guile-site-dir (if (equal? prefix ".") (canonicalize-path ".")
                              (string-append prefix "/share/guile/site/" guile-effective-version)))
@@ -614,7 +617,6 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@mandir@" . ,mandir)
                      ("@sysconfdir@" . ,sysconfdir)
 
-                     ("@GUILE_EFFECTIVE_VERSION@" . ,(effective-version))
                      ("@colors@" . ,(if disable-colors? "no" "yes"))
                      ("@V@" . ,(if disable-silent-rules? "1" "0"))
 
@@ -625,6 +627,8 @@ See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
                      ("@DOT@" . ,(or (file-name "dot" deps) ""))
                      ("@GIT@" . ,(or (file-name "git" deps) ""))
                      ("@GUILE@" . ,guile)
+                     ("@GUILE_EFFECTIVE_VERSION@" . ,(effective-version))
+                     ("@GUILE_LOAD_PATH@" . ,(string-join guile-load-path ":"))
                      ("@GUIX@" . ,(or (file-name "guix" deps) ""))
                      ("@HELP2MAN@" . ,(or (file-name "help2man" deps) ""))
                      ("@MAKEINFO@" . ,(or (file-name "makeinfo" deps) ""))

@@ -151,6 +151,7 @@ subst () {
     -e s,"@pkgdatadir@,$pkgdatadir,"\
     -e s,"@sysconfdir@,$sysconfdir,"\
     -e s,"@GUILE_EFFECTIVE_VERSION@,$GUILE_EFFECTIVE_VERSION,"\
+    -e s,"@GUILE_LOAD_PATH@,$GUILE_LOAD_PATH,"\
     -e s,"@V@,$V,"\
     -e s,"@AR@,$AR,"\
     -e s,"@BASH@,$BASH,"\

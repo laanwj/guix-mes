@@ -32,6 +32,8 @@
 (mes-use-module (mes display))
 (mes-use-module (mes simple-format))
 
+(define %load-path (or (and=> (getenv "GUILE_LOAD_PATH") (lambda (x) (string-split x #\:))) '()))
+
 (define (drain-input port) (read-string))
 
 (define (read-line . rest)
