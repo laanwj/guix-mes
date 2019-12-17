@@ -22,7 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if !__MESC__
+#define __READ_BUFFER_MAX 128
+int __read_buffer_max;
+#else /* FIXME: We want bin/mes-mescc's x86-linux sha256sum to stay the same. */
 #define __READ_BUFFER_MAX 100
+#define __read_buffer_max 100
+#endif
 
 struct __read_buffer
 {
@@ -36,7 +42,21 @@ void
 __buffered_read_init (int filedes)
 {
   if (!__read_cache)
-    __read_cache = (struct __read_buffer *) malloc (sizeof (struct __read_buffer) * __FILEDES_MAX);
+    {
+      __read_cache = (struct __read_buffer *) malloc (sizeof (struct __read_buffer) * __FILEDES_MAX);
+#if !__MESC__
+      __read_buffer_max = __READ_BUFFER_MAX;
+      char *p = getenv ("MES_READ_BUFFER");
+      if (p)
+        {
+          __read_buffer_max = atoi (p);
+          if (__read_buffer_max < 0)
+            __read_buffer_max = 0;
+          if (__read_buffer_max > __READ_BUFFER_MAX)
+            __read_buffer_max = __READ_BUFFER_MAX;
+        }
+#endif
+    }
 }
 
 size_t
@@ -55,23 +75,33 @@ __buffered_read (int filedes, void *buffer, size_t size)
   __buffered_read_init (filedes);
   struct __read_buffer *cache = &__read_cache[filedes];
   char *p = buffer;
-  if (!cache->size && size > __READ_BUFFER_MAX)
+  if (!cache->size && size > __read_buffer_max)
     return _read (filedes, buffer, size);
   while (cache->size > 0 && todo)
     {
       todo--;
-      *p++ = cache->string[__READ_BUFFER_MAX - cache->size--];
+      *p++ = cache->string[__read_buffer_max - cache->size--];
     }
   if (todo)
     {
-      ssize_t bytes = _read (filedes, cache->string, __READ_BUFFER_MAX);
+#if !__MESC__
+      if (todo > __read_buffer_max)
+        return size - todo + _read (filedes, p, todo);
+      if (__mes_debug () > 4)
+        {
+          eputs ("__buffered_read: ");
+          eputs (itoa (__read_buffer_max));
+          eputs ("\n");
+        }
+#endif
+      ssize_t bytes = _read (filedes, cache->string, __read_buffer_max);
       if (bytes < 0)
         return -1;
       if (bytes)
         {
           cache->size = bytes;
-          if (bytes < __READ_BUFFER_MAX)
-            memmove (cache->string + __READ_BUFFER_MAX - bytes, cache->string, bytes);
+          if (bytes < __read_buffer_max)
+            memmove (cache->string + __read_buffer_max - bytes, cache->string, bytes);
           return size - todo + __buffered_read (filedes, p, todo);
         }
     }

@@ -45,7 +45,7 @@ fopen (char const *file_name, char const *opentype)
       int flags = O_RDWR;
       if (opentype[0] == 'a')
         flags |= O_APPEND;
-      fd = open (file_name, flags, mode);
+      fd = _open3 (file_name, flags, mode);
     }
   else if (opentype[0] == 'w' || opentype[0] == 'a' || !strcmp (opentype, "r+"))
     {
@@ -72,5 +72,3 @@ fopen (char const *file_name, char const *opentype)
     fd = 0;
   return (FILE *) (long) fd;
 }
-
-#undef open

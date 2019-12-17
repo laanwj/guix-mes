@@ -42,5 +42,5 @@ open (char const *file_name, int flags, ...)
       return r;
     }
   else
-    return _open2(file_name, flags);
+    return _open2 (file_name, flags);
 }
