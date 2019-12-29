@@ -21,6 +21,7 @@
 #include <mes/lib.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <string.h>
 
 int
 execlp (char const *file_name, char const *arg, ...)
@@ -28,7 +29,7 @@ execlp (char const *file_name, char const *arg, ...)
   va_list ap;
   int r;
   va_start (ap, arg);
-  if (file_name[0] != '/')
+  if (!strchr (file_name, '/'))
     file_name = search_path (file_name);
   if (__mes_debug () > 2)
     {

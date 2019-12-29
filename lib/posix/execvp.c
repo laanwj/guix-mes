@@ -20,12 +20,13 @@
 
 #include <mes/lib.h>
 #include <errno.h>
+#include <string.h>
 #include <unistd.h>
 
 int
 execvp (char const *file_name, char *const argv[])
 {
-  if (file_name[0] != '/')
+  if (!strchr (file_name, '/'))
     file_name = search_path (file_name);
   if (!file_name)
     {
