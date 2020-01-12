@@ -30,6 +30,7 @@ void __ungetc_set (int filedes, int c);
 int __ungetc_p (int filedes);
 double abtod (char const **p, int base);
 long abtol (char const **p, int base);
+char *dtoab (double number, int base, int signed_p);
 char *itoa (int number);
 char *ltoa (long number);
 char *ltoab (long x, int base);

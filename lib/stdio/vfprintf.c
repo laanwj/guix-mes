@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -161,6 +161,50 @@ vfprintf (FILE * f, char const *format, va_list ap)
                   while (precision > length)
                     {
                       fputc (' ', f);
+                      precision--;
+                      width--;
+                      count++;
+                    }
+                }
+              while (*s)
+                {
+                  if (precision-- <= 0)
+                    break;
+                  width--;
+                  fputc (*s++, f);
+                  count++;
+                }
+              while (width > 0)
+                {
+                  width--;
+                  fputc (pad, f);
+                  count++;
+                }
+              break;
+            }
+          case 'f':
+          case 'e':
+          case 'E':
+          case 'g':
+          case 'G':
+            {
+              double d = va_arg (ap, double);
+              char *s = dtoab (d, 10, 1);
+              if (c == 'E' || c == 'G')
+                strupr (s);
+              int length = strlen (s);
+              if (precision == -1)
+                precision = length;
+              if (!left_p)
+                {
+                  while (width-- > precision)
+                    {
+                      fputc (pad, f);
+                      count++;
+                    }
+                  while (precision > length)
+                    {
+                      fputc ('0', f);
                       precision--;
                       width--;
                       count++;

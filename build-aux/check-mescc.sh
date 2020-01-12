@@ -201,6 +201,7 @@ if test -z "$bootstrap"; then
 lib/tests/dirent/90-readdir.c
 lib/tests/io/90-stat.c
 lib/tests/mes/90-abtod.c
+lib/tests/mes/90-dtoab.c
 lib/tests/posix/90-execlp.c
 lib/tests/posix/90-unsetenv.c
 lib/tests/signal/90-signal.c
@@ -208,6 +209,7 @@ lib/tests/stdio/90-fopen.c
 lib/tests/stdio/90-fopen-append.c
 lib/tests/stdio/90-fread-fwrite.c
 lib/tests/stdio/90-fseek.c
+lib/tests/stdio/90-sprintf.c
 lib/tests/stdlib/90-strtol.c
 lib/tests/string/90-snprintf.c
 lib/tests/string/90-strpbrk.c
@@ -226,7 +228,6 @@ fi
 XFAIL_TESTS="
 lib/tests/mes/90-abtod.c
 lib/tests/stdio/90-sprintf.c
-lib/tests/stdio/90-sprintf.c
 "
 
 if test $compiler = mescc; then
@@ -235,6 +236,7 @@ lib/tests/scaffold/17-compare-unsigned-char-le.c
 lib/tests/scaffold/17-compare-unsigned-short-le.c
 lib/tests/scaffold/66-local-char-array.c
 lib/tests/scaffold/72-typedef-struct-def-local.c
+lib/tests/mes/90-dtoab.c
 lib/tests/scaffold/90-goto-var.c
 lib/tests/scaffold/91-goto-array.c
 "
@@ -253,6 +255,7 @@ fi
 
 if test $mes_cpu = x86; then
     XFAIL_TESTS="$XFAIL_TESTS
+lib/tests/mes/90-dtoab.c
 "
 fi
 

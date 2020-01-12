@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -180,6 +180,55 @@ vsnprintf (char *str, size_t size, char const *format, va_list ap)
                     }
                 }
               while (s && *s)
+                {
+                  if (precision-- <= 0)
+                    break;
+                  width--;
+                  c = *s++;
+                  if (count < size)
+                    *str++ = c;
+                  count++;
+                }
+              while (width > 0)
+                {
+                  width--;
+                  if (count < size)
+                    *str++ = pad;
+                  count++;
+                }
+              break;
+            }
+          case 'f':
+          case 'e':
+          case 'E':
+          case 'g':
+          case 'G':
+            {
+              double d = va_arg (ap, double);
+              char *s = dtoab (d, 10, 1);
+              if (c == 'E' || c == 'G')
+                strupr (s);
+              int length = strlen (s);
+              if (precision == -1)
+                precision = length;
+              if (!left_p)
+                {
+                  while (width-- > precision)
+                    {
+                      if (count < size)
+                        *str++ = pad;
+                      count++;
+                    }
+                  while (precision > length)
+                    {
+                      if (count < size)
+                        *str++ = '0';
+                      precision--;
+                      width--;
+                      count++;
+                    }
+                }
+              while (*s)
                 {
                   if (precision-- <= 0)
                     break;

@@ -87,6 +87,7 @@ lib/linux/lseek.c
 else
     libmes_SOURCES="$libmes_SOURCES
 lib/mes/abtod.c
+lib/mes/dtoab.c
 "
 fi
 
@@ -158,6 +159,7 @@ lib/ctype/isupper.c
 lib/ctype/tolower.c
 lib/ctype/toupper.c
 lib/mes/abtod.c
+lib/mes/dtoab.c
 lib/mes/search-path.c
 lib/posix/execvp.c
 lib/stdio/fclose.c
