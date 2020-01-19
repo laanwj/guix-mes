@@ -343,7 +343,7 @@ gen-announce:
 	$(GEN_ANNOUNCE)\
 	    --release-type=beta\
 	    --package-name=mes\
-	    --previous-version='0.20 '\
+	    --previous-version='0.21 '\
             --current-version=$(VERSION)\
 	    --gpg-key-id=$(GPG_KEY_ID)\
 	    --url-directory=https://ftp.gnu.org/gnu/mes\
