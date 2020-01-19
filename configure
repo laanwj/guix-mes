@@ -458,7 +458,7 @@ Some influential environment variables:
                              (make-dep "diff" #:optional? #t)
                              (make-dep "guile" #:version '(2 0) #:commands '("guile-2.2" "guile-2.0" "guile-2" "guile") #:optional? #t)
                              (make-dep "mes" #:version '(0 20) #:optional? #t)
-                             (make-dep "guix" #:version '(0 13) #:optional? #t)
+                             (make-dep "guix" #:version '() #:optional? #t)
                              (make-dep "ar" #:version '(2 10) #:optional? #t)
                              (make-dep "sh" #:optional? #t)
                              (make-dep "bash" #:version '(2 0) #:optional? #t)

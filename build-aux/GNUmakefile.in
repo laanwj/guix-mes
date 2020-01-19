@@ -78,7 +78,7 @@ PHONY_TARGETS:=\
  mostlyclean\
  pdf\
  ps\
- sign\
+ sign-dist\
  uninstall\
  web\
 #
@@ -283,7 +283,7 @@ endif
 
 dist: $(TARBALL)
 
-sign: $(TARBALL)
+sign-dist: $(TARBALL)
 	gpg -a --output $(TARBALL).sig --detach-sig $(TARBALL)
 	git checkout ChangeLog
 
@@ -319,10 +319,17 @@ tag:
 	git tag -s v$(VERSION) -m "GNU Mes $(VERSION)."
 
 # Release process
-#  0. doc: Release update, Release commit, test guix bootstrap
-#  1. make tag
-#  2. make dist
+#  0. Prepare git, see history:
+#     - doc: Release update
+#       + NEWS, etc.
+#       + doc/announce/ANNOUNCE-0.22, using xxx for checksums
+#     - Release 0.22
+#  1. make tag VERSION=0.22
+#  2. make sign-dist
 #  3. make release
+#     - Update doc/announce/ANNOUNCE-0.22
+#     - doc: Post-release update.
+#  4. verify bootstrap
 
 guix-build:
 	./pre-inst-env $(GUIX) build mes@$(VERSION) --with-source=$(TARBALL)
