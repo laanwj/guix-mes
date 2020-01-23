@@ -16,7 +16,10 @@ Please send Mes bug reports to bug-mes@gnu.org.
 Using --with-bootstrap on x86, a bin/mes-mescc is compiled with
 mes+mescc, that shall have sha256sum
 
-    9e0bcb1633c58e7bc415f6ea27cee7951d6b0658e13cdc147e992b31a14625fb  bin/mes-mescc
+    722790ed261954eb53cf2cd2906c89c7589ef72b66171bbe2a9dce0f0af20232  bin/mes-mescc  v0.22
+    9e0bcb1633c58e7bc415f6ea27cee7951d6b0658e13cdc147e992b31a14625fb  bin/mes-mescc  v0.21
+
+only differing in the version number string.
 
 This has been verified on GNU Guix, Debian GNU/Linux and NixOS.
 *** Mes now builds reproducibly with Guile+MesCC vs Mes+MesCC.

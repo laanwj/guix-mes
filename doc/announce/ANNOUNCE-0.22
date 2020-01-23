@@ -6,7 +6,7 @@ Subject: GNU Mes 0.22 released
 We are pleased to announce the release of GNU Mes 0.22, representing
 57 commits over 8 weeks.
 
-Mes can now be built reproducibly by mes+mescc or guile+mescc accross
+Mes can now be built reproducibly by mes+mescc or guile+mescc across
 distributions such as GNU Guix, Debian GNU/Linux and NixOS.  Also, many
 build issues were fixed.  A big thank you to reproducible-builds.org,
 Vagrant Cascadian, Jelle van der Waa, Hannes Mehnert and David Terry!
@@ -87,8 +87,8 @@ is built using
 
   Here are the MD5 and SHA1 checksums:
 
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.22.tar.gz
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.22.tar.gz
+  450c3043ad68ce942c1233282c9fa7e7  mes-0.22.tar.gz
+  a318150059a2bcff6b58e765e203c05d0dfaccee  mes-0.22.tar.gz
 
   [*] Use a .sig file to verify that the corresponding file (without the
   .sig suffix) is intact.  First, be sure to download both the .sig file
@@ -114,7 +114,10 @@ is built using
  Using --with-bootstrap on x86, a bin/mes-mescc is compiled with
  mes+mescc, that shall have sha256sum
 
-     9e0bcb1633c58e7bc415f6ea27cee7951d6b0658e13cdc147e992b31a14625fb  bin/mes-mescc
+     722790ed261954eb53cf2cd2906c89c7589ef72b66171bbe2a9dce0f0af20232  bin/mes-mescc  v0.22
+     9e0bcb1633c58e7bc415f6ea27cee7951d6b0658e13cdc147e992b31a14625fb  bin/mes-mescc  v0.21
+
+ only differing in the version number string.
 
  This has been verified on GNU Guix, Debian GNU/Linux and NixOS.
  *** Mes now builds reproducibly with Guile+MesCC vs Mes+MesCC.
