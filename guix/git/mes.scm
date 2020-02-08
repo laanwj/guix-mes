@@ -46,32 +46,40 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix licenses)
-  #:use-module (guix packages))
+  #:use-module (guix packages)
+  #:use-module (guix utils))
 
 (define %source-dir (getcwd))
 
 (define-public mescc-tools
   (package
     (name "mescc-tools")
-    (version "0.6.1")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "http://git.savannah.nongnu.org/cgit/mescc-tools.git/snapshot/"
-                    name "-Release_" version
-                    ".tar.gz"))
-              (file-name (string-append name "-" version ".tar.gz"))
-              (sha256
-               (base32
-                "06jpvq6xfjzn2al6b4rdwd3zv3h4cvilc4n9gqcnjr9cr6wjpw2n"))))
+    (version "0.7.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "http://git.savannah.nongnu.org/cgit/mescc-tools.git/snapshot/"
+             name "-Release_" version
+             ".tar.gz"))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32
+         "1p1ijia4rm3002f5sypidl9v5gq0mlch9b0n61rpxkdsaaxjqax3"))))
     (build-system gnu-build-system)
-    (supported-systems '("i686-linux" "x86_64-linux"))
+    (supported-systems
+     '("aarch64-linux" "armhf-linux" "i686-linux" "x86_64-linux"))
     (arguments
      `(#:make-flags (list (string-append "PREFIX=" (assoc-ref %outputs "out"))
-                          "CC=gcc")
+                          (string-append "CC=" ,(cc-for-target)))
        #:test-target "test"
        #:phases (modify-phases %standard-phases
-                  (delete 'configure))))
+                  (delete 'configure)
+                  (add-after 'unpack 'patch-prefix
+                    (lambda _
+                      (substitute* "sha256.sh"
+                        (("/usr/bin/sha256sum") (which "sha256sum")))
+                      #t)))))
     (synopsis "Tools for the full source bootstrapping process")
     (description
      "Mescc-tools is a collection of tools for use in a full source
