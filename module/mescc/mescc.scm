@@ -299,7 +299,8 @@
          (arch (option-ref options 'arch #f)))
     (if machine (cond ((member arch '("x86" "x86_64")) (cond ((equal? machine "32") "x86")
                                                              ((equal? machine "64") "x86_64")))
-                      ((equal? arch "arm") (cond ((equal? machine "32") "arm"))))
+                      ((equal? arch "arm") (cond ((equal? machine "32") "arm")
+                                                 ((equal? machine "arm") "arm"))))
         arch)))
 
 (define (mescc:get-host options)

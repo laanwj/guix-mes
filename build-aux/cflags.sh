@@ -50,6 +50,12 @@ if test $mes_libc = mes; then
 fi
 LIBS=-lc
 
+if test $mes_cpu = arm; then
+    AM_CFLAGS="$AM_CFLAGS
+-marm
+"
+fi
+
 export AM_CFLAGS CFLAGS
 export AM_CPPFLAGS CPPFLAGS
 export AM_LDFLAGS LDFLAGS

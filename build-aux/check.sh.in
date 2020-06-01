@@ -35,6 +35,9 @@ if $courageous; then
 fi
 
 CFLAGS=
+if test $mes_cpu = arm; then
+    CFLAGS="-marm"
+fi
 if test $mes_libc = mes; then
     CFLAGS="${CFLAGS}
 -static
