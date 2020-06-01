@@ -44,6 +44,12 @@ if test -e libmes.s; then
     cp libmes.s $mes_cpu-mes
 fi
 
+archive libmescc.a $libmescc_SOURCES
+cp libmescc.a $mes_cpu-mes
+if test -e libmescc.s; then
+    cp libmescc.s $mes_cpu-mes
+fi
+
 if test $mes_libc = mes; then
     archive libc.a $libc_SOURCES
     cp libc.a $mes_cpu-mes

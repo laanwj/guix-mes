@@ -143,8 +143,9 @@
                          (append hex2-files
                                  (list (infos->hex2 options hex2-file-name infos)))))
          (default-libraries (if (or (option-ref options 'nodefaultlibs #f)
-                                    (option-ref options 'nostdlib #f)) '()
-                                    '("c")))
+                                    (option-ref options 'nostdlib #f))
+                                '()
+                                '("mescc" "c")))
          (libraries (filter-map (multi-opt 'library) options))
          (libraries (delete-duplicates (append libraries default-libraries)))
          (hex2-libraries (map (cut find-library options ".a" <>) libraries))

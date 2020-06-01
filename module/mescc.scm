@@ -116,9 +116,9 @@ Options:
   -L DIR              append DIR to library path
   -l LIBNAME          link with LIBNAME
   -m BITS             compile for BITS bits [32]
-  -nodefaultlibs      do not use libc.o when linking
+  -nodefaultlibs      do not use libc.o nor libmescc.a when linking
   -nostartfiles       do not use crt1.o when linking
-  -nostdlib           do not use crt1.o or libc.o when linking
+  -nostdlib           do not use crt1.o or libc.o or libmescc.a when linking
   -o FILE             write output to FILE
   -O LEVEL            use optimizing LEVEL
   -S                  preprocess and compile only; do not assemble or link

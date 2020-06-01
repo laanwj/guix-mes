@@ -20,11 +20,9 @@
  */
 
 #include <mes/lib.h>
-#include <assert.h>
 #include <stdint.h>
 #include <limits.h>
-
-/*#define LONG_MIN (-(~0UL>>1)-1)*/
+#include <signal.h>
 
 typedef struct
 {
@@ -32,15 +30,21 @@ typedef struct
   long rem;
 } ldiv_t;
 
-void __mesabi_div0(void)
+int __raise(int);
+
+void
+__mesabi_div0 (void)
 {
-  eputs(" ***MES C LIB*** divide by zero numerator=");
-  eputs("\n");
-  assert(0);
+  if (__raise(SIGFPE) < 0) { /* could not raise SIGFPE */
+    /* Fail in any way possible */
+    unsigned char* x = (unsigned char*) 0;
+    *x = 2;
+  }
 }
 
-/* Compare gcc: __udivdi3 */
-unsigned long __mesabi_uldiv(unsigned long a, unsigned long b, unsigned long* remainder)
+/* Compare gcc: __udivmoddi4 */
+unsigned long
+__mesabi_uldiv (unsigned long a, unsigned long b, unsigned long* remainder)
 {
   unsigned long tmp;
   if (!remainder)
@@ -63,11 +67,12 @@ unsigned long __mesabi_uldiv(unsigned long a, unsigned long b, unsigned long* re
 /* Note: Rounds towards zero.
    Maintainer: Be careful to satisfy quot * b + rem == a.
                That means that rem can be negative. */
-ldiv_t ldiv(long a, long b)
+ldiv_t __mesabi_ldiv(long a, long b)
 {
   ldiv_t result;
   int negate_result = (a < 0) ^ (b < 0);
-  assert(b != LONG_MIN);
+  if (b == LONG_MIN)
+    __mesabi_div0();
   if (a != LONG_MIN)
     {
       int negative_a = (a < 0);
@@ -108,3 +113,50 @@ ldiv_t ldiv(long a, long b)
       return result;
     }
 }
+
+#if __GNUC__ && !SYSTEM_LIBC && __arm__
+// ...-binutils-2.31.1/bin/ld: hash.o: in function `hash_cstring':
+// hash.c:(.text+0x56): undefined reference to `__aeabi_idivmod'
+// ...-binutils-2.31.1/bin/ld: math.o: in function `divide':
+// math.c:(.text+0x516): undefined reference to `__aeabi_idiv'
+// ...-binutils-2.31.1/bin/ld: math.o: in function `modulo':
+// math.c:(.text+0x5d2): undefined reference to `__aeabi_idivmod'
+// ...-binutils-2.31.1/bin/ld: gcc-lib/libc.a(ntoab.o): in function `ntoab':
+// ntoab.c:(.text+0x54): undefined reference to `__aeabi_uidivmod'
+// ...-binutils-2.31.1/bin/ld: ntoab.c:(.text+0x62): undefined reference to `__aeabi_uidiv'
+
+/* Result: r0: quotient; r1: remainder */
+long
+__aeabi_idivmod (long a, long b)
+{
+  ldiv_t result = __mesabi_ldiv(a, b);
+  register long rem_result asm("r1");
+  rem_result = result.rem;
+  return result.quot;
+}
+
+long
+__aeabi_idiv (long a, long b)
+{
+  ldiv_t result = __mesabi_ldiv(a, b);
+  return result.quot;
+}
+
+/* Result: r0: quotient; r1: remainder */
+unsigned long
+__aeabi_uidivmod (unsigned long a, unsigned long b)
+{
+  unsigned long quot;
+  unsigned long rem;
+  register unsigned long rem_result asm("r1");
+  quot = __mesabi_uldiv (a, b, &rem);
+  rem_result = rem;
+  return quot;
+}
+
+unsigned long
+__aeabi_uidiv (unsigned long a, unsigned long b)
+{
+  return __mesabi_uldiv (a, b, 0);
+}
+#endif // __GNUC__ && !SYSTEM_LIBC && __arm__

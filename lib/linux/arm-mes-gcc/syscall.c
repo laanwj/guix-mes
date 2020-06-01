@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -26,6 +26,7 @@ long __sys_call1 (long sys_call, long one);
 long __sys_call2 (long sys_call, long one, long two);
 long __sys_call3 (long sys_call, long one, long two, long three);
 long __sys_call4 (long sys_call, long one, long two, long three, long four);
+long __sys_call6 (long sys_call, long one, long two, long three, long four, long five, long six);
 
 // *INDENT-OFF*
 long
@@ -97,3 +98,19 @@ _sys_call4 (long sys_call, long one, long two, long three, long four)
     errno = 0;
   return r;
 }
+
+#if 0
+long
+_sys_call6 (long sys_call, long one, long two, long three, long four, long five, long six)
+{
+  long r = __sys_call6(sys_call, one, two, three, four, five, six);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+#endif

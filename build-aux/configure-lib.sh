@@ -76,11 +76,15 @@ lib/mes/mini-write.c
 "
 fi
 
+libmescc_SOURCES="
+lib/linux/$mes_cpu-mes-$compiler/syscall-internal.c
+lib/mes/div.c
+"
+
 libmes_SOURCES="
 $libc_mini_shared_SOURCES
 lib/ctype/isnumber.c
 lib/mes/abtol.c
-lib/mes/div.c
 lib/mes/eputc.c
 lib/mes/fdgetc.c
 lib/mes/fdputc.c

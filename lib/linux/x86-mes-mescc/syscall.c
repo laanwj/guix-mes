@@ -21,50 +21,11 @@
 #include <errno.h>
 #include <linux/x86/syscall.h>
 
-int
-__sys_call (int sys_call)
-{
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("int____$0x80");
-}
-
-int
-__sys_call1 (int sys_call, int one)
-{
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("mov____0x8(%ebp),%ebx !12");
-  asm ("int____$0x80");
-}
-
-int
-__sys_call2 (int sys_call, int one, int two)
-{
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("mov____0x8(%ebp),%ebx !12");
-  asm ("mov____0x8(%ebp),%ecx !16");
-  asm ("int____$0x80");
-}
-
-int
-__sys_call3 (int sys_call, int one, int two, int three)
-{
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("mov____0x8(%ebp),%ebx !12");
-  asm ("mov____0x8(%ebp),%ecx !16");
-  asm ("mov____0x8(%ebp),%edx !20");
-  asm ("int____$0x80");
-}
-
-int
-__sys_call4 (int sys_call, int one, int two, int three, int four)
-{
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("mov____0x8(%ebp),%ebx !12");
-  asm ("mov____0x8(%ebp),%ecx !16");
-  asm ("mov____0x8(%ebp),%edx !20");
-  asm ("mov____0x8(%ebp),%esi !24");
-  asm ("int____$0x80");
-}
+int __sys_call (int sys_call);
+int __sys_call1 (int sys_call, int one);
+int __sys_call2 (int sys_call, int one, int two);
+int __sys_call3 (int sys_call, int one, int two, int three);
+int __sys_call4 (int sys_call, int one, int two, int three, int four);
 
 int
 _sys_call (int sys_call)

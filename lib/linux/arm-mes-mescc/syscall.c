@@ -21,17 +21,17 @@
 #include <errno.h>
 #include <linux/x86/syscall.h>
 
-long __sys_call (long sys_call);
-long __sys_call1 (long sys_call, long one);
-long __sys_call2 (long sys_call, long one, long two);
-long __sys_call3 (long sys_call, long one, long two, long three);
-long __sys_call4 (long sys_call, long one, long two, long three, long four);
+int __sys_call (int sys_call);
+int __sys_call1 (int sys_call, int one);
+int __sys_call2 (int sys_call, int one, int two);
+int __sys_call3 (int sys_call, int one, int two, int three);
+int __sys_call4 (int sys_call, int one, int two, int three, int four);
+int __sys_call6 (int sys_call, int one, int two, int three, int four, int five, int six);
 
-// *INDENT-OFF*
-long
-_sys_call (long sys_call)
+int
+_sys_call (int sys_call)
 {
-  long r = __sys_call(sys_call);
+  int r = __sys_call (sys_call);
   if (r < 0)
     {
       errno = -r;
@@ -42,10 +42,10 @@ _sys_call (long sys_call)
   return r;
 }
 
-long
-_sys_call1 (long sys_call, long one)
+int
+_sys_call1 (int sys_call, int one)
 {
-  long r = __sys_call1(sys_call, one);
+  int r = __sys_call1 (sys_call, one);
   if (r < 0)
     {
       errno = -r;
@@ -56,10 +56,10 @@ _sys_call1 (long sys_call, long one)
   return r;
 }
 
-long
-_sys_call2 (long sys_call, long one, long two)
+int
+_sys_call2 (int sys_call, int one, int two)
 {
-  long r = __sys_call2(sys_call, one, two);
+  int r = __sys_call2 (sys_call, one, two);
   if (r < 0)
     {
       errno = -r;
@@ -70,10 +70,10 @@ _sys_call2 (long sys_call, long one, long two)
   return r;
 }
 
-long
-_sys_call3 (long sys_call, long one, long two, long three)
+int
+_sys_call3 (int sys_call, int one, int two, int three)
 {
-  long r = __sys_call3(sys_call, one, two, three);
+  int r = __sys_call3 (sys_call, one, two, three);
   if (r < 0)
     {
       errno = -r;
@@ -84,10 +84,24 @@ _sys_call3 (long sys_call, long one, long two, long three)
   return r;
 }
 
-long
-_sys_call4 (long sys_call, long one, long two, long three, long four)
+int
+_sys_call4 (int sys_call, int one, int two, int three, int four)
 {
-  long r = __sys_call4(sys_call, one, two, three, four);
+  int r = __sys_call4 (sys_call, one, two, three, four);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+
+int
+_sys_call6 (int sys_call, int one, int two, int three, int four, int five, int six)
+{
+  int r = __sys_call6 (sys_call, one, two, three, four, five, six);
   if (r < 0)
     {
       errno = -r;

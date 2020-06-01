@@ -53,5 +53,9 @@ done
 if test $mes_libc = system; then
     LIBS=-lmes
 fi
+if [ "$compiler" = "gcc" ]
+then
+  LIBS="${LIBS} -lmescc"
+fi
 link bin/mes-$compiler
 cp bin/mes-$compiler bin/mes

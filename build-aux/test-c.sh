@@ -41,25 +41,25 @@ CC=${CC-gcc}
 
 i=$(basename "$t" .c)
 if [ -z "${i/[012][0-9]-*/}" ]; then
-    LIBS=
+    LIBS='-l mescc'
 elif [ -z "${i/[34][0-9]-*/}" ]; then
-    LIBS='-l c-mini'
+    LIBS='-l c-mini -l mescc'
 elif [ -z "${i/[78][0-9a-z]-*/}" ]; then
-    LIBS='-l c+tcc'
+    LIBS='-l c+tcc -l mescc'
 elif [ -z "${i/9[0-9a-z]-*/}" ]; then
-    LIBS='-l c+gnu'
+    LIBS='-l c+gnu -l mescc'
 else
-    LIBS='-l c'
+    LIBS='-l c -l mescc'
 fi
 
 if test $mes_kernel = gnu\
         && test -z "$LIBS"; then
-    LIBS="-l c-mini"
+    LIBS="-l c-mini -l mescc"
 fi
 
 if test $mes_libc = system; then
     crt1=
-    LIBS='-l mes'
+    LIBS='-l mes -l mescc'
 else
     crt1=crt1.o
 fi
