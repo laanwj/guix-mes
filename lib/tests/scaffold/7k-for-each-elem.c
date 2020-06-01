@@ -47,7 +47,7 @@ struct section section;
 int
 main ()
 {
-#if __i386__
+#if __i386__ || __arm__
   int sym_size = 8;
 #elif __GNUC__ && __x86_64__
   int sym_size = 16;

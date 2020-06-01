@@ -56,7 +56,7 @@ main ()
   oputs (itoa (foo_size));
   oputs ("\n");
   // FIXME: add *14, *18
-#if __i386__
+#if __i386__ || __arm__
   int foo_size_14 = 224;
   int foo_size_18 = 288;
 #elif __x86_64__

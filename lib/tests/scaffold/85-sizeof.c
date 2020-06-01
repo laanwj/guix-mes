@@ -34,7 +34,7 @@ struct bar
   };
 };
 
-#if __i386__
+#if __i386__ || __arm__
 #define ptr_size 4
 #define foo_size 20
 #define bar_size 12
