@@ -1,0 +1,50 @@
+### GNU Mes --- Maxwell Equations of Software
+### Copyright © 2017,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright © 2019 Danny Milosavljevic <dannym@scratchpost.org>
+###
+### This file is part of GNU Mes.
+###
+### GNU Mes is free software; you can redistribute it and/or modify it
+### under the terms of the GNU General Public License as published by
+### the Free Software Foundation; either version 3 of the License, or (at
+### your option) any later version.
+###
+### GNU Mes is distributed in the hope that it will be useful, but
+### WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+### Commentary:
+
+# elf32-0hello-mes.hex2: `Hello, GNU Mes!' for arm-linux written in
+# hex2 assembly, for usage with elf32-0header.hex2.  This produces a
+# 160-byte binary (a0 hex).  Inspiration was taken from GNU Gcc output
+# of hello-mes.S.
+
+### Code:
+
+# @60
+:ELF_text
+                               # print <hello>
+04 70 a0 e3                    # mov    r7, #4
+01 00 a0 e3                    # mov    r0, #1
+!hello 10 8f e2                # add    r1, pc, $(hello - pc)
+!bye>hello 20 a0 e3            # mov    r2, $(bye-hello)
+00 00 00 ef                    # swi    0
+
+                               # exit 0
+01 70 a0 e3                    # mov    r7, #1
+00 00 a0 e3                    # mov    r0, #0
+00 00 00 ef                    # swi    0
+03 f0 20 e3                    # wfi
+
+# @90
+:ELF_data
+:hello
+48 65 6c 6c 6f 2c 20 47        # Hello, G
+4e 55 20 4d 65 73 21 0a        # NU Mes!\n
+:bye
+:ELF_end
