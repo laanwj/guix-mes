@@ -18,10 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
+#include <signal.h>
+
+int __raise(int);
 
 void
 abort (void)
 {
-  asm ("hlt");
+  if (__raise(SIGABRT) < 0) { /* could not raise SIGABRT */
+    /* Fail in any way possible */
+    unsigned char* x = (unsigned char*) 0;
+    *x = 2;
+  }
 }
