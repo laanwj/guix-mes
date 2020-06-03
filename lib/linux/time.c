@@ -23,6 +23,9 @@
 #include <time.h>
 #include <stdlib.h>
 
+/* Linux' SYS_time syscall is a compatibility shim for SYS_gettimeofday.
+Therefore, prefer SYS_gettimeofday. */
+
 #if SYS_gettimeofday
 
 #include <sys/time.h>
