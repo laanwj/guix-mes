@@ -121,46 +121,53 @@ extensive examples, including parsers for the Javascript and C99 languages.")
     (license (list gpl3+ lgpl3+))))
 
 (define-public mes
-  (let ((triplet "i686-unknown-linux-gnu")
-        (version "0.22"))
-    (package
-      (name "mes")
-      (version version)
-      (source (origin
-                (method url-fetch)
-                (uri (string-append
-                      "https://ftp.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
-                (sha256
-                 (base32 #!mes!# "04pajp8v31na34ls4730ig5f6miiplhdvkmsb9ls1b8bbmw2vb4n"))))
-      (build-system gnu-build-system)
-      (supported-systems '("i686-linux" "x86_64-linux"))
-      (propagated-inputs
-       `(("mescc-tools" ,mescc-tools)
-         ("nyacc" ,nyacc)))
-      (native-inputs
-       `(("guile" ,guile-2.2)
-         ,@(if (string-prefix? "x86_64-linux" (or (%current-target-system)
-                                                  (%current-system)))
-               ;; Use cross-compiler rather than #:system "i686-linux" to get
-               ;; MesCC 64 bit .go files installed ready for use with Guile.
-               `(("i686-linux-binutils" ,(cross-binutils triplet))
-                 ("i686-linux-gcc" ,(cross-gcc triplet)))
-               '())
-         ("graphviz" ,graphviz)
-         ("help2man" ,help2man)
-         ("perl" ,perl)                ; build-aux/gitlog-to-changelog
-         ("texinfo" ,texinfo)))
-      (arguments
-       `(#:strip-binaries? #f)) ; binutil's strip b0rkes MesCC/M1/hex2 binaries
-      (synopsis "Scheme interpreter and C compiler for full source bootstrapping")
-      (description
-       "GNU Mes--Maxwell Equations of Software--brings the Reduced Binary Seed
+  (package
+    (name "mes")
+    (version "0.22")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://ftp.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
+              (sha256
+               (base32 #!mes!# "04pajp8v31na34ls4730ig5f6miiplhdvkmsb9ls1b8bbmw2vb4n"))))
+    (build-system gnu-build-system)
+    (supported-systems '("aarch64-linux" "armhf-linux" "i686-linux" "x86_64-linux"))
+    (propagated-inputs
+     `(("mescc-tools" ,mescc-tools)
+       ("nyacc" ,nyacc)))
+    (native-inputs
+     `(("guile" ,guile-2.2)
+       ,@(cond ((string-prefix? "x86_64-linux" (or (%current-target-system)
+                                                   (%current-system)))
+                ;; Use cross-compiler rather than #:system "i686-linux" to get
+                ;; MesCC 64 bit .go files installed ready for use with Guile.
+                (let ((triplet "i686-unknown-linux-gnu"))
+                  `(("i686-linux-binutils" ,(cross-binutils triplet))
+                    ("i686-linux-gcc" ,(cross-gcc triplet)))))
+               ((string-prefix? "aarch64-linux" (or (%current-target-system)
+                                                    (%current-system)))
+                ;; Use cross-compiler rather than #:system "armhf-linux" to get
+                ;; MesCC 64 bit .go files installed ready for use with Guile.
+                (let ((triplet "arm-linux-gnueabihf"))
+                  `(("arm-linux-binutils" ,(cross-binutils triplet))
+                    ("arm-linux-gcc" ,(cross-gcc triplet)))))
+               (else
+                '()))
+       ("graphviz" ,graphviz)
+       ("help2man" ,help2man)
+       ("perl" ,perl)                   ; build-aux/gitlog-to-changelog
+       ("texinfo" ,texinfo)))
+    (arguments
+     `(#:strip-binaries? #f)) ; binutil's strip b0rkes MesCC/M1/hex2 binaries
+    (synopsis "Scheme interpreter and C compiler for full source bootstrapping")
+    (description
+     "GNU Mes--Maxwell Equations of Software--brings the Reduced Binary Seed
 bootstrap to Guix and aims to help create full source bootstrapping for
 GNU/Linux distributions.  It consists of a mutual self-hosting Scheme
 interpreter in C and a Nyacc-based C compiler in Scheme and is compatible with
 Guile.")
-      (home-page "https://www.gnu.org/software/mes")
-      (license gpl3+))))
+    (home-page "https://www.gnu.org/software/mes")
+    (license gpl3+)))
 
 (define-public mes.git
  (let ((version "0.22")
