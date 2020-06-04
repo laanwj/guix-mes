@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2020 Danny Milosavljevic <dannym@scratchpost.org>
  *
  * This file is part of GNU Mes.
  *
@@ -25,12 +26,21 @@
 #include_next <setjmp.h>
 #else // ! SYSTEM_LIBC
 
+#if __arm__
+typedef struct
+{
+  long __fp;
+  long __lr;
+  long __sp;
+} __jmp_buf;
+#else
 typedef struct
 {
   long __bp;
   long __pc;
   long __sp;
 } __jmp_buf;
+#endif
 typedef __jmp_buf jmp_buf[1];
 
 #if __MESC__
