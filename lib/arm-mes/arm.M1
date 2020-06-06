@@ -1,0 +1,390 @@
+### GNU Mes --- Maxwell Equations of Software
+### Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright © 2019,2020 Danny Milosavljevic <dannym@scratchpost.org>
+###
+### This file is part of GNU Mes.
+###
+### Mes is free software# you can redistribute it and/or modify it
+### under the terms of the GNU General Public License as published by
+### the Free Software Foundation# either version 3 of the License, or (at
+### your option) any later version.
+###
+### GNU Mes is distributed in the hope that it will be useful, but
+### WITHOUT ANY WARRANTY# without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+# Note: r9 is used as scratch register and is assumed to not contain anything important!
+
+# reduced instruction set: r0, r1 (some r2 for shift, r3 for mul)
+
+# The "e" in most opcodes near the end means "always".
+#                     020090e0 # adds r0, r0, r2; ADDS = '0' op3 op1 '09' op2 'e0'
+#                     030091e0 # adds r0, r1, r3
+#                     031091e0 # adds r1, r1, r3
+#                     030090e0 # adds r0, r0, r3
+DEFINE add____$i8,%r0   0090e2 # adds r0, r0, #xx; ADDSI = immediate op1 '09' op2 'e2'
+#                       0091e2 # adds r0, r1, #xx; ADDSI = immediate op1 '09' op2 'e2'
+#                       1090e2 # adds r1, r0, #xx; ADDSI = immediate op1 '09' op2 'e2'
+DEFINE add____$i8,%r1   1091e2 # adds    r1, r1, #xx
+DEFINE add____$i8,%r13  d09de2 # adds    r13, r13, #xx
+DEFINE sub____$i8,%r0   0050e2 # subs    r0, r0, #xx
+DEFINE sub____$i8,%r1   1051e2 # subs    r1, r1, #xx
+DEFINE add____%r0,%r0 000090e0 # adds    r0, r0, r0
+DEFINE add____%r0,%r1 001091e0 # adds    r1, r1, r0
+DEFINE add____%r1,%r0 010090e0 # adds    r0, r0, r1
+DEFINE add____%r1,%r1 011091e0 # adds    r1, r1, r1
+DEFINE and____%r1,%r0 010010e0 # ands    r0, r0, r1
+DEFINE and____$i8,%r0 0000e2
+DEFINE and____$i8,%r1 1001e2
+DEFINE call___*%r0 30ff2fe1
+DEFINE call___*%r1 31ff2fe1
+DEFINE cmp____$i8,%r0 0050e3
+DEFINE cmp____$i8,%r1 0051e3
+DEFINE cmn____$i8,%r0 0070e3
+DEFINE cmn____$i8,%r1 0071e3
+DEFINE swi____$0 000000ef
+DEFINE ja 8a
+DEFINE jae 3a
+DEFINE jb 2a
+DEFINE jbe 9a
+DEFINE je 0a
+DEFINE jg ca
+DEFINE jge aa
+DEFINE jl ba
+DEFINE jle da
+DEFINE jne 1a
+
+# e3a00064        mov     r0, #100
+# e3a01064        mov     r1, #100
+# e3a02064        mov     r2, #100
+
+#    0:   e3047215        movw    r7, #16917      ; 0x4215
+
+# OK:
+DEFINE mov____$i8,%r0 00a0e3
+DEFINE mov____$i8,%r1 10a0e3
+DEFINE mov____$i8,%r7 70a0e3
+
+DEFINE mvn____%r0,$i8 00e0e3
+DEFINE mvn____%r1,$i8 10e0e3
+DEFINE mvn____%r7,$i8 70e0e3
+
+DEFINE mov____%r0,%r1 0010a0e1
+DEFINE mov____%r0,%r2 0020a0e1
+DEFINE mov____%fp,%r1 0b10a0e1
+DEFINE mov____%fp,%r2 0b20a0e1
+DEFINE mov____%r0,(%r1) 000081e5
+DEFINE mov____%r1,%r0 0100a0e1
+DEFINE mov____%r1,%r2 0120a0e1
+DEFINE mov____%esp,%r0 0d00a0e1
+
+# e59f9004        ldr     r9, [pc, #4]    ; <L1>
+# e5890000        str     r0, [r9]
+# ea000000        b L2
+# L1: ???
+# L2:
+DEFINE mov____%r0,0x32 04909fe5000089e5000000ea
+DEFINE mov____%r1,0x32 04909fe5001089e5000000ea
+DEFINE mov____%r2,0x32 04909fe5002089e5000000ea
+
+# e92d0005        push    {r0, r2}
+# e5910000        ldr     r0, [r1]
+# e59f200c        ldr     r2, [pc, #12]   ; 1c <X2>
+# e0800002        add     r0, r0, r2
+# e5810000        str     r0, [r1]
+# e8bd0005        pop     {r0, r2}
+# ea000000        b       20 <Y2>
+# X2: ???
+# Y2:
+DEFINE add____$i32,(%r1) 05002de9000091e50c209fe5020080e0000081e50500bde8000000ea
+
+# e59f0000        ldr     r0, [pc]
+# ea000000        b       c <R>
+# nop
+# R:
+DEFINE mov____$i32,%r0 00009fe5000000ea
+DEFINE mov____$i32,%r1 00109fe5000000ea
+DEFINE mov____$i32,%r2 00209fe5000000ea
+DEFINE mov____$i32,%r7 00709fe5000000ea
+DEFINE mov____%r2,(%r1) 002081e5
+DEFINE mov____%r3,%r0 0300a0e1
+DEFINE mov____%r3,%r1 0e10a0e1
+DEFINE mov____(%r0),%r0 000090e5
+DEFINE mov____(%r0),%r2 002090e5
+DEFINE mov____(%r1),%r1 001091e5
+
+DEFINE nop 0000a0e1
+DEFINE not____%r0 0000e0e1
+DEFINE not____%r1 0110e0e1
+DEFINE or_____%r1,%r0 010090e1 # orrs    r0, r0, r1
+DEFINE pop____%r0 04009de4
+DEFINE pop____%r1 04109de4
+DEFINE pop____%r3 04309de4
+DEFINE pop____%lr 04e09de4
+
+# e59f9004        ldr     r9, [pc, #4]    ; c <L1x>
+# e52d9004        push    {r9}            ; (str r9, [sp, #-4]!)
+# ea000000        b       10 <L1y>
+# L1x: data
+# L1y:
+
+DEFINE push___$i32 04909fe504902de5000000ea
+
+DEFINE push___%r0 04002de5 # str r0, [sp, #-4]!
+DEFINE push___%r1 04102de5 # str r1, [sp, #-4]!
+DEFINE push___%r2 04202de5 # str r2, [sp, #-4]!
+DEFINE push___%r3 04302de5 # str r3, [sp, #-4]!
+DEFINE push___%lr 04e02de5 # str lr, [sp, #-4]!
+
+DEFINE sub____%r1,%r0 010050e0 # subs    r0, r0, r1
+DEFINE test___%r0,%r0 000010e1
+DEFINE test___%r1,%r1 010011e1
+DEFINE xor____$i8,%r0 0030e2 # eors    r0, r0, #xx
+DEFINE xor____%r0,%r0 000030e0 # eors    r0, r0, r0
+DEFINE xor____%r1,%r0 010030e0 # eors    r0, r0, r1
+DEFINE xor____%r1,%r1 011031e0 # eors    r1, r1, r1
+DEFINE xor____%r3,%r3 033033e0 # eors    r3, r3, r3
+
+# Note: These are the native ARM instructions.
+# Note: i8 immediate
+DEFINE ldr____%r0,(%fp,+#$i8) 009be5
+DEFINE ldr____%r1,(%fp,+#$i8) 109be5
+DEFINE ldr____%r2,(%fp,+#$i8) 209be5
+DEFINE ldr____%r3,(%fp,+#$i8) 309be5
+DEFINE ldr____%r4,(%fp,+#$i8) 409be5
+DEFINE ldr____%r5,(%fp,+#$i8) 509be5
+DEFINE ldr____%r7,(%fp,+#$i8) 709be5
+DEFINE ldr____%fp,(%fp,+#$i8) b09be5
+DEFINE ldr____%sp,(%fp,+#$i8) d09be5
+DEFINE ldr____%lr,(%fp,+#$i8) e09be5
+DEFINE ldr____%r0,(%fp,-#$i8) 001be5
+DEFINE ldr____%r1,(%fp,-#$i8) 101be5
+DEFINE ldr____%r2,(%fp,-#$i8) 201be5
+DEFINE ldr____%r3,(%fp,-#$i8) 301be5
+DEFINE ldr____%r4,(%fp,-#$i8) 401be5
+DEFINE ldr____%r5,(%fp,-#$i8) 501be5
+DEFINE ldr____%r7,(%fp,-#$i8) 701be5
+DEFINE ldr____%fp,(%fp,-#$i8) b01be5
+DEFINE ldr____%sp,(%fp,-#$i8) d01be5
+DEFINE ldr____%lr,(%fp,-#$i8) e01be5
+DEFINE str____%r0,(%fp,+#$i8) 008be5
+DEFINE str____%r1,(%fp,+#$i8) 108be5
+DEFINE str____%r2,(%fp,+#$i8) 208be5
+DEFINE str____%r3,(%fp,+#$i8) 308be5
+DEFINE str____%r4,(%fp,+#$i8) 408be5
+DEFINE str____%r5,(%fp,+#$i8) 508be5
+DEFINE str____%r7,(%fp,+#$i8) 708be5
+DEFINE str____%fp,(%fp,+#$i8) b08be5
+DEFINE str____%sp,(%fp,+#$i8) d08be5
+DEFINE str____%lr,(%fp,+#$i8) e08be5
+DEFINE str____%r0,(%fp,-#$i8) 000be5
+DEFINE str____%r1,(%fp,-#$i8) 100be5
+DEFINE str____%r2,(%fp,-#$i8) 200be5
+DEFINE str____%r3,(%fp,-#$i8) 300be5
+DEFINE str____%r4,(%fp,-#$i8) 400be5
+DEFINE str____%r5,(%fp,-#$i8) 500be5
+DEFINE str____%r7,(%fp,-#$i8) 700be5
+DEFINE str____%fp,(%fp,-#$i8) b00be5
+DEFINE str____%sp,(%fp,-#$i8) d00be5
+DEFINE str____%lr,(%fp,-#$i8) e00be5
+# Note: Loads INTO register r0 (ARM original operand order)
+DEFINE ldrsb__%r0,(%r0) d000d0e1  # ldrsb   r0, [r0]
+DEFINE ldrsb__%r1,(%r1) d010d1e1  # ldrsb   r1, [r1]
+DEFINE ldrsb__%r2,(%r2) d020d2e1  # ldrsb   r2, [r2]
+DEFINE ldrsb__%r3,(%r3) d030d3e1  # ldrsb   r3, [r3]
+DEFINE ldrsb__%r4,(%r4) d040d4e1  # ldrsb   r4, [r4]
+DEFINE ldrsb__%r5,(%r5) d050d5e1  # ldrsb   r5, [r5]
+DEFINE ldrb___%r0,(%r1) 0000d1e5  # ldrb    r0, [r1]
+DEFINE ldrh___%r0,(%r0) b000d0e1  # ldrh    r0, [r0]
+DEFINE ldrh___%r0,(%r1) b000d1e1  # ldrh    r0, [r1]
+DEFINE ldrh___%r1,(%r1) b010d1e1  # ldrh    r1, [r1]
+DEFINE ldrh___%r2,(%r2) b020d2e1  # ldrh    r2, [r2]
+DEFINE ldrh___%r3,(%r3) b030d3e1  # ldrh    r3, [r3]
+DEFINE strb___%r0,(%r0) 0000c0e5  # strb    r0, [r0]
+DEFINE strb___%r0,(%r1) 0000c1e5  # strb    r0, [r1]
+DEFINE strb___%r1,(%r1) 0010c1e5  # strb    r1, [r1]
+DEFINE strb___%r2,(%r2) 0020c2e5  # strb    r2, [r2]
+DEFINE strb___%r3,(%r3) 0030c3e5  # strb    r3, [r3]
+DEFINE strb___%r4,(%r4) 0040c4e5  # strb    r4, [r4]
+DEFINE strb___%r0,(%fp,+#$i8) 00cbe5 # strb    r0, [fp, +#xx]
+DEFINE strb___%r0,(%fp,-#$i8) 004be5 # strb    r0, [fp, -#xx]
+DEFINE strh___%r0,(%r0) b000c0e1  # strh    r0, [r0]
+DEFINE strh___%r0,(%r1) b000c1e1  # strh    r0, [r1]
+DEFINE strh___%r1,(%r1) b010c1e1  # strh    r1, [r1]
+DEFINE strh___%r2,(%r2) b020c2e1  # strh    r2, [r2]
+DEFINE strh___%r3,(%r3) b030c3e1  # strh    r3, [r3]
+DEFINE strh___%r4,(%r4) b040c4e1  # strh    r4, [r4]
+
+# There's a single instruction that does it--but I don't know how to encode it.
+# mov %r9, immediate
+# add %r9, %r9, %fp
+# strh %r0, [%r9]
+DEFINE strh___%r0,(%fp,+#$i8) 90a0e30b9089e0b000c9e1
+
+# There's a single instruction that does it--but I don't know how to encode it.
+# e3a090xx  mov %r9, immediate
+# e05b9009  sub %r9, %fp, %r9
+# e1c900b0  strh %r0, [%r9]
+DEFINE strh___%r0,(%fp,-#$i8) 90a0e309904be0b000c9e1
+
+DEFINE movle__%r0,$i8   00a0d3    # movle  r0, #xx
+DEFINE movlt__%r0,$i8   00a0b3    # movlt  r0, #xx
+DEFINE movge__%r0,$i8   00a0a3    # movge  r0, #xx
+DEFINE movgt__%r0,$i8   00a0c3    # movgt  r0, #xx
+DEFINE movcs__%r0,$i8   00a023    # movcs  r0, #xx
+DEFINE movcc__%r0,$i8   00a033    # movcc   r0, #xx
+DEFINE movhi__%r0,$i8   00a083    # movhi   r0, #xx
+DEFINE moveq__%r0,$i8   00a003    # moveq   r0, #xx
+DEFINE movle__%r1,$i8   10a0d3    # movle   r1, #xx
+DEFINE movlt__%r1,$i8   10a0b3    # movlt   r1, #xx
+DEFINE movge__%r1,$i8   10a0a3    # movge   r1, #xx
+DEFINE movgt__%r1,$i8   10a0c3    # movgt   r1, #xx
+DEFINE movcs__%r1,$i8   10a023    # movcs   r1, #xx
+DEFINE movcc__%r1,$i8   10a033    # movcc   r1, #xx
+DEFINE movhi__%r1,$i8   10a083    # movhi   r1, #xx
+DEFINE moveq__%r1,$i8   10a003    # moveq   r1, #xx
+
+DEFINE asr____%r0,%r0,%r1 5001a0e1  # asr %r0, %r0, %r1
+DEFINE lsl____%r0,%r0,%r1 1001a0e1  # lsl %r0, %r0, %r1
+DEFINE lsl____%r0,%r0,$i8 90a0e31009a0e1 # mov     r9, #xx; lsl %r0, %r0, %r9
+DEFINE lsl____%r1,%r1,$i8 90a0e31119a0e1 # mov     r9, #xx; lsl %r1, %r1, %r9
+DEFINE lsr____%r0,%r0,%r1 3001a0e1  # lsr %r0, %r0, %r1
+DEFINE ldr____%r0,(%sp,#$i8) 009de5  # ldr r0, [r13+xx]
+DEFINE ldr____%r1,(%sp,#$i8) 109de5  # ldr r1, [r13+xx]
+#DEFINE add____%r2,%r0,%r1,lsl#4 012280e0
+# Without carry
+DEFINE add____%r2,%r0,%r1,lsl#2 012180e0
+DEFINE add____%r2,%r1,%r0,lsl#2 002181e0
+DEFINE add____%r1,$i8 1081e2
+DEFINE add____%r2,$i8 2082e2
+DEFINE bl eb
+DEFINE b ea
+DEFINE sxtb__%r0,%r0 7000afe6
+DEFINE sxtb__%r1,%r1 7110afe6
+DEFINE sxth__%r0,%r0 7000bfe6
+DEFINE sxth__%r1,%r1 7110bfe6
+DEFINE uxtb__%r0,%r0 7000efe6
+DEFINE uxtb__%r1,%r1 7110efe6
+DEFINE uxth__%r0,%r0 7000ffe6
+DEFINE uxth__%r1,%r1 7110ffe6
+
+# See: https://github.com/torvalds/linux/blob/v4.19/arch/arm/tools/syscall.tbl
+DEFINE SYS_exit   01
+DEFINE SYS_fork   02
+DEFINE SYS_read   03
+DEFINE SYS_write  04
+DEFINE SYS_open   05
+DEFINE SYS_close  06
+# DEFINE SYS_waitpid does_not_exist
+DEFINE SYS_rmdir  28
+DEFINE SYS_wait4  72
+# waitid: 0x118
+
+DEFINE SYS_unlink 0a
+DEFINE SYS_execve 0b
+DEFINE SYS_chmod  0f
+DEFINE SYS_lseek  13
+DEFINE SYS_access 21
+DEFINE SYS_brk    2d
+DEFINE SYS_ioctl  36
+DEFINE SYS_stat   6a
+DEFINE SYS_fsync  76
+DEFINE SYS_getcwd b7
+
+# These are x86 ABI remnants:
+
+DEFINE mul____%r1,%r0 910089e0 # umull   r0, r9, r1, r0
+DEFINE mul____%r0,%r1 910089e0 # umull   r0, r9, r1, r0
+DEFINE mov____%ebp,%r0 0b00a0e1
+DEFINE mov____%ebp,%r1 0b10a0e1
+DEFINE push___%ebp 04b02de5 # str fp, [sp, #-4]!
+DEFINE pop____%ebp 04b09de4 # ldr fp, [sp], #4
+DEFINE mov____%esp,%ebp 0db0a0e1 # mov     fp, sp
+DEFINE mov____%ebp,%esp 0bd0a0e1 # mov sp, fp
+DEFINE sub____$i8,%esp d04de2 # sub     sp, sp, #xx
+
+DEFINE jmp____*%r1 11ff2fe1
+
+# e59f9008        ldr     r9, [pc, #8]    ; 10 <LX1>
+# e089900b        add     r9, r9, fp
+# e5890000        str     r0, [r9]
+# ea000000        b       14 <LX2>
+# 00000010 <LX1>: data
+# 00000014 <LX2>:
+DEFINE mov____%r0,0x32(%ebp) 08909fe50b9089e0000089e5000000ea
+DEFINE mov____%r1,0x32(%ebp) 08909fe50b9089e0001089e5000000ea
+DEFINE mov____%r2,0x32(%ebp) 08909fe50b9089e0002089e5000000ea
+
+# e59f9004        ldr     r9, [pc, #4]    ; c <LX1>
+# e5990000        ldr     r0, [r9]
+# ea000000        b       10 <LX2>
+DEFINE mov____0x32,%r0 04909fe5000099e5000000ea
+DEFINE mov____0x32,%r1 04909fe5001099e5000000ea
+DEFINE mov____0x32,%r2 04909fe5002099e5000000ea
+
+# e1a09000        mov     r9, r0
+# e1a00001        mov     r0, r1
+# e1a01009        mov     r1, r9
+DEFINE xchg___%r0,%r1 0090a0e10100a0e10910a0e1
+
+# e49de004        pop     {lr}            ; (ldr lr, [sp], #4)
+# e1a0f00e        mov     pc, lr
+DEFINE ret 04e09de40ef0a0e1
+
+# The flags are also updated, but that's probably useless.
+DEFINE add____$i8,%esp d09de2
+
+# e24ddeff        sub     sp, sp, #4080
+# e24dd064        sub     sp, sp, #100
+DEFINE allocate_stack_4180 ffde4de264d04de2
+
+DEFINE mov____0x32(%ebp),%r0 08909fe50b9089e0000099e5000000ea
+# e59f9008        ldr     r9, [pc, #8]
+# e089900b        add     r9, r9, fp
+# e5991000        ldr     r1, [r9]
+# ea000000        b       20 <VD>
+# V: ...
+# VD:
+DEFINE mov____0x32(%ebp),%r1 08909fe50b9089e0001099e5000000ea
+
+# e1a09000        mov     r9, r0
+# e59d0000        ldr     r0, [sp]
+# e58d9000        str     r9, [sp]
+DEFINE xchg___%r0,(%esp) 0090a0e100009de500908de5
+
+# e52d1004        push    {r1}            ; (str r1, [sp, #-4]!)
+# e59f1010        ldr     r1, [pc, #16]   ; 1c <WERT>
+# e5909000        ldr     r9, [r0]
+# e0999001        adds    r9, r9, r1
+# e5809000        str     r9, [r0]
+# e49d1004        pop     {r1}            ; (ldr r1, [sp], #4)
+# ea000000        b       20 <VD>
+# V: ...
+# VD:
+DEFINE add____$i32,(%r0) 04102de510109fe5009090e5019099e0009080e504109de4000000ea
+
+# mov %r9, #00
+# push {%r9}
+DEFINE push___0 0090a0e304902de5
+
+DEFINE add____$i32,%r0 04909fe5090090e0000000ea
+# e59f9004        ldr     r9, [pc, #4]    ; c <VALUE>
+# e0911009        adds    r1, r1, r9
+# ea000000        b       10
+# VALUE:
+DEFINE add____$i32,%r1 04909fe5091091e0000000ea
+DEFINE add____$i32,%r2 04909fe5092092e0000000ea
+
+# e59f9008        ldr     r9, [pc, #8]    ; 10 <WERT>
+# e089900b        add     r9, r9, fp
+# e5c90000        strb    r0, [r9]
+# ea000000        b       14 <WERTD>
+# WERT: nop
+# WERTD:
+DEFINE strb___%r0,0x32(%ebp) 08909fe50b9089e00000c9e5000000ea
+
+DEFINE wfi 03f020e3

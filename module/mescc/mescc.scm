@@ -23,6 +23,7 @@
   #:use-module (ice-9 getopt-long)
   #:use-module (mes misc)
 
+  #:use-module (mescc armv4 info)
   #:use-module (mescc i386 info)
   #:use-module (mescc x86_64 info)
   #:use-module (mescc preprocess)

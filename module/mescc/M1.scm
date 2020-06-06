@@ -63,6 +63,13 @@
 (define (hex2:offset1 o)
   (string-append "!" o))
 
+(define (hex2:offset2 o)
+  (string-append "@" o))
+
+(define (hex2:offset3 o)
+  "Note: Uses architecture-specific printer (for branch instructions)"
+  (string-append "^~" o))
+
 (define hex? #t)
 
 (define (hex2:immediate o)
@@ -171,6 +178,8 @@
 
           ((#:offset ,offset) (hex2:offset offset))
           ((#:offset1 ,offset1) (hex2:offset1 offset1))
+          ((#:offset2 ,offset2) (hex2:offset2 offset2))
+          ((#:offset3 ,offset3) (hex2:offset3 offset3))
           ((#:immediate ,immediate) (hex2:immediate immediate))
           ((#:immediate1 ,immediate1) (hex2:immediate1 immediate1))
           ((#:immediate2 ,immediate2) (hex2:immediate2 immediate2))
@@ -191,11 +200,15 @@
                 ((or (string? (car o)) (symbol? (car o)))
                  (display "\t" )
                  (display-join (map text->M1 o) " "))
+                ((or (string? (car (reverse o))) (symbol? (car (reverse o))))
+                 (display "\t" )
+                 (display-join (map text->M1 o) " "))
                 (else (error "line->M1 invalid line:" o)))
           (newline))
         (when verbose?
           (display (string-append "    :" name "\n") (current-error-port)))
-        (display (string-append "\n\n:" name "\n"))
+        ;; "<" aligns to multiple of 4 Bytes.
+        (display (string-append "\n\n<\n:" name "\n"))
         (for-each line->M1 (apply append text))))
     (define (write-global o)
       (define (labelize o)

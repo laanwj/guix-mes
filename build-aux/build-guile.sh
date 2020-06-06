@@ -34,6 +34,8 @@ module/mescc/M1.scm
 module/mescc/as.scm
 module/mescc/bytevectors.scm
 module/mescc/compile.scm
+module/mescc/armv4/as.scm
+module/mescc/armv4/info.scm
 module/mescc/i386/as.scm
 module/mescc/i386/info.scm
 module/mescc/x86_64/as.scm
