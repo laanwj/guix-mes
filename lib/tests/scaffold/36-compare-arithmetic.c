@@ -44,5 +44,17 @@ main ()
   if (8 / 4 != 2)
     return 1;
 
+  oputs ("t: 8 / -4\n");
+  if (8 / -4 != -2)
+    return 1;
+
+  oputs ("t: -8 / -4\n");
+  if (-8 / -4 != 2)
+    return 1;
+
+  oputs ("t: -8 / 4\n");
+  if (-8 / 4 != -2)
+    return 1;
+
   return 0;
 }
