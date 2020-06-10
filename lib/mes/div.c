@@ -67,9 +67,9 @@ __mesabi_uldiv (unsigned long a, unsigned long b, unsigned long* remainder)
 /* Note: Rounds towards zero.
    Maintainer: Be careful to satisfy quot * b + rem == a.
                That means that rem can be negative. */
-ldiv_t __mesabi_ldiv(long a, long b)
+void
+__mesabi_ldiv(long a, long b, ldiv_t* result)
 {
-  ldiv_t result;
   int negate_result = (a < 0) ^ (b < 0);
   if (b == LONG_MIN)
     __mesabi_div0();
@@ -80,22 +80,21 @@ ldiv_t __mesabi_ldiv(long a, long b)
         a = -a;
       if (b < 0)
         b = -b;
-      result.quot = __mesabi_uldiv(a, b, &result.rem);
+      result->quot = __mesabi_uldiv(a, b, &result->rem);
       if (negate_result)
-        result.quot = -result.quot;
+        result->quot = -result->quot;
       if (negative_a)
-        result.rem = -result.rem;
-      return result;
+        result->rem = -result->rem;
     }
   else
     {
-      result.rem = 0;
+      result->rem = 0;
       if (b < 0)
         b = -b;
       if (b == 1)
         {
-          result.quot = a;
-          /* Since result.quot is already negative, don't negate it again. */
+          result->quot = a;
+          /* Since result->quot is already negative, don't negate it again. */
           negate_result = !negate_result;
         }
       else if (b == 0)
@@ -105,14 +104,31 @@ ldiv_t __mesabi_ldiv(long a, long b)
           long x;
           for (x = 0; a <= -b; a += b)
             ++x;
-          result.rem = a; /* negative */
-          result.quot = x;
+          result->rem = a; /* negative */
+          result->quot = x;
         }
       if (negate_result)
-        result.quot = -result.quot;
-      return result;
+        result->quot = -result->quot;
     }
 }
+
+long
+__mesabi_imod (long a, long b)
+{
+  ldiv_t result;
+  __mesabi_ldiv(a, b, &result);
+  return result.rem;
+}
+
+#if !SYSTEM_LIBC && __arm__
+long
+__aeabi_idiv (long a, long b)
+{
+  ldiv_t result;
+  __mesabi_ldiv(a, b, &result);
+  return result.quot;
+}
+#endif // !SYSTEM_LIBC && __arm__
 
 #if __GNUC__ && !SYSTEM_LIBC && __arm__
 // ...-binutils-2.31.1/bin/ld: hash.o: in function `hash_cstring':
@@ -129,16 +145,10 @@ ldiv_t __mesabi_ldiv(long a, long b)
 long
 __aeabi_idivmod (long a, long b)
 {
-  ldiv_t result = __mesabi_ldiv(a, b);
+  ldiv_t result;
+  __mesabi_ldiv(a, b, &result);
   register long rem_result asm("r1");
   rem_result = result.rem;
-  return result.quot;
-}
-
-long
-__aeabi_idiv (long a, long b)
-{
-  ldiv_t result = __mesabi_ldiv(a, b);
   return result.quot;
 }
 
