@@ -196,6 +196,9 @@ ok1:
   if (strcmp ("-2147483648", itoa (i)))
     return 34;
 
+  if (strcmp ("-80000000", ntoab (i, 16, 1)))
+    return 35;
+
   oputs ("t: i = -2147483647\n");
   i = -2147483647;
 
