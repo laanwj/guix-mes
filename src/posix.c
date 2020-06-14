@@ -71,6 +71,8 @@ unreadchar (int c)
 {
   if (__stdin >= 0)
     return fdungetc (c, __stdin);
+  if (c == EOF) // can't unread EOF
+    return c;
   SCM port = current_input_port ();
   SCM string = STRING (port);
   size_t length = LENGTH (string);
