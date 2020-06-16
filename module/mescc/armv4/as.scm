@@ -30,6 +30,19 @@
   #:export (
             armv4:instructions
             ))
+;; If 0 <= exp < #x100, use positive-body.
+;; If #x-100 < exp < 0, use negative-body.
+;; Otherwise, use general-body.
+(define-macro (optimize-immediate exp positive-body negative-body
+                                  general-body)
+ `(let ((exp ,exp))
+    (if (,>= exp ,0)
+        (if (,< exp ,#x100)
+            ,positive-body
+            ,general-body)
+        (if (,> exp ,#x-100)
+            ,negative-body
+            ,general-body))))
 
 (define (armv4:function-preamble . rest)
   "Note: Pretends to be on x86 a lot"
@@ -47,23 +60,17 @@
     `(,`(,(string-append "mov____%" r ",0x32(%ebp)") (#:immediate ,n)))))
 
 (define (immediate->r0 v)
-  (if (< v 0)
-      (if (> v #x-100)
-         `(((#:immediate1 ,(- -1 v)) "mvn____%r0,$i8"))
-         `(("mov____$i32,%r0" (#:immediate ,v))))
-      (if (< v #x100)
-         `(((#:immediate1 ,v) "mov____$i8,%r0"))
-         `(("mov____$i32,%r0" (#:immediate ,v))))))
+  (optimize-immediate v
+   `(((#:immediate1 ,v) "mov____$i8,%r0"))
+   `(((#:immediate1 ,(- -1 v)) "mvn____%r0,$i8"))
+   `(("mov____$i32,%r0" (#:immediate ,v)))))
 
 (define (armv4:value->r info v)
   (let ((r (get-r info)))
-    (if (< v 0)
-        (if (> v #x-100)
-           `(((#:immediate1 ,(- -1 v)) ,(string-append "mvn____%" r ",$i8")))
-           `((,(string-append "mov____$i32,%" r) (#:immediate ,v))))
-        (if (< v #x100)
-           `(((#:immediate1 ,v) ,(string-append "mov____$i8,%" r)))
-           `((,(string-append "mov____$i32,%" r) (#:immediate ,v)))))))
+    (optimize-immediate v
+     `(((#:immediate1 ,v) ,(string-append "mov____$i8,%" r)))
+     `(((#:immediate1 ,(- -1 v)) ,(string-append "mvn____%" r ",$i8")))
+     `((,(string-append "mov____$i32,%" r) (#:immediate ,v))))))
 
 (define (armv4:ret . rest)
   "Note: Pretends to be on x86 a lot"
@@ -78,15 +85,13 @@
 (define (armv4:local->r info n)
   (let ((r (get-r info))
         (n (- 0 (* 4 n))))
-    (if (< n 0)
-        (if (> n #x-100)
-           `(((#:immediate1 ,(- n))
-              ,(string-append "ldr____%" r ",(%fp,-#$i8)")))
-           `((,(string-append "mov____0x32(%ebp),%" r) (#:immediate ,n))))
-        (if (< n #x100)
-           `(((#:immediate1 ,n)
-              ,(string-append "ldr____%" r ",(%fp,+#$i8)")))
-           `((,(string-append "mov____0x32(%ebp),%" r) (#:immediate ,n)))))))
+    (optimize-immediate n
+     `(((#:immediate1 ,n)
+        ,(string-append "ldr____%" r ",(%fp,+#$i8)")))
+     `(((#:immediate1 ,(- n))
+        ,(string-append "ldr____%" r ",(%fp,-#$i8)")))
+     `((,(string-append "mov____0x32(%ebp),%" r)
+        (#:immediate ,n))))))
 
 (define (armv4:r0+r1 info)
   (let ((r0 (get-r0 info))
@@ -128,17 +133,13 @@
 (define (armv4:r->local+n info id n)
   (let ((n (+ (- 0 (* 4 id)) n))
         (r (get-r info)))
-    (if (< n 0)
-        (if (> n #x-100)
-           `(((#:immediate1 ,(- n))
-              ,(string-append "str____%" r ",(%fp,-#$i8)")))
-           `((,(string-append "mov____%" r ",0x32(%ebp)")
-             (#:immediate ,n))))
-        (if (< n #x100)
-           `(((#:immediate1 ,n)
-              ,(string-append "str____%" r ",(%fp,+#$i8)")))
-           `((,(string-append "mov____%" r ",0x32(%ebp)")
-              (#:immediate ,n)))))))
+    (optimize-immediate n
+     `(((#:immediate1 ,n)
+        ,(string-append "str____%" r ",(%fp,+#$i8)")))
+     `(((#:immediate1 ,(- n))
+        ,(string-append "str____%" r ",(%fp,-#$i8)")))
+     `((,(string-append "mov____%" r ",0x32(%ebp)")
+        (#:immediate ,n))))))
 
 (define (armv4:r-mem-add info v)
   (let ((r (get-r info)))
@@ -148,9 +149,10 @@
   (let ((r (get-r info)))
     `((,(string-append "push___%r0"))
       (,(string-append "ldrb___%r0,(%" r ")"))
-      ,(if (< v 0)
-          `((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%r0"))
-          `((#:immediate1 ,v) ,(string-append "add____$i8,%r0")))
+      ,(optimize-immediate v
+        `((#:immediate1 ,v) ,(string-append "add____$i8,%r0"))
+        `((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%r0"))
+        (error "armv4:r-byte-mem-add got immediate that doesn't fit into 8 bits."))
       (,(string-append "strb___%r0,(%" r ")"))
       (,(string-append "pop____%r0")))))
 
@@ -158,9 +160,10 @@
   (let ((r (get-r info)))
     `((,(string-append "push___%r0"))
       (,(string-append "ldrh___%r0,(%" r ")"))
-      ,(if (< v 0)
-          `((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%r0"))
-          `((#:immediate1 ,v) ,(string-append "add____$i8,%r0")))
+      ,(optimize-immediate v
+        `((#:immediate1 ,v) ,(string-append "add____$i8,%r0"))
+        `((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%r0"))
+        (error "armv4:r-word-mem-add got immediate that doesn't fit into 8 bits but that is not implemented."))
       (,(string-append "strh___%r0,(%" r ")"))
       (,(string-append "pop____%r0")))))
 
@@ -168,13 +171,10 @@
   (let ((r (get-r info)))
     (let ((n (- 0 (* 4 n))))
       `((,(string-append "mov____%ebp,%" r))
-        ,(if (< n 0)
-            (if (> n #x-100)
-               `((#:immediate1 ,(- n)) ,(string-append "sub____$i8,%" r))
-               `(,(string-append "add____$i32,%" r) (#:immediate ,n)))
-            (if (< n #x100)
-               `((#:immediate1 ,n) ,(string-append "add____$i8,%" r))
-               `(,(string-append "add____$i32,%" r) (#:immediate ,n))))))))
+        ,(optimize-immediate n
+          `((#:immediate1 ,n) ,(string-append "add____$i8,%" r))
+          `((#:immediate1 ,(- n)) ,(string-append "sub____$i8,%" r))
+          `(,(string-append "add____$i32,%" r) (#:immediate ,n)))))))
 
 (define (armv4:label->r info label)
   (let ((r (get-r info)))
@@ -393,13 +393,10 @@
 
 (define (armv4:r+value info v)
   (let ((r (get-r info)))
-    (if (< v 0)
-        (if (> v #x-100)
-           `(((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%" r)))
-           `((,(string-append "add____$i32,%" r) (#:immediate ,v))))
-        (if (< v #x100)
-           `(((#:immediate1 ,v) ,(string-append "add____$i8,%" r)))
-           `((,(string-append "add____$i32,%" r) (#:immediate ,v)))))))
+    (optimize-immediate v
+     `(((#:immediate1 ,v) ,(string-append "add____$i8,%" r)))
+     `(((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%" r)))
+     `((,(string-append "add____$i32,%" r) (#:immediate ,v))))))
 
 (define (armv4:r0->r1-mem info)
   (let ((r0 (get-r0 info))
@@ -418,13 +415,10 @@
 
 (define (armv4:r-cmp-value info v)
   (let ((r (get-r info)))
-    (if (< v 0)
-        (if (> v #x-100)
-            `(((#:immediate1 ,(- v)) ,(string-append "cmn____$i8,%" r)))
-            `((,(string-append "cmp____$i32,%" r) (#:immediate ,v))))
-        (if (< v #x100)
-           `(((#:immediate1 ,v) ,(string-append "cmp____$i8,%" r)))
-           `((,(string-append "cmp____$i32,%" r) (#:immediate ,v)))))))
+    (optimize-immediate v
+     `(((#:immediate1 ,v) ,(string-append "cmp____$i8,%" r)))
+     `(((#:immediate1 ,(- v)) ,(string-append "cmn____$i8,%" r)))
+     `((,(string-append "cmp____$i32,%" r) (#:immediate ,v))))))
 
 (define (armv4:push-register info r)
   `((,(string-append "push___%" r))))
@@ -485,13 +479,10 @@
 
 (define (armv4:r0+value info v)
   (let ((r0 (get-r0 info)))
-    (if (< v 0)
-        (if (> v #x-100)
-           `(((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%" r0)))
-           `((,(string-append "add____$i32,%" r0) (#:immediate ,v))))
-        (if (< v #x100)
-           `(((#:immediate1 ,v) ,(string-append "add____$i8,%" r0))))
-           `((,(string-append "add____$i32,%" r0) (#:immediate ,v))))))
+    (optimize-immediate v
+     `(((#:immediate1 ,v) ,(string-append "add____$i8,%" r0)))
+     `(((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%" r0)))
+     `((,(string-append "add____$i32,%" r0) (#:immediate ,v))))))
 
 (define (armv4:value->r0 info v)
   (let ((r0 (get-r0 info)))
@@ -500,31 +491,23 @@
 (define (armv4:byte-r->local+n info id n)
   (let* ((n (+ (- 0 (* 4 id)) n))
          (r (get-r info)))
-    `(,(if (< n 0)
-           (if (> n #x-100)
-              `((#:immediate1 ,(- n))
-                ,(string-append "strb___%" r ",(%fp,-#$i8)"))
-              `(,(string-append "strb___%" r ",0x32(%ebp)")
-                (#:immediate ,n)))
-           (if (< n #x100)
-              `((#:immediate1 ,n)
-                ,(string-append "strb___%" r ",(%fp,+#$i8)"))
-              `(,(string-append "strb___%" r ",0x32(%ebp)") (#:immediate ,n)))))))
+    `(,(optimize-immediate n
+        `((#:immediate1 ,n)
+          ,(string-append "strb___%" r ",(%fp,+#$i8)"))
+        `((#:immediate1 ,(- n))
+          ,(string-append "strb___%" r ",(%fp,-#$i8)"))
+        `(,(string-append "strb___%" r ",0x32(%ebp)")
+          (#:immediate ,n))))))
 
 (define (armv4:word-r->local+n info id n)
   (let* ((n (+ (- 0 (* 4 id)) n))
          (r (get-r info)))
-    `(,(if (< n 0)
-           (if (> n #x-100)
-               `((#:immediate1 ,(- n))
-                 ,(string-append "strh___%" r ",(%fp,-#$i8)"))
-               `(,(string-append "strh___%" r ",0x32(%ebp)")
-                 (#:immediate ,n)))
-           (if (< n #x100)
-               `((#:immediate1 ,n)
-                 ,(string-append "strh___%" r ",(%fp,+#$i8)"))
-               `(,(string-append "strh___%" r ",0x32(%ebp)")
-                 (#:immediate ,n)))))))
+    (optimize-immediate n
+     `(((#:immediate1 ,n)
+        ,(string-append "strh___%" r ",(%fp,+#$i8)")))
+     `(((#:immediate1 ,(- n))
+        ,(string-append "strh___%" r ",(%fp,-#$i8)")))
+     `((,(string-append "strh___%" r ",0x32(%ebp)"))))))
 
 (define (armv4:r-and info v)
   (let ((r (get-r info)))
