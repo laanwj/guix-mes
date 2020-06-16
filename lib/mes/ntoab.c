@@ -38,26 +38,9 @@ ntoab (long x, int base, int signed_p)
   if (signed_p && x < 0)
     {
       sign_p = 1;
-      if (x == LONG_MIN)
-        {
-           /* Cannot do u = (-x), so avoid it. */
-           long i;
-           if (base == 10)
-             return XSTR(LONG_MIN);
-           /* We cause the same result as
-                i = (-x) % base
-                u = (-x) / base
-              would in mathematics if x and base were integers.
-              It will be the case that -base < x <= 0 after the loop.
-              Because base > 1, the quotient will definitely fit into u.
-              i will contain the last digit to print. */
-           for (u = 0; x <= -base; x += base, ++u)
-             ;
-           i = -x;
-           *p-- = i > 9 ? 'a' + i - 10 : '0' + i;
-        }
-      else
-        u = -x;
+      /* Avoid LONG_MIN */
+      u = (unsigned long) (-(x + 1));
+      ++u;
     }
   else
     u = x;
