@@ -148,7 +148,7 @@
 (define (armv4:r-byte-mem-add info v)
   (let ((r (get-r info)))
     `((,(string-append "push___%r0"))
-      (,(string-append "ldrb___%r0,(%" r ")"))
+      (,(string-append "ldrsb__%r0,(%" r ")"))
       ,(optimize-immediate v
         `((#:immediate1 ,v) ,(string-append "add____$i8,%r0"))
         `((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%r0"))
@@ -159,11 +159,11 @@
 (define (armv4:r-word-mem-add info v)
   (let ((r (get-r info)))
     `((,(string-append "push___%r0"))
-      (,(string-append "ldrh___%r0,(%" r ")"))
+      (,(string-append "ldrsh__%r0,(%" r ")"))
       ,(optimize-immediate v
         `((#:immediate1 ,v) ,(string-append "add____$i8,%r0"))
         `((#:immediate1 ,(- v)) ,(string-append "sub____$i8,%r0"))
-        (error "armv4:r-word-mem-add got immediate that doesn't fit into 8 bits but that is not implemented."))
+        `(("add____$i32,(%r0)" (#:immediate ,v))))
       (,(string-append "strh___%r0,(%" r ")"))
       (,(string-append "pop____%r0")))))
 
@@ -256,7 +256,7 @@
 
 (define (armv4:word-mem->r info)
   (let ((r (get-r info)))
-    `((,(string-append "ldrh___%" r ",(%" r ")")))))
+    `((,(string-append "ldrsh__%" r ",(%" r ")")))))
 
 (define (armv4:mem->r info)
   (let ((r (get-r info)))
