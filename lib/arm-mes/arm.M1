@@ -46,6 +46,16 @@ DEFINE cmp____$i8,%r0 0050e3
 DEFINE cmp____$i8,%r1 0051e3
 DEFINE cmn____$i8,%r0 0070e3
 DEFINE cmn____$i8,%r1 0071e3
+
+# e59f9004        ldr     r9, [pc, #4]
+# e1500009        cmp     r0, r9
+# ea000000        b       10064 <Q>
+#                 dd 0
+# Q:
+DEFINE cmp____$i32,%r0 04909fe5090050e1000000ea
+DEFINE cmp____$i32,%r1 04909fe5090051e1000000ea
+DEFINE cmp____$i32,%r2 04909fe5090052e1000000ea
+
 DEFINE swi____$0 000000ef
 DEFINE ja 8a
 DEFINE jae 3a
