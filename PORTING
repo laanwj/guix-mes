@@ -20,16 +20,14 @@ to your config.scm and run guix system reconfigure.
 
 ** Setup environment
 
+For example (note: ARM is no longer a 'port', see HACKING)
    #+BEGIN_SRC bash
-   guix environment -s armhf-linux --pure --ad-hoc bash coreutils diffutils gawk gcc-toolchain grep guile help2man make nyacc pkg-config sed texinfo
-   PATH=~/src/mescc-tools-arm/bin:$PATH
+   guix environment -s armhf-linux --pure --ad-hoc bash coreutils diffutils findutils gawk gcc-toolchain@7 grep git guile@2.2 gzip help2man make mescc-tools nyacc openssh-sans-x pkg-config sed tar texinfo
    #+END_SRC
-
-(No git, graphviz on ARM yet).
 
 ** Try it
    #+BEGIN_SRC bash
-   ./configure --with-courage --with-system-libc
+   CC=gnu-triplet-gcc ./configure --with-courage --with-system-libc
    ./simple.sh
    #+END_SRC
 

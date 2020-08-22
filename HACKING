@@ -4,7 +4,8 @@
 * SETUP
     guix environment -l guix.scm     #64 bit + 32bit
 
-    CC=i686-unkown-linux-gnu-gcc ./configure
+    CC=i686-unknown-linux-gnu-gcc ./configure
+    CC=arm-unknown-linux-gnu-gcc ./configure
 or
     ./configure
 
