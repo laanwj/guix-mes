@@ -29,7 +29,7 @@ struct foo13
   int a;
   int b;
   int c;
-  char d;
+  signed char d;
 } __attribute__ ((packed));
 
 struct foo13 tab14[3];
