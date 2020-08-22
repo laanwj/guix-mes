@@ -104,6 +104,7 @@ clean:
 	rm -f build-aux/mes-snarf.go
 	rm -f module/mescc.go
 	rm -f module/mes/*.go module/mescc/*.go
+	rm -f module/mescc/armv4/*.go
 	rm -f module/mescc/i386/*.go
 	rm -f module/mescc/x86_64/*.go
 	rm -rf gcc-lib/*.o gcc-lib/*.s gcc-lib/*.a gcc-lib/*-mes
