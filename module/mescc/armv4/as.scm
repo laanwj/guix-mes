@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;; Copyright © 2019 Danny Milosavljevic <dannym@scratchpost.org>
 ;;;
 ;;; This file is part of GNU Mes.
@@ -36,11 +36,11 @@
 (define-macro (optimize-immediate exp positive-body negative-body
                                   general-body)
  `(let ((exp ,exp))
-    (if (,>= exp ,0)
-        (if (,< exp ,#x100)
+    (if (>= exp 0)
+        (if (< exp #x100)
             ,positive-body
             ,general-body)
-        (if (,> exp ,#x-100)
+        (if (> exp #x-100)
             ,negative-body
             ,general-body))))
 
