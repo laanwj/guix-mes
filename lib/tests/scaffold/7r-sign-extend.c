@@ -18,16 +18,16 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-char global_c = -1;
+signed char global_c = -1;
 struct foo
 {
-  char type;
+  signed char type;
 };
 int
 main ()
 {
   {
-    char c = -1;
+    signed char c = -1;
     int i = c;
     if (i != -1)
       return 1;
@@ -40,28 +40,28 @@ main ()
   }
 
   {
-    char c = -1;
+    signed char c = -1;
     int ints[2] = { c, 0 };
     if (ints[0] != -1)
       return 3;
   }
 
   {
-    char c = -1;
+    signed char c = -1;
     int i = c;
     if (i != -1)
       return 4;
   }
 
   {
-    char c = -1;
+    signed char c = -1;
     int i = c;
     if (i != -1)
       return 5;
   }
 
   {
-    char a[2] = { -1, -129 };
+    signed char a[2] = { -1, -129 };
     int i = a[0];
     if (i != -1)
       return 6;
@@ -82,8 +82,8 @@ main ()
   }
 
   {
-    char c = -1;
-    char *p = &c;
+    signed char c = -1;
+    signed char *p = &c;
     int i = *p;
     if (i != -1)
       return 10;
@@ -91,7 +91,7 @@ main ()
 
   {
     int i = -129;
-    i = (char) i;
+    i = (signed char) i;
     if (i != 127)
       return 11;
   }
