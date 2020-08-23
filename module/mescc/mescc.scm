@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -242,7 +242,7 @@
                       ,@(append-map (cut list "-f" <>) M1-files)
                       "-o" ,M1-blood-elf-footer)))
     (when (and verbose? (> verbose? 1))
-        (format (current-error-port) "~a\n" (string-join command)))
+      (format (current-error-port) "~a\n" (string-join command)))
     (and (zero? (apply assert-system* command))
          (let* ((options (acons 'compile #t options)) ; ugh
                 (options (acons 'output blood-elf-footer options)))
@@ -250,8 +250,8 @@
 
 (define (replace-suffix file-name suffix)
   (let* ((parts (string-split file-name #\.))
-         (base (if (pair? (cdr parts)) (drop-right parts 1)))
-         (old-suffix (last parts))
+         (base (if (pair? (cdr parts)) (drop-right parts 1) (list file-name)))
+         (old-suffix (if (pair? (cdr parts)) (last parts) ""))
          (program-prefix (cond ((string-prefix? "arm-mes-" old-suffix) ".arm-mes-")
                                ((string-prefix? "x86-mes-" old-suffix) ".x86-mes-")
                                ((string-prefix? "x86_64-mes-" old-suffix) ".x86_64-mes-")
