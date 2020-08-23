@@ -475,7 +475,7 @@
          (r1 (get-r1 info))
          (r2 (car registers)))
     `((,(string-append "mov____(%" r0 "),%" r2))
-      (,(string-append "strh__%" r2 ",(%" r1 ")")))))
+      (,(string-append "strh___%" r2 ",(%" r1 ")")))))
 
 (define (armv4:r0+value info v)
   (let ((r0 (get-r0 info)))
