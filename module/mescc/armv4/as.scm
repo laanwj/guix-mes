@@ -364,10 +364,10 @@
   (let ((r0 (get-r0 info))
         (r1 (get-r1 info)))
     (if signed?
-        ;; __aeabi_idiv(a, b)
+        ;; __mesabi_idiv(a, b)
         (cons* `(,(string-append "push___%" r1))
                `(,(string-append "push___%" r0))
-               (armv4:call-label #f "__aeabi_idiv" 2))
+               (armv4:call-label #f "__mesabi_idiv" 2))
         ;; __mesabi_uldiv(a, b, remainderp)
         (cons* `(,(string-append "push___0"))
                `(,(string-append "push___%" r1))

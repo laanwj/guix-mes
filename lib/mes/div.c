@@ -120,15 +120,13 @@ __mesabi_imod (long a, long b)
   return result.rem;
 }
 
-#if !SYSTEM_LIBC && __arm__
-long
-__aeabi_idiv (long a, long b)
+int
+__mesabi_idiv (int a, int b)
 {
   ldiv_t result;
   __mesabi_ldiv(a, b, &result);
   return result.quot;
 }
-#endif // !SYSTEM_LIBC && __arm__
 
 #if __GNUC__ && !SYSTEM_LIBC && __arm__
 // ...-binutils-2.31.1/bin/ld: hash.o: in function `hash_cstring':
@@ -140,6 +138,14 @@ __aeabi_idiv (long a, long b)
 // ...-binutils-2.31.1/bin/ld: gcc-lib/libc.a(ntoab.o): in function `ntoab':
 // ntoab.c:(.text+0x54): undefined reference to `__aeabi_uidivmod'
 // ...-binutils-2.31.1/bin/ld: ntoab.c:(.text+0x62): undefined reference to `__aeabi_uidiv'
+
+long
+__aeabi_idiv (long a, long b)
+{
+  ldiv_t result;
+  __mesabi_ldiv(a, b, &result);
+  return result.quot;
+}
 
 /* Result: r0: quotient; r1: remainder */
 long
