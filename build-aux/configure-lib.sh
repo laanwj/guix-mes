@@ -222,6 +222,7 @@ lib/mes/abtod.c
 lib/mes/dtoab.c
 lib/mes/search-path.c
 lib/posix/execvp.c
+lib/posix/raise.c
 lib/stdio/fclose.c
 lib/stdio/fdopen.c
 lib/stdio/ferror.c
@@ -270,6 +271,8 @@ lib/$mes_cpu-mes-$compiler/setjmp.c
 if test $mes_kernel = linux; then
     libc_tcc_SOURCES="$libc_tcc_SOURCES
 lib/linux/close.c
+lib/linux/getpid.c
+lib/linux/kill.c
 lib/linux/rmdir.c
 lib/linux/stat.c
 "
@@ -304,7 +307,6 @@ lib/posix/alarm.c
 lib/posix/execl.c
 lib/posix/execlp.c
 lib/posix/mktemp.c
-lib/posix/raise.c
 lib/posix/sbrk.c
 lib/posix/sleep.c
 lib/posix/unsetenv.c
@@ -389,11 +391,9 @@ lib/linux/getdents.c
 lib/linux/getegid.c
 lib/linux/geteuid.c
 lib/linux/getgid.c
-lib/linux/getpid.c
 lib/linux/getppid.c
 lib/linux/getrusage.c
 lib/linux/getuid.c
-lib/linux/kill.c
 lib/linux/link.c
 lib/linux/lstat.c
 lib/linux/mkdir.c
