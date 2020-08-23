@@ -1,5 +1,5 @@
 ### GNU Mes --- Maxwell Equations of Software
-### Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright © 2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ### Copyright © 2019,2020 Danny Milosavljevic <dannym@scratchpost.org>
 ###
 ### This file is part of GNU Mes.
@@ -228,6 +228,11 @@ DEFINE strh___%r1,(%r1) b010c1e1  # strh    r1, [r1]
 DEFINE strh___%r2,(%r2) b020c2e1  # strh    r2, [r2]
 DEFINE strh___%r3,(%r3) b030c3e1  # strh    r3, [r3]
 DEFINE strh___%r4,(%r4) b040c4e1  # strh    r4, [r4]
+
+# tcc
+DEFINE ldrsb__%r2,(%r0) d020d0e1  # ldrsb   r2, [r0]
+DEFINE strh___%r2,(%r1) b020c1e1  # strh    r2, [r1]
+DEFINE strb___%r2,(%r1) 0020c1e5  # strb    r2, [r1]
 
 # There's a single instruction that does it--but I don't know how to encode it.
 # mov %r9, immediate
