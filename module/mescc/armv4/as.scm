@@ -466,7 +466,7 @@
          (r0 (get-r0 info))
          (r1 (get-r1 info))
          (r2 (car registers)))
-    `((,(string-append "ldrsb_%" r2 ",(%" r0 ")"))
+    `((,(string-append "ldrsb__%" r2 ",(%" r0 ")"))
       (,(string-append "strb___%" r2 ",(%" r1 ")")))))
 
 (define (armv4:word-r0-mem->r1-mem info)
