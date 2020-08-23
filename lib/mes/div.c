@@ -139,6 +139,8 @@ __mesabi_idiv (int a, int b)
 // ntoab.c:(.text+0x54): undefined reference to `__aeabi_uidivmod'
 // ...-binutils-2.31.1/bin/ld: ntoab.c:(.text+0x62): undefined reference to `__aeabi_uidiv'
 
+/* FIXME: This ABI should use registers for the input arguments, too.
+Maybe the others below, too. */
 long
 __aeabi_idiv (long a, long b)
 {
