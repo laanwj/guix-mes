@@ -21,8 +21,8 @@
 #include <linux/x86/syscall.h>
 
 // *INDENT-OFF*
-long
-__sys_call (long sys_call)
+static long
+__sys_call_internal (long sys_call)
 {
   long r;
   asm (
@@ -36,24 +36,9 @@ __sys_call (long sys_call)
   return r;
 }
 
-long
-__sys_call1 (long sys_call, long one)
-{
-  long r;
-  asm (
-       "mov    %1,%%eax\n\t"
-       "mov    %2,%%ebx\n\t"
-       "int    $0x80\n\t"
-       "mov    %%eax,%0\n\t"
-       : "=r" (r)
-       : "rm" (sys_call), "rm" (one)
-       : "eax", "ebx"
-       );
-  return r;
-}
 
-long
-__sys_call2 (long sys_call, long one, long two)
+static long
+__sys_call2_internal (long sys_call, long one, long two)
 {
   long r;
   asm (
@@ -68,51 +53,15 @@ __sys_call2 (long sys_call, long one, long two)
        );
   return r;
 }
+// *INDENT-ON*
 
-long
-__sys_call3 (long sys_call, long one, long two, long three)
-{
-  long r;
-  asm (
-       "mov    %2,%%ebx\n\t"
-       "mov    %3,%%ecx\n\t"
-       "mov    %4,%%edx\n\t"
-       "mov    %1,%%eax\n\t"
-       "int    $0x80\n\t"
-       "mov    %%eax,%0\n\t"
-       : "=r" (r)
-       : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three)
-       : "eax", "ebx", "ecx", "edx"
-       );
-  return r;
-}
-
-long
-__sys_call4 (long sys_call, long one, long two, long three, long four)
-{
-  long r;
-  asm (
-       "mov    %2,%%ebx\n\t"
-       "mov    %3,%%ecx\n\t"
-       "mov    %4,%%edx\n\t"
-       "mov    %5,%%esi\n\t"
-       "mov    %1,%%eax\n\t"
-       "int    $0x80\n\t"
-       "mov    %%eax,%0\n\t"
-       : "=r" (r)
-       : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three), "rm" (four)
-       : "eax", "ebx", "ecx", "edx", "esi"
-       );
-  return r;
-}
-
-/* Returns < 0 on error (errno-like value from kernel), or 0 on success */
+/* Return < 0 on error (errno-like value from kernel), or 0 on success */
 int
-__raise(int signum)
+__raise (int signum)
 {
-  long pid = __sys_call (SYS_getpid);
+  long pid = __sys_call_internal (SYS_getpid);
   if (pid < 0)
     return pid;
   else
-    return __sys_call2 (SYS_kill, pid, signum);
+    return __sys_call2_internal (SYS_kill, pid, signum);
 }

@@ -21,12 +21,63 @@
 #include <errno.h>
 #include <linux/x86/syscall.h>
 
-int __sys_call (int sys_call);
-int __sys_call1 (int sys_call, int one);
-int __sys_call2 (int sys_call, int one, int two);
-int __sys_call3 (int sys_call, int one, int two, int three);
-int __sys_call4 (int sys_call, int one, int two, int three, int four);
-int __sys_call6 (int sys_call, int one, int two, int three, int four, int five, int six);
+int
+__sys_call (int sys_call)
+{
+  asm ("!8 ldr____%r7,(%fp,+#$i8)");
+  asm ("swi____$0");
+}
+
+int
+__sys_call1 (int sys_call, int one)
+{
+  asm ("!8 ldr____%r7,(%fp,+#$i8)");
+  asm ("!12 ldr____%r0,(%fp,+#$i8)");
+  asm ("swi____$0");
+}
+
+int
+__sys_call2 (int sys_call, int one, int two)
+{
+  asm ("!8 ldr____%r7,(%fp,+#$i8)");
+  asm ("!12 ldr____%r0,(%fp,+#$i8)");
+  asm ("!16 ldr____%r1,(%fp,+#$i8)");
+  asm ("swi____$0");
+}
+
+int
+__sys_call3 (int sys_call, int one, int two, int three)
+{
+  asm ("!8 ldr____%r7,(%fp,+#$i8)");
+  asm ("!12 ldr____%r0,(%fp,+#$i8)");
+  asm ("!16 ldr____%r1,(%fp,+#$i8)");
+  asm ("!20 ldr____%r2,(%fp,+#$i8)");
+  asm ("swi____$0");
+}
+
+int
+__sys_call4 (int sys_call, int one, int two, int three, int four)
+{
+  asm ("!8 ldr____%r7,(%fp,+#$i8)");
+  asm ("!12 ldr____%r0,(%fp,+#$i8)");
+  asm ("!16 ldr____%r1,(%fp,+#$i8)");
+  asm ("!20 ldr____%r2,(%fp,+#$i8)");
+  asm ("!24 ldr____%r3,(%fp,+#$i8)");
+  asm ("swi____$0");
+}
+
+int
+__sys_call6 (int sys_call, int one, int two, int three, int four, int five, int six)
+{
+  asm ("!8 ldr____%r7,(%fp,+#$i8)");
+  asm ("!12 ldr____%r0,(%fp,+#$i8)");
+  asm ("!16 ldr____%r1,(%fp,+#$i8)");
+  asm ("!20 ldr____%r2,(%fp,+#$i8)");
+  asm ("!24 ldr____%r3,(%fp,+#$i8)");
+  asm ("!28 ldr____%r4,(%fp,+#$i8)");
+  asm ("!32 ldr____%r5,(%fp,+#$i8)");
+  asm ("swi____$0");
+}
 
 int
 _sys_call (int sys_call)

@@ -20,23 +20,15 @@
 
 #include <linux/x86/syscall.h>
 
-int
-__sys_call (int sys_call)
+static int
+__sys_call_internal (int sys_call)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("int____$0x80");
 }
 
-int
-__sys_call1 (int sys_call, int one)
-{
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("mov____0x8(%ebp),%ebx !12");
-  asm ("int____$0x80");
-}
-
-int
-__sys_call2 (int sys_call, int one, int two)
+static int
+__sys_call2_internal (int sys_call, int one, int two)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
@@ -44,34 +36,13 @@ __sys_call2 (int sys_call, int one, int two)
   asm ("int____$0x80");
 }
 
+/* Return < 0 on error (errno-like value from kernel), or 0 on success */
 int
-__sys_call3 (int sys_call, int one, int two, int three)
+__raise (int signum)
 {
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("mov____0x8(%ebp),%ebx !12");
-  asm ("mov____0x8(%ebp),%ecx !16");
-  asm ("mov____0x8(%ebp),%edx !20");
-  asm ("int____$0x80");
-}
-
-int
-__sys_call4 (int sys_call, int one, int two, int three, int four)
-{
-  asm ("mov____0x8(%ebp),%eax !8");
-  asm ("mov____0x8(%ebp),%ebx !12");
-  asm ("mov____0x8(%ebp),%ecx !16");
-  asm ("mov____0x8(%ebp),%edx !20");
-  asm ("mov____0x8(%ebp),%esi !24");
-  asm ("int____$0x80");
-}
-
-/* Returns < 0 on error (errno-like value from kernel), or 0 on success */
-int
-__raise(int signum)
-{
-  int pid = __sys_call (SYS_getpid);
+  int pid = __sys_call_internal (SYS_getpid);
   if (pid < 0)
     return pid;
   else
-    return __sys_call2 (SYS_kill, pid, signum);
+    return __sys_call2_internal (SYS_kill, pid, signum);
 }
