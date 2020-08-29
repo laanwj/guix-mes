@@ -55,7 +55,10 @@ if test $mes_libc = system; then
 fi
 if [ "$compiler" = "gcc" ]
 then
-  LIBS="${LIBS} -lmescc"
+  # Make it possible to resolve raise(), required by libgcc.a, provided in
+  # libc.a.  The final command line has to have "-lc -lgcc -lc".
+  # See <https://www.openwall.com/lists/musl/2018/05/09/1>.
+  LIBS="${LIBS} -lgcc -lc"
 fi
 link bin/mes-$compiler
 cp bin/mes-$compiler bin/mes
