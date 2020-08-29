@@ -40,16 +40,25 @@ rm -f "$o"
 CC=${CC-gcc}
 
 i=$(basename "$t" .c)
+
+if [ -z "${MES_CHECKING_BUILTIN_LIBS}" ]
+then
+    MES_CHECKING_BUILTIN_LIBS="`${CC} --print-libgcc-file-name`"
+fi
+
 if [ -z "${i/[012][0-9]-*/}" ]; then
-    LIBS='-l mescc'
+    LIBS="${MES_CHECKING_BUILTIN_LIBS}"
 elif [ -z "${i/[34][0-9]-*/}" ]; then
-    LIBS='-l c-mini -l mescc'
+    LIBS="-l c-mini ${MES_CHECKING_BUILTIN_LIBS} -l c-mini"
 elif [ -z "${i/[78][0-9a-z]-*/}" ]; then
-    LIBS='-l c+tcc -l mescc'
+    LIBS="-l c+tcc ${MES_CHECKING_BUILTIN_LIBS} -l c+tcc"
 elif [ -z "${i/9[0-9a-z]-*/}" ]; then
-    LIBS='-l c+gnu -l mescc'
+    LIBS="-l c+gnu ${MES_CHECKING_BUILTIN_LIBS} -l c+gnu"
 else
-    LIBS='-l c -l mescc'
+    # Make it possible to resolve raise(), required by libgcc.a, provided
+    # in libc.a.  The final command line has to have "-lc -lgcc -lc".
+    # See <https://www.openwall.com/lists/musl/2018/05/09/1>.
+    LIBS="-l c ${MES_CHECKING_BUILTIN_LIBS} -l c"
 fi
 
 if test $mes_kernel = gnu\

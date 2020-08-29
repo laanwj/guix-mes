@@ -79,6 +79,8 @@ if test $compiler = gcc; then
         cd gcc-lib
         srcdest=$srcdir/../
         srcdir=../$srcdir
+        MES_CHECKING_BUILTIN_LIBS="-l gcc"
+        export MES_CHECKING_BUILTIN_LIBS
         ../pre-inst-env ${SHELL} ${srcdest}build-aux/check-mescc.sh
     )
 fi
@@ -97,7 +99,8 @@ fi
     LDFLAGS="
 -nostdlib
 "
-    LIBS="-lc -lmescc"
+    MES_CHECKING_BUILTIN_LIBS="-l mescc"
+    export MES_CHECKING_BUILTIN_LIBS
     AR="${srcdest}pre-inst-env mesar"
     CC="${srcdest}pre-inst-env mescc"
     ../pre-inst-env ${SHELL} ${srcdest}build-aux/check-mescc.sh
