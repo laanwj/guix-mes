@@ -157,6 +157,7 @@ lib/string/memset.c
 lib/string/strcmp.c
 lib/string/strcpy.c
 lib/string/strncmp.c
+lib/posix/raise.c
 "
 
 if test $mes_kernel = gnu; then
@@ -205,6 +206,8 @@ lib/linux/time.c
 lib/linux/unlink.c
 lib/linux/waitpid.c
 lib/linux/$mes_cpu-mes-$compiler/syscall.c
+lib/linux/getpid.c
+lib/linux/kill.c
 "
 fi
 
@@ -222,7 +225,6 @@ lib/mes/abtod.c
 lib/mes/dtoab.c
 lib/mes/search-path.c
 lib/posix/execvp.c
-lib/posix/raise.c
 lib/stdio/fclose.c
 lib/stdio/fdopen.c
 lib/stdio/ferror.c
@@ -271,8 +273,6 @@ lib/$mes_cpu-mes-$compiler/setjmp.c
 if test $mes_kernel = linux; then
     libc_tcc_SOURCES="$libc_tcc_SOURCES
 lib/linux/close.c
-lib/linux/getpid.c
-lib/linux/kill.c
 lib/linux/rmdir.c
 lib/linux/stat.c
 "
