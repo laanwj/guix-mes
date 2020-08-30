@@ -267,11 +267,21 @@
 (define* (arch-find options file-name #:key kernel)
   (let* ((srcdest (or (getenv "srcdest") ""))
          (srcdir-lib (string-append srcdest "lib"))
+         (srcdir-mescc-lib (string-append srcdest "mescc-lib"))
+         (libdir (option-ref options 'libdir "lib"))
+         (libdir-mescc (string-append
+                        (dirname (option-ref options 'libdir "lib"))
+                        "/mescc-lib"))
          (arch (string-append (arch-get options) "-mes"))
-         (path (cons* "."
-                      srcdir-lib
-                      (option-ref options 'libdir "lib")
-                      (filter-map (multi-opt 'library-dir) options)))
+         (path (append (if (getenv "MES_UNINSTALLED")
+                           (list srcdir-mescc-lib
+                                 srcdir-lib
+                                 libdir-mescc)
+                           '())
+                       (list libdir)
+                       (or (and=> (getenv "LIBRARY_PATH")
+                                  (cut string-split <> #\:)) '())
+                       (filter-map (multi-opt 'library-dir) options)))
          (arch-file-name (string-append arch "/" file-name))
          (arch-file-name (if kernel (string-append kernel "/" arch-file-name)
                              arch-file-name))
