@@ -108,12 +108,6 @@ __sys_call4 (long sys_call, long one, long two, long three, long four)
 }
 // *INDENT-ON*
 
-long __sys_call (long sys_call);
-long __sys_call1 (long sys_call, long one);
-long __sys_call2 (long sys_call, long one, long two);
-long __sys_call3 (long sys_call, long one, long two, long three);
-long __sys_call4 (long sys_call, long one, long two, long three, long four);
-
 long
 _sys_call (long sys_call)
 {
