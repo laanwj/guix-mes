@@ -71,7 +71,9 @@ HOWEVER, the function entry already allocated space for locals on the stack (aft
 
   asm ("SYS_exit mov____$i8,%r7");
   asm ("swi____$0");
-  do {
-    asm ("wfi");
-  } while (1);
+  do
+    {
+      asm ("wfi");
+    }
+  while (1);
 }

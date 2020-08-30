@@ -56,7 +56,7 @@ signal (int signum, sighandler_t action)
      I've decided to take the easy way out for now. */
   /*setup_action.sa_restorer = _restorer_for_siginfo;*/
   bitindex = signum - 1;
-  itembitcount = 8 * sizeof(setup_action.sa_mask.items[0]);
+  itembitcount = 8 * sizeof (setup_action.sa_mask.items[0]);
   setup_action.sa_mask.items[bitindex / itembitcount] = 1UL << (bitindex % itembitcount);
   old.sa_handler = SIG_DFL;
   setup_action.sa_flags = SA_RESTART;
@@ -64,7 +64,7 @@ signal (int signum, sighandler_t action)
   /* Tell kernel that we use a restorer, on penalty of segfault.  */
   setup_action.sa_flags |= SA_RESTORER;
 #endif
-  int r = _sys_call4 (SYS_rt_sigaction, signum, (long)&setup_action, (long)&old, sizeof (sigset_t));
+  int r = _sys_call4 (SYS_rt_sigaction, signum, (long) &setup_action, (long) &old, sizeof (sigset_t));
   if (r)
     return 0;
   return old.sa_handler;
