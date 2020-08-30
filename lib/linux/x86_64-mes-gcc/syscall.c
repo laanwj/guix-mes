@@ -21,16 +21,9 @@
 #include <errno.h>
 #include <linux/x86_64/syscall.h>
 
-// HMM, merge this with x86-mes-gcc/mes.c, doing something like
-// #define R0 eax
-// #define R1 ebx
-//
-// #define R0 rax
-// #define R1 rdi
-
 // *INDENT-OFF*
 long
-_sys_call (long sys_call)
+__sys_call (long sys_call)
 {
   long r;
   asm (
@@ -41,18 +34,11 @@ _sys_call (long sys_call)
        : "rm" (sys_call)
        : "rax"
        );
-  if (r < 0)
-    {
-      errno = -r;
-      r = -1;
-    }
-  else
-    errno = 0;
   return r;
 }
 
 long
-_sys_call1 (long sys_call, long one)
+__sys_call1 (long sys_call, long one)
 {
   long r;
   asm (
@@ -64,18 +50,11 @@ _sys_call1 (long sys_call, long one)
        : "rm" (sys_call), "rm" (one)
        : "rax", "rdi"
        );
-  if (r < 0)
-    {
-      errno = -r;
-      r = -1;
-    }
-  else
-    errno = 0;
   return r;
 }
 
 long
-_sys_call2 (long sys_call, long one, long two)
+__sys_call2 (long sys_call, long one, long two)
 {
   long r;
   asm (
@@ -88,18 +67,11 @@ _sys_call2 (long sys_call, long one, long two)
        : "rm" (sys_call), "rm" (one), "rm" (two)
        : "rax", "rdi", "rsi"
        );
-  if (r < 0)
-    {
-      errno = -r;
-      r = -1;
-    }
-  else
-    errno = 0;
   return r;
 }
 
 long
-_sys_call3 (long sys_call, long one, long two, long three)
+__sys_call3 (long sys_call, long one, long two, long three)
 {
   long r;
   asm (
@@ -113,18 +85,11 @@ _sys_call3 (long sys_call, long one, long two, long three)
        : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three)
        : "rax", "rdi", "rsi", "rdx"
        );
-  if (r < 0)
-    {
-      errno = -r;
-      r = -1;
-    }
-  else
-    errno = 0;
   return r;
 }
 
 long
-_sys_call4 (long sys_call, long one, long two, long three, long four)
+__sys_call4 (long sys_call, long one, long two, long three, long four)
 {
   long r;
   asm (
@@ -141,6 +106,70 @@ _sys_call4 (long sys_call, long one, long two, long three, long four)
        : "rm" (sys_call), "rm" (one), "rm" (two), "rm" (three), "rm" (four)
        : "rax", "rdi", "rsi", "rdx", "r10"
        );
+  return r;
+}
+// *INDENT-ON*
+
+long
+_sys_call (long sys_call)
+{
+  long r = __sys_call (sys_call);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+
+long
+_sys_call1 (long sys_call, long one)
+{
+  long r = __sys_call1 (sys_call, one);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+
+long
+_sys_call2 (long sys_call, long one, long two)
+{
+  long r = __sys_call2 (sys_call, one, two);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+
+long
+_sys_call3 (long sys_call, long one, long two, long three)
+{
+  long r = __sys_call3 (sys_call, one, two, three);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+
+long
+_sys_call4 (long sys_call, long one, long two, long three, long four)
+{
+  long r = __sys_call4 (sys_call, one, two, three, four);
   if (r < 0)
     {
       errno = -r;

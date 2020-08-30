@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -22,16 +22,75 @@
 #include <linux/x86_64/syscall.h>
 
 long
-//__sys_call (long one, long two, long three, long four)
-__sys_call (long sys_call, long one, long two, long three, long four)
+__sys_call (long sys_call)
 {
-#if 1                           // !MES_CCAMD64
-  // asm ("mov____0x8(%rbp),%rdi !0x10");
-  // asm ("mov____0x8(%rbp),%rsi !0x18");
-  // asm ("mov____0x8(%rbp),%rdx !0x20");
-  // asm ("mov____0x8(%rbp),%rdx !0x28");
-  // asm ("mov____0x8(%rbp),%r10 !0x30");
+#if 0                           // !MES_CCAMD64
+  asm ("mov____0x8(%rbp),%rdi !0x10");
+#else
+  asm ("mov____0x8(%rbp),%rax !0x10");
+#endif
 
+  asm ("syscall");
+}
+
+long
+__sys_call1 (long sys_call, long one)
+{
+#if 0                           // !MES_CCAMD64
+  asm ("mov____0x8(%rbp),%rdi !0x10");
+  asm ("mov____0x8(%rbp),%rsi !0x18");
+#else
+  asm ("mov____0x8(%rbp),%rax !0x10");
+  asm ("mov____0x8(%rbp),%rdi !0x18");
+#endif
+
+  asm ("syscall");
+}
+
+long
+__sys_call2 (long sys_call, long one, long two)
+{
+#if 0                           // !MES_CCAMD64
+  asm ("mov____0x8(%rbp),%rdi !0x10");
+  asm ("mov____0x8(%rbp),%rsi !0x18");
+  asm ("mov____0x8(%rbp),%rdx !0x20");
+#else
+  asm ("mov____0x8(%rbp),%rax !0x10");
+  asm ("mov____0x8(%rbp),%rdi !0x18");
+  asm ("mov____0x8(%rbp),%rsi !0x20");
+#endif
+
+  asm ("syscall");
+}
+
+long
+__sys_call3 (long sys_call, long one, long two, long three)
+{
+#if 0                           // !MES_CCAMD64
+  asm ("mov____0x8(%rbp),%rdi !0x10");
+  asm ("mov____0x8(%rbp),%rsi !0x18");
+  asm ("mov____0x8(%rbp),%rdx !0x20");
+  asm ("mov____0x8(%rbp),%rdx !0x28");
+#else
+  asm ("mov____0x8(%rbp),%rax !0x10");
+  asm ("mov____0x8(%rbp),%rdi !0x18");
+  asm ("mov____0x8(%rbp),%rsi !0x20");
+  asm ("mov____0x8(%rbp),%rdx !0x28");
+#endif
+
+  asm ("syscall");
+}
+
+long
+__sys_call4 (long sys_call, long one, long two, long three, long four)
+{
+#if 0                           // !MES_CCAMD64
+  asm ("mov____0x8(%rbp),%rdi !0x10");
+  asm ("mov____0x8(%rbp),%rsi !0x18");
+  asm ("mov____0x8(%rbp),%rdx !0x20");
+  asm ("mov____0x8(%rbp),%rdx !0x28");
+  asm ("mov____0x8(%rbp),%r10 !0x30");
+#else
   asm ("mov____0x8(%rbp),%rax !0x10");
   asm ("mov____0x8(%rbp),%rdi !0x18");
   asm ("mov____0x8(%rbp),%rsi !0x20");
@@ -45,8 +104,6 @@ __sys_call (long sys_call, long one, long two, long three, long four)
 long
 _sys_call (long sys_call)
 {
-  // long rax = sys_call;
-  // long r = __sys_call ();
   long r = __sys_call (sys_call);
   if (r < 0)
     {
@@ -61,9 +118,7 @@ _sys_call (long sys_call)
 long
 _sys_call1 (long sys_call, long one)
 {
-  // long rax = sys_call;
-  // long r = __sys_call (one);
-  long r = __sys_call (sys_call, one);
+  long r = __sys_call1 (sys_call, one);
   if (r < 0)
     {
       errno = -r;
@@ -77,9 +132,7 @@ _sys_call1 (long sys_call, long one)
 long
 _sys_call2 (long sys_call, long one, long two)
 {
-  // long rax = sys_call;
-  // long r = __sys_call (one, two);
-  long r = __sys_call (sys_call, one, two);
+  long r = __sys_call2 (sys_call, one, two);
   if (r < 0)
     {
       errno = -r;
@@ -93,9 +146,7 @@ _sys_call2 (long sys_call, long one, long two)
 long
 _sys_call3 (long sys_call, long one, long two, long three)
 {
-  // long rax = sys_call;
-  // long r = __sys_call (one, two, three);
-  long r = __sys_call (sys_call, one, two, three);
+  long r = __sys_call3 (sys_call, one, two, three);
   if (r < 0)
     {
       errno = -r;
@@ -109,9 +160,7 @@ _sys_call3 (long sys_call, long one, long two, long three)
 long
 _sys_call4 (long sys_call, long one, long two, long three, long four)
 {
-  // long rax = sys_call;
-  // long r = __sys_call (one, two, three, four);
-  long r = __sys_call (sys_call, one, two, three, four);
+  long r = __sys_call4 (sys_call, one, two, three, four);
   if (r < 0)
     {
       errno = -r;
