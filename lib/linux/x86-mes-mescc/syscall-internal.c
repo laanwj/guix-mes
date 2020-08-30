@@ -20,15 +20,15 @@
 
 #include <linux/x86/syscall.h>
 
-static int
-__sys_call_internal (int sys_call)
+static long
+__sys_call_internal (long sys_call)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("int____$0x80");
 }
 
-static int
-__sys_call2_internal (int sys_call, int one, int two)
+static long
+__sys_call2_internal (long sys_call, long one, long two)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
@@ -40,9 +40,9 @@ __sys_call2_internal (int sys_call, int one, int two)
 int
 __raise (int signum)
 {
-  int pid = __sys_call_internal (SYS_getpid);
+  int pid = (int) __sys_call_internal (SYS_getpid);
   if (pid < 0)
     return pid;
   else
-    return __sys_call2_internal (SYS_kill, pid, signum);
+    return (int) __sys_call2_internal (SYS_kill, pid, signum);
 }

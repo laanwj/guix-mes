@@ -21,23 +21,23 @@
 #include <errno.h>
 #include <linux/x86/syscall.h>
 
-int
-__sys_call (int sys_call)
+long
+__sys_call (long sys_call)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("int____$0x80");
 }
 
-int
-__sys_call1 (int sys_call, int one)
+long
+__sys_call1 (long sys_call, long one)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
   asm ("int____$0x80");
 }
 
-int
-__sys_call2 (int sys_call, int one, int two)
+long
+__sys_call2 (long sys_call, long one, long two)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
@@ -45,8 +45,8 @@ __sys_call2 (int sys_call, int one, int two)
   asm ("int____$0x80");
 }
 
-int
-__sys_call3 (int sys_call, int one, int two, int three)
+long
+__sys_call3 (long sys_call, long one, long two, long three)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
@@ -55,8 +55,8 @@ __sys_call3 (int sys_call, int one, int two, int three)
   asm ("int____$0x80");
 }
 
-int
-__sys_call4 (int sys_call, int one, int two, int three, int four)
+long
+__sys_call4 (long sys_call, long one, long two, long three, long four)
 {
   asm ("mov____0x8(%ebp),%eax !8");
   asm ("mov____0x8(%ebp),%ebx !12");
@@ -66,10 +66,10 @@ __sys_call4 (int sys_call, int one, int two, int three, int four)
   asm ("int____$0x80");
 }
 
-int
-_sys_call (int sys_call)
+long
+_sys_call (long sys_call)
 {
-  int r = __sys_call (sys_call);
+  long r = __sys_call (sys_call);
   if (r < 0)
     {
       errno = -r;
@@ -80,10 +80,10 @@ _sys_call (int sys_call)
   return r;
 }
 
-int
-_sys_call1 (int sys_call, int one)
+long
+_sys_call1 (long sys_call, long one)
 {
-  int r = __sys_call1 (sys_call, one);
+  long r = __sys_call1 (sys_call, one);
   if (r < 0)
     {
       errno = -r;
@@ -94,10 +94,10 @@ _sys_call1 (int sys_call, int one)
   return r;
 }
 
-int
-_sys_call2 (int sys_call, int one, int two)
+long
+_sys_call2 (long sys_call, long one, long two)
 {
-  int r = __sys_call2 (sys_call, one, two);
+  long r = __sys_call2 (sys_call, one, two);
   if (r < 0)
     {
       errno = -r;
@@ -108,10 +108,10 @@ _sys_call2 (int sys_call, int one, int two)
   return r;
 }
 
-int
-_sys_call3 (int sys_call, int one, int two, int three)
+long
+_sys_call3 (long sys_call, long one, long two, long three)
 {
-  int r = __sys_call3 (sys_call, one, two, three);
+  long r = __sys_call3 (sys_call, one, two, three);
   if (r < 0)
     {
       errno = -r;
@@ -122,10 +122,10 @@ _sys_call3 (int sys_call, int one, int two, int three)
   return r;
 }
 
-int
-_sys_call4 (int sys_call, int one, int two, int three, int four)
+long
+_sys_call4 (long sys_call, long one, long two, long three, long four)
 {
-  int r = __sys_call4 (sys_call, one, two, three, four);
+  long r = __sys_call4 (sys_call, one, two, three, four);
   if (r < 0)
     {
       errno = -r;
