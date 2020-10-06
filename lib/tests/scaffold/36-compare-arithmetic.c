@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -30,31 +30,31 @@ main ()
 
   oputs ("t: 2 - 1\n");
   if (0)
-    return 1;
+    return 2;
 
   oputs ("t: 1 << 3\n");
   if (1 << 3 != 8)
-    return 1;
+    return 3;
 
   oputs ("t: 8 >> 3\n");
   if (8 >> 3 != 1)
-    return 1;
+    return 4;
 
   oputs ("t: 8 / 4\n");
   if (8 / 4 != 2)
-    return 1;
+    return 5;
 
   oputs ("t: 8 / -4\n");
   if (8 / -4 != -2)
-    return 1;
+    return 6;
 
   oputs ("t: -8 / -4\n");
   if (-8 / -4 != 2)
-    return 1;
+    return 7;
 
   oputs ("t: -8 / 4\n");
   if (-8 / 4 != -2)
-    return 1;
+    return 8;
 
   return 0;
 }
