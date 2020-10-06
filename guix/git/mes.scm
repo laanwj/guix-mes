@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -153,7 +153,9 @@ extensive examples, including parsers for the Javascript and C99 languages.")
                   #t))
               (sha256
                (base32
-                "065ksalfllbdrzl12dz9d9dcxrv97wqxblslngsc6kajvnvlyvpk"))))))
+                "065ksalfllbdrzl12dz9d9dcxrv97wqxblslngsc6kajvnvlyvpk"))))
+    (inputs
+     `(("guile" ,guile-3.0)))))
 
 (define-public mes
   (package
@@ -171,7 +173,7 @@ extensive examples, including parsers for the Javascript and C99 languages.")
      `(("mescc-tools" ,mescc-tools)
        ("nyacc" ,nyacc)))
     (native-inputs
-     `(("guile" ,guile-2.2)
+     `(("guile" ,guile-3.0-latest)
        ,@(cond ((string-prefix? "x86_64-linux" (or (%current-target-system)
                                                    (%current-system)))
                 ;; Use cross-compiler rather than #:system "i686-linux" to get
