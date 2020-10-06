@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -89,7 +89,7 @@ get_machine.")
     (home-page "https://savannah.nongnu.org/projects/mescc-tools")
     (license gpl3+)))
 
-(define-public nyacc-0.99
+(define-public nyacc
   (package
     (name "nyacc")
     (version "0.99.0")
@@ -128,20 +128,6 @@ extensive examples, including parsers for the Javascript and C99 languages.")
     (home-page "https://savannah.nongnu.org/projects/nyacc")
     (license (list gpl3+ lgpl3+))))
 
-(define-public nyacc
-  (package
-    (inherit nyacc)
-    (version "1.03.0")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://savannah/nyacc/nyacc-"
-                                  version ".tar.gz"))
-              (sha256
-               (base32
-                "1vdiqpm3p0ndmpmkzcpkpjvgklfsk4wxrhkixdxbczpafdfl635p"))))
-    (inputs
-     `(("guile" ,guile-3.0)))))
-
 (define-public mes
   (package
     (name "mes")
@@ -156,9 +142,9 @@ extensive examples, including parsers for the Javascript and C99 languages.")
     (supported-systems '("aarch64-linux" "armhf-linux" "i686-linux" "x86_64-linux"))
     (propagated-inputs
      `(("mescc-tools" ,mescc-tools)
-       ("nyacc" ,guile3-nyacc)))
+       ("nyacc" ,nyacc)))
     (native-inputs
-     `(("guile" ,guile-3.0)
+     `(("guile" ,guile-2.2)
        ,@(cond ((string-prefix? "x86_64-linux" (or (%current-target-system)
                                                    (%current-system)))
                 ;; Use cross-compiler rather than #:system "i686-linux" to get
