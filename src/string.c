@@ -26,8 +26,6 @@
 #include <limits.h>
 #include <string.h>
 
-long MAX_STRING;
-
 void
 assert_max_string (size_t i, char const *msg, char *string)
 {
