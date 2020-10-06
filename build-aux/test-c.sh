@@ -47,7 +47,7 @@ then
 fi
 
 if [ -z "${i/[012][0-9]-*/}" ]; then
-    LIBS="${MES_CHECKING_BUILTIN_LIBS}"
+    LIBS="${MES_CHECKING_BUILTIN_LIBS} -l c-mini"
 elif [ -z "${i/[34][0-9]-*/}" ]; then
     LIBS="-l c-mini ${MES_CHECKING_BUILTIN_LIBS} -l c-mini"
 elif [ -z "${i/[78][0-9a-z]-*/}" ]; then

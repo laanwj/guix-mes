@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -40,10 +40,10 @@
 #define STDERR 2
 #endif
 
-char **environ;
-int __stdin;
-int __stdout;
-int __stderr;
+extern char **environ;
+extern int __stdin;
+extern int __stdout;
+extern int __stderr;
 
 int eputs (char const *s);
 int puts (char const *s);
@@ -87,7 +87,7 @@ typedef long ssize_t;
 #ifndef __MES_ERRNO_T
 #define __MES_ERRNO_T 1
 typedef int error_t;
-int errno;
+extern int errno;
 #endif // !__MES_ERRNO_T
 
 size_t strlen (char const *s);

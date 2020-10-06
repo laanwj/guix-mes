@@ -43,12 +43,6 @@ typedef struct
 #endif
 typedef __jmp_buf jmp_buf[1];
 
-#if __MESC__
-__jmp_buf buf[1];
-#else
-jmp_buf buf;
-#endif
-
 void longjmp (jmp_buf env, int val);
 int setjmp (jmp_buf env);
 

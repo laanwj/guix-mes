@@ -18,7 +18,7 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mes/lib.h>
+#include <mes/lib-mini.h>
 #include <string.h>
 
 int
