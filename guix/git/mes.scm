@@ -89,7 +89,7 @@ get_machine.")
     (home-page "https://savannah.nongnu.org/projects/mescc-tools")
     (license gpl3+)))
 
-(define-public nyacc
+(define-public nyacc-0.99
   (package
     (name "nyacc")
     (version "0.99.0")
@@ -127,6 +127,33 @@ The syntax and nomenclature should be considered not stable.  It comes with
 extensive examples, including parsers for the Javascript and C99 languages.")
     (home-page "https://savannah.nongnu.org/projects/nyacc")
     (license (list gpl3+ lgpl3+))))
+
+(define-public nyacc
+  (package
+    (inherit nyacc-0.99)
+    (version "1.00.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://savannah/nyacc/nyacc-"
+                                  version ".tar.gz"))
+              (modules '((guix build utils)))
+              (snippet
+               '(begin
+                  (substitute* (find-files "." "^Makefile\\.in$")
+                    (("^SITE_SCM_DIR =.*")
+                     "SITE_SCM_DIR = \
+@prefix@/share/guile/site/@GUILE_EFFECTIVE_VERSION@\n")
+                    (("^SITE_SCM_GO_DIR =.*")
+                     "SITE_SCM_GO_DIR = \
+@prefix@/lib/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache\n")
+                    (("^INFODIR =.*")
+                     "INFODIR = @prefix@/share/info\n")
+                    (("^DOCDIR =.*")
+                     "DOCDIR = @prefix@/share/doc/$(PACKAGE_TARNAME)\n"))
+                  #t))
+              (sha256
+               (base32
+                "065ksalfllbdrzl12dz9d9dcxrv97wqxblslngsc6kajvnvlyvpk"))))))
 
 (define-public mes
   (package
