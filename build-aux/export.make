@@ -158,3 +158,11 @@ endif
 ifdef M1FLAGS
 export M1FLAGS
 endif
+
+ifdef TESTS
+export TESTS
+endif
+
+ifdef XFAIL_TESTS
+export XFAIL_TESTS
+endif

@@ -102,3 +102,5 @@ export srcdest
 export srcdir
 export GUILE_AUTO_COMPILE
 export MES_PREFIX
+export TESTS
+export XFAIL_TESTS

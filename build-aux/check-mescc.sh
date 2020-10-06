@@ -22,7 +22,7 @@ set -e
 . ./config.sh
 set -u
 
-TESTS="
+mes_tests="
 lib/tests/scaffold/t.c
 lib/tests/scaffold/01-return-0.c
 lib/tests/scaffold/02-return-1.c
@@ -127,6 +127,9 @@ lib/tests/scaffold/63-struct-cell.c
 lib/tests/scaffold/64-make-cell.c
 lib/tests/scaffold/65-read.c
 lib/tests/scaffold/66-local-char-array.c
+"
+
+tcc_tests="
 lib/tests/scaffold/70-stdarg.c
 lib/tests/stdio/70-printf-hello.c
 lib/tests/stdio/70-printf-simple.c
@@ -198,8 +201,7 @@ lib/tests/scaffold/84-struct-field-list.c
 lib/tests/scaffold/85-sizeof.c
 "
 
-if test -z "$bootstrap"; then
-    TESTS="$TESTS
+gnu_tests="
 lib/tests/dirent/90-readdir.c
 lib/tests/io/90-stat.c
 lib/tests/mes/90-abtod.c
@@ -225,14 +227,13 @@ lib/tests/scaffold/a0-math-divide-signed-negative.c
 lib/tests/scaffold/a1-global-no-align.c
 lib/tests/scaffold/a1-global-no-clobber.c
 "
-fi
 
-XFAIL_TESTS="
+xfail_tests="
 lib/tests/stdio/90-sprintf.c
 "
 
 if test $compiler = mescc; then
-    XFAIL_TESTS="$XFAIL_TESTS
+    xfail_tests="$xfail_tests
 lib/tests/scaffold/17-compare-unsigned-char-le.c
 lib/tests/scaffold/17-compare-unsigned-short-le.c
 lib/tests/scaffold/66-local-char-array.c
@@ -244,35 +245,35 @@ lib/tests/scaffold/91-goto-array.c
 "
 
     if test $mes_cpu = x86; then
-        XFAIL_TESTS="$XFAIL_TESTS
+        xfail_tests="$xfail_tests
 "
     fi
 
     if test $mes_cpu = x86_64; then
-        XFAIL_TESTS="$XFAIL_TESTS
+        xfail_tests="$xfail_tests
 lib/tests/scaffold/a0-call-trunc-int.c
 "
     fi
 fi
 
 if test $mes_cpu = x86_64; then
-    XFAIL_TESTS="$XFAIL_TESTS
+    xfail_tests="$xfail_tests
 lib/tests/stdio/70-printf-stdarg.c
 "
 fi
 
 if test $compiler = gcc; then
-    XFAIL_TESTS="$XFAIL_TESTS
+    xfail_tests="$xfail_tests
 "
 
     if test $mes_cpu = x86; then
-        XFAIL_TESTS="$XFAIL_TESTS
+        xfail_tests="$xfail_tests
 lib/tests/mes/90-dtoab.c
 "
     fi
 
     if test $mes_cpu = x86_64; then
-        XFAIL_TESTS="$XFAIL_TESTS
+        xfail_tests="$xfail_tests
 lib/tests/stdio/70-printf-hello.c
 lib/tests/stdio/70-printf-simple.c
 lib/tests/stdio/70-printf.c
@@ -283,6 +284,16 @@ lib/tests/string/90-snprintf.c
 "
     fi
 fi
+
+# Allow for make check TESTS=lib/tests/setjmp/80-setjmp.c
+if test -n "$bootstrap"; then
+    TESTS="${TESTS-$mes_tests$tcc_tests}"
+else
+    TESTS="${TESTS-$mes_tests$tcc_test$gnu_tests}"
+fi
+
+# Allow for make check xfail_tests=lib/tests/setjmp/80-setjmp.c
+XFAIL_TESTS="${XFAIL_TESTS-$xfail_tests}"
 
 recheck=${recheck-false}
 test_ext=.c
