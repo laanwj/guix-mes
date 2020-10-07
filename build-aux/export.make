@@ -119,6 +119,10 @@ ifdef SHELL
 export SHELL
 endif
 
+ifdef GUILD_OPTIMIZE
+export GUILD_OPTIMIZE
+endif
+
 ifdef GUILE_LOAD_PATH
 export GUILE_LOAD_PATH
 endif

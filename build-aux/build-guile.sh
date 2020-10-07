@@ -62,6 +62,6 @@ for i in $SCM_FILES $SCRIPTS; do
     go=${i%%.scm}.go
     f=${srcdest}$i
     if test $f -nt $go; then
-        trace "GUILEC     $f" $GUILD compile -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $f
+        trace "GUILEC     $f" $GUILD compile $GUILD_OPTIMIZE -L ${srcdest}module -L ${srcdest}build-aux -L ${srcdest}scripts -o $go $f
     fi
 done
