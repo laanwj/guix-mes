@@ -39,8 +39,8 @@
     ("long" . ,(make-type 'signed 4 #f))
     ("default" . ,(make-type 'signed 4 #f))
     ("*" . ,(make-type 'unsigned 4 #f))
-    ("long long" . ,(make-type 'signed 8 #f))
-    ("long long int" . ,(make-type 'signed 8 #f))
+    ("long long" . ,(make-type 'signed 4 #f))
+    ("long long int" . ,(make-type 'signed 4 #f))
 
     ("void" . ,(make-type 'void 1 #f))
     ("signed char" . ,(make-type 'signed 1 #f))
@@ -50,8 +50,8 @@
     ("unsigned int" . ,(make-type 'unsigned 4 #f))
     ("unsigned long" . ,(make-type 'unsigned 4 #f))
 
-    ("unsigned long long" . ,(make-type 'unsigned 8 #f))
-    ("unsigned long long int" . ,(make-type 'unsigned 8 #f))
+    ("unsigned long long" . ,(make-type 'unsigned 4 #f))
+    ("unsigned long long int" . ,(make-type 'unsigned 4 #f))
 
     ("float" . ,(make-type 'float 4 #f))
     ("double" . ,(make-type 'float 4 #f)) ; FIXME
