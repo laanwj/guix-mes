@@ -27,12 +27,22 @@
 #else // ! SYSTEM_LIBC
 
 #if __arm__
+#if __GNUC__
+#warning "It is not supported to use mes' setjmp implementation together with GCC.  Continuing with best-effort implementation."
+typedef struct
+{
+  long __sp;
+  long __lr;
+  long __registers[8]; /* Note: Keep in sync with lib/arm-mes-gcc/setjmp.c */
+} __jmp_buf;
+#else
 typedef struct
 {
   long __fp;
   long __lr;
   long __sp;
 } __jmp_buf;
+#endif
 #else
 typedef struct
 {
