@@ -50,11 +50,32 @@ __mesabi_uldiv (unsigned long a, unsigned long b, unsigned long* remainder)
   if (!remainder)
     remainder = &tmp;
   *remainder = 0;
-  if (b == 1)
+  switch (b) {
+  case 64UL:
+    *remainder = a & 63UL;
+    return a >> 6UL;
+  case 32UL:
+    *remainder = a & 31UL;
+    return a >> 5UL;
+  case 16UL:
+    *remainder = a & 15UL;
+    return a >> 4UL;
+  case 8UL:
+    *remainder = a & 7UL;
+    return a >> 3UL;
+  case 4UL:
+    *remainder = a & 3UL;
+    return a >> 2UL;
+  case 2UL:
+    *remainder = a & 1UL;
+    return a >> 1UL;
+  case 1UL:
+    *remainder = 0;
     return a;
-  else if (b == 0)
+  case 0UL:
     __mesabi_div0();
-  else
+    return 0UL;
+  default:
     {
       unsigned long x;
       for (x = 0; a >= b; a -= b)
@@ -62,6 +83,7 @@ __mesabi_uldiv (unsigned long a, unsigned long b, unsigned long* remainder)
       *remainder = a;
       return x;
     }
+  }
 }
 
 /* Note: Rounds towards zero.
