@@ -189,6 +189,7 @@ lib/tests/scaffold/70-array-in-struct-init.c
 lib/tests/scaffold/70-struct-short-enum-init.c
 lib/tests/scaffold/70-struct-post.c
 lib/tests/scaffold/70-extern.c
+lib/tests/scaffold/70-ternary-arithmetic-argument.c
 lib/tests/setjmp/80-setjmp.c
 lib/tests/stdio/80-sscanf.c
 lib/tests/stdlib/80-qsort.c
@@ -238,6 +239,7 @@ lib/tests/scaffold/17-compare-unsigned-char-le.c
 lib/tests/scaffold/17-compare-unsigned-short-le.c
 lib/tests/scaffold/66-local-char-array.c
 lib/tests/scaffold/72-typedef-struct-def-local.c
+lib/tests/scaffold/70-ternary-arithmetic-argument.c
 lib/tests/mes/90-abtod.c
 lib/tests/mes/90-dtoab.c
 lib/tests/scaffold/90-goto-var.c
