@@ -115,6 +115,7 @@ lib/tests/scaffold/54-argc.c
 lib/tests/scaffold/54-argv.c
 lib/tests/scaffold/55-char-array.c
 lib/tests/scaffold/60-math.c
+lib/tests/scaffold/60-math-itoa.c
 lib/tests/scaffold/61-array.c
 lib/tests/scaffold/62-array.c
 lib/tests/scaffold/63-struct.c

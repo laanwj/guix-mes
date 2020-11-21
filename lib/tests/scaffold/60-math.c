@@ -181,9 +181,6 @@ ok1:
   oputs ("t: i = INT_MAX\n");
   i = INT_MAX;
 
-  if (strcmp ("2147483647", itoa (i)))
-    return 33;
-
   oputs ("t: i = 2147483646\n");
   i = 2147483646;
 
@@ -192,12 +189,6 @@ ok1:
 
   oputs ("t: i = INT_MIN\n");
   i = INT_MIN;
-
-  if (strcmp ("-2147483648", itoa (i)))
-    return 34;
-
-  if (strcmp ("-80000000", ntoab (i, 16, 1)))
-    return 35;
 
   oputs ("t: i = -2147483647\n");
   i = -2147483647;
