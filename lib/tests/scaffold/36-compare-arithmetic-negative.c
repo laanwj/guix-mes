@@ -24,25 +24,17 @@ int
 main ()
 {
   oputs ("\n");
-  oputs ("t: 1 + 2\n");
-  if (1 + 2 != 3)
+  oputs ("t: 8 / -4\n");
+  if (8 / -4 != -2)
     return 1;
 
-  oputs ("t: 2 - 1\n");
-  if (0)
+  oputs ("t: -8 / -4\n");
+  if (-8 / -4 != 2)
     return 2;
 
-  oputs ("t: 1 << 3\n");
-  if (1 << 3 != 8)
+  oputs ("t: -8 / 4\n");
+  if (-8 / 4 != -2)
     return 3;
-
-  oputs ("t: 8 >> 3\n");
-  if (8 >> 3 != 1)
-    return 4;
-
-  oputs ("t: 8 / 4\n");
-  if (8 / 4 != 2)
-    return 5;
 
   return 0;
 }

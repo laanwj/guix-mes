@@ -85,6 +85,7 @@ lib/tests/scaffold/33-and-or.c
 lib/tests/scaffold/34-pre-post.c
 lib/tests/scaffold/35-compare-char.c
 lib/tests/scaffold/36-compare-arithmetic.c
+lib/tests/scaffold/36-compare-arithmetic-negative.c
 lib/tests/scaffold/37-compare-assign.c
 lib/tests/scaffold/38-compare-call-2.c
 lib/tests/scaffold/38-compare-call-3.c
