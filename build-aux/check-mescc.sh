@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -105,6 +105,7 @@ lib/tests/mes/50-itoa.c
 lib/tests/posix/50-getenv.c
 lib/tests/stdlib/50-malloc.c
 lib/tests/string/50-strcmp.c
+lib/tests/string/50-strcmp-itoa.c
 lib/tests/string/50-strcpy.c
 lib/tests/string/50-strncmp.c
 lib/tests/posix/50-open-read.c
