@@ -28,6 +28,10 @@ rain1
 scaffold/tests/90-goto-var.c
 scaffold/tests/91-goto-array.c
 
+Nathalie Kopaczewski <natkopa@gmail.com>
+Fast long devision
+lib/div.c (__mesabi_log2i)
+
 List of imported files
 
 D A Gwyn
@@ -81,7 +85,7 @@ lib/mach/mach-init.c
 lib/mach/*.S
 
 * legalese
-Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
