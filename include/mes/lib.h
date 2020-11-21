@@ -66,4 +66,9 @@ void _exit (int code);
 long brk (void *addr);
 #endif // !SYSTEM_LIBC
 
+long __mesabi_imod (long a, long b);
+long __mesabi_idiv (long a, long b);
+unsigned long __mesabi_umod (unsigned long a, unsigned long b);
+unsigned long __mesabi_udiv (unsigned long a, unsigned long b);
+
 #endif //__MES_LIB_H

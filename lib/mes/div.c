@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  * Copyright © 2019 Danny Milosavljevic <dannym@scratchpost.org>
  * Copyright © 2020 Nathalie Kopaczewski <natkopa@gmail.com>
  *
@@ -277,10 +277,25 @@ __mesabi_imod (long a, long b)
   return result.rem;
 }
 
-int
-__mesabi_idiv (int a, int b)
+long
+__mesabi_idiv (long a, long b)
 {
   struct ldiv_t result;
   __mesabi_ldiv (a, b, &result);
   return result.quot;
+}
+
+unsigned long
+__mesabi_umod (unsigned long a, unsigned long b)
+{
+  unsigned long result;
+  __mesabi_uldiv (a, b, &result);
+  return result;
+}
+
+unsigned long
+__mesabi_udiv (unsigned long a, unsigned long b)
+{
+  unsigned long result;
+  return __mesabi_uldiv (a, b, &result);
 }
