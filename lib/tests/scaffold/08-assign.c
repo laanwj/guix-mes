@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -27,6 +27,8 @@ main ()
   a = 2;
   b = -2;
   c = a + b;
+#if !(__arm__ && __TINYC__) // tcc does not support arm assembly
   asm ("nop");
+#endif
   return c;
 }
