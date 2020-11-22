@@ -239,6 +239,7 @@ typedef struct ucontext
 #endif // !__i386__
 
 int kill (pid_t pid, int signum);
+int raise (int);
 int sigaction (int signum, struct sigaction const *act, struct sigaction *oldact);
 int sigaddset (sigset_t * set, int signum);
 #if __MESC__
