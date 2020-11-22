@@ -73,5 +73,6 @@ unsigned long __mesabi_udiv (unsigned long a, unsigned long b);
 
 void *__memcpy (void *dest, void const *src, size_t n);
 void *__memmove (void *dest, void const *src, size_t n);
+void *__memset (void *s, int c, size_t n);
 
 #endif //__MES_LIB_H
