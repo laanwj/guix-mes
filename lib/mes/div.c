@@ -33,6 +33,10 @@ struct ldiv_t
 
 int __raise (int);
 
+#if __TINYC__
+#define __raise(x) -1
+#endif
+
 void
 __mesabi_div0 (void)
 {
