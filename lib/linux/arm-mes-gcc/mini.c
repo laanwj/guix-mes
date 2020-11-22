@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  * Copyright © 2019,2020 Danny Milosavljevic <dannym@scratchpost.org>
  *
  * This file is part of GNU Mes.
@@ -24,6 +24,7 @@
 #define SYS_exit   "0x01"
 #define SYS_write  "0x04"
 
+#if !__TINYC__
 // *INDENT-OFF*
 void
 _exit (int code)
@@ -39,7 +40,25 @@ _exit (int code)
   // not reached
   _exit (0);
 }
+#else //__TINYC__
+__asm__ (".global _exit\n");
+__asm__ ("_exit:\n");
+__asm__ (".int 0xe92d4880\n"); //push  {r7, fp, lr}
+__asm__ (".int 0xe28db008\n"); //add   fp, sp, #8
+__asm__ (".int 0xe24dd00c\n"); //sub   sp, sp, #12
+__asm__ (".int 0xe50b0010\n"); //str   r0, [fp, #-16]
+__asm__ (".int 0xe51b3010\n"); //ldr   r3, [fp, #-16]
+__asm__ (".int 0xe3a07001\n"); //mov   r7, #1
+__asm__ (".int 0xe1a00003\n"); //mov   r0, r3
+__asm__ (".int 0xef000000\n"); //svc   0x00000000
+__asm__ (".int 0xe3a00000\n"); //mov   r0, #0
+__asm__ (".int 0xebfffffe\n"); //bl    0 <_exit>
+__asm__ (".int 0xe320f000\n"); //nop   {0}
+__asm__ (".int 0xe24bd008\n"); //sub   sp, fp, #8
+__asm__ (".int 0xe8bd8880\n"); //pop   {r7, fp, pc}
+#endif //__TINYC__
 
+#if !__TINYC__
 ssize_t
 _write (int filedes, void const *buffer, size_t size)
 {
@@ -58,3 +77,27 @@ _write (int filedes, void const *buffer, size_t size)
   return r;
 }
 // *INDENT-ON*
+#else //__TINYC__
+__asm__ (".global _write\n");
+__asm__ ("_write:\n");
+__asm__ (".int 0xe92d4880\n"); //push  {r7, fp, lr}
+__asm__ (".int 0xe28db008\n"); //add   fp, sp, #8
+__asm__ (".int 0xe24dd01c\n"); //sub   sp, sp, #28
+__asm__ (".int 0xe50b0018\n"); //str   r0, [fp, #-24]   ; 0xffffffe8
+__asm__ (".int 0xe50b101c\n"); //str   r1, [fp, #-28]   ; 0xffffffe4
+__asm__ (".int 0xe50b2020\n"); //str   r2, [fp, #-32]   ; 0xffffffe0
+__asm__ (".int 0xe51b3018\n"); //ldr   r3, [fp, #-24]   ; 0xffffffe8
+__asm__ (".int 0xe51bc01c\n"); //ldr   ip, [fp, #-28]   ; 0xffffffe4
+__asm__ (".int 0xe51be020\n"); //ldr   lr, [fp, #-32]   ; 0xffffffe0
+__asm__ (".int 0xe3a07004\n"); //mov   r7, #4
+__asm__ (".int 0xe1a00003\n"); //mov   r0, r3
+__asm__ (".int 0xe1a0100c\n"); //mov   r1, ip
+__asm__ (".int 0xe1a0300e\n"); //mov   r3, lr
+__asm__ (".int 0xef000000\n"); //svc   0x00000000
+__asm__ (".int 0xe1a03000\n"); //mov   r3, r0
+__asm__ (".int 0xe50b3010\n"); //str   r3, [fp, #-16]
+__asm__ (".int 0xe51b3010\n"); //ldr   r3, [fp, #-16]
+__asm__ (".int 0xe1a00003\n"); //mov   r0, r3
+__asm__ (".int 0xe24bd008\n"); //sub   sp, fp, #8
+__asm__ (".int 0xe8bd8880\n"); //pop   {r7, fp, pc}
+#endif //__TINYC__
