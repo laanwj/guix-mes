@@ -217,6 +217,15 @@ libtcc1_SOURCES="
 lib/libtcc1.c
 "
 
+if test $mes_cpu = arm; then
+    libtcc1_SOURCES="$libtcc1_SOURCES
+lib/mes/div.c
+lib/string/__memcpy.c
+lib/string/__memmove.c
+lib/string/__memset.c
+"
+fi
+
 libc_tcc_SOURCES="
 $libc_SOURCES
 lib/ctype/islower.c
