@@ -55,10 +55,10 @@ typedef unsigned short uint16_t;
 typedef short int16_t;
 typedef unsigned uint32_t;
 typedef int int32_t;
-#if __SIZEOF_LONG_LONG__
+#if __SIZEOF_LONG_LONG__ == 8
 typedef unsigned long long uint64_t;
 typedef long long int64_t;
-#endif // __SIZEOF_LONG_LONG__
+#endif // __SIZEOF_LONG_LONG__ == 8
 
 typedef int intmax_t;
 typedef unsigned uintmax_t;
