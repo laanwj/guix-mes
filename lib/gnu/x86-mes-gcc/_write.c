@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,38 +20,4 @@
 
 #include "mes/lib-mini.h"
 
-#define SYS_exit   "0x3c"
-#define SYS_write  "0x01"
-
-// *INDENT-OFF*
-void
-_exit (int code)
-{
-  asm (
-       "mov     $"SYS_exit",%%rax\n\t"
-       "mov     %0,%%rdi\n\t"
-       "syscall \n\t"
-       : // no outputs "=" (r)
-       : "rm" (code)
-       );
-  // not reached
-  _exit (0);
-}
-
-ssize_t
-_write (int filedes, void const *buffer, size_t size)
-{
-  long r;
-  asm (
-       "mov     $"SYS_write",%%rax\n\t"
-       "mov     %1,%%rdi\n\t"
-       "mov     %2,%%rsi\n\t"
-       "mov     %3,%%rdx\n\t"
-       "syscall \n\t"
-       "mov     %%rax,%0\n\t"
-       : "=r" (r)
-       : "rm" (filedes), "rm" (buffer), "rm" (size)
-       : "rax", "rdi", "rsi", "rdx"
-       );
-  return r;
-}
+// your mach _write here

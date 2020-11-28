@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -18,20 +18,17 @@
  * along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-void
-_exit ()
-{
-  asm ("mov____$i32,%eax SYS_exit");
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("int____$0x80");
-}
+#include "mes/lib-mini.h"
 
 void
-_write ()
+_write (int filedes, void const *buffer, size_t size)
 {
-  asm ("mov____$i32,%eax SYS_write");
-  asm ("mov____0x8(%ebp),%ebx !8");
-  asm ("mov____0x8(%ebp),%ecx !12");
-  asm ("mov____0x8(%ebp),%edx !16");
-  asm ("int____$0x80");
+#if 1                           // !MES_CCAMD64
+  asm ("mov____0x8(%rbp),%rdi !0x10");
+  asm ("mov____0x8(%rbp),%rsi !0x18");
+  asm ("mov____0x8(%rbp),%rdx !0x20");
+#endif
+
+  asm ("mov____$i32,%rax SYS_write");
+  asm ("syscall");
 }

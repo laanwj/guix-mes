@@ -1,7 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
- * Copyright © 2020 Danny Milosavljevic <dannym@scratchpost.org>
+ * Copyright © 2016,2017,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,19 +19,11 @@
  */
 
 void
-_exit ()
-{
-  asm ("SYS_exit mov____$i8,%r7");
-  asm ("!8 ldr____%r0,(%fp,+#$i8)");
-  asm ("swi____$0");
-}
-
-void
 _write ()
 {
-  asm ("SYS_write mov____$i8,%r7");
-  asm ("!8 ldr____%r0,(%fp,+#$i8)");
-  asm ("!12 ldr____%r1,(%fp,+#$i8)");
-  asm ("!16 ldr____%r2,(%fp,+#$i8)");
-  asm ("swi____$0");
+  asm ("mov____$i32,%eax SYS_write");
+  asm ("mov____0x8(%ebp),%ebx !8");
+  asm ("mov____0x8(%ebp),%ecx !12");
+  asm ("mov____0x8(%ebp),%edx !16");
+  asm ("int____$0x80");
 }

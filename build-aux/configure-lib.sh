@@ -37,8 +37,9 @@ lib/mes/oputs.c
 if test $mes_libc = mes; then
     libc_mini_shared_SOURCES="$libc_mini_shared_SOURCES
 lib/mes/globals.c
-lib/$mes_kernel/$mes_cpu-mes-$compiler/mini.c
 lib/stdlib/exit.c
+lib/$mes_kernel/$mes_cpu-mes-$compiler/_exit.c
+lib/$mes_kernel/$mes_cpu-mes-$compiler/_write.c
 lib/stdlib/puts.c
 lib/string/strlen.c
 "

@@ -91,7 +91,8 @@ MES_DEBUG=2 MES=out-system-libc/mes sh -x scripts/mescc -m $mes_bits -nostdlib\
          \
          lib/mes/eputs.c\
          \
-         lib/linux/$mes_cpu-mes-mescc/mini.c\
+         lib/linux/$mes_cpu-mes-mescc/_exit.c\
+         lib/linux/$mes_cpu-mes-mescc/_write.c\
          \
          lib/mes/write.c\
          lib/string/strlen.c\
@@ -142,7 +143,8 @@ $CC -g -D HAVE_CONFIG_H=1 -I include -I include/$mes_kernel/$mes_cpu\
     lib/string/strlen.c\
     lib/stdlib/puts.c\
     lib/stdlib/exit.c\
-    lib/$mes_kernel/$mes_cpu-mes-$compiler/mini.c\
+    lib/$mes_kernel/$mes_cpu-mes-$compiler/_exit.c\
+    lib/$mes_kernel/$mes_cpu-mes-$compiler/_write.c\
     \
     lib/mes/div.c\
     lib/mes/itoa.c\
@@ -252,7 +254,8 @@ MES_DEBUG=2 MES=out-mes/mes sh -x scripts/mescc -m $mes_bits -nostdlib\
          \
          lib/mes/eputs.c\
          \
-         lib/linux/$mes_cpu-mes-mescc/mini.c\
+         lib/linux/$mes_cpu-mes-mescc/_exit.c\
+         lib/linux/$mes_cpu-mes-mescc/_write.c\
          \
          lib/mes/write.c\
          lib/string/strlen.c\
