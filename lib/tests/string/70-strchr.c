@@ -38,12 +38,11 @@ strchr (char const *s, int c)
 int
 main ()
 {
-  char *p = strchr ("hello", 'l');
+  char *hello = "hello";
+  char *p = strchr (hello, 'l');
   if (!p)
     return 1;
-  int i = p - "hello";
-  // int i;
-  // i = p - "hello";
+  int i = p - hello;
   if (i != 2)
     return i;
 
