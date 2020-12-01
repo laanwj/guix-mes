@@ -193,6 +193,7 @@ lib/tests/scaffold/70-struct-short-enum-init.c
 lib/tests/scaffold/70-struct-post.c
 lib/tests/scaffold/70-extern.c
 lib/tests/scaffold/70-ternary-arithmetic-argument.c
+lib/tests/scaffold/70-function-modulo.c
 lib/tests/setjmp/80-setjmp.c
 lib/tests/stdio/80-sscanf.c
 lib/tests/stdlib/80-qsort.c
