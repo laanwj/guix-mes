@@ -21,10 +21,9 @@
 
 #include "mes/lib-mini.h"
 
-#define SYS_exit   "0x01"
-
 // *INDENT-OFF*
 #if !__TINYC__
+#define SYS_exit "0x01"
 void
 _exit (int code)
 {
@@ -40,19 +39,13 @@ _exit (int code)
   _exit (0);
 }
 #else //__TINYC__
-__asm__ (".global _exit\n");
-__asm__ ("_exit:\n");
-__asm__ (".int 0xe92d4880\n"); //push  {r7, fp, lr}
-__asm__ (".int 0xe28db008\n"); //add   fp, sp, #8
-__asm__ (".int 0xe24dd00c\n"); //sub   sp, sp, #12
-__asm__ (".int 0xe50b0010\n"); //str   r0, [fp, #-16]
-__asm__ (".int 0xe51b3010\n"); //ldr   r3, [fp, #-16]
-__asm__ (".int 0xe3a07001\n"); //mov   r7, #1
-__asm__ (".int 0xe1a00003\n"); //mov   r0, r3
-__asm__ (".int 0xef000000\n"); //svc   0x00000000
-__asm__ (".int 0xe3a00000\n"); //mov   r0, #0
-__asm__ (".int 0xebfffffe\n"); //bl    0 <_exit>
-__asm__ (".int 0xe320f000\n"); //nop   {0}
-__asm__ (".int 0xe24bd008\n"); //sub   sp, fp, #8
-__asm__ (".int 0xe8bd8880\n"); //pop   {r7, fp, pc}
+#define SYS_exit 0x01
+void
+_exit (int code)
+{
+  int c = SYS_exit;
+  __asm__ (".int 0xe51b7004\n"); //ldr   r7, [fp, #-4] ; "c"
+  __asm__ (".int 0xe59b000c\n"); //ldr   r0, [fp, #12] ; code
+  __asm__ (".int 0xef000000\n"); //svc   0x00000000
+}
 #endif //__TINYC__
