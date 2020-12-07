@@ -27,7 +27,7 @@
 #else // ! SYSTEM_LIBC
 
 #if __arm__
-#if __GNUC__
+#if __GNUC__ || __TINYC__
 #warning "It is not supported to use mes' setjmp implementation together with GCC.  Continuing with best-effort implementation."
 typedef struct
 {
