@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -23,20 +23,24 @@
 double
 __divdi3 (double a, double b)
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__divdi3 stub\n");
   stub = 1;
+#endif
   return ((long) a / (long) b);
 }
 
 double
 __moddi3 (double a, double b)
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__moddi3 stub\n");
   stub = 1;
+#endif
   return ((long) a % (long) b);
 }
 
@@ -48,14 +52,16 @@ unsigned long
 __udivdi3 (unsigned long a, long ah, unsigned long b)
 #endif
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__udivdi3 stub\n");
   stub = 1;
-  if (!b)
-    return 0;
+#endif
   unsigned long ai = a;
   unsigned long bi = b;
+  if (!b)
+    return 0;
   return ai / bi;
 }
 
@@ -67,10 +73,12 @@ unsigned long
 __umoddi3 (unsigned long a, long ah, unsigned long b)
 #endif
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__umoddi3 stub\n");
   stub = 1;
+#endif
   unsigned long ai = a;
   unsigned long bi = b;
   return ai % bi;
@@ -84,17 +92,16 @@ unsigned long
 __lshrdi3 (unsigned long a, long ah, long b)
 #endif
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__lshrdi3 stub\n");
   stub = 1;
-#if 0 // In some instances, this recurses
   return a >> b;
-#else
+#else //  __TINYC__
   for (int i = 0; i < b; i++)
     a /= 2;
-  return a;
-#endif
+#endif // __TINYC__
 }
 
 #if HAVE_LONG_LONG
@@ -105,17 +112,17 @@ long
 __ashldi3 (long a, long ah, long b)
 #endif
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__ashldi3 stub\n");
   stub = 1;
-#if 0 // In some instances, this recurses
   return a << b;
-#else
+#else //  __TINYC__
   for (int i = 0; i < b; i++)
     a += a;
   return a;
-#endif
+#endif // __TINYC__
 }
 
 #if HAVE_LONG_LONG
@@ -126,17 +133,17 @@ long
 __ashrdi3 (long a, long ah, long b)
 #endif
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__ashrdi3 stub\n");
   stub = 1;
-#if 0 // In some instances, this recurses
-  return a >> b;
-#else
+ return a >> b;
+#else //  __TINYC__
   for (int i = 0; i < b; i++)
     a /= 2;
   return a;
-#endif
+#endif // __TINYC__
 }
 
 #if HAVE_LONG_LONG && HAVE_FLOAT
@@ -147,10 +154,12 @@ double
 __floatundixf (unsigned long a)
 #endif
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__floatundixf stub\n");
   stub = 1;
+#endif
   return 0;
 }
 
@@ -161,10 +170,12 @@ unsigned long
 #endif
 __fixunsxfdi (double a1)
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__fixunsxfdi stub\n");
   stub = 1;
+#endif
   return 0;
 }
 
@@ -177,10 +188,12 @@ long long
 #endif // !__TINYCC__
 __fixdfdi (double a1)
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__fixdfdi stub\n");
   stub = 1;
+#endif
   return 0;
 }
 
@@ -192,10 +205,12 @@ unsigned long
 __fixxfdi (double a1)
 #endif
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__fixxfdi stub\n");
   stub = 1;
+#endif
   return 0;
 }
 
@@ -206,9 +221,11 @@ long
 #endif
 __fixsfdi (double a1)
 {
+#if !__TINYC__
   static int stub = 0;
   if (__mes_debug () && !stub)
     eputs ("__fixsfdi stub\n");
   stub = 1;
+#endif
   return 0;
 }
