@@ -29,7 +29,13 @@ __divdi3 (double a, double b)
     eputs ("__divdi3 stub\n");
   stub = 1;
 #endif
-  return ((long) a / (long) b);
+  long ai = a;
+  long bi = b;
+#if __arm__ && __TINYC__
+  return __mesabi_idiv (ai, bi);
+#else
+  return ai / bi;
+#endif
 }
 
 double
@@ -41,7 +47,13 @@ __moddi3 (double a, double b)
     eputs ("__moddi3 stub\n");
   stub = 1;
 #endif
-  return ((long) a % (long) b);
+  long ai = a;
+  long bi = b;
+#if __arm__ && __TINYC__
+  return __mesabi_imod (ai, bi);
+#else
+  return ai % bi;
+#endif
 }
 
 #if HAVE_LONG_LONG
@@ -62,7 +74,11 @@ __udivdi3 (unsigned long a, long ah, unsigned long b)
   unsigned long bi = b;
   if (!b)
     return 0;
+#if __arm__ && __TINYC__
+  return __mesabi_idiv (ai, bi);
+#else
   return ai / bi;
+#endif
 }
 
 #if HAVE_LONG_LONG
@@ -81,7 +97,11 @@ __umoddi3 (unsigned long a, long ah, unsigned long b)
 #endif
   unsigned long ai = a;
   unsigned long bi = b;
+#if __arm__ && __TINYC__
+  return __mesabi_imod (ai, bi);
+#else
   return ai % bi;
+#endif
 }
 
 #if HAVE_LONG_LONG
@@ -100,7 +120,12 @@ __lshrdi3 (unsigned long a, long ah, long b)
   return a >> b;
 #else //  __TINYC__
   for (int i = 0; i < b; i++)
+#if __arm__
+    a = __mesabi_idiv (a, 2);
+#else // !__arm__
     a /= 2;
+#endif // !__arm__
+  return a;
 #endif // __TINYC__
 }
 
@@ -141,7 +166,11 @@ __ashrdi3 (long a, long ah, long b)
  return a >> b;
 #else //  __TINYC__
   for (int i = 0; i < b; i++)
+#if __arm__
+    a = __mesabi_idiv (a, 2);
+#else // !__arm__
     a /= 2;
+#endif // !__arm__
   return a;
 #endif // __TINYC__
 }
