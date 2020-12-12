@@ -175,6 +175,22 @@ __ashrdi3 (long a, long ah, long b)
 #endif // __TINYC__
 }
 
+double
+#if HAVE_LONG_LONG && HAVE_FLOAT
+__floatundidf (unsigned long long a)
+#else
+__floatundidf (unsigned long a)
+#endif
+{
+#if !__TINYC__
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__floatundidf stub\n");
+  stub = 1;
+#endif
+  return 0;
+}
+
 #if HAVE_LONG_LONG && HAVE_FLOAT
 long double
 __floatundixf (unsigned long long a)
@@ -258,3 +274,28 @@ __fixsfdi (double a1)
 #endif
   return 0;
 }
+
+double
+__fixunsdfdi (double num, double den)
+{
+#if !__TINYC__
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__fixunsdfdi stub\n");
+  stub = 1;
+#endif
+  return 0;
+}
+
+int
+__fixunsdfsi (int a, int b)
+{
+#if !__TINYC__
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__fixunsdfsi stub\n");
+  stub = 1;
+#endif
+  return 0;
+}
+
