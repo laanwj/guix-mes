@@ -299,3 +299,29 @@ __fixunsdfsi (int a, int b)
   return 0;
 }
 
+#if __arm__
+int
+__floatdisf (int a, int b)
+{
+#if !__TINYC__
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__floatdisf stub\n");
+  stub = 1;
+#endif
+  return 0;
+}
+
+int
+__floatdidf (int a, int b)
+{
+#if !__TINYC__
+  static int stub = 0;
+  if (__mes_debug () && !stub)
+    eputs ("__floatdidf stub\n");
+  stub = 1;
+#endif
+  return 0;
+}
+
+#endif //__arm__
