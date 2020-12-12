@@ -70,6 +70,8 @@ long __mesabi_imod (long a, long b);
 long __mesabi_idiv (long a, long b);
 unsigned long __mesabi_umod (unsigned long a, unsigned long b);
 unsigned long __mesabi_udiv (unsigned long a, unsigned long b);
+unsigned long __mesabi_uldiv (unsigned long a, unsigned long b,
+                              unsigned long *remainder);
 
 void *__memcpy (void *dest, void const *src, size_t n);
 void *__memmove (void *dest, void const *src, size_t n);
