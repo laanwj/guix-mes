@@ -324,4 +324,27 @@ __floatdidf (int a, int b)
   return 0;
 }
 
+int
+__divsi3 (int num, int den)
+{
+  return __mesabi_idiv (num, den);
+}
+
+int
+__modsi3 (int num, int den)
+{
+  return __mesabi_imod (num, den);
+}
+
+int
+__udivsi3 (int num, int den)
+{
+  return __mesabi_udiv (num, den);
+}
+
+int
+__umodsi3 (int num, int den)
+{
+  return __mesabi_umod (num, den);
+}
 #endif //__arm__
