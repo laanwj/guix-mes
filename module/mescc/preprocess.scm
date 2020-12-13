@@ -112,7 +112,10 @@
 (define* (c99-input->ast #:key (prefix "") (defines '()) (includes '()) (arch "") verbose?)
   (when verbose?
     (stderr "parsing: input\n"))
-  ((compose ast-strip-const ast-strip-comment) (c99-input->full-ast #:prefix prefix #:defines defines #:includes includes #:arch arch #:verbose? verbose?)))
+  ((compose ast-strip-attributes
+            ast-strip-const
+            ast-strip-comment)
+   (c99-input->full-ast #:prefix prefix #:defines defines #:includes includes #:arch arch #:verbose? verbose?)))
 
 (define (ast-strip-comment o)
   (pmatch o
@@ -141,4 +144,12 @@
          `(decl-spec-list (type-qual-list (type-qual ,qual)) ,@(map ast-strip-const rest))))
     ((,h . ,t) (if (list? o) (filter-map ast-strip-const o)
                    (cons (ast-strip-const h) (ast-strip-const t))))
+    (_  o)))
+
+(define (ast-strip-attributes o)
+  (pmatch o
+    ((decl-spec-list (@ (attributes . ,attributes)) . ,rest)
+      `(decl-spec-list ,@rest))
+    ((,h . ,t) (if (list? o) (filter-map ast-strip-attributes o)
+                   (cons (ast-strip-attributes h) (ast-strip-attributes t))))
     (_  o)))
