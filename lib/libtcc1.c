@@ -176,6 +176,7 @@ __ashrdi3 (long a, long ah, long b)
 }
 
 double
+__attribute__((weak))
 #if HAVE_LONG_LONG && HAVE_FLOAT
 __floatundidf (unsigned long long a)
 #else
@@ -193,9 +194,11 @@ __floatundidf (unsigned long a)
 
 #if HAVE_LONG_LONG && HAVE_FLOAT
 long double
+__attribute__((weak))
 __floatundixf (unsigned long long a)
 #else
 double
+__attribute__((weak))
 __floatundixf (unsigned long a)
 #endif
 {
@@ -213,6 +216,7 @@ unsigned long long
 #else
 unsigned long
 #endif
+__attribute__((weak))
 __fixunsxfdi (double a1)
 {
 #if !__TINYC__
@@ -231,6 +235,7 @@ int
 #else // !__TINYCC__
 long long
 #endif // !__TINYCC__
+__attribute__((weak))
 __fixdfdi (double a1)
 {
 #if !__TINYC__
@@ -244,11 +249,11 @@ __fixdfdi (double a1)
 
 #if HAVE_LONG_LONG
 unsigned long long
-__fixxfdi (double a1)
 #else
 unsigned long
-__fixxfdi (double a1)
 #endif
+__attribute__((weak))
+__fixxfdi (double a1)
 {
 #if !__TINYC__
   static int stub = 0;
@@ -264,6 +269,7 @@ long long
 #else
 long
 #endif
+__attribute__((weak))
 __fixsfdi (double a1)
 {
 #if !__TINYC__
@@ -276,6 +282,7 @@ __fixsfdi (double a1)
 }
 
 double
+__attribute__((weak))
 __fixunsdfdi (double num, double den)
 {
 #if !__TINYC__
@@ -288,6 +295,7 @@ __fixunsdfdi (double num, double den)
 }
 
 int
+__attribute__((weak))
 __fixunsdfsi (int a, int b)
 {
 #if !__TINYC__
@@ -301,6 +309,7 @@ __fixunsdfsi (int a, int b)
 
 #if __arm__
 int
+__attribute__((weak))
 __floatdisf (int a, int b)
 {
 #if !__TINYC__
@@ -313,6 +322,7 @@ __floatdisf (int a, int b)
 }
 
 int
+__attribute__((weak))
 __floatdidf (int a, int b)
 {
 #if !__TINYC__
