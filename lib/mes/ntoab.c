@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -26,7 +26,7 @@
 #define XSTR(s) STR(s)
 
 char *
-ntoab (long x, int base, int signed_p)
+ntoab (long x, unsigned base, int signed_p)
 {
   static char itoa_buf[20];
   char *p = itoa_buf + 11;

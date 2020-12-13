@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -34,7 +34,7 @@ char *dtoab (double number, int base, int signed_p);
 char *itoa (int number);
 char *ltoa (long number);
 char *ltoab (long x, int base);
-char *ntoab (long number, int base, int signed_p);
+char *ntoab (long number, unsigned base, int signed_p);
 char *ultoa (unsigned long number);
 char *utoa (unsigned number);
 int eputc (int c);
