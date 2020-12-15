@@ -42,6 +42,7 @@ if test -n "$MES_UNINSTALLED"; then
     libdir=${libdir-${abs_top_builddir}/lib}
 fi
 
+prefix=@prefix@
 MES=${MES-@prefix@/bin/mes}
 bindir=${bindir-@bindir@}
 includedir=${includedir-@includedir@}
