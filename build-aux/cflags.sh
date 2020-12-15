@@ -1,5 +1,5 @@
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -29,6 +29,11 @@ if test $mes_kernel = gnu; then
 fi
 
 AM_CFLAGS=
+if test "$V" = 2; then
+    AM_CFLAGS="$AM_CFLAGS -v"
+elif test "$V" = 3; then
+    AM_CFLAGS="$AM_CFLAGS -v -v"
+fi
 
 if test $mes_libc = mes; then
     AM_CFLAGS="$AM_CFLAGS
