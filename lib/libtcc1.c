@@ -175,6 +175,7 @@ __ashrdi3 (long a, long ah, long b)
 #endif // __TINYC__
 }
 
+#if HAVE_FLOAT_STUB || HAVE_FLOAT
 double
 __attribute__((weak))
 #if HAVE_LONG_LONG && HAVE_FLOAT
@@ -293,6 +294,7 @@ __fixunsdfdi (double num, double den)
 #endif
   return 0;
 }
+#endif // HAVE_FLOAT_STUB || HAVE_FLOAT
 
 int
 __attribute__((weak))
