@@ -26,7 +26,7 @@
 /* Linux' SYS_time syscall is a compatibility shim for SYS_gettimeofday.
 Therefore, prefer SYS_gettimeofday. */
 
-#if SYS_gettimeofday
+#if defined (SYS_gettimeofday)
 
 #include <sys/time.h>
 
@@ -42,7 +42,7 @@ time (time_t * result)
   return tv.tv_sec;
 }
 
-#elif SYS_time
+#elif defined (SYS_time)
 
 time_t
 time (time_t * result)
