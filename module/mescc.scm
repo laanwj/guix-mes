@@ -58,7 +58,7 @@
 
 (define (parse-opts args)
   (let* ((option-spec
-          '((align)
+          '((align (value #t))
             (arch (value #t))
             (assemble (single-char #\c))
             (base-address (value #t))
@@ -103,7 +103,7 @@ Usage: mescc [OPTION]... FILE...
 C99 compiler in Scheme for bootstrapping the GNU system.
 
 Options:
-  --align             align globals
+  --align=SYMBOL      align SYMBOL {functions,globals,none} [functions]
   --arch=ARCH         compile for ARCH [~a]
   --kernel=ARCH       compile for KERNEL [~a]
   -dumpmachine        display the compiler's target machine

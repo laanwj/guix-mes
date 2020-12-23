@@ -35,9 +35,9 @@
             infos->M1
             M1:merge-infos))
 
-(define* (infos->M1 file-name infos #:key align? verbose?)
+(define* (infos->M1 file-name infos #:key align verbose?)
   (let ((info (fold M1:merge-infos (make <info>) infos)))
-    (info->M1 file-name info #:align? align? #:verbose? verbose?)))
+    (info->M1 file-name info #:align align #:verbose? verbose?)))
 
 (define (M1:merge-infos o info)
   (clone info
@@ -113,14 +113,16 @@
 (define (global-extern? o)
   (and=> (global:storage o) (cut eq? <> 'extern)))
 
-(define* (info->M1 file-name o #:key align? verbose?)
+(define* (info->M1 file-name o #:key align verbose?)
   (let* ((functions (.functions o))
          (function-names (map car functions))
          (globals (.globals o))
          (globals (filter (negate (compose global-extern? cdr)) globals))
          (strings (filter global-string? globals))
          (strings (map car strings))
-         (reg-size (type:size (assoc-ref (.types o) "*"))))
+         (reg-size (type:size (assoc-ref (.types o) "*")))
+         (align-functions? (memq 'functions align))
+         (align-globals? (memq 'globals align)))
     (define (string->label o)
       (let ((index (list-index (lambda (s) (equal? s o)) strings)))
         (if index
@@ -207,8 +209,11 @@
           (newline))
         (when verbose?
           (display (string-append "    :" name "\n") (current-error-port)))
-        ;; "<" aligns to multiple of 4 Bytes.
-        (display (string-append "\n\n<\n:" name "\n"))
+        (display "\n\n")
+        (when align-functions?
+          ;; "<" aligns to multiple of 4 Bytes.
+          (display "<\n"))
+        (display (string-append ":" name "\n"))
         (for-each line->M1 (apply append text))))
     (define (write-global o)
       (define (labelize o)
@@ -223,7 +228,7 @@
                     (else (string-append "&" label))))))
       (define (display-align size)
         (let ((alignment (- reg-size (modulo size reg-size))))
-          (when (and align? (> reg-size alignment 0))
+          (when (and align-globals? (> reg-size alignment 0))
             (display " ")
             (display-join (map text->M1 (map (const 0) (iota alignment))) " "))
           #t))

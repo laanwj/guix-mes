@@ -876,8 +876,9 @@ The @var{option}s can be among the following:
 
 @table @code
 
-@item --align
-align globals
+@item --align=@var{symbol}
+align @var{symbol}, the default is @code{functions}; other valid values
+are: @code{globals}.
 
 @item --base-address=ADRRESS
 use BaseAddress ADDRESS [0x1000000]
