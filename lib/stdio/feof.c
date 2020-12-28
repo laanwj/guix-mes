@@ -1,6 +1,6 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
- * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
  *
  * This file is part of GNU Mes.
  *
@@ -23,7 +23,7 @@
 int
 feof (FILE * stream)
 {
-  char c = fgetc (stream);
+  int c = fgetc (stream);
   if (c != EOF)
     ungetc (c, stream);
   return c == EOF;
