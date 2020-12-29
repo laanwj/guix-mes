@@ -81,8 +81,13 @@ fi
 libmescc_SOURCES="
 lib/mes/globals.c
 lib/linux/$mes_cpu-mes-$compiler/syscall-internal.c
+"
+
+if test $mes_cpu = arm; then
+    libmescc_SOURCES="$libmescc_SOURCES
 lib/mes/div.c
 "
+fi
 
 libmes_SOURCES="
 $libc_mini_shared_SOURCES
