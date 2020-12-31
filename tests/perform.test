@@ -5,7 +5,7 @@ if [ "$MES" != guile ]; then
     MES_BOOT=boot-02.scm exec $MES < $0
     exit $?
 fi
-exec ${MES-mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests perform)' -s "$0" "$@"
+exec ${MES-bin/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests perform)' -s "$0" "$@"
 !#
 
 ;;; -*-scheme-*-

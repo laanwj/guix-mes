@@ -6,7 +6,7 @@ if [ "$MES" != guile ]; then
     $MES < $0
     exit $?
 fi
-exec ${MES-mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests boot)' -s "$0" "$@"
+exec ${MES-bin/mes} --no-auto-compile -L ${0%/*} -L module -C module -e '(tests boot)' -s "$0" "$@"
 !#
 
 ;;; -*-scheme-*-
