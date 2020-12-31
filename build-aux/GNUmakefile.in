@@ -1,5 +1,5 @@
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2018,2019,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -323,16 +323,37 @@ tag:
 
 # Release process
 #  0. Prepare git, see history:
-#     - doc: Release update
-#       + NEWS, etc.
-#       + doc/announce/ANNOUNCE-0.22, using xxx for checksums
-#     - Release 0.22
-#  1. make tag VERSION=0.22
-#  2. make sign-dist
-#  3. make release
-#     - Update doc/announce/ANNOUNCE-0.22
+#     - doc: Release update (NEWS, etc.)
+#     - Generate announcement
+#       + touch mes-0.23.tar.gz
+#       + make gen-announce VERSION=0.23
+#       + Update and commit doc/announce/ANNOUNCE-0.23,
+#         using xxx (32,40) for checksums
+#     - create "Release 0.23" commit (see Release 0.22).
+#       + configure
+#       + configure.sh
+#  1. Tag for release
+#     make tag VERSION=0.23
+#  2. Create signed tarball
+#     make sign-dist
+#  3. Update Guix package description
+#     - make release
+#  4. Finish announcement
+#     - Update doc/announce/ANNOUNCE-0.23
 #     - doc: Post-release update.
-#  4. verify bootstrap
+#     - build-aux/GNUMakefile.in: gen-announce: update previous-version
+#  5. Verify
+#     - Update package in Guix master.
+#     - If applicable, verify bootstrap.
+#  6. Upload to ftp.gnu.org
+#  7. Create blog post
+#     cp doc/announce/ANNOUNCE-0.23 ~/src/web/joyofsource.com/posts/announce-0.23.md
+#     fix urls and all
+#  8. Send mail
+#     To: info-gnu@gnu.org
+#     Cc: guix-devel@gnu.org
+#     Cc: bootstrappable@freelists.org
+#     Cc: rb-general@lists.reproducible-builds.org
 
 guix-build:
 	./pre-inst-env $(GUIX) build mes@$(VERSION) --with-source=$(TARBALL)
@@ -349,12 +370,12 @@ gen-announce:
 	$(GEN_ANNOUNCE)\
 	    --release-type=beta\
 	    --package-name=mes\
-	    --previous-version='0.21 '\
+	    --previous-version='0.22 '\
             --current-version=$(VERSION)\
 	    --gpg-key-id=$(GPG_KEY_ID)\
 	    --url-directory=https://ftp.gnu.org/gnu/mes\
 	    --news=NEWS\
-            > doc/announce/ANNOUNCE-$(VERSION)-
+            > doc/announce/ANNOUNCE-$(VERSION)
 
 installdirs: mkinstalldirs
 	mkdir -p\

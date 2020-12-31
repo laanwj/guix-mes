@@ -2,7 +2,7 @@
 #+TITLE: GNU Mes NEWS – history of user-visible changes
 #+STARTUP: content hidestars
 
-Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+Copyright © 2016,2017,2018,2019,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -10,6 +10,24 @@ Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 
 Please send Mes bug reports to bug-mes@gnu.org.
 
+* Changes in 0.23 since 0.22
+** Core
+*** Mes and Mes C Library can now be built with GCC 10.x.
+** MesCC
+*** The Mes C Library now supports an armhf-linux bootstrap.
+*** MesCC now supports ARM.
+*** mini.c library was split into _exit.c, and _write.c.
+*** When building with GCC, -lgcc is now used.
+*** MesCC now has it's own support library libmescc.a (-lmescc).
+*** MesCC now requires mescc-tools-0.7.0 or later for ARM.
+*** MesCC can be now built with nyacc-1.00.2:
+note that nyacc-1.03.0 is not (backwards) compatible.
+*** MesCC can be built with Guile 3.0.x:
+See https://bugs.gnu.org/43831; use guild compile -O1 with Guile 3.0.x.
+*** MesCC now raises SIGABRT on abort, if supported.
+** Noteworthy bug fixes
+*** unreadchar on EOF is now a no-op.
+*** malloc now aligns the blocks it gives out to max_align_t.
 * Changes in 0.22 since 0.21
 ** Core
 *** Mes now builds reproducibly with MesCC, cross distribution

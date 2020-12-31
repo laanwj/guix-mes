@@ -1,0 +1,120 @@
+
+Subject: GNU Mes 0.23 released
+
+<#secure method=pgpmime mode=sign>
+
+We are happy to announce the release of GNU Mes 0.23, representing 125
+commits over one year by four people.
+
+Mes was ported to ARM and can now be used in the GNU Guix Reduced Binary
+Seed bootstrap as described here
+
+    https://guix.gnu.org/blog/2020/guix-further-reduces-bootstrap-seed-to-25/
+
+and now also for armhf-linux and aarch-linux.  Work to integrate this
+into Guix is ongoing: tinycc and gcc-core-2.95.3 have been built.
+
+We are excited that the Nlnet Foundation is now sponsoring this work!
+
+Enjoy,
+Janneke and Danny.
+
+* About
+
+  GNU Mes[0] is a Scheme interpreter and C compiler for bootstrapping the
+  GNU System.  Since version 0.22 it has again helped to halve the size of
+  opaque, uninspectable binary seeds that are currently being used in the
+  Reduced Binary Seed bootstrap[1] of GNU Guix[2].  The final goal is to
+  help create a full source bootstrap as part of the bootstrappable
+  builds[3] effort for UNIX-like operating systems.
+
+  The Scheme interpreter is written in ~5,000 LOC of simple C, and the C
+  compiler written in Scheme and these are mutual self-hosting.  This
+  mes.c is now being simplified to be transpiled by M2-Planet[4].
+
+  Mes has a Garbage Collector, a library of loadable Scheme modules--
+  notably Dominique Boucher's LALR[5], Pre-R6RS portable syntax-case[6]
+  with R7RS ellipsis, Matt Wette's Nyacc[7] --and test suite, just
+  enough to support a REPL and a C99 compiler: mescc.
+
+  Mes+MesCC can compile an only lightly patched TinyCC[8] that is
+  self-hosting.  Using this tcc and the Mes C library we now have a
+  Reduced Binary Seed bootstrap for the gnutools triplet: glibc-2.2.5,
+  binutils-2.20.1, gcc-2.95.3.  This is enough to bootstrap Guix for
+  i686-linux, x86_64-linux, armhf-linux and aarch64-linux.
+
+  Mes is inspired by The Maxwell Equations of Software: LISP-1.5[9] -- John
+  McCarthy page 13, GNU Guix's source/binary packaging transparency and
+  Jeremiah Orians's stage0[10] ~500 byte self-hosting hex assembler.
+
+  We are very grateful to NLNet for sponsoring the Reduced Binary Seed
+  bootstrap[11] and the ARM port[12].
+
+* Download
+
+  git clone git://git.savannah.gnu.org/mes.git
+
+  Here are the compressed sources and a GPG detached signature[*]:
+    https://ftp.gnu.org/gnu/mes/mes-0.23.tar.gz
+    https://ftp.gnu.org/gnu/mes/mes-0.23.tar.gz.sig
+
+  Use a mirror for higher download bandwidth:
+    https://ftpmirror.gnu.org/mes/mes-0.23.tar.gz
+    https://ftpmirror.gnu.org/mes/mes-0.23.tar.gz.sig
+
+  Here are the MD5 and SHA1 checksums:
+
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.23.tar.gz
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.23.tar.gz
+
+  [*] Use a .sig file to verify that the corresponding file (without the
+  .sig suffix) is intact.  First, be sure to download both the .sig file
+  and the corresponding tarball.  Then, run a command like this:
+
+    gpg --verify mes-0.23.tar.gz.sig
+
+  If that command fails because you don't have the required public key,
+  then run this command to import it:
+
+    gpg --keyserver keys.gnupg.net --recv-keys 1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
+
+  and rerun the 'gpg --verify' command.
+
+* Get informed, get involved
+
+  See https://bootstrappable.org
+  Join #bootstrappable on irc.freenode.net.
+
+* NEWS
+ * Changes in 0.23 since 0.22
+ ** Core
+ *** Mes and Mes C Library can now be built with GCC 10.x.
+ ** MesCC
+ *** The Mes C Library now supports an armhf-linux bootstrap.
+ *** MesCC now supports ARM.
+ *** mini.c library was split into _exit.c, and _write.c.
+ *** When building with GCC, -lgcc is now used.
+ *** MesCC now has it's own support library libmescc.a (-lmescc).
+ *** MesCC now requires mescc-tools-0.7.0 or later for ARM.
+ *** MesCC can be now built with nyacc-1.00.2:
+ note that nyacc-1.03.0 is not (backwards) compatible.
+ *** MesCC can be built with Guile 3.0.x:
+ See https://bugs.gnu.org/43831; use guild compile -O1 with Guile 3.0.x.
+ *** MesCC now raises SIGABRT on abort, if supported.
+ ** Noteworthy bug fixes
+ *** unreadchar on EOF is now a no-op.
+ *** malloc now aligns the blocks it gives out to max_align_t.
+
+[0] https://www.gnu.org/software/mes
+[1] https://guix.gnu.org/blog/2020/guix-further-reduces-bootstrap-seed-to-25
+[2] https://www.gnu.org/software/guix
+[3] https://bootstrappable.org
+[4] https://github.com/oriansj/m2-planet
+[5] https://github.com/schemeway/lalr-scm
+[6] https://www.cs.indiana.edu/chezscheme/syntax-case/old-psyntax.html
+[7] https://www.nongnu.org/nyacc
+[8] https://gitlab.com/janneke/tinycc
+[9] http://www.softwarepreservation.org/projects/LISP/book/LISP%201.5%20Programmers%20Manual.pdf
+[10] https://savannah.nongnu.org/projects/stage0
+[11] https://nlnet.nl/project/GNUMes
+[12] https://nlnet.nl/project/GNUMes-arm

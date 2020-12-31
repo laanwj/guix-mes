@@ -22,17 +22,18 @@ similar way.
    #+BEGIN_SRC bash
    guix environment -l guix.scm     #64 bit + 32bit
    guix environment --system=i686-linux -l guix.scm #32 bit only
+   guix environment --system=armhf-linux -l guix.scm #32 bit only
    #+END_SRC
 
 *** Other GNU/Linux
-  - [[https://savannah.gnu.org/projects/mescc-tools/][mescc-tools]], 0.6.1 is known to work.
-  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 0.93.0 is known to work.
-  - GNU Gcc, 4.9.3 is known to work.
-  - GNU Guile, version 2.0.12 or is know to work.
-  - SH, /bin/sh, GNU Bash 4.3 is known to work.
+  - [[https://savannah.gnu.org/projects/mescc-tools/][mescc-tools]], 0.7.0 is known to work.
+  - [[https://savannah.gnu.org/projects/nyacc][Nyacc]], 1.00.2 is known to work.
+  - GNU Gcc, 7.5.0 is known to work.
+  - GNU Guile, version 3.0.4 is know to work.
+  - SH, /bin/sh, GNU Bash 5.0.16 is known to work.
   - GNU coreutils
-  - sed, GNU sed 4.2 is known to work.
-  - Perl, 5.22 is known to work.
+  - sed, GNU sed 4.8 is known to work.
+  - Perl, 5.30 is known to work.
 
 ** Build it
 
