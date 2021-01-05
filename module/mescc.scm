@@ -112,7 +112,7 @@ Options:
   --numbered-arch     mescc-tools use numbered arch
   -D DEFINE[=VALUE]   define DEFINE [VALUE=1]
   -E                  preprocess only; do not compile, assemble or link
-  -g                  add debug info [GDB, objdump] TODO: hex2 footer
+  -g                  add debug info (call stack in GDB)
   -h, --help          display this help and exit
   -I DIR              append DIR to include path
   -L DIR              append DIR to library path
