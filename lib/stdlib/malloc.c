@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 Danny Milosavljevic <dannym@scratchpost.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,6 +21,8 @@
 
 #include <mes/lib.h>
 #include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /* FIXME: We want bin/mes-mescc's x86-linux sha256sum to stay the same.
    Therfore we cannot remove stdlib/malloc from libc_SOURCES, which is
@@ -37,6 +40,9 @@ malloc (size_t size)
 {
   if (!__brk)
     __brk = (char *) brk (0);
+  /* align what we give back. */
+  __brk = (char*) (((uintptr_t) __brk
+                    + sizeof (max_align_t) - 1) & -sizeof (max_align_t));
   if (brk (__brk + size) == -1)
     return 0;
   char *p = __brk;

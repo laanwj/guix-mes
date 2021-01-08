@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 Danny Milosavljevic <dannym@scratchpost.org>
  *
  * This file is part of GNU Mes.
  *
@@ -36,6 +37,10 @@
 #define offsetof(type, field) ((size_t)&((type *)0)->field)
 #endif // !__MESC__
 #endif // offsetof
+
+/* Note: on banana gcc, max_align_t is 16 Byte big instead! */
+
+typedef double max_align_t;
 
 #endif // ! SYSTEM_LIBC
 
