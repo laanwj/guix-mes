@@ -310,8 +310,10 @@ $(TARBALL): .tarball-version | generate-ChangeLog
 ifdef GUIX
 update-hash: $(TARBALL)
 	$(GUIX) download file://$(PWD)/$<
-	sed -i -e 's,(base32 #!mes!# "[^"]*"),(base32 #!mes!# "$(shell $(GUIX) hash $<)"),' guix/git/mes.scm
-
+	sed -i 											\
+		-e 's,version #!mes!# "[^"]*"),version #!mes!# "$(VERSION)"),'			\
+		-e 's,(base32 #!mes!# "[^"]*"),(base32 #!mes!# "$(shell $(GUIX) hash $<)"),' 	\
+		guix/git/mes.scm
 else
 $(warning update-hash: no guix)
 endif
@@ -335,7 +337,10 @@ tag:
 guix-build:
 	./pre-inst-env $(GUIX) build mes@$(VERSION) --with-source=$(TARBALL)
 
-release: update-hash | gen-announce guix-build
+release: update-hash
+	git commit -m 'guix: mes: Update to $(VERSION).'			\
+	    -m '* guix/git/mes.scm (mes)[source]: Update to $(VERSION).'	\
+	    guix/git/mes.scm
 
 GPG_KEY_ID:=1A858392E331EAFDB8C27FFBF3C1A0D9C1D65273
 GEN_ANNOUNCE=$(GNULIB)/build-aux/announce-gen
