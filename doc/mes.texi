@@ -1139,7 +1139,7 @@ Additionally, in Mes we prefer to format @code{if} statements like this
 Development is done using the Git distributed version control system.
 Thus, access to the repository is not strictly necessary.  We welcome
 contributions in the form of patches as produced by @code{git
-format-patch} sent to the @email{guix-patches@@gnu.org} mailing list.
+format-patch} sent to the @email{bug-mes@@gnu.org} mailing list.
 
 Please write commit logs in the ChangeLog format (@pxref{Change Logs,,,
 standards, GNU Coding Standards}); you can check the commit history for
@@ -1177,7 +1177,7 @@ It will be ready sooner if you help.
 
 @cindex contact, irc, mailing list
 Join us on @code{#bootstrappable} on the Freenode IRC network or on
-@email{guix-devel@@gnu.org} to share your experience---good or bad.
+@email{bug-mes@@gnu.org} to share your experience---good or bad.
 
 @cindex bug, bug report, reporting a bug
 Please send bug reports with full details to @email{bug-mes@@gnu.org}.
