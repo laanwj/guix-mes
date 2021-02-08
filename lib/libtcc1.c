@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 Danny Milosavljevic <dannym@scratchpost.org>
  *
  * This file is part of GNU Mes.
  *
@@ -20,8 +21,13 @@
 
 #include <mes/lib.h>
 
-double
-__divdi3 (double a, double b)
+#if HAVE_LONG_LONG
+long long
+__divdi3 (long long a, long long b)
+#else
+long
+__divdi3 (long a, long b)
+#endif
 {
 #if !__TINYC__
   static int stub = 0;
@@ -29,6 +35,7 @@ __divdi3 (double a, double b)
     eputs ("__divdi3 stub\n");
   stub = 1;
 #endif
+  // FIXME: Actually use long long
   long ai = a;
   long bi = b;
 #if __arm__ && __TINYC__
@@ -38,8 +45,13 @@ __divdi3 (double a, double b)
 #endif
 }
 
-double
-__moddi3 (double a, double b)
+#if HAVE_LONG_LONG
+long long
+__moddi3 (long long a, long long b)
+#else
+long
+__moddi3 (long a, long b)
+#endif
 {
 #if !__TINYC__
   static int stub = 0;
@@ -47,6 +59,7 @@ __moddi3 (double a, double b)
     eputs ("__moddi3 stub\n");
   stub = 1;
 #endif
+  // FIXME: Actually use long long
   long ai = a;
   long bi = b;
 #if __arm__ && __TINYC__
@@ -70,12 +83,13 @@ __udivdi3 (unsigned long a, long ah, unsigned long b)
     eputs ("__udivdi3 stub\n");
   stub = 1;
 #endif
+  // FIXME: Actually use long long
   unsigned long ai = a;
   unsigned long bi = b;
   if (!b)
     return 0;
 #if __arm__ && __TINYC__
-  return __mesabi_idiv (ai, bi);
+  return __mesabi_udiv (ai, bi);
 #else
   return ai / bi;
 #endif
@@ -95,10 +109,11 @@ __umoddi3 (unsigned long a, long ah, unsigned long b)
     eputs ("__umoddi3 stub\n");
   stub = 1;
 #endif
+  // FIXME: Actually use long long
   unsigned long ai = a;
   unsigned long bi = b;
 #if __arm__ && __TINYC__
-  return __mesabi_imod (ai, bi);
+  return __mesabi_umod (ai, bi);
 #else
   return ai % bi;
 #endif
@@ -121,7 +136,7 @@ __lshrdi3 (unsigned long a, long ah, long b)
 #else //  __TINYC__
   for (int i = 0; i < b; i++)
 #if __arm__
-    a = __mesabi_idiv (a, 2);
+    a = __mesabi_udiv (a, 2); // I sure hope that doesn't endless recurse because of the optimizations in __mesabi_udiv that shift
 #else // !__arm__
     a /= 2;
 #endif // !__arm__
@@ -167,7 +182,7 @@ __ashrdi3 (long a, long ah, long b)
 #else //  __TINYC__
   for (int i = 0; i < b; i++)
 #if __arm__
-    a = __mesabi_idiv (a, 2);
+    a = __mesabi_idiv (a, 2); // I sure hope that doesn't endless recurse because of the optimizations in __mesabi_udiv that shift
 #else // !__arm__
     a /= 2;
 #endif // !__arm__
