@@ -37,8 +37,8 @@ Janneke and Danny.
   with R7RS ellipsis, Matt Wette's Nyacc[7] --and test suite, just
   enough to support a REPL and a C99 compiler: mescc.
 
-  Mes+MesCC can compile an only lightly patched TinyCC[8] that is
-  self-hosting.  Using this tcc and the Mes C library we now have a
+  Mes + MesCC + Mes C Library can build a bootstrappable TinyCC[8] that
+  is self-hosting.  Using this tcc and the Mes C library we now have a
   Reduced Binary Seed bootstrap for the gnutools triplet: glibc-2.2.5,
   binutils-2.20.1, gcc-2.95.3.  This is enough to bootstrap Guix for
   i686-linux, x86_64-linux, armhf-linux and aarch64-linux.
@@ -64,8 +64,8 @@ Janneke and Danny.
 
   Here are the MD5 and SHA1 checksums:
 
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.23.tar.gz
-  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  mes-0.23.tar.gz
+    e9a0ae6e2c3842cf57fccb54909463ba  mes-0.23.tar.gz
+    0560879358e5a980f7374844c495c92014b47878  mes-0.23.tar.gz
 
   [*] Use a .sig file to verify that the corresponding file (without the
   .sig suffix) is intact.  First, be sure to download both the .sig file
