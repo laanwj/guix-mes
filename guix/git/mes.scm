@@ -160,13 +160,13 @@ extensive examples, including parsers for the Javascript and C99 languages.")
 (define-public mes
   (package
     (name "mes")
-    (version #!mes!# "0.22")
+    (version #!mes!# "0.23")
     (source (origin
               (method url-fetch)
               (uri (string-append
                     "https://ftp.gnu.org/pub/gnu/mes/mes-" version ".tar.gz"))
               (sha256
-               (base32 #!mes!# "16ngnrdlzik19sdzy9d7krg57q6ws3xrckwkk2gs7q4h5f3x1z99"))))
+               (base32 #!mes!# "0mnryfkl0dwbr5gxp16j5s95gw7z1vm1fqa1pxabp0aiar1hw53s"))))
     (build-system gnu-build-system)
     (supported-systems '("aarch64-linux" "armhf-linux" "i686-linux" "x86_64-linux"))
     (propagated-inputs
@@ -207,7 +207,7 @@ Guile.")
     (license gpl3+)))
 
 (define-public mes.git
- (let ((version #!mes!# "0.22")
+ (let ((version #!mes!# "0.23")
         (revision "0")
         (commit (read-string (open-pipe "git show HEAD | head -1 | cut -d ' ' -f 2" OPEN_READ))))
     (package
