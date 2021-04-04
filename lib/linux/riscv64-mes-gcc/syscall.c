@@ -93,6 +93,23 @@ __sys_call4 (long sys_call, long one, long two, long three, long four)
        );
   return __a0;
 }
+
+long
+__sys_call5 (long sys_call, long one, long two, long three, long four, long five)
+{
+  register long __a7 asm ("a7") = sys_call;
+  register long __a0 asm ("a0") = one;
+  register long __a1 asm ("a1") = two;
+  register long __a2 asm ("a2") = three;
+  register long __a3 asm ("a3") = four;
+  register long __a4 asm ("a4") = five;
+  asm volatile (
+       "ecall\n\t"
+       : "+r" (__a0)
+       : "r" (__a7), "r" (__a1), "r" (__a2), "r" (__a3), "r" (__a4)
+       );
+  return __a0;
+}
 // *INDENT-ON*
 
 long
@@ -155,6 +172,20 @@ long
 _sys_call4 (long sys_call, long one, long two, long three, long four)
 {
   long r = __sys_call4 (sys_call, one, two, three, four);
+  if (r < 0)
+    {
+      errno = -r;
+      r = -1;
+    }
+  else
+    errno = 0;
+  return r;
+}
+
+long
+_sys_call5 (long sys_call, long one, long two, long three, long four, long five)
+{
+  long r = __sys_call5 (sys_call, one, two, three, four, five);
   if (r < 0)
     {
       errno = -r;
