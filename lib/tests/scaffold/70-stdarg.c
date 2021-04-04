@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -35,7 +36,7 @@ stdarg1 (long *one, ...)
   ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
 #undef __FUNCTION_ARGS
 #endif
-  c = va_arg (ap, char);
+  c = va_arg (ap, int);
   r = c;
   eputs ("c:");
   eputs (itoa (c));
@@ -59,7 +60,7 @@ stdarg2 (long *one, long *two, ...)
   ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
 #undef __FUNCTION_ARGS
 #endif
-  c = va_arg (ap, char);
+  c = va_arg (ap, int);
   r = c;
   eputs ("c:");
   eputs (itoa (c));
@@ -83,7 +84,7 @@ stdarg3 (long *one, long *two, long *three, ...)
   ap += (__FOO_VARARGS + (__FUNCTION_ARGS << 1)) << 3;
 #undef __FUNCTION_ARGS
 #endif
-  c = va_arg (ap, char);
+  c = va_arg (ap, int);
   r = c;
   eputs ("c:");
   eputs (itoa (c));
