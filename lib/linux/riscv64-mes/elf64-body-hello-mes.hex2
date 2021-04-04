@@ -1,0 +1,70 @@
+### GNU Mes --- Maxwell Equations of Software
+### Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+###
+### This file is part of GNU Mes.
+###
+### GNU Mes is free software; you can redistribute it and/or modify it
+### under the terms of the GNU General Public License as published by
+### the Free Software Foundation; either version 3 of the License, or (at
+### your option) any later version.
+###
+### GNU Mes is distributed in the hope that it will be useful, but
+### WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+### Commentary:
+
+# elf64-body-hello-mes.hex2: `Hello, GNU Mes!' for x86_64-linux written
+# in hex2 assembly, for usage with generic elf64-header.hex2 and
+# elf64-footer-single-main.hex.
+
+# This ELF binary contains a symbol table which means that objdump and
+# gdb can be used to inspect and debug.
+
+### Code:
+
+# @300
+:ELF_text
+:_start
+# exit(42)
+97 02 00 00                    # auipc t0,0x0
+83 e2 c2 00                    # ld t0,12(t0) # main
+e7 80 02 00                    # jalr t0
+&main
+
+# @310
+:main
+                               # print <hello>
+93 08 00 04                    # li a7,64 (sys_write)
+13 05 10 00                    # li a0,1
+97 05 00 00                    # auipc a1,0x0
+83 e5 c5 00                    # lwu a1,12(a1) # addr
+6f 00 80 00                    # j 10
+&hello
+
+17 06 00 00                    # auipc a2,0x0
+03 66 c6 00                    # lwu a2,12(a2) # addr
+6f 00 80 00                    # j 10
+%bye>hello
+
+13 06 00 01                    # li      a2,16
+73 00 00 00                    # ecall sys_write
+93 08 d0 05                    # li      a7,93 (sys_exit)
+13 05 00 00                    # li      a0,0
+73 00 00 00                    # ecall sys_exit
+73 00 50 10                    # wfi
+
+00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00        # align to @360
+
+# @360
+:ELF_data
+:hello
+48 65 6c 6c 6f 2c 20 47        # Hello, G
+4e 55 20 4d 65 73 21 0a        # NU Mes!\n
+:bye
+:ELF_end
