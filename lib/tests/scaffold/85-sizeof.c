@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -34,11 +35,11 @@ struct bar
   };
 };
 
-#if __i386__ || __arm__
+#if __i386__ || __arm__ || (__riscv && __riscv_xlen == 32)
 #define ptr_size 4
 #define foo_size 20
 #define bar_size 12
-#elif __x86_64__
+#elif __x86_64__ || (__riscv && __riscv_xlen == 64)
 #define ptr_size 8
 #define foo_size 24
 #define bar_size 12

@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -47,11 +48,11 @@ struct section section;
 int
 main ()
 {
-#if __i386__ || __arm__
+#if __i386__ || __arm__ || (__riscv && __riscv_xlen == 32)
   int sym_size = 8;
-#elif __GNUC__ && __x86_64__
+#elif __GNUC__ && (__x86_64__ || (__riscv && __riscv_xlen == 64))
   int sym_size = 16;
-#elif  __MESC__ && __x86_64__
+#elif  __MESC__ && (__x86_64__ || (__riscv && __riscv_xlen == 64))
   int sym_size = 12;
 #endif
 

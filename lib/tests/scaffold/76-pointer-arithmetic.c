@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -56,10 +57,10 @@ main ()
   oputs (itoa (foo_size));
   oputs ("\n");
   // FIXME: add *14, *18
-#if __i386__ || __arm__
+#if __i386__ || __arm__ || (__riscv && __riscv_xlen == 32)
   int foo_size_14 = 224;
   int foo_size_18 = 288;
-#elif __x86_64__
+#elif __x86_64__ || (__riscv && __riscv_xlen == 64)
   int foo_size_14 = 336;
   int foo_size_18 = 432;
 #endif
