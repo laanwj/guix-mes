@@ -23,15 +23,6 @@
 #include <unistd.h>
 #include <signal.h>
 
-#if __i386__
-#else
-void
-_restorer_for_siginfo (void)
-{
-  _sys_call (SYS_rt_sigreturn);
-}
-#endif
-
 sighandler_t
 signal (int signum, sighandler_t action)
 {

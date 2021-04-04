@@ -87,7 +87,7 @@ typedef unsigned uintmax_t;
 
 #define INT_MIN -2147483648
 #define INT_MAX 2147483647
-#if __i386__ || __arm__
+#if __i386__ || __arm__ || (__riscv && __riscv_xlen == 32)
 #define LONG_MIN INT_MIN
 #define LONG_MAX INT_MAX
 #define UINT_MAX UINT32_MAX
@@ -95,7 +95,7 @@ typedef unsigned uintmax_t;
 #define LLONG_MIN INT64_MIN
 #define LLONG_MAX INT64_MAX
 #define SIZE_MAX UINT32_MAX
-#elif __x86_64__
+#elif __x86_64__ || (__riscv && __riscv_xlen == 64)
 #define LONG_MIN INT64_MIN
 #define LONG_MAX INT64_MAX
 #define UINT_MAX UINT32_MAX

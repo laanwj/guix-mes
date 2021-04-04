@@ -35,7 +35,7 @@ typedef int mode_t;
 #endif
 
 // *INDENT-OFF*
-#if __i386__ || __arm__
+#if __i386__ || __arm__ || (__riscv && __riscv_xlen == 32)
 struct stat
 {
   unsigned long  st_dev;
@@ -57,7 +57,7 @@ struct stat
   unsigned long  __foo0;
   unsigned long  __foo1;
 };
-#elif __x86_64__
+#elif __x86_64__ || (__riscv && __riscv_xlen == 64)
 struct stat
 {
   unsigned long  st_dev;

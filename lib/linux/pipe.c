@@ -21,9 +21,16 @@
 #include <linux/syscall.h>
 #include <syscall.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 int
 pipe (int filedes[2])
 {
+#if defined(SYS_pipe)
   return _sys_call1 (SYS_pipe, (long) filedes);
+#elif defined(SYS_pipe2)
+  return _sys_call2 (SYS_pipe2, (long) filedes, 0);
+#else
+#error No usable pipe syscall found
+#endif
 }

@@ -20,10 +20,17 @@
 
 #include <linux/syscall.h>
 #include <syscall.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 int
 symlink (char const *old_name, char const *new_name)
 {
+#if defined(SYS_symlink)
   return _sys_call2 (SYS_symlink, (long) old_name, (long) new_name);
+#elif defined(SYS_symlinkat)
+  return _sys_call3 (SYS_symlinkat, (long) old_name, AT_FDCWD, (long) new_name);
+#else
+#error No usable symlink syscall
+#endif
 }

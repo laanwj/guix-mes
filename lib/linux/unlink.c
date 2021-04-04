@@ -20,9 +20,16 @@
 
 #include <linux/syscall.h>
 #include <syscall.h>
+#include <fcntl.h>
 
 int
 unlink (char const *file_name)
 {
+#if defined(SYS_unlink)
   return _sys_call1 (SYS_unlink, (long) file_name);
+#elif defined(SYS_unlinkat)
+  return _sys_call3 (SYS_unlinkat, AT_FDCWD, (long) file_name, 0);
+#else
+#error No usable unlink syscall
+#endif
 }

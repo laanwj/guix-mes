@@ -21,9 +21,16 @@
 #include <linux/syscall.h>
 #include <syscall.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 int
 mknod (char const *file_name, mode_t mode, dev_t dev)
 {
+#if defined(SYS_mknod)
   return _sys_call3 (SYS_mknod, (long) file_name, (long) mode, (long) dev);
+#elif defined(SYS_mknodat)
+  return _sys_call4 (SYS_mknodat, AT_FDCWD, (long) file_name, (long) mode, (long) dev);
+#else
+#error No usable mknod syscall
+#endif
 }

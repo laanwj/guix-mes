@@ -20,9 +20,17 @@
 
 #include <linux/syscall.h>
 #include <syscall.h>
+#include <signal.h>
+#include <unistd.h>
 
 int
 fork ()
 {
+#if defined(SYS_fork)
   return _sys_call (SYS_fork);
+#elif defined(SYS_clone)
+  return _sys_call4 (SYS_clone, SIGCHLD, 0, NULL, 0);
+#else
+#error No usable clone syscall found
+#endif
 }

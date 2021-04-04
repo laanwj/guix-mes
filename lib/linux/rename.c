@@ -21,9 +21,16 @@
 #include <linux/syscall.h>
 #include <syscall.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 int
 rename (char const *old_name, char const *new_name)
 {
+#if defined(SYS_rename)
   return _sys_call2 (SYS_rename, (long) old_name, (long) new_name);
+#elif defined(SYS_renameat2)
+  return _sys_call5 (SYS_renameat2, AT_FDCWD, (long) old_name, AT_FDCWD, (long) new_name, 0);
+#else
+#error No usable rename syscall
+#endif
 }

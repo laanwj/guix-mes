@@ -24,5 +24,11 @@
 int
 dup2 (int old, int new)
 {
+#if defined(SYS_dup2)
   return _sys_call2 (SYS_dup2, (int) old, (int) new);
+#elif defined(SYS_dup3)
+  return _sys_call3 (SYS_dup3, (int) old, (int) new, 0);
+#else
+#error No usable dup2 syscall
+#endif
 }

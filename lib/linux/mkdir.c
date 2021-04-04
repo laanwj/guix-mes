@@ -20,10 +20,17 @@
 
 #include <linux/syscall.h>
 #include <syscall.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 
 int
 mkdir (char const *file_name, mode_t mode)
 {
+#if defined(SYS_mkdir)
   return _sys_call2 (SYS_mkdir, (long) file_name, (long) mode);
+#elif defined(SYS_mkdirat)
+  return _sys_call3 (SYS_mkdirat, AT_FDCWD, (long) file_name, (long) mode);
+#else
+#error No usable mkdir syscall
+#endif
 }

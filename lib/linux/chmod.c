@@ -21,9 +21,16 @@
 #include <linux/syscall.h>
 #include <syscall.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 int
 chmod (char const *file_name, mode_t mask)
 {
+#if defined(SYS_chmod)
   return _sys_call2 (SYS_chmod, (long) file_name, (long) mask);
+#elif defined(SYS_fchmodat)
+  return _sys_call3 (SYS_fchmodat, AT_FDCWD, (long) file_name, (long) mask);
+#else
+#error No usable chmod syscall
+#endif
 }

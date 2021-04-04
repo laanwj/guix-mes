@@ -20,9 +20,16 @@
 
 #include <linux/syscall.h>
 #include <syscall.h>
+#include <fcntl.h>
 
 int
 access (char const *file_name, int how)
 {
-  return _sys_call2 (SYS_access, (long) file_name, (int) how);
+#if defined(SYS_access)
+    return _sys_call2 (SYS_access, (long) file_name, (int) how);
+#elif defined(SYS_faccessat)
+    return _sys_call3 (SYS_faccessat, AT_FDCWD, (long) file_name, (int) how);
+#else
+#error No usable access sysall
+#endif
 }
