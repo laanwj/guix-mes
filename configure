@@ -5,6 +5,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 
 ;;; GNU Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018,2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
 ;;;
 ;;; configure: This file is part of GNU Mes.
 ;;;
@@ -534,12 +535,12 @@ Some influential environment variables:
            (mes-cpu (cond ((member mes-cpu '("i386" "i486" "i586" "i686")) "x86")
                           ((member mes-cpu '("arm" "armv4" "armv7l")) "arm")
                           (else mes-cpu)))
-           (mes-bits (if (member mes-cpu '("x86_64")) "64"
+           (mes-bits (if (member mes-cpu '("x86_64" "riscv64")) "64"
                          "32"))
            (mes-libc (if system-libc? "system" "mes"))
            (mes-kernel (car (filter
                              (compose not
-                                      (cut member <> '("pc" "portbld" "unknown")))
+                                      (cut member <> '("pc" "portbld" "unknown" "redhat")))
                              (cdr host-type-list))))
            (mes-kernel (if (string-prefix? "freebsd" mes-kernel) "freebsd" mes-kernel))
            (mes-compiler (cond (gcc? "gcc") (tcc? "gcc") (else "mescc")))
@@ -575,7 +576,9 @@ Some influential environment variables:
 
       (when (and (not (member mes-system '("arm-linux-mes"
                                            "x86-linux-mes"
-                                           "x86_64-linux-mes")))
+                                           "x86_64-linux-mes"
+                                           "riscv32-linux-mes"
+                                           "riscv64-linux-mes")))
                  (not with-courage?))
         (stderr "platform not supported: ~a
 See \"Porting GNU Mes\" in the manual, or try --with-courage\n" mes-system)
