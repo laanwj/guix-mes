@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -320,8 +321,12 @@ SCM
 make_frame (SCM stack, long index)
 {
   SCM frame_type = make_frame_type ();
-  long array_index = (STACK_SIZE - (index * FRAME_SIZE));
-  SCM procedure = g_stack_array[array_index + FRAME_PROCEDURE];
+  SCM procedure = 0;
+  if (index != 0)
+    {
+      long array_index = (STACK_SIZE - (index * FRAME_SIZE));
+      procedure = g_stack_array[array_index + FRAME_PROCEDURE];
+    }
   if (!procedure)
     procedure = cell_f;
   SCM values = cell_nil;
