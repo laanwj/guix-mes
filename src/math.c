@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2016,2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -177,7 +178,7 @@ multiply (SCM x)                ///((name . "*") (arity . n))
 SCM
 logand (SCM x)                  ///((arity . n))
 {
-  long n = 0;
+  long n = -1;
   while (x != cell_nil)
     {
       assert_number ("multiply", CAR (x));
