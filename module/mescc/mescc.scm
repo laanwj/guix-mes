@@ -164,7 +164,7 @@
          (s-files (if (string-suffix? ".S" input-file-name) s-files
                       (cons (replace-suffix input-file-name ".s") s-files)))
          (elf-footer (and debug-info?
-                          (or (M1->blood-elf options s-files)
+                          (or (M1->blood-elf options hex2-files)
                               (exit 1)))))
     (or (hex2->elf options hex2-files #:elf-footer elf-footer)
         (exit 1))))
