@@ -83,7 +83,7 @@
          (verbose? (count-opt options 'verbose))
          (numbered-arch? (option-ref options 'numbered-arch? #f))
          (align (filter-map (multi-opt 'align) options))
-         (align (if (null? align) '(functions) (map string->symbol align)))
+         (align (if (null? align) '(functions globals) (map string->symbol align)))
          (align (if (not numbered-arch?) align
                     ;; function alignment not supported by MesCC-Tools 0.5.2
                     (filter (negate (cut eq? <> 'functions)) align))))
@@ -177,7 +177,7 @@
          (verbose? (count-opt options 'verbose))
          (numbered-arch? (option-ref options 'numbered-arch? #f))
          (align (filter-map (multi-opt 'align) options))
-         (align (if (null? align) '(functions) (map string->symbol align)))
+         (align (if (null? align) '(functions globals) (map string->symbol align)))
          (align (if (not numbered-arch?) align
                     ;; function alignment not supported by MesCC-Tools 0.5.2
                     (filter (negate (cut eq? <> 'functions)) align))))
