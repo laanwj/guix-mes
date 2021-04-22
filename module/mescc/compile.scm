@@ -1,5 +1,6 @@
 ;;; GNU Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -1234,13 +1235,13 @@
                 (info (free-register info)))
            info))
 
-        ((eq ,a ,b) (let ((info ((binop->r info) a b 'r0-r1)))
+        ((eq ,a ,b) (let ((info ((binop->r info) a b 'r0-cmp-r1)))
                       (append-text info (wrap-as (as info 'zf->r)))))
 
         ((ge ,a ,b)
          (let* ((type-a (ast->type a info))
                 (type-b (ast->type b info))
-                (info ((binop->r info) a b 'r0-r1))
+                (info ((binop->r info) a b 'r0-cmp-r1))
                 (test->r (if (or (unsigned? type-a) (unsigned? type-b)) 'ae?->r 'ge?->r))
                 (info (append-text info (wrap-as (as info test->r))))
                 (info (append-text info (wrap-as (as info 'test-r)))))
@@ -1249,7 +1250,7 @@
         ((gt ,a ,b)
          (let* ((type-a (ast->type a info))
                 (type-b (ast->type b info))
-                (info ((binop->r info) a b 'r0-r1))
+                (info ((binop->r info) a b 'r0-cmp-r1))
                 (test->r (if (or (unsigned? type-a) (unsigned? type-b)) 'a?->r 'g?->r))
                 (info (append-text info (wrap-as (as info test->r))))
                 (info (append-text info (wrap-as (as info 'test-r)))))
@@ -1264,7 +1265,7 @@
         ((le ,a ,b)
          (let* ((type-a (ast->type a info))
                 (type-b (ast->type b info))
-                (info ((binop->r info) a b 'r0-r1))
+                (info ((binop->r info) a b 'r0-cmp-r1))
                 (test->r (if (or (unsigned? type-a) (unsigned? type-b)) 'be?->r 'le?->r))
                 (info (append-text info (wrap-as (as info test->r))))
                 (info (append-text info (wrap-as (as info 'test-r)))))
@@ -1273,7 +1274,7 @@
         ((lt ,a ,b)
          (let* ((type-a (ast->type a info))
                 (type-b (ast->type b info))
-                (info ((binop->r info) a b 'r0-r1))
+                (info ((binop->r info) a b 'r0-cmp-r1))
                 (test->r (if (or (unsigned? type-a) (unsigned? type-b)) 'b?->r 'l?->r))
                 (info (append-text info (wrap-as (as info test->r))))
                 (info (append-text info (wrap-as (as info 'test-r)))))
