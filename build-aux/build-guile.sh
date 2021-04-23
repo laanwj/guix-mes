@@ -2,6 +2,7 @@
 
 # GNU Mes --- Maxwell Equations of Software
 # Copyright © 2017,2018 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
 #
 # This file is part of GNU Mes.
 #
@@ -38,6 +39,8 @@ module/mescc/armv4/as.scm
 module/mescc/armv4/info.scm
 module/mescc/i386/as.scm
 module/mescc/i386/info.scm
+module/mescc/riscv64/as.scm
+module/mescc/riscv64/info.scm
 module/mescc/x86_64/as.scm
 module/mescc/x86_64/info.scm
 module/mescc/info.scm
