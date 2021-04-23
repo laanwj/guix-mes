@@ -1,5 +1,6 @@
 ;;; GNU Mes --- Maxwell Equations of Software
 ;;; Copyright © 2016,2017,2018,2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -249,6 +250,7 @@
          (verbose? (count-opt options 'verbose))
          (blood-elf (or (getenv "BLOOD_ELF") "blood-elf"))
          (command `(,blood-elf
+                      ,@(if (equal? (arch-get-machine options) "64") '("--64") '())
                       "-f" ,(arch-find options (arch-get-m1-macros options))
                       ,@(append-map (cut list "-f" <>) M1-files)
                       "-o" ,M1-blood-elf-footer)))
