@@ -1,0 +1,349 @@
+### GNU Mes --- Maxwell Equations of Software
+### Copyright © 2017,2018,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+### Copyright © 2019,2020 Danny Milosavljevic <dannym@scratchpost.org>
+### Copyright © 2021 W. J. van der Laan <laanwj@protonmail.com>
+###
+### This file is part of GNU Mes.
+###
+### Mes is free software; you can redistribute it and/or modify it
+### under the terms of the GNU General Public License as published by
+### the Free Software Foundation; either version 3 of the License, or (at
+### your option) any later version.
+###
+### GNU Mes is distributed in the hope that it will be useful, but
+### WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+
+## Multi-instruction macros
+DEFINE j.a____$i32 970f000083efcf0067800f00 # auipc t6,0x0; lwu t6,12(t6); jr t6
+DEFINE jal.a__$i32 970f000093804f0183ef0f0167800f00 # auipc t6,0x0; addi ra,t6,20; lwu t6,16(t6); jr t6
+DEFINE push___%t0 130181ff23305100 # addi sp,sp,-0x8; sd t0,0(sp)
+DEFINE push___%t1 130181ff23306100 # addi sp,sp,-0x8; sd t1,0(sp)
+DEFINE push___%fp 130181ff23308100 # addi sp,sp,-0x8; sd fp,0(sp)
+DEFINE push___%ra 130181ff23301100 # addi sp,sp,-0x8; sd ra,0(sp)
+DEFINE push___%t5 130181ff2330e101 # addi sp,sp,-0x8; sd t5,0(sp)
+DEFINE pop____%t0 8332010013018100 # ld t0,0(sp); addi sp,sp,0x8
+DEFINE pop____%t1 0333010013018100 # ld t1,0(sp); addi sp,sp,0x8
+DEFINE pop____%fp 0334010013018100 # ld fp,0(sp); addi sp,sp,0x8
+DEFINE pop____%ra 8330010013018100 # ld ra,0(sp); addi sp,sp,0x8
+
+## Immediate values
+DEFINE li_____%t0,$i32 9702000083a2c2006f008000 # auipc t0,0x0; lw t0,12(t0); j 8
+DEFINE li_____%t1,$i32 170300000323c3006f008000 # auipc t1,0x0; lw t1,12(t1); j 8
+DEFINE li_____%a0,$i32 170500000325c5006f008000 # auipc a0,0x0; lw a0,12(a0); j 8
+DEFINE li_____%a1,$i32 9705000083a5c5006f008000 # auipc a1,0x0; lw a1,12(a1); j 8
+DEFINE li_____%a2,$i32 170600000326c6006f008000 # auipc a2,0x0; lw a2,12(a2); j 8
+DEFINE li_____%a3,$i32 9706000083a6c6006f008000 # auipc a3,0x0; lw a3,12(a3); j 8
+DEFINE li_____%a4,$i32 170700000327c7006f008000 # auipc a4,0x0; lw a4,12(a4); j 8
+DEFINE li_____%a5,$i32 9707000083a7c7006f008000 # auipc a5,0x0; lw a5,12(a5); j 8
+DEFINE li_____%a7,$i32 9708000083a8c8006f008000 # auipc a7,0x0; lw a7,12(a7); j 8
+DEFINE li_____%t5,$i32 170f0000032fcf006f008000 # auipc t5,0x0; lw t5,12(t5); j 8
+DEFINE li_____%s10,$i32 170d0000032dcd006f008000 # auipc s10,0x0; lw s10,12(s10); j 8
+DEFINE li_____%s11,$i32 970d000083adcd006f008000 # auipc s11,0x0; lw s11,12(s11); j 8
+DEFINE li_____%t0,$i64 9702000083b2c2006f00c000 # auipc t0,0x0; ld t0,12(t0); j 12
+DEFINE li_____%t1,$i64 170300000333c3006f00c000 # auipc t1,0x0; ld t1,12(t1); j 12
+DEFINE li_____%t5,$i64 170f0000033fcf006f00c000 # auipc t5,0x0; ld t5,12(t5); j 12
+DEFINE li_____%s10,$i64 170d0000033dcd006f00c000 # auipc s10,0x0; ld s10,12(s10); j 12
+DEFINE li_____%s11,$i64 970d000083bdcd006f00c000 # auipc s11,0x0; ld s11,12(s11); j 12
+DEFINE li_____%t0,$i16_0000 b702 # lui t0,0
+DEFINE srai___%t0,16 93d20241
+DEFINE li_____%t1,$i16_0000 3703 # lui t1,0
+DEFINE srai___%t1,16 13530341
+DEFINE li_____%t5,$i16_0000 370f # lui t5,0
+DEFINE srai___%t5,16 135f0f41
+DEFINE li_____%t4,$i16_0000 b70e # lui t4,0
+DEFINE srai___%t4,16 93de0e41
+DEFINE li_____%s10,$i16_0000 370d # lui s10,0
+DEFINE srai___%s10,16 135d0d41
+DEFINE li_____%s11,$i16_0000 b70d # lui s11,0
+DEFINE srai___%s11,16 93dd0d41
+
+## Immediate adds
+DEFINE addi___%sp,%sp,$i32 970f000083af0f013301f1016f008000 # auipc t6,0x0; lw t6,16(t6); add sp,sp,t6; j 8
+DEFINE addi___%sp,%sp,$i64 1701000003310101330121006f00c000 # auipc sp,0x0; ld sp,16(sp); add sp,sp,sp; j 12
+DEFINE addi___%t0,%t0,$i32 970f000083af0f01b382f2016f008000 # auipc t6,0x0; lw t6,16(t6); add t0,t0,t6; j 8
+DEFINE addi___%t0,%t0,$i64 9702000083b20201b38252006f00c000 # auipc t0,0x0; ld t0,16(t0); add t0,t0,t0; j 12
+DEFINE addi___%t1,%t1,$i32 970f000083af0f013303f3016f008000 # auipc t6,0x0; lw t6,16(t6); add t1,t1,t6; j 8
+DEFINE addi___%t1,%t1,$i64 1703000003330301330363006f00c000 # auipc t1,0x0; ld t1,16(t1); add t1,t1,t1; j 12
+DEFINE addi___%t5,%t5,$i32 970f000083af0f01330fff016f008000 # auipc t6,0x0; lw t6,16(t6); add t5,t5,t6; j 8
+DEFINE addi___%t5,%t5,$i64 170f0000033f0f01330fef016f00c000 # auipc t5,0x0; ld t5,16(t5); add t5,t5,t5; j 12
+DEFINE addi___%t4,%t4,$i32 970f000083af0f01b38efe016f008000 # auipc t6,0x0; lw t6,16(t6); add t4,t4,t6; j 8
+DEFINE addi___%t4,%t4,$i64 970e000083be0e01b38ede016f00c000 # auipc t4,0x0; ld t4,16(t4); add t4,t4,t4; j 12
+DEFINE addi___%t0,%t0,-1 9382f2ff
+DEFINE addi___%t0,%t0,1 93821200
+DEFINE addi___%t0,%t0,$i8_0 938202
+DEFINE addi___%t0,%t0,$i8_8 938282
+DEFINE addi___%t1,%t1,-1 1303f3ff
+DEFINE addi___%t1,%t1,1 13031300
+DEFINE addi___%t1,%t1,$i8_0 130303
+DEFINE addi___%t1,%t1,$i8_8 130383
+DEFINE addi___%sp,%sp,-1 1301f1ff
+DEFINE addi___%sp,%sp,1 13011100
+DEFINE addi___%sp,%sp,$i8_0 130101
+DEFINE addi___%sp,%sp,$i8_8 130181
+DEFINE addi___%t5,%t5,-1 130fffff
+DEFINE addi___%t5,%t5,1 130f1f00
+DEFINE addi___%t5,%t5,$i8_0 130f0f
+DEFINE addi___%t5,%t5,$i8_8 130f8f
+DEFINE addi___%t4,%t4,-1 938efeff
+DEFINE addi___%t4,%t4,1 938e1e00
+DEFINE addi___%t4,%t4,$i8_0 938e0e
+DEFINE addi___%t4,%t4,$i8_8 938e8e
+DEFINE addi___%t5,%fp,$i32 970f000083af0f01330ff4016f008000 # auipc t6,0x0; lw t6,16(t6); add t5,fp,t6; j 8
+DEFINE addi___%t5,%fp,$i8_0 130f04
+DEFINE addi___%t5,%fp,$i8_8 130f84
+
+## Condition flags and jumps emulation
+DEFINE cond.nz 330dbd41133d1d00930d0000 # sub s10,s10,s11; seqz s10,s10; mv s11,x0
+DEFINE jeq.a__$i32 631abd01970f000083efcf0067800f00 # bne s10,s11,20; auipc t6,0x0; lwu t6,12(t6); jr t6
+DEFINE jne.a__$i32 630abd01970f000083efcf0067800f00 # beq s10,s11,20; auipc t6,0x0; lwu t6,12(t6); jr t6
+DEFINE seq____%t0 b302bd4193b21200 # sub t0,s10,s11; seqz t0,t0
+DEFINE sne____%t0 b302bd41b3325000 # sub t0,s10,s11; snez t0,t0
+DEFINE sge____%t0 b322bd0193b21200 # slt t0,s10,s11; seqz t0,t0
+DEFINE slt____%t0 b322bd01
+DEFINE sgt____%t0 b3a2ad01 # slt t0,s11,s10
+DEFINE sle____%t0 b3a2ad0193b21200 # slt t0,s11,s10; seqz t0,t0
+DEFINE sgeu___%t0 b332bd0193b21200 # sltu t0,s10,s11; seqz t0,t0
+DEFINE sltu___%t0 b332bd01
+DEFINE sgtu___%t0 b3b2ad01 # sltu t0,s11,s10
+DEFINE sleu___%t0 b3b2ad0193b21200 # sltu t0,s11,s10; seqz t0,t0
+DEFINE seq____%t1 3303bd4113331300 # sub t1,s10,s11; seqz t1,t1
+DEFINE sne____%t1 3303bd4133336000 # sub t1,s10,s11; snez t1,t1
+DEFINE sge____%t1 3323bd0113331300 # slt t1,s10,s11; seqz t1,t1
+DEFINE slt____%t1 3323bd01
+DEFINE sgt____%t1 33a3ad01 # slt t1,s11,s10
+DEFINE sle____%t1 33a3ad0113331300 # slt t1,s11,s10; seqz t1,t1
+DEFINE sgeu___%t1 3333bd0113331300 # sltu t1,s10,s11; seqz t1,t1
+DEFINE sltu___%t1 3333bd01
+DEFINE sgtu___%t1 33b3ad01 # sltu t1,s11,s10
+DEFINE sleu___%t1 33b3ad0113331300 # sltu t1,s11,s10; seqz t1,t1
+
+## Sign extension
+DEFINE ext.b__%t0 93f2f20f # andi t0,t0,255
+DEFINE ext.b__%t1 1373f30f # andi t1,t1,255
+DEFINE sext.b_%t0 9392820393d28243 # slli t0,t0,56; srai t0,t0,56
+DEFINE sext.b_%t1 1313830313538343 # slli t1,t1,56; srai t1,t1,56
+DEFINE ext.h__%t0 b70f0100938fffffb3f2f201 # li t6,65535; and t0,t0,t6
+DEFINE ext.h__%t1 b70f0100938fffff3373f301 # li t6,65535; and t1,t1,t6
+DEFINE sext.h_%t0 9392020393d20243 # slli t0,t0,48; srai t0,t0,48
+DEFINE sext.h_%t1 1313030313530343 # slli t1,t1,48; srai t1,t1,48
+DEFINE ext.w__%t0 9b0ff0ffb3f2f201 # li t6,4294967295; and t0,t0,t6
+DEFINE ext.w__%t1 9b0ff0ff3373f301 # li t6,4294967295; and t1,t1,t6
+DEFINE sext.w_%t0 9b820200
+DEFINE sext.w_%t1 1b030300
+
+## Simple instructions
+DEFINE ecall 73000000
+DEFINE ebreak 73001000
+DEFINE ret 67800000
+DEFINE nop 13000000
+DEFINE add____%t0,%t0,%t0 b3825200
+DEFINE add____%t0,%t0,%t1 b3826200
+DEFINE add____%t1,%t1,%t0 33035300
+DEFINE add____%t1,%t1,%t1 33036300
+DEFINE sub____%t0,%t0,%t0 b3825240
+DEFINE sub____%t0,%t0,%t1 b3826240
+DEFINE sub____%t1,%t1,%t0 33035340
+DEFINE sub____%t1,%t1,%t1 33036340
+DEFINE and____%t0,%t0,%t0 b3f25200
+DEFINE and____%t0,%t0,%t1 b3f26200
+DEFINE and____%t1,%t1,%t0 33735300
+DEFINE and____%t1,%t1,%t1 33736300
+DEFINE or_____%t0,%t0,%t0 b3e25200
+DEFINE or_____%t0,%t0,%t1 b3e26200
+DEFINE or_____%t1,%t1,%t0 33635300
+DEFINE or_____%t1,%t1,%t1 33636300
+DEFINE xor____%t0,%t0,%t0 b3c25200
+DEFINE xor____%t0,%t0,%t1 b3c26200
+DEFINE xor____%t1,%t1,%t0 33435300
+DEFINE xor____%t1,%t1,%t1 33436300
+DEFINE mul____%t0,%t0,%t0 b3825202
+DEFINE mul____%t0,%t0,%t1 b3826202
+DEFINE mul____%t1,%t1,%t0 33035302
+DEFINE mul____%t1,%t1,%t1 33036302
+DEFINE div____%t0,%t0,%t0 b3c25202
+DEFINE div____%t0,%t0,%t1 b3c26202
+DEFINE div____%t1,%t1,%t0 33435302
+DEFINE div____%t1,%t1,%t1 33436302
+DEFINE rem____%t0,%t0,%t0 b3e25202
+DEFINE rem____%t0,%t0,%t1 b3e26202
+DEFINE rem____%t1,%t1,%t0 33635302
+DEFINE rem____%t1,%t1,%t1 33636302
+DEFINE sll____%t0,%t0,%t0 b3925200
+DEFINE sll____%t0,%t0,%t1 b3926200
+DEFINE sll____%t1,%t1,%t0 33135300
+DEFINE sll____%t1,%t1,%t1 33136300
+DEFINE srl____%t0,%t0,%t0 b3d25200
+DEFINE srl____%t0,%t0,%t1 b3d26200
+DEFINE srl____%t1,%t1,%t0 33535300
+DEFINE srl____%t1,%t1,%t1 33536300
+DEFINE sra____%t0,%t0,%t0 b3d25240
+DEFINE sra____%t0,%t0,%t1 b3d26240
+DEFINE sra____%t1,%t1,%t0 33535340
+DEFINE sra____%t1,%t1,%t1 33536340
+DEFINE not____%t0,%t0 93c2f2ff
+DEFINE not____%t0,%t1 9342f3ff
+DEFINE not____%t1,%t0 13c3f2ff
+DEFINE not____%t1,%t1 1343f3ff
+DEFINE sll____%t0,%t0,%t5 b392e201
+DEFINE sll____%t1,%t1,%t5 3313e301
+DEFINE and____%t0,%t0,%t5 b3f2e201
+DEFINE and____%t1,%t1,%t5 3373e301
+DEFINE add____%t5,%t5,%fp 330f8f00
+DEFINE sb_____%t0,0(%t0) 23805200
+DEFINE lb_____%t0,0(%t0) 83820200
+DEFINE sh_____%t0,0(%t0) 23905200
+DEFINE lh_____%t0,0(%t0) 83920200
+DEFINE sw_____%t0,0(%t0) 23a05200
+DEFINE lw_____%t0,0(%t0) 83a20200
+DEFINE sd_____%t0,0(%t0) 23b05200
+DEFINE ld_____%t0,0(%t0) 83b20200
+DEFINE sb_____%t1,0(%t1) 23006300
+DEFINE lb_____%t1,0(%t1) 03030300
+DEFINE sh_____%t1,0(%t1) 23106300
+DEFINE lh_____%t1,0(%t1) 03130300
+DEFINE sw_____%t1,0(%t1) 23206300
+DEFINE lw_____%t1,0(%t1) 03230300
+DEFINE sd_____%t1,0(%t1) 23306300
+DEFINE ld_____%t1,0(%t1) 03330300
+DEFINE sb_____%t0,0(%t1) 23005300
+DEFINE lb_____%t0,0(%t1) 83020300
+DEFINE sh_____%t0,0(%t1) 23105300
+DEFINE lh_____%t0,0(%t1) 83120300
+DEFINE sw_____%t0,0(%t1) 23205300
+DEFINE lw_____%t0,0(%t1) 83220300
+DEFINE sd_____%t0,0(%t1) 23305300
+DEFINE ld_____%t0,0(%t1) 83320300
+DEFINE sb_____%t1,0(%t0) 23806200
+DEFINE lb_____%t1,0(%t0) 03830200
+DEFINE sh_____%t1,0(%t0) 23906200
+DEFINE lh_____%t1,0(%t0) 03930200
+DEFINE sw_____%t1,0(%t0) 23a06200
+DEFINE lw_____%t1,0(%t0) 03a30200
+DEFINE sd_____%t1,0(%t0) 23b06200
+DEFINE ld_____%t1,0(%t0) 03b30200
+DEFINE sb_____%t0,0(%t5) 23005f00
+DEFINE lb_____%t0,0(%t5) 83020f00
+DEFINE sh_____%t0,0(%t5) 23105f00
+DEFINE lh_____%t0,0(%t5) 83120f00
+DEFINE sw_____%t0,0(%t5) 23205f00
+DEFINE lw_____%t0,0(%t5) 83220f00
+DEFINE sd_____%t0,0(%t5) 23305f00
+DEFINE ld_____%t0,0(%t5) 83320f00
+DEFINE sb_____%t1,0(%t5) 23006f00
+DEFINE lb_____%t1,0(%t5) 03030f00
+DEFINE sh_____%t1,0(%t5) 23106f00
+DEFINE lh_____%t1,0(%t5) 03130f00
+DEFINE sw_____%t1,0(%t5) 23206f00
+DEFINE lw_____%t1,0(%t5) 03230f00
+DEFINE sd_____%t1,0(%t5) 23306f00
+DEFINE ld_____%t1,0(%t5) 03330f00
+DEFINE sb_____%t5,0(%t0) 2380e201
+DEFINE lb_____%t5,0(%t0) 038f0200
+DEFINE sh_____%t5,0(%t0) 2390e201
+DEFINE lh_____%t5,0(%t0) 039f0200
+DEFINE sw_____%t5,0(%t0) 23a0e201
+DEFINE lw_____%t5,0(%t0) 03af0200
+DEFINE sd_____%t5,0(%t0) 23b0e201
+DEFINE ld_____%t5,0(%t0) 03bf0200
+DEFINE sb_____%t5,0(%t1) 2300e301
+DEFINE lb_____%t5,0(%t1) 030f0300
+DEFINE sh_____%t5,0(%t1) 2310e301
+DEFINE lh_____%t5,0(%t1) 031f0300
+DEFINE sw_____%t5,0(%t1) 2320e301
+DEFINE lw_____%t5,0(%t1) 032f0300
+DEFINE sd_____%t5,0(%t1) 2330e301
+DEFINE ld_____%t5,0(%t1) 033f0300
+DEFINE sb_____%t0,0(%sp) 23005100
+DEFINE lb_____%t0,0(%sp) 83020100
+DEFINE sh_____%t0,0(%sp) 23105100
+DEFINE lh_____%t0,0(%sp) 83120100
+DEFINE sw_____%t0,0(%sp) 23205100
+DEFINE lw_____%t0,0(%sp) 83220100
+DEFINE sd_____%t0,0(%sp) 23305100
+DEFINE ld_____%t0,0(%sp) 83320100
+DEFINE sb_____%t1,0(%sp) 23006100
+DEFINE lb_____%t1,0(%sp) 03030100
+DEFINE sh_____%t1,0(%sp) 23106100
+DEFINE lh_____%t1,0(%sp) 03130100
+DEFINE sw_____%t1,0(%sp) 23206100
+DEFINE lw_____%t1,0(%sp) 03230100
+DEFINE sd_____%t1,0(%sp) 23306100
+DEFINE ld_____%t1,0(%sp) 03330100
+DEFINE sb_____%t5,0(%sp) 2300e101
+DEFINE lb_____%t5,0(%sp) 030f0100
+DEFINE sh_____%t5,0(%sp) 2310e101
+DEFINE lh_____%t5,0(%sp) 031f0100
+DEFINE sw_____%t5,0(%sp) 2320e101
+DEFINE lw_____%t5,0(%sp) 032f0100
+DEFINE sd_____%t5,0(%sp) 2330e101
+DEFINE ld_____%t5,0(%sp) 033f0100
+DEFINE sb_____%t4,0(%t5) 2300df01
+DEFINE lb_____%t4,0(%t5) 830e0f00
+DEFINE sh_____%t4,0(%t5) 2310df01
+DEFINE lh_____%t4,0(%t5) 831e0f00
+DEFINE sw_____%t4,0(%t5) 2320df01
+DEFINE lw_____%t4,0(%t5) 832e0f00
+DEFINE sd_____%t4,0(%t5) 2330df01
+DEFINE ld_____%t4,0(%t5) 833e0f00
+DEFINE sb_____%t0,0(%t5) 23005f00
+DEFINE lb_____%t0,0(%t5) 83020f00
+DEFINE sh_____%t0,0(%t5) 23105f00
+DEFINE lh_____%t0,0(%t5) 83120f00
+DEFINE sw_____%t0,0(%t5) 23205f00
+DEFINE lw_____%t0,0(%t5) 83220f00
+DEFINE sd_____%t0,0(%t5) 23305f00
+DEFINE ld_____%t0,0(%t5) 83320f00
+DEFINE lbu____%t0,0(%t0) 83c20200
+DEFINE lhu____%t0,0(%t0) 83d20200
+DEFINE lwu____%t0,0(%t0) 83e20200
+DEFINE lbu____%t1,0(%t1) 03430300
+DEFINE lhu____%t1,0(%t1) 03530300
+DEFINE lwu____%t1,0(%t1) 03630300
+DEFINE mv_____%sp,%fp 13010400
+DEFINE mv_____%fp,%sp 13040100
+DEFINE mv_____%t0,%fp 93020400
+DEFINE mv_____%t1,%fp 13030400
+DEFINE mv_____%t5,%t0 138f0200
+DEFINE mv_____%t5,%t1 130f0300
+DEFINE mv_____%t5,%x0 130f0000
+DEFINE mv_____%t0,%t5 93020f00
+DEFINE mv_____%t1,%t5 13030f00
+DEFINE mv_____%t0,%t1 93020300
+DEFINE mv_____%t1,%t0 13830200
+DEFINE mv_____%a0,%t0 13850200
+DEFINE mv_____%a0,%t1 13050300
+DEFINE mv_____%t0,%a0 93020500
+DEFINE mv_____%t0,%x0 93020000
+DEFINE mv_____%t1,%x0 13030000
+DEFINE mv_____%s10,%t0 138d0200
+DEFINE mv_____%s10,%t1 130d0300
+DEFINE mv_____%s10,%x0 130d0000
+DEFINE mv_____%s11,%t0 938d0200
+DEFINE mv_____%s11,%t1 930d0300
+DEFINE mv_____%s11,%x0 930d0000
+DEFINE ld_____%a7,0x10(%fp) 83380401
+DEFINE ld_____%a0,0x18(%fp) 03358401
+DEFINE ld_____%a1,0x20(%fp) 83350402
+DEFINE ld_____%a2,0x28(%fp) 03368402
+DEFINE ld_____%a3,0x30(%fp) 83360403
+DEFINE ld_____%a4,0x38(%fp) 03378403
+DEFINE ld_____%a0,0x10(%fp) 03350401
+DEFINE ld_____%a1,0x18(%fp) 83358401
+DEFINE ld_____%a2,0x20(%fp) 03360402
+DEFINE ld_____%fp,0x10(%fp) 03340401
+DEFINE ld_____%t0,0x8(%fp) 83328400
+DEFINE ld_____%sp,0x10(%fp) 03310401
+DEFINE ld_____%fp,0x0(%fp) 03340400
+DEFINE jr_____%t0 67800200
+DEFINE jalr___%t0 e7800200
+DEFINE jr_____%t1 67000300
+DEFINE jalr___%t1 e7000300
+
+## System call values (libc-mini, crt0)
+DEFINE li_____%a7,SYS_write 93080004
+DEFINE li_____%a7,SYS_exit 9308d005
