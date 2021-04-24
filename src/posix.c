@@ -307,7 +307,7 @@ waitpid_ (SCM pid, SCM options)
   return cons (MAKE_NUMBER (child), MAKE_NUMBER (status));
 }
 
-#if __x86_64__
+#if __x86_64__ || (__riscv && __riscv_xlen == 64)
 /* Nanoseconds on 64-bit systems with POSIX timers.  */
 #define TIME_UNITS_PER_SECOND 1000000000
 #else
