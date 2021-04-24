@@ -49,10 +49,10 @@
   (cond
     ((= v 0)
       `(,(string-append "mv_____%" r ",%x0")))
-    ((and (>= v (- #x8000)) (<= v #x7fff))
+    ((and (>= v #x-8000) (<= v #x7fff))
       `(,(string-append "li_____%" r ",$i16_0000") (#:immediate2 ,v)
         ,(string-append "srai___%" r ",16")))
-    ((and (>= v (- #x80000000)) (<= v #x7fffffff))
+    ((and (>= v #x-80000000) (<= v #x7fffffff))
       `(,(string-append "li_____%" r ",$i32") (#:immediate ,v)))
     (else
       `(,(string-append "li_____%" r ",$i64") (#:immediate8 ,v)))))
@@ -66,11 +66,11 @@
       `(,(string-append "addi___%" r0 ",%" r1 ",1")))
     ((= v -1)
       `(,(string-append "addi___%" r0 ",%" r1 ",-1")))
-    ((and (>= v (- #x800)) (<= v #x7ff) (= (logand v 15) 0))
+    ((and (>= v #x-800) (<= v #x7ff) (= (logand v 15) 0))
       `(,(string-append "addi___%" r0 ",%" r1 ",$i8_0") (#:immediate1 ,(ash v -4))))
-    ((and (>= v (- #x800)) (<= v #x7ff) (= (logand v 15) 8))
+    ((and (>= v #x-800) (<= v #x7ff) (= (logand v 15) 8))
       `(,(string-append "addi___%" r0 ",%" r1 ",$i8_8") (#:immediate1 ,(ash v -4))))
-    ((and (>= v (- #x80000000)) (<= v #x7fffffff))
+    ((and (>= v #x-80000000) (<= v #x7fffffff))
       `(,(string-append "addi___%" r0 ",%" r1 ",$i32") (#:immediate ,v)))
     (else
       `(,(string-append "addi___%" r0 ",%" r1 ",$i64") (#:immediate8 ,v)))))
@@ -367,18 +367,17 @@
 
 (define (riscv64:local-add info n v)
   (let ((n (- 0 (* 8 n))))
-    `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:immediate ,n))
+    `(,(riscv64:li %tmpreg1 n)
       (,(string-append "add____%" %tmpreg1 ",%" %tmpreg1 ",%fp"))
       (,(string-append "ld_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))
       ,(riscv64:addi %tmpreg2 %tmpreg2 v)
       (,(string-append "sd_____%" %tmpreg2 ",0(%" %tmpreg1 ")")))))
 
 (define (riscv64:label-mem-add info label v)
-  (let ((n (- 0 (* 8 n))))
-    `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
-      (,(string-append "ld_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))
-      ,(riscv64:addi %tmpreg2 %tmpreg2 v)
-      (,(string-append "sd_____%" %tmpreg2 ",0(%" %tmpreg1 ")")))))
+  `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
+    (,(string-append "ld_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))
+    ,(riscv64:addi %tmpreg2 %tmpreg2 v)
+    (,(string-append "sd_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))))
 
 ;; no-operation
 (define (riscv64:nop info)
