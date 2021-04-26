@@ -4,7 +4,7 @@ MES_ARENA=100000000 exec ${SCHEME-guile} -L . --no-auto-compile -e '(configure)'
 !#
 
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; configure: This file is part of GNU Mes.
 ;;;
@@ -479,7 +479,7 @@ Some influential environment variables:
            (guile (file-name "guile" deps))
            ;; See https://bugs.gnu.org/43831; use -O1 with Guile-3
            (guild-optimize (let ((guile-version (and=> (find-dep "guile" deps) dependency-version-found)))
-                             (and guile-version (tuple< '(2) guile-version) "-O1")))
+                             (and guile-version (tuple< '(2 9) guile-version) "-O1")))
            (deps (if guile (cons (check-program-version (make-dep "nyacc" #:version '(0 99 0) #:commands (list (string-append guile " -c '(use-modules (nyacc lalr)) (display *nyacc-version*)'")) #:file-name #t #:version-option #f))
                                  deps)
                      deps))
