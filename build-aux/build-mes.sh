@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -59,6 +59,9 @@ then
   # libc.a.  The final command line has to have "-lc -lgcc -lc".
   # See <https://www.openwall.com/lists/musl/2018/05/09/1>.
   LIBS="${LIBS} -lgcc -lc"
+fi
+if [ "$compiler" = "mescc" ]; then
+   LIBS="${LIBS} -lc -lmescc"
 fi
 link bin/mes-$compiler
 cp bin/mes-$compiler bin/mes

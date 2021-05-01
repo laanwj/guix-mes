@@ -1,5 +1,5 @@
 ;;; GNU Mes --- Maxwell Equations of Software
-;;; Copyright © 2016,2017,2018,2019,2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2016,2017,2018,2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 ;;;
 ;;; This file is part of GNU Mes.
 ;;;
@@ -359,10 +359,11 @@
 
 (define (arch-get-machine options)
   (let* ((machine (option-ref options 'machine #f))
-         (arch (option-ref options 'arch #f)))
-    (or machine
-        (if (member arch '("x86_64")) "64"
-            "32"))))
+         (arch (option-ref options 'arch #f))
+         (machine (or machine arch "32")))
+    (cond ((member machine '("x86_64")) "64")
+          ((member machine '("arm")) "32")
+          (else "32"))))
 
 (define (arch-get-m1-macros options)
   (let ((arch (arch-get options)))
