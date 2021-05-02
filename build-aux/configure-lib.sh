@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # GNU Mes --- Maxwell Equations of Software
-# Copyright © 2019, 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+# Copyright © 2019,2020,2021 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 #
 # This file is part of GNU Mes.
 #
@@ -155,7 +155,6 @@ lib/stdio/putc.c
 lib/stdio/putchar.c
 lib/stdio/ungetc.c
 lib/stdlib/free.c
-lib/stdlib/malloc.c
 lib/stdlib/realloc.c
 lib/string/memchr.c
 lib/string/memcmp.c
@@ -209,6 +208,7 @@ lib/linux/_getcwd.c
 lib/linux/gettimeofday.c
 lib/linux/ioctl.c
 lib/linux/_open3.c
+lib/linux/malloc.c
 lib/linux/_read.c
 lib/linux/time.c
 lib/linux/unlink.c
