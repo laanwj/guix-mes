@@ -33,7 +33,7 @@ _start ()
   asm (
        "mov     %%ebp,%%eax\n\t"
        "add     $4,%%eax\n\t"
-       "movzbl  (%%eax),%%eax\n\t"
+       "mov     (%%eax),%%eax\n\t"
        "add     $3,%%eax\n\t"
        "shl     $2,%%eax\n\t"
        "add     %%ebp,%%eax\n\t"
@@ -48,7 +48,7 @@ _start ()
 
        "mov     %ebp,%eax\n\t"
        "add     $4,%eax\n\t"
-       "movzbl  (%eax),%eax\n\t"
+       "mov     (%eax),%eax\n\t"
        "push    %eax\n\t"
 
        "call    _main\n\t"

@@ -1,6 +1,7 @@
 /* -*-comment-start: "//";comment-end:""-*-
  * GNU Mes --- Maxwell Equations of Software
  * Copyright © 2017,2018,2019 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+ * Copyright © 2021 Paul Dersey <pdersey@gmail.com>
  *
  * This file is part of GNU Mes.
  *
@@ -48,7 +49,7 @@ _start ()
   asm (
        "mov     %%ebp,%%eax\n\t"
        "add     $4,%%eax\n\t"
-       "movzbl  (%%eax),%%eax\n\t"
+       "mov     (%%eax),%%eax\n\t"
        "add     $3,%%eax\n\t"
        "shl     $2,%%eax\n\t"
        "add     %%ebp,%%eax\n\t"
@@ -64,7 +65,7 @@ _start ()
 
        "mov     %ebp,%eax\n\t"
        "add     $4,%eax\n\t"
-       "movzbl  (%eax),%eax\n\t"
+       "mov     (%eax),%eax\n\t"
        "push    %eax\n\t"
 
        "call    main\n\t"
