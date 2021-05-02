@@ -25,9 +25,9 @@
 int
 rmdir (char const *file_name)
 {
-#if defined(SYS_rmdir)
+#if defined (SYS_rmdir)
   return _sys_call1 (SYS_rmdir, (long) file_name);
-#elif defined(SYS_unlinkat)
+#elif defined (SYS_unlinkat)
   return _sys_call3 (SYS_unlinkat, AT_FDCWD, (long) file_name, AT_REMOVEDIR);
 #else
 #error No usable rmdir syscall

@@ -25,9 +25,9 @@
 int
 getdents (int filedes, char *buffer, size_t nbytes)
 {
-#if defined(SYS_getdents)
+#if defined (SYS_getdents)
   return _sys_call3 (SYS_getdents, (int) filedes, (long) buffer, (long) nbytes);
-#elif defined(SYS_getdents64)
+#elif defined (SYS_getdents64)
   return _sys_call3 (SYS_getdents64, (int) filedes, (long) buffer, (long) nbytes);
 #else
 #error No usable getdents syscall

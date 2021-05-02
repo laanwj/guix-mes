@@ -26,9 +26,9 @@
 ssize_t
 readlink (char const *file_name, char *buffer, size_t size)
 {
-#if defined(SYS_readlink)
+#if defined (SYS_readlink)
   return _sys_call3 (SYS_readlink, (long) file_name, (long) buffer, (long) size);
-#elif defined(SYS_readlinkat)
+#elif defined (SYS_readlinkat)
   return _sys_call4 (SYS_readlinkat, AT_FDCWD, (long) file_name, (long) buffer, (long) size);
 #else
 #error No usable readlink syscall

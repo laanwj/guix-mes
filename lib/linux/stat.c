@@ -26,9 +26,9 @@
 int
 stat (char const *file_name, struct stat *statbuf)
 {
-#if defined(SYS_stat)
+#if defined (SYS_stat)
   return _sys_call2 (SYS_stat, (long) file_name, (long) statbuf);
-#elif defined(SYS_newfstatat)
+#elif defined (SYS_newfstatat)
   return _sys_call4 (SYS_newfstatat, AT_FDCWD, (long) file_name, (long) statbuf, AT_SYMLINK_NOFOLLOW);
 #else
 #error No usable stat syscall

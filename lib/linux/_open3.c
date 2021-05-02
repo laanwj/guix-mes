@@ -26,9 +26,9 @@
 int
 _open3 (char const *file_name, int flags, int mask)
 {
-#if defined(SYS_open)
+#if defined (SYS_open)
   int r = _sys_call3 (SYS_open, (long) file_name, (int) flags, (int) mask);
-#elif defined(SYS_openat)
+#elif defined (SYS_openat)
   int r = _sys_call4 (SYS_openat, AT_FDCWD, (long) file_name, (int) flags, (int) mask);
 #else
 #error No usable open syscall

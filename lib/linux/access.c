@@ -25,9 +25,9 @@
 int
 access (char const *file_name, int how)
 {
-#if defined(SYS_access)
+#if defined (SYS_access)
     return _sys_call2 (SYS_access, (long) file_name, (int) how);
-#elif defined(SYS_faccessat)
+#elif defined (SYS_faccessat)
     return _sys_call3 (SYS_faccessat, AT_FDCWD, (long) file_name, (int) how);
 #else
 #error No usable access sysall
