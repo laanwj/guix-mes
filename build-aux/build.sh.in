@@ -128,9 +128,9 @@ fi
     AR=${MESAR-"${srcdest}pre-inst-env mesar"}
     CC=${MESCC-"${srcdest}pre-inst-env mescc -m $mes_bits"}
     # No user overrides for MesCC, they are probably intended for GCC
-    CFLAGS=
+    CFLAGS="-g"
     CPPFLAGS=
-    LDFLAGS=
+    LDFLAGS="-g"
     ${SHELL} ${srcdest}build-aux/build-lib.sh
     ${SHELL} ${srcdest}build-aux/build-source-lib.sh
     if $bootstrap; then
