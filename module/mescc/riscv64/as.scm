@@ -33,7 +33,8 @@
             ))
 
 ;;; reserved temporary intermediate registers
-; t6 is used internally by M1 sequences
+; t6 is used internally by M1 sequences (and in riscv64:addi)
+(define %intreg "t6")
 ; t4 and t5 are scratch registers for code generation here
 (define %tmpreg1 "t5")
 (define %tmpreg2 "t4")
@@ -47,38 +48,52 @@
 ;;; internal: return instruction to load an intermediate value into a register
 (define (riscv64:li r v)
   (cond
-    ((= v 0)
-      `(,(string-append "mv_____%" r ",%x0")))
-    ((and (>= v #x-8000) (<= v #x7fff))
-      `(,(string-append "li_____%" r ",$i16_0000") (#:immediate2 ,v)
-        ,(string-append "srai___%" r ",16")))
+    ((and (>= v #x-800) (<= v #x7ff))
+      `((#:immediate-field "I" ,v) ,(string-append "li_____%" r ",0")))
     ((and (>= v #x-80000000) (<= v #x7fffffff))
-      `(,(string-append "li_____%" r ",$i32") (#:immediate ,v)))
+      `((#:immediate-field "U" ,v) ,(string-append "lui____%" r ",0")
+        (#:immediate-field "I" ,v) ,(string-append "addi___%" r ",%" r ",0")))
     (else
       `(,(string-append "li_____%" r ",$i64") (#:immediate8 ,v)))))
+
+;;; internal: return instruction to load value of label into a register
+(define (riscv64:li-address r label)
+  `((#:address-field "U" ,label) ,(string-append "lui____%" r ",0")
+    (#:address-field "I" ,label) ,(string-append "addi___%" r ",%" r ",0"))) ;; FIXME 64bit
 
 ;;; internal: return instruction to add an intermediate value into a register
 (define (riscv64:addi r0 r1 v)
   (cond
     ((= v 0)
       `(,(string-append "; addi___%" r0 ",%" r1 ",0"))) ; nothing to do
-    ((= v 1)
-      `(,(string-append "addi___%" r0 ",%" r1 ",1")))
-    ((= v -1)
-      `(,(string-append "addi___%" r0 ",%" r1 ",-1")))
-    ((and (>= v #x-800) (<= v #x7ff) (= (logand v 15) 0))
-      `(,(string-append "addi___%" r0 ",%" r1 ",$i8_0") (#:immediate1 ,(ash v -4))))
-    ((and (>= v #x-800) (<= v #x7ff) (= (logand v 15) 8))
-      `(,(string-append "addi___%" r0 ",%" r1 ",$i8_8") (#:immediate1 ,(ash v -4))))
+    ((and (>= v #x-800) (<= v #x7ff))
+      `((#:immediate-field "I" ,v) ,(string-append "addi___%" r0 ",%" r1 ",0")))
     ((and (>= v #x-80000000) (<= v #x7fffffff))
-      `(,(string-append "addi___%" r0 ",%" r1 ",$i32") (#:immediate ,v)))
+      `((#:immediate-field "U" ,v) ,(string-append "lui____%" %intreg ",0")
+        (#:immediate-field "I" ,v) ,(string-append "addi___%" %intreg ",%" %intreg ",0")
+        ,(string-append "add____%" r0 ",%" r1 ",%" %intreg)))
     (else
       `(,(string-append "addi___%" r0 ",%" r1 ",$i64") (#:immediate8 ,v)))))
 
+;;; internal: load b/h/w/d from fp+n
+(define (riscv64:local+n->x-r x n r)
+  (if (and (>= n #x-800) (<= n #x7ff))
+    `(((#:immediate-field "I" ,n) ,(string-append "l" x "_____%" r ",0(%fp)")))
+    `(,(riscv64:addi %tmpreg1 "fp" n)
+      (,(string-append "l" x "_____%" r ",0(%" %tmpreg1 ")")))))
+
+;;; internal: store b/h/w/d to fp+n
+(define (riscv64:x-r->local+n x n r)
+  (if (and (>= n #x-800) (<= n #x7ff))
+    `(((#:immediate-field "S" ,n) ,(string-append "s" x "_____%" r ",0(%fp)")))
+    `(,(riscv64:addi %tmpreg1 "fp" n)
+      (,(string-append "s" x "_____%" r ",0(%" %tmpreg1 ")")))))
+
 ;;; the preamble of every function
 (define (riscv64:function-preamble info . rest)
-  `(("push___%ra")
-    ("push___%fp")
+  `(((#:immediate-field "I" -16) "addi___%sp,%sp,0")
+    ((#:immediate-field "S" 8) "sd_____%ra,0(%sp)")
+    ((#:immediate-field "S" 0) "sd_____%fp,0(%sp)")
     ("mv_____%fp,%sp")))
 
 ;;; allocate function locals
@@ -101,20 +116,20 @@
 ;;; function epilogue
 (define (riscv64:ret . rest)
   '(("mv_____%sp,%fp")
-    ("pop____%fp")
-    ("pop____%ra")
+    ((#:immediate-field "I" 0) "ld_____%fp,0(%sp)")
+    ((#:immediate-field "I" 8) "ld_____%ra,0(%sp)")
+    ((#:immediate-field "I" 16) "addi___%sp,%sp,0")
     ("ret")))
 
 ;;; stack local to register
 (define (riscv64:local->r info n)
   (let ((r (car (if (pair? (.allocated info)) (.allocated info) (.registers info))))
         (n (- 0 (* 8 n))))
-    `(,(riscv64:addi %tmpreg1 "fp" n)
-      (,(string-append "ld_____%" r ",0(%" %tmpreg1 ")")))))
+    (riscv64:local+n->x-r "d" n r)))
 
 ;;; call a function through a label
 (define (riscv64:call-label info label n)
-  `(("jal.a__$i32" (#:address ,label))
+  `(((#:offset-field "J" ,label) "jal____0")
     ,(riscv64:addi "sp" "sp" (* n 8))
     ))
 
@@ -131,8 +146,8 @@
 
 ;;; label to function argument
 (define (riscv64:label->arg info label i)
-  `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
-    (,(string-append "push___%" %tmpreg1)))) ; FIXME 64bit
+  `(,(riscv64:li-address %tmpreg1 label)
+    (,(string-append "push___%" %tmpreg1))))
 
 ;;; ALU: r0 := r0 + r1
 (define (riscv64:r0+r1 info)
@@ -189,7 +204,7 @@
 ;;; label address into register
 (define (riscv64:label->r info label)
   (let ((r (get-r info)))
-    `((,(string-append "li_____%" r ",$i32") (#:address ,label))))) ;; FIXME 64bit
+    `(,(riscv64:li-address r label))))
 
 ;;; copy register r0 to register r1 (see also r1->r0)
 (define (riscv64:r0->r1 info)
@@ -235,7 +250,7 @@
 
 ;;; unconditional jump to label
 (define (riscv64:jump info label)
-  `(("j.a____$i32 " (#:address ,label))))
+  `(((#:offset-field "J" ,label) "j______0")))
 
 ;;;; Flag setters ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -276,16 +291,23 @@
 ;;;; Flag users ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; flag-based conditional jumps (equality)
+; because a B field only has a limited range, and we cannot rely on the linker being
+; intelligent about this, this is the long way around: jump around a j with the inverse condition.
+; - nz becomes beq instead of bne
+; - z becomes bne instead of beq
 (define (riscv64:jump-nz info label)
-  `(("jne.a__$i32" (#:address ,label))))
+  `(((#:immediate-field "B" 8) ,(string-append "beq____%" %condregx ",%" %condregy ",0"))
+    ((#:offset-field "J" ,label) ,(string-append "j______0"))))
 
 (define (riscv64:jump-z info label)
-  `(("jeq.a__$i32" (#:address ,label))))
+  `(((#:immediate-field "B" 8) ,(string-append "bne____%" %condregx ",%" %condregy ",0"))
+    ((#:offset-field "J" ,label) ,(string-append "j______0"))))
 
 ; assuming the result was properly zero/sign-extended, this is the same as a
 ; normal jump-z
 (define (riscv64:jump-byte-z info label)
-  `(("jeq.a__$i32" (#:address ,label))))
+  `(((#:immediate-field "B" 8) ,(string-append "bne____%" %condregx ",%" %condregy ",0"))
+    ((#:offset-field "J" ,label) ,(string-append "j______0"))))
 
 ;;; zero flag to register
 (define (riscv64:zf->r info)
@@ -342,8 +364,8 @@
 ;;; load word at label into register r
 (define (riscv64:label-mem->r info label)
   (let ((r (get-r info)))
-    `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
-      (,(string-append "ld_____%" r ",0(%" %tmpreg1 ")"))))) ;; FIXME 64bit
+    `(,(riscv64:li-address %tmpreg1 label)
+      (,(string-append "ld_____%" r ",0(%" %tmpreg1 ")")))))
 
 ;;; read 8-bit (and zero-extend) from address in register r into register r
 (define (riscv64:byte-mem->r info)
@@ -367,14 +389,18 @@
 
 (define (riscv64:local-add info n v)
   (let ((n (- 0 (* 8 n))))
-    `(,(riscv64:li %tmpreg1 n)
-      (,(string-append "add____%" %tmpreg1 ",%" %tmpreg1 ",%fp"))
-      (,(string-append "ld_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))
-      ,(riscv64:addi %tmpreg2 %tmpreg2 v)
-      (,(string-append "sd_____%" %tmpreg2 ",0(%" %tmpreg1 ")")))))
+    (if (and (>= n #x-800) (<= n #x7ff))
+      `(((#:immediate-field "I" ,n) ,(string-append "ld_____%" %tmpreg2 ",0(%fp)"))
+        ,(riscv64:addi %tmpreg2 %tmpreg2 v)
+        ((#:immediate-field "S" ,n) ,(string-append "sd_____%" %tmpreg2 ",0(%fp)")))
+      `(,(riscv64:li %tmpreg1 n)
+        (,(string-append "add____%" %tmpreg1 ",%" %tmpreg1 ",%fp"))
+        (,(string-append "ld_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))
+        ,(riscv64:addi %tmpreg2 %tmpreg2 v)
+        (,(string-append "sd_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))))))
 
 (define (riscv64:label-mem-add info label v)
-  `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
+  `(,(riscv64:li-address %tmpreg1 label)
     (,(string-append "ld_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))
     ,(riscv64:addi %tmpreg2 %tmpreg2 v)
     (,(string-append "sd_____%" %tmpreg2 ",0(%" %tmpreg1 ")"))))
@@ -394,26 +420,26 @@
 ;;; write 8-bit from register r to memory at the label
 (define (riscv64:r->byte-label info label)
   (let ((r (get-r info)))
-    `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
-      (,(string-append "sb_____%" r ",0(%" %tmpreg1 ")"))))) ;; FIXME 64bit
+    `(,(riscv64:li-address %tmpreg1 label)
+      (,(string-append "sb_____%" r ",0(%" %tmpreg1 ")")))))
 
 ;;; write 16-bit from register r to memory at the label
 (define (riscv64:r->word-label info label)
   (let ((r (get-r info)))
-    `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
-      (,(string-append "sh_____%" r ",0(%" %tmpreg1 ")"))))) ;; FIXME 64bit
+    `(,(riscv64:li-address %tmpreg1 label)
+      (,(string-append "sh_____%" r ",0(%" %tmpreg1 ")")))))
 
 ;;; write 32-bit from register r to memory at the label
 (define (riscv64:r->long-label info label)
   (let ((r (get-r info)))
-    `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
-      (,(string-append "sw_____%" r ",0(%" %tmpreg1 ")"))))) ;; FIXME 64bit
+    `(,(riscv64:li-address %tmpreg1 label)
+      (,(string-append "sw_____%" r ",0(%" %tmpreg1 ")")))))
 
 ;;; write 64-bit from register r to memory at the label
 (define (riscv64:r->label info label)
   (let ((r (get-r info)))
-    `((,(string-append "li_____%" %tmpreg1 ",$i32") (#:address ,label))
-      (,(string-append "sd_____%" r ",0(%" %tmpreg1 ")"))))) ;; FIXME 64bit
+    `(,(riscv64:li-address %tmpreg1 label)
+      (,(string-append "sd_____%" r ",0(%" %tmpreg1 ")")))))
 
 ;;; ALU r0 := r0 * r1
 (define (riscv64:r0*r1 info)
@@ -570,37 +596,32 @@
 (define (riscv64:byte-r->local+n info id n)
   (let ((n (+ (- 0 (* 8 id)) n))
          (r (get-r info)))
-    `(,(riscv64:addi %tmpreg1 "fp" n)
-      (,(string-append "sb_____%" r ",0(%" %tmpreg1 ")")))))
+    (riscv64:x-r->local+n "b" n r)))
 
 ;;; register (16-bit) to stack local
 (define (riscv64:word-r->local+n info id n)
   (let ((n (+ (- 0 (* 8 id)) n))
          (r (get-r info)))
-    `(,(riscv64:addi %tmpreg1 "fp" n)
-      (,(string-append "sh_____%" r ",0(%" %tmpreg1 ")")))))
+    (riscv64:x-r->local+n "h" n r)))
 
 ;;; register (32-bit) to stack local
 (define (riscv64:long-r->local+n info id n)
   (let ((n (+ (- 0 (* 8 id)) n))
          (r (get-r info)))
-    `(,(riscv64:addi %tmpreg1 "fp" n)
-      (,(string-append "sw_____%" r ",0(%" %tmpreg1 ")")))))
+    (riscv64:x-r->local+n "w" n r)))
 
 ;;; register (64-bit) to stack local
 (define (riscv64:r->local info n)
   (let ((r (get-r info))
         (n (- 0 (* 8 n))))
-    `(,(riscv64:addi %tmpreg1 "fp" n)
-      (,(string-append "sd_____%" r ",0(%" %tmpreg1 ")")))))
+    (riscv64:x-r->local+n "d" n r)))
 
 ;;; register (64-bit) to stack local (how does this differ from r->local ?)
 ;;; n is computed differently
 (define (riscv64:r->local+n info id n)
   (let ((n (+ (- 0 (* 8 id)) n))
          (r (get-r info)))
-    `(,(riscv64:addi %tmpreg1 "fp" n)
-      (,(string-append "sd_____%" r ",0(%" %tmpreg1 ")")))))
+    (riscv64:x-r->local+n "d" n r)))
 
 ;;; swap value of register r with the top word of the stack
 ;; seems unused

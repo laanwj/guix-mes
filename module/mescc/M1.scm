@@ -99,6 +99,12 @@
                      " %" (if (< o 0) "-1"
                               (number->string (dec->hex (if mesc? o (quotient o #x100000000))))))))
 
+(define (hex2:offset-field form o)
+  (string-append "." form o))
+
+(define (hex2:absolute-field form o)
+  (string-append "=" form o))
+
 (define* (display-join o #:optional (sep ""))
   (let loop ((o o))
     (when (pair? o)
@@ -165,6 +171,17 @@
           ((#:address8 ,number) (guard (number? number))
            (string-join (map text->M1 (int->bv64 number))))
 
+          ((#:address-field ,form (#:string ,string))
+           (hex2:absolute-field form (string->label `(#:string ,string))))
+          ((#:address-field ,form (#:address ,address)) (guard (string? address))
+           (hex2:absolute-field form address))
+          ((#:address-field ,form (#:address ,global)) (guard (global? global))
+           (hex2:absolute-field form (global->string global)))
+          ((#:address-field ,form ,function) (guard (function? function))
+           (hex2:absolute-field form (function->string function)))
+          ((#:address-field ,form ,number) (guard (number? number))
+           (hex2:absolute-field form (number->string number)))
+
           ((#:string ,string)
            (hex2:address (string->label o)))
 
@@ -178,6 +195,11 @@
           ((#:address8 ,global) (guard (global? global))
            (hex2:address8 (global->string global)))
 
+          ((#:address-field ,form ,address) (guard (string? address))
+           (hex2:absolute-field form address))
+          ((#:address-field ,form ,global) (guard (global? global))
+           (hex2:absolute-field form (global->string global)))
+
           ((#:offset ,offset) (hex2:offset offset))
           ((#:offset1 ,offset1) (hex2:offset1 offset1))
           ((#:offset2 ,offset2) (hex2:offset2 offset2))
@@ -187,6 +209,9 @@
           ((#:immediate2 ,immediate2) (hex2:immediate2 immediate2))
           ((#:immediate4 ,immediate4) (hex2:immediate4 immediate4))
           ((#:immediate8 ,immediate8) (hex2:immediate8 immediate8))
+
+          ((#:offset-field ,form ,offset) (hex2:offset-field form offset))
+          ((#:immediate-field ,form ,immediate) (hex2:absolute-field form (number->string immediate)))
           (_ (error "text->M1 no match o" o))))
        ((pair? o) (string-join (map text->M1 o)))
        (#t (error "no such text:" o))))
