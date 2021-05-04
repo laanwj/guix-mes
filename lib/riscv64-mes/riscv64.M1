@@ -19,88 +19,28 @@
 ### along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Multi-instruction macros
-DEFINE j.a____$i32 970f000083efcf0067800f00 # auipc t6,0x0; lwu t6,12(t6); jr t6
-DEFINE jal.a__$i32 970f000093804f0183ef0f0167800f00 # auipc t6,0x0; addi ra,t6,20; lwu t6,16(t6); jr t6
 DEFINE push___%t0 130181ff23305100 # addi sp,sp,-0x8; sd t0,0(sp)
 DEFINE push___%t1 130181ff23306100 # addi sp,sp,-0x8; sd t1,0(sp)
-DEFINE push___%fp 130181ff23308100 # addi sp,sp,-0x8; sd fp,0(sp)
-DEFINE push___%ra 130181ff23301100 # addi sp,sp,-0x8; sd ra,0(sp)
 DEFINE push___%t5 130181ff2330e101 # addi sp,sp,-0x8; sd t5,0(sp)
 DEFINE pop____%t0 8332010013018100 # ld t0,0(sp); addi sp,sp,0x8
 DEFINE pop____%t1 0333010013018100 # ld t1,0(sp); addi sp,sp,0x8
-DEFINE pop____%fp 0334010013018100 # ld fp,0(sp); addi sp,sp,0x8
-DEFINE pop____%ra 8330010013018100 # ld ra,0(sp); addi sp,sp,0x8
 
 ## Immediate values
-DEFINE li_____%t0,$i32 9702000083a2c2006f008000 # auipc t0,0x0; lw t0,12(t0); j 8
-DEFINE li_____%t1,$i32 170300000323c3006f008000 # auipc t1,0x0; lw t1,12(t1); j 8
-DEFINE li_____%a0,$i32 170500000325c5006f008000 # auipc a0,0x0; lw a0,12(a0); j 8
-DEFINE li_____%a1,$i32 9705000083a5c5006f008000 # auipc a1,0x0; lw a1,12(a1); j 8
-DEFINE li_____%a2,$i32 170600000326c6006f008000 # auipc a2,0x0; lw a2,12(a2); j 8
-DEFINE li_____%a3,$i32 9706000083a6c6006f008000 # auipc a3,0x0; lw a3,12(a3); j 8
-DEFINE li_____%a4,$i32 170700000327c7006f008000 # auipc a4,0x0; lw a4,12(a4); j 8
-DEFINE li_____%a5,$i32 9707000083a7c7006f008000 # auipc a5,0x0; lw a5,12(a5); j 8
-DEFINE li_____%a7,$i32 9708000083a8c8006f008000 # auipc a7,0x0; lw a7,12(a7); j 8
-DEFINE li_____%t5,$i32 170f0000032fcf006f008000 # auipc t5,0x0; lw t5,12(t5); j 8
-DEFINE li_____%s10,$i32 170d0000032dcd006f008000 # auipc s10,0x0; lw s10,12(s10); j 8
-DEFINE li_____%s11,$i32 970d000083adcd006f008000 # auipc s11,0x0; lw s11,12(s11); j 8
 DEFINE li_____%t0,$i64 9702000083b2c2006f00c000 # auipc t0,0x0; ld t0,12(t0); j 12
 DEFINE li_____%t1,$i64 170300000333c3006f00c000 # auipc t1,0x0; ld t1,12(t1); j 12
 DEFINE li_____%t5,$i64 170f0000033fcf006f00c000 # auipc t5,0x0; ld t5,12(t5); j 12
 DEFINE li_____%s10,$i64 170d0000033dcd006f00c000 # auipc s10,0x0; ld s10,12(s10); j 12
 DEFINE li_____%s11,$i64 970d000083bdcd006f00c000 # auipc s11,0x0; ld s11,12(s11); j 12
-DEFINE li_____%t0,$i16_0000 b702 # lui t0,0
-DEFINE srai___%t0,16 93d20241
-DEFINE li_____%t1,$i16_0000 3703 # lui t1,0
-DEFINE srai___%t1,16 13530341
-DEFINE li_____%t5,$i16_0000 370f # lui t5,0
-DEFINE srai___%t5,16 135f0f41
-DEFINE li_____%t4,$i16_0000 b70e # lui t4,0
-DEFINE srai___%t4,16 93de0e41
-DEFINE li_____%s10,$i16_0000 370d # lui s10,0
-DEFINE srai___%s10,16 135d0d41
-DEFINE li_____%s11,$i16_0000 b70d # lui s11,0
-DEFINE srai___%s11,16 93dd0d41
 
 ## Immediate adds
-DEFINE addi___%sp,%sp,$i32 970f000083af0f013301f1016f008000 # auipc t6,0x0; lw t6,16(t6); add sp,sp,t6; j 8
 DEFINE addi___%sp,%sp,$i64 1701000003310101330121006f00c000 # auipc sp,0x0; ld sp,16(sp); add sp,sp,sp; j 12
-DEFINE addi___%t0,%t0,$i32 970f000083af0f01b382f2016f008000 # auipc t6,0x0; lw t6,16(t6); add t0,t0,t6; j 8
 DEFINE addi___%t0,%t0,$i64 9702000083b20201b38252006f00c000 # auipc t0,0x0; ld t0,16(t0); add t0,t0,t0; j 12
-DEFINE addi___%t1,%t1,$i32 970f000083af0f013303f3016f008000 # auipc t6,0x0; lw t6,16(t6); add t1,t1,t6; j 8
 DEFINE addi___%t1,%t1,$i64 1703000003330301330363006f00c000 # auipc t1,0x0; ld t1,16(t1); add t1,t1,t1; j 12
-DEFINE addi___%t5,%t5,$i32 970f000083af0f01330fff016f008000 # auipc t6,0x0; lw t6,16(t6); add t5,t5,t6; j 8
 DEFINE addi___%t5,%t5,$i64 170f0000033f0f01330fef016f00c000 # auipc t5,0x0; ld t5,16(t5); add t5,t5,t5; j 12
-DEFINE addi___%t4,%t4,$i32 970f000083af0f01b38efe016f008000 # auipc t6,0x0; lw t6,16(t6); add t4,t4,t6; j 8
 DEFINE addi___%t4,%t4,$i64 970e000083be0e01b38ede016f00c000 # auipc t4,0x0; ld t4,16(t4); add t4,t4,t4; j 12
-DEFINE addi___%t0,%t0,-1 9382f2ff
-DEFINE addi___%t0,%t0,1 93821200
-DEFINE addi___%t0,%t0,$i8_0 938202
-DEFINE addi___%t0,%t0,$i8_8 938282
-DEFINE addi___%t1,%t1,-1 1303f3ff
-DEFINE addi___%t1,%t1,1 13031300
-DEFINE addi___%t1,%t1,$i8_0 130303
-DEFINE addi___%t1,%t1,$i8_8 130383
-DEFINE addi___%sp,%sp,-1 1301f1ff
-DEFINE addi___%sp,%sp,1 13011100
-DEFINE addi___%sp,%sp,$i8_0 130101
-DEFINE addi___%sp,%sp,$i8_8 130181
-DEFINE addi___%t5,%t5,-1 130fffff
-DEFINE addi___%t5,%t5,1 130f1f00
-DEFINE addi___%t5,%t5,$i8_0 130f0f
-DEFINE addi___%t5,%t5,$i8_8 130f8f
-DEFINE addi___%t4,%t4,-1 938efeff
-DEFINE addi___%t4,%t4,1 938e1e00
-DEFINE addi___%t4,%t4,$i8_0 938e0e
-DEFINE addi___%t4,%t4,$i8_8 938e8e
-DEFINE addi___%t5,%fp,$i32 970f000083af0f01330ff4016f008000 # auipc t6,0x0; lw t6,16(t6); add t5,fp,t6; j 8
-DEFINE addi___%t5,%fp,$i8_0 130f04
-DEFINE addi___%t5,%fp,$i8_8 130f84
 
 ## Condition flags and jumps emulation
 DEFINE cond.nz 330dbd41133d1d00930d0000 # sub s10,s10,s11; seqz s10,s10; mv s11,x0
-DEFINE jeq.a__$i32 631abd01970f000083efcf0067800f00 # bne s10,s11,20; auipc t6,0x0; lwu t6,12(t6); jr t6
-DEFINE jne.a__$i32 630abd01970f000083efcf0067800f00 # beq s10,s11,20; auipc t6,0x0; lwu t6,12(t6); jr t6
 DEFINE seq____%t0 b302bd4193b21200 # sub t0,s10,s11; seqz t0,t0
 DEFINE sne____%t0 b302bd41b3325000 # sub t0,s10,s11; snez t0,t0
 DEFINE sge____%t0 b322bd0193b21200 # slt t0,s10,s11; seqz t0,t0
@@ -121,6 +61,8 @@ DEFINE sgeu___%t1 3333bd0113331300 # sltu t1,s10,s11; seqz t1,t1
 DEFINE sltu___%t1 3333bd01
 DEFINE sgtu___%t1 33b3ad01 # sltu t1,s11,s10
 DEFINE sleu___%t1 33b3ad0113331300 # sltu t1,s11,s10; seqz t1,t1
+DEFINE beq____%s10,%s11,0 6300bd01
+DEFINE bne____%s10,%s11,0 6310bd01
 
 ## Sign extension
 DEFINE ext.b__%t0 93f2f20f # andi t0,t0,255
@@ -194,6 +136,19 @@ DEFINE sll____%t1,%t1,%t5 3313e301
 DEFINE and____%t0,%t0,%t5 b3f2e201
 DEFINE and____%t1,%t1,%t5 3373e301
 DEFINE add____%t5,%t5,%fp 330f8f00
+DEFINE add____%t0,%t0,%t6 b382f201
+DEFINE add____%t0,%t1,%t6 b302f301
+DEFINE add____%t0,%t5,%t6 b302ff01
+DEFINE add____%t0,%fp,%t6 b302f401
+DEFINE add____%t1,%t0,%t6 3383f201
+DEFINE add____%t1,%t1,%t6 3303f301
+DEFINE add____%t1,%t5,%t6 3303ff01
+DEFINE add____%t1,%fp,%t6 3303f401
+DEFINE add____%t5,%t0,%t6 338ff201
+DEFINE add____%t5,%t1,%t6 330ff301
+DEFINE add____%t5,%t5,%t6 330fff01
+DEFINE add____%t5,%fp,%t6 330ff401
+DEFINE add____%sp,%sp,%t6 3301f101
 DEFINE sb_____%t0,0(%t0) 23805200
 DEFINE lb_____%t0,0(%t0) 83820200
 DEFINE sh_____%t0,0(%t0) 23905200
@@ -290,14 +245,54 @@ DEFINE sw_____%t4,0(%t5) 2320df01
 DEFINE lw_____%t4,0(%t5) 832e0f00
 DEFINE sd_____%t4,0(%t5) 2330df01
 DEFINE ld_____%t4,0(%t5) 833e0f00
-DEFINE sb_____%t0,0(%t5) 23005f00
-DEFINE lb_____%t0,0(%t5) 83020f00
-DEFINE sh_____%t0,0(%t5) 23105f00
-DEFINE lh_____%t0,0(%t5) 83120f00
-DEFINE sw_____%t0,0(%t5) 23205f00
-DEFINE lw_____%t0,0(%t5) 83220f00
-DEFINE sd_____%t0,0(%t5) 23305f00
-DEFINE ld_____%t0,0(%t5) 83320f00
+DEFINE sb_____%t0,0(%fp) 23005400
+DEFINE lb_____%t0,0(%fp) 83020400
+DEFINE sh_____%t0,0(%fp) 23105400
+DEFINE lh_____%t0,0(%fp) 83120400
+DEFINE sw_____%t0,0(%fp) 23205400
+DEFINE lw_____%t0,0(%fp) 83220400
+DEFINE sd_____%t0,0(%fp) 23305400
+DEFINE ld_____%t0,0(%fp) 83320400
+DEFINE sb_____%t1,0(%fp) 23006400
+DEFINE lb_____%t1,0(%fp) 03030400
+DEFINE sh_____%t1,0(%fp) 23106400
+DEFINE lh_____%t1,0(%fp) 03130400
+DEFINE sw_____%t1,0(%fp) 23206400
+DEFINE lw_____%t1,0(%fp) 03230400
+DEFINE sd_____%t1,0(%fp) 23306400
+DEFINE ld_____%t1,0(%fp) 03330400
+DEFINE sb_____%t5,0(%fp) 2300e401
+DEFINE lb_____%t5,0(%fp) 030f0400
+DEFINE sh_____%t5,0(%fp) 2310e401
+DEFINE lh_____%t5,0(%fp) 031f0400
+DEFINE sw_____%t5,0(%fp) 2320e401
+DEFINE lw_____%t5,0(%fp) 032f0400
+DEFINE sd_____%t5,0(%fp) 2330e401
+DEFINE ld_____%t5,0(%fp) 033f0400
+DEFINE sb_____%t4,0(%fp) 2300d401
+DEFINE lb_____%t4,0(%fp) 830e0400
+DEFINE sh_____%t4,0(%fp) 2310d401
+DEFINE lh_____%t4,0(%fp) 831e0400
+DEFINE sw_____%t4,0(%fp) 2320d401
+DEFINE lw_____%t4,0(%fp) 832e0400
+DEFINE sd_____%t4,0(%fp) 2330d401
+DEFINE ld_____%t4,0(%fp) 833e0400
+DEFINE sb_____%ra,0(%sp) 23001100
+DEFINE lb_____%ra,0(%sp) 83000100
+DEFINE sh_____%ra,0(%sp) 23101100
+DEFINE lh_____%ra,0(%sp) 83100100
+DEFINE sw_____%ra,0(%sp) 23201100
+DEFINE lw_____%ra,0(%sp) 83200100
+DEFINE sd_____%ra,0(%sp) 23301100
+DEFINE ld_____%ra,0(%sp) 83300100
+DEFINE sb_____%fp,0(%sp) 23008100
+DEFINE lb_____%fp,0(%sp) 03040100
+DEFINE sh_____%fp,0(%sp) 23108100
+DEFINE lh_____%fp,0(%sp) 03140100
+DEFINE sw_____%fp,0(%sp) 23208100
+DEFINE lw_____%fp,0(%sp) 03240100
+DEFINE sd_____%fp,0(%sp) 23308100
+DEFINE ld_____%fp,0(%sp) 03340100
 DEFINE lbu____%t0,0(%t0) 83c20200
 DEFINE lhu____%t0,0(%t0) 83d20200
 DEFINE lwu____%t0,0(%t0) 83e20200
@@ -326,24 +321,52 @@ DEFINE mv_____%s10,%x0 130d0000
 DEFINE mv_____%s11,%t0 938d0200
 DEFINE mv_____%s11,%t1 930d0300
 DEFINE mv_____%s11,%x0 930d0000
-DEFINE ld_____%a7,0x10(%fp) 83380401
-DEFINE ld_____%a0,0x18(%fp) 03358401
-DEFINE ld_____%a1,0x20(%fp) 83350402
-DEFINE ld_____%a2,0x28(%fp) 03368402
-DEFINE ld_____%a3,0x30(%fp) 83360403
-DEFINE ld_____%a4,0x38(%fp) 03378403
-DEFINE ld_____%a0,0x10(%fp) 03350401
-DEFINE ld_____%a1,0x18(%fp) 83358401
-DEFINE ld_____%a2,0x20(%fp) 03360402
-DEFINE ld_____%fp,0x10(%fp) 03340401
-DEFINE ld_____%t0,0x8(%fp) 83328400
-DEFINE ld_____%sp,0x10(%fp) 03310401
-DEFINE ld_____%fp,0x0(%fp) 03340400
+DEFINE j______0 6f000000
+DEFINE jal____0 ef000000
 DEFINE jr_____%t0 67800200
 DEFINE jalr___%t0 e7800200
 DEFINE jr_____%t1 67000300
 DEFINE jalr___%t1 e7000300
 
+## System call arguments
+DEFINE ld_____%a0,0(%fp) 03350400
+DEFINE ld_____%a1,0(%fp) 83350400
+DEFINE ld_____%a2,0(%fp) 03360400
+DEFINE ld_____%a3,0(%fp) 83360400
+DEFINE ld_____%a4,0(%fp) 03370400
+DEFINE ld_____%a7,0(%fp) 83380400
+DEFINE ld_____%fp,0(%fp) 03340400
+DEFINE ld_____%sp,0(%fp) 03310400
+
 ## System call values (libc-mini, crt0)
 DEFINE li_____%a7,SYS_write 93080004
 DEFINE li_____%a7,SYS_exit 9308d005
+
+## Immediates
+DEFINE lui____%t0,0 b7020000
+DEFINE lui____%t1,0 37030000
+DEFINE lui____%t6,0 b70f0000
+DEFINE lui____%t5,0 370f0000
+DEFINE lui____%s10,0 370d0000
+DEFINE lui____%s11,0 b70d0000
+DEFINE li_____%t0,0 93020000
+DEFINE li_____%t1,0 13030000
+DEFINE li_____%t6,0 930f0000
+DEFINE li_____%t5,0 130f0000
+DEFINE li_____%s10,0 130d0000
+DEFINE li_____%s11,0 930d0000
+DEFINE addi___%t0,%t0,0 93820200
+DEFINE addi___%t0,%t1,0 93020300
+DEFINE addi___%t1,%t0,0 13830200
+DEFINE addi___%t1,%t1,0 13030300
+DEFINE addi___%t5,%t0,0 138f0200
+DEFINE addi___%t5,%t1,0 130f0300
+DEFINE addi___%s10,%t0,0 138d0200
+DEFINE addi___%s10,%t1,0 130d0300
+DEFINE addi___%s11,%t0,0 938d0200
+DEFINE addi___%s11,%t1,0 930d0300
+DEFINE addi___%t5,%fp,0 130f0400
+DEFINE addi___%sp,%sp,0 13010100
+DEFINE addi___%t5,%t5,0 130f0f00
+DEFINE addi___%t4,%t4,0 938e0e00
+DEFINE addi___%t6,%t6,0 938f0f00
