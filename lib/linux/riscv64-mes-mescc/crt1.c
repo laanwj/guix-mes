@@ -30,34 +30,36 @@ int main (int argc, char *argv[], char *envp[]);
 int
 _start ()
 {
-  asm ("li_____%t0,$i16_0000 @0");
-  asm ("li_____%t1,$i32 &__stdin");
+  asm ("=I0 li_____%t0,0");
+  asm ("=U__stdin lui____%t1,0");
+  asm ("=I__stdin addi___%t1,%t1,0");
   asm ("sw_____%t0,0(%t1)");
 
-  asm ("li_____%t0,$i16_0000 @1");
-  asm ("srai___%t0,16");
-  asm ("li_____%t1,$i32 &__stdout");
+  asm ("=I1 li_____%t0,0");
+  asm ("=U__stdout lui____%t1,0");
+  asm ("=I__stdout addi___%t1,%t1,0");
   asm ("sw_____%t0,0(%t1)");
 
-  asm ("li_____%t0,$i16_0000 @2");
-  asm ("srai___%t0,16");
-  asm ("li_____%t1,$i32 &__stderr");
+  asm ("=I2 li_____%t0,0");
+  asm ("=U__stderr lui____%t1,0");
+  asm ("=I__stderr addi___%t1,%t1,0");
   asm ("sw_____%t0,0(%t1)");
 
   // environ is &argv[argc + 1]
   asm ("mv_____%t1,%fp");
-  asm ("addi___%t1,%t1,$i8_8 !0x1"); // 0x10 to skip over pushed fp+ra, 0x8 to skip over argc
-  asm ("addi___%t5,%fp,$i8_0 !0x1"); // 0x10 to skip over pushed fp+ra
+  asm ("=I0x18 addi___%t1,%t1,0"); // 0x10 to skip over pushed fp+ra, 0x8 to skip over argc
+  asm ("=I0x10 addi___%t5,%fp,0"); // 0x10 to skip over pushed fp+ra
   asm ("ld_____%t0,0(%t5)");
-  asm ("addi___%t0,%t0,1");
-  asm ("li_____%t5,$i32 %0x3"); // skip over all arguments and the final NULL
+  asm ("=I1 addi___%t0,%t0,0");
+  asm ("=I0x3 li_____%t5,0"); // skip over all arguments and the final NULL
   asm ("sll____%t0,%t0,%t5");
   asm ("add____%t0,%t0,%t1");
   asm ("push___%t0"); // envp
   asm ("push___%t1"); // argv
-  asm ("li_____%t1,$i32 &environ");
+  asm ("=Uenviron lui____%t1,0");
+  asm ("=Ienviron addi___%t1,%t1,0");
   asm ("sd_____%t0,0(%t1)");
-  asm ("addi___%t5,%fp,$i8_0 !0x1"); // 0x10 to skip over pushed fp+ra
+  asm ("=I0x10 addi___%t5,%fp,0"); // 0x10 to skip over pushed fp+ra
   asm ("ld_____%t0,0(%t5)");
   asm ("push___%t0"); // argc
 
