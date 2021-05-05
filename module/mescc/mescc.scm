@@ -372,7 +372,7 @@
   (let* ((machine (option-ref options 'machine #f))
          (arch (option-ref options 'arch #f))
          (machine (or machine arch "32")))
-    (cond ((member machine '("riscv64" "x86_64")) "64")
+    (cond ((member machine '("64" "riscv64" "x86_64")) "64")
           ((member machine '("arm")) "32")
           (else "32"))))
 
