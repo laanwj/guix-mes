@@ -24,7 +24,7 @@
 void
 _exit (int status)
 {
-  asm ("ld_____%a0,0x10(%fp)");
+  asm ("=I0x10 ld_____%a0,0(%fp)");
   asm ("li_____%a7,SYS_exit");
   asm ("ecall");
   // no need to read return value

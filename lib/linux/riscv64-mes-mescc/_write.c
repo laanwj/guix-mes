@@ -24,9 +24,9 @@
 void
 _write (int filedes, void const *buffer, size_t size)
 {
-  asm ("ld_____%a0,0x10(%fp)");
-  asm ("ld_____%a1,0x18(%fp)");
-  asm ("ld_____%a2,0x20(%fp)");
+  asm ("=I0x10 ld_____%a0,0(%fp)");
+  asm ("=I0x18 ld_____%a1,0(%fp)");
+  asm ("=I0x20 ld_____%a2,0(%fp)");
   asm ("li_____%a7,SYS_write");
   asm ("ecall");
   asm ("mv_____%t0,%a0");

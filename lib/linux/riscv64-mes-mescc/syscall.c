@@ -25,7 +25,7 @@
 long
 __sys_call (long sys_call)
 {
-  asm ("ld_____%a7,0x10(%fp)");
+  asm ("=I0x10 ld_____%a7,0(%fp)");
 
   asm ("ecall");
 
@@ -35,8 +35,8 @@ __sys_call (long sys_call)
 long
 __sys_call1 (long sys_call, long one)
 {
-  asm ("ld_____%a7,0x10(%fp)");
-  asm ("ld_____%a0,0x18(%fp)");
+  asm ("=I0x10 ld_____%a7,0(%fp)");
+  asm ("=I0x18 ld_____%a0,0(%fp)");
 
   asm ("ecall");
 
@@ -46,9 +46,9 @@ __sys_call1 (long sys_call, long one)
 long
 __sys_call2 (long sys_call, long one, long two)
 {
-  asm ("ld_____%a7,0x10(%fp)");
-  asm ("ld_____%a0,0x18(%fp)");
-  asm ("ld_____%a1,0x20(%fp)");
+  asm ("=I0x10 ld_____%a7,0(%fp)");
+  asm ("=I0x18 ld_____%a0,0(%fp)");
+  asm ("=I0x20 ld_____%a1,0(%fp)");
 
   asm ("ecall");
 
@@ -58,10 +58,10 @@ __sys_call2 (long sys_call, long one, long two)
 long
 __sys_call3 (long sys_call, long one, long two, long three)
 {
-  asm ("ld_____%a7,0x10(%fp)");
-  asm ("ld_____%a0,0x18(%fp)");
-  asm ("ld_____%a1,0x20(%fp)");
-  asm ("ld_____%a2,0x28(%fp)");
+  asm ("=I0x10 ld_____%a7,0(%fp)");
+  asm ("=I0x18 ld_____%a0,0(%fp)");
+  asm ("=I0x20 ld_____%a1,0(%fp)");
+  asm ("=I0x28 ld_____%a2,0(%fp)");
 
   asm ("ecall");
 
@@ -71,11 +71,11 @@ __sys_call3 (long sys_call, long one, long two, long three)
 long
 __sys_call4 (long sys_call, long one, long two, long three, long four)
 {
-  asm ("ld_____%a7,0x10(%fp)");
-  asm ("ld_____%a0,0x18(%fp)");
-  asm ("ld_____%a1,0x20(%fp)");
-  asm ("ld_____%a2,0x28(%fp)");
-  asm ("ld_____%a3,0x30(%fp)");
+  asm ("=I0x10 ld_____%a7,0(%fp)");
+  asm ("=I0x18 ld_____%a0,0(%fp)");
+  asm ("=I0x20 ld_____%a1,0(%fp)");
+  asm ("=I0x28 ld_____%a2,0(%fp)");
+  asm ("=I0x30 ld_____%a3,0(%fp)");
 
   asm ("ecall");
 
@@ -85,12 +85,12 @@ __sys_call4 (long sys_call, long one, long two, long three, long four)
 long
 __sys_call5 (long sys_call, long one, long two, long three, long four, long five)
 {
-  asm ("ld_____%a7,0x10(%fp)");
-  asm ("ld_____%a0,0x18(%fp)");
-  asm ("ld_____%a1,0x20(%fp)");
-  asm ("ld_____%a2,0x28(%fp)");
-  asm ("ld_____%a3,0x30(%fp)");
-  asm ("ld_____%a4,0x38(%fp)");
+  asm ("=I0x10 ld_____%a7,0(%fp)");
+  asm ("=I0x18 ld_____%a0,0(%fp)");
+  asm ("=I0x20 ld_____%a1,0(%fp)");
+  asm ("=I0x28 ld_____%a2,0(%fp)");
+  asm ("=I0x30 ld_____%a3,0(%fp)");
+  asm ("=I0x38 ld_____%a4,0(%fp)");
 
   asm ("ecall");
 

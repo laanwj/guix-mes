@@ -26,11 +26,11 @@ void
 longjmp (jmp_buf env, int val)
 {
   val = val == 0 ? 1 : val;
-  asm ("ld_____%fp,0x10(%fp)"); // env*
+  asm ("=I0x10 ld_____%fp,0(%fp)"); // env*
 
-  asm ("ld_____%t0,0x8(%fp)");  // env.__pc
-  asm ("ld_____%sp,0x10(%fp)"); // env.__sp
-  asm ("ld_____%fp,0x0(%fp)");  // env.__bp
+  asm ("=I0x8 ld_____%t0,0(%fp)");  // env.__pc
+  asm ("=I0x10 ld_____%sp,0(%fp)"); // env.__sp
+  asm ("=I0x0 ld_____%fp,0(%fp)");  // env.__bp
   asm ("jr_____%t0");
   // not reached
   exit (42);
